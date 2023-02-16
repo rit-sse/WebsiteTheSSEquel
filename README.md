@@ -1,2 +1,1 @@
-# WebsiteTheSSEquel
-It's about damn time!
+Better than the book.
