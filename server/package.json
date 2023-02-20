@@ -1,0 +1,19 @@
+{
+  "name": "sse-website-api",
+  "version": "1.0.0",
+  "description": "The server API for the new SSE website rebuild.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rit-sse/WebsiteTheSSEquel.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rit-sse/WebsiteTheSSEquel/issues"
+  },
+  "homepage": "https://github.com/rit-sse/WebsiteTheSSEquel#readme"
+}
