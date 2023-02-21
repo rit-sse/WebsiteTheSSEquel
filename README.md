@@ -4,8 +4,8 @@ This repo contains the source code for the website of the Society of Software En
 
 ## Directory Structure
 
-- `client` directory holds the front-end codebase built using Create-React-App.
-- `server` directory holds the Node.js back-end API server built using TypeScript and Nodemon.
+- `client` directory holds the React.js front-end codebase bootstrapped using [create-react-app](https://create-react-app.dev/).
+- `server` directory holds the back-end API server built with Node.js, Express, and TypeScript, and bootstrapped using [create-express-api](https://www.npmjs.com/package/create-express-api).
 - `documentation` directory contains project documentation including wireframes, domain models, ERDs, etc.
 
 ## Getting Started
