@@ -20,7 +20,7 @@ To get started with the project, follow the instructions below:
 
 If you wish to contribute to the project, please join us at the SSE (GOL 1670) on Wednesdays at 7pm for our weekly tech committee meeting. Also join us on slack at rit-sse.slack.com. Make sure to join the `#technology` and `#projects` channels. See you there!
 
-To see what the committee is working on, check out the [GitHub Projects board](https://github.com/orgs/rit-sse/projects/2/views/10).
+To see what the SSE web team is working on, check out the [GitHub Projects board](https://github.com/orgs/rit-sse/projects/2/views/10).
 
 ## License
 
