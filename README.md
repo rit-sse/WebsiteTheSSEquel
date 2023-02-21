@@ -1,4 +1,4 @@
-# Society of Software Engineers Website Repo
+# Society of Software Engineers Website: the SSEquel
 
 This repo contains the source code for the website of the Society of Software Engineers. The website is built using a React front-end and a Node.js back-end API server.
 
