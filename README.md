@@ -1,11 +1,11 @@
 # Society of Software Engineers Website: the SSEquel
 
-This repo contains the source code for the website of the Society of Software Engineers. The website is built using a React front-end and a Node.js back-end API server.
+This repo contains the source code for the website of the Society of Software Engineers. The website is built using a React.js front-end and a Python Flask back-end API server.
 
 ## Directory Structure
 
-- `client` directory holds the React.js front-end codebase bootstrapped using [create-react-app](https://create-react-app.dev/).
-- `server` directory holds the back-end API server built with Node.js, Express, and TypeScript, and bootstrapped using [create-express-api](https://www.npmjs.com/package/create-express-api).
+- `client` directory holds the React.js front-end codebase bootstrapped using [Vite.js](https://vitejs.dev/) tooling.
+- `server` directory holds the back-end API server built with Python Flask. Currently empty, as we have not started implementation.
 - `documentation` directory contains project documentation including wireframes, domain models, ERDs, etc.
 
 ## Getting Started
@@ -13,8 +13,10 @@ This repo contains the source code for the website of the Society of Software En
 To get started with the project, follow the instructions below:
 
 1. Clone the repository to your local machine using `git clone https://github.com/[username]/[repository-name].git`
-2. Install the required dependencies for both the client and server by running `npm install` in the respective directories.
-3. Start the development server for both the client and server by running `npm start` in the respective directories.
+2. Install the dependencies for the client using `npm install` in the `client` directory.
+3. Once the server is skeletonized, install the dependencies for the server using `pip install -r requirements.txt` in the `server` directory.
+4. Run the client using `npm run dev` in the `client` directory.
+5. Once the server is skeletonized, run the server using `python app.py` in the `server` directory.
 
 ## Contributing
 
