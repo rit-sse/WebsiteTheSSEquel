@@ -1,3 +1,5 @@
+// This file defines the base layout of all pages in the application.
+
 import "./globals.scss";
 import type { Metadata } from "next";
 import Navbar from "@/components/nav/Navbar";

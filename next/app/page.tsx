@@ -1,3 +1,6 @@
+// This file renders the home page route (/) of the website.
+// We know that this is the homepage because this file resides in the root app directory.
+
 import Image from 'next/image'
 import { CTAButton } from '@/components/common/CTAButton';
 
