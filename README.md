@@ -19,9 +19,9 @@ To get started with the project, follow the instructions below:
 6. Once the server is skeletonized, run the server using `python app.py` in the `next` directory.
 
 ## Recommended Extensions for VSCode
-- Tailwind CSS IntelliSense
-- PostCSS Language Support
-- GitLens
+- Tailwind CSS IntelliSense: bradlc.vscode-tailwindcss
+- PostCSS Language Support: csstools.postcss
+- GitLens: eamodio.gitlens
 
 ## Contributing
 
