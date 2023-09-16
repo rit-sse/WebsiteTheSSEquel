@@ -1,0 +1,1 @@
+// This file renders the /about/constitution route of the website.
