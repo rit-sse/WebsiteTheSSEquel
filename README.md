@@ -21,6 +21,7 @@ To get started with the project, follow the instructions below:
 ## Recommended Extensions for VSCode
 - Tailwind CSS IntelliSense
 - PostCSS Language Support
+- GitLens
 
 ## Contributing
 
