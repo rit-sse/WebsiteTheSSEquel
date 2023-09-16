@@ -13,9 +13,8 @@ To get started with the project, follow the instructions below:
 
 1. Clone the repository to your local machine using `git clone https://github.com/[username]/[repository-name].git`
 2. Install the dependencies for the client using `npm install` in the `client` directory.
-3. Once the server is skeletonized, install the dependencies for the server using `pip install -r requirements.txt` in the `server` directory.
-4. Run `npm i` in the next directory to install the dependencies for the client.
-5. Run the client using `npm run dev` in the `next` directory.
+3. Run `npm i` in the next directory to install the dependencies for the client.
+4. Run the client using `npm run dev` in the `next` directory.
 
 ## Recommended Extensions for VSCode
 - Tailwind CSS IntelliSense: bradlc.vscode-tailwindcss
