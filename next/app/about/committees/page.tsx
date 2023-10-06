@@ -30,12 +30,28 @@ export default function Committees() {
 
             <div className="carousel flex flex-row w-full">
                 <div id="slide1" className="carousel-item relative w-full sm:justify-center md:justify-left">
-                    <img src='https://media.istockphoto.com/id/1392016982/photo/mixed-group-of-business-people-sitting-around-a-table-and-talking.jpg?s=612x612&w=0&k=20&c=d7mWQhdzKrowHYTWXXcCrNn02uyfLYQYB78M75G8lKg=' className="w-full h-full object-cover" />
+                    <img src='https://sse.rit.edu/assets/f59563ac4f3db9d4a392c37501414e4f.jpg' className="w-full h-full object-cover" />
                     <div className="absolute flex justify-between transform -translate-y-1/2 left-5 right-5 top-1/2">
-                    <a href="#slide4" className="btn btn-circle">❮</a>
-                    <a href="#slide2" className="btn btn-circle">❯</a>
+                      <a href="#slide3" className="btn btn-circle">❮</a>
+                      <a href="#slide2" className="btn btn-circle">❯</a>
                     </div>
-                </div> 
+                </div>
+
+                <div id="slide2" className="carousel-item relative w-full sm:justify-center md:justify-left">
+                    <img src='https://www.rit.edu/sites/rit.edu/files/styles/news_spotlight/public/images/news-spotlight/legacy/2013-04-30.jpg?itok=mC5VHCHF' className="w-full h-full object-cover" />
+                    <div className="absolute flex justify-between transform -translate-y-1/2 left-5 right-5 top-1/2">
+                      <a href="#slide1" className="btn btn-circle">❮</a>
+                      <a href="#slide3" className="btn btn-circle">❯</a>
+                    </div>
+                </div>
+
+                <div id="slide3" className="carousel-item relative w-full sm:justify-center md:justify-left">
+                    <img src='https://www.rit.edu/sites/rit.edu/files/images/news-spotlight/legacy/2006-06-14.jpg' className="w-full h-full object-cover" />
+                    <div className="absolute flex justify-between transform -translate-y-1/2 left-5 right-5 top-1/2">
+                      <a href="#slide2" className="btn btn-circle">❮</a>
+                      <a href="#slide1" className="btn btn-circle">❯</a>
+                    </div>
+                </div>
             </div>
         </div>
       </section>
