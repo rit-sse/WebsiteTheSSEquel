@@ -7,7 +7,7 @@ export default function Committees() {
   return (
     <>
       <section className="text-slate-200">
-        <div className="flex flex-col lg:flex-row">
+        <div className="flex flex-col py-16 lg:flex-row">
             <div className="carousel flex flex-row w-full max-w-100 max-h-96">
                 <div id="slide1" className="carousel-item relative w-full sm:justify-center md:justify-left">
                     <img src='https://sse.rit.edu/assets/f59563ac4f3db9d4a392c37501414e4f.jpg' className="max-w-full max-h-full object-cover" />
@@ -34,7 +34,7 @@ export default function Committees() {
                 </div>
             </div>
             
-            <div className="mx-auto max-w-screen-xl px-4 py-16 lg:flex lg:py-32">
+            <div className="mx-auto max-w-screen-xl pl-4 pr-4 py-16 lg:flex lg:pl-16 lg:pr-32">
                 <div className="text-center flex flex-col items-center w-full max-w-xl">
                     <h1
                     className="bg-gradient-to-r from-sky-400 to-emerald-400 bg-clip-text
