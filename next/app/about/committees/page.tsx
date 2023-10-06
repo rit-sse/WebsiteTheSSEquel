@@ -7,8 +7,34 @@ export default function Committees() {
   return (
     <>
       <section className="text-slate-200">
-        <div className="flex flex-col md:flex-row">
-            <div className="mx-auto max-w-screen-xl px-4 py-32 lg:flex">
+        <div className="flex flex-col lg:flex-row">
+            <div className="carousel flex flex-row w-full max-w-100 max-h-96">
+                <div id="slide1" className="carousel-item relative w-full sm:justify-center md:justify-left">
+                    <img src='https://sse.rit.edu/assets/f59563ac4f3db9d4a392c37501414e4f.jpg' className="max-w-full max-h-full object-cover" />
+                    <div className="absolute flex justify-between transform -translate-y-1/2 left-5 right-5 top-1/2">
+                      <a href="#slide3" className="btn btn-circle">❮</a>
+                      <a href="#slide2" className="btn btn-circle">❯</a>
+                    </div>
+                </div>
+
+                <div id="slide2" className="carousel-item relative w-full sm:justify-center md:justify-left">
+                    <img src='https://www.rit.edu/sites/rit.edu/files/styles/news_spotlight/public/images/news-spotlight/legacy/2013-04-30.jpg?itok=mC5VHCHF' className="max-w-full max-h-full object-cover" />
+                    <div className="absolute flex justify-between transform -translate-y-1/2 left-5 right-5 top-1/2">
+                      <a href="#slide1" className="btn btn-circle">❮</a>
+                      <a href="#slide3" className="btn btn-circle">❯</a>
+                    </div>
+                </div>
+
+                <div id="slide3" className="carousel-item relative w-full sm:justify-center md:justify-left">
+                    <img src='https://www.rit.edu/sites/rit.edu/files/images/news-spotlight/legacy/2006-06-14.jpg' className="max-w-full max-h-full object-cover" />
+                    <div className="absolute flex justify-between transform -translate-y-1/2 left-5 right-5 top-1/2">
+                      <a href="#slide2" className="btn btn-circle">❮</a>
+                      <a href="#slide1" className="btn btn-circle">❯</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div className="mx-auto max-w-screen-xl px-4 py-16 lg:flex lg:py-32">
                 <div className="text-center flex flex-col items-center w-full max-w-xl">
                     <h1
                     className="bg-gradient-to-r from-sky-400 to-emerald-400 bg-clip-text
@@ -25,32 +51,6 @@ export default function Committees() {
                     {/* <div className="flex justify-center mt-4">
                     <CTAButton href="https://forms.gle/2HhKAsX91FLnzYGV7" text="Submit an Idea" />
                     </div> */}
-                </div>
-            </div>
-
-            <div className="carousel flex flex-row w-full">
-                <div id="slide1" className="carousel-item relative w-full sm:justify-center md:justify-left">
-                    <img src='https://sse.rit.edu/assets/f59563ac4f3db9d4a392c37501414e4f.jpg' className="w-full h-full object-cover" />
-                    <div className="absolute flex justify-between transform -translate-y-1/2 left-5 right-5 top-1/2">
-                      <a href="#slide3" className="btn btn-circle">❮</a>
-                      <a href="#slide2" className="btn btn-circle">❯</a>
-                    </div>
-                </div>
-
-                <div id="slide2" className="carousel-item relative w-full sm:justify-center md:justify-left">
-                    <img src='https://www.rit.edu/sites/rit.edu/files/styles/news_spotlight/public/images/news-spotlight/legacy/2013-04-30.jpg?itok=mC5VHCHF' className="w-full h-full object-cover" />
-                    <div className="absolute flex justify-between transform -translate-y-1/2 left-5 right-5 top-1/2">
-                      <a href="#slide1" className="btn btn-circle">❮</a>
-                      <a href="#slide3" className="btn btn-circle">❯</a>
-                    </div>
-                </div>
-
-                <div id="slide3" className="carousel-item relative w-full sm:justify-center md:justify-left">
-                    <img src='https://www.rit.edu/sites/rit.edu/files/images/news-spotlight/legacy/2006-06-14.jpg' className="w-full h-full object-cover" />
-                    <div className="absolute flex justify-between transform -translate-y-1/2 left-5 right-5 top-1/2">
-                      <a href="#slide2" className="btn btn-circle">❮</a>
-                      <a href="#slide1" className="btn btn-circle">❯</a>
-                    </div>
                 </div>
             </div>
         </div>
