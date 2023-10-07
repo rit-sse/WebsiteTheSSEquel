@@ -3,42 +3,47 @@
 
 import Image from 'next/image'
 // Initialization for ES Users
-import Collapse from 'daisyui';
+import { Children } from 'react';
 
+const ZCard: React.FC<{
+  image: 'left' | 'right';
+  children: React.ReactNode;
+}> = ({ image, children }) => {
+  const [left, right, ...rest] = Children.toArray(children);
+
+  if (rest.length > 0) throw new Error("ZCard can only have two children");
+
+  const classLeft = image == 'left' ? "w-1/3" : "w-2/3";
+  const classRight = image == 'right' ? "w-1/3" : "w-2/3";
+
+  return (
+    <div className="flex flex-row items-center gap-24">
+      <div className={classLeft}>{left}</div>
+      <div className={classRight}>{right}</div>
+    </div>
+  );
+};
 
 export default function Committees() {
+  const placeholder_w = 540;
+  const placeholder_h = 400;
+
+  const placeholder_img = (
+    <Image
+      src={`https://dummyimage.com/${placeholder_w}x${placeholder_h}`}
+      alt="Placeholder"
+      width={placeholder_w}
+      height={placeholder_h}
+      className="w-full h-auto rounded-md"
+    />
+  );
+
   return (
     <>
       <section className="text-slate-200">
-        <div className="flex flex-col py-16 lg:flex-row">
-            <div className="carousel flex flex-row w-full max-w-100 max-h-96">
-                <div id="slide1" className="carousel-item relative w-full sm:justify-center md:justify-left">
-                    <img src='https://sse.rit.edu/assets/f59563ac4f3db9d4a392c37501414e4f.jpg' className="max-w-full max-h-full object-cover" />
-                    <div className="absolute flex justify-between transform -translate-y-1/2 left-5 right-5 top-1/2">
-                      <a href="#slide3" className="btn btn-circle">❮</a>
-                      <a href="#slide2" className="btn btn-circle">❯</a>
-                    </div>
-                </div>
-
-                <div id="slide2" className="carousel-item relative w-full sm:justify-center md:justify-left">
-                    <img src='https://www.rit.edu/sites/rit.edu/files/styles/news_spotlight/public/images/news-spotlight/legacy/2013-04-30.jpg?itok=mC5VHCHF' className="max-w-full max-h-full object-cover" />
-                    <div className="absolute flex justify-between transform -translate-y-1/2 left-5 right-5 top-1/2">
-                      <a href="#slide1" className="btn btn-circle">❮</a>
-                      <a href="#slide3" className="btn btn-circle">❯</a>
-                    </div>
-                </div>
-
-                <div id="slide3" className="carousel-item relative w-full sm:justify-center md:justify-left">
-                    <img src='https://www.rit.edu/sites/rit.edu/files/images/news-spotlight/legacy/2006-06-14.jpg' className="max-w-full max-h-full object-cover" />
-                    <div className="absolute flex justify-between transform -translate-y-1/2 left-5 right-5 top-1/2">
-                      <a href="#slide2" className="btn btn-circle">❮</a>
-                      <a href="#slide1" className="btn btn-circle">❯</a>
-                    </div>
-                </div>
-            </div>
-            
-            <div className="mx-auto max-w-screen-xl pl-4 pr-4 py-16 lg:flex lg:pl-16 lg:pr-32">
-                <div className="text-center flex flex-col items-center w-full max-w-xl">
+        <div className="flex flex-col items-center max-w-screen-xl">            
+            <div className="mx-auto px-4 pt-16 max-w-2xl">
+                <div className="text-center flex flex-col items-center w-full">
                     <h1
                     className="bg-gradient-to-r from-sky-400 to-emerald-400 bg-clip-text
                                 text-4xl/[3rem] font-extrabold text-transparent sm:text-5xl/[4rem]"
@@ -46,40 +51,56 @@ export default function Committees() {
                     Committees
                     </h1>
 
-                    <p className="mx-auto mt-4 max-w-2xl sm:text-xl/relaxed">
+                    <p className="mx-auto mt-4 sm:text-xl/relaxed">
                         Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
                         eiusmod tempor incididunt ut labore et dolore magna aliqua.
                     </p>
-
-                    {/* <div className="flex justify-center mt-4">
-                    <CTAButton href="https://forms.gle/2HhKAsX91FLnzYGV7" text="Submit an Idea" />
-                    </div> */}
                 </div>
             </div>
-        </div>
 
-        <div className="text-left flex flex-col items-left px-4 w-full max-w-full">
-          <h2
-          className="text-white bg-clip-text
-                      text-3xl/[3rem] font-bold text-transparent sm:text-1xl/[4rem]"
-          >
-          Events
-          </h2>
+            <div id='Committee Slots' className='pt-16'>
+              <ZCard image='left'>
+                {placeholder_img}
+                <div className='text-left py-16'>
+                  <h2
+                  className="text-white bg-clip-text
+                              text-3xl/[3rem] font-bold text-transparent sm:text-1xl/[4rem]"
+                  >
+                  Events
+                  </h2>
 
-          <h3 className="mt-4 pl-4 max-w-2xl text-bold sm:text-xl/relaxed">
-            Committee Head: Adam Gilbert<br />
-            Email: aeg1276@rit.edu
+                  <p className="mt-4 pb-4 sm:text-xl/relaxed">
+                  This is a description of the committee. Lorem ipsum dolor sit amet,
+                  consectetur adipiscing elit. Integer ullamcorper dui eu ex laoreet,
+                  sagittis aliquet mauris ornare. Nullam urna magna, hendrerit nec tortor
+                  porttitor, dignissim vulputate neque. Etiam accumsan ut leo sit amet lacinia.
+                  Nam euismod risus nec nunc commodo, quis laoreet ligula mollis.
+                  Mauris sodales ac neque quis blandit. Aenean vel lobortis eros.
+                  </p>
+                </div>
+              </ZCard>
 
-          </h3>
+              <ZCard image='right'>
+                <div className='text-right py-16'>
+                  <h2
+                  className="text-white bg-clip-text
+                              text-3xl/[3rem] font-bold text-transparent sm:text-1xl/[4rem]"
+                  >
+                  Talks
+                  </h2>
 
-          <p className="mt-4 pl-4 max-w-2xl pb-4 sm:text-xl/relaxed">
-              This is a description of the committee. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua.
-          </p>
-
-          {/* <div className="flex justify-center mt-4">
-          <CTAButton href="https://forms.gle/2HhKAsX91FLnzYGV7" text="Submit an Idea" />
-          </div> */}
+                  <p className="mt-4 pb-4 sm:text-xl/relaxed">
+                  This is a description of the committee. Lorem ipsum dolor sit amet,
+                  consectetur adipiscing elit. Integer ullamcorper dui eu ex laoreet,
+                  sagittis aliquet mauris ornare. Nullam urna magna, hendrerit nec tortor
+                  porttitor, dignissim vulputate neque. Etiam accumsan ut leo sit amet lacinia.
+                  Nam euismod risus nec nunc commodo, quis laoreet ligula mollis.
+                  Mauris sodales ac neque quis blandit. Aenean vel lobortis eros.
+                  </p>
+                </div>
+                {placeholder_img}
+              </ZCard>
+            </div>
         </div>
       </section>
     </>
