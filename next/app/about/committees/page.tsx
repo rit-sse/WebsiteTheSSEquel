@@ -2,6 +2,9 @@
 // We know that this is the homepage because this file resides in the root app directory.
 
 import Image from 'next/image'
+// Initialization for ES Users
+import Collapse from 'daisyui';
+
 
 export default function Committees() {
   return (
@@ -53,6 +56,30 @@ export default function Committees() {
                     </div> */}
                 </div>
             </div>
+        </div>
+
+        <div className="text-left flex flex-col items-left px-4 w-full max-w-full">
+          <h2
+          className="text-white bg-clip-text
+                      text-3xl/[3rem] font-bold text-transparent sm:text-1xl/[4rem]"
+          >
+          Events
+          </h2>
+
+          <h3 className="mt-4 pl-4 max-w-2xl text-bold sm:text-xl/relaxed">
+            Committee Head: Adam Gilbert<br />
+            Email: aeg1276@rit.edu
+
+          </h3>
+
+          <p className="mt-4 pl-4 max-w-2xl pb-4 sm:text-xl/relaxed">
+              This is a description of the committee. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+              eiusmod tempor incididunt ut labore et dolore magna aliqua.
+          </p>
+
+          {/* <div className="flex justify-center mt-4">
+          <CTAButton href="https://forms.gle/2HhKAsX91FLnzYGV7" text="Submit an Idea" />
+          </div> */}
         </div>
       </section>
     </>
