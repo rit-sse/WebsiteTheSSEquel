@@ -4,9 +4,9 @@ import Link from "next/link";
 export const CTAButton: React.FC<{ href: string, text: string }> = ({ href, text }) => (
     <Link
         href={href}
-        className=" min-w-[9rem] rounded-2xl p-px bg-gradient-to-tl from-emerald-400 to-sky-400 active:scale-95 transition-all hover:shadow-radial-lg hover:shadow-[#113D40]"
+        className="inline-block rounded-xl p-0.5 text-base-100 bg-gradient-to-br from-primary to-secondary hover:from-base-content hover:to-secondary active:scale-95 transition-all hover:shadow-radial-lg hover:shadow-[#414d51]"
     >
-        <div className="font-medium bg-slate-850 hover:bg-gradient-to-tl hover:from-emerald-400 hover:to-sky-400 hover:text-slate-950 p-4 rounded-[calc(1.2rem-4px)] transition-all">
+        <div className="block rounded-[10px] px-5 py-3 font-medium hover:bg-gradient-to-br hover:from-base-100 hover:to-base-100 hover:text-base-content transition-all">
             {text}
         </div>
     </Link>
