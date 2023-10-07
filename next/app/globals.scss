@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 ::selection {
-  background-color: theme('colors.sky.300');
+  background-color: theme('colors.emerald.400');
   color: theme('colors.slate.950');
 }
 
@@ -26,5 +26,9 @@
   overflow: hidden;
   user-select: none;
   pointer-events: none;
-  font-weight: 600;
+  font-weight: 700;
+
+  @media speech {
+    display: none;
+  }
 }
