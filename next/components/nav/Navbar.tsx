@@ -4,6 +4,8 @@ import Link from "next/link";
 import Image from "next/image";
 import NavItem, { NavItemProps } from "./NavItem";
 import MobileNavDropdown from "./MobileNavDropdown";
+import ThemedFullLogo from "../common/themedFullLogo";
+
 
 const navItems: NavItemProps[] = [
     {
@@ -91,7 +93,7 @@ const Navbar: React.FC = () => {
     return (
         <nav
             id="navbar"
-            className="sticky top-0 z-50 flex items-center justify-center bg-slate-900 bg-opacity-80 filter backdrop-blur-sm"
+            className="sticky top-0 z-50 flex items-center justify-center bg-base-100 bg-opacity-0 filter backdrop-blur-sm"
         >
             <div
                 id="nav-content"
@@ -103,25 +105,19 @@ const Navbar: React.FC = () => {
                     href="/"
                     className="flex flex-row items-center justify-center group focus:outline-offset-8 rounded-md  "
                 >
-                    <div className="">
-                        <Image
-                            src="sse-small.svg"
-                            className=""
-                            alt="Logo"
-                            width={50}
-                            height={50}
-                        />
-                    </div>
+                    <ThemedFullLogo />
                 </Link>
                 <div className="hidden md:block md:visible">
-                    <ul className="inline-flex flex-row flex-nowrap justify-between text-center">
+                    <ul className="inline-flex flex-row flex-nowrap justify-between text-center text-lg">
                         {navItems.map((navItem, index) => (
                             <NavItem key={index} {...navItem} onClickFunc={blurOnClick} />
                         ))}
                     </ul>
                 </div>
                 <div className="dropdown dropdown-end md:hidden">
-                    <Hamburger />
+                    <div className="flex flex-row">
+                        <Hamburger />
+                    </div>
                     <MobileNavDropdown navItems={navItems} onClickFunc={blurOnClick} />
                 </div>
             </div>
