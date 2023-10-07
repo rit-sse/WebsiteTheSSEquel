@@ -82,12 +82,8 @@ export default function Leadership() {
                                         <p className="text-indigo-300">{item.title}</p>
                                         <p className="text-gray-300 mt-2 px-10">{item.desc}</p>
                                         <div className="mt-4 flex justify-center gap-4 text-gray-400">
-                                            <a href={item.linkedin}>
-                                                <LinkedIn/>
-                                            </a>
-                                            <a href={item.github}>
-                                            <GitHub/>
-                                            </a>
+                                            <a href={item.linkedin}><LinkedIn/></a>
+                                            <a href={item.github}><GitHub/></a>
                                         </div>
                                     </div>
                                 </li>
