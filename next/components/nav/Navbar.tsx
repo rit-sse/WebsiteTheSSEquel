@@ -4,6 +4,8 @@ import Link from "next/link";
 import Image from "next/image";
 import NavItem, { NavItemProps } from "./NavItem";
 import MobileNavDropdown from "./MobileNavDropdown";
+import ThemedFullLogo from "../common/themedFullLogo";
+
 
 const navItems: NavItemProps[] = [
     {
@@ -103,15 +105,7 @@ const Navbar: React.FC = () => {
                     href="/"
                     className="flex flex-row items-center justify-center group focus:outline-offset-8 rounded-md  "
                 >
-                    <div className="">
-                        <Image
-                            src="sse-full-darkmode.svg"
-                            className="py-2"
-                            alt="Logo"
-                            width={250}
-                            height={250}
-                        />
-                    </div>
+                    <ThemedFullLogo />
                 </Link>
                 <div className="hidden md:block md:visible">
                     <ul className="inline-flex flex-row flex-nowrap justify-between text-center text-lg">
@@ -121,7 +115,9 @@ const Navbar: React.FC = () => {
                     </ul>
                 </div>
                 <div className="dropdown dropdown-end md:hidden">
-                    <Hamburger />
+                    <div className="flex flex-row">
+                        <Hamburger />
+                    </div>
                     <MobileNavDropdown navItems={navItems} onClickFunc={blurOnClick} />
                 </div>
             </div>
