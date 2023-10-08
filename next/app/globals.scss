@@ -26,9 +26,5 @@
   overflow: hidden;
   user-select: none;
   pointer-events: none;
-  font-weight: 700;
-
-  @media speech {
-    display: none;
-  }
+  font-weight: 600;
 }
