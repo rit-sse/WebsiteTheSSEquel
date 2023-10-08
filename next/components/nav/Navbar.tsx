@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import NavItem, { NavItemProps } from "./NavItem";
 import MobileNavDropdown from "./MobileNavDropdown";
-import ThemedFullLogo from "../common/themedFullLogo";
+import SSEFullLogo from "../common/SSEFullLogo";
 
 
 const navItems: NavItemProps[] = [
@@ -105,7 +105,7 @@ const Navbar: React.FC = () => {
                     href="/"
                     className="flex flex-row items-center justify-center group focus:outline-offset-8 rounded-md  "
                 >
-                    <ThemedFullLogo />
+                    <SSEFullLogo />
                 </Link>
                 <div className="hidden md:block md:visible">
                     <ul className="inline-flex flex-row flex-nowrap justify-between text-center text-lg">
