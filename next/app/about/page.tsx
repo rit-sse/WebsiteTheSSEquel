@@ -17,6 +17,9 @@ const ZCard: React.FC<{
 
   if (rest.length > 0) throw new Error("ZCard can only have two children");
 
+  // const classLeft = image == 'left' ? "w-1/4" : "w-3/4";
+  // const classRight = image == 'right' ? "w-1/4" : "w-3/4";
+
   return (
     <div className="flex items-center  gap-24">
       <div className="w-1/2">{left}</div>
@@ -50,7 +53,7 @@ const About = () => {
         </h1>
 
         <div className="w-5/6 space-y-24">
-          <p className="w-1/2 mt-8 sm:text-xl/relaxed m-auto">
+          <p className="w-4/5 mt-8 sm:text-xl/relaxed m-auto">
             The Society of Software Engineers at RIT fosters a vibrant community
             of tech enthusiasts, bridging academia with industry partnerships
             from giants like Microsoft to Apple, ensuring our members thrive in
@@ -63,12 +66,10 @@ const About = () => {
                 All-In-One Hub For Developers
               </h3>
               <p className="mt-8 sm:text-xl/relaxed">
-                Our lab (GOL-1670) is open for mentoring on weekdays from
-                10:00AM to 6:00PM and any student, can come and ask questions
-                for any class in the Software Engineering curriculum. The
-                Mentoring Committee offers 1-on-1 tutoring and holds practice
-                exams for popular computer science and software engineering
-                classes.
+                GOL-1670 offers weekday Software Engineering mentoring and
+                tutoring. Experience the SSE Winter Ball, partake in trips and
+                movies, or join our intramural sports. Academics and recreation,
+                seamlessly combined.
               </p>
             </div>
             {placeholder_img}
@@ -79,12 +80,11 @@ const About = () => {
             <div className="">
               <h3 className="text-3xl font-bold">Hands-On Experience</h3>
               <p className="mt-8 sm:text-xl/relaxed">
-                The projects committee is a recent addition to the society, but
-                it is by no means the smallest. In the projects committee, SSE
-                members come together and work on software engineering projects
-                for fun and research. Our current and past projects include a
-                singing tesla coil, a web-controllable slideshow for our TV
-                displays, and a large multitouch wall.
+                In the Projects Committee, SSE members collaborate on unique
+                software projects, from singing tesla coils to multitouch walls.
+                Additionally, our Rapid Development Weekends offer a fast-paced
+                experience, producing everything from games to file transfer
+                systems in just two days.
               </p>
             </div>
           </ZCard>
