@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import Navbar from "@/components/nav/Navbar";
 import Footer from "@/components/Footer";
 import { Inter } from 'next/font/google'
+import { Providers } from "./Providers";
 
 
 const inter = Inter({ subsets: ['latin'] })
@@ -22,15 +23,17 @@ export default function RootLayout({
 }) {
   return (
 
-    <html lang="en">
+    <html lang="en" data-theme="dark">
       <body
-        className={`min-h-screen flex flex-col text-slate-300 bg-gradient-to-b from-slate-900 to-slate-1000`}
+        className={`min-h-screen flex flex-col bg-gradient-to-b from-base-100 to-base-300`}
       >
-        <Navbar />
-        <main className="flex flex-col grow items-center p-2 md:p-4 lg:p-6 xl:p-8">
-          {children}
-        </main>
-        <Footer />
+        <Providers>
+          <Navbar />
+          <main className="flex flex-col grow items-center p-2 md:p-4 lg:p-6 xl:p-8">
+            {children}
+          </main>
+          <Footer />
+        </Providers>
       </body>
     </html>
   );
