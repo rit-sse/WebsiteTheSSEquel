@@ -13,7 +13,7 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'Society of Software Engineers',
   description: 'The Society of Software Engineers (SSE) is an academic organization at the Rochester Institute of Technology (RIT) that provides mentoring and support for students in the Golisano College for Computing and Information Sciences (GCCIS).',
-  icons: ["./sse-small.svg"],
+  icons: ["./icon.png"],
 }
 
 export default function RootLayout({
