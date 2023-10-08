@@ -1,6 +1,6 @@
 import React from "react";
 
-function SSEFullLogo() {
+function SSELogoFull() {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -27,4 +27,4 @@ function SSEFullLogo() {
     );
 }
 
-export default SSEFullLogo;
+export default SSELogoFull;
