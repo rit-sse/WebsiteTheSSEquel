@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 ::selection {
-  background-color: theme('colors.emerald.400');
-  color: theme('colors.slate.950');
+  background-color: theme('colors.primary');
+  color: theme('colors.base-100');
 }
 
 :root {
