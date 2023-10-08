@@ -7,7 +7,6 @@ import MobileNavDropdown from "./MobileNavDropdown";
 import SSELogoFull from "../common/SSELogoFull";
 import SSELogoSmall from "../common/SSELogoSmall";
 
-
 const navItems: NavItemProps[] = [
     {
         title: "Home",
@@ -94,7 +93,7 @@ const Navbar: React.FC = () => {
     return (
         <nav
             id="navbar"
-            className="sticky top-0 z-50 flex items-center justify-center bg-base-100 bg-opacity-0 filter backdrop-blur-sm"
+            className="sticky top-0 z-50 flex items-center justify-center bg-slate-900 bg-opacity-80 filter backdrop-blur-sm"
         >
             <div
                 id="nav-content"
@@ -110,16 +109,14 @@ const Navbar: React.FC = () => {
                     {/* <SSELogoSmall /> */}
                 </Link>
                 <div className="hidden md:block md:visible">
-                    <ul className="inline-flex flex-row flex-nowrap justify-between text-center text-lg">
+                    <ul className="inline-flex flex-row flex-nowrap justify-between text-center">
                         {navItems.map((navItem, index) => (
                             <NavItem key={index} {...navItem} onClickFunc={blurOnClick} />
                         ))}
                     </ul>
                 </div>
                 <div className="dropdown dropdown-end md:hidden">
-                    <div className="flex flex-row">
-                        <Hamburger />
-                    </div>
+                    <Hamburger />
                     <MobileNavDropdown navItems={navItems} onClickFunc={blurOnClick} />
                 </div>
             </div>

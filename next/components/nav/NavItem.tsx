@@ -24,9 +24,9 @@ const NavItem: React.FC<NavItemProps & OnClickProps> = ({
     const content = (
         <span
             data-label={title}
-            className={`flex-grow bold-pseudo ${pathname === route ? "font-semibold text-primary" : ""}
-                        group-hover:text-primary focus-within:text-primary focus:text-primary group-focus-within:text-primary
-                        group-hover:font-semibold group-focus-within:font-semibold transition-all`}
+            className={`flex-grow bold-pseudo ${pathname === route ? "font-bold text-emerald-400" : ""}
+                        group-hover:text-emerald-400 focus-within:text-emerald-400 focus:text-emerald-400 group-focus-within:text-emerald-400
+                        group-hover:font-bold group-focus-within:font-bold transition-all`}
         >
             {title}
         </span>
@@ -91,7 +91,7 @@ const DropdownArrayIcon: React.FC = () => {
     return (
         <svg
             className="w-5 h-5 inline translate-y-[2px] translate-x-[3px] 
-                       text-base-content group-hover:text-primary group-focus-within:text-primary 
+                       text-gray-400 group-hover:text-emerald-400 group-focus-within:text-emerald-400 
                        group-hover:translate-x-[5px] group-focus-within:translate-x-[5px] transition-all"
             fill="none"
             stroke="currentColor"
