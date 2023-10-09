@@ -5,6 +5,25 @@ import Image from 'next/image'
 // Initialization for ES Users
 import { Children } from 'react';
 
+// const ZCard: React.FC<{
+//   image: 'left' | 'right';
+//   children: React.ReactNode;
+// }> = ({ image, children }) => {
+//   const [left, right, ...rest] = Children.toArray(children);
+
+//   if (rest.length > 0) throw new Error("ZCard can only have two children");
+
+//   const classLeft = image == 'left' ? "w-1/3" : "w-2/3";
+//   const classRight = image == 'right' ? "w-1/3" : "w-2/3";
+
+//   return (
+//     <div className="flex flex-row sm:flex-col items-center gap-24">
+//       <div className={classLeft}>{left}</div>
+//       <div className={classRight}>{right}</div>
+//     </div>
+//   );
+// };
+
 const ZCard: React.FC<{
   image: 'left' | 'right';
   children: React.ReactNode;
@@ -13,11 +32,12 @@ const ZCard: React.FC<{
 
   if (rest.length > 0) throw new Error("ZCard can only have two children");
 
-  const classLeft = image == 'left' ? "w-1/3" : "w-2/3";
-  const classRight = image == 'right' ? "w-1/3" : "w-2/3";
+  const classLeft = image === 'left' ? "w-full sm:w-1/3" : "w-full sm:w-2/3";
+  const classRight = image === 'right' ? "w-full sm:w-1/3" : "w-full sm:w-2/3";
+  const flexDirection = image === 'left' ? 'flex-col sm:flex-row' : 'flex-col-reverse sm:flex-row';
 
   return (
-    <div className="flex flex-row items-center gap-24">
+    <div className={`flex ${flexDirection} items-center gap-24 gap-y-0`}>
       <div className={classLeft}>{left}</div>
       <div className={classRight}>{right}</div>
     </div>
@@ -58,7 +78,7 @@ export default function Committees() {
                 </div>
             </div>
 
-            <div id='Committee Slots' className='pt-16'>
+            <div id='Committee Slots' className='pt-16 sm:pt-4'>
               <ZCard image='left'>
                 {placeholder_img}
                 <div className='text-left py-16'>
@@ -99,6 +119,27 @@ export default function Committees() {
                   </p>
                 </div>
                 {placeholder_img}
+              </ZCard>
+
+              <ZCard image='left'>
+                {placeholder_img}
+                <div className='text-left py-16'>
+                  <h2
+                  className="text-white bg-clip-text
+                              text-3xl/[3rem] font-bold text-transparent sm:text-1xl/[4rem]"
+                  >
+                  Projects
+                  </h2>
+
+                  <p className="mt-4 pb-4 sm:text-xl/relaxed sm:pb-0">
+                  This is a description of the committee. Lorem ipsum dolor sit amet,
+                  consectetur adipiscing elit. Integer ullamcorper dui eu ex laoreet,
+                  sagittis aliquet mauris ornare. Nullam urna magna, hendrerit nec tortor
+                  porttitor, dignissim vulputate neque. Etiam accumsan ut leo sit amet lacinia.
+                  Nam euismod risus nec nunc commodo, quis laoreet ligula mollis.
+                  Mauris sodales ac neque quis blandit. Aenean vel lobortis eros.
+                  </p>
+                </div>
               </ZCard>
             </div>
         </div>
