@@ -62,7 +62,7 @@ export default function Committees() {
     <>
       <section className="text-slate-200">
         <div className="flex flex-col items-center max-w-screen-xl">            
-            <div className="mx-auto px-4 pt-16 max-w-2xl">
+            <div className="mx-auto px-4 sm: pt-16 md:py-16 max-w-2xl">
                 <div className="text-center flex flex-col items-center w-full">
                     <h1
                     className="bg-gradient-to-r from-sky-400 to-emerald-400 bg-clip-text
@@ -81,7 +81,7 @@ export default function Committees() {
             <div id='Committee Slots' className='pt-16 sm:pt-4'>
               <ZCard image='left'>
                 {placeholder_img}
-                <div className='text-left py-16'>
+                <div className='text-left pt-4 pb-32 md:py-16'>
                   <h2
                   className="text-white bg-clip-text
                               text-3xl/[3rem] font-bold text-transparent sm:text-1xl/[4rem]"
@@ -101,7 +101,7 @@ export default function Committees() {
               </ZCard>
 
               <ZCard image='right'>
-                <div className='text-right py-16'>
+                <div className='text-right pt-4 pb-32 md:py-16'>
                   <h2
                   className="text-white bg-clip-text
                               text-3xl/[3rem] font-bold text-transparent sm:text-1xl/[4rem]"
@@ -123,7 +123,7 @@ export default function Committees() {
 
               <ZCard image='left'>
                 {placeholder_img}
-                <div className='text-left py-16'>
+                <div className='text-left pt-4 pb-32 md:py-16'>
                   <h2
                   className="text-white bg-clip-text
                               text-3xl/[3rem] font-bold text-transparent sm:text-1xl/[4rem]"
