@@ -24,9 +24,9 @@ const NavItem: React.FC<NavItemProps & OnClickProps> = ({
     const content = (
         <span
             data-label={title}
-            className={`flex-grow bold-pseudo ${pathname === route ? "font-bold text-emerald-400" : ""}
-                        group-hover:text-emerald-400 focus-within:text-emerald-400 focus:text-emerald-400 group-focus-within:text-emerald-400
-                        group-hover:font-bold group-focus-within:font-bold transition-all`}
+            className={`flex-grow bold-pseudo ${pathname === route ? "font-semibold text-primary" : ""}
+                        group-hover:text-primary focus-within:text-primary focus:text-primary group-focus-within:text-primary
+                        group-hover:font-semibold group-focus-within:font-semibold transition-all`}
         >
             {title}
         </span>
@@ -57,10 +57,10 @@ const NavItem: React.FC<NavItemProps & OnClickProps> = ({
                 )}
                 <div
                     className={`flex flex-col w-auto min-w-full whitespace-nowrap absolute
-                                left-1/2 -translate-x-1/2 mt-0 space-y-0 text-white bg-slate-800 
-                                rounded-lg shadow-lg shadow-slate-950 transition ease-in-out duration-100 
-                                opacity-0 pointer-events-none -translate-y-2 scale-75 
-                                group-focus-within:opacity-100 group-focus-within:pointer-events-auto group-focus-within:translate-y-2 group-focus-within:scale-100 
+                                left-1/2 -translate-x-1/2 mt-0 space-y-0 text-base-content bg-base-100 bg-opacity-75
+                                rounded-lg shadow-lg shadow-base-300 transition ease-in-out duration-100
+                                opacity-0 pointer-events-none -translate-y-2 scale-75
+                                group-focus-within:opacity-100 group-focus-within:pointer-events-auto group-focus-within:translate-y-2 group-focus-within:scale-100
                                 group-hover:opacity-100 group-hover:pointer-events-auto group-hover:translate-y-2 group-hover:scale-100`}
                 >
                     {subItems?.map((item, index) => (
@@ -68,8 +68,8 @@ const NavItem: React.FC<NavItemProps & OnClickProps> = ({
                             onClick={onClickFunc}
                             key={index}
                             href={item.route!}
-                            className={`px-2 py-2 text-sm
-                                        hover:bg-slate-700 focus:bg-slate-700 transition-colors duration-200 ${
+                            className={`px-2 py-2 text-md
+                                        hover:bg-secondary focus:bg-secondary transition-colors duration-200 ${
                                 // Add rounded corners to bottom of first and top of last item in sub-item groups
                                 index === 0
                                     ? "rounded-t-lg"
@@ -91,7 +91,7 @@ const DropdownArrayIcon: React.FC = () => {
     return (
         <svg
             className="w-5 h-5 inline translate-y-[2px] translate-x-[3px] 
-                       text-gray-400 group-hover:text-emerald-400 group-focus-within:text-emerald-400 
+                       text-base-content group-hover:text-primary group-focus-within:text-primary 
                        group-hover:translate-x-[5px] group-focus-within:translate-x-[5px] transition-all"
             fill="none"
             stroke="currentColor"
