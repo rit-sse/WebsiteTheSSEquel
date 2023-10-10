@@ -46,7 +46,7 @@ const About = () => {
     <>
       <div className="px-4 py-32 flex flex-1 flex-col items-center w-11/12">
         <h1
-          className="bg-gradient-to-r from-sky-400 to-emerald-400 bg-clip-text
+          className="bg-gradient-to-r from-primary to-accent bg-clip-text
             text-4xl/[3rem] font-extrabold text-transparent sm:text-5xl/[4rem]"
         >
           About Us
