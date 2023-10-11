@@ -1,10 +1,11 @@
-// This file renders the home page route (/) of the website.
-// We know that this is the homepage because this file resides in the root app directory.
-
 import Image from 'next/image'
 // Initialization for ES Users
 import { Children } from 'react';
 
+/*  An element used with text next to an image to alternate which side the image is on
+    Delcarations:
+      image(string left or right): declares which side the image will be in relation to the text
+*/
 const ZCard: React.FC<{
   image: 'left' | 'right';
   children: React.ReactNode;
@@ -25,10 +26,45 @@ const ZCard: React.FC<{
   );
 };
 
+
+/*  Creates a div for each committee storing the committee name and description
+    Params:
+      name(string): the name of the committee
+      description(string): a description of the committee
+      textSide(string): if the text is on the left or the right of the image
+*/
+const CommitteeSlot: React.FC<{
+  name: string;
+  description: string;
+  textSide: 'left' | 'right';
+}> = ({ textSide, name, description }) => {
+  const textClass = textSide === 'left' ? 'text-left' : 'text-right';
+  const generalClasses = textClass + ' pt-4 pb-32 md:py-16'
+  const nameClasses = 'text-white bg-clip-text font-bold text-transparent text-3xl/[3rem]'
+  const descriptionClasses = 'mt-4 pb-4 text-xl/relaxed'
+
+  return (
+    <div className={generalClasses}>
+      <h2
+        className={nameClasses}
+      >
+        {name}
+      </h2>
+
+      <p className={descriptionClasses}>
+        {description}
+      </p>
+    </div>
+  );
+};
+
+
 export default function Committees() {
+  // The default height and width for the placeholder dummy photo
   const placeholder_w = 540;
   const placeholder_h = 400;
 
+  // the image being used in all ZCards currently
   const placeholder_img = (
     <Image
       src={`https://dummyimage.com/${placeholder_w}x${placeholder_h}`}
@@ -62,65 +98,44 @@ export default function Committees() {
             <div id='Committee Slots' className='pt-4'>
               <ZCard image='left'>
                 {placeholder_img}
-                <div className='text-left pt-4 pb-32 md:py-16'>
-                  <h2
-                  className="text-white bg-clip-text
-                               font-bold text-transparent text-3xl/[3rem]"
-                  >
-                  Events
-                  </h2>
-
-                  <p className="mt-4 pb-4 text-xl/relaxed">
-                  This is a description of the committee. Lorem ipsum dolor sit amet,
-                  consectetur adipiscing elit. Integer ullamcorper dui eu ex laoreet,
-                  sagittis aliquet mauris ornare. Nullam urna magna, hendrerit nec tortor
-                  porttitor, dignissim vulputate neque. Etiam accumsan ut leo sit amet lacinia.
-                  Nam euismod risus nec nunc commodo, quis laoreet ligula mollis.
-                  Mauris sodales ac neque quis blandit. Aenean vel lobortis eros.
-                  </p>
-                </div>
+                <CommitteeSlot
+                  textSide='left'
+                  name='Events'
+                  description='This is a description of the committee. Lorem ipsum dolor sit amet,
+                                consectetur adipiscing elit. Integer ullamcorper dui eu ex laoreet,
+                                sagittis aliquet mauris ornare. Nullam urna magna, hendrerit nec tortor
+                                porttitor, dignissim vulputate neque. Etiam accumsan ut leo sit amet lacinia.
+                                Nam euismod risus nec nunc commodo, quis laoreet ligula mollis.
+                                Mauris sodales ac neque quis blandit. Aenean vel lobortis eros.'
+                  />
               </ZCard>
 
               <ZCard image='right'>
-                <div className='text-right pt-4 pb-32 md:py-16'>
-                  <h2
-                  className="text-white bg-clip-text
-                              text-3xl/[3rem] font-bold text-transparent sm:text-1xl/[4rem]"
-                  >
-                  Talks
-                  </h2>
-
-                  <p className="mt-4 pb-4 text-xl/relaxed">
-                  This is a description of the committee. Lorem ipsum dolor sit amet,
-                  consectetur adipiscing elit. Integer ullamcorper dui eu ex laoreet,
-                  sagittis aliquet mauris ornare. Nullam urna magna, hendrerit nec tortor
-                  porttitor, dignissim vulputate neque. Etiam accumsan ut leo sit amet lacinia.
-                  Nam euismod risus nec nunc commodo, quis laoreet ligula mollis.
-                  Mauris sodales ac neque quis blandit. Aenean vel lobortis eros.
-                  </p>
-                </div>
+                <CommitteeSlot
+                  textSide='right'
+                  name='Talks'
+                  description='This is a description of the committee. Lorem ipsum dolor sit amet,
+                                consectetur adipiscing elit. Integer ullamcorper dui eu ex laoreet,
+                                sagittis aliquet mauris ornare. Nullam urna magna, hendrerit nec tortor
+                                porttitor, dignissim vulputate neque. Etiam accumsan ut leo sit amet lacinia.
+                                Nam euismod risus nec nunc commodo, quis laoreet ligula mollis.
+                                Mauris sodales ac neque quis blandit. Aenean vel lobortis eros.'
+                  />
                 {placeholder_img}
               </ZCard>
 
               <ZCard image='left'>
                 {placeholder_img}
-                <div className='text-left pt-4 pb-32 md:py-16'>
-                  <h2
-                  className="text-white bg-clip-text
-                               font-bold text-transparent text-3xl/[3rem]"
-                  >
-                  Projects
-                  </h2>
-
-                  <p className="mt-4 pb-4 text-xl/relaxed sm:pb-0">
-                  This is a description of the committee. Lorem ipsum dolor sit amet,
-                  consectetur adipiscing elit. Integer ullamcorper dui eu ex laoreet,
-                  sagittis aliquet mauris ornare. Nullam urna magna, hendrerit nec tortor
-                  porttitor, dignissim vulputate neque. Etiam accumsan ut leo sit amet lacinia.
-                  Nam euismod risus nec nunc commodo, quis laoreet ligula mollis.
-                  Mauris sodales ac neque quis blandit. Aenean vel lobortis eros.
-                  </p>
-                </div>
+                <CommitteeSlot
+                  textSide='left'
+                  name='Projects'
+                  description='This is a description of the committee. Lorem ipsum dolor sit amet,
+                                consectetur adipiscing elit. Integer ullamcorper dui eu ex laoreet,
+                                sagittis aliquet mauris ornare. Nullam urna magna, hendrerit nec tortor
+                                porttitor, dignissim vulputate neque. Etiam accumsan ut leo sit amet lacinia.
+                                Nam euismod risus nec nunc commodo, quis laoreet ligula mollis.
+                                Mauris sodales ac neque quis blandit. Aenean vel lobortis eros.'
+                  />
               </ZCard>
             </div>
         </div>
