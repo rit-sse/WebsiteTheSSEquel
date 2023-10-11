@@ -2,6 +2,36 @@ import type { Config } from 'tailwindcss'
 const defaultTheme = require('tailwindcss/defaultTheme');
 
 const config: Config = {
+  daisyui: {
+    themes: [
+      {
+        'dark': {
+          "primary": "#A4C7F4",
+          "secondary": "#6196D6",
+          "accent": "#3B6497",
+          "neutral": "#2F3F4C",
+          "base-100": "#161F27",
+          "base-content": "#F0F4F9",
+          "info": "#38bdf8",
+          "success": "#4ade80",
+          "warning": "#fbbf24",
+          "error": "#ef4444",
+        },
+        'light': {
+          "primary": "#5f88ab",
+          "secondary": "#8eabc4",
+          "accent": "#4C6D89",
+          "neutral": "#3E4A56",
+          "base-100": "#F0F4F9",
+          "base-content": "#161F27",
+          "info": "#38bdf8",
+          "success": "#4ade80",
+          "warning": "#fbbf24",
+          "error": "#ef4444",
+        },
+      },
+    ],
+  },
   content: [
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
