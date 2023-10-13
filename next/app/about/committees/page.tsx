@@ -1,5 +1,4 @@
 import Image from 'next/image'
-// Initialization for ES Users
 import { Children } from 'react';
 
 /*  An element used with text next to an image to alternate which side the image is on
@@ -128,7 +127,63 @@ export default function Committees() {
                 {placeholder_img}
                 <CommitteeSlot
                   textSide='left'
-                  name='Projects'
+                  name='Public Relations'
+                  description='This is a description of the committee. Lorem ipsum dolor sit amet,
+                                consectetur adipiscing elit. Integer ullamcorper dui eu ex laoreet,
+                                sagittis aliquet mauris ornare. Nullam urna magna, hendrerit nec tortor
+                                porttitor, dignissim vulputate neque. Etiam accumsan ut leo sit amet lacinia.
+                                Nam euismod risus nec nunc commodo, quis laoreet ligula mollis.
+                                Mauris sodales ac neque quis blandit. Aenean vel lobortis eros.'
+                  />
+              </ZCard>
+
+              <ZCard image='right'>
+                <CommitteeSlot
+                  textSide='right'
+                  name='Mentoring'
+                  description='This is a description of the committee. Lorem ipsum dolor sit amet,
+                                consectetur adipiscing elit. Integer ullamcorper dui eu ex laoreet,
+                                sagittis aliquet mauris ornare. Nullam urna magna, hendrerit nec tortor
+                                porttitor, dignissim vulputate neque. Etiam accumsan ut leo sit amet lacinia.
+                                Nam euismod risus nec nunc commodo, quis laoreet ligula mollis.
+                                Mauris sodales ac neque quis blandit. Aenean vel lobortis eros.'
+                  />
+                  {placeholder_img}
+              </ZCard>
+
+              <ZCard image='left'>
+                {placeholder_img}
+                <CommitteeSlot
+                  textSide='left'
+                  name='Marketing'
+                  description='This is a description of the committee. Lorem ipsum dolor sit amet,
+                                consectetur adipiscing elit. Integer ullamcorper dui eu ex laoreet,
+                                sagittis aliquet mauris ornare. Nullam urna magna, hendrerit nec tortor
+                                porttitor, dignissim vulputate neque. Etiam accumsan ut leo sit amet lacinia.
+                                Nam euismod risus nec nunc commodo, quis laoreet ligula mollis.
+                                Mauris sodales ac neque quis blandit. Aenean vel lobortis eros.'
+                  />
+              </ZCard>
+
+              <ZCard image='right'>
+                <CommitteeSlot
+                  textSide='right'
+                  name='Student Outreach'
+                  description='This is a description of the committee. Lorem ipsum dolor sit amet,
+                                consectetur adipiscing elit. Integer ullamcorper dui eu ex laoreet,
+                                sagittis aliquet mauris ornare. Nullam urna magna, hendrerit nec tortor
+                                porttitor, dignissim vulputate neque. Etiam accumsan ut leo sit amet lacinia.
+                                Nam euismod risus nec nunc commodo, quis laoreet ligula mollis.
+                                Mauris sodales ac neque quis blandit. Aenean vel lobortis eros.'
+                  />
+                  {placeholder_img}
+              </ZCard>
+
+              <ZCard image='left'>
+                {placeholder_img}
+                <CommitteeSlot
+                  textSide='left'
+                  name='Tech Committee'
                   description='This is a description of the committee. Lorem ipsum dolor sit amet,
                                 consectetur adipiscing elit. Integer ullamcorper dui eu ex laoreet,
                                 sagittis aliquet mauris ornare. Nullam urna magna, hendrerit nec tortor
