@@ -88,8 +88,11 @@ export default function Committees() {
                     </h1>
 
                     <p className="mx-auto mt-4 text-xl/relaxed">
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-                        eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                    The Society of Software Engineers delegates responsibility for tasks with committees. These
+                    committees play pivotal roles in organizing events, facilitating projects, providing platforms for
+                    knowledge exchange, and more. Together we create opportunities for members to connect,
+                    collaborate, and learn from one another.
+
                     </p>
                 </div>
             </div>
