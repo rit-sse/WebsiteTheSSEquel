@@ -29,6 +29,10 @@ const navItems: NavItemProps[] = [
                 route: "#",
             },
             {
+                title: "Committees",
+                route: "#",
+            },
+            {
                 title: "Constitution",
                 route: "#",
             },
