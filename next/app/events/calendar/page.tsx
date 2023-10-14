@@ -3,7 +3,7 @@ import Calendar from "./Calendar";
 export default function EventsCalendar() {
     return (
         <>
-            <div className="flex flex-col items-center w-screen h-screen max-w-screen-xl">            
+            <div className="flex flex-col items-center w-full h-screen max-w-screen-xl">            
                 <div className="mx-auto px-4 sm: py-16 md:pb-8 max-w-2xl">
                     <div className="text-center flex flex-col items-center w-full">
                         <h1
