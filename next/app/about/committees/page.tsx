@@ -45,7 +45,6 @@ export default function Committees() {
               <ZCard imageSide='left'>
                 {placeholder_img}
                 <CommitteeSlot
-                  textSide='left'
                   name='Events'
                   description='This is a description of the committee. Lorem ipsum dolor sit amet,
                                 consectetur adipiscing elit. Integer ullamcorper dui eu ex laoreet,
@@ -58,7 +57,6 @@ export default function Committees() {
 
               <ZCard imageSide='right'>
                 <CommitteeSlot
-                  textSide='right'
                   name='Talks'
                   description='This is a description of the committee. Lorem ipsum dolor sit amet,
                                 consectetur adipiscing elit. Integer ullamcorper dui eu ex laoreet,
@@ -73,7 +71,6 @@ export default function Committees() {
               <ZCard imageSide='left'>
                 {placeholder_img}
                 <CommitteeSlot
-                  textSide='left'
                   name='Public Relations'
                   description='This is a description of the committee. Lorem ipsum dolor sit amet,
                                 consectetur adipiscing elit. Integer ullamcorper dui eu ex laoreet,
@@ -86,7 +83,6 @@ export default function Committees() {
 
               <ZCard imageSide='right'>
                 <CommitteeSlot
-                  textSide='right'
                   name='Mentoring'
                   description='This is a description of the committee. Lorem ipsum dolor sit amet,
                                 consectetur adipiscing elit. Integer ullamcorper dui eu ex laoreet,
@@ -101,7 +97,6 @@ export default function Committees() {
               <ZCard imageSide='left'>
                 {placeholder_img}
                 <CommitteeSlot
-                  textSide='left'
                   name='Marketing'
                   description='This is a description of the committee. Lorem ipsum dolor sit amet,
                                 consectetur adipiscing elit. Integer ullamcorper dui eu ex laoreet,
@@ -114,7 +109,6 @@ export default function Committees() {
 
               <ZCard imageSide='right'>
                 <CommitteeSlot
-                  textSide='right'
                   name='Student Outreach'
                   description='This is a description of the committee. Lorem ipsum dolor sit amet,
                                 consectetur adipiscing elit. Integer ullamcorper dui eu ex laoreet,
@@ -129,7 +123,6 @@ export default function Committees() {
               <ZCard imageSide='left'>
                 {placeholder_img}
                 <CommitteeSlot
-                  textSide='left'
                   name='Tech Committee'
                   description='This is a description of the committee. Lorem ipsum dolor sit amet,
                                 consectetur adipiscing elit. Integer ullamcorper dui eu ex laoreet,
