@@ -106,3 +106,8 @@ model Course {
   departmentId Int
   code         Int
 }
+model Schedule{
+id Int        @id @default(autoincrement())
+mentorId Int
+
+}
