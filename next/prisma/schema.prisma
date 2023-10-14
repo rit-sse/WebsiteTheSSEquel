@@ -9,3 +9,14 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model Quote{
+  id Int @default(autoincrement()) @id
+  date_added DateTime
+  quote String @db.VarChar(255)
+  user_id Int
+  author String @db.VarChar(40)
+
+  user User @relation(fields: [user_id], references: [id])
+
+}
