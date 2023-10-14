@@ -116,3 +116,9 @@ model CourseTaken {
   mentor   Mentor @relation(fields: [mentorId], references: [id])
   course   Course @relation(fields: [courseId], references: [id])
 }
+
+model HourBlock {
+  id        Int      @id @default(autoincrement())
+  weekday   String
+  startTime DateTime @db.Time()
+}
