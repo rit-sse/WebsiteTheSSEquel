@@ -39,7 +39,7 @@ const CommitteeSlot: React.FC<{
 }> = ({ textSide, name, description }) => {
   const textClass = textSide === 'left' ? 'text-left' : 'text-right';
   const generalClasses = textClass + ' pt-4 pb-32 md:py-16'
-  const nameClasses = 'text-accent bg-clip-text font-bold text-transparent text-3xl/[3rem]'
+  const nameClasses = 'bg-clip-text font-bold text-3xl/[3rem]'
   const descriptionClasses = 'mt-4 pb-4 text-xl/relaxed'
 
   return (
@@ -76,7 +76,7 @@ export default function Committees() {
 
   return (
     <>
-      <section className="text-slate-200">
+      <section>
         <div className="flex flex-col items-center max-w-screen-xl">            
             <div className="mx-auto px-4 sm: py-16 md:pb-8 max-w-2xl">
                 <div className="text-center flex flex-col items-center w-full">
