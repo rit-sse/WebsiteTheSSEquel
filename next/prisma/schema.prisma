@@ -30,34 +30,34 @@ model User {
 
   // relational fields
   //Holds a reference to the mentor table using a User field, going to see how this works going forward, not entirely sure
-  mentor Mentor[]
-  quotes Quote[]
+  mentor   Mentor[]
+  quotes   Quote[]
   officers Officer[]
 }
 
 model Quote {
-  id         Int      @default(autoincrement()) @id
+  id         Int      @id @default(autoincrement())
   date_added DateTime
   quote      String   @db.VarChar(255)
   user_id    Int
   author     String   @db.VarChar(40)
 
   // relational fields
-  user       User    @relation(fields: [user_id], references: [id])
+  user User @relation(fields: [user_id], references: [id])
 }
 
 model OfficerPosition {
-  id          Int       @default(autoincrement()) @id
-  title       String    @db.VarChar(40)
-  is_primary  Boolean   @default(false)
-  email       String    @db.VarChar(40)
-  
+  id         Int     @id @default(autoincrement())
+  title      String  @db.VarChar(40)
+  is_primary Boolean @default(false)
+  email      String  @db.VarChar(40)
+
   // relational fields
-  officers    Officer[]
+  officers Officer[]
 }
 
 model Officer {
-  id          Int       @default(autoincrement()) @id
+  id          Int      @id @default(autoincrement())
   position_id Int
   user_id     Int
   is_active   Boolean
@@ -65,10 +65,9 @@ model Officer {
   end_date    DateTime
 
   // relational fields
-  user User @relation(fields: [user_id], references: [id])
+  user     User            @relation(fields: [user_id], references: [id])
   position OfficerPosition @relation(fields: [position_id], references: [id])
 }
-  
 
 model Mentor {
   id Int @id @default(autoincrement())
@@ -92,4 +91,18 @@ model MentorSkill {
   mentorId Int
   skill    Skill  @relation(fields: [skillId], references: [id])
   skillId  Int
+}
+
+model Department {
+  id     Int      @id @default(autoincrement())
+  title  String
+  course Course[]
+}
+
+model Course {
+  id           Int        @id @default(autoincrement())
+  title        String
+  department   Department @relation(fields: [departmentId], references: [id])
+  departmentId Int
+  code         Int
 }
