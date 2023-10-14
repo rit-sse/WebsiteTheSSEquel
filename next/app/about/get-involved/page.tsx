@@ -5,7 +5,7 @@ export default function GetInvolved() {
         <>
             <section className="text-slate-200">
                 <div className="text-center flex flex-col items-center w-full max-w-xl">
-                    <h1 className="bg-gradient-to-r from-sky-400 to-emerald-400 bg-clip-text
+                        <h1 className="bg-gradient-to-t from-primary to-secondary bg-clip-text
                          text-4xl/[3rem] font-extrabold text-transparent sm:text-5xl/[4rem]">
                         <span className="sm:block">Get Involved</span>
                     </h1>
