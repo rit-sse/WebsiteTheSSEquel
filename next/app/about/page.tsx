@@ -1,31 +1,12 @@
 // This is the file that renders the /about route of the website.
 import { Metadata } from "next";
 import Image from "next/image";
-import { Children } from "react";
+import ZCard from "./ZCard";
 
 export const metadata: Metadata = {
   title: "About Us",
   description:
     "The Society of Software Engigneers is an academic organization at the Rochester Institute of Technology that provides mentoring and support for students in the Golisano College for Computing and Information Sciences.",
-};
-
-const ZCard: React.FC<{
-  image: "left" | "right";
-  children: React.ReactNode;
-}> = ({ image, children }) => {
-  const [left, right, ...rest] = Children.toArray(children);
-
-  if (rest.length > 0) throw new Error("ZCard can only have two children");
-
-  // const classLeft = image == 'left' ? "w-1/4" : "w-3/4";
-  // const classRight = image == 'right' ? "w-1/4" : "w-3/4";
-
-  return (
-    <div className="flex items-center  gap-24">
-      <div className="w-1/2">{left}</div>
-      <div className="w-1/2">{right}</div>
-    </div>
-  );
 };
 
 const About = () => {
@@ -46,7 +27,7 @@ const About = () => {
     <>
       <div className="px-4 py-32 flex flex-1 flex-col items-center w-11/12">
         <h1
-          className="bg-gradient-to-r from-primary to-accent bg-clip-text
+          className="bg-gradient-to-b from-primary to-secondary-focus bg-clip-text
             text-4xl/[3rem] font-extrabold text-transparent sm:text-5xl/[4rem]"
         >
           About Us
@@ -60,7 +41,7 @@ const About = () => {
             their future careers.
           </p>
 
-          <ZCard image="right">
+          <ZCard imageSide="right">
             <div className="">
               <h3 className="text-3xl font-bold">
                 All-In-One Hub For Developers
@@ -75,7 +56,7 @@ const About = () => {
             {placeholder_img}
           </ZCard>
 
-          <ZCard image="left">
+          <ZCard imageSide="left">
             {placeholder_img}
             <div className="">
               <h3 className="text-3xl font-bold">Hands-On Experience</h3>
