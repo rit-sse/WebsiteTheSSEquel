@@ -14,7 +14,7 @@ package-lock.json
 /out/
 
 # prisma
-/next/prisma/migrations/
+/next/prisma/migrations
 
 # production
 /build
@@ -22,7 +22,7 @@ package-lock.json
 # misc
 .DS_Store
 *.pem
-/.history/
+/.history
 
 # debug
 npm-debug.log*
