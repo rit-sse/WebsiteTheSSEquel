@@ -1,62 +1,6 @@
 import Image from 'next/image'
-import { Children } from 'react';
-
-/*  An element used with text next to an image to alternate which side the image is on
-    Delcarations:
-      image(string left or right): declares which side the image will be in relation to the text
-*/
-const ZCard: React.FC<{
-  imageSide: 'left' | 'right';
-  children: React.ReactNode;
-}> = ({ imageSide, children }) => {
-  const [left, right, ...rest] = Children.toArray(children);
-
-  if (rest.length > 0) throw new Error("ZCard can only have two children");
-
-  const classLeft = imageSide === 'left' ? "w-full md:w-1/3" : "w-full md:w-2/3";
-  const classRight = imageSide === 'right' ? "w-full md:w-1/3" : "w-full md:w-2/3";
-  const flexDirection = imageSide === 'left' ? 'flex-col md:flex-row' : 'flex-col-reverse md:flex-row';
-
-  return (
-    <div className={`flex ${flexDirection} items-center gap-24 gap-y-0`}>
-      <div className={classLeft}>{left}</div>
-      <div className={classRight}>{right}</div>
-    </div>
-  );
-};
-
-
-/*  Creates a div for each committee storing the committee name and description
-    Params:
-      name(string): the name of the committee
-      description(string): a description of the committee
-      textSide(string): if the text is on the left or the right of the image
-*/
-const CommitteeSlot: React.FC<{
-  name: string;
-  description: string;
-  textSide: 'left' | 'right';
-}> = ({ textSide, name, description }) => {
-  const textClass = textSide === 'left' ? 'text-left' : 'text-right';
-  const generalClasses = 'text-left pt-4 pb-32 md:py-16 md:' + textClass
-  const nameClasses = 'bg-clip-text font-bold text-3xl/[3rem]'
-  const descriptionClasses = 'mt-4 pb-4 text-xl/relaxed'
-
-  return (
-    <div className={generalClasses}>
-      <h2
-        className={nameClasses}
-      >
-        {name}
-      </h2>
-
-      <p className={descriptionClasses}>
-        {description}
-      </p>
-    </div>
-  );
-};
-
+import ZCard from './ZCard'
+import CommitteeSlot from './CommitteeSlot';
 
 export default function Committees() {
   // The default height and width for the placeholder dummy photo
