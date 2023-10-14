@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules
+package-lock.json
 /.pnp
 .pnp.js
 
@@ -12,12 +13,16 @@
 /.next/
 /out/
 
+# prisma
+/next/prisma/migrations/
+
 # production
 /build
 
 # misc
 .DS_Store
 *.pem
+/.history/
 
 # debug
 npm-debug.log*
