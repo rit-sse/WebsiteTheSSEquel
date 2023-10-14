@@ -12,7 +12,7 @@ const ExternalHyperlinkText: React.FC<ExternalHyperlinkTextProps> = ({
         href={route}
         target="_blank"
         rel="noreferrer"
-        className="whitespace-nowrap text-center text-emerald-500 
+        className="whitespace-nowrap text-center text-primary 
                hover:underline focus:underline transition-all outline-offset-4"
     >
         {text}
