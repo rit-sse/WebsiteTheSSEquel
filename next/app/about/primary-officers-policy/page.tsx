@@ -1,1 +1,0 @@
-// This is the file that renders the /about route of the website.
