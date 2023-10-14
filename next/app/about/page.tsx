@@ -25,23 +25,24 @@ const About = () => {
 
   return (
     <>
-      <div className="px-4 py-32 flex flex-1 flex-col items-center w-11/12">
+      <div className="px-4 py-16 flex flex-1 flex-col items-center w-11/12">
         <h1
-          className="bg-gradient-to-b from-primary to-secondary-focus bg-clip-text
-            text-4xl/[3rem] font-extrabold text-transparent sm:text-5xl/[4rem]"
+          className="bg-gradient-to-t from-primary to-secondary bg-clip-text
+          text-4xl/[3rem] font-extrabold text-transparent md:text-5xl/[4rem]"
         >
           About Us
         </h1>
 
-        <div className="w-5/6 space-y-24">
-          <p className="w-4/5 mt-8 sm:text-xl/relaxed m-auto">
+        <div className="w-full md:w-5/6 space-y-24">
+          <p className="w-3/5 mt-4 text-center sm:text-xl/relaxed m-auto">
             The Society of Software Engineers at RIT fosters a vibrant community
             of tech enthusiasts, bridging academia with industry partnerships
             from giants like Microsoft to Apple, ensuring our members thrive in
             their future careers.
           </p>
 
-          <ZCard imageSide="right">
+          <ZCard imageSide="left">
+            {placeholder_img}
             <div className="">
               <h3 className="text-3xl font-bold">
                 All-In-One Hub For Developers
@@ -53,11 +54,9 @@ const About = () => {
                 seamlessly combined.
               </p>
             </div>
-            {placeholder_img}
           </ZCard>
 
-          <ZCard imageSide="left">
-            {placeholder_img}
+          <ZCard imageSide="right">
             <div className="">
               <h3 className="text-3xl font-bold">Hands-On Experience</h3>
               <p className="mt-8 sm:text-xl/relaxed">
@@ -68,6 +67,7 @@ const About = () => {
                 systems in just two days.
               </p>
             </div>
+            {placeholder_img}
           </ZCard>
         </div>
       </div>
