@@ -77,6 +77,7 @@ model Mentor {
   expirationDate DateTime
   isActive       Boolean
   mentorSkill    MentorSkill[]
+  courseTaken    CourseTaken[]
 }
 
 model Skill {
@@ -100,9 +101,18 @@ model Department {
 }
 
 model Course {
-  id           Int        @id @default(autoincrement())
+  id           Int           @id @default(autoincrement())
   title        String
-  department   Department @relation(fields: [departmentId], references: [id])
+  department   Department    @relation(fields: [departmentId], references: [id])
   departmentId Int
   code         Int
+  courseTaken  CourseTaken[]
+}
+
+model CourseTaken {
+  id       Int    @id @default(autoincrement())
+  mentorId Int
+  courseId Int
+  mentor   Mentor @relation(fields: [mentorId], references: [id])
+  course   Course @relation(fields: [courseId], references: [id])
 }
