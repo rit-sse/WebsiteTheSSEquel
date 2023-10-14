@@ -12,27 +12,27 @@ datasource db {
 
 model User {
   //Store an automatically generated unique int for id
-  id Int @id @default(autoincrement())
+  id          Int @id @default(autoincrement())
 
   //Store first and last name as Strings
-  firstName String
-  lastName  String
+  firstName   String
+  lastName    String
 
   //Store email as a unique String
-  email String @unique
+  email       String @unique
 
   //Store a boolean value to determine if a user is a member or not
   //Defaults to false if not specified
-  isMember Boolean @default(false)
+  isMember    Boolean @default(false)
 
   //Image will be saved
-  profilePic String @default("default.jpg")
+  profilePic  String @default("default.jpg")
 
   // relational fields
   //Holds a reference to the mentor table using a User field, going to see how this works going forward, not entirely sure
-  mentor   Mentor[]
-  quotes   Quote[]
-  officers Officer[]
+  mentor      Mentor[]
+  quotes      Quote[]
+  officers    Officer[]
 }
 
 model Quote {
@@ -43,7 +43,7 @@ model Quote {
   author     String   @db.VarChar(40)
 
   // relational fields
-  user User @relation(fields: [user_id], references: [id])
+  user       User     @relation(fields: [user_id], references: [id])
 }
 
 model OfficerPosition {
@@ -53,7 +53,7 @@ model OfficerPosition {
   email      String  @db.VarChar(40)
 
   // relational fields
-  officers Officer[]
+  officers   Officer[]
 }
 
 model Officer {
@@ -65,8 +65,8 @@ model Officer {
   end_date    DateTime
 
   // relational fields
-  user     User            @relation(fields: [user_id], references: [id])
-  position OfficerPosition @relation(fields: [position_id], references: [id])
+  user        User            @relation(fields: [user_id], references: [id])
+  position    OfficerPosition @relation(fields: [position_id], references: [id])
 }
 
 model Mentor {
