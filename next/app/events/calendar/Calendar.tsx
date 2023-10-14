@@ -12,11 +12,9 @@ const Calendar = () => {
         // Handler to call on window resize
         function handleResize() {
         // Set window width/height to state
-        if (window.innerWidth > 768) {
-            setCalendarLink(standardCalendarLink)
-        } else {
+        window.innerWidth > 768 ?
+            setCalendarLink(standardCalendarLink) :
             setCalendarLink(agendaCalendarLink)
-        }
     }
     
     // Add event listener
