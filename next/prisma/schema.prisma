@@ -78,6 +78,7 @@ model Mentor {
   isActive       Boolean
   mentorSkill    MentorSkill[]
   courseTaken    CourseTaken[]
+  schedule Schedule[]
 }
 
 model Skill {
@@ -121,9 +122,12 @@ model HourBlock {
   id        Int      @id @default(autoincrement())
   weekday   String
   startTime DateTime @db.Time()
+  schedule Schedule[]
 }
 model Schedule{
 id Int        @id @default(autoincrement())
 mentorId Int
-
+hourBlockId Int
+hourBlock HourBlock @relation(fields: [hourBlockId], references: [id])
+mentor Mentor @relation(fields:[mentorId], references: [id]) 
 }
