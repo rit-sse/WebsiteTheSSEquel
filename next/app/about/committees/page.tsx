@@ -81,7 +81,7 @@ export default function Committees() {
             <div className="mx-auto px-4 sm: py-16 md:pb-8 max-w-2xl">
                 <div className="text-center flex flex-col items-center w-full">
                     <h1
-                    className="bg-gradient-to-r from-primary to-secondary bg-clip-text
+                    className="bg-gradient-to-t from-primary to-secondary bg-clip-text
                                 text-4xl/[3rem] font-extrabold text-transparent md:text-5xl/[4rem]"
                     >
                     Committees
