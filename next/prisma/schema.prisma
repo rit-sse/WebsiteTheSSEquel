@@ -11,14 +11,26 @@ datasource db {
 }
 
 model User {
-  id         Int     @id @default(autoincrement())
-  firstName  String
-  lastName   String
-  email      String  @unique
-  isMember   Boolean @default(false)
-  profilePic String  @default("default.jpg")
+  //Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
+
+  //Store first and last name as Strings
+  firstName String
+  lastName  String
+
+  //Store email as a unique String
+  email String @unique
+
+  //Store a boolean value to determine if a user is a member or not
+  //Defaults to false if not specified
+  isMember Boolean @default(false)
+
+  //Image will be saved
+  profilePic String @default("default.jpg")
 
   // relational fields
+  //Holds a reference to the mentor table using a User field, going to see how this works going forward, not entirely sure
+  mentor Mentor[]
   quotes Quote[]
   officers Officer[]
 }
@@ -55,4 +67,14 @@ model Officer {
   // relational fields
   user User @relation(fields: [user_id], references: [id])
   position OfficerPosition @relation(fields: [position_id], references: [id])
+}
+  
+
+model Mentor {
+  id Int @id @default(autoincrement())
+
+  mentor         User     @relation(fields: [userId], references: [id])
+  userId         Int
+  expirationDate DateTime
+  isActive       Boolean
 }
