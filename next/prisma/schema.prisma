@@ -28,9 +28,47 @@ model User {
   //Image will be saved
   profilePic String @default("default.jpg")
 
+  // relational fields
   //Holds a reference to the mentor table using a User field, going to see how this works going forward, not entirely sure
   mentor Mentor[]
+  quotes Quote[]
+  officers Officer[]
 }
+
+model Quote {
+  id         Int      @default(autoincrement()) @id
+  date_added DateTime
+  quote      String   @db.VarChar(255)
+  user_id    Int
+  author     String   @db.VarChar(40)
+
+  // relational fields
+  user       User    @relation(fields: [user_id], references: [id])
+}
+
+model OfficerPosition {
+  id          Int       @default(autoincrement()) @id
+  title       String    @db.VarChar(40)
+  is_primary  Boolean   @default(false)
+  email       String    @db.VarChar(40)
+  
+  // relational fields
+  officers    Officer[]
+}
+
+model Officer {
+  id          Int       @default(autoincrement()) @id
+  position_id Int
+  user_id     Int
+  is_active   Boolean
+  start_date  DateTime
+  end_date    DateTime
+
+  // relational fields
+  user User @relation(fields: [user_id], references: [id])
+  position OfficerPosition @relation(fields: [position_id], references: [id])
+}
+  
 
 model Mentor {
   id Int @id @default(autoincrement())
