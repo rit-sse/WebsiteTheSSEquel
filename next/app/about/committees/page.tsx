@@ -6,16 +6,16 @@ import { Children } from 'react';
       image(string left or right): declares which side the image will be in relation to the text
 */
 const ZCard: React.FC<{
-  image: 'left' | 'right';
+  imageSide: 'left' | 'right';
   children: React.ReactNode;
-}> = ({ image, children }) => {
+}> = ({ imageSide, children }) => {
   const [left, right, ...rest] = Children.toArray(children);
 
   if (rest.length > 0) throw new Error("ZCard can only have two children");
 
-  const classLeft = image === 'left' ? "w-full md:w-1/3" : "w-full md:w-2/3";
-  const classRight = image === 'right' ? "w-full md:w-1/3" : "w-full md:w-2/3";
-  const flexDirection = image === 'left' ? 'flex-col md:flex-row' : 'flex-col-reverse md:flex-row';
+  const classLeft = imageSide === 'left' ? "w-full md:w-1/3" : "w-full md:w-2/3";
+  const classRight = imageSide === 'right' ? "w-full md:w-1/3" : "w-full md:w-2/3";
+  const flexDirection = imageSide === 'left' ? 'flex-col md:flex-row' : 'flex-col-reverse md:flex-row';
 
   return (
     <div className={`flex ${flexDirection} items-center gap-24 gap-y-0`}>
@@ -98,7 +98,7 @@ export default function Committees() {
             </div>
 
             <div id='Committee Slots' className='pt-4'>
-              <ZCard image='left'>
+              <ZCard imageSide='left'>
                 {placeholder_img}
                 <CommitteeSlot
                   textSide='left'
@@ -112,7 +112,7 @@ export default function Committees() {
                   />
               </ZCard>
 
-              <ZCard image='right'>
+              <ZCard imageSide='right'>
                 <CommitteeSlot
                   textSide='right'
                   name='Talks'
@@ -126,7 +126,7 @@ export default function Committees() {
                 {placeholder_img}
               </ZCard>
 
-              <ZCard image='left'>
+              <ZCard imageSide='left'>
                 {placeholder_img}
                 <CommitteeSlot
                   textSide='left'
@@ -140,7 +140,7 @@ export default function Committees() {
                   />
               </ZCard>
 
-              <ZCard image='right'>
+              <ZCard imageSide='right'>
                 <CommitteeSlot
                   textSide='right'
                   name='Mentoring'
@@ -154,7 +154,7 @@ export default function Committees() {
                   {placeholder_img}
               </ZCard>
 
-              <ZCard image='left'>
+              <ZCard imageSide='left'>
                 {placeholder_img}
                 <CommitteeSlot
                   textSide='left'
@@ -168,7 +168,7 @@ export default function Committees() {
                   />
               </ZCard>
 
-              <ZCard image='right'>
+              <ZCard imageSide='right'>
                 <CommitteeSlot
                   textSide='right'
                   name='Student Outreach'
@@ -182,7 +182,7 @@ export default function Committees() {
                   {placeholder_img}
               </ZCard>
 
-              <ZCard image='left'>
+              <ZCard imageSide='left'>
                 {placeholder_img}
                 <CommitteeSlot
                   textSide='left'
