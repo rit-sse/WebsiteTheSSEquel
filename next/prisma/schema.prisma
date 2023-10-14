@@ -35,8 +35,23 @@ model User {
 model Mentor {
   id Int @id @default(autoincrement())
 
-  mentor         User     @relation(fields: [userId], references: [id])
+  mentor         User          @relation(fields: [userId], references: [id])
   userId         Int
   expirationDate DateTime
   isActive       Boolean
+  mentorSkill    MentorSkill[]
+}
+
+model Skill {
+  id          Int           @id @default(autoincrement())
+  skill       String        @unique
+  mentorSkill MentorSkill[]
+}
+
+model MentorSkill {
+  id       Int    @id @default(autoincrement())
+  mentor   Mentor @relation(fields: [mentorId], references: [id])
+  mentorId Int
+  skill    Skill  @relation(fields: [skillId], references: [id])
+  skillId  Int
 }
