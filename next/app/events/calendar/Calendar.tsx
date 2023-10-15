@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 
 const Calendar = () => {
+    // standard link is in week mode, agenda is in agenda mode
     const standardCalendarLink = "https://calendar.google.com/calendar/embed?mode=WEEK&height=600&wkst=1&bgcolor=%23ffffff&ctz=America%2FNew_York&showTitle=0&showPrint=0&src=Y190MG5udTc4YTlkdHN0YjFjYTgwOTA2N2h2Y0Bncm91cC5jYWxlbmRhci5nb29nbGUuY29t&color=%233F51B5";
     const agendaCalendarLink = "https://calendar.google.com/calendar/embed?mode=AGENDA&height=600&wkst=1&bgcolor=%23ffffff&ctz=America%2FNew_York&showTitle=0&showPrint=0&src=Y190MG5udTc4YTlkdHN0YjFjYTgwOTA2N2h2Y0Bncm91cC5jYWxlbmRhci5nb29nbGUuY29t&color=%233F51B5";
 
@@ -11,7 +12,6 @@ const Calendar = () => {
         // only execute all the code below in client side
         // Handler to call on window resize
         function handleResize() {
-        // Set window width/height to state
         window.innerWidth > 768 ?
             setCalendarLink(standardCalendarLink) :
             setCalendarLink(agendaCalendarLink)
