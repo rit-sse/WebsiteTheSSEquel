@@ -57,7 +57,7 @@ const NavItem: React.FC<NavItemProps & OnClickProps> = ({
                 )}
                 <div
                     className={`flex flex-col w-auto min-w-full whitespace-nowrap absolute
-                                left-1/2 -translate-x-1/2 mt-0 space-y-0 text-base-content bg-base-100 bg-opacity-75
+                                left-1/2 -translate-x-1/2 mt-0 space-y-0 text-base-content bg-base-100
                                 rounded-lg shadow-lg shadow-base-300 transition ease-in-out duration-100
                                 opacity-0 pointer-events-none -translate-y-2 scale-75
                                 group-focus-within:opacity-100 group-focus-within:pointer-events-auto group-focus-within:translate-y-2 group-focus-within:scale-100
