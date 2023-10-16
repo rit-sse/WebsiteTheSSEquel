@@ -110,8 +110,13 @@ const Navbar: React.FC = () => {
                     href="/"
                     className="flex flex-row items-center justify-center group focus:outline-offset-8 rounded-md  "
                 >
-                    <SSELogoFull />
-                    {/* <SSELogoSmall /> */}
+                    {/* Responsively display either the small or full logo depending on screen width */}
+                    <div className="lg:hidden">
+                        <SSELogoSmall />
+                    </div>
+                    <div className="hidden lg:block lg:visible">
+                        <SSELogoFull />
+                    </div>
                 </Link>
                 <div className="hidden md:block md:visible">
                     <ul className="inline-flex flex-row flex-nowrap justify-between text-center text-lg">
