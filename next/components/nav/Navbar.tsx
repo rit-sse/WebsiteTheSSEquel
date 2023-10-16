@@ -51,7 +51,7 @@ const navItems: NavItemProps[] = [
         subItems: [
             {
                 title: "View Calendar",
-                route: "#",
+                route: "/events/calendar",
             },
             {
                 title: "Winter Ball",
