@@ -18,7 +18,7 @@ const navItems: NavItemProps[] = [
         subItems: [
             {
                 title: "About Us",
-                route: "#",
+                route: "/about",
             },
             {
                 title: "Get Involved",
