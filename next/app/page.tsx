@@ -7,11 +7,11 @@ import { CTAButton } from '@/components/common/CTAButton';
 export default function Home() {
   return (
     <>
-      <section className="text-slate-200">
+      <section className="text-base-content">
         <div className="mx-auto max-w-screen-xl px-4 py-32 lg:flex">
           <div className="text-center flex flex-col items-center w-full max-w-xl">
             <h1
-              className="bg-gradient-to-r from-sky-400 to-emerald-400 bg-clip-text
+              className="bg-gradient-to-br from-primary to-primary bg-clip-text
                          text-4xl/[3rem] font-extrabold text-transparent sm:text-5xl/[4rem]"
             >
               Society of
@@ -26,10 +26,6 @@ export default function Home() {
             <div className="mt-8 flex flex-col flex-wrap justify-center gap-4 min-[460px]:flex-row">
               <CTAButton href="https://rit-sse.slack.com/" text="Join our Slack" />
             </div>
-
-            {/* <div className="flex justify-center mt-4">
-              <CTAButton href="https://forms.gle/2HhKAsX91FLnzYGV7" text="Submit an Idea" />
-            </div> */}
           </div>
         </div>
       </section>

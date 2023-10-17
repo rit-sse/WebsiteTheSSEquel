@@ -1,6 +1,6 @@
 export const SearchIcon = () => (
     <svg
-        className=" stroke-slate-400"
+        className=" stroke-base-content"
         xmlns="http://www.w3.org/2000/svg"
         width="20"
         height="20"
@@ -17,7 +17,7 @@ export const SearchIcon = () => (
 
 export const ClearIcon = () => (
     <svg
-        className="stroke-slate-400"
+        className="stroke-base-content"
         xmlns="http://www.w3.org/2000/svg"
         width="24"
         height="24"
@@ -34,7 +34,7 @@ export const ClearIcon = () => (
 
 export const DiceIcon = () => (
     <svg
-        className="stroke-emerald-400"
+        className="stroke-base-content"
         xmlns="http://www.w3.org/2000/svg"
         width="24"
         height="24"
@@ -55,7 +55,7 @@ export const DiceIcon = () => (
 
 export const ExternalLinkIcon = () => (
     <svg
-        className="w-5 h-5 text-slate-200"
+        className="w-5 h-5 text-base-content"
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 24 24"
         fill="none"
@@ -73,7 +73,7 @@ export const ExternalLinkIcon = () => (
 export const StarIcon = () => (
     <svg
         xmlns="http://www.w3.org/2000/svg"
-        className="w-5 h-5 absolute left-[-0.625rem] top-[-0.625rem] text-yellow-500 fill-yellow-500"
+        className="w-5 h-5 absolute left-[-0.625rem] top-[-0.625rem] text-content fill-base-content"
         viewBox="0 0 24 24"
         stroke="currentColor"
         strokeWidth="2"
@@ -86,7 +86,7 @@ export const StarIcon = () => (
 
 export const GitHub = () => (
     <svg
-        className="w-5 h-5 fill-slate-400"
+        className="w-6 h-6 fill-base-content"
         aria-hidden="true"
         viewBox="0 0 16 16"
         data-view-component="true"
