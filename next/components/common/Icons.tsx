@@ -86,7 +86,7 @@ export const StarIcon = () => (
 
 export const GitHub = () => (
     <svg
-        className="w-6 h-6 fill-base-content"
+        className="w-5 h-5 fill-slate-400"
         aria-hidden="true"
         viewBox="0 0 16 16"
         data-view-component="true"
