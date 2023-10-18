@@ -7,4 +7,4 @@ export default async function Constitution() {
     return (
       <div dangerouslySetInnerHTML={{ __html: postData.props.htmlContent }} />
     );
-  }
+}
