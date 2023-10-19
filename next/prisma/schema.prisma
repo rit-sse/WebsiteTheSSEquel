@@ -12,122 +12,199 @@ datasource db {
 
 model User {
   //Store an automatically generated unique int for id
-  id          Int @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
   //Store first and last name as Strings
-  firstName   String
-  lastName    String
+  firstName String @db.VarChar(40)
+  lastName  String @db.VarChar(40)
 
   //Store email as a unique String
-  email       String @unique
+  email String @unique
 
   //Store a boolean value to determine if a user is a member or not
   //Defaults to false if not specified
-  isMember    Boolean @default(false)
+  isMember Boolean @default(false)
 
   //Image will be saved
-  profilePic  String @default("default.jpg")
+  profilePic String @default("default.jpg")
 
   // relational fields
   //Holds a reference to the mentor table using a User field, going to see how this works going forward, not entirely sure
-  mentor      Mentor[]
-  quotes      Quote[]
-  officers    Officer[]
+  mentor   Mentor[]
+  quotes   Quote[]
+  officers Officer[]
 }
 
 model Quote {
-  id         Int      @id @default(autoincrement())
-  date_added DateTime
-  quote      String   @db.VarChar(255)
-  user_id    Int
-  author     String   @db.VarChar(40)
+  //Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
 
-  // relational fields
-  user       User     @relation(fields: [user_id], references: [id])
+  //Store the timestamp quote was added
+  date_added DateTime
+
+  //Store quote as a String 
+  quote String @db.VarChar(255)
+
+  //Refrences userId
+  user_id Int
+
+  //Store author name as a String 
+  author String @db.VarChar(40)
+
+  //Relational fields
+  //Refrences user_id
+  user User @relation(fields: [user_id], references: [id])
 }
 
 model OfficerPosition {
-  id         Int     @id @default(autoincrement())
-  title      String  @db.VarChar(40)
-  is_primary Boolean @default(false)
-  email      String  @db.VarChar(40)
+  //Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
 
-  // relational fields
-  officers   Officer[]
+  //Store position title as a String 
+  title String @db.VarChar(40)
+
+  //States primary as a boolean
+  is_primary Boolean @default(false)
+
+  //Store email as a unique String
+  email String @unique @db.VarChar(40)
+
+  //Relational fields
+  officers Officer[]
 }
 
 model Officer {
-  id          Int      @id @default(autoincrement())
-  position_id Int
-  user_id     Int
-  is_active   Boolean
-  start_date  DateTime
-  end_date    DateTime
+  //Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
 
-  // relational fields
-  user        User            @relation(fields: [user_id], references: [id])
-  position    OfficerPosition @relation(fields: [position_id], references: [id])
+  //Refrences positionId
+  position_id Int
+
+  //Refrences userId
+  user_id Int
+
+  //Store active status as a boolean
+  is_active Boolean
+
+  //Store startDate and endDate as a DateTime
+  start_date DateTime
+  end_date   DateTime
+
+  //Relational fields
+  user     User            @relation(fields: [user_id], references: [id])
+  position OfficerPosition @relation(fields: [position_id], references: [id])
 }
 
 model Mentor {
+  //Store an automatically generated unique int for id
   id Int @id @default(autoincrement())
 
-  mentor         User          @relation(fields: [userId], references: [id])
-  userId         Int
+  //Refrences userId 
+  user_Id Int
+
+  //Store expirationDate as a DateTime
   expirationDate DateTime
-  isActive       Boolean
-  mentorSkill    MentorSkill[]
-  courseTaken    CourseTaken[]
-  schedule Schedule[]
+
+  //Stores active status as a Boolean
+  isActive Boolean
+
+  //Relatinal fieldS
+  mentorSkill MentorSkill[]
+  courseTaken CourseTaken[]
+  schedule    Schedule[]
+  //Refrence field
+  mentor      User          @relation(fields: [user_Id], references: [id])
 }
 
 model Skill {
+  //Store an automatically generated unique int for id
   id          Int           @id @default(autoincrement())
+  //Store skill as a unique String
   skill       String        @unique
+  //Relatinal field
   mentorSkill MentorSkill[]
 }
 
 model MentorSkill {
-  id       Int    @id @default(autoincrement())
-  mentor   Mentor @relation(fields: [mentorId], references: [id])
-  mentorId Int
-  skill    Skill  @relation(fields: [skillId], references: [id])
-  skillId  Int
+  //Store an automatically generated unique int for id
+  id        Int    @id @default(autoincrement())
+  //Refrences mentorId
+  mentor_Id Int
+  //Refrences skillId
+  skill_Id  Int
+  //Referential Fields
+  mentor    Mentor @relation(fields: [mentor_Id], references: [id])
+  skill     Skill  @relation(fields: [skill_Id], references: [id])
 }
 
 model Department {
-  id     Int      @id @default(autoincrement())
-  title  String
+  //Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
+
+  //Store title as a String
+  title String
+
+  //Relatinal field
   course Course[]
 }
 
 model Course {
-  id           Int           @id @default(autoincrement())
-  title        String
-  department   Department    @relation(fields: [departmentId], references: [id])
+  //Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
+
+  //Store title as a String
+  title String @db.VarChar(40)
+
+  //Refrence departmentId
   departmentId Int
-  code         Int
-  courseTaken  CourseTaken[]
+
+  //Stores code as an Integer
+  code Int
+
+  //Relational field
+  courseTaken CourseTaken[]
+
+  //Refrence field
+  department Department @relation(fields: [departmentId], references: [id])
 }
 
 model CourseTaken {
-  id       Int    @id @default(autoincrement())
+  //Store an automatically generated unique int for id
+  id       Int @id @default(autoincrement())
+  //Refrence mentorId
   mentorId Int
+  //Refrence courseId
   courseId Int
-  mentor   Mentor @relation(fields: [mentorId], references: [id])
-  course   Course @relation(fields: [courseId], references: [id])
+
+  //Relation fields
+  mentor Mentor @relation(fields: [mentorId], references: [id])
+  course Course @relation(fields: [courseId], references: [id])
 }
 
 model HourBlock {
-  id        Int      @id @default(autoincrement())
-  weekday   String
+  //Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
+
+  //Stores day of the week as a String
+  weekday String
+
+  //Stores time block startTime as a DateTime
   startTime DateTime @db.Time()
+
+  //Refrenced relation field
   schedule Schedule[]
 }
-model Schedule{
-id Int        @id @default(autoincrement())
-mentorId Int
-hourBlockId Int
-hourBlock HourBlock @relation(fields: [hourBlockId], references: [id])
-mentor Mentor @relation(fields:[mentorId], references: [id]) 
+
+model Schedule {
+  //Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
+
+  //Refrence mentorid
+  mentorId    Int
+  //Refrence houtBlockId 
+  hourBlockId Int
+
+  //Relational fields
+  hourBlock HourBlock @relation(fields: [hourBlockId], references: [id])
+  mentor    Mentor    @relation(fields: [mentorId], references: [id])
 }
