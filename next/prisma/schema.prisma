@@ -35,8 +35,8 @@ model User {
   mentor   Mentor[]
   quotes   Quote[]
   officers Officer[]
-  Account  Account[]
-  Session  Session[]
+  account  Account[]
+  session  Session[]
 }
 
 model Quote {
