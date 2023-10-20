@@ -208,3 +208,29 @@ model Schedule {
   hourBlock HourBlock @relation(fields: [hourBlockId], references: [id])
   mentor    Mentor    @relation(fields: [mentorId], references: [id])
 }
+
+model GoLinks {
+  //Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
+
+  //Store short link as a String
+  golink String
+
+  //Store url as a String
+  url String
+
+  //Description as a String
+  description String
+
+  //createdAt stored as a DateTime default to the timestamp it was created at
+  createdAt DateTime @default(now())
+
+  //updatedAt stores the time the link was last updated
+  updatedAt DateTime
+
+  //Determines if a link is public or not
+  isPublic Boolean @default(false)
+
+  //author is stored as a String
+  author String
+}
