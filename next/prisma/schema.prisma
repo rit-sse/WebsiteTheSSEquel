@@ -32,7 +32,6 @@ model User {
   emailVerified Boolean @default(false)
 
   // relational fields
-  //Holds a reference to the mentor table using a User field, going to see how this works going forward, not entirely sure
   mentor   Mentor[]
   quotes   Quote[]
   officers Officer[]
