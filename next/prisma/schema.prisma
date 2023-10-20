@@ -28,11 +28,16 @@ model User {
   //Image will be saved
   profilePic String @default("default.jpg")
 
+  //Store a boolean value to determine if a user is an officer or not
+  emailVerified Boolean @default(false)
+
   // relational fields
   //Holds a reference to the mentor table using a User field, going to see how this works going forward, not entirely sure
   mentor   Mentor[]
   quotes   Quote[]
   officers Officer[]
+  Account  Account[]
+  Session  Session[]
 }
 
 model Quote {
@@ -233,4 +238,64 @@ model GoLinks {
 
   //author is stored as a String
   author String
+}
+
+//Account model represents an account in the system.
+//It contains information about the user, the type of account, and the authentication provider.
+model Account {
+  //Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
+
+  //user is a relational field that references the User model
+  user               User     @relation(fields: [userId], references: [id])
+  //userId is a foreign key that references the id field of the User model
+  userId             Int
+  //type is a string that represents the type of account
+  type               String
+  //provider is a string that represents the authentication provider
+  provider           String
+  //providerAccountId is a string that represents the id of the account in the authentication provider
+  providerAccountId  String
+  //refreshToken is a string that represents the refresh token for the account
+  refreshToken       String
+  //accessToken is a string that represents the access token for the account
+  accessToken        String
+  //accessTokenExpires is a DateTime that represents the expiration date of the access token
+  accessTokenExpires DateTime
+  //createdAt is a DateTime that represents the date the account was created
+  tokenType          String
+  //updatedAt is a DateTime that represents the date the account was last updated
+  scope              String
+  //idToken is a string that represents the id token for the account
+  idToken            String
+  //sessionState is a string that represents the session state for the account
+  sessionState       String
+}
+
+model Session {
+  //Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
+
+  //Stores the expiration as a DateTime
+  expires DateTime
+
+  //Stores the session token as a string
+  sessionToken String
+
+  //Stores the user id as an Int
+  userId Int
+
+  //relation fields
+  user User @relation(fields: [userId], references: [id])
+}
+
+model VerificationToken {
+  //identifier is a string that is unique and is used to identify the token
+  identifier String @unique
+
+  //token is a string that is unique and is used to verify the token
+  token String @unique
+
+  //expires is a DateTime that represents the expiration date of the token
+  expires DateTime
 }
