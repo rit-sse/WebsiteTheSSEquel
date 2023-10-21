@@ -15,8 +15,8 @@ model User {
   id Int @id @default(autoincrement())
 
   //Store first and last name as Strings
-  firstName String @db.VarChar(40)
-  lastName  String @db.VarChar(40)
+  firstName String
+  lastName  String
 
   //Store email as a unique String
   email String @unique
