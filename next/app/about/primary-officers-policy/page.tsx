@@ -11,7 +11,7 @@ export default async function PrimaryOfficersPolicy() {
     <>
       <div></div>
 
-      <div className = "prose" dangerouslySetInnerHTML={{ __html: postData.props.htmlContent }} />
+      <div dangerouslySetInnerHTML={{ __html: postData.props.htmlContent }} />
     </>
   );
 
