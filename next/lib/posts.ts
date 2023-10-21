@@ -7,10 +7,9 @@ import remarkRehype from 'remark-rehype'
 import {unified} from 'unified'
 
 const postsDirectory = path.join(process.cwd(), 'app', 'about', 'posts');
-export async function getPostData(filename: string) {
+export async function getPostData(url: string) {
   try {
-    const fullPath = path.join(postsDirectory, filename);
-    const markdown = await fs.readFile(fullPath, 'utf8');
+    const markdown = await fetch(url)
 
     // Use remark to convert markdown into HTML string
     // const htmlContent = await remark().use(html).process(markdown);
@@ -19,10 +18,12 @@ export async function getPostData(filename: string) {
     .use(remarkRehype)
     .use(rehypeSanitize)
     .use(rehypeStringify)
-    .process(markdown)
+    .process(await markdown.text())
+
+    //console.dir(htmlContent)
     return {
       props: {
-        htmlContent: htmlContent.toString(),
+        htmlContent: htmlContent.value,
       },
     };
   } catch (error) {

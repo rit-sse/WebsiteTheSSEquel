@@ -1,8 +1,21 @@
 import Image from 'next/image'
 import { CTAButton } from '@/components/common/CTAButton';
+import { getPostData } from "@/lib/posts";
 
-export default function PrimaryOfficersPolicy() {
-    return(<>
+export default async function PrimaryOfficersPolicy() {
+    const postData = await getPostData("https://raw.githubusercontent.com/rit-sse/governing-docs/main/primary-officers-policy.md");
+
+  //console.log(postData.props.htmlContent);
+
+  return (
+    <>
+      <div></div>
+
+      <div className = "prose" dangerouslySetInnerHTML={{ __html: postData.props.htmlContent }} />
+    </>
+  );
+
+    /*return(<>
         <section className="text-slate-200">
             <div className="text-center flex flex-col items-center w-full max-w-xl">
               <h1
@@ -262,5 +275,6 @@ export default function PrimaryOfficersPolicy() {
         </div>
         </>
     )
+    */
             
 }
