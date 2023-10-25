@@ -49,11 +49,11 @@ model Quote {
   //Store quote as a String 
   quote String @db.VarChar(255)
 
-  //Refrences userId
+  //References userId of person who submitted the quote
   user_id Int
 
-  //Store author name as a String 
-  author String @db.VarChar(40)
+  //Store author, person who said the qoute, as a String, default to anonymous
+  author String @default("Anonymous")
 
   //Relational fields
   //Refrences user_id
@@ -237,6 +237,9 @@ model GoLinks {
 
   //author is stored as a String
   author String
+
+  //isPinned is a boolean value to determine if a user is pinned or not
+  isPinned Boolean @default(false)
 }
 
 //Account model represents an account in the system.
