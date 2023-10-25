@@ -6,7 +6,8 @@ import NavItem, { NavItemProps } from "./NavItem";
 import MobileNavDropdown from "./MobileNavDropdown";
 import SSELogoFull from "../common/SSELogoFull";
 import SSELogoSmall from "../common/SSELogoSmall";
-
+import DarkModeToggle from "../common/DarkModeToggle";
+import { MouseEvent } from "react";
 
 const navItems: NavItemProps[] = [
     {
@@ -123,8 +124,10 @@ const Navbar: React.FC = () => {
                         {navItems.map((navItem, index) => (
                             <NavItem key={index} {...navItem} onClickFunc={blurOnClick} />
                         ))}
+                    <DarkModeToggle/>
                     </ul>
                 </div>
+
                 <div className="dropdown dropdown-end md:hidden">
                     <div className="flex flex-row">
                         <Hamburger />
