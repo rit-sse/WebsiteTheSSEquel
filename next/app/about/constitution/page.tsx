@@ -10,7 +10,7 @@ export default async function Constitution() {
     <>
       <div></div>
 
-      <div className = "prose" dangerouslySetInnerHTML={{ __html: postData.props.htmlContent }} />
+      <div dangerouslySetInnerHTML={{ __html: postData.props.htmlContent }} />
     </>
   );
 }
