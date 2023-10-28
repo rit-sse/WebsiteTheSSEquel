@@ -1,6 +1,8 @@
 import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
-async function main() {
+
+//Anderson
+async function seedUser() {
     const johndoe = await prisma.user.upsert({
         where: { email: 'johndoe@rit.edu' },
         update: {},
@@ -11,6 +13,39 @@ async function main() {
         },
     })
     console.log({ johndoe })
+}
+
+//Anderson
+async function seedQuote() { }
+
+//Joe
+async function seedOfficerPosition() { }
+
+//Garrett
+async function seedOfficer() { }
+
+//Abigail
+async function seedMentor() { }
+
+//Abigail
+async function seedSkill() { }
+
+//Garrett
+async function seedMentorSkill() { }
+
+//Joe
+async function seedDepartment() { }
+
+//Joe
+async function seedCourse() { }
+
+//Anderson
+async function seedCourseTaken() { }
+
+
+async function main() {
+    seedUser()
+
 }
 main()
     .then(async () => {
