@@ -65,13 +65,13 @@ model OfficerPosition {
   id Int @id @default(autoincrement())
 
   //Store position title as a String 
-  title String @db.VarChar(40)
+  title String @unique
 
   //States primary as a boolean
   is_primary Boolean @default(false)
 
   //Store email as a unique String
-  email String @unique @db.VarChar(40)
+  email String @unique
 
   //Relational fields
   officers Officer[]
