@@ -1,7 +1,6 @@
 import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
-//Anderson
 async function seedUser() {
     const johndoe = await prisma.user.upsert({
         where: { email: 'johndoe@rit.edu' },
@@ -33,10 +32,8 @@ async function seedUser() {
     console.log({ johndoe, janedoe, johnsmith })
 }
 
-//Anderson
 async function seedQuote() { }
 
-//Joe
 async function seedOfficerPosition() {
     const president = await prisma.officerPosition.upsert({
         where: { id: 1 },
@@ -69,7 +66,6 @@ async function seedOfficerPosition() {
     console.log({ president, vicePresident, techHead })
 }
 
-//Joe
 async function seedOfficer() {
     const officer1 = await prisma.officer.upsert({
         where: { id: 1 },
@@ -111,7 +107,7 @@ async function seedOfficer() {
     })
     console.log({ officer1, officer2, officer3 })
 }
-//Joe
+
 async function seedMentor() {
     const mentor1 = await prisma.mentor.upsert({
         where: { id: 1 },
@@ -147,7 +143,6 @@ async function seedMentor() {
     console.log({ mentor1, mentor2, mentor3 })
 }
 
-//Joe
 async function seedSkill() {
     const java = await prisma.skill.upsert({
         where: { id: 1 },
@@ -178,8 +173,39 @@ async function seedSkill() {
     console.log({ java, cpp, python })
 }
 
-//Garrett
-async function seedMentorSkill() { }
+async function seedMentorSkill() {
+    const mentorSkill1 = await prisma.mentorSkill.upsert({
+        where: { id: 1 },
+        update: {},
+        create: {
+            id: 1,
+            mentor_Id: 1,
+            skill_Id: 1,
+        },
+    })
+
+    const mentorSkill2 = await prisma.mentorSkill.upsert({
+        where: { id: 2 },
+        update: {},
+        create: {
+            id: 2,
+            mentor_Id: 2,
+            skill_Id: 2,
+        },
+    })
+
+    const mentorSkill3 = await prisma.mentorSkill.upsert({
+        where: { id: 3 },
+        update: {},
+        create: {
+            id: 3,
+            mentor_Id: 3,
+            skill_Id: 3,
+        },
+    })
+
+    console.log({ mentorSkill1, mentorSkill2, mentorSkill3 })
+}
 
 //Joe
 async function seedDepartment() { }
@@ -197,6 +223,7 @@ async function main() {
     seedOfficer()
     seedMentor()
     seedSkill()
+    seedMentorSkill()
 
 }
 main()
