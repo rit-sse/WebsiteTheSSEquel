@@ -208,12 +208,69 @@ async function seedMentorSkill() {
 }
 
 //Joe
-async function seedDepartment() { }
+async function seedDepartment() {
+    const department1 = await prisma.department.upsert({
+        where: { id: 1 },
+        update: {},
+        create: {
+            id: 1,
+            title: 'Computer Science',
+        },
+    })
+    const department2 = await prisma.department.upsert({
+        where: { id: 2 },
+        update: {},
+        create: {
+            id: 2,
+            title: 'Software Engineering',
+        },
+    })
+    const department3 = await prisma.department.upsert({
+        where: { id: 3 },
+        update: {},
+        create: {
+            id: 3,
+            title: 'Interactive Games and Media',
+        },
+    })
+    console.log({ department1, department2, department3 })
+}
 
 //Joe
-async function seedCourse() { }
+async function seedCourse() {
+    const course1 = await prisma.course.upsert({
+        where: { id: 1 },
+        update: {},
+        create: {
+            id: 1,
+            title: 'Software Development I',
+            departmentId: 2,
+            code: 123,
+        },
+    })
+    const course2 = await prisma.course.upsert({
+        where: { id: 2 },
+        update: {},
+        create: {
+            id: 2,
+            title: 'Software Development II',
+            departmentId: 2,
+            code: 124
+        },
+    })
+    const course3 = await prisma.course.upsert({
+        where: { id: 3 },
+        update: {},
+        create: {
+            id: 3,
+            title: 'CS For AP Students',
+            departmentId: 1,
+            code: 140
+        },
+    })
+    console.log({ course1, course2, course3 })
+}
 
-//Anderson
 async function seedCourseTaken() { }
 
 
@@ -224,6 +281,8 @@ async function main() {
     seedMentor()
     seedSkill()
     seedMentorSkill()
+    seedDepartment()
+    seedCourse()
 
 }
 main()
