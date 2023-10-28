@@ -271,7 +271,36 @@ async function seedCourse() {
     console.log({ course1, course2, course3 })
 }
 
-async function seedCourseTaken() { }
+async function seedCourseTaken() {
+    const courseTaken1 = await prisma.courseTaken.upsert({
+        where: { id: 1 },
+        update: {},
+        create: {
+            id: 1,
+            mentorId: 1,
+            courseId: 1,
+        },
+    })
+    const courseTaken2 = await prisma.courseTaken.upsert({
+        where: { id: 2 },
+        update: {},
+        create: {
+            id: 2,
+            mentorId: 2,
+            courseId: 2,
+        },
+    })
+    const courseTaken3 = await prisma.courseTaken.upsert({
+        where: { id: 3 },
+        update: {},
+        create: {
+            id: 3,
+            mentorId: 3,
+            courseId: 3,
+        },
+    })
+    console.log({ courseTaken1, courseTaken2, courseTaken3 })
+}
 
 
 async function main() {
@@ -283,6 +312,7 @@ async function main() {
     seedMentorSkill()
     seedDepartment()
     seedCourse()
+    seedCourseTaken()
 
 }
 main()
