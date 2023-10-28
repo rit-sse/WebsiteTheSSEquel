@@ -65,7 +65,33 @@ async function seedOfficer() {
             end_date: new Date(),
         },
     })
-    console.log({ officer1 })
+
+    const officer2 = await prisma.officer.upsert({
+        where: { id: 1 },
+        update: {},
+        create: {
+            id: 2,
+            position_id: 2,
+            user_id: 2,
+            is_active: true,
+            start_date: new Date(),
+            end_date: new Date(),
+        },
+    })
+
+    const officer3 = await prisma.officer.upsert({
+        where: { id: 3 },
+        update: {},
+        create: {
+            id: 3,
+            position_id: 3,
+            user_id: 1,
+            is_active: false,
+            start_date: new Date(),
+            end_date: new Date(),
+        },
+    })
+    console.log({ officer1, officer2, officer3 })
 }
 //Abigail
 async function seedMentor() { }
