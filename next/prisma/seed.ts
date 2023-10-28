@@ -19,7 +19,18 @@ async function seedUser() {
 async function seedQuote() { }
 
 //Joe
-async function seedOfficerPosition() { }
+async function seedOfficerPosition() {
+    const president = await prisma.officerPosition.upsert({
+        where: { id: 1 },
+        update: {},
+        create: {
+            title: 'President',
+            is_primary: true,
+            email: 'sse-president@rit.edu'
+        },
+    })
+    console.log({ president })
+}
 
 //Garrett
 async function seedOfficer() { }
@@ -45,6 +56,7 @@ async function seedCourseTaken() { }
 
 async function main() {
     seedUser()
+    seedOfficerPosition()
 
 }
 main()
