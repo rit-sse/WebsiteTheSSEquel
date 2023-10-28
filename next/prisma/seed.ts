@@ -147,8 +147,36 @@ async function seedMentor() {
     console.log({ mentor1, mentor2, mentor3 })
 }
 
-//Abigail
-async function seedSkill() { }
+//Joe
+async function seedSkill() {
+    const java = await prisma.skill.upsert({
+        where: { id: 1 },
+        update: {},
+        create: {
+            id: 1,
+            skill: 'Java',
+        },
+    })
+
+    const cpp = await prisma.skill.upsert({
+        where: { id: 2 },
+        update: {},
+        create: {
+            id: 2,
+            skill: 'c++',
+        },
+    })
+
+    const python = await prisma.skill.upsert({
+        where: { id: 3 },
+        update: {},
+        create: {
+            id: 3,
+            skill: 'Python',
+        },
+    })
+    console.log({ java, cpp, python })
+}
 
 //Garrett
 async function seedMentorSkill() { }
@@ -168,6 +196,7 @@ async function main() {
     seedOfficerPosition()
     seedOfficer()
     seedMentor()
+    seedSkill()
 
 }
 main()
