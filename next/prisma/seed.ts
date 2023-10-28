@@ -52,8 +52,21 @@ async function seedOfficerPosition() {
 }
 
 //Garrett
-async function seedOfficer() { }
-
+async function seedOfficer() {
+    const officer1 = await prisma.officer.upsert({
+        where: { id: 1 },
+        update: {},
+        create: {
+            id: 1,
+            position_id: 1,
+            user_id: 1,
+            is_active: true,
+            start_date: new Date(),
+            end_date: new Date(),
+        },
+    })
+    console.log({ officer1 })
+}
 //Abigail
 async function seedMentor() { }
 
@@ -76,6 +89,7 @@ async function seedCourseTaken() { }
 async function main() {
     seedUser()
     seedOfficerPosition()
+    seedOfficer()
 
 }
 main()
