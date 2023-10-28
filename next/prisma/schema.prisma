@@ -65,13 +65,13 @@ model OfficerPosition {
   id Int @id @default(autoincrement())
 
   //Store position title as a String 
-  title String @db.VarChar(40)
+  title String @unique
 
   //States primary as a boolean
   is_primary Boolean @default(false)
 
   //Store email as a unique String
-  email String @unique @db.VarChar(40)
+  email String @unique
 
   //Relational fields
   officers Officer[]
@@ -88,7 +88,7 @@ model Officer {
   user_id Int
 
   //Store active status as a boolean
-  is_active Boolean
+  is_active Boolean @default(true)
 
   //Store startDate and endDate as a DateTime
   start_date DateTime
@@ -116,7 +116,6 @@ model Mentor {
   mentorSkill MentorSkill[]
   courseTaken CourseTaken[]
   schedule    Schedule[]
-  //Refrence field
   mentor      User          @relation(fields: [user_Id], references: [id])
 }
 
