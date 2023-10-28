@@ -116,7 +116,6 @@ model Mentor {
   mentorSkill MentorSkill[]
   courseTaken CourseTaken[]
   schedule    Schedule[]
-  //Refrence field
   mentor      User          @relation(fields: [user_Id], references: [id])
 }
 

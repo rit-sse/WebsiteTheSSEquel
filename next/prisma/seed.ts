@@ -12,7 +12,25 @@ async function seedUser() {
             email: 'johndoe@rit.edu'
         },
     })
-    console.log({ johndoe })
+    const janedoe = await prisma.user.upsert({
+        where: { email: 'janedoe@rit.edu' },
+        update: {},
+        create: {
+            firstName: 'Jane',
+            lastName: 'Doe',
+            email: 'janedoe@rit.edu'
+        },
+    })
+    const johnsmith = await prisma.user.upsert({
+        where: { email: 'johnsmith@rit.edu' },
+        update: {},
+        create: {
+            firstName: 'John',
+            lastName: 'Smith',
+            email: 'johnsmith@rit.edu'
+        },
+    })
+    console.log({ johndoe, janedoe, johnsmith })
 }
 
 //Anderson
@@ -51,7 +69,7 @@ async function seedOfficerPosition() {
     console.log({ president, vicePresident, techHead })
 }
 
-//Garrett
+//Joe
 async function seedOfficer() {
     const officer1 = await prisma.officer.upsert({
         where: { id: 1 },
@@ -93,8 +111,41 @@ async function seedOfficer() {
     })
     console.log({ officer1, officer2, officer3 })
 }
-//Abigail
-async function seedMentor() { }
+//Joe
+async function seedMentor() {
+    const mentor1 = await prisma.mentor.upsert({
+        where: { id: 1 },
+        update: {},
+        create: {
+            id: 1,
+            user_Id: 1,
+            expirationDate: new Date(),
+            isActive: true,
+        },
+    })
+    const mentor2 = await prisma.mentor.upsert({
+        where: { id: 2 },
+        update: {},
+        create: {
+            id: 2,
+            user_Id: 2,
+            expirationDate: new Date(),
+            isActive: true,
+        },
+    })
+
+    const mentor3 = await prisma.mentor.upsert({
+        where: { id: 3 },
+        update: {},
+        create: {
+            id: 3,
+            user_Id: 3,
+            expirationDate: new Date(),
+            isActive: true,
+        },
+    })
+    console.log({ mentor1, mentor2, mentor3 })
+}
 
 //Abigail
 async function seedSkill() { }
@@ -116,6 +167,7 @@ async function main() {
     seedUser()
     seedOfficerPosition()
     seedOfficer()
+    seedMentor()
 
 }
 main()
