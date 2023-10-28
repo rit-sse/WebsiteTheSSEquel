@@ -29,7 +29,26 @@ async function seedOfficerPosition() {
             email: 'sse-president@rit.edu'
         },
     })
-    console.log({ president })
+    const vicePresident = await prisma.officerPosition.upsert({
+        where: { id: 2 },
+        update: {},
+        create: {
+            title: 'Vice President',
+            is_primary: false,
+            email: 'sse-vicepresident@rit.edu'
+        },
+    })
+
+    const techHead = await prisma.officerPosition.upsert({
+        where: { id: 3 },
+        update: {},
+        create: {
+            title: 'Tech Head',
+            is_primary: false,
+            email: 'sse-tech@rit.edu'
+        },
+    })
+    console.log({ president, vicePresident, techHead })
 }
 
 //Garrett
