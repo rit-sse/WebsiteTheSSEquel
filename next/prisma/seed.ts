@@ -32,7 +32,42 @@ async function seedUser() {
     console.log({ johndoe, janedoe, johnsmith })
 }
 
-async function seedQuote() { }
+async function seedQuote() {
+    const quote1 = await prisma.quote.upsert({
+        where: { id: 1 },
+        update: {},
+        create: {
+            id: 1,
+            date_added: new Date(),
+            quote: 'This is a quote',
+            user_id: 1,
+        }
+    })
+
+    const quote2 = await prisma.quote.upsert({
+        where: { id: 2 },
+        update: {},
+        create: {
+            id: 2,
+            date_added: new Date(),
+            quote: 'This is another quote',
+            user_id: 2,
+        }
+    })
+
+    const quote3 = await prisma.quote.upsert({
+        where: { id: 3 },
+        update: {},
+        create: {
+            id: 3,
+            date_added: new Date(),
+            quote: 'This is a third quote',
+            user_id: 3,
+        }
+    })
+
+    console.log({ quote1, quote2, quote3 })
+}
 
 async function seedOfficerPosition() {
     const president = await prisma.officerPosition.upsert({
@@ -313,6 +348,7 @@ async function main() {
     seedDepartment()
     seedCourse()
     seedCourseTaken()
+    seedQuote()
 
 }
 main()
