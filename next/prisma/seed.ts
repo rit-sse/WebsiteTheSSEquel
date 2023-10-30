@@ -81,7 +81,7 @@ async function seedOfficer() {
     })
 
     const officer2 = await prisma.officer.upsert({
-        where: { id: 1 },
+        where: { id: 2 },
         update: {},
         create: {
             id: 2,
