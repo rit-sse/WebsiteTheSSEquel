@@ -1,0 +1,303 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  //Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
+
+  //Store first and last name as Strings
+  firstName String
+  lastName  String
+
+  //Store email as a unique String
+  email String @unique
+
+  //Store a boolean value to determine if a user is a member or not
+  //Defaults to false if not specified
+  isMember Boolean @default(false)
+
+  //Image will be saved
+  profilePic String @default("default.jpg")
+
+  //Store a boolean value to determine if a user is a verfied or not
+  emailVerified Boolean @default(false)
+
+  // relational fields
+  mentor   Mentor[]
+  quotes   Quote[]
+  officers Officer[]
+  account  Account[]
+  session  Session[]
+}
+
+model Quote {
+  //Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
+
+  //Store the timestamp quote was added
+  date_added DateTime
+
+  //Store quote as a String 
+  quote String @db.VarChar(255)
+
+  //References userId of person who submitted the quote
+  user_id Int
+
+  //Store author, person who said the qoute, as a String, default to anonymous
+  author String @default("Anonymous")
+
+  //Relational fields
+  //Refrences user_id
+  user User @relation(fields: [user_id], references: [id])
+}
+
+model OfficerPosition {
+  //Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
+
+  //Store position title as a String 
+  title String @db.VarChar(40)
+
+  //States primary as a boolean
+  is_primary Boolean @default(false)
+
+  //Store email as a unique String
+  email String @unique @db.VarChar(40)
+
+  //Relational fields
+  officers Officer[]
+}
+
+model Officer {
+  //Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
+
+  //Refrences positionId
+  position_id Int
+
+  //Refrences userId
+  user_id Int
+
+  //Store active status as a boolean
+  is_active Boolean
+
+  //Store startDate and endDate as a DateTime
+  start_date DateTime
+  end_date   DateTime
+
+  //Relational fields
+  user     User            @relation(fields: [user_id], references: [id])
+  position OfficerPosition @relation(fields: [position_id], references: [id])
+}
+
+model Mentor {
+  //Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
+
+  //Refrences userId 
+  user_Id Int
+
+  //Store expirationDate as a DateTime
+  expirationDate DateTime
+
+  //Stores active status as a Boolean
+  isActive Boolean
+
+  //Relatinal fieldS
+  mentorSkill MentorSkill[]
+  courseTaken CourseTaken[]
+  schedule    Schedule[]
+  //Refrence field
+  mentor      User          @relation(fields: [user_Id], references: [id])
+}
+
+model Skill {
+  //Store an automatically generated unique int for id
+  id          Int           @id @default(autoincrement())
+  //Store skill as a unique String
+  skill       String        @unique
+  //Relatinal field
+  mentorSkill MentorSkill[]
+}
+
+model MentorSkill {
+  //Store an automatically generated unique int for id
+  id        Int    @id @default(autoincrement())
+  //Refrences mentorId
+  mentor_Id Int
+  //Refrences skillId
+  skill_Id  Int
+  //Referential Fields
+  mentor    Mentor @relation(fields: [mentor_Id], references: [id])
+  skill     Skill  @relation(fields: [skill_Id], references: [id])
+}
+
+model Department {
+  //Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
+
+  //Store title as a String
+  title String
+
+  //Relatinal field
+  course Course[]
+}
+
+model Course {
+  //Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
+
+  //Store title as a String
+  title String @db.VarChar(40)
+
+  //Refrence departmentId
+  departmentId Int
+
+  //Stores code as an Integer
+  code Int
+
+  //Relational field
+  courseTaken CourseTaken[]
+
+  //Refrence field
+  department Department @relation(fields: [departmentId], references: [id])
+}
+
+model CourseTaken {
+  //Store an automatically generated unique int for id
+  id       Int @id @default(autoincrement())
+  //Refrence mentorId
+  mentorId Int
+  //Refrence courseId
+  courseId Int
+
+  //Relation fields
+  mentor Mentor @relation(fields: [mentorId], references: [id])
+  course Course @relation(fields: [courseId], references: [id])
+}
+
+model HourBlock {
+  //Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
+
+  //Stores day of the week as a String
+  weekday String
+
+  //Stores time block startTime as a DateTime
+  startTime DateTime @db.Time()
+
+  //Refrenced relation field
+  schedule Schedule[]
+}
+
+model Schedule {
+  //Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
+
+  //Refrence mentorid
+  mentorId    Int
+  //Refrence houtBlockId 
+  hourBlockId Int
+
+  //Relational fields
+  hourBlock HourBlock @relation(fields: [hourBlockId], references: [id])
+  mentor    Mentor    @relation(fields: [mentorId], references: [id])
+}
+
+model GoLinks {
+  //Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
+
+  //Store short link as a String
+  golink String
+
+  //Store url as a String
+  url String
+
+  //Description as a String
+  description String
+
+  //createdAt stored as a DateTime default to the timestamp it was created at
+  createdAt DateTime @default(now())
+
+  //updatedAt stores the time the link was last updated
+  updatedAt DateTime
+
+  //Determines if a link is public or not
+  isPublic Boolean @default(false)
+
+  //author is stored as a String
+  author String
+
+  //isPinned is a boolean value to determine if a user is pinned or not
+  isPinned Boolean @default(false)
+}
+
+//Account model represents an account in the system.
+//It contains information about the user, the type of account, and the authentication provider.
+model Account {
+  //Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
+
+  //user is a relational field that references the User model
+  user               User     @relation(fields: [userId], references: [id])
+  //userId is a foreign key that references the id field of the User model
+  userId             Int
+  //type is a string that represents the type of account
+  type               String
+  //provider is a string that represents the authentication provider
+  provider           String
+  //providerAccountId is a string that represents the id of the account in the authentication provider
+  providerAccountId  String
+  //refreshToken is a string that represents the refresh token for the account
+  refreshToken       String
+  //accessToken is a string that represents the access token for the account
+  accessToken        String
+  //accessTokenExpires is a DateTime that represents the expiration date of the access token
+  accessTokenExpires DateTime
+  //createdAt is a DateTime that represents the date the account was created
+  tokenType          String
+  //updatedAt is a DateTime that represents the date the account was last updated
+  scope              String
+  //idToken is a string that represents the id token for the account
+  idToken            String
+  //sessionState is a string that represents the session state for the account
+  sessionState       String
+}
+
+model Session {
+  //Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
+
+  //Stores the expiration as a DateTime
+  expires DateTime
+
+  //Stores the session token as a string
+  sessionToken String
+
+  //Stores the user id as an Int
+  userId Int
+
+  //relation fields
+  user User @relation(fields: [userId], references: [id])
+}
+
+model VerificationToken {
+  //identifier is a string that is unique and is used to identify the token
+  identifier String @unique
+
+  //token is a string that is unique and is used to verify the token
+  token String @unique
+
+  //expires is a DateTime that represents the expiration date of the token
+  expires DateTime
+}
