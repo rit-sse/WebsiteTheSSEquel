@@ -26,10 +26,6 @@ export default function Home() {
             <div className="mt-8 flex flex-col flex-wrap justify-center gap-4 min-[460px]:flex-row">
               <CTAButton href="https://rit-sse.slack.com/" text="Join our Slack" />
             </div>
-
-            {/* <div className="flex justify-center mt-4">
-              <CTAButton href="https://forms.gle/2HhKAsX91FLnzYGV7" text="Submit an Idea" />
-            </div> */}
           </div>
         </div>
       </section>
