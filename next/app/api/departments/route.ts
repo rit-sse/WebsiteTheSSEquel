@@ -3,7 +3,17 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function get_departments() {
-  const allDepts = await prisma.department.findMany();
+  const allDepts = await prisma.department.findMany({
+    select: {
+      title: true,
+      course: {
+        select: {
+          title: true,
+          code: true,
+        },
+      },
+    },
+  });
   return allDepts;
 }
 
