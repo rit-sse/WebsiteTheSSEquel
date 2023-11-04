@@ -81,10 +81,10 @@ export default function GetInvolved() {
                     {placeholder_img}
                     <CommitteeSlot
                         name='Talks'
-                        description='We dont always talk about computing related topics, we often delve into diverse topics, such as 
+                        description="We don't always talk about computing related topics, we often delve into diverse topics, such as 
                         the amusing appearances of various aquatic creatures. Our enthusiasm for this particular subject matter has led 
                         to the establishment of Funny Fish Friday, a designated day for engaging in lively conversations about these quirky 
-                        aquatic beings". If you would like to give a talk of your own please reach out to our Talk Head, Tess Hacker.'
+                        aquatic beings. If you would like to give a talk of your own please reach out to our Talk Head, Tess Hacker."
                     />
                 </ZCard>
 
