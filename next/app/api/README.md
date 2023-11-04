@@ -5,8 +5,9 @@ Specifically, this directory will hold all API calls to the Prisma database.
 
 ## Folder Structure
 
-lib/
-|-- user_api.ts (author: Joe Baillie | status: not_done)
+api/
+|-- golinks/public (author: Joe Baillie | status: not_done)
+|-- golinks/officer (author: Joe Baillie | status: not_done)
 |-- quote_api.ts (author: Sam Velasquez | status: not_done)
 |-- officer_position_api.ts (author: Anderson Cardenas | status: not_done)
 |-- officer_api.ts (author: Anderson Cardenas | status: not_done)
