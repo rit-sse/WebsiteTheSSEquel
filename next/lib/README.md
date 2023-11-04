@@ -11,7 +11,7 @@ lib/
 |-- officer_position_api.ts (author: _______ | status: not_done)
 |-- officer_api.ts (author: _______ | status: not_done)
 |-- mentor_api.ts (author: _______ | status: not_done)
-|-- skill_api.ts (author: _______ | status: not_done)
+|-- skill_api.ts (author: Garrett Tupper | status: not_done)
 |-- mentor_skill_api.ts (author: _______ | status: not_done)
 |-- department_api.ts (author: _______ | status: not_done)
 |-- course_api.ts (author: _______ | status: not_done)
