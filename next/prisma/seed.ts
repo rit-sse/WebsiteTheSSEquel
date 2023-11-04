@@ -250,6 +250,7 @@ async function seedDepartment() {
         create: {
             id: 1,
             title: 'Computer Science',
+            shortTitle: 'CS',
         },
     })
     const department2 = await prisma.department.upsert({
@@ -258,6 +259,7 @@ async function seedDepartment() {
         create: {
             id: 2,
             title: 'Software Engineering',
+            shortTitle: 'SWEN',
         },
     })
     const department3 = await prisma.department.upsert({
@@ -266,6 +268,7 @@ async function seedDepartment() {
         create: {
             id: 3,
             title: 'Interactive Games and Media',
+            shortTitle: 'IGM',
         },
     })
     console.log({ department1, department2, department3 })

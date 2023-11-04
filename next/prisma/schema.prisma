@@ -148,6 +148,9 @@ model Department {
   //Store title as a String
   title String
 
+  //Store short title as a String
+  shortTitle String @default("GCIS")
+
   //Relatinal field
   course Course[]
 }
