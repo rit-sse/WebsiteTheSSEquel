@@ -2,6 +2,65 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  h1 {
+    @apply bg-gradient-to-br;
+    @apply from-primary;
+    @apply to-primary;
+    @apply bg-clip-text;
+    @apply text-4xl/[3rem];
+    @apply font-extrabold;
+    @apply text-transparent;
+    @apply sm:text-5xl/[4rem];
+    @apply text-center;
+    @apply mb-2;
+  }
+
+  h2 {
+    @apply font-bold;
+    @apply text-left;
+    @apply text-base-content;
+    @apply sm:text-3xl/[4rem];
+    @apply mt-2;
+    }
+
+  h3 {
+    @apply text-base-content;
+    @apply font-semibold;
+    @apply text-left;
+    @apply sm:text-2xl/[3rem];
+    }
+
+  h4 {
+    @apply text-base-content;
+    @apply font-semibold;
+    @apply text-left;
+    @apply sm:text-2xl/[3rem];
+    }
+
+  h5 {
+    @apply text-base-content;
+    @apply font-semibold;
+    @apply text-left;
+    @apply sm:text-xl/[3rem];
+    }
+
+  p {
+    @apply text-base-content;
+    @apply text-left;
+    //@apply max-w-2xl;
+    @apply sm:text-xl/relaxed;
+  }
+
+  li {
+    @apply ml-5;
+    @apply list-disc;
+    @apply text-base-content;
+    @apply sm:text-xl/relaxed;
+    }
+
+}
+
 ::selection {
   background-color: theme('colors.primary');
   color: theme('colors.base-100');
