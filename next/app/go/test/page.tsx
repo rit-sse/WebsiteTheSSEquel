@@ -49,9 +49,9 @@ const goLinkData: { shortlink: string; url: string; description: string }[] = [
 ];
 
 export default function GoLinks() {
-    const goLinkList = goLinkData.map(data => (
+    const goLinkList = goLinkData.map((data, index) => (
         <GoLink
-            key={data.shortlink}
+            key={index}
             {...data}
         />
     ));
