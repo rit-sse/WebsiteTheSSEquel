@@ -577,42 +577,26 @@ async function seedVerificationToken() {
 
 
 async function main() {
-    const user = seedUser()
-    const quote = seedQuote()
-    const officerPosition = seedOfficerPosition()
-    const officer = seedOfficer()
-    const mentor = seedMentor()
-    const skill = seedSkill()
-    const mentorSkill = seedMentorSkill()
-    const department = seedDepartment()
-    const course = seedCourse()
-    const courseTaken = seedCourseTaken()
-    const hourBlock = seedHourBlock()
-    const schedule = seedSchedule()
-    const goLinks = seedGoLinks()
-    const account = seedAccount()
-    const session = seedSession()
-    const verificationToken = seedVerificationToken()
-    const list = [
-        user,
-        quote,
-        officerPosition,
-        officer,
-        mentor,
-        skill,
-        mentorSkill,
-        department,
-        course,
-        courseTaken,
-        hourBlock,
-        schedule,
-        goLinks,
-        account,
-        session,
-        verificationToken,
-    ]
-    for (const item of list) {
-        await item
+    try {
+        await seedUser()
+        await seedQuote()
+        await seedOfficerPosition()
+        await seedOfficer()
+        await seedMentor()
+        await seedSkill()
+        await seedMentorSkill()
+        await seedDepartment()
+        await seedCourse()
+        await seedCourseTaken()
+        await seedHourBlock()
+        await seedSchedule()
+        await seedGoLinks()
+        await seedAccount()
+        await seedSession()
+        await seedVerificationToken()
+    }
+    catch (e) {
+        console.error(e)
     }
 }
 
