@@ -246,7 +246,7 @@ async function seedMentorSkill() {
 async function seedDepartment() {
     const department1 = await prisma.department.upsert({
         where: { id: 1 },
-        update: {},
+        update: { shortTitle: 'CS', },
         create: {
             id: 1,
             title: 'Computer Science',
@@ -255,7 +255,7 @@ async function seedDepartment() {
     })
     const department2 = await prisma.department.upsert({
         where: { id: 2 },
-        update: {},
+        update: { shortTitle: 'SWEN', },
         create: {
             id: 2,
             title: 'Software Engineering',
@@ -264,7 +264,7 @@ async function seedDepartment() {
     })
     const department3 = await prisma.department.upsert({
         where: { id: 3 },
-        update: {},
+        update: { shortTitle: 'IGM', },
         create: {
             id: 3,
             title: 'Interactive Games and Media',
