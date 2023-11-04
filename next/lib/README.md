@@ -13,7 +13,7 @@ lib/
 |-- mentor_api.ts (author: _______ | status: not_done)
 |-- skill_api.ts (author: _______ | status: not_done)
 |-- mentor_skill_api.ts (author: _______ | status: not_done)
-|-- department_api.ts (author: _______ | status: not_done)
+|-- department_api.ts (author: Abigail | status: not_done)
 |-- course_api.ts (author: _______ | status: not_done)
 |-- course_taken_api.ts (author: _______ | status: not_done)
 |-- hour_block_api.ts (author: _______ | status: not_done)
