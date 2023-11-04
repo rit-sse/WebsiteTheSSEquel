@@ -19,7 +19,32 @@ const goLinkData: { shortlink: string; url: string; description: string }[] = [
     {
         shortlink: "techprojects",
         url: "https://sse.rit.edu/go/techprojects",
-        description: "GitHub Projects board for Tech Committee projects and tasks"
+        description: "GitHub Projects board for Tech Committee projects and tasks",
+    },
+    {
+        shortlink: "projects",
+        url: "https://sse.rit.edu/go/projects",
+        description: "If you're interested in starting or working on a project, fill this out!",
+    },
+    {
+        shortlink: "outreach_committe",
+        url: "https://sse.rit.edu/go/outreach_committe",
+        description: "Sign up form for Outreach Committte",
+    },
+    {
+        shortlink: "talksideas",
+        url: "https://sse.rit.edu/go/talksideas",
+        description: "Document of all ideas for a talk",
+    },
+    {
+        shortlink: "talksideasform",
+        url: "https://sse.rit.edu/go/talksideasform",
+        description: "Form to give an idea for a talk",
+    },
+    {
+        shortlink: "microtalksrequest",
+        url: "https://sse.rit.edu/go/microtalksrequest",
+        description: "Form for requesting to do a micro talk",
     }
 ];
 
@@ -27,9 +52,7 @@ export default function GoLinks() {
     const goLinkList = goLinkData.map(data => (
         <GoLink
             key={data.shortlink}
-            shortlink={data.shortlink}
-            url={data.url}
-            description={data.description}
+            {...data}
         />
     ));
 
