@@ -37,6 +37,7 @@ model User {
   officers Officer[]
   account  Account[]
   session  Session[]
+  goLinks  GoLinks[]
 }
 
 model Quote {
@@ -65,13 +66,13 @@ model OfficerPosition {
   id Int @id @default(autoincrement())
 
   //Store position title as a String 
-  title String @db.VarChar(40)
+  title String @unique
 
   //States primary as a boolean
   is_primary Boolean @default(false)
 
   //Store email as a unique String
-  email String @unique @db.VarChar(40)
+  email String @unique
 
   //Relational fields
   officers Officer[]
@@ -88,7 +89,7 @@ model Officer {
   user_id Int
 
   //Store active status as a boolean
-  is_active Boolean
+  is_active Boolean @default(true)
 
   //Store startDate and endDate as a DateTime
   start_date DateTime
@@ -116,7 +117,6 @@ model Mentor {
   mentorSkill MentorSkill[]
   courseTaken CourseTaken[]
   schedule    Schedule[]
-  //Refrence field
   mentor      User          @relation(fields: [user_Id], references: [id])
 }
 
@@ -224,7 +224,7 @@ model GoLinks {
   url String
 
   //Description as a String
-  description String
+  description String?
 
   //createdAt stored as a DateTime default to the timestamp it was created at
   createdAt DateTime @default(now())
@@ -236,7 +236,10 @@ model GoLinks {
   isPublic Boolean @default(false)
 
   //author is stored as a String
-  author String
+  authorId Int
+
+  //author is a relational field that references the User model
+  author User @relation(fields: [authorId], references: [id])
 
   //isPinned is a boolean value to determine if a user is pinned or not
   isPinned Boolean @default(false)
@@ -292,6 +295,7 @@ model Session {
 }
 
 model VerificationToken {
+  id         Int    @id @default(autoincrement())
   //identifier is a string that is unique and is used to identify the token
   identifier String @unique
 
