@@ -33,7 +33,7 @@ const NavItem: React.FC<NavItemProps & OnClickProps> = ({
     );
 
     return (
-        <li>
+        <li className="list-none">
             <div
                 className={`relative inline-block justify-start items-center group p-3 rounded-md ${route ? "cursor-pointer" : ""
                     }`}
