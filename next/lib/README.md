@@ -8,8 +8,8 @@ Specifically, this directory will hold all API calls to the Prisma database.
 lib/
 |-- user_api.ts (author: Joe Baillie | status: not_done)
 |-- quote_api.ts (author: Sam Velasquez | status: not_done)
-|-- officer_position_api.ts (author: _______ | status: not_done)
-|-- officer_api.ts (author: _______ | status: not_done)
+|-- officer_position_api.ts (author: Anderson Cardenas| status: not_done)
+|-- officer_api.ts (author: Anderson Cardenas | status: not_done)
 |-- mentor_api.ts (author: _______ | status: not_done)
 |-- skill_api.ts (author: Garrett Tupper | status: not_done)
 |-- mentor_skill_api.ts (author: _______ | status: not_done)
