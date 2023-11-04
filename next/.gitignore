@@ -41,3 +41,6 @@ prisma/migrations
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# jetbrains
+.idea
