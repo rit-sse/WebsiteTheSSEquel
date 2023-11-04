@@ -337,20 +337,270 @@ async function seedCourseTaken() {
     console.log({ courseTaken1, courseTaken2, courseTaken3 })
 }
 
+async function seedHourBlock() {
+    const hourBlock1 = await prisma.hourBlock.upsert({
+        where: { id: 1 },
+        update: {},
+        create: {
+            id: 1,
+            weekday: 'Monday',
+            startTime: new Date('2023-11-1 12:00:00'),
+        },
+    })
+    const hourBlock2 = await prisma.hourBlock.upsert({
+        where: { id: 2 },
+        update: {},
+        create: {
+            id: 2,
+            weekday: 'Tuesday',
+            startTime: new Date('2023-11-2 12:00:00'),
+        },
+    })
+    const hourBlock3 = await prisma.hourBlock.upsert({
+        where: { id: 3 },
+        update: {},
+        create: {
+            id: 3,
+            weekday: 'Wednesday',
+            startTime: new Date('2023-11-3 12:00:00'),
+        },
+    })
+    console.log({ hourBlock1, hourBlock2, hourBlock3 })
+}
+
+async function seedSchedule() {
+    const schedule1 = await prisma.schedule.upsert({
+        where: { id: 1 },
+        update: {},
+        create: {
+            id: 1,
+            mentorId: 1,
+            hourBlockId: 1,
+        },
+    })
+    const schedule2 = await prisma.schedule.upsert({
+        where: { id: 2 },
+        update: {},
+        create: {
+            id: 2,
+            mentorId: 2,
+            hourBlockId: 2,
+        },
+    })
+    const schedule3 = await prisma.schedule.upsert({
+        where: { id: 3 },
+        update: {},
+        create: {
+            id: 3,
+            mentorId: 3,
+            hourBlockId: 3,
+        },
+    })
+    console.log({ schedule1, schedule2, schedule3 })
+}
+
+async function seedGoLinks() {
+    const goLink1 = await prisma.goLinks.upsert({
+        where: { id: 1 },
+        update: {},
+        create: {
+            id: 1,
+            golink: 'sse',
+            url: 'sse.rit.edu',
+            description: 'SSE Website',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            isPublic: true,
+            authorId: 1,
+            isPinned: true,
+        },
+    })
+    const goLink2 = await prisma.goLinks.upsert({
+        where: { id: 2 },
+        update: {},
+        create: {
+            id: 2,
+            golink: 'google',
+            url: 'google.com',
+            description: 'An underground and unknown search engine',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            isPublic: true,
+            authorId: 2,
+            isPinned: true,
+        },
+    })
+    const goLink3 = await prisma.goLinks.upsert({
+        where: { id: 3 },
+        update: {},
+        create: {
+            id: 3,
+            golink: 'youtube',
+            url: 'youtube.com',
+            description: 'A small video sharing website',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            isPublic: true,
+            authorId: 3,
+            isPinned: true,
+        },
+    })
+    console.log({ goLink1, goLink2, goLink3 })
+}
+
+async function seedAccount() {
+    const account1 = await prisma.account.upsert({
+        where: { id: 1 },
+        update: {},
+        create: {
+            id: 1,
+            userId: 1,
+            type: 'google',
+            provider: 'google.com',
+            providerAccountId: '123',
+            refreshToken: '123',
+            accessToken: '123',
+            accessTokenExpires: new Date(),
+            tokenType: '123',
+            scope: '123',
+            idToken: '123',
+            sessionState: '123',
+        }
+    })
+    const account2 = await prisma.account.upsert({
+        where: { id: 2 },
+        update: {},
+        create: {
+            id: 2,
+            userId: 2,
+            type: 'google',
+            provider: 'google.com',
+            providerAccountId: '123',
+            refreshToken: '123',
+            accessToken: '123',
+            accessTokenExpires: new Date(),
+            tokenType: '123',
+            scope: '123',
+            idToken: '123',
+            sessionState: '123',
+        }
+    })
+    const account3 = await prisma.account.upsert({
+        where: { id: 3 },
+        update: {},
+        create: {
+            id: 3,
+            userId: 3,
+            type: 'google',
+            provider: 'google.com',
+            providerAccountId: '123',
+            refreshToken: '123',
+            accessToken: '123',
+            accessTokenExpires: new Date(),
+            tokenType: '123',
+            scope: '123',
+            idToken: '123',
+            sessionState: '123',
+        }
+    })
+    console.log({ account1, account2, account3 })
+}
+
+async function seedSession() {
+    const session1 = await prisma.session.upsert({
+        where: { id: 1 },
+        update: {},
+        create: {
+            id: 1,
+            expires: new Date(),
+            sessionToken: '123',
+            userId: 1,
+        }
+    })
+    const session2 = await prisma.session.upsert({
+        where: { id: 2 },
+        update: {},
+        create: {
+            id: 2,
+            expires: new Date(),
+            sessionToken: '124',
+            userId: 2,
+        }
+    })
+
+    const session3 = await prisma.session.upsert({
+        where: { id: 3 },
+        update: {},
+        create: {
+            id: 3,
+            expires: new Date(),
+            sessionToken: '125',
+            userId: 3,
+        }
+    })
+    console.log({ session1, session2, session3 })
+}
+
+async function seedVerificationToken() {
+    const verificationToken1 = await prisma.verificationToken.upsert({
+        where: { id: 1 },
+        update: {},
+        create: {
+            id: 1,
+            identifier: 'sadsad',
+            token: '123',
+            expires: new Date(),
+        }
+    })
+    const verificationToken2 = await prisma.verificationToken.upsert({
+        where: { id: 2 },
+        update: {},
+        create: {
+            id: 2,
+            identifier: 'qwewqr',
+            token: '124',
+            expires: new Date(),
+        }
+    })
+    const verificationToken3 = await prisma.verificationToken.upsert({
+        where: { id: 3 },
+        update: {},
+        create: {
+            id: 3,
+            identifier: 'wsx',
+            token: '125',
+            expires: new Date(),
+        }
+    })
+    console.log({ verificationToken1, verificationToken2, verificationToken3 })
+}
+
 
 async function main() {
-    seedUser()
-    seedOfficerPosition()
-    seedOfficer()
-    seedMentor()
-    seedSkill()
-    seedMentorSkill()
-    seedDepartment()
-    seedCourse()
-    seedCourseTaken()
-    seedQuote()
-
+    const list = [seedUser(),
+    seedQuote(),
+    seedOfficerPosition(),
+    seedOfficer(),
+    seedMentor(),
+    seedSkill(),
+    seedMentorSkill(),
+    seedDepartment(),
+    seedCourse(),
+    seedCourseTaken(),
+    seedHourBlock(),
+    seedSchedule(),
+    seedGoLinks(),
+    seedAccount(),
+    seedSession(),
+    seedVerificationToken()]
+    for (const i of list) {
+        await i
+    }
 }
+
+
+
+
 main()
     .then(async () => {
         await prisma.$disconnect()

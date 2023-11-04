@@ -37,6 +37,7 @@ model User {
   officers Officer[]
   account  Account[]
   session  Session[]
+  goLinks  GoLinks[]
 }
 
 model Quote {
@@ -223,7 +224,7 @@ model GoLinks {
   url String
 
   //Description as a String
-  description String
+  description String?
 
   //createdAt stored as a DateTime default to the timestamp it was created at
   createdAt DateTime @default(now())
@@ -235,7 +236,10 @@ model GoLinks {
   isPublic Boolean @default(false)
 
   //author is stored as a String
-  author String
+  authorId Int
+
+  //author is a relational field that references the User model
+  author User @relation(fields: [authorId], references: [id])
 
   //isPinned is a boolean value to determine if a user is pinned or not
   isPinned Boolean @default(false)
@@ -291,6 +295,7 @@ model Session {
 }
 
 model VerificationToken {
+  id         Int    @id @default(autoincrement())
   //identifier is a string that is unique and is used to identify the token
   identifier String @unique
 
