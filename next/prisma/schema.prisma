@@ -37,7 +37,6 @@ model User {
   officers Officer[]
   account  Account[]
   session  Session[]
-  goLinks  GoLinks[]
 }
 
 model Quote {
@@ -237,12 +236,6 @@ model GoLinks {
 
   //Determines if a link is public or not
   isPublic Boolean @default(false)
-
-  //author is stored as a String
-  authorId Int
-
-  //author is a relational field that references the User model
-  author User @relation(fields: [authorId], references: [id])
 
   //isPinned is a boolean value to determine if a user is pinned or not
   isPinned Boolean @default(false)
