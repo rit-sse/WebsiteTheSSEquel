@@ -1,30 +1,33 @@
 export default function GoLink({
-    shortlink,
+    goUrl,
     url,
     description,
+    canEdit = false,
 } : {
-    shortlink: string,
+    goUrl: string,
     url: string,
     description: string,
+    canEdit: boolean,
 }) {
   return (
-    <div className="
-        flex flex-col
-        p-4
-        bg-base-100
-        rounded-md
-        shadow-md
-        hover:shadow-lg
-        transition-shadow
-        border-2
-        border-base-content
+    <a
+        href={url}
+        target="_blank"
+        className="
+            flex flex-col
+            p-4
+            bg-base-100
+            rounded-md
+            shadow-md
+            hover:shadow-lg
+            transition-shadow
+            border-2
+            border-base-content
     ">
-        <p>Shortlink: <a
-            href={url}
-            target="_blank"
-            className="text-primary hover:underline"
-        >{shortlink}</a></p>
-        <p>Description: {description}</p>
-    </div>
+        <p
+            className="font-bold text-2xl"
+        >{goUrl}</p>
+        <p className="text-base">{description}</p>
+    </a>
   );
 }
