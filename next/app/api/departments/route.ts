@@ -2,9 +2,14 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+/**
+ * HTTP GET request to /api/departments/
+ * @returns list of department objects
+ */
 export async function GET() {
   const allDepts = await prisma.department.findMany({
     select: {
+      id: true,
       title: true,
       shortTitle: true,
       course: {
@@ -15,41 +20,76 @@ export async function GET() {
       },
     },
   });
-  console.log("All Departments:", allDepts);
   return Response.json(allDepts);
 }
 
+/**
+ * HTTP POST request to /api/departments/
+ * @param request { title: string, shortTitle: string }
+ * @return department object that was created
+ */
 export async function POST(request: Request) {
   const body = await request.json();
-  // TODO: Validate the titles
+
+  if (!("title" in body && "shortTitle" in body)) {
+    return new Response(
+      'Both "title" and "shortTitle" must be included in request body',
+      { status: 400 }
+    );
+  }
   const title = body.title;
   const shortTitle = body.shortTitle;
-  await prisma.department.create({
+
+  const dept = await prisma.department.create({
     data: {
       title,
       shortTitle,
     },
   });
-  return new Response(`Created new department: ${title}`, { status: 200 });
+  return Response.json(dept);
 }
 
+/**
+ * HTTP DELETE request to /api/departments
+ * @param request { id: number }
+ * @returns department object previously at { id }
+ */
 export async function DELETE(request: Request) {
   const body = await request.json();
+
+  if (!("id" in body)) {
+    return new Response("ID must be included", { status: 400 });
+  }
   const id = body.id;
-  // TODO: Validate the id
-  await prisma.department.delete({ where: { id } });
-  return new Response("Deleted department", { status: 200 });
+
+  const dept = await prisma.department.delete({ where: { id } });
+  return Response.json(dept);
 }
 
+/**
+ * HTTP PUT request to /api/departments
+ * @param request { id: number, title?: string, shortTitle?: string }
+ * @returns updated department object
+ */
 export async function PUT(request: Request) {
   const body = await request.json();
-  // TODO: Validate input
+
+  if (!("id" in body)) {
+    return new Response("ID must be included", { status: 400 });
+  }
   const id = body.id;
-  const title = body.title;
-  const shortTitle = body.shortTitle;
-  await prisma.department.update({
+
+  const data: { title?: string; shortTitle?: string } = {};
+  if ("title" in body) {
+    data.title = body.title;
+  }
+  if ("shortTitle" in body) {
+    data.shortTitle = body.shortTitle;
+  }
+
+  const dept = await prisma.department.update({
     where: { id },
-    data: { title, shortTitle },
+    data,
   });
-  return new Response("Updated department", { status: 200 });
+  return Response.json(dept);
 }
