@@ -1,7 +1,5 @@
-import Image from 'next/image'
 import ZCardContainer from '@/components/ZCardContainer';
 import CommitteeSlotData from './CommitteeSlotData';
-import { ZCardContent } from '@/types/ZCardContent';
 import { CommitteeSlot } from './CommitteeSlot';
 
 export default function Committees() {
