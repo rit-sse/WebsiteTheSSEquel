@@ -1,9 +1,7 @@
 // This is the file that renders the /about route of the website.
 import { Metadata } from "next";
-import Image from "next/image";
 import slotData from "./AboutUsSlotContent";
 import ZCardContainer from "@/components/ZCardContainer";
-import AboutUsSlotContent from "./AboutUsSlotContent";
 import {AboutUsSlot} from "@/app/about/AboutUsSlot";
 
 export const metadata: Metadata = {
