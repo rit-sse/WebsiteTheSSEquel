@@ -1,12 +1,8 @@
-import { Children } from 'react';
+import React, { Children, ReactNode } from 'react';
 
-/*  An element used with text next to an image to alternate which side the image is on
-    Delcarations:
-      image(string left or right): declares which side the image will be in relation to the text
-*/
 const ZCard: React.FC<{
-  imageSide: 'left' | 'right';
-  children: React.ReactNode;
+  imageSide: 'left' | 'right',
+  children: ReactNode
 }> = ({ imageSide, children }) => {
   const [left, right, ...rest] = Children.toArray(children);
 
