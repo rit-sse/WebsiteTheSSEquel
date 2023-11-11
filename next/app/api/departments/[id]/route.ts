@@ -12,21 +12,28 @@ export async function GET(
   request: Request,
   { params }: { params: { id: string } }
 ) {
-  const id = parseInt(params.id);
-  const dept = await prisma.department.findUnique({
-    where: {
-      id,
-    },
-    select: {
-      title: true,
-      shortTitle: true,
-      course: {
-        select: {
-          title: true,
-          code: true,
+  try {
+    const id = parseInt(params.id);
+    const dept = await prisma.department.findUnique({
+      where: {
+        id,
+      },
+      select: {
+        title: true,
+        shortTitle: true,
+        course: {
+          select: {
+            title: true,
+            code: true,
+          },
         },
       },
-    },
-  });
-  return Response.json(dept);
+    });
+    if (dept == null) {
+      return new Response(`Didn't find Department ID ${id}`, { status: 404 });
+    }
+    return Response.json(dept);
+  } catch {
+    return new Response("Invalid Department ID", { status: 400 });
+  }
 }

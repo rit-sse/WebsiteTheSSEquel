@@ -63,6 +63,9 @@ export async function DELETE(request: Request) {
   const id = body.id;
 
   const dept = await prisma.department.delete({ where: { id } });
+  if (dept == null) {
+    return new Response(`Couldn't find department ID ${id}`, { status: 404 });
+  }
   return Response.json(dept);
 }
 
@@ -91,5 +94,8 @@ export async function PUT(request: Request) {
     where: { id },
     data,
   });
+  if (dept == null) {
+    return new Response(`Couldn't find department ID ${id}`, { status: 404 });
+  }
   return Response.json(dept);
 }
