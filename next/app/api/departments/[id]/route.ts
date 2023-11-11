@@ -12,6 +12,7 @@ export async function GET(
   request: Request,
   { params }: { params: { id: string } }
 ) {
+  // make sure the provided ID is a valid integer
   try {
     const id = parseInt(params.id);
     const dept = await prisma.department.findUnique({
@@ -29,6 +30,7 @@ export async function GET(
         },
       },
     });
+    // make sure the selected department exists
     if (dept == null) {
       return new Response(`Didn't find Department ID ${id}`, { status: 404 });
     }
