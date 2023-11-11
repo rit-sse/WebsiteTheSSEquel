@@ -3,21 +3,21 @@ import { FC } from "react";
 
 export class CommitteeSlot implements ZCardContent {
     imageSrc: string;
-    title: string;
-    body: string;
+    name: string;
+    description: string;
 
     constructor(
-        private imageSrcString: string,
-        private titleName: string,
-        private bodyContent: string
+        private constructorImageSrc: string,
+        private constructorName: string,
+        private constructorDescription: string
     ) {
-        this.imageSrc = imageSrcString;
-        this.title = titleName;
-        this.body = bodyContent;
+        this.imageSrc = constructorImageSrc;
+        this.name = constructorName;
+        this.description = constructorDescription;
     }
 
     getAlt(): string {
-        return "Image of" + this.title;
+        return "Image of " + this.name;
     }
 
     toContent(): FC<{}> {
@@ -29,11 +29,11 @@ export class CommitteeSlot implements ZCardContent {
             return (
             <div className={generalClasses}>
                 <h2 className={nameClasses}>
-                    {this.title}
+                    {this.name}
                 </h2>
         
                 <p className={descriptionClasses}>
-                    {this.body}
+                    {this.description}
                 </p>
             </div>
             );
@@ -43,5 +43,4 @@ export class CommitteeSlot implements ZCardContent {
     getImageSrc(): string {
         return this.imageSrc;
     }
-
 }
