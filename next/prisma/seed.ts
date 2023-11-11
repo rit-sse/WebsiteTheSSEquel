@@ -407,7 +407,6 @@ async function seedGoLinks() {
         where: { id: 1 },
         update: {},
         create: {
-            id: 1,
             golink: 'sse',
             url: 'sse.rit.edu',
             description: 'SSE Website',
