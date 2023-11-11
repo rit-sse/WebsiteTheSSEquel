@@ -1,23 +1,10 @@
 import Image from 'next/image'
-import ZCard from './ZCard'
-import CommitteeSlot from './CommitteeSlot';
+import ZCardContainer from '@/components/ZCardContainer';
+import CommitteeSlotData from './CommitteeSlotData';
+import { ZCardContent } from '@/types/ZCardContent';
+import { CommitteeSlot } from './CommitteeSlot';
 
 export default function Committees() {
-  // The default height and width for the placeholder dummy photo
-  const placeholder_w = 540;
-  const placeholder_h = 400;
-
-  // the image being used in all ZCards currently
-  const placeholder_img = (
-    <Image
-      src={`https://dummyimage.com/${placeholder_w}x${placeholder_h}`}
-      alt="Placeholder"
-      width={placeholder_w}
-      height={placeholder_h}
-      className="w-full h-auto rounded-md"
-    />
-  );
-
   return (
     <>
       <section>
@@ -41,98 +28,13 @@ export default function Committees() {
                 </div>
             </div>
 
-            <div id='Committee Slots' className='pt-4'>
-              <ZCard imageSide='left'>
-                {placeholder_img}
-                <CommitteeSlot
-                  name='Events'
-                  description='This is a description of the committee. Lorem ipsum dolor sit amet,
-                                consectetur adipiscing elit. Integer ullamcorper dui eu ex laoreet,
-                                sagittis aliquet mauris ornare. Nullam urna magna, hendrerit nec tortor
-                                porttitor, dignissim vulputate neque. Etiam accumsan ut leo sit amet lacinia.
-                                Nam euismod risus nec nunc commodo, quis laoreet ligula mollis.
-                                Mauris sodales ac neque quis blandit. Aenean vel lobortis eros.'
-                  />
-              </ZCard>
-
-              <ZCard imageSide='right'>
-                <CommitteeSlot
-                  name='Talks'
-                  description='This is a description of the committee. Lorem ipsum dolor sit amet,
-                                consectetur adipiscing elit. Integer ullamcorper dui eu ex laoreet,
-                                sagittis aliquet mauris ornare. Nullam urna magna, hendrerit nec tortor
-                                porttitor, dignissim vulputate neque. Etiam accumsan ut leo sit amet lacinia.
-                                Nam euismod risus nec nunc commodo, quis laoreet ligula mollis.
-                                Mauris sodales ac neque quis blandit. Aenean vel lobortis eros.'
-                  />
-                {placeholder_img}
-              </ZCard>
-
-              <ZCard imageSide='left'>
-                {placeholder_img}
-                <CommitteeSlot
-                  name='Public Relations'
-                  description='This is a description of the committee. Lorem ipsum dolor sit amet,
-                                consectetur adipiscing elit. Integer ullamcorper dui eu ex laoreet,
-                                sagittis aliquet mauris ornare. Nullam urna magna, hendrerit nec tortor
-                                porttitor, dignissim vulputate neque. Etiam accumsan ut leo sit amet lacinia.
-                                Nam euismod risus nec nunc commodo, quis laoreet ligula mollis.
-                                Mauris sodales ac neque quis blandit. Aenean vel lobortis eros.'
-                  />
-              </ZCard>
-
-              <ZCard imageSide='right'>
-                <CommitteeSlot
-                  name='Mentoring'
-                  description='This is a description of the committee. Lorem ipsum dolor sit amet,
-                                consectetur adipiscing elit. Integer ullamcorper dui eu ex laoreet,
-                                sagittis aliquet mauris ornare. Nullam urna magna, hendrerit nec tortor
-                                porttitor, dignissim vulputate neque. Etiam accumsan ut leo sit amet lacinia.
-                                Nam euismod risus nec nunc commodo, quis laoreet ligula mollis.
-                                Mauris sodales ac neque quis blandit. Aenean vel lobortis eros.'
-                  />
-                  {placeholder_img}
-              </ZCard>
-
-              <ZCard imageSide='left'>
-                {placeholder_img}
-                <CommitteeSlot
-                  name='Marketing'
-                  description='This is a description of the committee. Lorem ipsum dolor sit amet,
-                                consectetur adipiscing elit. Integer ullamcorper dui eu ex laoreet,
-                                sagittis aliquet mauris ornare. Nullam urna magna, hendrerit nec tortor
-                                porttitor, dignissim vulputate neque. Etiam accumsan ut leo sit amet lacinia.
-                                Nam euismod risus nec nunc commodo, quis laoreet ligula mollis.
-                                Mauris sodales ac neque quis blandit. Aenean vel lobortis eros.'
-                  />
-              </ZCard>
-
-              <ZCard imageSide='right'>
-                <CommitteeSlot
-                  name='Student Outreach'
-                  description='This is a description of the committee. Lorem ipsum dolor sit amet,
-                                consectetur adipiscing elit. Integer ullamcorper dui eu ex laoreet,
-                                sagittis aliquet mauris ornare. Nullam urna magna, hendrerit nec tortor
-                                porttitor, dignissim vulputate neque. Etiam accumsan ut leo sit amet lacinia.
-                                Nam euismod risus nec nunc commodo, quis laoreet ligula mollis.
-                                Mauris sodales ac neque quis blandit. Aenean vel lobortis eros.'
-                  />
-                  {placeholder_img}
-              </ZCard>
-
-              <ZCard imageSide='left'>
-                {placeholder_img}
-                <CommitteeSlot
-                  name='Tech Committee'
-                  description='This is a description of the committee. Lorem ipsum dolor sit amet,
-                                consectetur adipiscing elit. Integer ullamcorper dui eu ex laoreet,
-                                sagittis aliquet mauris ornare. Nullam urna magna, hendrerit nec tortor
-                                porttitor, dignissim vulputate neque. Etiam accumsan ut leo sit amet lacinia.
-                                Nam euismod risus nec nunc commodo, quis laoreet ligula mollis.
-                                Mauris sodales ac neque quis blandit. Aenean vel lobortis eros.'
-                  />
-              </ZCard>
-            </div>
+            <ZCardContainer contentSlots={
+              CommitteeSlotData.map(
+                data => new CommitteeSlot(
+                  data.imageSrc, data.name, data.description
+                )
+              )
+            }/>
         </div>
       </section>
     </>
