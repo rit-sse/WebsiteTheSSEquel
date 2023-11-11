@@ -4,13 +4,16 @@ const ZCard: React.FC<{
   imageSide: 'left' | 'right',
   children: ReactNode
 }> = ({ imageSide, children }) => {
-  const [left, right, ...rest] = Children.toArray(children);
+  let [left, right, ...rest] = Children.toArray(children);
 
   if (rest.length > 0) throw new Error("ZCard can only have two children");
 
   const classLeft = imageSide === 'left' ? "w-full md:w-1/3" : "w-full md:w-2/3";
   const classRight = imageSide === 'right' ? "w-full md:w-1/3" : "w-full md:w-2/3";
   const flexDirection = imageSide === 'left' ? 'flex-col md:flex-row' : 'flex-col-reverse md:flex-row';
+
+  if (imageSide == 'right')
+    [left, right] = [right, left]
 
   return (
     <div className={`flex ${flexDirection} items-center gap-24 gap-y-0`}>
