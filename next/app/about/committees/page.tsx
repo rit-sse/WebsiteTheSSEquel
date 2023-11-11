@@ -1,6 +1,6 @@
 import Image from 'next/image'
-import ZCard from './ZCard'
-import CommitteeSlot from './CommitteeSlot';
+import ZCard from '../../../components/ZCard'
+import CommitteeSlot from './OLDCommitteeSlot';
 
 export default function Committees() {
   // The default height and width for the placeholder dummy photo
