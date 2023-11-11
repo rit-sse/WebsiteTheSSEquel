@@ -29,6 +29,9 @@ export async function GET(
         },
       },
     });
+    if (dept == null) {
+      return new Response(`Didn't find Department ID ${id}`, { status: 404 });
+    }
     return Response.json(dept);
   } catch {
     return new Response("Invalid Department ID", { status: 400 });
