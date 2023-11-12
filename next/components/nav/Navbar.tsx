@@ -6,6 +6,7 @@ import NavItem, { NavItemProps } from "./NavItem";
 import MobileNavDropdown from "./MobileNavDropdown";
 import SSELogoFull from "../common/SSELogoFull";
 import SSELogoSmall from "../common/SSELogoSmall";
+import AuthButton from "./AuthButton";
 
 
 const navItems: NavItemProps[] = [
@@ -111,18 +112,21 @@ const Navbar: React.FC = () => {
                     className="flex flex-row items-center justify-center group focus:outline-offset-8 rounded-md  "
                 >
                     {/* Responsively display either the small or full logo depending on screen width */}
-                    <div className="lg:hidden">
+                    <div className="xl:hidden">
                         <SSELogoSmall />
                     </div>
-                    <div className="hidden lg:block lg:visible">
+                    <div className="hidden xl:block xl:visible">
                         <SSELogoFull />
                     </div>
                 </Link>
-                <div className="hidden md:block md:visible">
+                <div className="hidden md:visible md:inline-flex">
                     <ul className="inline-flex flex-row flex-nowrap justify-between text-center text-lg">
                         {navItems.map((navItem, index) => (
                             <NavItem key={index} {...navItem} onClickFunc={blurOnClick} />
                         ))}
+                        <li className="flex flex-row justify-center items-center">
+                            <AuthButton />
+                        </li>
                     </ul>
                 </div>
                 <div className="dropdown dropdown-end md:hidden">
