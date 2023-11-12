@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import NavItem, { NavItemProps } from "./NavItem";
 import MobileNavDropdown from "./MobileNavDropdown";
 import SSELogoFull from "../common/SSELogoFull";
@@ -22,11 +21,11 @@ const navItems: NavItemProps[] = [
             },
             {
                 title: "Get Involved",
-                route: "#",
+                route: "/about/get-involved",
             },
             {
                 title: "Leadership",
-                route: "#",
+                route: "/about/leadership",
             },
             {
                 title: "Committees",
@@ -34,11 +33,11 @@ const navItems: NavItemProps[] = [
             },
             {
                 title: "Constitution",
-                route: "#",
+                route: "/about/constitution",
             },
             {
                 title: "Primary Officer's Policy",
-                route: "#",
+                route: "/about/primary-officers-policy",
             }
         ],
     },
