@@ -39,7 +39,26 @@ The above is just a placeholder, you'll need to fill in each entry with the appr
 
 1. Go to the [Google Cloud Console](https://console.cloud.google.com/) and create a new project. Name the project something like `ssequel-dev`.
 
-2. Click on the `APIs & Services` dropdown in the top left corner and select `OAuth consent screen`. Select `External` and click `Create`.
+2. Navigate to `APIs & Services` and go to the [Credentials tab](https://console.cloud.google.com/apis/credentials). Click on `Create Credentials` and select `OAuth client ID`.
 
-3. Fill in the `Application name` field with something like `SSEquel Dev`. Fill in the `Authorized domains` field with `localhost`. Click `Save and continue`.
+3. On the next screen, select `Configure consent screen`.
 
+4. Select `External` and click `Create`.
+
+5. Fill in the `Application name` field with something like `SSEquel Dev`, and your email for the required `User support email` and `Developer contact information` fields. You can leave the other fields blank. Click `Save and Continue`.
+
+6. On the Scopes page, click `Save and Continue`.
+
+7. On the Test users page, click `Save and Continue`.
+
+8. On the Summary page, click `Back to Dashboard`.
+
+9. Now that you've configured the consent screen, you can create the OAuth client ID. Back on the [Credentials tab](https://console.cloud.google.com/apis/credentials) page, click on `Create Credentials` and select `OAuth client ID`.
+
+10. On the next screen, select `Web application`. Name the OAuth client ID something like `SSEquel Dev`. Under `Authorized JavaScript origins`, add `http://localhost:3000`. Under `Authorized redirect URIs`, add `http://localhost:3000/api/auth/callback/google`. Click `Create`. You should be presented with a modal titled `OAuth client created`.
+
+11. Congratulations, you've created a Google OAuth client ID! You can now fill in the `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` entries in the `.env` file. 
+
+The `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` can be found again later by going to the [Credentials tab](https://console.cloud.google.com/apis/credentials) and clicking on the client ID under `OAuth 2.0 Client IDs`.
+
+That's it! You should now be able to run `npm run dev` and view the website at `localhost:3000` with authentication and access to your local database instance. Try logging in with your RIT email.
