@@ -20,7 +20,6 @@ export const authOptions: AuthOptions = {
     ],
     callbacks: {
         session: async ({ session, user }) => {
-            console.log("session callback", session, user)
             // fetch user roles from database
             // session.roles = ...
             return Promise.resolve(session)
