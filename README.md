@@ -7,18 +7,16 @@ This repo contains the source code for the Society of Software Engineers' websit
 - `next` directory holds the Next.js application bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 - `documentation` directory contains project documentation including wireframes, domain models, ERDs, etc.
 
-## Getting Started
+## Environment Setup
+Follow our [environment setup guide](documentation/EnvironmentSetup.md) to get started with the project.
 
-To get started with the project, follow the instructions below:
+## Required VSCode Extensions
+- Tailwind CSS IntelliSense: bradlc.vscode-tailwindcss (Tailwind CSS IntelliSense)
+- PostCSS Language Support: csstools.postcss (required for Tailwind CSS IntelliSense)
+- Prisma: Prisma.prisma (Prisma file syntax highlighting, formatting, completions, and linting)
 
-1. Clone the repository to your local machine using `git clone https://github.com/rit-sse/WebsiteTheSSEquel.git`
-2. Run `npm i` in the next directory to install the dependencies.
-3. Run the app using `npm run dev` in the `next` directory.
-
-## Recommended Extensions for VSCode
-- Tailwind CSS IntelliSense: bradlc.vscode-tailwindcss
-- PostCSS Language Support: csstools.postcss
-- GitLens: eamodio.gitlens
+Recommended VSCode Extensions:
+- GitLens: eamodio.gitlens (GOATed extension for git)
 
 ## Contributing
 
