@@ -2,6 +2,104 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  h1 {
+    @apply bg-gradient-to-br;
+    @apply from-primary;
+    @apply to-primary;
+    @apply bg-clip-text;
+    @apply text-4xl/[3rem];
+    @apply font-extrabold;
+    @apply text-transparent;
+    @apply sm:text-5xl/[4rem];
+    @apply text-center;
+  }
+
+  h2 {
+    @apply font-bold;
+    @apply text-left;
+    @apply text-primary;
+    @apply sm:text-3xl/[4rem];
+  }
+
+  h3 {
+    @apply text-secondary;
+    @apply font-semibold;
+    @apply text-left;
+    @apply sm:text-2xl/[3rem];
+  }
+
+  h4 {
+    @apply text-accent;
+    @apply font-semibold;
+    @apply text-left;
+    @apply sm:text-2xl/[3rem];
+  }
+
+  h5 {
+    @apply text-base-content;
+    @apply font-semibold;
+    @apply text-left;
+    @apply sm:text-xl/[3rem];
+  }
+
+  p {
+    @apply text-base-content;
+    @apply text-left;
+    @apply sm:text-xl/relaxed;
+
+    // // apply a bottom margin if the next element is a heading
+    // &+h1,
+    // &+h2,
+    // &+h3,
+    // &+h4,
+    // &+h5 {
+    //   @apply mt-4;
+    // }
+  }
+
+  li {
+    @apply ml-5;
+    @apply list-disc;
+    @apply text-base-content;
+    @apply sm:text-xl/relaxed;
+
+    // apply a if the next element is a heading
+    &+h1,
+    &+h2,
+    &+h3,
+    &+h4,
+    &+h5 {
+      @apply mt-10;
+    }
+  }
+
+  // table formatting
+  table {
+    @apply w-full;
+    @apply whitespace-nowrap;
+    @apply divide-y divide-base-content;
+    @apply my-4;
+  }
+
+  th {
+    @apply px-6 py-3 text-left text-xs font-medium uppercase tracking-wider;
+  }
+
+  td {
+    @apply px-6 py-4 whitespace-nowrap;
+  }
+
+  tr {
+    @apply bg-base-100;
+  }
+
+  tbody tr:nth-child(odd) {
+    @apply bg-base-200;
+  }
+
+}
+
 ::selection {
   background-color: theme('colors.primary');
   color: theme('colors.base-100');
