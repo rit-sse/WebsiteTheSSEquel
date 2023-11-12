@@ -22,42 +22,94 @@
     @apply text-base-content;
     @apply sm:text-3xl/[4rem];
     @apply mt-2;
-    }
+  }
 
   h3 {
     @apply text-base-content;
     @apply font-semibold;
     @apply text-left;
     @apply sm:text-2xl/[3rem];
-    }
+  }
 
   h4 {
     @apply text-base-content;
     @apply font-semibold;
     @apply text-left;
     @apply sm:text-2xl/[3rem];
-    }
+  }
 
   h5 {
     @apply text-base-content;
     @apply font-semibold;
     @apply text-left;
     @apply sm:text-xl/[3rem];
-    }
+  }
 
   p {
     @apply text-base-content;
     @apply text-left;
     //@apply max-w-2xl;
     @apply sm:text-xl/relaxed;
+
+    // apply a bottom margin if the next element is a heading
+    &+h2 {
+      @apply mt-6;
+    }
+
+    &+h3 {
+      @apply mt-3;
+    }
+
+    &+h4,
+    &+h5 {
+      @apply mt-2;
+    }
   }
 
-  li {
-    @apply ml-5;
+  ul {
     @apply list-disc;
     @apply text-base-content;
     @apply sm:text-xl/relaxed;
+    @apply ml-12;
+
+    // apply a bottom margin if the next element is a heading
+    &+h2 {
+      @apply mt-6;
     }
+
+    &+h3 {
+      @apply mt-3;
+    }
+
+    &+h4,
+    &+h5 {
+      @apply mt-2;
+    }
+  }
+
+  // table formatting
+  table {
+    @apply w-full;
+    @apply whitespace-nowrap;
+    @apply divide-y divide-base-content;
+    @apply my-4;
+  }
+
+  th {
+    @apply px-6 py-3 text-left text-xs font-medium uppercase tracking-wider;
+  }
+
+  td {
+    @apply px-6 py-4 whitespace-nowrap;
+  }
+
+  tr {
+    @apply bg-base-100;
+  }
+
+  tbody tr:nth-child(odd) {
+    @apply bg-base-200;
+  }
 
 }
 
