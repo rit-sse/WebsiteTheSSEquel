@@ -48,29 +48,60 @@
     @apply text-left;
     @apply sm:text-xl/relaxed;
 
-    // // apply a bottom margin if the next element is a heading
-    // &+h1,
-    // &+h2,
-    // &+h3,
-    // &+h4,
-    // &+h5 {
-    //   @apply mt-4;
-    // }
+    // apply a bottom margin if the next element is a heading
+    &+h2 {
+      @apply mt-6;
+    }
+
+    &+h3 {
+      @apply mt-3;
+    }
+
+    &+h4,
+    &+h5 {
+      @apply mt-2;
+    }
   }
 
-  li {
-    @apply ml-5;
+  ul {
     @apply list-disc;
     @apply text-base-content;
     @apply sm:text-xl/relaxed;
+    @apply ml-12;
 
-    // apply a if the next element is a heading
-    &+h1,
-    &+h2,
-    &+h3,
+    // apply a bottom margin if the next element is a heading
+    &+h2 {
+      @apply mt-6;
+    }
+
+    &+h3 {
+      @apply mt-3;
+    }
+
     &+h4,
     &+h5 {
-      @apply mt-10;
+      @apply mt-2;
+    }
+  }
+
+  ol {
+    @apply list-decimal;
+    @apply text-base-content;
+    @apply sm:text-xl/relaxed;
+    @apply ml-12;
+
+    // apply a bottom margin if the next element is a heading
+    &+h2 {
+      @apply mt-6;
+    }
+
+    &+h3 {
+      @apply mt-3;
+    }
+
+    &+h4,
+    &+h5 {
+      @apply mt-2;
     }
   }
 
