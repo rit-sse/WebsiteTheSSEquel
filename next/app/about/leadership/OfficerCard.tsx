@@ -6,8 +6,6 @@ interface OfficerCardProps {
 }
 
 export default function OfficerCard({ teamMember }: OfficerCardProps) {
-  let iconColor: string = "";
-
   return (
     <div className="mt-4">
       <div className="w-24 h-24 mx-auto">
@@ -19,13 +17,13 @@ export default function OfficerCard({ teamMember }: OfficerCardProps) {
         <p className="mt-2 px-2 text-center">{teamMember.desc}</p>
         <div className="mt-4 flex gap-4">
           <a href={teamMember.linkedin}>
-            <LinkedIn color={iconColor} />
+            <LinkedIn />
           </a>
           <a href={teamMember.github}>
-            <GitHub color={iconColor} />
+            <GitHub />
           </a>
           <a href={teamMember.email}>
-            <Email color={iconColor} />
+            <Email />
           </a>
         </div>
       </div>

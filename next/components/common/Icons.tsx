@@ -1,9 +1,14 @@
-export const SearchIcon = () => (
+interface IconProps {
+    className?: string;
+}
+
+/**
+ * Use stroke-* classes to change the color of the icon.
+ */
+export const SearchIcon = ({ className }: IconProps) => (
     <svg
-        className=" stroke-base-content"
+        className={`w-5 h-5 stroke-base-content ${className}`}
         xmlns="http://www.w3.org/2000/svg"
-        width="20"
-        height="20"
         viewBox="0 0 24 24"
         fill="none"
         strokeWidth="2"
@@ -15,12 +20,13 @@ export const SearchIcon = () => (
     </svg>
 );
 
-export const ClearIcon = () => (
+/**
+ * Use stroke-* classes to change the color of the icon.
+ */
+export const ClearIcon = ({ className }: IconProps) => (
     <svg
-        className="stroke-base-content"
+        className={`w-5 h-5 stroke-base-content ${className}`}
         xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
         viewBox="0 0 24 24"
         fill="none"
         strokeWidth="2"
@@ -32,12 +38,13 @@ export const ClearIcon = () => (
     </svg>
 );
 
-export const DiceIcon = () => (
+/**
+ * Use stroke-* classes to change the color of the icon.
+ */
+export const DiceIcon = ({ className }: IconProps) => (
     <svg
-        className="stroke-base-content"
+        className={`w-5 h-5 stroke-base-content ${className}`}
         xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
         viewBox="0 0 24 24"
         fill="none"
         strokeWidth="2"
@@ -53,13 +60,15 @@ export const DiceIcon = () => (
     </svg>
 );
 
-export const ExternalLinkIcon = () => (
+/**
+ * Use stroke-* classes to change the color of the icon.
+ */
+export const ExternalLinkIcon = ({ className }: IconProps) => (
     <svg
-        className="w-5 h-5 text-base-content"
+        className={`w-5 h-5 stroke-base-content ${className}`}
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 24 24"
         fill="none"
-        stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -70,12 +79,16 @@ export const ExternalLinkIcon = () => (
     </svg>
 );
 
-export const StarIcon = () => (
+
+/**
+ * Use stroke-* classes to change the border color of the icon.
+ * Use fill-* classes to change the fill color of the icon.
+ */
+export const StarIcon = ({ className }: IconProps) => (
     <svg
         xmlns="http://www.w3.org/2000/svg"
-        className="w-5 h-5 absolute left-[-0.625rem] top-[-0.625rem] text-content fill-base-content"
+        className={`w-5 h-5 absolute left-[-0.625rem] top-[-0.625rem] text-content stroke-base-100 fill-base-content ${className}`}
         viewBox="0 0 24 24"
-        stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -84,9 +97,12 @@ export const StarIcon = () => (
     </svg>
 );
 
-export const GitHub = ({color}) => (
+/**
+ * Use fill-* classes to change the color of the icon.
+ */
+export const GitHub = ({ className }: IconProps) => (
     <svg
-        className={`w-5 h-5 fill-${color ? color : 'base-content'}`}
+        className={`w-5 h-5 fill-base-content ${className}`}
         aria-hidden="true"
         viewBox="0 0 16 16"
         data-view-component="true"
@@ -95,20 +111,26 @@ export const GitHub = ({color}) => (
     </svg>
 );
 
-export const LinkedIn = ({color}) => (
-    <svg 
-        className={`w-5 h-5 fill-${color ? color : 'base-content'}`}
+/**
+ * Use fill-* classes to change the color of the icon.
+ */
+export const LinkedIn = ({ className }: IconProps) => (
+    <svg
+        className={`w-5 h-5 fill-base-content ${className}`}
         viewBox="0 0 48 48"
     >
         <path d="M44.447 0H3.544C1.584 0 0 1.547 0 3.46V44.53C0 46.444 1.584 48 3.544 48h40.903C46.407 48 48 46.444 48 44.54V3.46C48 1.546 46.406 0 44.447 0zM14.24 40.903H7.116V17.991h7.125v22.912zM10.678 14.87a4.127 4.127 0 01-4.134-4.125 4.127 4.127 0 014.134-4.125 4.125 4.125 0 010 8.25zm30.225 26.034h-7.115V29.766c0-2.653-.047-6.075-3.704-6.075-3.703 0-4.265 2.896-4.265 5.887v11.325h-7.107V17.991h6.826v3.13h.093c.947-1.8 3.272-3.702 6.731-3.702 7.21 0 8.541 4.744 8.541 10.912v12.572z" />
     </svg>
 );
 
-export const Email = ({color}) => (
+/**
+ * Use fill-* classes to change the color of the icon.
+ */
+export const Email = ({ className }: IconProps) => (
     <svg
-      viewBox="0 0 24 24"
-      className={`w-5 h-5 fill-${color ? color : 'base-content'}`}
+        viewBox="0 0 24 24"
+        className={`w-5 h-5 fill-base-content ${className}`}
     >
-      <path d="M20 8l-8 5-8-5V6l8 5 8-5m0-2H4c-1.11 0-2 .89-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2z" />
+        <path d="M20 8l-8 5-8-5V6l8 5 8-5m0-2H4c-1.11 0-2 .89-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2z" />
     </svg>
-  );
+);
