@@ -22,12 +22,10 @@ export default function Leadership() {
                 className="bg-gradient-to-t from-primary to-secondary 
               bg-clip-text text-4xl font-extrabold text-transparent md:text-5xl"
               >
-                Meet our team
+                Meet our Team
               </h1>
               <p className="mt-3 text-xl leading-8">
-                Lorem, ipsum dolor sit amet consectetur adipisicing elit. Lorem,
-                ipsum dolor sit amet consectetur adipisicing elit. Lorem, ipsum
-                dolor sit amet consectetur.
+                Have questions? Feel free to reach out to any of our officers!
               </p>
             </div>
           </div>
