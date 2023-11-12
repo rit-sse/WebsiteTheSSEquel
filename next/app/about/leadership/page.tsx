@@ -1,9 +1,15 @@
-import { useState } from "react";
 import OfficerCard from "./OfficerCard";
 import { teamData, Team } from "./team";
 
 export default function Leadership() {
   let team: Team = teamData;
+
+  team.committee_heads.sort((a, b) => {
+    if (a.title < b.title) {
+      return -1;
+    }
+    return 1;
+  });
 
   return (
     <>
@@ -33,8 +39,8 @@ export default function Leadership() {
             </h3>
             <div className="">
               <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-4">
-                {team.primary_officers.map((item, idx) => (
-                  <OfficerCard key={idx} item={item} />
+                {team.primary_officers.map((member, idx) => (
+                  <OfficerCard key={idx} teamMember={member} />
                 ))}
               </div>
             </div>
@@ -46,8 +52,8 @@ export default function Leadership() {
             </h3>
             <div className="">
               <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-4">
-                {team.committee_heads.map((item, idx) => (
-                  <OfficerCard key={idx} item={item} />
+                {team.committee_heads.map((member, idx) => (
+                  <OfficerCard key={idx} teamMember={member} />
                 ))}
               </div>
             </div>
