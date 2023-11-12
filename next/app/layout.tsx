@@ -6,6 +6,7 @@ import Navbar from "@/components/nav/Navbar";
 import Footer from "@/components/Footer";
 import { Inter } from 'next/font/google'
 import { Providers } from "./Providers";
+import { getServerSession } from "next-auth";
 
 
 const inter = Inter({ subsets: ['latin'] })
@@ -16,18 +17,20 @@ export const metadata: Metadata = {
   icons: ["./icon.png"],
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await getServerSession();
+
   return (
 
     <html lang="en" data-theme="dark">
       <body
         className={`min-h-screen flex flex-col bg-gradient-to-b from-base-100 to-base-300`}
       >
-        <Providers>
+        <Providers session={session}>
           <Navbar />
           <main className="flex flex-col grow items-center p-2 md:p-4 lg:p-6 xl:p-8">
             {children}
