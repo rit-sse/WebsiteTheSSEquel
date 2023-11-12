@@ -33,25 +33,23 @@ export default function Leadership() {
           </div>
 
           {/* Primary Officers */}
-          <div className="my-20">
-            <h3 className="text-xl font-extrabold text-primary-focus sm:text-3xl my-12">
-              Primary Officers
-            </h3>
-            <div className="">
-              <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-4">
-                {team.primary_officers.map((member, idx) => (
-                  <OfficerCard key={idx} teamMember={member} />
-                ))}
-              </div>
+          <h2 className="text-xl text-center font-extrabold text-primary-focus sm:text-3xl my-12">
+            Primary Officers
+          </h2>
+          <div className="">
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {team.primary_officers.map((member, idx) => (
+                <OfficerCard key={idx} teamMember={member} />
+              ))}
             </div>
           </div>
           {/* Committee Heads */}
           <div className="mt-20">
-            <h3 className="text-xl font-extrabold text-primary-focus sm:text-3xl mb-12">
+            <h2 className="text-xl text-center font-extrabold text-primary-focus sm:text-3xl mb-12">
               Committee Heads
-            </h3>
+            </h2>
             <div className="">
-              <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-4">
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 gap-y-8">
                 {team.committee_heads.map((member, idx) => (
                   <OfficerCard key={idx} teamMember={member} />
                 ))}
