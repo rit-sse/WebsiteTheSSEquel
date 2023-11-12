@@ -5,44 +5,44 @@ const defaultImage = `https://dummyimage.com/${placeholder_w}x${placeholder_h}`
 const defaultDescription = `This is a description of the committee. Lorem ipsum dolor sit amet,
                             consectetur adipiscing elit. Integer ullamcorper dui eu ex laoreet,
                             sagittis aliquet mauris ornare. Nullam urna magna, hendrerit nec tortor
-                            porttitor, dignissim vulputate neque. Etiam accumsan ut leo sit amet lacinia.
-                            Nam euismod risus nec nunc commodo, quis laoreet ligula mollis.
-                            Mauris sodales ac neque quis blandit. Aenean vel lobortis eros.`
+                            porttitor, dignissim vulputate neque.`
 
 export default [
     {
         imageSrc: defaultImage,
-        title: 'General Meeting',
-        body: `A great way to get involved is by being on this page! There are many ways to get involved
-                    whether you are a computing major or non computing major. This can range from going to general
-                    meetings to participating in projects or you can even start a project of your own! Simply walking
-                    into the lab and sitting in on a general meeting to understand what is happening is a great way to
-                    start. This provides an opportunity to gain insights into our ongoing activities and operations,
-                    allowing you to assess potential areas of interest for your engagement. Please feel free to stop by
-                    for a meeting every Friday at 3:00 PM in GOL-1670.`
+        title: 'Come to General Meeting',
+        body: `We have a general meeting every week on Monday at 1 PM in the SSE lab (GOL 1670). Come join us
+            to stay up to date with what's happening in the SSE and to meet other members! If you have any questions,
+            feel free to reach out to any of the officers (found on the Leadership page). The lab is open every weekday
+            from 10 AM to 6 PM. Feel free to stop by and hang out, we love meeting new people!`
     },
     {
         imageSrc: defaultImage,
-        title: 'Mentoring',
-        body: `If you have any questions about anything that is related to software engineering, 
-                    computer science, computational mathematics, or game design please feel free to come talk to walk 
-                    right in and ask one one of our mentors. Mentoring is open Monday to Friday from 10AM to 6PM. You 
-                    can check out the mentoring schedule of the times for each mentor. However, if you would like to apply 
-                    to help out as a mentor, please reach out to our Mentoring Head, Eloise Christian.`
+        title: 'Come in for Mentoring',
+        body: `If you need help with any of your GCCIS or math classes, we have mentors who would love to help! Mentoring is 
+        open Monday to Friday from 10AM to 6PM. You can check out the mentoring schedule of the times for each mentor. 
+        If you would like to apply to be a mentor, please reach out to our Mentoring Head.`
     },
     {
         imageSrc: defaultImage,
-        title: 'Talks',
-        body: `We don't always talk about computing related topics, we often delve into diverse topics, such as 
-                    the amusing appearances of various aquatic creatures. Our enthusiasm for this particular subject matter has led 
-                    to the establishment of Funny Fish Friday, a designated day for engaging in lively conversations about these quirky 
-                    aquatic beings. If you would like to give a talk of your own please reach out to our Talk Head, Tess Hacker.`
+        title: 'Join a Project',
+        body: `Collaboration is a core value of the SSE. We have a variety of projects that you can join (including this website!).
+            Check out our projects page to see what we're working on. Don't see anything you like? Reach out to our projects head
+            to start your own project! An SSE project can be anything with a software component, so get creative!`
     },
     {
         imageSrc: defaultImage,
-        title: 'Cleaning',
+        title: 'Attend or Give a Talk',
+        body: `We don't always talk about technical software topics, we often delve into diverse topics, such as 
+            the amusing appearances of various aquatic creatures. Our enthusiasm for this particular subject matter has led 
+            to the establishment of Funny Fish Friday, a designated day for engaging in lively conversations about these quirky 
+            aquatic beings. If you would like to give a talk of your own please reach out to our Talk Head!`
+    },
+    {
+        imageSrc: defaultImage,
+        title: 'Help Clean the Lab',
         body: `With all this happening, the lab can get a bit messy. 
-                    This is a great opportunity to gain membership here by participating 
-                    in lab cleanup sessions!`
+            This is a great opportunity to gain membership here by participating 
+            in lab cleanup sessions! Check out our calendar for the next lab cleaning, or talk to our Lab Ops Head.`
     }
 ]
