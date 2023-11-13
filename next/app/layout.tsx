@@ -27,10 +27,11 @@ export default async function RootLayout({
   const session = await getServerSession(authOptions);
 
   return (
-
-    <html lang="en" data-theme="dark">
+    // details on suppressHydrationWarning: https://github.com/pacocoursey/next-themes#html--css (scroll up a bit)
+    // Also: https://www.reddit.com/r/nextjs/comments/138smpm/how_to_fix_extra_attributes_from_the_server_error/
+    <html lang="en" data-theme="dark" suppressHydrationWarning>
       <body
-        className={`min-h-screen flex flex-col bg-gradient-to-b from-base-100 to-base-300`}
+        className={`min-h-screen flex flex-col bg-gradient-to-b from-base-100 to-base-300 ${inter.className}`}
       >
         <Providers session={session}>
           <Navbar />
