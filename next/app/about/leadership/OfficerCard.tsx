@@ -1,4 +1,4 @@
-import { GitHub, LinkedIn, Email } from "../../../components/common/Icons";
+import { GitHubIcon, LinkedInIcon, EmailIcon } from "../../../components/common/Icons";
 import { TeamMember } from "./team";
 
 interface OfficerCardProps {
@@ -17,13 +17,13 @@ export default function OfficerCard({ teamMember }: OfficerCardProps) {
         <p className="mt-2 px-2 text-center">{teamMember.desc}</p>
         <div className="mt-4 flex gap-4">
           <a href={teamMember.linkedin}>
-            <LinkedIn />
+            <LinkedInIcon />
           </a>
           <a href={teamMember.github}>
-            <GitHub />
+            <GitHubIcon />
           </a>
           <a href={teamMember.email}>
-            <Email />
+            <EmailIcon />
           </a>
         </div>
       </div>
