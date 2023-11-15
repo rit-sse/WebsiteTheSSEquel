@@ -60,7 +60,7 @@ export default function GoLinks() {
     return (
         <div>
             <h1>Go Links</h1>
-            <hr></hr>
+            
             <div className="
                 grid
                 grid-cols-1
