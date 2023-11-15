@@ -1,3 +1,5 @@
+import { GoLinkIcon } from "@/components/common/Icons";
+
 export default function GoLink({
     goUrl,
     url,
@@ -9,12 +11,14 @@ export default function GoLink({
     description: string,
     canEdit: boolean,
 }) {
+    
+
     return (
         <a
             href={url}
             target="_blank"
             className="
-            flex flex-col
+            flex 
             p-4
             bg-base-100
             rounded-md
@@ -25,10 +29,17 @@ export default function GoLink({
             border-base-content
             hover:border-info
         ">
-            <p
-                className="font-bold text-2xl"
-            >{goUrl}</p>
-            <p className="text-base">{description}</p>
+            <div
+            style={{flexGrow: 1}}
+        >
+                <p
+                    className="font-bold text-2xl"
+                >{goUrl}</p>
+                <p className="text-base">{description}</p>
+            </div>
+            <div>
+                <GoLinkIcon></GoLinkIcon>
+            </div>
         </a>
     );
 }

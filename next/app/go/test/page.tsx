@@ -12,7 +12,7 @@ const goLinkData: { goUrl: string; url: string; description: string }[] = [
         description: "Movie Night",
     },
     {
-        goUrl: "challenges-leaderboard",
+        goUrl: "challenges-leaderboard-testtesttesttesttesttesttesttesttesttest",
         url: "https://sse.rit.edu/go/challenges-leaderboard",
         description: "The leaderboard for the weekly coding challenges",
     },
