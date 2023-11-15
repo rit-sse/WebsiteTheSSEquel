@@ -30,14 +30,15 @@ export default function GoLink({
             hover:border-info
         ">
             <div
-            style={{flexGrow: 1}}
+            className="flex-grow overflow-hidden whitespace-nowrap text-ellipsis"
         >
                 <p
                     className="font-bold text-2xl"
                 >{goUrl}</p>
                 <p className="text-base">{description}</p>
             </div>
-            <div>
+            <div
+            className="ml-3">
                 <GoLinkIcon></GoLinkIcon>
             </div>
         </a>
