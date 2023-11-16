@@ -61,4 +61,9 @@ The above is just a placeholder, you'll need to fill in each entry with the appr
 
 The `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` can be found again later by going to the [Credentials tab](https://console.cloud.google.com/apis/credentials) and clicking on the client ID under `OAuth 2.0 Client IDs`.
 
+## Building the Local Database
+If you run the project now, you'll encounter schema errors. This is because the local database hasn't been built. We use Prisma for managing the Postgres database, so we'll use [Prisma's migrate command](https://www.prisma.io/docs/concepts/components/prisma-migrate/migrate-development-production) to build the db tables using the schema defined in the schema.prisma file.
+
+In the /next/ directory, run `npx prisma migrate dev`.  
+
 That's it! You should now be able to run `npm run dev` and view the website at `localhost:3000` with authentication and access to your local database instance. Try logging in with your RIT email.
