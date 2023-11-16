@@ -13,7 +13,6 @@
     @apply text-transparent;
     @apply sm:text-5xl/[4rem];
     @apply text-center;
-    @apply mb-2;
   }
 
   h2 {
@@ -47,7 +46,6 @@
   p {
     @apply text-base-content;
     @apply text-left;
-    //@apply max-w-2xl;
     @apply sm:text-xl/relaxed;
 
     // apply a bottom margin if the next element is a heading
