@@ -12,7 +12,13 @@ const DarkModeToggle: React.FC = () => {
     }, [])
 
     if (!mounted) {
-        return null
+        return (
+            <svg
+                className="w-7 h-7"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+            />
+        )
     }
 
     const handleToggleChange = () => {
