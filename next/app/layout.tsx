@@ -10,7 +10,9 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "./api/auth/[...nextauth]/route";
 
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({
+  subsets: ['latin'],
+});
 
 export const metadata: Metadata = {
   title: 'Society of Software Engineers',
@@ -29,9 +31,9 @@ export default async function RootLayout({
   return (
     // details on suppressHydrationWarning: https://github.com/pacocoursey/next-themes#html--css (scroll up a bit)
     // Also: https://www.reddit.com/r/nextjs/comments/138smpm/how_to_fix_extra_attributes_from_the_server_error/
-    <html lang="en" data-theme="dark" suppressHydrationWarning>
+    <html lang="en" data-theme="dark" className={`${inter.className}`} suppressHydrationWarning>
       <body
-        className={`min-h-screen flex flex-col bg-gradient-to-b from-base-100 to-base-300 ${inter.className}`}
+        className={`min-h-screen flex flex-col bg-gradient-to-b from-base-100 to-base-300`}
       >
         <Providers session={session}>
           <Navbar />
