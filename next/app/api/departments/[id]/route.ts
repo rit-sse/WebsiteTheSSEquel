@@ -36,6 +36,6 @@ export async function GET(
     }
     return Response.json(dept);
   } catch {
-    return new Response("Invalid Department ID", { status: 400 });
+    return new Response("Invalid Department ID", { status: 422 });
   }
 }

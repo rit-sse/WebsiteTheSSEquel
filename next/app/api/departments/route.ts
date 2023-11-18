@@ -29,13 +29,18 @@ export async function GET() {
  * @return department object that was created
  */
 export async function POST(request: Request) {
-  const body = await request.json();
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return new Response("Invalid JSON", { status: 422 });
+  }
 
   // make sure the title and shortTitle properties are included
   if (!("title" in body && "shortTitle" in body)) {
     return new Response(
       'Both "title" and "shortTitle" must be included in request body',
-      { status: 400 }
+      { status: 422 }
     );
   }
   const title = body.title;
@@ -56,11 +61,16 @@ export async function POST(request: Request) {
  * @returns department object previously at { id }
  */
 export async function DELETE(request: Request) {
-  const body = await request.json();
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return new Response("Invalid JSON", { status: 422 });
+  }
 
   // verify the id is included
   if (!("id" in body)) {
-    return new Response("ID must be included", { status: 400 });
+    return new Response("ID must be included", { status: 422 });
   }
   const id = body.id;
 
@@ -93,11 +103,16 @@ export async function DELETE(request: Request) {
  * @returns updated department object
  */
 export async function PUT(request: Request) {
-  const body = await request.json();
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return new Response("Invalid JSON", { status: 422 });
+  }
 
   // verify that the id is included in the request
   if (!("id" in body)) {
-    return new Response("ID must be included", { status: 400 });
+    return new Response("ID must be included", { status: 422 });
   }
   const id = body.id;
 
