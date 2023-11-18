@@ -64,12 +64,27 @@ export async function DELETE(request: Request) {
   }
   const id = body.id;
 
-  const dept = await prisma.department.delete({ where: { id } });
+  // in order to delete a department you need to delete all the courses in it
+  const courses = await prisma.course.findMany({
+    where: { departmentId: id },
+  });
+  for (let course of courses) {
+    // in order to delete a course you need to delete every time someone's taken the course
+    const courseId = course.id;
+    await prisma.courseTaken.deleteMany({ where: { courseId } });
+  }
+
+  await prisma.course.deleteMany({
+    where: { departmentId: id },
+  });
+
   // make sure the specified department exists
-  if (dept == null) {
+  try {
+    const department = await prisma.department.delete({ where: { id } });
+    return Response.json({ department, courses });
+  } catch {
     return new Response(`Couldn't find department ID ${id}`, { status: 404 });
   }
-  return Response.json(dept);
 }
 
 /**
