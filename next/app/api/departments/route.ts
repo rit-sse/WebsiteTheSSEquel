@@ -29,13 +29,18 @@ export async function GET() {
  * @return department object that was created
  */
 export async function POST(request: Request) {
-  const body = await request.json();
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return new Response("Invalid JSON", { status: 422 });
+  }
 
   // make sure the title and shortTitle properties are included
   if (!("title" in body && "shortTitle" in body)) {
     return new Response(
       'Both "title" and "shortTitle" must be included in request body',
-      { status: 400 }
+      { status: 422 }
     );
   }
   const title = body.title;
@@ -56,20 +61,40 @@ export async function POST(request: Request) {
  * @returns department object previously at { id }
  */
 export async function DELETE(request: Request) {
-  const body = await request.json();
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return new Response("Invalid JSON", { status: 422 });
+  }
 
   // verify the id is included
   if (!("id" in body)) {
-    return new Response("ID must be included", { status: 400 });
+    return new Response("ID must be included", { status: 422 });
   }
   const id = body.id;
 
-  const dept = await prisma.department.delete({ where: { id } });
+  // in order to delete a department you need to delete all the courses in it
+  const courses = await prisma.course.findMany({
+    where: { departmentId: id },
+  });
+  for (let course of courses) {
+    // in order to delete a course you need to delete every time someone's taken the course
+    const courseId = course.id;
+    await prisma.courseTaken.deleteMany({ where: { courseId } });
+  }
+
+  await prisma.course.deleteMany({
+    where: { departmentId: id },
+  });
+
   // make sure the specified department exists
-  if (dept == null) {
+  try {
+    const department = await prisma.department.delete({ where: { id } });
+    return Response.json({ department, courses });
+  } catch {
     return new Response(`Couldn't find department ID ${id}`, { status: 404 });
   }
-  return Response.json(dept);
 }
 
 /**
@@ -78,11 +103,16 @@ export async function DELETE(request: Request) {
  * @returns updated department object
  */
 export async function PUT(request: Request) {
-  const body = await request.json();
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return new Response("Invalid JSON", { status: 422 });
+  }
 
   // verify that the id is included in the request
   if (!("id" in body)) {
-    return new Response("ID must be included", { status: 400 });
+    return new Response("ID must be included", { status: 422 });
   }
   const id = body.id;
 

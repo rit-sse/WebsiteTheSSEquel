@@ -3,10 +3,10 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 /**
- * HTTP GET request to /api/departments/[id]
+ * HTTP GET request to /api/course/[id]
  * @param request
  * @param param1 { params: { id: string } }
- * @returns department with { id }
+ * @returns course with { id }
  */
 export async function GET(
   request: Request,
@@ -15,27 +15,27 @@ export async function GET(
   // make sure the provided ID is a valid integer
   try {
     const id = parseInt(params.id);
-    const dept = await prisma.department.findUnique({
+    const course = await prisma.course.findUnique({
       where: {
         id,
       },
       select: {
         title: true,
-        shortTitle: true,
-        course: {
+        code: true,
+        department: {
           select: {
             title: true,
-            code: true,
+            shortTitle: true,
           },
         },
       },
     });
-    // make sure the selected department exists
-    if (dept == null) {
-      return new Response(`Didn't find Department ID ${id}`, { status: 404 });
+    // make sure the selected course exists
+    if (course == null) {
+      return new Response(`Didn't find Course ID ${id}`, { status: 404 });
     }
-    return Response.json(dept);
+    return Response.json(course);
   } catch {
-    return new Response("Invalid Department ID", { status: 422 });
+    return new Response("Invalid Course ID", { status: 422 });
   }
 }
