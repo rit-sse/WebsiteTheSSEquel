@@ -12,7 +12,7 @@ const goLinkData: { goUrl: string; url: string; description: string }[] = [
         description: "Movie Night",
     },
     {
-        goUrl: "challenges-leaderboardtesiuyriuweyrpqwoerywqeopryweroywruywqerpuyqewirqypoy",
+        goUrl: "challenges-leader",
         url: "https://sse.rit.edu/go/challenges-leaderboard",
         description: "The leaderboard for the leaderboard for the weeklyleaderboard for the weeklyleaderboard for the weekly weekly coding challenges",
     },
@@ -30,6 +30,21 @@ const goLinkData: { goUrl: string; url: string; description: string }[] = [
         goUrl: "outreach_committe",
         url: "https://sse.rit.edu/go/outreach_committe",
         description: "Sign up form for Outreach Committte",
+    },
+    {
+        goUrl: "talksideas",
+        url: "https://sse.rit.edu/go/talksideas",
+        description: "Document of all ideas for a talk",
+    },
+    {
+        goUrl: "talksideasform",
+        url: "https://sse.rit.edu/go/talksideasform",
+        description: "Form to give an idea for a talk",
+    },
+    {
+        goUrl: "microtalksrequest",
+        url: "https://sse.rit.edu/go/microtalksrequest",
+        description: "Form for requesting to do a micro talk",
     },
     {
         goUrl: "talksideas",

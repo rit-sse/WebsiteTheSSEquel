@@ -30,8 +30,12 @@ export default function GoLink({
             hover:border-info
         ">
             <div
-            className="flex-grow overflow-hidden whitespace-nowrap text-ellipsis"
-        >
+            className="
+            flex-grow 
+            overflow-auto
+            whitespace-normal
+            w-96
+        ">
                 <p
                     className="font-bold text-2xl"
                 >{goUrl}</p>
