@@ -24,6 +24,7 @@ export async function GET(
         shortTitle: true,
         course: {
           select: {
+            id: true,
             title: true,
             code: true,
           },

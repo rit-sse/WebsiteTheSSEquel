@@ -14,6 +14,7 @@ export async function GET() {
       code: true,
       department: {
         select: {
+          id: true,
           title: true,
           shortTitle: true,
         },
