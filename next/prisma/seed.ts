@@ -413,7 +413,6 @@ async function seedGoLinks() {
             createdAt: new Date(),
             updatedAt: new Date(),
             isPublic: true,
-            authorId: 1,
             isPinned: true,
         },
     })
@@ -428,7 +427,6 @@ async function seedGoLinks() {
             createdAt: new Date(),
             updatedAt: new Date(),
             isPublic: true,
-            authorId: 2,
             isPinned: true,
         },
     })
@@ -443,7 +441,6 @@ async function seedGoLinks() {
             createdAt: new Date(),
             updatedAt: new Date(),
             isPublic: true,
-            authorId: 3,
             isPinned: true,
         },
     })
