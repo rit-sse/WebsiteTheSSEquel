@@ -1,16 +1,16 @@
 import React from "react";
 import { Project } from "./projects";
 
-const ProjectCard = ({logo, title, supervisor, contact, description, stack}: Project) => {
+const ProjectCard = ({logo, title, lead, contact, description, stack}: Project) => {
   return (
-    <div className="rounded-lg bg-base-100 w-9/12 py-8 px-12 mx-auto flex flex-row items-center content-center gap-10 my-10">
+    <div className="rounded-lg bg-base-100 w-10/12 py-8 px-12 mx-auto flex flex-row items-center content-center gap-10 my-10">
       {/* Left half */}
       <div className="text-9xl">{logo || "❓"}</div>
 
       {/* Right half */}
       <div>
         {/* Heading */}
-        <h1 className="text-2xl text-primary text-left mb-4">
+        <h1 className="text-2xl font-bold text-primary text-left mb-4">
           {title ? title : "Default"}
         </h1>
         
@@ -18,8 +18,8 @@ const ProjectCard = ({logo, title, supervisor, contact, description, stack}: Pro
         <div className="text-lg flex flex-col gap-2">
           <div>
             {/* <div className="mb-2"> */}
-            <span className="font-bold">Supervisor: </span>
-            {supervisor ? supervisor : "Default"}
+            <span className="font-bold">Project Lead: </span>
+            {lead ? lead : "Default"}
           </div>
 
           <div>

@@ -1,11 +1,10 @@
-"use client"
+"use client";
 import React from "react";
 import ProjectCard from "./ProjectCard";
 import { Project, projectsData } from "./projects";
 import { useState } from "react";
 
 const Projects = () => {
-
   const [projects, setProjects] = useState(projectsData);
 
   return (
@@ -22,20 +21,16 @@ const Projects = () => {
           <div className="leading-8">Our mission is simple.</div>
           <div className="leading-8">Want to build? We'll make it happen.</div>
           <div className="text-xl text-primary opacity-70 mt-1">
-            Write to projects@sse.rit.edu for more info.
+            Write to <span className="hover:underline hover:font-bold"><a href="mailto:projects@sse.rit.edu">projects@sse.rit.edu</a></span> for more info.
           </div>
         </div>
       </section>
 
       {/* Exhibit */}
       <section className="exihibit">
-        {
-          projects.map(
-            (project, key) => (
-              <ProjectCard key={key} {...project} />
-            )
-          )
-        }
+        {projects.map((project, key) => (
+          <ProjectCard key={key} {...project} />
+        ))}
       </section>
     </>
   );
