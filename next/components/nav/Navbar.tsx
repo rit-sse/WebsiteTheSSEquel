@@ -65,7 +65,7 @@ const navItems: NavItemProps[] = [
     },
     {
         title: "Projects",
-        route: "#",
+        route: "/projects",
     },
     { // Go links dropdown should be extracted to it's own component since the nav items are dynamic (depending on what's pinned)
         title: "Go Links",
