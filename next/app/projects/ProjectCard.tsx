@@ -1,17 +1,17 @@
 import React from "react";
+import { Project } from "./projects";
 
-const ProjectCard = () => {
+const ProjectCard = ({logo, title, supervisor, contact, description, stack}: Project) => {
   return (
     <div className="rounded-lg bg-base-100 w-9/12 py-8 px-12 mx-auto flex flex-row items-center content-center gap-10 my-10">
       {/* Left half */}
-      <div className="text-9xl">🐞</div>
+      <div className="text-9xl">{logo || "❓"}</div>
 
       {/* Right half */}
       <div>
-        
         {/* Heading */}
         <h1 className="text-2xl text-primary text-left mb-4">
-          Project Name 
+          {title ? title : "Default"}
         </h1>
         
         {/* Body */}
@@ -19,22 +19,19 @@ const ProjectCard = () => {
           <div>
             {/* <div className="mb-2"> */}
             <span className="font-bold">Supervisor: </span>
-            Name
+            {supervisor ? supervisor : "Default"}
           </div>
 
           <div>
             {/* <div className="mb-2"> */}
             <span className="font-bold">Contact: </span>
-            personal@email.com
+            {contact ? contact : "Default"}
           </div>
 
           <div>
             {/* <div className="mb-2"> */}
             <span className="font-bold">Description: </span>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Quia,
-            aliquid. Laudantium veritatis veniam praesentium nesciunt facilis
-            quod quam nihil labore perferendis, qui molestiae ad quibusdam
-            magnam consequatur tempore, hic minus!
+            {description ? description : "Default"}
           </div>
 
           <div>
