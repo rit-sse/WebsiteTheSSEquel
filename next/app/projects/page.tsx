@@ -19,6 +19,12 @@ const Projects = () => {
           <div className="text-xl text-primary opacity-70 mt-1">Write to projects@sse.rit.edu for more info.</div>
         </div>
       </section>
+
+    {/* Exhibit */}
+      <section className="exihibit">
+        <ProjectCard />
+      </section>
+
     </>
   );
 };
