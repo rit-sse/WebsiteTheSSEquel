@@ -5,6 +5,7 @@ export interface Project{
     contact: string;
     description: string;
     stack?: string;
+    progress: string;
 }
 
 export const projectsData: Project[] = [
@@ -14,7 +15,8 @@ export const projectsData: Project[] = [
         lead: "lead 1",
         contact: "lead1@email.com",
         description: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quia, aliquid. Laudantium veritatis veniam praesentium nesciunt facilis quod quam nihil labore perferendis, qui molestiae ad quibusdam magnam consequatur tempore, hic minus!",
-        stack: "Stack"
+        stack: "Stack",
+        progress: "In Progress"
     },
     {
         logo: "🦋",
@@ -22,6 +24,7 @@ export const projectsData: Project[] = [
         lead: "Lead 2",
         contact: "lead2@email.com",
         description: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quia, aliquid. Laudantium veritatis veniam praesentium nesciunt facilis quod quam nihil labore perferendis, qui molestiae ad quibusdam magnam consequatur tempore, hic minus!",
+        progress: "Conceptualization"
     },
     {
         logo: "🎱",
@@ -29,6 +32,7 @@ export const projectsData: Project[] = [
         lead: "Lead 3",
         contact: "lead3@email.com",
         description: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quia, aliquid. Laudantium veritatis veniam praesentium nesciunt facilis quod quam nihil labore perferendis, qui molestiae ad quibusdam magnam consequatur tempore, hic minus!",
-        stack: "Stack"
+        stack: "Stack",
+        progress: "Complete"
     },
 ] 
