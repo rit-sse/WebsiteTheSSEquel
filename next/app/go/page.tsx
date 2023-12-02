@@ -86,7 +86,7 @@ const GoLinksPage = () => {
     return (
         <>
             <PinnedGoLinksContainer />
-            <SearchContainer goLinkData={goLinkData}/>
+            {/* <SearchContainer goLinkData={goLinkData}/> */}
             <GoLinksContainer goLinkData={goLinkData} />
         </>
     )
