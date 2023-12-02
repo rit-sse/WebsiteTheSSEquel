@@ -1,11 +1,8 @@
 import React from 'react';
 import GoLink from './GoLink';
+import { GoLinksContainerProps } from "@/app/go/page";
 
-interface GoLinksContainerProps {
-    goLinkData: { goUrl: string; url: string; description: string; pinned: boolean }[];
-}
-
-const GoLinksContainer: React.FC<GoLinksContainerProps> = ({ goLinkData }) => {
+const GoLinksContainer: React.FC<GoLinksContainerProps> = ({goLinkData}) => {
     const goLinkList = goLinkData.map((data, index) => (
         <GoLink
             key={index}
@@ -13,7 +10,7 @@ const GoLinksContainer: React.FC<GoLinksContainerProps> = ({ goLinkData }) => {
             canEdit={false}
         />
     ));
-    
+
     return (
         <div>
             <div className="
@@ -29,6 +26,7 @@ const GoLinksContainer: React.FC<GoLinksContainerProps> = ({ goLinkData }) => {
             </div>
         </div>
     )
-}
+};
+
 
 export default GoLinksContainer;

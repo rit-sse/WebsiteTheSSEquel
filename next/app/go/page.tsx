@@ -76,6 +76,10 @@ const goLinkData: { goUrl: string; url: string; description: string, pinned: boo
     }
 ];
 
+export interface GoLinksContainerProps {
+    goLinkData: { goUrl: string; url: string; description: string; pinned: boolean }[];
+}
+
 const GoLinksPage = () => {
     return (
         <>
