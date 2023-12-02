@@ -36,7 +36,7 @@ const GoLinksContainer: React.FC<GoLinksContainerProps> = ({ goLinkData }) => {
     }
 
     return (
-        <div>
+        <div className="w-9/12">
             <div className="w-full">
                 <input type="text" placeholder="Type here" className="input input-bordered w-full my-5" onChange={(event) => setDisplay(event.target.value)} />
             </div>
