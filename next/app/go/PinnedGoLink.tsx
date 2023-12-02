@@ -4,7 +4,7 @@ export default function PinnedGoLink({goUrl, url, description} : {goUrl: string,
             href = {url}
             target = "_blank"
             className ="
-            flex
+            flex 
             p-4
             bg-base-100
             rounded-md
@@ -13,9 +13,9 @@ export default function PinnedGoLink({goUrl, url, description} : {goUrl: string,
             transition-shadow
             border-2
             border-base-content
-            hover:border:info"
+            hover:border-info"
             >
-                <div className = "flex-grow overflow-hidden whitespace-nowrap text-ellipsis">
+                <div className = "flex-grow overflow-auto whitespace-normal w-96">
                     <p className = "font-bold text-2xl">
                         {goUrl}
                     </p>

@@ -13,7 +13,7 @@ const goLinkData: { goUrl: string; url: string; description: string, pinned: boo
         goUrl: "movienight",
         url: "https://sse.rit.edu/go/movienight",
         description: "Movie Night",
-        pinned: false,
+        pinned: true,
     },
     {
         goUrl: "challenges-leader",
@@ -49,7 +49,7 @@ const goLinkData: { goUrl: string; url: string; description: string, pinned: boo
         goUrl: "talksideasform",
         url: "https://sse.rit.edu/go/talksideasform",
         description: "Form to give an idea for a talk",
-        pinned: false,
+        pinned: true,
     },
     {
         goUrl: "microtalksrequest",
@@ -61,7 +61,7 @@ const goLinkData: { goUrl: string; url: string; description: string, pinned: boo
         goUrl: "talksideas",
         url: "https://sse.rit.edu/go/talksideas",
         description: "Document of all ideas for a talk",
-        pinned: false,
+        pinned: true,
     },
     {
         goUrl: "talksideasform",
@@ -84,7 +84,7 @@ export interface GoLinksContainerProps {
 const GoLinksPage = () => {
     return (
         <>
-            <PinnedGoLinksContainer />
+            <PinnedGoLinksContainer goLinkData ={goLinkData}/>
             <GoLinksContainer goLinkData={goLinkData} />
         </>
     )
