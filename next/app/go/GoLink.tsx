@@ -1,18 +1,13 @@
 import { GoLinkIcon } from "@/components/common/Icons";
-
-export default function GoLink({
-    goUrl,
-    url,
-    description,
-    canEdit = false,
-} : {
+export interface GoLinkProps {
     goUrl: string,
     url: string,
     description: string,
-    canEdit: boolean,
-}) {
-    
+    pinned: boolean
+}
 
+const GoLink: React.FC<GoLinkProps> = ({goUrl, url, description, pinned}) => {
+    
     return (
         <a
             href={url}
@@ -48,3 +43,5 @@ export default function GoLink({
         </a>
     );
 }
+
+export default GoLink;
