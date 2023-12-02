@@ -12,7 +12,7 @@ const SearchContainer: React.FC<GoLinksContainerProps> = ({goLinkData}) => {
 
     return (
         <div>
-            <p>search</p>
+            <input type="text" placeholder="Type here" className="input input-bordered w-full max-w-xs" />
         </div>
     )
 };
