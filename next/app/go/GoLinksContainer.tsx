@@ -3,7 +3,7 @@ import GoLink from './GoLink';
 
 interface GoLinksContainerProps {
     goLinkData: { goUrl: string; url: string; description: string; pinned: boolean }[];
-  }
+}
 
 const GoLinksContainer: React.FC<GoLinksContainerProps> = ({ goLinkData }) => {
     const goLinkList = goLinkData.map((data, index) => (
