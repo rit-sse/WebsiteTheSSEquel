@@ -6,15 +6,12 @@ import { GoLinksContainerProps } from "@/app/go/page";
 import { filterGoLinks } from '@/lib/filter';
 
 const GoLinksContainer: React.FC<GoLinksContainerProps> = ({ goLinkData }) => {
-    const [filter, setFilter] = useState<string>("")
     const [goLinkList, setGoLinkList] = useState<React.JSX.Element[]>(goLinkData.map((data, index) => (
         <GoLink
             key={index}
             {...data}
         />
     )));
-
-
 
     const setDisplay = (givenFilter: string) => {
         if (givenFilter === "") {
@@ -26,11 +23,9 @@ const GoLinksContainer: React.FC<GoLinksContainerProps> = ({ goLinkData }) => {
             )))
         }
         else {
-            console.log("data: " + goLinkData)
-            console.log("filter: " + givenFilter)
             const filteredGoLinkData = filterGoLinks(givenFilter, goLinkData)
             console.log(filteredGoLinkData)
-            
+
             setGoLinkList(filteredGoLinkData.map((data, index) => (
                 <GoLink
                     key={index}
@@ -38,25 +33,7 @@ const GoLinksContainer: React.FC<GoLinksContainerProps> = ({ goLinkData }) => {
                 />
             )))
         }
-        // const filteredGoLinkData = goLinkData.filter((data) => {        
-        //     data.goUrl.toLowerCase().includes(filter.toLowerCase())
-        // })
     }
-
-    // const goLinkList = filteredGoLinkData.map((data, index) => (
-    //     <GoLink
-    //         key={index}
-    //         {...data}
-    //     />
-    // ));
-
-
-    // const goLinkList = goLinkData.map((data, index) => (
-    //     <GoLink
-    //         key={index}
-    //         {...data}
-    //     />
-    // ));
 
     return (
         <div>

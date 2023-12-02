@@ -1,7 +1,7 @@
 import { GoLinkProps } from "@/app/go/GoLink";
 
 /**
- * 
+ * stub
  */
 export function filterGoLinks (filter: string, goLinkData: GoLinkProps[]): GoLinkProps[] {
     filter = filter.toLowerCase()
