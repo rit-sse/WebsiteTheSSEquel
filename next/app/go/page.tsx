@@ -1,7 +1,6 @@
 import GoLinksContainer from "@/app/go/GoLinksContainer";
 import PinnedGoLinksContainer from "@/app/go/PinnedGoLinksContainer";
 import { GoLinkProps } from "./GoLink";
-import SearchContainer from "./SearchContainer";
 
 const goLinkData: { goUrl: string; url: string; description: string, pinned: boolean }[] = [
     {
@@ -86,7 +85,6 @@ const GoLinksPage = () => {
     return (
         <>
             <PinnedGoLinksContainer />
-            {/* <SearchContainer goLinkData={goLinkData}/> */}
             <GoLinksContainer goLinkData={goLinkData} />
         </>
     )
