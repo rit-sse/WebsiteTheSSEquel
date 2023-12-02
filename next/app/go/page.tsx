@@ -80,7 +80,7 @@ const GoLinksPage = () => {
     return (
         <>
             <PinnedGoLinksContainer />
-            <GoLinksContainer />
+            <GoLinksContainer goLinkData={goLinkData} />
         </>
     )
 }
