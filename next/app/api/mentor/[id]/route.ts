@@ -23,7 +23,7 @@ export async function GET(
         id: true,
         isActive: true,
         expirationDate: true,
-        mentor: {
+        user: {
           select: {
             id: true,
             firstName: true,
