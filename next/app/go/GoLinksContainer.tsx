@@ -7,7 +7,6 @@ const GoLinksContainer: React.FC<GoLinksContainerProps> = ({goLinkData}) => {
         <GoLink
             key={index}
             {...data}
-            canEdit={false}
         />
     ));
 
