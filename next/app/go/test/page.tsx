@@ -1,5 +1,7 @@
 // import GoLink from ".././GoLink";
 
+import PinnedGoLink from "../pinnedGoLink";
+
 const goLinkData: { goUrl: string; url: string; description: string }[] = [
     {
         goUrl: "scoreboard",
@@ -19,5 +21,19 @@ const goLinkData: { goUrl: string; url: string; description: string }[] = [
 ];
 
 export default function PinnedGoLinks() {
-    return(<h1>Pinned</h1>)
+    let pinnedList = goLinkData.map((data, index) => (
+        <PinnedGoLink
+        key = {index}
+        {...data}
+        />
+    ));
+    return(
+            <div className ="
+            grid
+            grid-cols-3
+            gap-4
+            p-4">
+                {pinnedList}
+            </div>
+    )
 }
