@@ -40,7 +40,7 @@ export interface ProfileLinks {
 export interface Profile {
     avatar: string;
     name: string;
-    pronouns: string;
+    // pronouns: string;
     role: Role;
     bio: string;
     links?: ProfileLinks;
