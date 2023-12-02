@@ -16,19 +16,16 @@ const GoLinksContainer: React.FC<GoLinksContainerProps> = ({ goLinkData }) => {
     
     return (
         <div>
-            <p>Regular Container</p>
-            <div>
-                <div className="
-                    grid
-                    grid-cols-1
-                    sm:grid-cols-1
-                    md:grid-cols-2
-                    lg:grid-cols-2
-                    gap-4
-                    p-4
-                ">
-                    {goLinkList}
-                </div>
+            <div className="
+                grid
+                grid-cols-1
+                sm:grid-cols-1
+                md:grid-cols-2
+                lg:grid-cols-2
+                gap-4
+                p-4
+            ">
+                {goLinkList}
             </div>
         </div>
     )
