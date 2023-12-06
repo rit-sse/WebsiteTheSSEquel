@@ -138,7 +138,7 @@ export const GoLinkIcon = () => (
 
 export const GoLinkStar = () => (
     <svg
-        className="me-1"
+        className="me-2"
         xmlns="http://www.w3.org/2000/svg"
         version="1.1"
         width="22.04825"
