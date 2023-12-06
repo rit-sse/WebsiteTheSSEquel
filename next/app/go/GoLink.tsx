@@ -1,13 +1,14 @@
 import { GoLinkIcon } from "@/components/common/Icons";
+import { GoLinkStar } from "@/components/common/Icons";
 export interface GoLinkProps {
-    goUrl: string,
-    url: string,
-    description: string,
-    pinned: boolean
+    goUrl: string;
+    url: string;
+    description: string;
+    pinned: boolean;
 }
 
-const GoLink: React.FC<GoLinkProps> = ({goUrl, url, description, pinned}) => {
-    
+const GoLink: React.FC<GoLinkProps> = ({ goUrl, url, description, pinned }) => {
+
     return (
         <a
             href={url}
@@ -25,20 +26,24 @@ const GoLink: React.FC<GoLinkProps> = ({goUrl, url, description, pinned}) => {
             hover:border-info
         ">
             <div
-            className="
+                className="
             flex-grow 
             overflow-auto
             whitespace-normal
             w-96
         ">
-                <p
-                    className="font-bold text-2xl"
-                >{goUrl}</p>
+                <div className="flex items-center">
+                    {pinned && <GoLinkStar/>}
+                    <span>  </span>
+                    <p className="font-bold text-2xl
+                    mx-2">
+                        {goUrl}
+                    </p>
+                </div>
                 <p className="text-base">{description}</p>
             </div>
-            <div
-            className="ml-3">
-                <GoLinkIcon></GoLinkIcon>
+            <div className="ml-3">
+                <GoLinkIcon />
             </div>
         </a>
     );
