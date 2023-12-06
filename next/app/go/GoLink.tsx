@@ -34,8 +34,7 @@ const GoLink: React.FC<GoLinkProps> = ({ goUrl, url, description, pinned }) => {
         ">
                 <div className="flex items-center">
                     {pinned && <GoLinkStar/>}
-                    <p className="font-bold text-2xl
-                    mx-2">
+                    <p className="font-bold text-2xl">
                         {goUrl}
                     </p>
                 </div>
