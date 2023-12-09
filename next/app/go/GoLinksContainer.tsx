@@ -32,7 +32,6 @@ const GoLinksContainer: React.FC<GoLinksContainerProps> = ({ goLinkData }) => {
         }
         else {
             const filteredGoLinkData = filterGoLinks(givenFilter, goLinkData)
-            console.log(filteredGoLinkData)
 
             setGoLinkList(filteredGoLinkData.map((data, index) => (
                 <GoLink
