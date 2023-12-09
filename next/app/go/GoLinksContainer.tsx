@@ -6,21 +6,29 @@ import { GoLinksContainerProps } from "@/app/go/page";
 import { filterGoLinks } from '@/lib/filter';
 
 const GoLinksContainer: React.FC<GoLinksContainerProps> = ({ goLinkData }) => {
-    const [goLinkList, setGoLinkList] = useState<React.JSX.Element[]>(goLinkData.map((data, index) => (
-        <GoLink
+    const pinnedGoLinks = goLinkData
+        .filter(data => data.pinned === true)
+        .map((data, index) => (
+            <GoLink
             key={index}
             {...data}
-        />
-    )));
+            />
+        ));
+
+    const unpinnedGoLinks = goLinkData
+        .filter(data => !data.pinned)
+        .map((data, index) => (
+            <GoLink
+            key={index}
+            {...data}
+            />
+        ));
+
+    const [goLinkList, setGoLinkList] = useState<React.JSX.Element[]>([...pinnedGoLinks, ...unpinnedGoLinks]);
 
     const setDisplay = (givenFilter: string) => {
         if (givenFilter === "") {
-            setGoLinkList(goLinkData.map((data, index) => (
-                <GoLink
-                    key={index}
-                    {...data}
-                />
-            )))
+            setGoLinkList([...pinnedGoLinks, ...unpinnedGoLinks])
         }
         else {
             const filteredGoLinkData = filterGoLinks(givenFilter, goLinkData)
