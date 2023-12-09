@@ -10,7 +10,7 @@ const GoLinksContainer: React.FC<GoLinksContainerProps> = ({ goLinkData }) => {
         .filter(data => data.pinned === true)
         .map((data, index) => (
             <GoLink
-            key={index}
+            key={`pinned-${index}`}
             {...data}
             />
         ));
@@ -19,7 +19,7 @@ const GoLinksContainer: React.FC<GoLinksContainerProps> = ({ goLinkData }) => {
         .filter(data => !data.pinned)
         .map((data, index) => (
             <GoLink
-            key={index}
+            key={`unpinned-${index}`}
             {...data}
             />
         ));
@@ -45,8 +45,22 @@ const GoLinksContainer: React.FC<GoLinksContainerProps> = ({ goLinkData }) => {
 
     return (
         <div className="w-9/12">
-            <div className="w-full">
-                <input type="text" placeholder="Type here" className="input input-bordered w-full my-5" onChange={(event) => setDisplay(event.target.value)} />
+            <div className="text-center flex flex-col items-center w-full">
+                <h1
+                className="bg-gradient-to-t from-primary to-secondary bg-clip-text
+                            text-4xl/[3rem] font-extrabold text-transparent md:text-5xl/[4rem]"
+                >
+                Go Links
+                </h1>
+
+                <p className="text-center mx-auto mt-4 text-xl/relaxed">
+                GoLinks are a type of URL shortcut that allow you to access the SSE's frequently used 
+                external websites or resources. Important or relevant golinks are marked with a gold star.
+                </p>
+            </div>
+
+            <div className="w-full mt-4">
+                <input type="text" placeholder="Search golinks, etc..." className="input input-bordered w-full my-5" onChange={(event) => setDisplay(event.target.value)} />
             </div>
             <div className="
                 grid
@@ -55,7 +69,7 @@ const GoLinksContainer: React.FC<GoLinksContainerProps> = ({ goLinkData }) => {
                 md:grid-cols-2
                 lg:grid-cols-2
                 gap-4
-                p-4
+                md:p-4
             ">
                 {goLinkList}
             </div>
