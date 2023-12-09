@@ -84,7 +84,7 @@ export interface GoLinksContainerProps {
 const GoLinksPage = () => {
     return (
         <>
-            <PinnedGoLinksContainer goLinkData ={goLinkData}/>
+            {/* <PinnedGoLinksContainer goLinkData ={goLinkData}/> */}
             <GoLinksContainer goLinkData={goLinkData} />
         </>
     )
