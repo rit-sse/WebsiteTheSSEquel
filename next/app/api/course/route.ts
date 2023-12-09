@@ -29,6 +29,8 @@ export async function GET() {
  * @param request { title: string, code: int, departmentId: int }
  * @return course object that was created
  */
+
+//TODO Finish and Test
 export async function POST(request: Request) {
   let body;
   try {
@@ -63,6 +65,8 @@ export async function POST(request: Request) {
  * @param request { id: number }
  * @returns course object previously at { id }
  */
+
+//TODO Finish and Test
 export async function DELETE(request: Request) {
   let body;
   try {
@@ -92,6 +96,8 @@ export async function DELETE(request: Request) {
  * @param request { id: number, title?: string, code?: int }
  * @returns updated course object
  */
+
+//TODO Finish and Test
 export async function PUT(request: Request) {
   let body;
   try {

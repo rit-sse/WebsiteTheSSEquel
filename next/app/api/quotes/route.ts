@@ -31,20 +31,22 @@ export async function GET() {
  * @param request { dateAdded: Date, quote: string, userId: number, author?: string }
  * @returns quote object that was created
  */
+
+// TODO: Finish and Test
 export async function POST(request: Request) {
     const body = await request.json()
 
     if (!("dateAdded" in body && "quote" in body && "userId" in body)) {
         return new Response(
-          '"userId", "dateAdded", "quote", must be included in request body',
-          {status: 400}
+            '"userId", "dateAdded", "quote", must be included in request body',
+            { status: 400 }
         );
     }
 
     const date_added = new Date(body.dateAdded)
     const quote = body.quote
     const user_id = body.userId
-    
+
     // fill in author key if one was specified by user. Otherwise, leave it anonymous
     let author
     if (body.author) {
@@ -60,5 +62,5 @@ export async function POST(request: Request) {
         }
     });
 
-    return Response.json(create_quote, {status: 201})
+    return Response.json(create_quote, { status: 201 })
 }

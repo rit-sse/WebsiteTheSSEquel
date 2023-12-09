@@ -30,6 +30,8 @@ export async function GET() {
  * @param request { expirationDate: string, isActive: bool, mentorId: number }
  * @return mentor object that was created
  */
+
+//TODO Finish and Test
 export async function POST(request: Request) {
   const body = await request.json();
 
@@ -59,6 +61,8 @@ export async function POST(request: Request) {
  * @param request { id: number }
  * @returns mentor object previously at { id }
  */
+
+//TODO Finish and Test
 export async function DELETE(request: Request) {
   const body = await request.json();
 
@@ -88,6 +92,8 @@ export async function DELETE(request: Request) {
  * @param request { id: number, expirationDate?: string, isActive?: bool, mentorId?: number }
  * @returns updated mentor object
  */
+
+//TODO Finish and Test
 export async function PUT(request: Request) {
   const body = await request.json();
 
