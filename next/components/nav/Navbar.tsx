@@ -7,6 +7,15 @@ import SSELogoFull from "../common/SSELogoFull";
 import SSELogoSmall from "../common/SSELogoSmall";
 import AuthButton from "./AuthButton";
 
+import goLinkData from "@/app/go/GoLinkData";
+
+const goLinks =
+    goLinkData
+    .filter(data => data.pinned)
+    .map(data => ({
+        title: data.goUrl,
+        route: data.url
+    }))
 
 const navItems: NavItemProps[] = [
     {
@@ -72,21 +81,22 @@ const navItems: NavItemProps[] = [
         subItems: [
             {
                 title: "View All",
-                route: "#",
+                route: "/go"
             },
             {
-                title: "Go Link 1",
-                route: "#",
-            },
-            {
-                title: "Go Link 2",
-                route: "#",
-            },
-            {
-                title: "Go Link 3",
-                route: "#",
-            },
-        ],
+                title: "Pinned",
+                subItems: [
+                    {
+                        title: "something",
+                        route: "#"
+                    },
+                    {
+                        title: "something",
+                        route: "#"
+                    }
+                ]
+            }
+        ]
     }
 ];
 
