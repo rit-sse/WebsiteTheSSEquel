@@ -7,15 +7,20 @@ import SSELogoFull from "../common/SSELogoFull";
 import SSELogoSmall from "../common/SSELogoSmall";
 import AuthButton from "./AuthButton";
 
-import goLinkData from "@/app/go/GoLinkData";
+import goLinkData from "@/app/go/goLinkData";
 
-const goLinks =
-    goLinkData
+const goLinks =[
+    {
+        title: "All Go Links",
+        route: "/go"
+    },
+    ...goLinkData
     .filter(data => data.pinned)
     .map(data => ({
         title: data.goUrl,
-        route: data.url
+        route: `/go/${data.goUrl}`
     }))
+]
 
 const navItems: NavItemProps[] = [
     {
@@ -78,25 +83,7 @@ const navItems: NavItemProps[] = [
     },
     { // Go links dropdown should be extracted to it's own component since the nav items are dynamic (depending on what's pinned)
         title: "Go Links",
-        subItems: [
-            {
-                title: "View All",
-                route: "/go"
-            },
-            {
-                title: "Pinned",
-                subItems: [
-                    {
-                        title: "something",
-                        route: "#"
-                    },
-                    {
-                        title: "something",
-                        route: "#"
-                    }
-                ]
-            }
-        ]
+        subItems: goLinks
     }
 ];
 
