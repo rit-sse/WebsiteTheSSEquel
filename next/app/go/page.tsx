@@ -1,7 +1,7 @@
 import GoLinksContainer from "@/app/go/GoLinksContainer";
 import PinnedGoLinksContainer from "@/app/go/PinnedGoLinksContainer";
 import { GoLinkProps } from "./GoLink";
-import goLinkData from "./GoLinkData";
+import goLinkData from "./goLinkData";
 
 export interface GoLinksContainerProps {
     goLinkData: GoLinkProps[];
