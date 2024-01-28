@@ -25,12 +25,11 @@ export async function GET() {
 }
 
 /**
+ * Create a new department
  * HTTP POST request to /api/departments/
  * @param request { title: string, shortTitle: string }
  * @return department object that was created
  */
-
-//TODO Finish and Test
 export async function POST(request: Request) {
   let body;
   try {
@@ -63,8 +62,6 @@ export async function POST(request: Request) {
  * @param request { id: number }
  * @returns department object previously at { id }
  */
-
-//TODO Finish and Test
 export async function DELETE(request: Request) {
   let body;
   try {
@@ -103,12 +100,11 @@ export async function DELETE(request: Request) {
 }
 
 /**
+ * Update an existing department
  * HTTP PUT request to /api/departments
  * @param request { id: number, title?: string, shortTitle?: string }
  * @returns updated department object
  */
-
-//TODO Finish and Test
 export async function PUT(request: Request) {
   let body;
   try {
@@ -132,13 +128,14 @@ export async function PUT(request: Request) {
     data.shortTitle = body.shortTitle;
   }
 
-  const dept = await prisma.department.update({
-    where: { id },
-    data,
-  });
-  // make sure the selected department exists
-  if (dept == null) {
+  try {
+    const dept = await prisma.department.update({
+      where: { id },
+      data,
+    });
+    return Response.json(dept);
+  } catch {
+    // make sure the selected department exists
     return new Response(`Couldn't find department ID ${id}`, { status: 404 });
   }
-  return Response.json(dept);
 }

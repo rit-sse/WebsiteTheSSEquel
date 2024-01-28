@@ -4,7 +4,7 @@ const prisma = new PrismaClient();
 
 /**
  * HTTP GET request to /api/mentor/
- * @returns list of mentor objects
+ * @return list of mentor objects
  */
 export async function GET() {
   const allMentors = await prisma.mentor.findMany({
@@ -26,14 +26,20 @@ export async function GET() {
 }
 
 /**
+ * Create a new mentor
  * HTTP POST request to /api/mentor/
- * @param request { expirationDate: string, isActive: bool, mentorId: number }
+ * @param request { expirationDate: string, isActive: bool, userId: number }
  * @return mentor object that was created
  */
 
 //TODO Finish and Test
 export async function POST(request: Request) {
-  const body = await request.json();
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return new Response("Invalid JSON", { status: 422 });
+  }
 
   // make sure the expirationDate, isActive, and mentorId properties are included
   if (!("expirationDate" in body && "isActive" in body && "userId" in body)) {
@@ -61,45 +67,57 @@ export async function POST(request: Request) {
  * @param request { id: number }
  * @returns mentor object previously at { id }
  */
-
-//TODO Finish and Test
 export async function DELETE(request: Request) {
-  const body = await request.json();
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return new Response("Invalid JSON", { status: 422 });
+  }
 
   // verify the id is included
   if (!("id" in body)) {
     return new Response("ID must be included", { status: 400 });
   }
   const id = body.id;
-  const mentorExists = await prisma.mentor.findUnique({ where: { id: id } })
+  // mentor object from database
+  const mentorExists = await prisma.mentor.findUnique({ where: { id: id } });
   if (mentorExists == null) {
     return new Response(`Couldn't find mentor ID ${id}`, { status: 404 });
   }
-  const deleteCourse = await prisma.courseTaken.deleteMany({ where: { mentorId: id } });
-  const deleteSkills = await prisma.mentorSkill.deleteMany({ where: { mentor_Id: id } });
-  const deleteScheduleRef = await prisma.schedule.deleteMany({ where: { mentorId: id } });
+  const _deleteCourse = await prisma.courseTaken.deleteMany({
+    where: { mentorId: id },
+  });
+  const _deleteSkills = await prisma.mentorSkill.deleteMany({
+    where: { mentor_Id: id },
+  });
+  const _deleteScheduleRef = await prisma.schedule.deleteMany({
+    where: { mentorId: id },
+  });
 
   const mentor = await prisma.mentor.delete({ where: { id: id } });
-  // make sure the specified mentor exists
-  if (mentor == null) {
-    return new Response(`Couldn't find mentor ID ${id}`, { status: 404 });
-  }
   return Response.json(mentor);
 }
 
 /**
+ * Update an existing mentor
  * HTTP PUT request to /api/mentor
- * @param request { id: number, expirationDate?: string, isActive?: bool, mentorId?: number }
+ * @param request { id: number, expirationDate?: string, isActive?: bool, userId?: number }
  * @returns updated mentor object
  */
-
-//TODO Finish and Test
 export async function PUT(request: Request) {
-  const body = await request.json();
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return new Response("Invalid JSON", { status: 422 });
+  }
 
   // verify that the id is included in the request
   if (!("id" in body)) {
-    return new Response("ID must be included", { status: 400 });
+    return new Response("`id` must be included in request body", {
+      status: 400,
+    });
   }
   const id = body.id;
 
@@ -115,17 +133,18 @@ export async function PUT(request: Request) {
   if ("isActive" in body) {
     data.isActive = body.isActive;
   }
-  if ("mentorId" in body) {
-    data.user_Id = body.mentorId;
+  if ("userId" in body) {
+    data.user_Id = body.userId;
   }
 
-  const mentor = await prisma.mentor.update({
-    where: { id },
-    data,
-  });
-  // make sure the selected mentor exists
-  if (mentor == null) {
+  try {
+    const mentor = await prisma.mentor.update({
+      where: { id },
+      data,
+    });
+    return Response.json(mentor);
+  } catch {
+    // make sure the selected mentor exists
     return new Response(`Couldn't find mentor ID ${id}`, { status: 404 });
   }
-  return Response.json(mentor);
 }

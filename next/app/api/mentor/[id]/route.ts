@@ -28,14 +28,13 @@ export async function GET(
             id: true,
             firstName: true,
             lastName: true,
-            email: true,
           },
         },
       },
     });
     // make sure the selected mentor exists
     if (mentor == null) {
-      return new Response(`Didn't find Mentor ID ${id}`, { status: 404 });
+      return new Response(`Could't find Mentor ID ${id}`, { status: 404 });
     }
     return Response.json(mentor);
   } catch {
