@@ -16,7 +16,7 @@ api/
 |-- skills/[id]/route.ts (author: Garrett Tupper | status: done) 
 |-- mentor_skill_api.ts (author: _______ | status: not_done)
 |-- department_api.ts (author: Abigail Cawley | status: not_done)
-|-- course_api.ts (author: _______ | status: not_done)
+|-- course_api.ts (author: Abigail Cawley | status: not_done)
 |-- course_taken_api.ts (author: _______ | status: not_done)
 |-- hour_block_api.ts (author: _______ | status: not_done)
 |-- schedule_api.ts (author: _______ | status: not_done)

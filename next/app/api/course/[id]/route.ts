@@ -33,7 +33,7 @@ export async function GET(
     });
     // make sure the selected course exists
     if (course == null) {
-      return new Response(`Didn't find Course ID ${id}`, { status: 404 });
+      return new Response(`Invalid Course ID ${id}`, { status: 404 });
     }
     return Response.json(course);
   } catch {

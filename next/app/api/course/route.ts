@@ -25,12 +25,12 @@ export async function GET() {
 }
 
 /**
+ * Create a new course
  * HTTP POST request to /api/course/
  * @param request { title: string, code: int, departmentId: int }
  * @return course object that was created
  */
 
-//TODO Finish and Test
 export async function POST(request: Request) {
   let body;
   try {
@@ -50,14 +50,18 @@ export async function POST(request: Request) {
   const code = body.code;
   const departmentId = body.departmentId;
 
-  const course = await prisma.course.create({
-    data: {
-      title,
-      code,
-      departmentId,
-    },
-  });
-  return Response.json(course, { status: 201 });
+  try {
+    const course = await prisma.course.create({
+      data: {
+        title,
+        code,
+        departmentId,
+      },
+    });
+    return Response.json(course, { status: 201 });
+  } catch (e) {
+    return new Response(`Failed to create user: ${e}`, { status: 500 });
+  }
 }
 
 /**
@@ -65,8 +69,6 @@ export async function POST(request: Request) {
  * @param request { id: number }
  * @returns course object previously at { id }
  */
-
-//TODO Finish and Test
 export async function DELETE(request: Request) {
   let body;
   try {
@@ -92,12 +94,11 @@ export async function DELETE(request: Request) {
 }
 
 /**
+ * Update existing course
  * HTTP PUT request to /api/course
  * @param request { id: number, title?: string, code?: int }
  * @returns updated course object
  */
-
-//TODO Finish and Test
 export async function PUT(request: Request) {
   let body;
   try {
@@ -121,13 +122,14 @@ export async function PUT(request: Request) {
     data.code = body.code;
   }
 
-  const course = await prisma.course.update({
-    where: { id },
-    data,
-  });
-  // make sure the selected course exists
-  if (course == null) {
-    return new Response(`Couldn't find course ID ${id}`, { status: 404 });
+  try {
+    const course = await prisma.course.update({
+      where: { id },
+      data,
+    });
+    return Response.json(course);
+  } catch (e) {
+    // make sure the selected course exists
+    return new Response(`Failed to update course: ${e}`, { status: 500 });
   }
-  return Response.json(course);
 }

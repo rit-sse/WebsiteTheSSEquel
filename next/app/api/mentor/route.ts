@@ -31,8 +31,6 @@ export async function GET() {
  * @param request { expirationDate: string, isActive: bool, userId: number }
  * @return mentor object that was created
  */
-
-//TODO Finish and Test
 export async function POST(request: Request) {
   let body;
   try {
@@ -52,14 +50,18 @@ export async function POST(request: Request) {
   const isActive = body.isActive;
   const user_Id = body.userId;
 
-  const mentor = await prisma.mentor.create({
-    data: {
-      expirationDate,
-      isActive,
-      user_Id,
-    },
-  });
-  return Response.json(mentor, { status: 201 });
+  try {
+    const mentor = await prisma.mentor.create({
+      data: {
+        expirationDate,
+        isActive,
+        user_Id,
+      },
+    });
+    return Response.json(mentor, { status: 201 });
+  } catch (e) {
+    return new Response(`Failed to create user: ${e}`, { status: 500 });
+  }
 }
 
 /**
@@ -143,8 +145,8 @@ export async function PUT(request: Request) {
       data,
     });
     return Response.json(mentor);
-  } catch {
+  } catch (e) {
     // make sure the selected mentor exists
-    return new Response(`Couldn't find mentor ID ${id}`, { status: 404 });
+    return new Response(`Failed to update mentor: ${e}`, { status: 500 });
   }
 }
