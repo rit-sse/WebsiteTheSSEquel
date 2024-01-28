@@ -76,12 +76,28 @@ export async function DELETE(request: Request) {
   }
   const id = body.id;
 
-  // make sure the specified department exists
   try {
+    const _quotes = await prisma.quote.deleteMany({ where: { user_id: id } });
+    const _officers = await prisma.officer.deleteMany({
+      where: { user_id: id },
+    });
+    await prisma.account.deleteMany({ where: { userId: id } });
+    await prisma.session.deleteMany({ where: { userId: id } });
+    const mentors = await prisma.mentor.findMany({ where: { user_Id: id } });
+    // to delete a user, we must delete their mentor status
+    for (const mentor of mentors) {
+      // but to delete a mentor, we must delete all of their courses, schedule, and skills
+      await prisma.courseTaken.deleteMany({
+        where: { mentorId: mentor.id },
+      });
+      await prisma.schedule.deleteMany({ where: { mentorId: mentor.id } });
+      await prisma.mentorSkill.deleteMany({ where: { mentor_Id: mentor.id } });
+    }
+    const _mentors = await prisma.mentor.deleteMany({ where: { user_Id: id } });
     const user = await prisma.user.delete({ where: { id } });
     return Response.json(user);
-  } catch {
-    return new Response(`Couldn't find user ID ${id}`, { status: 404 });
+  } catch (e) {
+    return new Response(`Failed to delete user: ${e}`, { status: 500 });
   }
 }
 
