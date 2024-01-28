@@ -48,13 +48,17 @@ export async function POST(request: Request) {
   const title = body.title;
   const shortTitle = body.shortTitle;
 
-  const dept = await prisma.department.create({
-    data: {
-      title,
-      shortTitle,
-    },
-  });
-  return Response.json(dept, { status: 201 });
+  try {
+    const dept = await prisma.department.create({
+      data: {
+        title,
+        shortTitle,
+      },
+    });
+    return Response.json(dept, { status: 201 });
+  } catch (e) {
+    return new Response(`Failed to create department: ${e}`, { status: 500 });
+  }
 }
 
 /**
@@ -134,8 +138,8 @@ export async function PUT(request: Request) {
       data,
     });
     return Response.json(dept);
-  } catch {
+  } catch (e) {
     // make sure the selected department exists
-    return new Response(`Couldn't find department ID ${id}`, { status: 404 });
+    return new Response(`Failed to update department: ${e}`, { status: 500 });
   }
 }

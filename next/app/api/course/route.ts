@@ -50,14 +50,18 @@ export async function POST(request: Request) {
   const code = body.code;
   const departmentId = body.departmentId;
 
-  const course = await prisma.course.create({
-    data: {
-      title,
-      code,
-      departmentId,
-    },
-  });
-  return Response.json(course, { status: 201 });
+  try {
+    const course = await prisma.course.create({
+      data: {
+        title,
+        code,
+        departmentId,
+      },
+    });
+    return Response.json(course, { status: 201 });
+  } catch (e) {
+    return new Response(`Failed to create user: ${e}`, { status: 500 });
+  }
 }
 
 /**
@@ -124,8 +128,8 @@ export async function PUT(request: Request) {
       data,
     });
     return Response.json(course);
-  } catch {
+  } catch (e) {
     // make sure the selected course exists
-    return new Response(`Couldn't find course ID ${id}`, { status: 404 });
+    return new Response(`Failed to update course: ${e}`, { status: 500 });
   }
 }
