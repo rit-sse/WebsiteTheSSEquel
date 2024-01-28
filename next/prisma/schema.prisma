@@ -112,7 +112,7 @@ model Mentor {
   //Stores active status as a Boolean
   isActive Boolean
 
-  //Relatinal fieldS
+  //Relatinal fields
   mentorSkill MentorSkill[]
   courseTaken CourseTaken[]
   schedule    Schedule[]
