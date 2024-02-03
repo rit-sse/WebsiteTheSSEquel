@@ -21,7 +21,7 @@ export async function GET() {
 /**
  * Create a new user
  * HTTP POST request to /api/user/
- * @param request { firstName: string, lastName: string }
+ * @param request { firstName: string, lastName: string, email: string }
  * @return user object that was created
  */
 export async function POST(request: Request) {
@@ -76,9 +76,14 @@ export async function DELETE(request: Request) {
   }
   const id = body.id;
 
+  const userExists = prisma.user.findUnique({ where: { id } });
+  if (userExists == null) {
+    return new Response(`Couldn't find user ID ${id}`, { status: 404 });
+  }
+
   try {
-    const _quotes = await prisma.quote.deleteMany({ where: { user_id: id } });
-    const _officers = await prisma.officer.deleteMany({
+    await prisma.quote.deleteMany({ where: { user_id: id } });
+    await prisma.officer.deleteMany({
       where: { user_id: id },
     });
     await prisma.account.deleteMany({ where: { userId: id } });
@@ -93,7 +98,7 @@ export async function DELETE(request: Request) {
       await prisma.schedule.deleteMany({ where: { mentorId: mentor.id } });
       await prisma.mentorSkill.deleteMany({ where: { mentor_Id: mentor.id } });
     }
-    const _mentors = await prisma.mentor.deleteMany({ where: { user_Id: id } });
+    await prisma.mentor.deleteMany({ where: { user_Id: id } });
     const user = await prisma.user.delete({ where: { id } });
     return Response.json(user);
   } catch (e) {
