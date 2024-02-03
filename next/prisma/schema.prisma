@@ -124,7 +124,7 @@ model Skill {
   id          Int           @id @default(autoincrement())
   //Store skill as a unique String
   skill       String        @unique
-  //Relatinal field
+  //Relational field
   mentorSkill MentorSkill[]
 }
 

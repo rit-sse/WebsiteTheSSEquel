@@ -37,7 +37,6 @@ async function seedQuote() {
         where: { id: 1 },
         update: {},
         create: {
-            id: 1,
             date_added: new Date(),
             quote: 'This is a quote',
             user_id: 1,
@@ -48,7 +47,6 @@ async function seedQuote() {
         where: { id: 2 },
         update: {},
         create: {
-            id: 2,
             date_added: new Date(),
             quote: 'This is another quote',
             user_id: 2,
@@ -59,7 +57,6 @@ async function seedQuote() {
         where: { id: 3 },
         update: {},
         create: {
-            id: 3,
             date_added: new Date(),
             quote: 'This is a third quote',
             user_id: 3,

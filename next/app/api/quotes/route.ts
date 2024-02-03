@@ -32,7 +32,7 @@ export async function GET() {
  * @returns quote object that was created
  */
 
-// TODO: Finish and Test
+// TODO: Test
 export async function POST(request: Request) {
     const body = await request.json()
 
@@ -63,4 +63,28 @@ export async function POST(request: Request) {
     });
 
     return Response.json(create_quote, { status: 201 })
+}
+
+/**
+ * DELETE request to /api/quote
+ * @param request { id: number }
+ * @returns quote object that was deleted at { id }
+ */
+
+//TODO: Test
+export async function DELETE(request: Request) {
+    const body = await request.json()
+
+    if (!("id" in body)) {
+        return new Response("id of quote must be included", {status: 400})
+    }
+
+    const id = body.id
+    const quoteExists = prisma.quote.findUnique({where: {id}});
+    if (!quoteExists) {
+        return new Response("quote does not exist", {status: 404})
+    }
+
+    const quote = await prisma.quote.delete({where: { id }})
+    return Response.json(quote)
 }
