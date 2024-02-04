@@ -13,8 +13,8 @@ jobs:
         id: run-newman
         uses: anthonyvscode/newman-action@v1
         with:
-          collection: todo-application.postman_collection.json
-          environment: todo-application.postman_environment.json
+          collection: next/postman/WebsiteTheSSEquelTests.postman_collection.json
+          environment: next/postman/WebsiteTheSSEquelTests.postman_collection.json
           reporters: cli
 
       - name: Output summary to console
