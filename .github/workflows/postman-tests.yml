@@ -9,6 +9,12 @@ jobs:
       - name:
         uses: actions/checkout@v2
 
+      - name: Start API
+        run: |
+          cd next
+          npm run dev &
+          sleep 5
+
       - name: Run API Tests
         id: run-newman
         uses: anthonyvscode/newman-action@v1
