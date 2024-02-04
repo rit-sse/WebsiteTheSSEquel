@@ -12,7 +12,7 @@ jobs:
       - name: Start API
         run: |
           cd next
-          npm run dev &
+          npm i && npm run dev &
           sleep 5
 
       - name: Run API Tests
