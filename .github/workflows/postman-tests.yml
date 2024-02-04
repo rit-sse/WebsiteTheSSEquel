@@ -31,7 +31,7 @@ jobs:
         run: |
           cd next
           npm i
-          npx prisma migrate dev
+          npx prisma migrate dev --force
           npx prisma db seed
           npm run dev &
           sleep 10
