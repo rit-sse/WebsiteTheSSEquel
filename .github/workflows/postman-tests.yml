@@ -13,7 +13,7 @@ jobs:
         run: |
           cd next
           npm i
-          npm run dev &
+          npx prisma db seed && npm run dev &
           sleep 20
 
       - name: Run API Tests
