@@ -26,29 +26,56 @@ export async function POST(request: Request) {
 		return new Response("Invalid JSON", { status: 422 });
 	}
 
-	console.log(body);
-
 	if (!("skill" in body)) {
-		return new Response("skill must be included in the body", { status: 400 });
+		return new Response("'skill' must be included in the body", { status: 400 });
 	}
-	const skillName = body.skill;
 
-	console.log(`skill name: ${skillName}`);
-
-	const skillCount = await prisma.skill.count();
-
-	console.log(skillCount);
+	const skill_exists = await prisma.skill.findFirst({
+		where: {
+			skill: body.skill,
+		},
+	});
+	if (skill_exists != null) {
+		console.log(skill_exists);
+		return new Response(`skill ${body.skill} already exists`, { status: 422 });
+	}
 
 	const skill = await prisma.skill.create({
 		data: {
-			id: skillCount+1,
-			skill: skillName,
+			skill: body.skill,
 		},
 	});
 
-	console.log(skill);
-
 	return Response.json(skill, { status: 201 });
+}
+
+export async function PUT(request: Request) {
+	let body;
+	try {
+		body = await request.json();
+	} catch {
+		return new Response("Invalid JSON", { status: 422 });
+	}
+
+	if (!("id" in body)) {
+		return new Response("'id'' must be in body", { status: 400 });
+	} else if (!("skill" in body)) {
+		return new Response("'skill' must be in body", { status: 400 });
+	}
+
+	const skill = await prisma.skill.update({
+		where: {
+			id: body.id,
+		},
+		data: {
+			skill: body.skill,
+		},
+	});
+
+	if (skill == null) {
+		return new Response(`Coulnd't find skill ID ${body.id}`, { status: 404 });
+	}
+	return Response.json(skill);
 }
 
 export async function DELETE(request: Request) {
@@ -62,26 +89,23 @@ export async function DELETE(request: Request) {
 	if (!("id" in body)) {
 		return new Response("ID must be in body", { status: 400 });
 	}
-	const id = body.id;
-
-	console.log(id);
 
 	const skillExists = await prisma.skill.findUnique({
 		where: {
-			id: id,
+			id: body.id,
 		},
 	});
 	if (skillExists == null) {
-		return new Response(`Coulnd't find skill ID ${id}`, { status: 404 });
+		return new Response(`Coulnd't find skill ID ${body.id}`, { status: 404 });
 	}
 
 	const _deleteMentorSkills = await prisma.mentorSkill.deleteMany({
-		where: { skill_Id: id },
+		where: { skill_Id: body.id },
 	});
 
 	const skill = await prisma.skill.delete({
 		where: {
-			id: id,
+			id: body.id,
 		},
 	});
 	return Response.json(skill);

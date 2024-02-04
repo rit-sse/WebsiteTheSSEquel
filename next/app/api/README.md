@@ -13,7 +13,7 @@ api/
 |-- officer_api.ts (author: Anderson Cardenas | status: not_done)
 |-- mentor_api.ts (author: Abigail Cawley | status: not_done)
 |-- skills/route.ts (author: Garrett Tupper | status: done)
-|-- skills/[id]/route.ts (author: Garrett Tupper | status: done) 
+|-- skills/[id]/route.ts (author: Garrett Tupper | status: done)
 |-- mentor_skill_api.ts (author: _______ | status: not_done)
 |-- department_api.ts (author: Abigail Cawley | status: not_done)
 |-- course_api.ts (author: Abigail Cawley | status: not_done)

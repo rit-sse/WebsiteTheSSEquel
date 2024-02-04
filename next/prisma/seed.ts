@@ -183,7 +183,6 @@ async function seedSkill() {
         where: { id: 1 },
         update: {},
         create: {
-            id: 1,
             skill: 'Java',
         },
     })
@@ -192,7 +191,6 @@ async function seedSkill() {
         where: { id: 2 },
         update: {},
         create: {
-            id: 2,
             skill: 'c++',
         },
     })
@@ -201,7 +199,6 @@ async function seedSkill() {
         where: { id: 3 },
         update: {},
         create: {
-            id: 3,
             skill: 'Python',
         },
     })

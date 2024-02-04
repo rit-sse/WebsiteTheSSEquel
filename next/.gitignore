@@ -42,3 +42,7 @@ prisma/migrations
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# nix envs
+.envrc
+.direnv
