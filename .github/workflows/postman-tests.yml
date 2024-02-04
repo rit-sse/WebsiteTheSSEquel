@@ -1,0 +1,21 @@
+name: Postman tests
+on:
+  push:
+    branches: [main, dev/postman-tests]
+jobs:
+  run-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name:
+        uses: actions/checkout@v2
+
+      - name: Run API Tests
+        id: run-newman
+        uses: anthonyvscode/newman-action@v1
+        with:
+          collection: todo-application.postman_collection.json
+          environment: todo-application.postman_environment.json
+          reporters: cli
+
+      - name: Output summary to console
+        run: echo ${{ steps.run-newman.outputs.summary }}
