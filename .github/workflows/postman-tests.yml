@@ -31,9 +31,9 @@ jobs:
         run: |
           cd next
           npm i
-          npx prisma generate
           npx prisma migrate reset --force
           npx prisma migrate dev
+          npx prisma generate
           npx prisma db seed
 
       - name: Start API
