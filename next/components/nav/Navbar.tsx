@@ -7,21 +7,6 @@ import SSELogoFull from "../common/SSELogoFull";
 import SSELogoSmall from "../common/SSELogoSmall";
 import AuthButton from "./AuthButton";
 
-import goLinkData from "@/app/go/goLinkData";
-
-const goLinks =[
-    {
-        title: "All Go Links",
-        route: "/go"
-    },
-    ...goLinkData
-    .filter(data => data.pinned)
-    .map(data => ({
-        title: data.goUrl,
-        route: `/go/${data.goUrl}`
-    }))
-]
-
 const navItems: NavItemProps[] = [
     {
         title: "Home",
@@ -81,9 +66,9 @@ const navItems: NavItemProps[] = [
         title: "Projects",
         route: "#",
     },
-    { // Go links dropdown should be extracted to it's own component since the nav items are dynamic (depending on what's pinned)
+    { // Go links dropdown removed. Check commit d2f1d82 in feature branch if we need to restore the dropdowns.
         title: "Go Links",
-        subItems: goLinks
+        route: "/go"
     }
 ];
 
