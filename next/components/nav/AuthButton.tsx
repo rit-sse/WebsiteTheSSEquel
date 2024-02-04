@@ -6,7 +6,10 @@ export default function AuthButton() {
 
     if (session) {
         return (
+            <>
             <HoverBoldButton text="Logout" dataLabel="Logout" onClick={() => signOut()} />
+            <img src='https://source.boringavatars.com/beam/' className="h-4/6 w-4/6" />
+            </>
         );
     } else {
         return (
