@@ -32,7 +32,7 @@ export async function POST(request: Request) {
     return new Response("Invalid JSON", { status: 422 });
   }
 
-  // make sure the title and shortTitle properties are included
+  // make sure the firstName, lastName, and email properties are included
   if (!("firstName" in body && "lastName" in body && "email" in body)) {
     return new Response(
       '"firstName", "lastName", and "email" must be included in request body',
@@ -126,7 +126,7 @@ export async function PUT(request: Request) {
   }
   const id = body.id;
 
-  // only update included fields
+  // only update fields the caller wants to update
   const data: { firstName?: string; lastName?: string; email?: string } = {};
   if ("firstName" in body) {
     data.firstName = body.firstName;
