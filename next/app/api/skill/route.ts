@@ -59,8 +59,13 @@ export async function PUT(request: Request) {
 
 	if (!("id" in body)) {
 		return new Response("'id'' must be in body", { status: 400 });
-	} else if (!("skill" in body)) {
-		return new Response("'skill' must be in body", { status: 400 });
+	}
+	const skill_exists =
+		(await prisma.skill.findUnique({
+			where: { id: body.id },
+		})) != null;
+	if (!skill_exists) {
+		return new Response(`Coulnd't find skill ID ${body.id}`, { status: 404 });
 	}
 
 	const skill = await prisma.skill.update({
@@ -71,10 +76,6 @@ export async function PUT(request: Request) {
 			skill: body.skill,
 		},
 	});
-
-	if (skill == null) {
-		return new Response(`Coulnd't find skill ID ${body.id}`, { status: 404 });
-	}
 	return Response.json(skill);
 }
 
