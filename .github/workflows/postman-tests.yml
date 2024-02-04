@@ -31,8 +31,10 @@ jobs:
         run: |
           cd next
           npm i
-          npx prisma migrate dev && npx prisma db seed && npm run dev &
-          sleep 20
+          npx prisma migrate dev
+          npx prisma db seed
+          npm run dev &
+          sleep 10
 
       - name: Run API Tests
         id: run-newman
