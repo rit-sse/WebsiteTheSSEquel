@@ -12,8 +12,9 @@ jobs:
       - name: Start API
         run: |
           cd next
-          npm i && npm run dev &
-          sleep 5
+          npm i
+          npm run dev &
+          sleep 20
 
       - name: Run API Tests
         id: run-newman
