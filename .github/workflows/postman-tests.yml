@@ -6,6 +6,9 @@ jobs:
   run-and-test:
     runs-on: ubuntu-latest
 
+    env:
+      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/postgres?schema=public"
+
     services:
       postgres:
         image: postgres:14
