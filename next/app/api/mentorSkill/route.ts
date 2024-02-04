@@ -99,3 +99,28 @@ export async function PUT(request: Request) {
 	});
 	return Response.json(mentorSkill);
 }
+
+export async function DELETE(request: Request) {
+	let body;
+	try {
+		body = await request.json();
+	} catch {
+		return new Response("Invalid JSON", { status: 422 });
+	}
+
+	if (!("id" in body)) {
+		return new Response("", { status: 0 });
+	}
+
+	const mentorSkill_exists = await prisma.mentorSkill.findUnique({
+		where: { id: body.id },
+	}) != null;
+	if (!mentorSkill_exists) {
+		return new Response(`Couldn't find mentorSkill with ID ${body.id}`, { status: 404 });
+	}
+
+	const mentorSkill = await prisma.mentorSkill.delete({
+		where: { id: body.id },
+	});
+	return Response.json(mentorSkill);
+}
