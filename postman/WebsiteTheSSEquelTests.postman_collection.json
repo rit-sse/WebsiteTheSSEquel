@@ -13,7 +13,7 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Assert Expected value for GET /api/user\", function () {\r",
+							"pm.test(\"Response for GET /api/user\", function () {\r",
 							"    var jsonData = pm.response.json();\r",
 							"    pm.expect(jsonData).to.eql([\r",
 							"        {\r",
@@ -65,7 +65,7 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Assert Expected value for GET /api/user/[id]\", function () {\r",
+							"pm.test(\"Response for GET /api/user/[id]\", function () {\r",
 							"    var jsonData = pm.response.json();\r",
 							"    pm.expect(jsonData).to.eql({\r",
 							"            \"firstName\": \"John\",\r",
@@ -103,7 +103,7 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Updated Data Matches\", function () {\r",
+							"pm.test(\"Response for PUT /api/user\", function () {\r",
 							"    var jsonData = pm.response.json();\r",
 							"    pm.expect(jsonData.firstName).to.equal(\"Johnathaniel\");\r",
 							"});"
