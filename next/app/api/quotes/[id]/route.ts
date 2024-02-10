@@ -4,7 +4,7 @@ const prisma = new PrismaClient()
 
 /**
  * HTTP GET request to api/quotes/[id]
- * @param request
+ * @param request { dateAdded: Date, quote: string, user_id: number, author?: string }
  * @param param1 { params: { id: string } }
  * @returns quote with { id }
  */
