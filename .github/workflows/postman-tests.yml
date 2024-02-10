@@ -1,7 +1,8 @@
+# See postman/README.md
 name: Postman tests
 on:
   push:
-    branches: [main, dev/postman-tests]
+    branches: [main, dev/postman-tests, dev/api]
 jobs:
   run-and-test:
     runs-on: ubuntu-latest
@@ -9,6 +10,7 @@ jobs:
     env:
       DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/postgres?schema=public"
 
+    # Start up a postgres database
     services:
       postgres:
         image: postgres:14
@@ -27,26 +29,28 @@ jobs:
       - name:
         uses: actions/checkout@v2
 
+        # run the migration and seeding scripts for prisma
       - name: Set up Prisma
         run: |
           cd next
           npm i
-          # npx prisma migrate reset --force
           npx prisma migrate dev
           npx prisma generate
           npx prisma db seed
 
+        # run the API in the background. This will host it on localhost:3000
       - name: Start API
         run: |
           cd next
           npm run dev &
 
+        # Run the tests through postman
       - name: Run API Tests
         id: run-newman
         uses: anthonyvscode/newman-action@v1
         with:
-          collection: next/postman/WebsiteTheSSEquelTests.postman_collection.json
-          environment: next/postman/WebsiteTheSSEquelTests.postman_collection.json
+          collection: postman/WebsiteTheSSEquelTests.postman_collection.json
+          environment: postman/WebsiteTheSSEquelTests.postman_collection.json
           reporters: cli
 
       - name: Output summary to console

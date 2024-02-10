@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "4aafadc4-886e-4f24-9516-4ea5c4e15c06",
+		"_postman_id": "428de5ad-323d-49c9-82f7-7244885a539b",
 		"name": "WebsiteTheSSEquelTests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "31102735"
@@ -13,7 +13,7 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Assert Expected value for GET\", function () {\r",
+							"pm.test(\"Assert Expected value for GET /api/user\", function () {\r",
 							"    var jsonData = pm.response.json();\r",
 							"    pm.expect(jsonData).to.eql([\r",
 							"        {\r",
