@@ -27,6 +27,12 @@ pm.test("Assert Expected value for <your request>", function () {
 });
 ```
 
+> ##### Errors Running Locally?
+>
+> API Tests verify that the expected data is returned from API calls. This means that if your local database contains
+> unexpected modifications, API calls will fail to produce expected behavior. If you are experiencing failures when testing
+> locally, try running `npx prisma db seed`
+
 ### Export Tests
 
 To export tests, find the three horizontal dots next to `WebsiteTheSSEquelTests` in the workplace explorer. Click them and then click export in the dropdown. Select the `Collection v2.1` format and select the `postman/WebsitetheSSEQuelTests.postman_collection.json` file in this repository to replace it.
