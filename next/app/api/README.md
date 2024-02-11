@@ -19,7 +19,7 @@ api/
 |-- course_taken_api.ts (author: Garrett Tupper | status: not_done)
 |-- hour_block_api.ts (author: _______ | status: not_done)
 |-- schedule_api.ts (author: _______ | status: not_done)
-|-- go_link_api.ts (author: _______ | status: not_done)
+|-- go_link_api.ts (author: Abigail Cawley | status: not_done)
 |-- account_api.ts (author: _______ | status: not_done)
 |-- session_api.ts (author: _______ | status: not_done)
 |-- verification_token_api.ts (author: _______ | status: not_done)
