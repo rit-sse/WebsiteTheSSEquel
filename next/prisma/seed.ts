@@ -207,7 +207,6 @@ async function seedMentorSkill() {
         where: { id: 1 },
         update: {},
         create: {
-            id: 1,
             mentor_Id: 1,
             skill_Id: 1,
         },
@@ -217,7 +216,6 @@ async function seedMentorSkill() {
         where: { id: 2 },
         update: {},
         create: {
-            id: 2,
             mentor_Id: 2,
             skill_Id: 2,
         },
@@ -227,7 +225,6 @@ async function seedMentorSkill() {
         where: { id: 3 },
         update: {},
         create: {
-            id: 3,
             mentor_Id: 3,
             skill_Id: 3,
         },
