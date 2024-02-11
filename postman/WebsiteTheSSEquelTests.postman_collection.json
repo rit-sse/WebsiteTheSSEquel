@@ -147,7 +147,11 @@
 						"exec": [
 							"pm.test(\"Response for GET /api/golinks/public\", function () {\r",
 							"    var jsonData = pm.response.json();\r",
-							"    pm.expect(jsonData).to.eql([{ \"id\": 1, \"golink\": \"sse\", \"url\": \"sse.rit.edu\", \"description\": \"SSE Website\", \"createdAt\": \"2024-02-11T19:14:35.918Z\", \"updatedAt\": \"2024-02-11T19:14:35.918Z\", \"isPublic\": true, \"isPinned\": true }, { \"id\": 2, \"golink\": \"google\", \"url\": \"google.com\", \"description\": \"An underground and unknown search engine\", \"createdAt\": \"2024-02-11T19:14:35.921Z\", \"updatedAt\": \"2024-02-11T19:14:35.921Z\", \"isPublic\": true, \"isPinned\": true }, { \"id\": 3, \"golink\": \"youtube\", \"url\": \"youtube.com\", \"description\": \"A small video sharing website\", \"createdAt\": \"2024-02-11T19:14:35.924Z\", \"updatedAt\": \"2024-02-11T19:14:35.924Z\", \"isPublic\": true, \"isPinned\": true }]);\r",
+							"    for (value of jsonData) {\r",
+							"        delete value.createdAt;\r",
+							"        delete value.updatedAt;\r",
+							"    }\r",
+							"    pm.expect(jsonData).to.eql([{ \"id\": 1, \"golink\": \"sse\", \"url\": \"sse.rit.edu\", \"description\": \"SSE Website\", \"isPublic\": true, \"isPinned\": true }, { \"id\": 2, \"golink\": \"google\", \"url\": \"google.com\", \"description\": \"An underground and unknown search engine\", \"isPublic\": true, \"isPinned\": true }, { \"id\": 3, \"golink\": \"youtube\", \"url\": \"youtube.com\", \"description\": \"A small video sharing website\", \"isPublic\": true, \"isPinned\": true }]);\r",
 							"});"
 						],
 						"type": "text/javascript"
