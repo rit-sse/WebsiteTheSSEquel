@@ -147,7 +147,7 @@
 						"exec": [
 							"pm.test(\"Response for GET /api/golinks/public\", function () {\r",
 							"    var jsonData = pm.response.json();\r",
-							"    pm.expect(jsonData).to.eql([{ \"id\": 1, \"golink\": \"sse\", \"url\": \"sse.rit.edu\", \"description\": \"SSE Website\", \"createdAt\": \"2024-02-11T19:09:58.326Z\", \"updatedAt\": \"2024-02-11T19:09:58.326Z\", \"isPublic\": true, \"isPinned\": true }, { \"id\": 2, \"golink\": \"google\", \"url\": \"google.com\", \"description\": \"An underground and unknown search engine\", \"createdAt\": \"2024-02-11T19:09:58.330Z\", \"updatedAt\": \"2024-02-11T19:09:58.330Z\", \"isPublic\": true, \"isPinned\": true }, { \"id\": 3, \"golink\": \"youtube\", \"url\": \"youtube.com\", \"description\": \"A small video sharing website\", \"createdAt\": \"2024-02-11T19:09:58.333Z\", \"updatedAt\": \"2024-02-11T19:09:58.333Z\", \"isPublic\": true, \"isPinned\": true }]);\r",
+							"    pm.expect(jsonData).to.eql([{ \"id\": 1, \"golink\": \"sse\", \"url\": \"sse.rit.edu\", \"description\": \"SSE Website\", \"createdAt\": \"2024-02-11T19:14:35.918Z\", \"updatedAt\": \"2024-02-11T19:14:35.918Z\", \"isPublic\": true, \"isPinned\": true }, { \"id\": 2, \"golink\": \"google\", \"url\": \"google.com\", \"description\": \"An underground and unknown search engine\", \"createdAt\": \"2024-02-11T19:14:35.921Z\", \"updatedAt\": \"2024-02-11T19:14:35.921Z\", \"isPublic\": true, \"isPinned\": true }, { \"id\": 3, \"golink\": \"youtube\", \"url\": \"youtube.com\", \"description\": \"A small video sharing website\", \"createdAt\": \"2024-02-11T19:14:35.924Z\", \"updatedAt\": \"2024-02-11T19:14:35.924Z\", \"isPublic\": true, \"isPinned\": true }]);\r",
 							"});"
 						],
 						"type": "text/javascript"
@@ -179,7 +179,7 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Response for GET /api/golinks/public\", function () {\r",
+							"pm.test(\"Response for GET /api/golinks/officer\", function () {\r",
 							"    var jsonData = pm.response.json();\r",
 							"    pm.expect(jsonData).to.eql([]);\r",
 							"});"
@@ -213,7 +213,7 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Response for PUT /api/user\", function () {\r",
+							"pm.test(\"Response for PUT /api/golinks\", function () {\r",
 							"    var jsonData = pm.response.json();\r",
 							"    pm.expect(jsonData.url).to.equal(\"https://duckduckgo.com\");\r",
 							"    pm.expect(jsonData.golink).to.equal(\"Duck Duck Go\");\r",
