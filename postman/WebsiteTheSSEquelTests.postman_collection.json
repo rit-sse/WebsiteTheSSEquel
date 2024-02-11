@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "428de5ad-323d-49c9-82f7-7244885a539b",
+		"_postman_id": "ed754f85-d1ea-4115-984a-0eaec489d4a4",
 		"name": "WebsiteTheSSEquelTests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "31102735"
@@ -133,6 +133,118 @@
 					"path": [
 						"api",
 						"user"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/api/golinks/public",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Response for GET /api/golinks/public\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData).to.eql([{ \"id\": 1, \"golink\": \"sse\", \"url\": \"sse.rit.edu\", \"description\": \"SSE Website\", \"createdAt\": \"2024-02-04T19:03:52.483Z\", \"updatedAt\": \"2024-02-04T19:03:52.483Z\", \"isPublic\": true, \"isPinned\": true }, { \"id\": 2, \"golink\": \"google\", \"url\": \"google.com\", \"description\": \"An underground and unknown search engine\", \"createdAt\": \"2024-02-04T19:03:52.485Z\", \"updatedAt\": \"2024-02-04T19:03:52.485Z\", \"isPublic\": true, \"isPinned\": true }, { \"id\": 3, \"golink\": \"youtube\", \"url\": \"youtube.com\", \"description\": \"A small video sharing website\", \"createdAt\": \"2024-02-04T19:03:52.489Z\", \"updatedAt\": \"2024-02-04T19:03:52.489Z\", \"isPublic\": true, \"isPinned\": true }]);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:3000/api/golinks/public",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"golinks",
+						"public"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/api/golinks/officer",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Response for GET /api/golinks/public\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData).to.eql([]);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:3000/api/golinks/officer",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"golinks",
+						"officer"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/api/golinks/",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Response for PUT /api/user\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.url).to.equal(\"https://duckduckgo.com\");\r",
+							"    pm.expect(jsonData.name).to.equal(\"Duck Duck Go\");\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\": 1,\r\n    \"url\": \"https://duckduckgo.com\",\r\n    \"name\": \"Duck Duck Go\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3000/api/golinks/",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"golinks",
+						""
 					]
 				}
 			},
