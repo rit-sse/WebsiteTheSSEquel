@@ -6,6 +6,7 @@ import MobileNavDropdown from "./MobileNavDropdown";
 import SSELogoFull from "../common/SSELogoFull";
 import SSELogoSmall from "../common/SSELogoSmall";
 import AuthButton from "./AuthButton";
+import DarkModeToggle from "../common/DarkModeToggle";
 
 
 const navItems: NavItemProps[] = [
@@ -133,6 +134,11 @@ const Navbar: React.FC = () => {
                         <Hamburger />
                     </div>
                     <MobileNavDropdown navItems={navItems} onClickFunc={blurOnClick} />
+                </div>
+                <div>
+                    <div className="flex justify-end items-center w-full right-0 p-2">
+                        <DarkModeToggle />
+                    </div>
                 </div>
             </div>
         </nav>
