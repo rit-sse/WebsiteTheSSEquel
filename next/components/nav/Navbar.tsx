@@ -6,6 +6,7 @@ import MobileNavDropdown from "./MobileNavDropdown";
 import SSELogoFull from "../common/SSELogoFull";
 import SSELogoSmall from "../common/SSELogoSmall";
 import AuthButton from "./AuthButton";
+import ProfileImage from "./ProfileImage";
 
 
 const navItems: NavItemProps[] = [
@@ -125,6 +126,9 @@ const Navbar: React.FC = () => {
                         ))}
                         <li className="flex flex-row justify-center items-center">
                             <AuthButton />
+                        </li>
+                        <li className="flex flex-row justify-center items-center">
+                            <ProfileImage />
                         </li>
                     </ul>
                 </div>
