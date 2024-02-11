@@ -66,6 +66,61 @@ export async function POST(request: Request) {
 }
 
 /**
+ * PUT request to /api/quote
+ * @param request { dateAdded: Date, quote: string, user_id: number, author?: string }
+ * @returns updated quote object
+ */
+export async function PUT(request: Request) {
+    let body;
+    try {
+        body = await request.json();
+    } catch {
+        return new Response("Invalid JSON", { status: 422 });
+    }
+
+    //check if id is in request
+    if (!("id" in body || "dateAdded" in body || "quote" in body || "user_id" in body)) {
+        return new Response("`id`, `dateAdded`, `quote`, and `user_id` must be included in request body", { status: 400 })
+    }
+    const id = body.id;
+    
+    //check if user_id is valid
+    try {
+        prisma.user.findUniqueOrThrow({
+            where: { id: body.user_id}
+        });
+    } catch {
+        return new Response("invalid user_id value", { status: 404 })
+    }
+
+    const data: {
+        dateAdded: Date;
+        quote: string;
+        user_id: number;
+        author?: string;
+    } = {
+        dateAdded: new Date(body.dateAdded),
+        quote: body.quote,
+        user_id: body.userId
+    };
+    
+    if ("author" in body) {
+        data.author = body.user_id
+    }
+
+    try {
+        const quote = await prisma.quote.update({
+            where: { id },
+            data,
+        });
+        return Response.json(quote);
+    } catch (e) {
+        return new Response(`Failed to update quote: ${e}`, { status: 500 });
+    }
+
+}
+
+/**
  * DELETE request to /api/quote
  * @param request { id: number }
  * @returns quote object that was deleted at { id }
