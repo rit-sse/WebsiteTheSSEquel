@@ -49,7 +49,7 @@ export default function Home() {
       </div>
       {/* About Us Section */}
       <div className='flex flex-col md:flex-row items-center md:justify-evenly md:mt-28'>
-        <div className='border border-black flex mt-12 md:mt-0 w-11/12 sm:w-2/5 justify-center'>
+        <div className='flex mt-12 md:mt-0 w-11/12 sm:w-2/5 justify-center'>
           {placeholder_img}
         </div>
         <div className="flex flex-col justify-center w-auto md:w-2/5">
