@@ -23,5 +23,16 @@ export const authOptions: AuthOptions = {
             // session.roles = ...
             return Promise.resolve(session)
         }
+    },
+    cookies: {
+        sessionToken: {
+            name: 'session', // Naming the session cookie as 'session'
+            options: {
+                httpOnly: true,
+                sameSite: 'lax', // Use 'strict' for more restricted cookie sending
+                path: '/',
+                secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+            },
+        },
     }
 };
