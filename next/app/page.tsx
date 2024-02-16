@@ -8,30 +8,45 @@ import { DiscordIcon, InstagramIcon, SlackIcon, TikTokIcon, TwitchIcon } from '@
 import Link from 'next/link';
 
 export default function Home() {
+  const placeholder_w = 800;
+  const placeholder_h = 800;
+
+  const placeholder_img = (
+    <Image
+      src={`https://dummyimage.com/${placeholder_w}x${placeholder_h}`}
+      alt="Placeholder"
+      width={placeholder_w}
+      height={placeholder_h}
+      className="w-full h-auto rounded-[60px]"
+    />
+  )
+
   return (
     <>
-      <section className="text-base-content">
-        <div className="mx-auto max-w-screen-xl px-4 pt-16 lg:flex">
-          <div className="text-center flex flex-col items-center w-full max-w-4xl">
-            <h1>
-              Society of
-              <span className="block lg:inline"> Software Engineers </span>
-            </h1>
+      {/* Hero section */}
+      <div className='border border-black flex flex-col md:flex-row items-center md:justify-between'>
+        <div className="flex flex-col justify-center w-auto md:w-2/5">
+          <h1 className='text-center md:text-left'>
+            Society of
+            <span className="block lg:inline"> Software Engineers </span>
+          </h1>
 
-            <p className="mx-auto mt-4 max-w-2xl sm:text-xl/relaxed text-center">
-              {HomepageContent.description}
-            </p>
-            <p className='mt-4 font-bold text-center'>
-              {HomepageContent.weeklyMeetingCallout}
-            </p>
+          <p className="mx-auto mt-4 sm:text-xl/relaxed text-center md:text-left">
+            {HomepageContent.description}
+          </p>
+          <p className='mt-4 font-bold text-center md:text-left'>
+            {HomepageContent.weeklyMeetingCallout}
+          </p>
 
-            <div className="mt-8 flex flex-row flex-wrap justify-center items-center gap-4 min-[460px]:flex-row">
-              <CTAButton href={HomepageContent.slackLink} text="Join Slack" />
-              <CTAButton href="/about/get-involved" text="Get Involved" />
-            </div>
+          <div className="border border-black mt-8 flex flex-row flex-wrap gap-4 min-[460px]:flex-row justify-center md:justify-start">
+            <CTAButton href={HomepageContent.slackLink} text="Join Slack" />
+            <CTAButton href="/about/get-involved" text="Get Involved" />
           </div>
         </div>
-      </section>
+        <div className='border border-black flex mt-12 md:mt-0 w-3/4 md:w-1/2 justify-center'>
+          {placeholder_img}
+        </div>
+      </div>
     </>
   );
 }
