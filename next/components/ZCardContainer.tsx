@@ -8,7 +8,7 @@ const ZCardContainer: React.FC<{
     return (
         <div className='pt-4'>
             {contentSlots.map((slot, index) => (
-                <div>
+                <div key={index}>
                     <ZCard imageSide={index % 2 == 0 ? 'left' : 'right'}>
                         <Image
                             src={slot.getImageSrc()}
