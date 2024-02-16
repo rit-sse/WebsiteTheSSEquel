@@ -24,7 +24,7 @@ export default function Home() {
   return (
     <>
       {/* Hero section */}
-      <div className='border border-black flex flex-col md:flex-row items-center md:justify-between'>
+      <div className='flex flex-col md:flex-row items-center md:justify-evenly'>
         <div className="flex flex-col justify-center w-auto md:w-2/5">
           <h1 className='text-center md:text-left'>
             Society of
@@ -38,13 +38,35 @@ export default function Home() {
             {HomepageContent.weeklyMeetingCallout}
           </p>
 
-          <div className="border border-black mt-8 flex flex-row flex-wrap gap-4 min-[460px]:flex-row justify-center md:justify-start">
+          <div className="mt-8 flex flex-row flex-wrap gap-4 min-[460px]:flex-row justify-center md:justify-start">
             <CTAButton href={HomepageContent.slackLink} text="Join Slack" />
             <CTAButton href="/about/get-involved" text="Get Involved" />
           </div>
         </div>
-        <div className='border border-black flex mt-12 md:mt-0 w-3/4 md:w-1/2 justify-center'>
+        <div className='flex mt-12 md:mt-0 w-11/12 sm:w-2/5 justify-center'>
           {placeholder_img}
+        </div>
+      </div>
+      {/* About Us Section */}
+      <div className='flex flex-col md:flex-row items-center md:justify-evenly md:mt-28'>
+        <div className='border border-black flex mt-12 md:mt-0 w-11/12 sm:w-2/5 justify-center'>
+          {placeholder_img}
+        </div>
+        <div className="flex flex-col justify-center w-auto md:w-2/5">
+          <h1 className='text-center md:text-left mt-8 md:mt-0'>
+            About Us
+          </h1>
+
+          <p className="mx-auto mt-4 text-lg/relaxed text-center md:text-left">
+            Tess is Tech Head. Tess is Tech Head. Tess is Tech Head. Tess is Tech Head.
+            Tess is Tech Head. Tess is Tech Head. Tess is Tech Head. Tess is Tech Head.
+            Tess is Tech Head. Tess is Tech Head. Tess is Tech Head. Tess is Tech Head.
+            Tess is Tech Head. Tess is Tech Head. Tess is Tech Head. Tess is Tech Head.
+            Tess is Tech Head. Tess is Tech Head. Tess is Tech Head. Tess is Tech Head.
+            Tess is Tech Head. Tess is Tech Head. Tess is Tech Head. Tess is Tech Head.
+            Tess is Tech Head. Tess is Tech Head. Tess is Tech Head. Tess is Tech Head.
+            Tess is Tech Head. Tess is Tech Head. Tess is Tech Head. Tess is Tech Head.
+          </p>
         </div>
       </div>
     </>
