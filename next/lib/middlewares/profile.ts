@@ -12,16 +12,18 @@ import { authOptions } from "../authOptions";
 export const profileMiddleware = async (request: NextRequest) => {
     const { pathname } = request.nextUrl;
     
-    if (pathname && typeof pathname == "string") {
-        if (pathname.startsWith("/profile")) {
-            let session = await getServerSession(authOptions);
-        //     if (!session) {
-        //         return NextResponse.redirect(new URL('/', request.url));
-        //     }
-            return NextResponse.next();
+    if (pathname.startsWith("/profile")) {
+        // const { req, res } = context;
+        const sessionToken = request.cookies.get('session');
+        if (!sessionToken) {
+            // redirect to home if not authorized
+            return NextResponse.redirect(new URL('/', request.url));
         }
+
+        // continue if yes authorized
+        return NextResponse.next();
     }
         
-    // Signal to continue the middleware chain (see middleware.ts)
+    // // Signal to continue the middleware chain for all other routes (see middleware.ts)
     return NextResponse.next();
 }
