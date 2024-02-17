@@ -336,7 +336,6 @@ async function seedHourBlock() {
         where: { id: 1 },
         update: {},
         create: {
-            id: 1,
             weekday: 'Monday',
             startTime: new Date('2023-11-1 12:00:00'),
         },
@@ -345,7 +344,6 @@ async function seedHourBlock() {
         where: { id: 2 },
         update: {},
         create: {
-            id: 2,
             weekday: 'Tuesday',
             startTime: new Date('2023-11-2 12:00:00'),
         },
@@ -354,7 +352,6 @@ async function seedHourBlock() {
         where: { id: 3 },
         update: {},
         create: {
-            id: 3,
             weekday: 'Wednesday',
             startTime: new Date('2023-11-3 12:00:00'),
         },

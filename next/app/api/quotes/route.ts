@@ -12,14 +12,6 @@ export async function GET() {
       date_added: true,
       quote: true,
       user_id: true,
-      user: {
-        // testing purposes only, may remove later
-        select: {
-          firstName: true,
-          lastName: true,
-          email: true,
-        },
-      },
       author: true,
     },
   });
@@ -31,7 +23,6 @@ export async function GET() {
  * @param request { dateAdded: Date, quote: string, userId: number, author?: string }
  * @returns quote object that was created
  */
-
 export async function POST(request: Request) {
   let body;
   try {
@@ -142,8 +133,6 @@ export async function PUT(request: Request) {
  * @param request { id: number }
  * @returns quote object that was deleted at { id }
  */
-
-//TODO: Test
 export async function DELETE(request: Request) {
   let body;
   try {
