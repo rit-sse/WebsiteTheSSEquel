@@ -20,7 +20,7 @@ export async function GET() {
 
 /**
  * HTTP POST request to /api/hourBlocks
- * @param request { weekday: string, startTime: Date}
+ * @param request { weekday: string, startTime: Date }
  * @returns hourBlock object that was created
  */
 export async function POST(request: Request) {
@@ -53,6 +53,52 @@ export async function POST(request: Request) {
     return Response.json(create_hourBlock, { status: 201 });
   } catch (e) {
     return new Response(`Failed to create hourBlock: ${e}`, { status: 500 });
+  }
+}
+
+/**
+ * PUT request to /api/hourBlocks
+ * @param request { id: number, weekday: string, startTime: Date }
+ * @returns updated hourblock object
+ */
+export async function PUT(request: Request) {
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return new Response("Invalid JSON", { status: 422 });
+  }
+
+  //check if id is in request
+  if (!("id" in body)) {
+    return new Response('"id" must be included in request body', {
+      status: 400,
+    });
+  }
+  const id = body.id;
+
+  const data: {
+    weekday?: string;
+    startTime?: Date;
+  } = {};
+
+  if ("weekday" in body) {
+    data.weekday = body.weekday;
+  }
+
+  if ("startTime" in body) {
+    //startTime string format: 'yyyy-mm-dd HH:MM:ss'
+    data.startTime = new Date(body.startTime);
+  }
+
+  try {
+    const hourBlock = await prisma.hourBlock.update({
+      where: { id },
+      data,
+    });
+    return Response.json(hourBlock);
+  } catch (e) {
+    return new Response(`Failed to update hourBlock: ${e}`, { status: 500 });
   }
 }
 

@@ -67,7 +67,7 @@ export async function POST(request: Request) {
 
 /**
  * PUT request to /api/quotes
- * @param request { dateAdded?: Date, quote?: string, userId?: number, author?: string }
+ * @param request { id: number, dateAdded?: Date, quote?: string, userId?: number, author?: string }
  * @returns updated quote object
  */
 export async function PUT(request: Request) {
