@@ -111,14 +111,17 @@
     @apply whitespace-nowrap;
     @apply divide-y divide-base-content;
     @apply my-4;
+    @apply table-fixed;
   }
 
   th {
     @apply px-6 py-3 text-left text-xs font-medium uppercase tracking-wider;
+    @apply overflow-auto;
   }
 
   td {
     @apply px-6 py-4 whitespace-nowrap;
+    @apply overflow-auto;
   }
 
   tr {
