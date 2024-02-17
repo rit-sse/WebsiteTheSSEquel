@@ -20,8 +20,7 @@ export async function GET(
         id,
       },
       select: {
-        firstName: true,
-        lastName: true,
+        name: true,
         email: true,
       },
     });

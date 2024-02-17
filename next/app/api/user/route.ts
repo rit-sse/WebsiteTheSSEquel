@@ -10,8 +10,7 @@ export async function GET() {
   const allDepts = await prisma.user.findMany({
     select: {
       id: true,
-      firstName: true,
-      lastName: true,
+      name: true,
       email: true,
     },
   });
@@ -21,7 +20,7 @@ export async function GET() {
 /**
  * Create a new user
  * HTTP POST request to /api/user/
- * @param request { firstName: string, lastName: string, email: string }
+ * @param request { name: string, email: string }
  * @return user object that was created
  */
 export async function POST(request: Request) {
@@ -32,22 +31,19 @@ export async function POST(request: Request) {
     return new Response("Invalid JSON", { status: 422 });
   }
 
-  // make sure the firstName, lastName, and email properties are included
-  if (!("firstName" in body && "lastName" in body && "email" in body)) {
-    return new Response(
-      '"firstName", "lastName", and "email" must be included in request body',
-      { status: 422 }
-    );
+  // make sure the name and email properties are included
+  if (!("name" in body && "email" in body)) {
+    return new Response('"name" and "email" must be included in request body', {
+      status: 422,
+    });
   }
-  const firstName = body.firstName;
-  const lastName = body.lastName;
+  const name = body.name;
   const email = body.email;
 
   try {
     const user = await prisma.user.create({
       data: {
-        firstName,
-        lastName,
+        name,
         email,
       },
     });
@@ -109,7 +105,7 @@ export async function DELETE(request: Request) {
 /**
  * Update an existing user
  * HTTP PUT request to /api/user
- * @param request { id: number, firstName?: string, lastName?: string, email?: string }
+ * @param request { id: number, name?: string, email?: string }
  * @returns updated user object
  */
 export async function PUT(request: Request) {
@@ -127,12 +123,9 @@ export async function PUT(request: Request) {
   const id = body.id;
 
   // only update fields the caller wants to update
-  const data: { firstName?: string; lastName?: string; email?: string } = {};
-  if ("firstName" in body) {
-    data.firstName = body.firstName;
-  }
-  if ("lastName" in body) {
-    data.lastName = body.lastName;
+  const data: { name?: string; email?: string } = {};
+  if ("name" in body) {
+    data.name = body.name;
   }
   if ("email" in body) {
     data.email = body.email;
