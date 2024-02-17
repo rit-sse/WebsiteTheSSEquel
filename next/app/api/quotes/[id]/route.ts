@@ -4,7 +4,7 @@ const prisma = new PrismaClient();
 
 /**
  * HTTP GET request to api/quotes/[id]
- * @param request { dateAdded: Date, quote: string, user_id: number, author?: string }
+ * @param request
  * @param param1 { params: { id: string } }
  * @returns quote with { id }
  */
@@ -22,18 +22,10 @@ export async function GET(
         date_added: true,
         quote: true,
         user_id: true,
-        user: {
-          // testing purposes only, may remove later
-          select: {
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
-        },
         author: true,
       },
     });
-    if (id == null) {
+    if (quote == null) {
       return new Response(`Could not find Quote ID ${id}`, { status: 404 });
     }
     return Response.json(quote);

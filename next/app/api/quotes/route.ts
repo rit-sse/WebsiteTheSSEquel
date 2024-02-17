@@ -9,6 +9,7 @@ const prisma = new PrismaClient();
 export async function GET() {
   const quotes = await prisma.quote.findMany({
     select: {
+      id: true,
       date_added: true,
       quote: true,
       user_id: true,
@@ -19,7 +20,7 @@ export async function GET() {
 }
 
 /**
- * POST request to /api/quote
+ * POST request to /api/quotes
  * @param request { dateAdded: Date, quote: string, userId: number, author?: string }
  * @returns quote object that was created
  */
@@ -65,7 +66,7 @@ export async function POST(request: Request) {
 }
 
 /**
- * PUT request to /api/quote
+ * PUT request to /api/quotes
  * @param request { dateAdded?: Date, quote?: string, userId?: number, author?: string }
  * @returns updated quote object
  */
@@ -129,9 +130,9 @@ export async function PUT(request: Request) {
 }
 
 /**
- * DELETE request to /api/quote
+ * DELETE request to /api/quotes
  * @param request { id: number }
- * @returns quote object that was deleted at { id }
+ * @returns quote object deleted at { id }
  */
 export async function DELETE(request: Request) {
   let body;

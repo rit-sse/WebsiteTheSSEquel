@@ -3,12 +3,13 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 /**
- * HTTP GET request to /api/hourBlock
- * @returns list of hourblock objects in model
+ * HTTP GET request to /api/hourBlocks
+ * @returns list of hourBlock objects in model
  */
 export async function GET() {
   const hourBlocks = await prisma.hourBlock.findMany({
     select: {
+      id: true,
       weekday: true,
       startTime: true,
     },
@@ -18,7 +19,7 @@ export async function GET() {
 }
 
 /**
- * HTTP POST request to /api/hourBlock
+ * HTTP POST request to /api/hourBlocks
  * @param request { weekday: string, startTime: Date}
  * @returns hourBlock object that was created
  */
@@ -52,5 +53,39 @@ export async function POST(request: Request) {
     return Response.json(create_hourBlock, { status: 201 });
   } catch (e) {
     return new Response(`Failed to create hourBlock: ${e}`, { status: 500 });
+  }
+}
+
+/**
+ * DELETE request to /api/hourBlocks
+ * @param request {id: number}
+ * @returns hourBlock object deleted at { id }
+ */
+export async function DELETE(request: Request) {
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return new Response("Invalid JSON", { status: 422 });
+  }
+
+  //verify id is included
+  if (!("id" in body)) {
+    return new Response("id of hourBlock must be included", { status: 422 });
+  }
+
+  const id = body.id;
+  const blockExists = prisma.hourBlock.findUnique({ where: { id } });
+
+  //validate existence of hourBlock
+  if (!blockExists) {
+    return new Response("Could not find hourBlock ID", { status: 404 });
+  }
+
+  try {
+    const hourBlock = await prisma.hourBlock.delete({ where: { id } });
+    return Response.json(hourBlock);
+  } catch (e) {
+    return new Response(`Failed to delete hourBlock: ${e}`, { status: 500 });
   }
 }
