@@ -2,7 +2,6 @@
 
 # dependencies
 /node_modules
-package-lock.json
 /.pnp
 .pnp.js
 
@@ -42,6 +41,9 @@ prisma/migrations
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# jetbrains
+.idea
 
 # nix envs
 .envrc

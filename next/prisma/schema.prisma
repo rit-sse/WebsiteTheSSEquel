@@ -15,8 +15,7 @@ model User {
   id Int @id @default(autoincrement())
 
   //Store first and last name as Strings
-  firstName String
-  lastName  String
+  name String
 
   //Store email as a unique String
   email String @unique
@@ -26,10 +25,9 @@ model User {
   isMember Boolean @default(false)
 
   //Image will be saved
-  profilePic String @default("default.jpg")
+  image String @default("https://source.boringavatars.com/beam/")
 
-  //Store a boolean value to determine if a user is a verfied or not
-  emailVerified Boolean @default(false)
+  emailVerified DateTime?
 
   // relational fields
   mentor   Mentor[]
@@ -177,10 +175,8 @@ model Course {
 model CourseTaken {
   //Store an automatically generated unique int for id
   id       Int @id @default(autoincrement())
-  //Refrence mentorId
-  mentorId Int
-  //Refrence courseId
-  courseId Int
+  mentorId Int // References Mentor.id
+  courseId Int // References Course.id
 
   //Relation fields
   mentor Mentor @relation(fields: [mentorId], references: [id])
@@ -197,7 +193,7 @@ model HourBlock {
   //Stores time block startTime as a DateTime
   startTime DateTime @db.Time()
 
-  //Refrenced relation field
+  //Referenced relation field
   schedule Schedule[]
 }
 
@@ -205,10 +201,8 @@ model Schedule {
   //Store an automatically generated unique int for id
   id Int @id @default(autoincrement())
 
-  //Refrence mentorid
-  mentorId    Int
-  //Refrence houtBlockId 
-  hourBlockId Int
+  mentorId    Int // References Mentor.id
+  hourBlockId Int // References HourBlock.id
 
   //Relational fields
   hourBlock HourBlock @relation(fields: [hourBlockId], references: [id])
@@ -247,47 +241,31 @@ model Account {
   //Store an automatically generated unique int for id
   id Int @id @default(autoincrement())
 
-  //user is a relational field that references the User model
-  user               User     @relation(fields: [userId], references: [id])
   //userId is a foreign key that references the id field of the User model
-  userId             Int
-  //type is a string that represents the type of account
-  type               String
-  //provider is a string that represents the authentication provider
-  provider           String
-  //providerAccountId is a string that represents the id of the account in the authentication provider
-  providerAccountId  String
-  //refreshToken is a string that represents the refresh token for the account
-  refreshToken       String
-  //accessToken is a string that represents the access token for the account
-  accessToken        String
-  //accessTokenExpires is a DateTime that represents the expiration date of the access token
-  accessTokenExpires DateTime
-  //createdAt is a DateTime that represents the date the account was created
-  tokenType          String
-  //updatedAt is a DateTime that represents the date the account was last updated
-  scope              String
-  //idToken is a string that represents the id token for the account
-  idToken            String
-  //sessionState is a string that represents the session state for the account
-  sessionState       String
+  userId            Int
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  //user is a relational field that references the User model
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
 }
 
 model Session {
-  //Store an automatically generated unique int for id
-  id Int @id @default(autoincrement())
-
-  //Stores the expiration as a DateTime
-  expires DateTime
-
-  //Stores the session token as a string
-  sessionToken String
-
-  //Stores the user id as an Int
-  userId Int
-
-  //relation fields
-  user User @relation(fields: [userId], references: [id])
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       Int
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model VerificationToken {
