@@ -145,18 +145,30 @@ export async function PUT(request: Request) {
 
 //TODO: Test
 export async function DELETE(request: Request) {
-  const body = await request.json();
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return new Response("Invalid JSON", { status: 422 });
+  }
 
+  //verify id is included
   if (!("id" in body)) {
-    return new Response("id of quote must be included", { status: 400 });
+    return new Response("id of quote must be included", { status: 422 });
   }
 
   const id = body.id;
   const quoteExists = prisma.quote.findUnique({ where: { id } });
+
+  //validate quote existence
   if (!quoteExists) {
-    return new Response("quote does not exist", { status: 404 });
+    return new Response("Could not find quote ID", { status: 404 });
   }
 
-  const quote = await prisma.quote.delete({ where: { id } });
-  return Response.json(quote);
+  try {
+    const quote = await prisma.quote.delete({ where: { id } });
+    return Response.json(quote);
+  } catch (e) {
+    return new Response(`Failed to delete quote: ${e}`, { status: 500 });
+  }
 }
