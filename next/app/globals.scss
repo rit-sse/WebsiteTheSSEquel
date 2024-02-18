@@ -129,6 +129,35 @@
     @apply bg-base-200;
   }
 
+  .z-card-container {
+    padding-top: 1rem;
+  
+    > div {
+      margin-bottom: 2rem;
+    }
+  }
+  
+  
+  .z-card {
+    display: flex;
+    flex-direction: column; 
+    margin: 1rem 0; 
+    padding: 20px;
+    border-radius: 8px;
+  
+    @media (min-width: 768px) { 
+      flex-direction: row; 
+    }
+  
+    .w-full {
+      border-radius: 8px;
+    }
+  
+    .gap-24 {
+      gap: 24px;
+    }
+  }
+
 }
 
 ::selection {
