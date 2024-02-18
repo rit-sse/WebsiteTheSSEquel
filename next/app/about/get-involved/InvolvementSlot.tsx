@@ -23,15 +23,15 @@ export class InvolvementSlot implements ZCardContent {
     toContent(): FC<{}> {
         return () => {       
             return (
-            <div className='general-classes'>
-                <h2 className='title-classes'>
-                    {this.title}
-                </h2>
-        
-                <p className='description-classes'>
-                    {this.body}
-                </p>
-            </div>
+                <div className='general-classes'>
+                    <h2 className='title-classes'>
+                        {this.title}
+                    </h2>
+                
+                    <p className='description-classes'>
+                        {this.body}
+                    </p>
+                </div>
             );
         }
     }

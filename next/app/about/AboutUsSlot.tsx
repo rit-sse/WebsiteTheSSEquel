@@ -17,18 +17,18 @@ export class AboutUsSlot implements ZCardContent {
     getAlt = () => this.alt;
 
     toContent(): FC {
-        // eslint-disable-next-line react/display-name
-        return () =>
-            (
-                <div>
-                    <h3 className="text-3xl font-bold">
+        return () => {
+            return (
+                <div className='general-classes'>
+                    <h2 className='title-classes'>
                         {this.name}
-                    </h3>
-                    <p className="mt-8 sm:text-xl/relaxed">
+                    </h2>
+                    <p className='description-classes'>
                         {this.description}
                     </p>
                 </div>
             );
+        }
     }
 
     getImageSrc(): string {
