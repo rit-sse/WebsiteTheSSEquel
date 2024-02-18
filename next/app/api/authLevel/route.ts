@@ -21,7 +21,7 @@ export async function GET(request: Request) {
     return new Response("Invalid JSON", { status: 422 });
   }
 
-  const user = await prisma.user.findFirst({
+  const user = await prisma.user.findUnique({
     where: {
       email: body.email,
     },
