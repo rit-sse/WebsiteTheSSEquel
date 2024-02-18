@@ -16,6 +16,7 @@ export default function Committees() {
                 collaborate, and learn from one another.
               </p>
             </div>
+            
             <ZCardContainer contentSlots={
               CommitteeSlotData.map(
                 data => new CommitteeSlot(

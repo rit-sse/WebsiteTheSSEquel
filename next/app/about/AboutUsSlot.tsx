@@ -23,6 +23,7 @@ export class AboutUsSlot implements ZCardContent {
                     <h2 className='title-classes'>
                         {this.name}
                     </h2>
+                    
                     <p className='description-classes'>
                         {this.description}
                     </p>
