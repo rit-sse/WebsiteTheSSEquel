@@ -40,6 +40,25 @@
     @apply mt-4; 
     @apply text-xl/relaxed;
   }
+
+  .general-classes{
+    @apply text-left;
+    @apply pt-4;
+    @apply pb-32;
+    @apply md:py-16;
+  }
+
+  .name-classes{
+    @apply bg-clip-text;
+    @apply font-bold;
+    @apply text-3xl/[3rem];
+  }
+
+  .description-classes{
+    @apply mt-4;
+    @apply pb-4;
+    @apply text-xl/relaxed;
+  }
   /* .text-page-structure > div {
     @apply w-full;
     @apply md:w-5/6;
