@@ -3,6 +3,59 @@
 @tailwind utilities;
 
 @layer base {
+  .text-page-structure {
+    @apply mx-auto;
+    @apply max-w-screen-xl;
+    @apply px-4;
+    @apply py-16;
+    @apply lg:flex;
+    @apply flex;
+    @apply flex-1;
+    @apply flex-col;
+    @apply items-center;
+    @apply w-11/12;
+  }
+  .text-page-structure > h1 {
+    @apply bg-gradient-to-br;
+    @apply from-primary;
+    @apply to-primary;
+    @apply bg-clip-text;
+    @apply text-4xl/[3rem];
+    @apply font-extrabold;
+    @apply text-transparent;
+    @apply sm:text-5xl/[4rem];
+    @apply text-center;
+  }
+
+  .subtitle-structure {
+    @apply w-full;
+    @apply md:w-5/6;
+    @apply space-y-24; 
+    @apply pb-8;
+  }
+
+  .subtitle-structure p {
+    @apply text-center; 
+    @apply mx-auto; 
+    @apply mt-4; 
+    @apply text-xl/relaxed;
+  }
+  /* .text-page-structure > div {
+    @apply w-full;
+    @apply md:w-5/6;
+    @apply space-y-24; 
+    @apply pb-8;
+  }
+  .text-page-structure > div > p {
+    @apply w-3/5; 
+    @apply mt-4;
+    @apply text-center; 
+    @apply sm:text-xl/relaxed; 
+    @apply m-auto;
+  } */
+
+
+  
   h1 {
     @apply bg-gradient-to-br;
     @apply from-primary;
