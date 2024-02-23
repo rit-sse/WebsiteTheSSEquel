@@ -1,5 +1,8 @@
 import { GoLinkIcon } from "@/components/common/Icons";
 import { GoLinkStar } from "@/components/common/Icons";
+import { GoLinkEdit } from "@/components/common/Icons";
+import { GoLinkDelete } from "@/components/common/Icons";
+import { useSession } from "next-auth/react";
 export interface GoLinkProps {
     goUrl: string;
     url: string;
@@ -41,10 +44,37 @@ const GoLink: React.FC<GoLinkProps> = ({ goUrl, url, description, pinned }) => {
                 <p className="text-base">{description}</p>
             </div>
             <div className="ml-3">
-                <GoLinkIcon />
+                <span className="float-right">
+                    <GoLinkIcon />
+                </span>
+                <span className="float-right">
+                    <EditAndDelete />
+                </span>
             </div>
         </a>
     );
+}
+
+const EditAndDelete: React.FC = () => {
+    const { data: session } = useSession();
+    if(session) {
+        return (
+            <form>
+                <button className="rounded-md bg-blue-500 hover:text-white">
+                    <div className="flex">
+                        Edit 
+                        <GoLinkEdit />
+                    </div>
+                </button>
+                <button className="rounded-md bg-red-500 hover:text-white">
+                    <div className="flex">
+                        Delete
+                        <GoLinkDelete />
+                    </div>
+                </button>
+            </form>
+        )
+    }
 }
 
 export default GoLink;
