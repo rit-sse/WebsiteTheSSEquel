@@ -64,7 +64,7 @@ const navItems: NavItemProps[] = [
     },
     {
         title: "Projects",
-        route: "#",
+        route: "/projects",
     },
     { // Go links dropdown removed. Check commit d2f1d82 in feature branch if we need to restore the dropdowns.
         title: "Go Links",
