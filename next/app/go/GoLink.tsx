@@ -1,3 +1,4 @@
+import Button from "@/components/common/Button";
 import { GoLinkIcon } from "@/components/common/Icons";
 import { GoLinkStar } from "@/components/common/Icons";
 import { GoLinkEdit } from "@/components/common/Icons";
@@ -60,18 +61,18 @@ const EditAndDelete: React.FC = () => {
     if(session) {
         return (
             <form>
-                <button className="rounded-md bg-blue-500 hover:text-white">
-                    <div className="flex">
-                        Edit 
-                        <GoLinkEdit />
+                <div className="flex flex-row">
+                    <div className="pr-1">
+                        <button className="rounded-md hover:scale-150">
+                            <GoLinkEdit />
+                        </button>
                     </div>
-                </button>
-                <button className="rounded-md bg-red-500 hover:text-white">
-                    <div className="flex">
-                        Delete
-                        <GoLinkDelete />
+                    <div className="pr-1">
+                        <button className="rounded-md hover:scale-150">
+                            <GoLinkDelete />
+                        </button>
                     </div>
-                </button>
+                </div>
             </form>
         )
     }
