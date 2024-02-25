@@ -9,11 +9,10 @@ const prisma = new PrismaClient();
  * "Member" => user is an SSE member but has no other credentials
  * "Mentor" => user is a mentor but not an officer
  * "Officer" => user is an officer
- * "Mega Rayquaza EX" => I am Burnt Out ;-;
- * @param request {email: string}
- * @returns {"None" | "User" | "Member" | "Mentor" | "Officer" | "Mega Rayquaza EX"} the auth level
+ * @param request {email: string} | {token: string}
+ * @returns {"None" | "User" | "Member" | "Mentor" | "Officer"} the auth level
  */
-export async function GET(request: Request) {
+export async function PUT(request: Request) {
   let body;
   try {
     body = await request.json();
@@ -21,29 +20,44 @@ export async function GET(request: Request) {
     return new Response("Invalid JSON", { status: 422 });
   }
 
-  const user = await prisma.user.findUnique({
-    where: {
-      email: body.email,
-    },
+  const user = await prisma.user.findFirst({
+    where:
+      "email" in body
+        ? {
+            email: body.email,
+          }
+        : {
+            session: {
+              some: {
+                sessionToken: body.token,
+              },
+            },
+          },
     select: {
       mentor: true,
       officers: true,
       isMember: true,
     },
   });
-  if (user == null) {
-    return new Response("None");
+
+  const authLevel = {
+    isUser: false,
+    isMember: false,
+    isMentor: false,
+    isOfficer: false,
+  };
+
+  if (user != null) {
+    // deconstruct the user object
+    const { mentor, officers, isMember } = user;
+    if (officers.length > 0) {
+      authLevel.isOfficer = true;
+    }
+    if (mentor.length > 0) {
+      authLevel.isOfficer = true;
+    }
+    authLevel.isMember = isMember;
+    authLevel.isUser = true;
   }
-  // deconstruct the user object
-  const { mentor, officers, isMember } = user;
-  if (officers.length > 0) {
-    return new Response("Officer");
-  }
-  if (mentor.length > 0) {
-    return new Response("Mentor");
-  }
-  if (isMember) {
-    return new Response("Member");
-  }
-  return new Response("User");
+  return Response.json(authLevel);
 }
