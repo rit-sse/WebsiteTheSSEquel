@@ -72,7 +72,7 @@ const EditAndDelete: React.FC = () => {
     const { data: session } = useSession();
     if(session) {
         return (
-            //<form>
+            <form>
                 <div className="flex flex-row">
                     <div className="pr-1">
                         <button 
@@ -87,7 +87,7 @@ const EditAndDelete: React.FC = () => {
                         </button>
                     </div>
                 </div>
-            //</form>
+            </form>
         )
     }
 }
