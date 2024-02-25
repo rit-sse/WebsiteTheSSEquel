@@ -1,10 +1,84 @@
+main {
+    display: block !important; 
+}
 #content {
     display: grid;
     grid-template-columns: 1fr 1fr;
     column-gap: 10%;
-    grid-template-rows: 1fr;
     grid-template-areas: "mentor-info gap mentor-canlendar";
     width: 100%;
-    height: 100%;
+    height: 80vh;
+    grid-row-end: -1;
   }
 
+  #mentor-canlendar {
+    display: grid;
+    grid-template-rows: repeat(9, 1fr);
+    grid-template-columns: repeat(6, 1fr);
+    column-gap: 1%;
+  }
+
+  #monday {
+    grid-row-start: 1;
+    grid-column-start: 2;
+  }
+
+  #tuesday {
+    grid-row-start: 1;
+    grid-column-start: 3;
+  }
+
+  #wednesday {
+    grid-row-start: 1;
+    grid-column-start: 4;
+  }
+
+  #thursday {
+    grid-row-start: 1;
+    grid-column-start: 5;
+  }
+
+  #friday {
+    grid-row-start: 1;
+    grid-column-start: 6;
+  }
+
+  #ten {
+    grid-row-start: 2;
+    grid-column-start: 1;
+  }
+
+  #eleven {
+    grid-row-start: 3;
+    grid-column-start: 1;
+  }
+
+  #twelve {
+    grid-row-start: 4;
+    grid-column-start: 1;
+  }
+
+  #one {
+    grid-row-start: 5;
+    grid-column-start: 1;
+  }
+
+  #two {
+    grid-row-start: 6;
+    grid-column-start: 1;
+  }
+
+  #three {
+    grid-row-start: 7;
+    grid-column-start: 1;
+  }
+
+  #four {
+    grid-row-start: 8;
+    grid-column-start: 1;
+  }
+
+  #five {
+    grid-row-start: 9;
+    grid-column-start: 1;
+  }
