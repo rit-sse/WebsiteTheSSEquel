@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import GoLink from './GoLink';
 import { GoLinksContainerProps } from "@/app/go/page";
 import { filterGoLinks } from '@/lib/filter';
+import {GoLinkButton} from '@/app/go/MakeNewGoLink'
+import data from '../about/AboutUsSlotContent';
 
 const GoLinksContainer: React.FC<GoLinksContainerProps> = ({ goLinkData }) => {
     const pinnedGoLinks = goLinkData
@@ -25,7 +27,6 @@ const GoLinksContainer: React.FC<GoLinksContainerProps> = ({ goLinkData }) => {
         ));
 
     const [goLinkList, setGoLinkList] = useState<React.JSX.Element[]>([...pinnedGoLinks, ...unpinnedGoLinks]);
-
     const setDisplay = (givenFilter: string) => {
         if (givenFilter === "") {
             setGoLinkList([...pinnedGoLinks, ...unpinnedGoLinks])
@@ -70,6 +71,7 @@ const GoLinksContainer: React.FC<GoLinksContainerProps> = ({ goLinkData }) => {
                 gap-4
                 md:p-4
             ">
+                <GoLinkButton/>
                 {goLinkList}
             </div>
         </div>

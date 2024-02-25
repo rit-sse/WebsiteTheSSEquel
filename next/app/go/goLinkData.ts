@@ -1,3 +1,5 @@
+import { url } from "inspector";
+
 const goLinkData: { goUrl: string; url: string; description: string, pinned: boolean }[] = [
     {
         goUrl: "scoreboard",
