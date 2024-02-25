@@ -43,7 +43,7 @@ const navItems: NavItemProps[] = [
     },
     {
         title: "Mentoring",
-        route: "#",
+        route: "/mentoring",
     },
     {
         title: "Events",
