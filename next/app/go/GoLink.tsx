@@ -54,7 +54,7 @@ const GoLink: React.FC<GoLinkProps> = ({ goUrl, url, description, pinned }) => {
                 </span>
             </div>
         </a>
-        <dialog id="test" className="modal">
+        <dialog id="edit-go-link" className="modal">
             <div className="modal-box">
                 <form method="dialog">
                 {/* if there is a button in form, it will close the modal */}
@@ -62,6 +62,28 @@ const GoLink: React.FC<GoLinkProps> = ({ goUrl, url, description, pinned }) => {
                 </form>
                 <h3 className="font-bold text-lg">Hello!</h3>
                 <p className="py-4">Press ESC key or click on ✕ button to close</p>
+            </div>
+        </dialog>
+        <dialog id="delete-go-link" className="modal">
+            <div className="modal-box">
+                <form method="dialog">
+                    <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+                        ✕
+                    </button>
+                </form>
+                <p className="font-bold py-4 text-lg">
+                    Are you sure you want to delete this GoLink?
+                </p>
+                <form>
+                    <button className="btn">
+                        Delete
+                    </button>
+                </form>
+                <form>
+                    <button className="btn">
+                        Cancel
+                    </button>
+                </form>
             </div>
         </dialog>
         </>
@@ -76,13 +98,21 @@ const EditAndDelete: React.FC = () => {
                 <div className="flex flex-row">
                     <div className="pr-1">
                         <button 
-                            onClick={()=>document.getElementById('test').showModal()}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                document.getElementById('edit-go-link').showModal();
+                            }}
                             className="rounded-md hover:scale-150">
                             <GoLinkEdit />
                         </button>
                     </div>
                     <div className="pr-1">
-                        <button className="rounded-md hover:scale-150">
+                        <button 
+                            onClick={(e) => {
+                                e.preventDefault();
+                                document.getElementById('delete-go-link').showModal();
+                            }}
+                            className="rounded-md hover:scale-150">
                             <GoLinkDelete />
                         </button>
                     </div>
