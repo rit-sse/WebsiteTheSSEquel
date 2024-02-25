@@ -44,12 +44,12 @@ const GoLink: React.FC<GoLinkProps> = ({ goUrl, url, description, pinned }) => {
                 </div>
                 <p className="text-base">{description}</p>
             </div>
-            <div className="ml-3">
-                <span className="float-right">
-                    <GoLinkIcon />
-                </span>
+            <div className="flex ml-3">
                 <span className="float-right">
                     <EditAndDelete />
+                </span>
+                <span className="float-right">
+                    <GoLinkIcon />
                 </span>
             </div>
         </a>
