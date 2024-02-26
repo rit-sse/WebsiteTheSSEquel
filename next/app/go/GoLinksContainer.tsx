@@ -1,19 +1,39 @@
 'use client'
 
-import React, { useState } from 'react';
-import GoLink from './GoLink';
+import React, { useEffect, useState } from 'react';
+import GoLink, { GoLinkProps } from './GoLink';
 import { GoLinksContainerProps } from "@/app/go/page";
 import { filterGoLinks } from '@/lib/filter';
 import {GoLinkButton} from '@/app/go/MakeNewGoLink'
 import data from '../about/AboutUsSlotContent';
+import { GET } from './goLinkData';
 
-const GoLinksContainer: React.FC<GoLinksContainerProps> = ({ goLinkData }) => {
-    const pinnedGoLinks = goLinkData
+const GoLinksContainer: React.FC<GoLinksContainerProps> = () => {
+    const [goLinkData, setGoLinkData] = useState<GoLinkProps[]>([]);
+    
+    useEffect(() => {
+        const fetchGoLinks = async () => {
+            try {
+                const response = await fetch('/api/golinks');
+                if (!response.ok) {
+                  throw new Error('Failed to fetch goLinks: ' + response.status);
+                }
+                const data = await response.json();
+                setGoLinkData(data);
+              } catch (error) {
+                console.error('Error fetching goLinks:', error);
+            }
+        };
+    
+        fetchGoLinks();
+      }, []);
+
+      const pinnedGoLinks = goLinkData
         .filter(data => data.pinned === true)
         .map((data, index) => (
             <GoLink
-            key={`pinned-${index}`}
-            {...data}
+                key={`pinned-${index}`}
+                {...data}
             />
         ));
 
@@ -21,8 +41,8 @@ const GoLinksContainer: React.FC<GoLinksContainerProps> = ({ goLinkData }) => {
         .filter(data => !data.pinned)
         .map((data, index) => (
             <GoLink
-            key={`unpinned-${index}`}
-            {...data}
+                key={`unpinned-${index}`}
+                {...data}
             />
         ));
 

@@ -4,14 +4,14 @@ import { GoLinkProps } from "./GoLink";
 import goLinkData from "./goLinkData";
 
 export interface GoLinksContainerProps {
-    goLinkData: GoLinkProps[];
+    // goLinkData: GoLinkProps[];
 }
 
 const GoLinksPage = () => {
     return (
         <>
             {/* <PinnedGoLinksContainer goLinkData ={goLinkData}/> */}
-            <GoLinksContainer goLinkData={goLinkData} />
+            <GoLinksContainer/>
         </>
     )
 }
