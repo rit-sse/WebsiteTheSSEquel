@@ -1,5 +1,51 @@
 import { url } from "inspector";
 
+
+const updateData = (apiResponse: any) => {
+    // if (apiResponse !== "") {
+    //   const transformedClubs = apiResponse.map((club: any) => ({
+    //     // id subtracted to start at 0 (to treat as indices)
+    //     id: club[0] - 1,
+    //     name: club[1],
+    //     maxCapacity: club[2],
+    //     yellowThreshold: club[3],
+    //     location: club[4],
+    //     genre: club[5],
+    //     attendees: club[6]
+    //   }));
+    //   transformedClubs.sort((club1: any, club2: any) =>
+    //     club1.id - club2.id
+    //   );
+  
+    //   // Assuming 'this.setState' is available in the context
+    //   this.setState({ clubs: transformedClubs, data: apiResponse });
+    // } else {
+    //   // Assuming 'this.setState' is available in the context
+    //   this.setState({ data: apiResponse });
+    // }
+  }
+  
+
+const fetchData = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/golink/public');
+      if (response.status === 200) {
+        const jsonOutput = await response.json();
+        console.log("Received data from server:", jsonOutput); // Add this line for debugging
+        updateData(jsonOutput);
+      } else {
+        console.log("HTTP error:" + response.status + ":" + response.statusText);
+        updateData([["status ", response.status]]);
+      }
+    } catch (error) {
+      console.log(error);
+      updateData("");
+    }
+  }
+  
+
+
+
 const goLinkData: { goUrl: string; url: string; description: string, pinned: boolean }[] = [
     {
         goUrl: "scoreboard",
