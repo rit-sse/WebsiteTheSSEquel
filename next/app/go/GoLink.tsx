@@ -104,7 +104,9 @@ const EditAndDelete: React.FC = () => {
                         <button 
                             onClick={(e) => {
                                 e.preventDefault();
-                                document.getElementById('edit-go-link').showModal();
+                                if(document) {
+                                    (document.getElementById('edit-go-link') as HTMLFormElement).showModal();
+                                }
                             }}
                             className="rounded-md hover:scale-150">
                             <GoLinkEdit />
@@ -114,7 +116,9 @@ const EditAndDelete: React.FC = () => {
                         <button 
                             onClick={(e) => {
                                 e.preventDefault();
-                                document.getElementById('delete-go-link').showModal();
+                                if(document) {
+                                    (document.getElementById('delete-go-link') as HTMLFormElement).showModal();
+                                }
                             }}
                             className="rounded-md hover:scale-150">
                             <GoLinkDelete />

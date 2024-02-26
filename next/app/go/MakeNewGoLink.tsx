@@ -9,7 +9,9 @@ export const GoLinkButton: React.FC = () =>  {
             <button 
             onClick={(func) =>{
                 func.preventDefault();
-                document.getElementById('make_new_link').showModal();
+                if(document) {
+                    (document.getElementById('make_new_link') as HTMLFormElement).showModal();
+                }
                 }
             }
             className="
