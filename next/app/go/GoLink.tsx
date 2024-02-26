@@ -74,16 +74,20 @@ const GoLink: React.FC<GoLinkProps> = ({ goUrl, url, description, pinned }) => {
                 <p className="font-bold py-4 text-lg">
                     Are you sure you want to delete this GoLink?
                 </p>
-                <form>
-                    <button className="btn">
-                        Delete
-                    </button>
-                </form>
-                <form>
-                    <button className="btn">
-                        Cancel
-                    </button>
-                </form>
+                <div className="flex">
+                    <span className="flex-grow"></span>
+                    <form>
+                        <button className="btn">
+                            Delete
+                        </button>
+                    </form>
+                    <span className="w-2"></span>
+                    <form>
+                        <button className="btn">
+                            Cancel
+                        </button>
+                    </form>
+                </div>
             </div>
         </dialog>
         </>
