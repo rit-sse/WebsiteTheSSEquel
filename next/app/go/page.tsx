@@ -1,9 +1,7 @@
 "use client"
 
 import GoLinksContainer from "@/app/go/GoLinksContainer";
-import PinnedGoLinksContainer from "@/app/go/PinnedGoLinksContainer";
 import { GoLinkProps } from "./GoLink";
-import goLinkData from "./goLinkData";
 import { useCallback, useEffect, useState } from "react";
 
 export interface GoLinksContainerProps {
@@ -35,9 +33,7 @@ const GoLinksPage = () => {
     
     return (
         <>
-            {/* <PinnedGoLinksContainer goLinkData ={goLinkData}/> */}
             <GoLinksContainer goLinkData={goLinkData} />
-            {/* <h1>{goLinkData.toString()}</h1> */}
         </>
     )
 }
