@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isUrlValid } from "../utils";
-import goLinkData from "@/app/go/goLinkData";
+// import goLinkData from "@/app/go/goLinkData";
 
 const getDestinationUrl = async (goUrl: string) => {
-    for (let goLink of goLinkData) {
-        if (goLink.goUrl === goUrl) {
-            return goLink.url;
-        }
-    }
+    // for (let goLink of goLinkData) {
+    //     if (goLink.goUrl === goUrl) {
+    //         return goLink.url;
+    //     }
+    // }
 }
 
 /** Middleware to handle golinks.
@@ -24,18 +24,18 @@ export const golinksMiddleware = async (request: NextRequest) => {
     const { pathname } = request.nextUrl;
     // Only run golinks middleware logic for paths starting with "/go/"
     if (pathname.startsWith('/go/')) {
-        const goLink = pathname.split('/go/')[1];
-        const destination = await getDestinationUrl(goLink); // this would be replaced with a database lookup
+        // const goLink = pathname.split('/go/')[1];
+        // const destination = await getDestinationUrl(goLink); // this would be replaced with a database lookup
 
-        // If the destination exists and is valid, redirect to it
-        if (destination && isUrlValid(destination)) {
-            // check if the url is a live site
-            const response = await fetch(destination);
-            if (response.ok) {
-                // redirect to the destination
-                return NextResponse.redirect(destination);
-            }
-        }
+        // // If the destination exists and is valid, redirect to it
+        // if (destination && isUrlValid(destination)) {
+        //     // check if the url is a live site
+        //     const response = await fetch(destination);
+        //     if (response.ok) {
+        //         // redirect to the destination
+        //         return NextResponse.redirect(destination);
+        //     }
+        // }
     }
 
     // Signal to continue the middleware chain (see middleware.ts)
