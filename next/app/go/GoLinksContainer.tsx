@@ -25,25 +25,58 @@ const GoLinksContainer: React.FC<GoLinksContainerProps> = ({ goLinkData }) => {
         />
     ));
 
-    const [goLinkList, setGoLinkList] = useState<React.JSX.Element[]>([...pinnedGoLinks, ...unpinnedGoLinks]);
-    const setDisplay = (givenFilter: string) => {
-        console.log("FART FART")
-        if (givenFilter === "") {
-            setGoLinkList([...pinnedGoLinks, ...unpinnedGoLinks])
-        }
-        else {
-            const filteredGoLinkData = filterGoLinks(givenFilter, goLinkData)
+    // const [goLinkList, setGoLinkList] = useState<React.JSX.Element[]>([...pinnedGoLinks, ...unpinnedGoLinks]);
 
+    // const setDisplay = (givenFilter: string) => {
+    //     if (givenFilter === "" || givenFilter === null) {
+    //         setGoLinkList([...pinnedGoLinks, ...unpinnedGoLinks]);
+    //     } else {
+    //         const filteredGoLinkData = filterGoLinks(givenFilter, goLinkData);
+    //         setGoLinkList(filteredGoLinkData.map((data, index) => (
+    //             <GoLink
+    //                 key={index}
+    //                 {...data}
+    //             />
+    //         )));
+    //     }
+    // }
+
+    const [goLinkList, setGoLinkList] = useState<React.JSX.Element[]>([]);
+
+    // Function to update goLinkList based on the filter
+    const updateGoLinkList = (givenFilter: string) => {
+        if (givenFilter === "" || givenFilter === null) {
+            // If filter is empty, set goLinkList to include all GoLinks
+            setGoLinkList(goLinkData.map((data, index) => (
+                <GoLink
+                    key={index}
+                    {...data}
+                />
+            )));
+        } else {
+            // Apply filter if provided
+            const filteredGoLinkData = filterGoLinks(givenFilter, goLinkData);
             setGoLinkList(filteredGoLinkData.map((data, index) => (
                 <GoLink
                     key={index}
                     {...data}
                 />
-            )))
+            )));
         }
-        console.log("List: " + goLinkList)
-    }
+    };
 
+    // Call updateGoLinkList once when component mounts to initially display all GoLinks
+    useEffect(() => {
+        updateGoLinkList("");
+    }, []);
+
+    // Function to handle filter change
+    const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const givenFilter = event.target.value;
+        updateGoLinkList(givenFilter);
+    };
+
+    
     if (goLinkData.length === 0) {
         return (
             <div className="w-9/12">
@@ -77,12 +110,12 @@ const GoLinksContainer: React.FC<GoLinksContainerProps> = ({ goLinkData }) => {
     
                     <p className="text-center mx-auto mt-4 text-xl/relaxed">
                     GoLinks are a type of URL shortcut that allow you to access the SSE's frequently used 
-                    external websites or resources. Important or relevant golinks are marked with a gold star.
+                    external websites or resources. Important/relevant golinks are marked with a gold star.
                     </p>
                 </div>
     
                 <div className="w-full mt-4">
-                    <input type="text" placeholder="Search golinks, etc..." className="input input-bordered w-full my-5" onChange={(event) => setDisplay(event.target.value)} />
+                    <input type="text" placeholder="Search golinks, etc..." className="input input-bordered w-full my-5" onChange={(event) => handleFilterChange(event)} />
                 </div>
                 <div className="
                     grid
