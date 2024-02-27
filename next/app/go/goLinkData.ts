@@ -5,8 +5,6 @@ const prisma = new PrismaClient();
 
 export async function GET() {
     const goLinkData = await prisma.goLinks.findMany({ where: { isPublic: true } });
-    // updateData(goLinks); // Call the updateData function with the fetched data
-    // return Response.json(goLinkData);
     return goLinkData;
 }
   

@@ -25,36 +25,12 @@ const GoLinksContainer: React.FC<GoLinksContainerProps> = ({ goLinkData }) => {
         />
     ));
 
-    // const [goLinkList, setGoLinkList] = useState<React.JSX.Element[]>([...pinnedGoLinks, ...unpinnedGoLinks]);
-
-    // const setDisplay = (givenFilter: string) => {
-    //     if (givenFilter === "" || givenFilter === null) {
-    //         setGoLinkList([...pinnedGoLinks, ...unpinnedGoLinks]);
-    //     } else {
-    //         const filteredGoLinkData = filterGoLinks(givenFilter, goLinkData);
-    //         setGoLinkList(filteredGoLinkData.map((data, index) => (
-    //             <GoLink
-    //                 key={index}
-    //                 {...data}
-    //             />
-    //         )));
-    //     }
-    // }
-
     const [goLinkList, setGoLinkList] = useState<React.JSX.Element[]>([]);
 
-    // Function to update goLinkList based on the filter
     const updateGoLinkList = (givenFilter: string) => {
         if (givenFilter === "" || givenFilter === null) {
-            // If filter is empty, set goLinkList to include all GoLinks
-            setGoLinkList(goLinkData.map((data, index) => (
-                <GoLink
-                    key={index}
-                    {...data}
-                />
-            )));
+            setGoLinkList([...pinnedGoLinks, ...unpinnedGoLinks]);
         } else {
-            // Apply filter if provided
             const filteredGoLinkData = filterGoLinks(givenFilter, goLinkData);
             setGoLinkList(filteredGoLinkData.map((data, index) => (
                 <GoLink
@@ -65,18 +41,15 @@ const GoLinksContainer: React.FC<GoLinksContainerProps> = ({ goLinkData }) => {
         }
     };
 
-    // Call updateGoLinkList once when component mounts to initially display all GoLinks
     useEffect(() => {
         updateGoLinkList("");
-    }, []);
+    }, [goLinkData]);
 
-    // Function to handle filter change
     const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const givenFilter = event.target.value;
         updateGoLinkList(givenFilter);
     };
 
-    
     if (goLinkData.length === 0) {
         return (
             <div className="w-9/12">
@@ -93,7 +66,9 @@ const GoLinksContainer: React.FC<GoLinksContainerProps> = ({ goLinkData }) => {
                     external websites or resources. Important or relevant golinks are marked with a gold star.
                     </p>
                 </div>
-                <div className='text-center my-10'>Loading...</div>
+                <div className='text-center my-10'>
+                    Loading...
+                </div>
             </div>
         )
     }
