@@ -9,7 +9,7 @@ export const GoLinkButton: React.FC = () =>  {
     const [pinned, setPinned] = useState(false); 
     const [officer, setOfficer] = useState(false); 
     
-    const resetValues = () => {
+    const handleCancel = () => {
         setTitle(""); 
         setUrl(""); 
         setDescription(""); 
@@ -17,6 +17,35 @@ export const GoLinkButton: React.FC = () =>  {
         setOfficer(false); 
     };
 
+    const handleCreate = async () => {
+        // Make API call here
+        try {
+            console.log("-------CREATING GOLINK--------")
+            const response = await fetch('http://localhost:3000/api/golinks/public', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    title: title,
+                    url: url,
+                    description: description,
+                    pinned: pinned,
+                    officer: officer
+                }),
+            });
+
+            if (response.ok) {
+                console.log('GoLink created successfully');
+                handleCancel(); 
+                (document.getElementById('create-golink') as HTMLDialogElement).close(); 
+            } else {
+                console.error('Failed to create GoLink');
+            }
+        } catch (error) {
+            console.error('Error occurred while creating GoLink:', error);
+        }
+    };
 
     if(session){
         return (
@@ -79,7 +108,10 @@ export const GoLinkButton: React.FC = () =>  {
 
                             <div className="modal-action">
                                 <form method="dialog">
-                                    <button className="btn">
+                                    <button className="btn" onClick={() => {
+                                        handleCreate();
+                                        // In handleCreate, if it goes well it will close the Modal.
+                                    }}>
                                         Create
                                     </button>
                                 </form>
@@ -90,8 +122,8 @@ export const GoLinkButton: React.FC = () =>  {
                             <div className="modal-action">
                                 <form method="dialog">
                                     <button className="btn" onClick={() => {
-                                        resetValues(); // Reset values when "Cancel" button is clicked
-                                        (document.getElementById('create-golink') as HTMLDialogElement).close(); // Close the modal
+                                        handleCancel(); 
+                                        (document.getElementById('create-golink') as HTMLDialogElement).close(); 
                                     }}>
                                         Cancel
                                     </button>
