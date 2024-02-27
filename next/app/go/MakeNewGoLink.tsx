@@ -34,10 +34,10 @@ export const GoLinkButton: React.FC = () =>  {
                 <dialog id="create-golink" className="modal">
                     <div className="modal-box">
                         <h3 className="font-bold py-4 text-xlg">Create GoLink</h3>
-                        
+
                         <label className="my-2 input input-bordered flex items-center gap-2">
                             Go Link Title: 
-                            <input type="text" className="grow" placeholder="The SSE Website" />
+                            <input type="text" className="grow text-gray-900" placeholder="The SSE Website" />
                         </label>
                         <label className="my-2 input input-bordered flex items-center gap-2">
                             Go Link URL: 
