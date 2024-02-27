@@ -54,17 +54,59 @@ const GoLink: React.FC<GoLinkProps> = ({ goUrl, url, description, pinned }) => {
                 </span>
             </div>
         </a>
-        <dialog id="edit-go-link" className="modal">
+        <dialog id="edit-golink" className="modal">
             <div className="modal-box">
-                <form method="dialog">
-                {/* if there is a button in form, it will close the modal */}
-                <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
-                </form>
-                <h3 className="font-bold text-lg">Hello!</h3>
-                <p className="py-4">Press ESC key or click on ✕ button to close</p>
+                <h3 className="font-bold py-4 text-xlg">Edit GoLink</h3>
+                
+                <label className="my-2 input input-bordered flex items-center gap-2">
+                    Go Link Title: 
+                    <input type="text" className="grow" placeholder="The SSE Website"/>
+                </label>
+                <label className="my-2 input input-bordered flex items-center gap-2">
+                    Go Link URL: 
+                    <input type="text" className="grow" placeholder="sse.rit.edu"/>
+                </label>
+
+                <textarea className="textarea textarea-bordered w-full" placeholder="Description (keep it short please)">{description}</textarea>
+
+                <div className="form-control">
+                    <label className="label cursor-pointer">
+                        <span className="label-text">Pinned</span> 
+                        <input type="checkbox" className="checkbox" />
+                    </label>
+                </div>
+
+                <div className="form-control">
+                    <label className="label cursor-pointer">
+                        <span className="label-text">Officer (Won't be publicly shown)</span> 
+                        <input type="checkbox" className="checkbox" />
+                    </label>
+                </div>
+                
+                <div className="flex">
+                    <span className="flex-grow"></span>
+
+                    <div className="modal-action">
+                        <form method="dialog">
+                            <button className="btn">
+                                Edit
+                            </button>
+                        </form>
+                    </div>
+
+                    <span className="w-2"></span>
+
+                    <div className="modal-action">
+                        <form method="dialog">
+                            <button className="btn">
+                                Cancel
+                            </button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </dialog>
-        <dialog id="delete-go-link" className="modal">
+        <dialog id="delete-golink" className="modal">
             <div className="modal-box">
                 <form method="dialog">
                     <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
@@ -76,17 +118,24 @@ const GoLink: React.FC<GoLinkProps> = ({ goUrl, url, description, pinned }) => {
                 </p>
                 <div className="flex">
                     <span className="flex-grow"></span>
-                    <form>
-                        <button className="btn">
-                            Delete
-                        </button>
-                    </form>
+
+                    <div className="modal-action">
+                        <form method="dialog">
+                            <button className="btn">
+                                Delete
+                            </button>
+                        </form>
+                    </div>
+
                     <span className="w-2"></span>
-                    <form>
-                        <button className="btn">
-                            Cancel
-                        </button>
-                    </form>
+
+                    <div className="modal-action">
+                        <form method="dialog">
+                            <button className="btn">
+                                Cancel
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </dialog>
@@ -105,7 +154,7 @@ const EditAndDelete: React.FC = () => {
                             onClick={(e) => {
                                 e.preventDefault();
                                 if(document) {
-                                    (document.getElementById('edit-go-link') as HTMLFormElement).showModal();
+                                    (document.getElementById('edit-golink') as HTMLFormElement).showModal();
                                 }
                             }}
                             className="rounded-md hover:scale-150">
@@ -117,7 +166,7 @@ const EditAndDelete: React.FC = () => {
                             onClick={(e) => {
                                 e.preventDefault();
                                 if(document) {
-                                    (document.getElementById('delete-go-link') as HTMLFormElement).showModal();
+                                    (document.getElementById('delete-golink') as HTMLFormElement).showModal();
                                 }
                             }}
                             className="rounded-md hover:scale-150">
