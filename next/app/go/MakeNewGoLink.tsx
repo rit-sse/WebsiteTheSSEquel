@@ -18,7 +18,6 @@ export const GoLinkButton: React.FC = () =>  {
     };
 
     const handleCreate = async () => {
-        // Make API call here
         try {
             console.log("-------CREATING GOLINK--------")
             const response = await fetch('http://localhost:3000/api/golinks', {

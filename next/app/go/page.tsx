@@ -8,6 +8,11 @@ export interface GoLinksContainerProps {
     goLinkData: GoLinkProps[];
 }
 
+export interface EditGoLinkModalProps {
+    goLinkData: GoLinkProps[];
+}
+
+
 const GoLinksPage = () => {
     const [goLinkData, setGoLinkData] = useState([]);
     const fetchData = useCallback(async() => {
@@ -16,7 +21,8 @@ const GoLinksPage = () => {
         console.log(response)
         console.log(data)
         
-        setGoLinkData(data.map((item: { golink: string; url: string; description: string; isPinned: boolean; }) => ({
+        setGoLinkData(data.map((item: { id: number, golink: string; url: string; description: string; isPinned: boolean; }) => ({
+            id: item.id,
             goUrl: item.golink,
             url: item.url,
             description: item.description ?? '', 

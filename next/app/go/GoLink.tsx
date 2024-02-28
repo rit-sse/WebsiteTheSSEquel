@@ -1,19 +1,20 @@
-import Button from "@/components/common/Button";
 import { GoLinkIcon } from "@/components/common/Icons";
 import { GoLinkStar } from "@/components/common/Icons";
 import { GoLinkEdit } from "@/components/common/Icons";
 import { GoLinkDelete } from "@/components/common/Icons";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
+
 export interface GoLinkProps {
+    id: number;
     goUrl: string;
     url: string;
     description: string;
     pinned: boolean;
 }
 
-const GoLink: React.FC<GoLinkProps> = ({ goUrl, url, description, pinned }) => {
-    const [title, setTitle] = useState(goUrl); 
+const GoLink: React.FC<GoLinkProps> = ({ id, goUrl, url, description, pinned }) => {
+    const [newTitle, setTitle] = useState(goUrl); 
     const [newUrl, setUrl] = useState(url); 
     const [newDescription, setDescription] = useState(description); 
     const [newPinned, setPinned] = useState(pinned); 
@@ -27,8 +28,65 @@ const GoLink: React.FC<GoLinkProps> = ({ goUrl, url, description, pinned }) => {
         setOfficer(false); 
     };
 
-    const editModalId = `edit-golink-${url}`; // Dynamic ID for edit modal
-    const deleteModalId = `delete-golink-${url}`; // Dynamic ID for delete modal
+    const editModalId = `edit-golink-${url}`; 
+    const deleteModalId = `delete-golink-${url}`; 
+
+    const handleEdit = async () => {
+        console.log("-------EDITING GOLINK--------")
+        try {
+            console.log(id)
+            console.log(newTitle)
+            const response = await fetch(`http://localhost:3000/api/golinks`, {
+                method: 'PUT', // Assuming you are using PUT method for editing
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    id: id,
+                    title: newTitle, 
+                    url: newUrl,
+                    description: newDescription,
+                    isPinned: newPinned,
+                    isPublic: !officer
+                }),
+            });
+    
+            if (response.ok) {
+                console.log('GoLink edited successfully');
+                (document.getElementById(editModalId) as HTMLDialogElement).close(); 
+            } else {
+                console.error('Failed to edit GoLink');
+            }
+        } catch (error) {
+            console.error('Error occurred while editing GoLink:', error);
+        }
+    }
+
+    const handleDelete = async () => {
+        console.log("-------DELETING GOLINK--------")
+        try {
+            const response = await fetch(`http://localhost:3000/api/golinks`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    id: id
+                }),
+            });
+    
+            if (response.ok) {
+                console.log('GoLink deleted successfully');
+                handleCancel(); 
+                (document.getElementById(deleteModalId) as HTMLDialogElement).close(); 
+            } else {
+                console.error('Failed to delete GoLink');
+            }
+        } catch (error) {
+            console.error('Error occurred while deleting GoLink:', error);
+        }
+    }
+
 
     return (
         <>
@@ -64,7 +122,7 @@ const GoLink: React.FC<GoLinkProps> = ({ goUrl, url, description, pinned }) => {
                 </div>
                 <div className="flex ml-3">
                     <span className="float-right">
-                        <EditAndDelete goUrl={goUrl} url={url} description={description} pinned={pinned}/>
+                        <EditAndDelete id={id} goUrl={goUrl} url={url} description={description} pinned={pinned}/>
                     </span>
                     <span className="float-right">
                         <GoLinkIcon />
@@ -77,7 +135,7 @@ const GoLink: React.FC<GoLinkProps> = ({ goUrl, url, description, pinned }) => {
 
                     <label className="my-2 input input-bordered flex items-center gap-2">
                         Go Link Title: 
-                        <input type="text" className="grow text-gray-900" placeholder="The SSE Website" value={title} onChange={(e) => setTitle(e.target.value)} />
+                        <input type="text" className="grow text-gray-900" placeholder="The SSE Website" value={newTitle} onChange={(e) => setTitle(e.target.value)} />
                     </label>
                     <label className="my-2 input input-bordered flex items-center gap-2">
                         Go Link URL: 
@@ -106,7 +164,7 @@ const GoLink: React.FC<GoLinkProps> = ({ goUrl, url, description, pinned }) => {
                         <div className="modal-action">
                             <form method="dialog">
                                 <button className="btn" onClick={() => {
-                                    // handleEdit();
+                                    handleEdit();
                                 }}>
                                     Edit
                                 </button>
@@ -119,7 +177,7 @@ const GoLink: React.FC<GoLinkProps> = ({ goUrl, url, description, pinned }) => {
                             <form method="dialog">
                                 <button className="btn" onClick={() => {
                                     handleCancel(); 
-                                    (document.getElementById('create-golink') as HTMLDialogElement).close(); 
+                                    (document.getElementById(editModalId) as HTMLDialogElement).close(); 
                                 }}>
                                     Cancel
                                 </button>
@@ -143,7 +201,10 @@ const GoLink: React.FC<GoLinkProps> = ({ goUrl, url, description, pinned }) => {
 
                         <div className="modal-action">
                             <form method="dialog">
-                                <button className="btn">
+                                <button className="btn" onClick={() => {
+                                    handleDelete(); 
+                                    (document.getElementById(deleteModalId) as HTMLDialogElement).close(); 
+                                }}>
                                     Delete
                                 </button>
                             </form>
@@ -153,7 +214,10 @@ const GoLink: React.FC<GoLinkProps> = ({ goUrl, url, description, pinned }) => {
 
                         <div className="modal-action">
                             <form method="dialog">
-                                <button className="btn">
+                                <button className="btn" onClick={() => {
+                                    handleCancel(); 
+                                    (document.getElementById(deleteModalId) as HTMLDialogElement).close(); 
+                                }}>
                                     Cancel
                                 </button>
                             </form>
@@ -165,7 +229,7 @@ const GoLink: React.FC<GoLinkProps> = ({ goUrl, url, description, pinned }) => {
     );
 }
 
-const EditAndDelete: React.FC<GoLinkProps> = ( url ) => {
+const EditAndDelete: React.FC<GoLinkProps> = ({ goUrl, url, description, pinned } ) => {
     const { data: session } = useSession();
     if(session) {
         return (
@@ -175,6 +239,7 @@ const EditAndDelete: React.FC<GoLinkProps> = ( url ) => {
                         <button 
                             onClick={(e) => {
                                 e.preventDefault();
+                                console.log(`edit-golink-${url}`)
                                 if(document) {
                                     (document.getElementById(`edit-golink-${url}`) as HTMLFormElement).showModal();
                                 }
