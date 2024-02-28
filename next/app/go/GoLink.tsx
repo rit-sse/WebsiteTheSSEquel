@@ -1,9 +1,7 @@
-import Button from "@/components/common/Button";
 import { GoLinkIcon } from "@/components/common/Icons";
 import { GoLinkStar } from "@/components/common/Icons";
-import { GoLinkEdit } from "@/components/common/Icons";
-import { GoLinkDelete } from "@/components/common/Icons";
-import { useSession } from "next-auth/react";
+import { EditAndDelete } from "./EditDeleteGoLinkModal";
+
 export interface GoLinkProps {
     goUrl: string;
     url: string;
@@ -12,7 +10,6 @@ export interface GoLinkProps {
 }
 
 const GoLink: React.FC<GoLinkProps> = ({ goUrl, url, description, pinned }) => {
-
     return (
         <>
         <a
@@ -47,14 +44,14 @@ const GoLink: React.FC<GoLinkProps> = ({ goUrl, url, description, pinned }) => {
             </div>
             <div className="flex ml-3">
                 <span className="float-right">
-                    <EditAndDelete />
+                    <EditAndDelete goUrl={goUrl} url={url} description={description} pinned={pinned}></EditAndDelete>
                 </span>
                 <span className="float-right">
                     <GoLinkIcon />
                 </span>
             </div>
         </a>
-        <dialog id="edit-golink" className="modal">
+        <dialog id="edit-golink-" className="modal">
             <div className="modal-box">
                 <h3 className="font-bold py-4 text-xlg">Edit GoLink</h3>
                 
@@ -143,40 +140,40 @@ const GoLink: React.FC<GoLinkProps> = ({ goUrl, url, description, pinned }) => {
     );
 }
 
-const EditAndDelete: React.FC = () => {
-    const { data: session } = useSession();
-    if(session) {
-        return (
-            <form>
-                <div className="flex flex-row">
-                    <div className="pr-1">
-                        <button 
-                            onClick={(e) => {
-                                e.preventDefault();
-                                if(document) {
-                                    (document.getElementById('edit-golink') as HTMLFormElement).showModal();
-                                }
-                            }}
-                            className="rounded-md hover:scale-150">
-                            <GoLinkEdit />
-                        </button>
-                    </div>
-                    <div className="pr-1">
-                        <button 
-                            onClick={(e) => {
-                                e.preventDefault();
-                                if(document) {
-                                    (document.getElementById('delete-golink') as HTMLFormElement).showModal();
-                                }
-                            }}
-                            className="rounded-md hover:scale-150">
-                            <GoLinkDelete />
-                        </button>
-                    </div>
-                </div>
-            </form>
-        )
-    }
-}
+// const EditAndDelete: React.FC = () => {
+//     const { data: session } = useSession();
+//     if(session) {
+//         return (
+//             <form>
+//                 <div className="flex flex-row">
+//                     <div className="pr-1">
+//                         <button 
+//                             onClick={(e) => {
+//                                 e.preventDefault();
+//                                 if(document) {
+//                                     (document.getElementById('edit-golink') as HTMLFormElement).showModal();
+//                                 }
+//                             }}
+//                             className="rounded-md hover:scale-150">
+//                             <GoLinkEdit />
+//                         </button>
+//                     </div>
+//                     <div className="pr-1">
+//                         <button 
+//                             onClick={(e) => {
+//                                 e.preventDefault();
+//                                 if(document) {
+//                                     (document.getElementById('delete-golink') as HTMLFormElement).showModal();
+//                                 }
+//                             }}
+//                             className="rounded-md hover:scale-150">
+//                             <GoLinkDelete />
+//                         </button>
+//                     </div>
+//                 </div>
+//             </form>
+//         )
+//     }
+// }
 
 export default GoLink;
