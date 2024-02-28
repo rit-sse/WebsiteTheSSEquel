@@ -60,11 +60,11 @@ const GoLink: React.FC<GoLinkProps> = ({ goUrl, url, description, pinned }) => {
                 
                 <label className="my-2 input input-bordered flex items-center gap-2">
                     Go Link Title: 
-                    <input type="text" className="grow" placeholder="The SSE Website"/>
+                    <input type="text" className="grow text-gray-900" placeholder="The SSE Website"/>
                 </label>
                 <label className="my-2 input input-bordered flex items-center gap-2">
                     Go Link URL: 
-                    <input type="text" className="grow" placeholder="sse.rit.edu"/>
+                    <input type="text" className="grow text-gray-900" placeholder="sse.rit.edu"/>
                 </label>
 
                 <textarea className="textarea textarea-bordered w-full" placeholder="Description (keep it short please)"></textarea>

@@ -21,17 +21,20 @@ export const GoLinkButton: React.FC = () =>  {
         // Make API call here
         try {
             console.log("-------CREATING GOLINK--------")
-            const response = await fetch('http://localhost:3000/api/golinks/public', {
+            const response = await fetch('http://localhost:3000/api/golinks', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
+                // In body, make sure parameter names MATCH the ones in api/golinks/route.ts for the POST request
+                // Left is backend parameter names, right is our front end names
+                // golink = backend parameter name --- title = frontend parameter name
                 body: JSON.stringify({
-                    title: title,
+                    golink: title,
                     url: url,
                     description: description,
-                    pinned: pinned,
-                    officer: officer
+                    isPinned: pinned,
+                    isPublic: !officer // If it is officer, it is not public
                 }),
             });
 
@@ -84,7 +87,7 @@ export const GoLinkButton: React.FC = () =>  {
                         </label>
                         <label className="my-2 input input-bordered flex items-center gap-2">
                             Go Link URL: 
-                            <input type="text" className="grow" placeholder="sse.rit.edu" value={url} onChange={(e) => setUrl(e.target.value)} />
+                            <input type="text" className="grow text-gray-900" placeholder="sse.rit.edu" value={url} onChange={(e) => setUrl(e.target.value)} />
                         </label>
 
                         <textarea className="textarea textarea-bordered w-full" placeholder="Description (keep it short please)" value={description} onChange={(e) => setDescription(e.target.value)}></textarea>
