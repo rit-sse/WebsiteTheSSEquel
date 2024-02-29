@@ -28,8 +28,8 @@ const GoLink: React.FC<GoLinkProps> = ({ id, goUrl, url, description, pinned }) 
         setOfficer(false); 
     };
 
-    const editModalId = `edit-golink-${url}`; 
-    const deleteModalId = `delete-golink-${url}`; 
+    const editModalId = `edit-golink-${id}`; 
+    const deleteModalId = `delete-golink-${id}`; 
 
     const handleEdit = async () => {
         console.log("-------EDITING GOLINK--------")
@@ -166,7 +166,7 @@ const GoLink: React.FC<GoLinkProps> = ({ id, goUrl, url, description, pinned }) 
                                 <button className="btn" onClick={() => {
                                     handleEdit();
                                 }}>
-                                    Edit
+                                    Edit (Refresh to see results)
                                 </button>
                             </form>
                         </div>
@@ -229,7 +229,7 @@ const GoLink: React.FC<GoLinkProps> = ({ id, goUrl, url, description, pinned }) 
     );
 }
 
-const EditAndDelete: React.FC<GoLinkProps> = ({ goUrl, url, description, pinned } ) => {
+const EditAndDelete: React.FC<GoLinkProps> = ({ id, goUrl, url, description, pinned } ) => {
     const { data: session } = useSession();
     if(session) {
         return (
@@ -239,9 +239,9 @@ const EditAndDelete: React.FC<GoLinkProps> = ({ goUrl, url, description, pinned 
                         <button 
                             onClick={(e) => {
                                 e.preventDefault();
-                                console.log(`edit-golink-${url}`)
+                                console.log(`edit-golink-${id}`)
                                 if(document) {
-                                    (document.getElementById(`edit-golink-${url}`) as HTMLFormElement).showModal();
+                                    (document.getElementById(`edit-golink-${id}`) as HTMLFormElement).showModal();
                                 }
                             }}
                             className="rounded-md hover:scale-150">
@@ -253,7 +253,7 @@ const EditAndDelete: React.FC<GoLinkProps> = ({ goUrl, url, description, pinned 
                             onClick={(e) => {
                                 e.preventDefault();
                                 if(document) {
-                                    (document.getElementById(`delete-golink-${url}`) as HTMLFormElement).showModal();
+                                    (document.getElementById(`delete-golink-${id}`) as HTMLFormElement).showModal();
                                 }
                             }}
                             className="rounded-md hover:scale-150">
