@@ -20,7 +20,6 @@ export const GoLinkButton: React.FC<CreateGoLinkProps> = ({fetchData}) =>  {
 
     const handleCreate = async () => {
         try {
-            console.log("-------CREATING GOLINK--------")
             const response = await fetch('http://localhost:3000/api/golinks', {
                 method: 'POST',
                 headers: {
@@ -29,6 +28,8 @@ export const GoLinkButton: React.FC<CreateGoLinkProps> = ({fetchData}) =>  {
                 // In body, make sure parameter names MATCH the ones in api/golinks/route.ts for the POST request
                 // Left is backend parameter names, right is our front end names
                 // golink = backend parameter name --- title = frontend parameter name
+                //
+                // I messed up when I did this with the edit API call, it wasn't saving the title because of that.
                 body: JSON.stringify({
                     golink: title,
                     url: url,
@@ -39,16 +40,11 @@ export const GoLinkButton: React.FC<CreateGoLinkProps> = ({fetchData}) =>  {
             });
 
             if (response.ok) {
-                console.log('GoLink created successfully');
                 handleCancel(); 
                 (document.getElementById('create-golink') as HTMLDialogElement).close(); 
                 fetchData();
-            } else {
-                console.error('Failed to create GoLink');
             }
-        } catch (error) {
-            console.error('Error occurred while creating GoLink:', error);
-        }
+        } catch (error) {}
     };
 
     if(session){

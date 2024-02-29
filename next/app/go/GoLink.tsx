@@ -33,10 +33,7 @@ const GoLink: React.FC<GoLinkProps> = ({ id, goUrl, url, description, pinned, fe
     const deleteModalId = `delete-golink-${id}`; 
 
     const handleEdit = async () => {
-        console.log("-------EDITING GOLINK--------")
         try {
-            console.log(id)
-            console.log(newTitle)
             const response = await fetch(`http://localhost:3000/api/golinks`, {
                 method: 'PUT', // Assuming you are using PUT method for editing
                 headers: {
@@ -53,19 +50,13 @@ const GoLink: React.FC<GoLinkProps> = ({ id, goUrl, url, description, pinned, fe
             });
     
             if (response.ok) {
-                console.log('GoLink edited successfully');
                 (document.getElementById(editModalId) as HTMLDialogElement).close(); 
                 fetchData();
-            } else {
-                console.error('Failed to edit GoLink');
-            }
-        } catch (error) {
-            console.error('Error occurred while editing GoLink:', error);
-        }
+            } 
+        } catch (error) {}
     }
 
     const handleDelete = async () => {
-        console.log("-------DELETING GOLINK--------")
         try {
             const response = await fetch(`http://localhost:3000/api/golinks`, {
                 method: 'DELETE',
@@ -78,16 +69,11 @@ const GoLink: React.FC<GoLinkProps> = ({ id, goUrl, url, description, pinned, fe
             });
     
             if (response.ok) {
-                console.log('GoLink deleted successfully');
                 handleCancel(); 
                 (document.getElementById(deleteModalId) as HTMLDialogElement).close(); 
                 fetchData();
-            } else {
-                console.error('Failed to delete GoLink');
             }
-        } catch (error) {
-            console.error('Error occurred while deleting GoLink:', error);
-        }
+        } catch (error) {}
     }
 
 
@@ -242,7 +228,6 @@ const EditAndDelete: React.FC<GoLinkProps> = ({ id, goUrl, url, description, pin
                         <button 
                             onClick={(e) => {
                                 e.preventDefault();
-                                console.log(`edit-golink-${id}`)
                                 if(document) {
                                     (document.getElementById(`edit-golink-${id}`) as HTMLFormElement).showModal();
                                 }
