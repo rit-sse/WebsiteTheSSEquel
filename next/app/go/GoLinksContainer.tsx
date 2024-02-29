@@ -66,8 +66,22 @@ const GoLinksContainer: React.FC<GoLinksContainerProps> = ({ goLinkData, fetchDa
     
                     <p className="text-center mx-auto mt-4 text-xl/relaxed">
                     GoLinks are a type of URL shortcut that allow you to access the SSE's frequently used 
-                    external websites or resources. Important or relevant golinks are marked with a gold star.
+                    external websites or resources. Important and/or relevant golinks are marked with a gold star.
                     </p>
+                </div>
+                <div className="w-full mt-4">
+                    <input type="text" placeholder="Search golinks, etc..." className="input input-bordered w-full my-5" onChange={(event) => handleFilterChange(event)} />
+                </div>
+                <div className="
+                    grid
+                    grid-cols-1
+                    sm:grid-cols-1
+                    md:grid-cols-2
+                    lg:grid-cols-2
+                    gap-4
+                    md:p-4
+                ">
+                    <GoLinkButton fetchData={fetchData}/>
                 </div>
                 <div className='text-center my-10'>
                     Loading...
@@ -88,7 +102,7 @@ const GoLinksContainer: React.FC<GoLinksContainerProps> = ({ goLinkData, fetchDa
     
                     <p className="text-center mx-auto mt-4 text-xl/relaxed">
                     GoLinks are a type of URL shortcut that allow you to access the SSE's frequently used 
-                    external websites or resources. Important/relevant golinks are marked with a gold star.
+                    external websites or resources. Important and/or relevant golinks are marked with a gold star.
                     </p>
                 </div>
     
