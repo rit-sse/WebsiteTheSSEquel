@@ -43,7 +43,7 @@ const GoLink: React.FC<GoLinkProps> = ({ id, goUrl, url, description, pinned }) 
                 },
                 body: JSON.stringify({
                     id: id,
-                    title: newTitle, 
+                    golink: newTitle, 
                     url: newUrl,
                     description: newDescription,
                     isPinned: newPinned,
