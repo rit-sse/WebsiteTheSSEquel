@@ -1,7 +1,8 @@
 import { useSession } from "next-auth/react";
 import { useState } from "react";
+import { CreateGoLinkProps } from "./page";
 
-export const GoLinkButton: React.FC = () =>  {
+export const GoLinkButton: React.FC<CreateGoLinkProps> = ({fetchData}) =>  {
     const { data: session } = useSession()
     const [title, setTitle] = useState(""); 
     const [url, setUrl] = useState(""); 
@@ -41,6 +42,7 @@ export const GoLinkButton: React.FC = () =>  {
                 console.log('GoLink created successfully');
                 handleCancel(); 
                 (document.getElementById('create-golink') as HTMLDialogElement).close(); 
+                fetchData();
             } else {
                 console.error('Failed to create GoLink');
             }

@@ -4,14 +4,14 @@ import GoLinksContainer from "@/app/go/GoLinksContainer";
 import { GoLinkProps } from "./GoLink";
 import { useCallback, useEffect, useState } from "react";
 
+export interface CreateGoLinkProps {
+    fetchData: () => Promise<void>; 
+}
+
 export interface GoLinksContainerProps {
     goLinkData: GoLinkProps[];
+    fetchData: () => Promise<void>; 
 }
-
-export interface EditGoLinkModalProps {
-    goLinkData: GoLinkProps[];
-}
-
 
 const GoLinksPage = () => {
     const [goLinkData, setGoLinkData] = useState([]);
@@ -39,7 +39,7 @@ const GoLinksPage = () => {
     
     return (
         <>
-            <GoLinksContainer goLinkData={goLinkData} />
+            <GoLinksContainer goLinkData={goLinkData} fetchData={fetchData} />
         </>
     )
 }

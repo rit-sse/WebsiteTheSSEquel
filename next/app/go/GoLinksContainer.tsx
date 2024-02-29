@@ -6,13 +6,14 @@ import { GoLinksContainerProps } from "@/app/go/page";
 import { filterGoLinks } from '@/lib/filter';
 import {GoLinkButton} from '@/app/go/MakeNewGoLink'
 
-const GoLinksContainer: React.FC<GoLinksContainerProps> = ({ goLinkData }) => {
+const GoLinksContainer: React.FC<GoLinksContainerProps> = ({ goLinkData, fetchData }) => {
     const pinnedGoLinks = goLinkData
     .filter(data => data.pinned === true)
     .map((data, index) => (
         <GoLink
             key={`pinned-${index}`}
             {...data}
+            fetchData={fetchData}
         />
     ));
 
@@ -22,6 +23,7 @@ const GoLinksContainer: React.FC<GoLinksContainerProps> = ({ goLinkData }) => {
         <GoLink
             key={`unpinned-${index}`}
             {...data}
+            fetchData={fetchData}
         />
     ));
 
@@ -36,6 +38,7 @@ const GoLinksContainer: React.FC<GoLinksContainerProps> = ({ goLinkData }) => {
                 <GoLink
                     key={index}
                     {...data}
+                    fetchData={fetchData}
                 />
             )));
         }
@@ -101,7 +104,7 @@ const GoLinksContainer: React.FC<GoLinksContainerProps> = ({ goLinkData }) => {
                     gap-4
                     md:p-4
                 ">
-                    <GoLinkButton/>
+                    <GoLinkButton fetchData={fetchData}/>
                     {goLinkList}
                 </div>
             </div>

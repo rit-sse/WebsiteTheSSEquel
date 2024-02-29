@@ -11,9 +11,10 @@ export interface GoLinkProps {
     url: string;
     description: string;
     pinned: boolean;
+    fetchData: () => Promise<void>; 
 }
 
-const GoLink: React.FC<GoLinkProps> = ({ id, goUrl, url, description, pinned }) => {
+const GoLink: React.FC<GoLinkProps> = ({ id, goUrl, url, description, pinned, fetchData }) => {
     const [newTitle, setTitle] = useState(goUrl); 
     const [newUrl, setUrl] = useState(url); 
     const [newDescription, setDescription] = useState(description); 
@@ -54,6 +55,7 @@ const GoLink: React.FC<GoLinkProps> = ({ id, goUrl, url, description, pinned }) 
             if (response.ok) {
                 console.log('GoLink edited successfully');
                 (document.getElementById(editModalId) as HTMLDialogElement).close(); 
+                fetchData();
             } else {
                 console.error('Failed to edit GoLink');
             }
@@ -79,6 +81,7 @@ const GoLink: React.FC<GoLinkProps> = ({ id, goUrl, url, description, pinned }) 
                 console.log('GoLink deleted successfully');
                 handleCancel(); 
                 (document.getElementById(deleteModalId) as HTMLDialogElement).close(); 
+                fetchData();
             } else {
                 console.error('Failed to delete GoLink');
             }
@@ -122,7 +125,7 @@ const GoLink: React.FC<GoLinkProps> = ({ id, goUrl, url, description, pinned }) 
                 </div>
                 <div className="flex ml-3">
                     <span className="float-right">
-                        <EditAndDelete id={id} goUrl={goUrl} url={url} description={description} pinned={pinned}/>
+                        <EditAndDelete id={id} goUrl={goUrl} url={url} description={description} pinned={pinned} fetchData={fetchData}/>
                     </span>
                     <span className="float-right">
                         <GoLinkIcon />
@@ -166,7 +169,7 @@ const GoLink: React.FC<GoLinkProps> = ({ id, goUrl, url, description, pinned }) 
                                 <button className="btn" onClick={() => {
                                     handleEdit();
                                 }}>
-                                    Edit (Refresh to see results)
+                                    Edit
                                 </button>
                             </form>
                         </div>
