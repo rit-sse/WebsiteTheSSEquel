@@ -42,7 +42,7 @@ jobs:
       - name: Start API
         run: |
           cd next
-          npm run dev > server_log.txt &
+          npm run dev --logs-dir=server_logs/ &
 
         # Run the tests through postman
       - name: Run API Tests
@@ -57,4 +57,4 @@ jobs:
         if: always()
         run: |
           echo ${{ steps.run-newman.outputs.summary }}
-          cat server_log.txt
+          cat server_logs/*
