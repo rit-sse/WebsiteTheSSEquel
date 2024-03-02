@@ -2,7 +2,7 @@
 name: Postman tests
 on:
   push:
-    branches: [main, dev/postman-tests, dev/api]
+    branches: [main, dev/postman-tests, dev/api, dev/auth-api]
 jobs:
   run-and-test:
     runs-on: ubuntu-latest
