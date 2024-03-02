@@ -110,6 +110,55 @@
 			],
 			"request": {
 				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer 123",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\": 1,\r\n    \"name\": \"Johnathaniel\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3000/api/user/",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"user",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/api/user no auth",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Response for PUT /api/user without auth\", function () {\r",
+							"    pm.expect(pm.response.code).to.equal(403);\r",
+							"    pm.expect(pm.response.text()).to.equal(\"Access Denied; need to be Officer to access\");\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
 				"header": [],
 				"body": {
 					"mode": "raw",
@@ -121,14 +170,15 @@
 					}
 				},
 				"url": {
-					"raw": "localhost:3000/api/user",
+					"raw": "localhost:3000/api/user/",
 					"host": [
 						"localhost"
 					],
 					"port": "3000",
 					"path": [
 						"api",
-						"user"
+						"user",
+						""
 					]
 				}
 			},
@@ -246,7 +296,13 @@
 			],
 			"request": {
 				"method": "PUT",
-				"header": [],
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer 123",
+						"type": "text"
+					}
+				],
 				"body": {
 					"mode": "raw",
 					"raw": "{\r\n    \"id\": 1,\r\n    \"hourBlockId\": 2\r\n}",
@@ -257,14 +313,15 @@
 					}
 				},
 				"url": {
-					"raw": "localhost:3000/api/schedule",
+					"raw": "localhost:3000/api/schedule/",
 					"host": [
 						"localhost"
 					],
 					"port": "3000",
 					"path": [
 						"api",
-						"schedule"
+						"schedule",
+						""
 					]
 				}
 			},
