@@ -42,7 +42,7 @@ jobs:
       - name: Start API
         run: |
           cd next
-          npm run dev &
+          npm run dev > server_log.txt &
 
         # Run the tests through postman
       - name: Run API Tests
@@ -54,4 +54,6 @@ jobs:
           reporters: cli
 
       - name: Output summary to console
-        run: echo ${{ steps.run-newman.outputs.summary }}
+        run: |
+          echo ${{ steps.run-newman.outputs.summary }}
+          cat server_log.txt
