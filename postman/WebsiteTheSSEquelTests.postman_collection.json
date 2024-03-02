@@ -383,7 +383,13 @@
 			],
 			"request": {
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer 123",
+						"type": "text"
+					}
+				],
 				"url": {
 					"raw": "localhost:3000/api/golinks/officer",
 					"host": [
@@ -418,7 +424,13 @@
 			],
 			"request": {
 				"method": "PUT",
-				"header": [],
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer 123",
+						"type": "text"
+					}
+				],
 				"body": {
 					"mode": "raw",
 					"raw": "{\r\n    \"id\": 1,\r\n    \"url\": \"https://duckduckgo.com\",\r\n    \"golink\": \"Duck Duck Go\"\r\n}",
