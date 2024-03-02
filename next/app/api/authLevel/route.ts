@@ -9,8 +9,8 @@ const prisma = new PrismaClient();
  * "Member" => user is an SSE member but has no other credentials
  * "Mentor" => user is a mentor but not an officer
  * "Officer" => user is an officer
- * @param request {email: string} | {token: string}
- * @returns {"None" | "User" | "Member" | "Mentor" | "Officer"} the auth level
+ * @param request \{email: string} | {token: string}
+ * @returns \{isUser: boolean, isMember: boolean, isMentor: boolean, isOfficer: boolean} the auth level
  */
 export async function PUT(request: Request) {
   let body;
@@ -34,11 +34,21 @@ export async function PUT(request: Request) {
             },
           },
     select: {
-      mentor: true,
-      officers: true,
+      mentor: {
+        where: {
+          isActive: true,
+        },
+      },
+      officers: {
+        where: {
+          is_active: true,
+        },
+      },
       isMember: true,
     },
   });
+
+  // console.log("Getting Auth for ", body, user);
 
   const authLevel = {
     isUser: false,
@@ -54,7 +64,7 @@ export async function PUT(request: Request) {
       authLevel.isOfficer = true;
     }
     if (mentor.length > 0) {
-      authLevel.isOfficer = true;
+      authLevel.isMentor = true;
     }
     authLevel.isMember = isMember;
     authLevel.isUser = true;
