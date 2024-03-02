@@ -17,6 +17,8 @@ const routeAuthType = (method: string, route: string) => {
       route.startsWith("/api/departments") ||
       route.startsWith("/api/officer") ||
       route.startsWith("/api/skill") ||
+      route.startsWith("/api/user") ||
+      route.startsWith("/api/golinks") ||
       route.startsWith("/api/course")) &&
       method != "GET")
   ) {
@@ -35,6 +37,12 @@ const routeAuthType = (method: string, route: string) => {
   return "None";
 };
 
+const accessDenied = (authType: string) => {
+  return new NextResponse(`Access Denied; need to be ${authType} to access`, {
+    status: 403,
+  });
+};
+
 export const authMiddleware = async (request: NextRequest) => {
   // console.log("Auth Middleware is running");
   const { pathname } = request.nextUrl;
@@ -43,10 +51,15 @@ export const authMiddleware = async (request: NextRequest) => {
   // slice out the `Bearer ...`
   const authToken = request.headers.get("Authorization")?.slice(7);
   const authType = routeAuthType(method, pathname);
+  console.log(authType);
 
   if (authType == "None") {
     // console.log("Letting through with no auth");
     return NextResponse.next();
+  }
+
+  if (authToken == null) {
+    return accessDenied(authType);
   }
 
   const perm_fetch = await fetch(process.env.NEXTAUTH_URL + "/api/authLevel", {
@@ -73,7 +86,5 @@ export const authMiddleware = async (request: NextRequest) => {
     return NextResponse.next();
   }
   // console.log("Access Denied");
-  return new NextResponse(`Access Denied; need to be ${authType} to access`, {
-    status: 403,
-  });
+  return accessDenied(authType);
 };
