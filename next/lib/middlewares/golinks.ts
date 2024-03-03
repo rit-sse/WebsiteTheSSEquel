@@ -28,6 +28,7 @@ const getDestinationUrl = async (goUrl: string) => {
  * Otherwise, returns NextResponse.next() to continue the middleware chain.
  */
 export const golinksMiddleware = async (request: NextRequest) => {
+    console.log("middle ware called!") 
     const { pathname } = request.nextUrl;
     // Only run golinks middleware logic for paths starting with "/go/"
     if (pathname.startsWith('/go/')) {
