@@ -87,13 +87,13 @@ export async function DELETE(request: Request) {
   if (mentorExists == null) {
     return new Response(`Couldn't find mentor ID ${id}`, { status: 404 });
   }
-  await prisma.courseTaken.deleteMany({
+  const _deleteCourse = await prisma.courseTaken.deleteMany({
     where: { mentorId: id },
   });
-  await prisma.mentorSkill.deleteMany({
+  const _deleteSkills = await prisma.mentorSkill.deleteMany({
     where: { mentor_Id: id },
   });
-  await prisma.schedule.deleteMany({
+  const _deleteScheduleRef = await prisma.schedule.deleteMany({
     where: { mentorId: id },
   });
 

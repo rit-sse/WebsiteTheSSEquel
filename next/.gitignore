@@ -43,6 +43,7 @@ prisma/migrations
 *.tsbuildinfo
 next-env.d.ts
 
-# nix envs
+# Nix
+flake.lock
 .envrc
 .direnv

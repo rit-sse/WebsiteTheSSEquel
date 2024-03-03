@@ -37,6 +37,7 @@ async function seedQuote() {
         where: { id: 1 },
         update: {},
         create: {
+            id: 1,
             date_added: new Date(),
             quote: 'This is a quote',
             user_id: 1,
@@ -47,6 +48,7 @@ async function seedQuote() {
         where: { id: 2 },
         update: {},
         create: {
+            id: 2,
             date_added: new Date(),
             quote: 'This is another quote',
             user_id: 2,
@@ -57,6 +59,7 @@ async function seedQuote() {
         where: { id: 3 },
         update: {},
         create: {
+            id: 3,
             date_added: new Date(),
             quote: 'This is a third quote',
             user_id: 3,
@@ -180,6 +183,7 @@ async function seedSkill() {
         where: { id: 1 },
         update: {},
         create: {
+            id: 1,
             skill: 'Java',
         },
     })
@@ -188,6 +192,7 @@ async function seedSkill() {
         where: { id: 2 },
         update: {},
         create: {
+            id: 2,
             skill: 'c++',
         },
     })
@@ -196,6 +201,7 @@ async function seedSkill() {
         where: { id: 3 },
         update: {},
         create: {
+            id: 3,
             skill: 'Python',
         },
     })
@@ -207,6 +213,7 @@ async function seedMentorSkill() {
         where: { id: 1 },
         update: {},
         create: {
+            id: 1,
             mentor_Id: 1,
             skill_Id: 1,
         },
@@ -216,6 +223,7 @@ async function seedMentorSkill() {
         where: { id: 2 },
         update: {},
         create: {
+            id: 2,
             mentor_Id: 2,
             skill_Id: 2,
         },
@@ -225,6 +233,7 @@ async function seedMentorSkill() {
         where: { id: 3 },
         update: {},
         create: {
+            id: 3,
             mentor_Id: 3,
             skill_Id: 3,
         },
