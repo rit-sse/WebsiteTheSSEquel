@@ -1,12 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import NavItem, { NavItemProps } from "./NavItem";
 import MobileNavDropdown from "./MobileNavDropdown";
 import SSELogoFull from "../common/SSELogoFull";
 import SSELogoSmall from "../common/SSELogoSmall";
-
+import AuthButton from "./AuthButton";
 
 const navItems: NavItemProps[] = [
     {
@@ -22,11 +21,11 @@ const navItems: NavItemProps[] = [
             },
             {
                 title: "Get Involved",
-                route: "#",
+                route: "/about/get-involved",
             },
             {
                 title: "Leadership",
-                route: "#",
+                route: "/about/leadership",
             },
             {
                 title: "Committees",
@@ -34,11 +33,11 @@ const navItems: NavItemProps[] = [
             },
             {
                 title: "Constitution",
-                route: "#",
+                route: "/about/constitution",
             },
             {
                 title: "Primary Officer's Policy",
-                route: "#",
+                route: "/about/primary-officers-policy",
             }
         ],
     },
@@ -67,26 +66,9 @@ const navItems: NavItemProps[] = [
         title: "Projects",
         route: "#",
     },
-    { // Go links dropdown should be extracted to it's own component since the nav items are dynamic (depending on what's pinned)
+    { // Go links dropdown removed. Check commit d2f1d82 in feature branch if we need to restore the dropdowns.
         title: "Go Links",
-        subItems: [
-            {
-                title: "View All",
-                route: "#",
-            },
-            {
-                title: "Go Link 1",
-                route: "#",
-            },
-            {
-                title: "Go Link 2",
-                route: "#",
-            },
-            {
-                title: "Go Link 3",
-                route: "#",
-            },
-        ],
+        route: "/go"
     }
 ];
 
@@ -111,18 +93,21 @@ const Navbar: React.FC = () => {
                     className="flex flex-row items-center justify-center group focus:outline-offset-8 rounded-md  "
                 >
                     {/* Responsively display either the small or full logo depending on screen width */}
-                    <div className="lg:hidden">
+                    <div className="xl:hidden">
                         <SSELogoSmall />
                     </div>
-                    <div className="hidden lg:block lg:visible">
+                    <div className="hidden xl:block xl:visible">
                         <SSELogoFull />
                     </div>
                 </Link>
-                <div className="hidden md:block md:visible">
+                <div className="hidden md:visible md:inline-flex">
                     <ul className="inline-flex flex-row flex-nowrap justify-between text-center text-lg">
                         {navItems.map((navItem, index) => (
                             <NavItem key={index} {...navItem} onClickFunc={blurOnClick} />
                         ))}
+                        <li className="flex flex-row justify-center items-center">
+                            <AuthButton />
+                        </li>
                     </ul>
                 </div>
                 <div className="dropdown dropdown-end md:hidden">
