@@ -80,8 +80,9 @@ const GoLink: React.FC<GoLinkProps> = ({ id, goUrl, url, description, pinned, fe
     return (
         <>
             {console.log(url)}
+            
             <a
-                href={url}
+                href={"http://localhost:3000/go/" + goUrl}
                 target="_blank"
                 className="
                 flex 
