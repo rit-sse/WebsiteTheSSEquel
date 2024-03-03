@@ -79,6 +79,7 @@ const GoLink: React.FC<GoLinkProps> = ({ id, goUrl, url, description, pinned, fe
 
     return (
         <>
+            {console.log(url)}
             <a
                 href={url}
                 target="_blank"

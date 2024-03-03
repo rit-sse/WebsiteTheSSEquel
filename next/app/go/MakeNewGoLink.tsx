@@ -19,7 +19,7 @@ export const GoLinkButton: React.FC<CreateGoLinkProps> = ({fetchData}) =>  {
     };
 
     const handleCreate = async () => {
-        try {
+        try {            
             const response = await fetch('http://localhost:3000/api/golinks', {
                 method: 'POST',
                 headers: {
