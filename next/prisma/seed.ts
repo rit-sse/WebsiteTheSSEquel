@@ -437,7 +437,6 @@ async function seedAccount() {
     where: { id: 1 },
     update: {},
     create: {
-      id: 1,
       userId: 1,
       type: "google",
       provider: "google.com",
@@ -455,7 +454,6 @@ async function seedAccount() {
     where: { id: 2 },
     update: {},
     create: {
-      id: 2,
       userId: 2,
       type: "google",
       provider: "google.com",
@@ -473,7 +471,6 @@ async function seedAccount() {
     where: { id: 3 },
     update: {},
     create: {
-      id: 3,
       userId: 3,
       type: "google",
       provider: "google.com",
