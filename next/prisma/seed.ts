@@ -100,7 +100,6 @@ async function seedOfficer() {
     where: { id: 1 },
     update: {},
     create: {
-      id: 1,
       position_id: 1,
       user_id: 1,
       is_active: true,
@@ -113,7 +112,6 @@ async function seedOfficer() {
     where: { id: 2 },
     update: {},
     create: {
-      id: 2,
       position_id: 2,
       user_id: 2,
       is_active: true,
@@ -126,7 +124,6 @@ async function seedOfficer() {
     where: { id: 3 },
     update: {},
     create: {
-      id: 3,
       position_id: 3,
       user_id: 1,
       is_active: false,
@@ -142,7 +139,6 @@ async function seedMentor() {
     where: { id: 1 },
     update: {},
     create: {
-      id: 1,
       user_Id: 1,
       expirationDate: new Date(),
       isActive: true,
@@ -152,7 +148,6 @@ async function seedMentor() {
     where: { id: 2 },
     update: {},
     create: {
-      id: 2,
       user_Id: 2,
       expirationDate: new Date(),
       isActive: true,
@@ -163,7 +158,6 @@ async function seedMentor() {
     where: { id: 3 },
     update: {},
     create: {
-      id: 3,
       user_Id: 3,
       expirationDate: new Date(),
       isActive: true,
@@ -236,7 +230,6 @@ async function seedDepartment() {
     where: { id: 1 },
     update: { shortTitle: "CS" },
     create: {
-      id: 1,
       title: "Computer Science",
       shortTitle: "CS",
     },
@@ -245,7 +238,6 @@ async function seedDepartment() {
     where: { id: 2 },
     update: { shortTitle: "SWEN" },
     create: {
-      id: 2,
       title: "Software Engineering",
       shortTitle: "SWEN",
     },
@@ -254,7 +246,6 @@ async function seedDepartment() {
     where: { id: 3 },
     update: { shortTitle: "IGM" },
     create: {
-      id: 3,
       title: "Interactive Games and Media",
       shortTitle: "IGM",
     },
@@ -268,7 +259,6 @@ async function seedCourse() {
     where: { id: 1 },
     update: {},
     create: {
-      id: 1,
       title: "Software Development I",
       departmentId: 2,
       code: 123,
@@ -278,7 +268,6 @@ async function seedCourse() {
     where: { id: 2 },
     update: {},
     create: {
-      id: 2,
       title: "Software Development II",
       departmentId: 2,
       code: 124,
@@ -288,7 +277,6 @@ async function seedCourse() {
     where: { id: 3 },
     update: {},
     create: {
-      id: 3,
       title: "CS For AP Students",
       departmentId: 1,
       code: 140,
@@ -302,7 +290,6 @@ async function seedCourseTaken() {
     where: { id: 1 },
     update: {},
     create: {
-      id: 1,
       mentorId: 1,
       courseId: 1,
     },
@@ -311,7 +298,6 @@ async function seedCourseTaken() {
     where: { id: 2 },
     update: {},
     create: {
-      id: 2,
       mentorId: 2,
       courseId: 2,
     },
@@ -320,7 +306,6 @@ async function seedCourseTaken() {
     where: { id: 3 },
     update: {},
     create: {
-      id: 3,
       mentorId: 3,
       courseId: 3,
     },
@@ -361,7 +346,6 @@ async function seedSchedule() {
     where: { id: 1 },
     update: {},
     create: {
-      id: 1,
       mentorId: 1,
       hourBlockId: 1,
     },
@@ -370,7 +354,6 @@ async function seedSchedule() {
     where: { id: 2 },
     update: {},
     create: {
-      id: 2,
       mentorId: 2,
       hourBlockId: 2,
     },
@@ -379,7 +362,6 @@ async function seedSchedule() {
     where: { id: 3 },
     update: {},
     create: {
-      id: 3,
       mentorId: 3,
       hourBlockId: 3,
     },
@@ -405,7 +387,6 @@ async function seedGoLinks() {
     where: { id: 2 },
     update: {},
     create: {
-      id: 2,
       golink: "google",
       url: "google.com",
       description: "An underground and unknown search engine",
@@ -419,7 +400,6 @@ async function seedGoLinks() {
     where: { id: 3 },
     update: {},
     create: {
-      id: 3,
       golink: "youtube",
       url: "youtube.com",
       description: "A small video sharing website",
@@ -527,7 +507,6 @@ async function seedVerificationToken() {
     where: { id: 1 },
     update: {},
     create: {
-      id: 1,
       identifier: "sadsad",
       token: "123",
       expires: new Date(),
@@ -537,7 +516,6 @@ async function seedVerificationToken() {
     where: { id: 2 },
     update: {},
     create: {
-      id: 2,
       identifier: "qwewqr",
       token: "124",
       expires: new Date(),
@@ -547,7 +525,6 @@ async function seedVerificationToken() {
     where: { id: 3 },
     update: {},
     create: {
-      id: 3,
       identifier: "wsx",
       token: "125",
       expires: new Date(),
