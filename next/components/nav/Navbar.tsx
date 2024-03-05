@@ -54,11 +54,11 @@ const navItems: NavItemProps[] = [
             },
             {
                 title: "Winter Ball",
-                route: "#",
+                route: "/events/winterball",
             },
             {
                 title: "Spring Fling",
-                route: "#",
+                route: "/events/springfling",
             },
         ],
     },
