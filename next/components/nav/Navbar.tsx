@@ -129,17 +129,20 @@ const Navbar: React.FC = () => {
                         </li>
                     </ul>
                 </div>
-                <div className="dropdown dropdown-end md:hidden">
+                <div className="dropdown dropdown-end md:hidden justify-end ">
                     <div className="flex flex-row">
                         <Hamburger />
                     </div>
                     <MobileNavDropdown navItems={navItems} onClickFunc={blurOnClick} />
                 </div>
-                <div>
-                    <div className="flex justify-end items-center w-full right-0 p-2">
-                        <DarkModeToggle />
-                    </div>
+
+                <div 
+                    className={`${
+                        'md:flex hidden'} justify-end items-center w-full right-0 p-2`}
+                    >
+                    <DarkModeToggle />
                 </div>
+
             </div>
         </nav>
     );
