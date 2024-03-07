@@ -1,6 +1,10 @@
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
+function validateGoLink(goLink: string) {
+  return /^[a-z\-]+$/.test(goLink);
+}
+
 /**
  * HTTP POST request to /api/golinks
  * Create a new Golink
@@ -22,13 +26,13 @@ export async function POST(request: Request) {
       { status: 400 }
     );
   }
+  const { golink, url, description, isPublic, isPinned } = body;
+  if (!validateGoLink(golink)) {
+    return new Response(`Invalid golink "${golink}"; must be lowercase`, {
+      status: 422,
+    });
+  }
 
-  // TODO: Validate the titles
-  const golink = body.golink;
-  const url = body.url;
-  const description = body.description;
-  const isPublic = body.isPublic;
-  const isPinned = body.isPinned;
   const newGolink = await prisma.goLinks.create({
     data: {
       golink: golink,
@@ -87,7 +91,7 @@ export async function PUT(request: Request) {
   // verify that the id is included in the request
   if (!("id" in body)) {
     return new Response("`id` must be included in request body", {
-      status: 400,
+      status: 422,
     });
   }
   const id = body.id;
@@ -104,7 +108,15 @@ export async function PUT(request: Request) {
     data.url = body.url;
   }
   if ("golink" in body) {
-    data.golink = body.golink;
+    const goLink = body.golink;
+    // use a regex to validate golink
+    if (!validateGoLink(goLink)) {
+      return new Response(`Invalid golink "${goLink}"; must be lowercase`, {
+        status: 400,
+      });
+    }
+
+    data.golink = goLink;
   }
   if ("description" in body) {
     data.description = body.description;

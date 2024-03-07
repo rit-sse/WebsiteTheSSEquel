@@ -1,14 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isUrlValid } from "../utils";
-import goLinkData from "@/app/go/goLinkData";
 
 const getDestinationUrl = async (goUrl: string) => {
-    for (let goLink of goLinkData) {
-        if (goLink.goUrl === goUrl) {
-            return goLink.url;
-        }
-    }
-}
+  const response = await fetch(process.env.NEXTAUTH_URL + "/api/go/" + goUrl);
+  if (response.ok) {
+    const url = await response.text();
+    return url.startsWith("http") ? url : "https://" + url;
+  } else {
+    return null;
+  }
+  // for (let goLink of goLinkData) {
+  //     if (goLink.goUrl === goUrl) {
+  //         return goLink.url;
+  //     }
+  // }
+};
 
 /** Middleware to handle golinks.
  * Checks the following:
@@ -16,7 +22,7 @@ const getDestinationUrl = async (goUrl: string) => {
  * - if the go link exists in the data store
  * - if the destination is a valid URL
  * - if the destination is a live site
- * 
+ *
  * If all checks pass, redirects to the destination.
  * Otherwise, returns NextResponse.next() to continue the middleware chain.
  */
@@ -27,17 +33,17 @@ export const golinksMiddleware = async (request: NextRequest) => {
         const goLink = pathname.split('/go/')[1];
         const destination = await getDestinationUrl(goLink); // this would be replaced with a database lookup
 
-        // If the destination exists and is valid, redirect to it
-        if (destination && isUrlValid(destination)) {
-            // check if the url is a live site
-            const response = await fetch(destination);
-            if (response.ok) {
-                // redirect to the destination
-                return NextResponse.redirect(destination);
-            }
-        }
+    // If the destination exists and is valid, redirect to it
+    if (destination && isUrlValid(destination)) {
+      // check if the url is a live site
+      const response = await fetch(destination);
+      if (response.ok) {
+        // redirect to the destination
+        return NextResponse.redirect(destination);
+      }
     }
+  }
 
-    // Signal to continue the middleware chain (see middleware.ts)
-    return NextResponse.next();
-}
+  // Signal to continue the middleware chain (see middleware.ts)
+  return NextResponse.next();
+};
