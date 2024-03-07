@@ -7,7 +7,6 @@ const getDestinationUrl = async (goUrl: string) => {
     const url = await response.text();
     return url.startsWith("http") ? url : "https://" + url;
   } else {
-    console.log("Error finding golink", await response.text());
     return null;
   }
   // for (let goLink of goLinkData) {
@@ -28,7 +27,6 @@ const getDestinationUrl = async (goUrl: string) => {
  * Otherwise, returns NextResponse.next() to continue the middleware chain.
  */
 export const golinksMiddleware = async (request: NextRequest) => {
-    console.log("middle ware called!") 
     const { pathname } = request.nextUrl;
     // Only run golinks middleware logic for paths starting with "/go/"
     if (pathname.startsWith('/go/')) {

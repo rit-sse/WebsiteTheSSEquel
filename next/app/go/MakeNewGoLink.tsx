@@ -10,6 +10,11 @@ export const GoLinkButton: React.FC<CreateGoLinkProps> = ({fetchData}) =>  {
     const [pinned, setPinned] = useState(false); 
     const [officer, setOfficer] = useState(false); 
     
+    const handleSetTitle = (givenTitle: string) => {
+        const title = givenTitle.toLowerCase().split(' ').join('-')
+        setTitle(title)
+    }
+
     const handleCancel = () => {
         setTitle(""); 
         setUrl(""); 
@@ -80,7 +85,7 @@ export const GoLinkButton: React.FC<CreateGoLinkProps> = ({fetchData}) =>  {
 
                         <label className="my-2 input input-bordered flex items-center gap-2">
                             Go Link Title: 
-                            <input type="text" className="grow text-gray-900" placeholder="The SSE Website" value={title} onChange={(e) => setTitle(e.target.value)} />
+                            <input type="text" className="grow text-gray-900" placeholder="The SSE Website" value={title} onChange={(e) => handleSetTitle(e.target.value)} />
                         </label>
                         <label className="my-2 input input-bordered flex items-center gap-2">
                             Go Link URL: 
