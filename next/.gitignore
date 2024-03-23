@@ -53,6 +53,7 @@ next-env.d.ts
 .idea
 
 # Nix
+flake.nix
 flake.lock
 .envrc
 .direnv
