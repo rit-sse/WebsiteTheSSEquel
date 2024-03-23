@@ -1,6 +1,57 @@
 import { NextRequest, NextResponse } from "next/server";
 
 /**
+ * A function to verify if a request should be let through. This function should handle the required authLevel
+ * API calls and returns a boolean representing whether or not the request should be allowed through
+ */
+type AuthVerifier = (method: string, request: NextRequest) => Promise<boolean>;
+
+/**
+ * Creates an AuthVerifier that checks a property of the user's permissions. Handles the API call
+ * and bearer token automatically
+ * @param verifier function that takes the HTTP method used and the user's permissions and returns
+ * a boolean representing whether or not the request should be allowed through
+ * @returns an AuthVerifier that checks the relevant permissions for the user
+ */
+const authVerifierFactory = (
+  verifier: (method: string, permissions: any) => boolean
+): AuthVerifier => {
+  return async (method: string, request: NextRequest) => {
+    // slice out the `Bearer ...`
+    const authToken = request.headers.get("Authorization")?.slice(7);
+    // fetch permissions from the API
+    const perm_fetch = await fetch(
+      process.env.NEXTAUTH_URL + "/api/authLevel",
+      {
+        body: JSON.stringify({ token: authToken }),
+        method: "PUT",
+      }
+    );
+    // console.log(perm_fetch);
+    const permissions = await perm_fetch.json();
+    return verifier(method, permissions);
+  };
+};
+
+/**
+ * Auth verifier that makes sure the user is an officer
+ */
+const officerVerifier = authVerifierFactory(
+  (_, permissions) => permissions.isOfficer
+);
+
+/**
+ * Map from API route name to authorization verifier. The verifier should be run against any request that
+ * goes through that route.
+ * Keys are the second element in the path segment; for example, the path "/api/golinks/officer" would
+ * correspond to the key "golinks"
+ */
+const ROUTES: { [key: string]: AuthVerifier } = {
+  hourBlocks: officerVerifier,
+  user: officerVerifier,
+};
+
+/**
  * check the URL to see what level of authorization is required
  * @param route the API route to check
  * @returns {"None" | "User" | "Member" | "Mentor" | "Officer"}
@@ -38,6 +89,22 @@ const accessDenied = (authType: string) => {
   return new NextResponse(`Access Denied; need to be ${authType} to access`, {
     status: 403,
   });
+};
+
+export const experimentalAuthMiddleware = async (request: NextRequest) => {
+  const { pathname } = request.nextUrl;
+  const [_, apiSegment, pathSegment] = pathname.split("/");
+  if (apiSegment != "api") {
+    return NextResponse.next();
+  }
+  const routeAuth = ROUTES[pathSegment];
+  if (routeAuth == null) {
+    return NextResponse.next();
+  }
+  if (await routeAuth(request.method, request)) {
+    return NextResponse.next();
+  }
+  return new NextResponse("Access Denied :(", { status: 403 });
 };
 
 export const authMiddleware = async (request: NextRequest) => {
