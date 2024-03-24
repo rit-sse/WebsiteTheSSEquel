@@ -4,7 +4,9 @@ import { NextRequest, NextResponse } from "next/server";
  * A function to verify if a request should be let through. This function should handle the required authLevel
  * API calls and returns a boolean representing whether or not the request should be allowed through
  */
-type AuthVerifier = (method: string, request: NextRequest) => Promise<boolean>;
+type AuthVerifier = (
+  request: NextRequest
+) => Promise<{ isAllowed: boolean; authType: string }>;
 
 /**
  * Creates an AuthVerifier that checks a property of the user's permissions. Handles the API call
@@ -14,31 +16,32 @@ type AuthVerifier = (method: string, request: NextRequest) => Promise<boolean>;
  * @returns an AuthVerifier that checks the relevant permissions for the user
  */
 const authVerifierFactory = (
-  verifier: (method: string, permissions: any) => boolean
+  verifier: (
+    method: string,
+    permissions: any
+  ) => { isAllowed: boolean; authType: string }
 ): AuthVerifier => {
-  return async (method: string, request: NextRequest) => {
+  return async (request: NextRequest) => {
     // slice out the `Bearer ...`
     const authToken = request.headers.get("Authorization")?.slice(7);
     // fetch permissions from the API
-    const perm_fetch = await fetch(
+    const permissions = await fetch(
       process.env.NEXTAUTH_URL + "/api/authLevel",
       {
         body: JSON.stringify({ token: authToken }),
         method: "PUT",
       }
-    );
-    // console.log(perm_fetch);
-    const permissions = await perm_fetch.json();
-    return verifier(method, permissions);
+    ).then(async (res) => await res.json());
+    return verifier(request.method, permissions);
   };
 };
 
 /**
  * Auth verifier that makes sure the user is an officer
  */
-const officerVerifier = authVerifierFactory(
-  (_, permissions) => permissions.isOfficer
-);
+const officerVerifier = authVerifierFactory((_, permissions) => {
+  return { isAllowed: permissions.isOfficer, authType: "Officer" };
+});
 
 /**
  * Map from API route name to authorization verifier. The verifier should be run against any request that
@@ -101,10 +104,11 @@ export const experimentalAuthMiddleware = async (request: NextRequest) => {
   if (routeAuth == null) {
     return NextResponse.next();
   }
-  if (await routeAuth(request.method, request)) {
+  const { isAllowed, authType } = await routeAuth(request);
+  if (isAllowed) {
     return NextResponse.next();
   }
-  return new NextResponse("Access Denied :(", { status: 403 });
+  return accessDenied(authType);
 };
 
 export const authMiddleware = async (request: NextRequest) => {
