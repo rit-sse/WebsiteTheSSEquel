@@ -89,6 +89,18 @@ const nonGetMentorVerifier = nonGetAuthVerifierFactory((permissions) => {
   };
 });
 
+const goLinkVerifier = async (request: NextRequest) => {
+  // if it's a GET to a public route, just allow it
+  if (
+    request.method === "GET" &&
+    !request.nextUrl.toString().startsWith("/api/golinks/officer")
+  ) {
+    return { isAllowed: true, authType: "None" };
+  }
+  // otherwise, run the officer verifier
+  return officerVerifier(request);
+};
+
 /**
  * Map from API route name to authorization verifier. The verifier should be run against any request that
  * goes through that route.
@@ -101,7 +113,7 @@ const ROUTES: { [key: string]: AuthVerifier } = {
   officer: nonGetOfficerVerifier,
   skill: nonGetOfficerVerifier,
   user: nonGetOfficerVerifier,
-  golinks: nonGetOfficerVerifier,
+  golinks: goLinkVerifier,
   course: nonGetOfficerVerifier,
   schedule: nonGetMentorVerifier,
   mentor: nonGetMentorVerifier,
