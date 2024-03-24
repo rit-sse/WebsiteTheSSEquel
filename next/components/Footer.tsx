@@ -9,7 +9,7 @@ import DarkModeToggle from "./common/DarkModeToggle";
 const Footer: React.FC = () => {
     return (
         <footer className="flex items-center justify-between w-full h-auto p-3">
-            <div className="flex items-center justify-start md:hidden">
+            <div className="flex items-center justify-start">
                 <DarkModeToggle />
             </div>
             <div className="flex flex-row items-center justify-end gap-2 flex-grow">

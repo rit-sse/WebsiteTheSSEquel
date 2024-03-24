@@ -135,14 +135,6 @@ const Navbar: React.FC = () => {
                     </div>
                     <MobileNavDropdown navItems={navItems} onClickFunc={blurOnClick} />
                 </div>
-
-                <div 
-                    className={`${
-                        'md:flex hidden'} justify-end items-center w-full right-0 p-2`}
-                    >
-                    <DarkModeToggle />
-                </div>
-
             </div>
         </nav>
     );
