@@ -16,10 +16,7 @@ type AuthVerifier = (
  * @returns an AuthVerifier that checks the relevant permissions for the user
  */
 const authVerifierFactory = (
-  verifier: (
-    method: string,
-    permissions: any
-  ) => { isAllowed: boolean; authType: string }
+  verifier: (permissions: any) => { isAllowed: boolean; authType: string }
 ): AuthVerifier => {
   return async (request: NextRequest) => {
     // slice out the `Bearer ...`
@@ -32,15 +29,64 @@ const authVerifierFactory = (
         method: "PUT",
       }
     ).then(async (res) => await res.json());
-    return verifier(request.method, permissions);
+    return verifier(permissions);
+  };
+};
+
+/**
+ * Creates an AuthVerifier that checks a property of the user's permissions. Handles the API call
+ * and bearer token automatically
+ * @param verifier function that takes the HTTP method used and the user's permissions and returns
+ * a boolean representing whether or not the request should be allowed through
+ * @returns an AuthVerifier that checks the relevant permissions for the user
+ */
+const nonGetAuthVerifierFactory = (
+  verifier: (permissions: any) => { isAllowed: boolean; authType: string }
+): AuthVerifier => {
+  return async (request: NextRequest) => {
+    // if it's a GET, just allow it
+    if (request.method === "GET") {
+      return { isAllowed: true, authType: "None" };
+    }
+    // slice out the `Bearer ...`
+    const authToken = request.headers.get("Authorization")?.slice(7);
+    // fetch permissions from the API
+    const permissions = await fetch(
+      process.env.NEXTAUTH_URL + "/api/authLevel",
+      {
+        body: JSON.stringify({ token: authToken }),
+        method: "PUT",
+      }
+    ).then(async (res) => await res.json());
+    return verifier(permissions);
   };
 };
 
 /**
  * Auth verifier that makes sure the user is an officer
  */
-const officerVerifier = authVerifierFactory((_, permissions) => {
+const officerVerifier = authVerifierFactory((permissions) => {
   return { isAllowed: permissions.isOfficer, authType: "Officer" };
+});
+
+/**
+ * Auth verifier that makes sure the user is an officer unless using a GET method
+ */
+const nonGetOfficerVerifier = nonGetAuthVerifierFactory((permissions) => {
+  return {
+    isAllowed: permissions.isOfficer,
+    authType: "Officer",
+  };
+});
+
+/**
+ * Auth verifier that makes sure the user is an officer unless using a GET method
+ */
+const nonGetMentorVerifier = nonGetAuthVerifierFactory((permissions) => {
+  return {
+    isAllowed: permissions.isMentor,
+    authType: "Mentor",
+  };
 });
 
 /**
@@ -50,8 +96,16 @@ const officerVerifier = authVerifierFactory((_, permissions) => {
  * correspond to the key "golinks"
  */
 const ROUTES: { [key: string]: AuthVerifier } = {
-  hourBlocks: officerVerifier,
-  user: officerVerifier,
+  hourBlocks: nonGetOfficerVerifier,
+  departments: nonGetOfficerVerifier,
+  officer: nonGetOfficerVerifier,
+  skill: nonGetOfficerVerifier,
+  user: nonGetOfficerVerifier,
+  golinks: nonGetOfficerVerifier,
+  course: nonGetOfficerVerifier,
+  schedule: nonGetMentorVerifier,
+  mentor: nonGetMentorVerifier,
+  courseTaken: nonGetMentorVerifier,
 };
 
 /**
