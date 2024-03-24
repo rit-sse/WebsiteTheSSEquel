@@ -1,19 +1,19 @@
 {
 	"info": {
-		"_postman_id": "c7392ac2-8ac5-42f9-85cd-19da9994ac3b",
+		"_postman_id": "07240a66-282d-410d-88a6-172975f5ef11",
 		"name": "WebsiteTheSSEquelTests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "31102735"
+		"_exporter_id": "32906494"
 	},
 	"item": [
-        {
+		{
 			"name": "skill",
 			"item": [
 				{
 					"name": "GET",
 					"item": [
 						{
-							"name": "Expect items",
+							"name": "Skill Expect items",
 							"event": [
 								{
 									"listen": "test",
@@ -92,7 +92,7 @@
 					"name": "POST",
 					"item": [
 						{
-							"name": "Expect created item",
+							"name": "Skill Expect created item",
 							"event": [
 								{
 									"listen": "test",
@@ -132,7 +132,7 @@
 							"response": []
 						},
 						{
-							"name": "Expect already exists error",
+							"name": "Skill Expect already exists error",
 							"event": [
 								{
 									"listen": "test",
@@ -169,7 +169,7 @@
 							"response": []
 						},
 						{
-							"name": "Expect changes",
+							"name": "Skill Expect changes",
 							"event": [
 								{
 									"listen": "test",
@@ -246,7 +246,7 @@
 					"name": "PUT",
 					"item": [
 						{
-							"name": "Expect updated item",
+							"name": "Skill Expect updated item",
 							"event": [
 								{
 									"listen": "test",
@@ -255,7 +255,7 @@
 											"pm.test(\"Response for PUT /api/skill\", () => {",
 											"    var data = pm.response.json();",
 											"    pm.expect(data).eql({",
-											"        \"id\": 3,",
+											"        \"id\": 4,",
 											"        \"skill\": \"Mojo\"",
 											"    });",
 											"});"
@@ -269,7 +269,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"id\": 3,\n    \"skill\": \"Mojo\"\n}"
+									"raw": "{\n    \"id\": 4,\n    \"skill\": \"Mojo\"\n}"
 								},
 								"url": {
 									"raw": "localhost:3000/api/skill",
@@ -286,7 +286,7 @@
 							"response": []
 						},
 						{
-							"name": "Expect same item wtih no changes",
+							"name": "Skill Expect same item wtih no changes",
 							"event": [
 								{
 									"listen": "test",
@@ -295,8 +295,8 @@
 											"pm.test(\"Response for PUT /api/skill\", () => {",
 											"    var data = pm.response.json();",
 											"    pm.expect(data).eql({",
-											"        \"id\": 1,",
-											"        \"skill\": \"Java\"",
+											"        \"id\": 4,",
+											"        \"skill\": \"Mojo\"",
 											"    });",
 											"});"
 										],
@@ -309,7 +309,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"id\": 1\n}"
+									"raw": "{\n    \"id\": 4\n}"
 								},
 								"url": {
 									"raw": "localhost:3000/api/skill",
@@ -326,7 +326,7 @@
 							"response": []
 						},
 						{
-							"name": "Expect already exists error",
+							"name": "Skill Expect already exists error",
 							"event": [
 								{
 									"listen": "test",
@@ -346,7 +346,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"id\": 2,\n    \"skill\": \"Java\"\n}"
+									"raw": "{\n    \"id\": 4,\n    \"skill\": \"Java\"\n}"
 								},
 								"url": {
 									"raw": "localhost:3000/api/skill",
@@ -363,7 +363,7 @@
 							"response": []
 						},
 						{
-							"name": "Expect changes",
+							"name": "Skill Expect changes",
 							"event": [
 								{
 									"listen": "test",
@@ -395,13 +395,8 @@
 											"            ]",
 											"        },",
 											"        {",
-											"            \"id\": 4,",
-											"            \"skill\": \"Rust\",",
-											"            \"mentorSkill\": []",
-											"        },",
-											"        {",
 											"            \"id\": 3,",
-											"            \"skill\": \"Mojo\",",
+											"            \"skill\": \"Python\",",
 											"            \"mentorSkill\": [",
 											"                {",
 											"                    \"id\": 3,",
@@ -409,6 +404,11 @@
 											"                    \"skill_Id\": 3",
 											"                }",
 											"            ]",
+											"        },",
+											"        {",
+											"            \"id\": 4,",
+											"            \"skill\": \"Mojo\",",
+											"            \"mentorSkill\": []",
 											"        }",
 											"    ])",
 											"})"
@@ -440,7 +440,7 @@
 					"name": "DELETE",
 					"item": [
 						{
-							"name": "Expect deleted item",
+							"name": "Skill Expect deleted item",
 							"event": [
 								{
 									"listen": "test",
@@ -449,8 +449,8 @@
 											"pm.test(\"Response from DELETE /api/skill\", () => {",
 											"    var data = pm.response.json();",
 											"    pm.expect(data).eql({",
-											"            \"id\": 1,",
-											"            \"skill\": \"Java\",",
+											"            \"id\": 4,",
+											"            \"skill\": \"Mojo\",",
 											"    });",
 											"})"
 										],
@@ -463,7 +463,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"id\": 1\n}",
+									"raw": "{\n    \"id\": 4\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -485,7 +485,7 @@
 							"response": []
 						},
 						{
-							"name": "Expect changes",
+							"name": "Skill Expect changes",
 							"event": [
 								{
 									"listen": "test",
@@ -494,6 +494,17 @@
 											"pm.test(\"Response from GET /api/skill\", () => {",
 											"    var data = pm.response.json();",
 											"    pm.expect(data).eql([",
+											"        {",
+											"            \"id\": 1,",
+											"            \"skill\": \"Java\",",
+											"            \"mentorSkill\": [",
+											"                {",
+											"                    \"id\": 1,",
+											"                    \"mentor_Id\": 1,",
+											"                    \"skill_Id\": 1",
+											"                }",
+											"            ]",
+											"        },",
 											"        {",
 											"            \"id\": 2,",
 											"            \"skill\": \"c++\",",
@@ -506,13 +517,8 @@
 											"            ]",
 											"        },",
 											"        {",
-											"            \"id\": 4,",
-											"            \"skill\": \"Rust\",",
-											"            \"mentorSkill\": []",
-											"        },",
-											"        {",
 											"            \"id\": 3,",
-											"            \"skill\": \"Mojo\",",
+											"            \"skill\": \"Python\",",
 											"            \"mentorSkill\": [",
 											"                {",
 											"                    \"id\": 3,",
@@ -551,7 +557,7 @@
 					"name": "GET [id]",
 					"item": [
 						{
-							"name": "Expect item",
+							"name": "Skill Expect item",
 							"event": [
 								{
 									"listen": "test",
@@ -560,13 +566,13 @@
 											"pm.test(\"\", () => {",
 											"    var data = pm.response.json();",
 											"    pm.expect(data).eql({",
-											"        \"id\": 2,",
-											"        \"skill\": \"c++\",",
+											"        \"id\": 1,",
+											"        \"skill\": \"Java\",",
 											"        \"mentorSkill\": [",
 											"            {",
-											"                \"id\": 2,",
-											"                \"mentor_Id\": 2,",
-											"                \"skill_Id\": 2",
+											"                \"id\": 1,",
+											"                \"mentor_Id\": 1,",
+											"                \"skill_Id\": 1",
 											"            }",
 											"        ]",
 											"    });",
@@ -580,7 +586,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "localhost:3000/api/skill/2",
+									"raw": "localhost:3000/api/skill/1",
 									"host": [
 										"localhost"
 									],
@@ -588,7 +594,627 @@
 									"path": [
 										"api",
 										"skill",
-										"2"
+										"1"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "mentorSkill",
+			"item": [
+				{
+					"name": "GET",
+					"item": [
+						{
+							"name": "MentorSkill Expect items",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for GET /api/mentorSkill\", () => {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData).to.eql([",
+											"        {",
+											"            \"id\": 1,",
+											"            \"mentor_Id\": 1,",
+											"            \"skill_Id\": 1,",
+											"            \"mentor\": {",
+											"                \"id\": 1,",
+											"                \"user_Id\": 1,",
+											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
+											"                \"isActive\": true",
+											"            },",
+											"            \"skill\": {",
+											"                \"id\": 1,",
+											"                \"skill\": \"Java\"",
+											"            }",
+											"        },",
+											"        {",
+											"            \"id\": 2,",
+											"            \"mentor_Id\": 2,",
+											"            \"skill_Id\": 2,",
+											"            \"mentor\": {",
+											"                \"id\": 2,",
+											"                \"user_Id\": 2,",
+											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
+											"                \"isActive\": true",
+											"            },",
+											"            \"skill\": {",
+											"                \"id\": 2,",
+											"                \"skill\": \"c++\"",
+											"            }",
+											"        },",
+											"        {",
+											"            \"id\": 3,",
+											"            \"mentor_Id\": 3,",
+											"            \"skill_Id\": 3,",
+											"            \"mentor\": {",
+											"                \"id\": 3,",
+											"                \"user_Id\": 3,",
+											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
+											"                \"isActive\": true",
+											"            },",
+											"            \"skill\": {",
+											"                \"id\": 3,",
+											"                \"skill\": \"Python\"",
+											"            }",
+											"        }",
+											"    ]);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:3000/api/mentorSkill",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"mentorSkill"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "POST",
+					"item": [
+						{
+							"name": "MentorSkill Expect created item",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for POST /api/mentorSkill\", () => {",
+											"    var json = pm.response.json();",
+											"    pm.expect(json).eql({",
+											"        \"id\": 4,",
+											"        \"mentor_Id\": 3,",
+											"        \"skill_Id\": 3",
+											"    });",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"id\": 4,\n    \"mentor_Id\": 3,\n    \"skill_Id\": 3\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:3000/api/mentorSkill",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"mentorSkill"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "MentorSkill Expect changes",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for GET /api/mentorSkill\", () => {",
+											"    var json = pm.response.json();",
+											"    pm.expect(json).eql([",
+											"        {",
+											"            \"id\": 1,",
+											"            \"mentor_Id\": 1,",
+											"            \"skill_Id\": 1,",
+											"            \"mentor\": {",
+											"                \"id\": 1,",
+											"                \"user_Id\": 1,",
+											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
+											"                \"isActive\": true",
+											"            },",
+											"            \"skill\": {",
+											"                \"id\": 1,",
+											"                \"skill\": \"Java\"",
+											"            }",
+											"        },",
+											"        {",
+											"            \"id\": 2,",
+											"            \"mentor_Id\": 2,",
+											"            \"skill_Id\": 2,",
+											"            \"mentor\": {",
+											"                \"id\": 2,",
+											"                \"user_Id\": 2,",
+											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
+											"                \"isActive\": true",
+											"            },",
+											"            \"skill\": {",
+											"                \"id\": 2,",
+											"                \"skill\": \"c++\"",
+											"            }",
+											"        },",
+											"        {",
+											"            \"id\": 3,",
+											"            \"mentor_Id\": 3,",
+											"            \"skill_Id\": 3,",
+											"            \"mentor\": {",
+											"                \"id\": 3,",
+											"                \"user_Id\": 3,",
+											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
+											"                \"isActive\": true",
+											"            },",
+											"            \"skill\": {",
+											"                \"id\": 3,",
+											"                \"skill\": \"Python\"",
+											"            }",
+											"        },",
+											"        {",
+											"            \"id\": 4,",
+											"            \"mentor_Id\": 3,",
+											"            \"skill_Id\": 3,",
+											"            \"mentor\": {",
+											"                \"id\": 3,",
+											"                \"user_Id\": 3,",
+											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
+											"                \"isActive\": true",
+											"            },",
+											"            \"skill\": {",
+											"                \"id\": 3,",
+											"                \"skill\": \"Python\"",
+											"            }",
+											"        }",
+											"    ]);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "localhost:3000/api/mentorSkill",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"mentorSkill"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "PUT",
+					"item": [
+						{
+							"name": "MentorSkill Expect updated item",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for PUT /api/mentorSkill\", () => {",
+											"    var json = pm.response.json();",
+											"    pm.expect(json).eql({",
+											"        \"id\": 4,",
+											"        \"mentor_Id\": 2,",
+											"        \"skill_Id\": 2",
+											"    });",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"id\": 4,\n    \"mentor_Id\": 2,\n    \"skill_Id\": 2\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:3000/api/mentorSkill",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"mentorSkill"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "MentorSkill Expect same item with no changes",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for PUT /api/mentorSkill\", () => {",
+											"    var json = pm.response.json();",
+											"    pm.expect(json).eql({",
+											"        \"id\": 1,",
+											"        \"mentor_Id\": 1,",
+											"        \"skill_Id\": 1",
+											"    });",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"id\": 1\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:3000/api/mentorSkill",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"mentorSkill"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "MentorSkill Expect changes",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for GET /api/mentorSkill\", () => {",
+											"    var json = pm.response.json();",
+											"    pm.expect(json).eql([",
+											"        {",
+											"            \"id\": 1,",
+											"            \"mentor_Id\": 1,",
+											"            \"skill_Id\": 1,",
+											"            \"mentor\": {",
+											"                \"id\": 1,",
+											"                \"user_Id\": 1,",
+											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
+											"                \"isActive\": true",
+											"            },",
+											"            \"skill\": {",
+											"                \"id\": 1,",
+											"                \"skill\": \"Java\"",
+											"            }",
+											"        },",
+											"        {",
+											"            \"id\": 2,",
+											"            \"mentor_Id\": 2,",
+											"            \"skill_Id\": 2,",
+											"            \"mentor\": {",
+											"                \"id\": 2,",
+											"                \"user_Id\": 2,",
+											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
+											"                \"isActive\": true",
+											"            },",
+											"            \"skill\": {",
+											"                \"id\": 2,",
+											"                \"skill\": \"c++\"",
+											"            }",
+											"        },",
+											"        {",
+											"            \"id\": 3,",
+											"            \"mentor_Id\": 3,",
+											"            \"skill_Id\": 3,",
+											"            \"mentor\": {",
+											"                \"id\": 3,",
+											"                \"user_Id\": 3,",
+											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
+											"                \"isActive\": true",
+											"            },",
+											"            \"skill\": {",
+											"                \"id\": 3,",
+											"                \"skill\": \"Python\"",
+											"            }",
+											"        },",
+											"        {",
+											"            \"id\": 4,",
+											"            \"mentor_Id\": 2,",
+											"            \"skill_Id\": 2,",
+											"            \"mentor\": {",
+											"                \"id\": 2,",
+											"                \"user_Id\": 2,",
+											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
+											"                \"isActive\": true",
+											"            },",
+											"            \"skill\": {",
+											"                \"id\": 2,",
+											"                \"skill\": \"c++\"",
+											"            }",
+											"        }",
+											"    ]);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "localhost:3000/api/mentorSkill",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"mentorSkill"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "DELETE",
+					"item": [
+						{
+							"name": "MentorSkill Expect deleted item",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for DELETE /api/mentorSkill\", () => {",
+											"    var json = pm.response.json();",
+											"    pm.expect(json).eql({",
+											"        \"id\": 4,",
+											"        \"mentor_Id\": 2,",
+											"        \"skill_Id\": 2",
+											"    });",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"id\": 4\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:3000/api/mentorSkill",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"mentorSkill"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "MentorSkill Expect changes",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Repsonse for GET /api/mentorSkill\", () => {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData).to.eql([",
+											"        {",
+											"            \"id\": 1,",
+											"            \"mentor_Id\": 1,",
+											"            \"skill_Id\": 1,",
+											"            \"mentor\": {",
+											"                \"id\": 1,",
+											"                \"user_Id\": 1,",
+											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
+											"                \"isActive\": true",
+											"            },",
+											"            \"skill\": {",
+											"                \"id\": 1,",
+											"                \"skill\": \"Java\"",
+											"            }",
+											"        },",
+											"        {",
+											"            \"id\": 2,",
+											"            \"mentor_Id\": 2,",
+											"            \"skill_Id\": 2,",
+											"            \"mentor\": {",
+											"                \"id\": 2,",
+											"                \"user_Id\": 2,",
+											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
+											"                \"isActive\": true",
+											"            },",
+											"            \"skill\": {",
+											"                \"id\": 2,",
+											"                \"skill\": \"c++\"",
+											"            }",
+											"        },",
+											"        {",
+											"            \"id\": 3,",
+											"            \"mentor_Id\": 3,",
+											"            \"skill_Id\": 3,",
+											"            \"mentor\": {",
+											"                \"id\": 3,",
+											"                \"user_Id\": 3,",
+											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
+											"                \"isActive\": true",
+											"            },",
+											"            \"skill\": {",
+											"                \"id\": 3,",
+											"                \"skill\": \"Python\"",
+											"            }",
+											"        }",
+											"    ]);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "localhost:3000/api/mentorSkill",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"mentorSkill"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "GET [id]",
+					"item": [
+						{
+							"name": "MentorSkill Expect item",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for GET /api/mentorSkill/1\", () => {",
+											"    var json = pm.response.json();",
+											"    pm.expect(json).eql({",
+											"        \"id\": 1,",
+											"        \"mentor_Id\": 1,",
+											"        \"skill_Id\": 1,",
+											"        \"mentor\": {",
+											"            \"id\": 1,",
+											"            \"user_Id\": 1,",
+											"            \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
+											"            \"isActive\": true",
+											"        },",
+											"        \"skill\": {",
+											"            \"id\": 1,",
+											"            \"skill\": \"Java\"",
+											"        }",
+											"    })",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "localhost:3000/api/mentorSkill/1",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"mentorSkill",
+										"1"
 									]
 								}
 							},
