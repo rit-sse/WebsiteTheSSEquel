@@ -4,9 +4,9 @@ import { NextRequest, NextResponse } from "next/server";
  * A function to verify if a request should be let through. This function should handle the required authLevel
  * API calls and returns a boolean representing whether or not the request should be allowed through
  */
-type AuthVerifier = (
-  request: NextRequest
-) => Promise<{ isAllowed: boolean; authType: string }>;
+type AuthVerifier = (request: NextRequest) => Promise<AuthOutput>;
+
+type AuthOutput = { isAllowed: boolean; authType: string };
 
 /**
  * Creates an AuthVerifier that checks a property of the user's permissions. Handles the API call
@@ -16,7 +16,7 @@ type AuthVerifier = (
  * @returns an AuthVerifier that checks the relevant permissions for the user
  */
 const authVerifierFactory = (
-  verifier: (permissions: any) => { isAllowed: boolean; authType: string }
+  verifier: (permissions: any) => AuthOutput
 ): AuthVerifier => {
   return async (request: NextRequest) => {
     // slice out the `Bearer ...`
@@ -34,11 +34,7 @@ const authVerifierFactory = (
 };
 
 /**
- * Creates an AuthVerifier that checks a property of the user's permissions. Handles the API call
- * and bearer token automatically
- * @param innerVerifier function that takes the HTTP request used and returns
- * a boolean representing whether or not the request should be allowed through
- * @returns an AuthVerifier that checks the relevant permissions for the user
+ * A wrapper around another verifier that allows GET requests without verification
  */
 const nonGetVerifier = (innerVerifier: AuthVerifier): AuthVerifier => {
   return async (request: NextRequest) => {
@@ -64,6 +60,9 @@ const mentorVerifier = authVerifierFactory((permissions) => {
   return { isAllowed: permissions.isMentor, authType: "Mentor" };
 });
 
+/**
+ * Auth verifier specifically for the golinks route
+ */
 const goLinkVerifier = async (request: NextRequest) => {
   // if it's a GET to a public route, just allow it
   if (
@@ -77,22 +76,34 @@ const goLinkVerifier = async (request: NextRequest) => {
 };
 
 /**
+ * An auth verifier that allows GET requests but makes sure all other requests are made by officers
+ */
+const nonGetOfficerVerifier = nonGetVerifier(officerVerifier);
+
+/**
+ * An auth verifier that allows GET requests but makes sure all other requests are made by mentors
+ */
+const nonGetMentorVerifier = nonGetVerifier(mentorVerifier);
+
+/**
  * Map from API route name to authorization verifier. The verifier should be run against any request that
  * goes through that route.
  * Keys are the second element in the path segment; for example, the path "/api/golinks/officer" would
  * correspond to the key "golinks"
  */
 const ROUTES: { [key: string]: AuthVerifier } = {
-  hourBlocks: nonGetVerifier(officerVerifier),
-  departments: nonGetVerifier(officerVerifier),
-  officer: nonGetVerifier(officerVerifier),
-  skill: nonGetVerifier(officerVerifier),
-  user: nonGetVerifier(officerVerifier),
+  course: nonGetOfficerVerifier,
+  courseTaken: nonGetMentorVerifier,
+  departments: nonGetOfficerVerifier,
   golinks: goLinkVerifier,
-  course: nonGetVerifier(officerVerifier),
-  schedule: nonGetVerifier(mentorVerifier),
-  mentor: nonGetVerifier(mentorVerifier),
-  courseTaken: nonGetVerifier(mentorVerifier),
+  hourBlocks: nonGetOfficerVerifier,
+  mentor: nonGetOfficerVerifier,
+  mentorSkill: nonGetMentorVerifier,
+  officer: nonGetOfficerVerifier,
+  quotes: nonGetOfficerVerifier,
+  schedule: nonGetMentorVerifier,
+  skill: nonGetOfficerVerifier,
+  user: nonGetOfficerVerifier,
 };
 
 /**
