@@ -3,7 +3,7 @@ import { GoLinkStar } from "@/components/common/Icons";
 import { GoLinkEdit } from "@/components/common/Icons";
 import { GoLinkDelete } from "@/components/common/Icons";
 import { useSession } from "next-auth/react";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export interface GoLinkProps {
     id: number;
@@ -222,7 +222,17 @@ const GoLink: React.FC<GoLinkProps> = ({ id, goUrl, url, description, pinned, fe
 
 const EditAndDelete: React.FC<GoLinkProps> = ({ id, goUrl, url, description, pinned } ) => {
     const { data: session } = useSession();
-    if(session) {
+    const [isOfficer, setIsOfficer] = useState(false);
+    
+    useEffect(() => {
+        useCallback(async() => {
+            const response = await fetch("http://localhost:3000/api/authLevel", {body: JSON.stringify({email: session?.user?.email}), method: "PUT"});
+            const data = await response.json();
+            setIsOfficer(data.isOfficer);            
+        }, [])
+    });
+
+    if(session && isOfficer) {
         return (
             <form>
                 <div className="flex flex-row">
