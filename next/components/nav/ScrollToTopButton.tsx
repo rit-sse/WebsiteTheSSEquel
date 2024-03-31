@@ -6,8 +6,9 @@ const ScrollToTopButton = () => {
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
+    // if the user scrolls down, show the button
     const toggleVisibility = () => {
-      // if the user scrolls down, show the button
+      // button should not appear in mobile view
       if(window.innerWidth > 640) {
         window.scrollY > 400 ? setIsVisible(true) : setIsVisible(false)
       } else {
