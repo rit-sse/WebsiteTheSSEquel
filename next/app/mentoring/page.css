@@ -1,3 +1,14 @@
+.border {
+  border: 1px solid black
+}
+
+#mentor-calendar > * {
+  border: 1px solid black
+
+}
+
+
+
 main {
     display: block !important; 
 }
@@ -11,74 +22,81 @@ main {
     grid-row-end: -1;
   }
 
-  #mentor-canlendar {
-    display: grid;
-    grid-template-rows: repeat(9, 1fr);
-    grid-template-columns: repeat(6, 1fr);
-    column-gap: 1%;
+  path {
+    stroke: black;
   }
 
-  #monday {
-    grid-row-start: 1;
-    grid-column-start: 2;
+  text.small-name {
+    font-size: 14px;
+    text-anchor: middle
   }
 
-  #tuesday {
-    grid-row-start: 1;
-    grid-column-start: 3;
+  path.kovu {
+    fill: #EA4335;
   }
 
-  #wednesday {
-    grid-row-start: 1;
-    grid-column-start: 4;
+  path.greg {
+    fill: #4285F4;
   }
 
-  #thursday {
-    grid-row-start: 1;
-    grid-column-start: 5;
+  path.jon {
+    fill: #8E7CC3;
   }
 
-  #friday {
-    grid-row-start: 1;
-    grid-column-start: 6;
+  path.cass {
+    fill: #EA9999;
   }
 
-  #ten {
-    grid-row-start: 2;
-    grid-column-start: 1;
+  path.mackenzie {
+    fill: #34A853;
   }
 
-  #eleven {
-    grid-row-start: 3;
-    grid-column-start: 1;
+  path.aidan {
+    fill: #9900ff;
   }
 
-  #twelve {
-    grid-row-start: 4;
-    grid-column-start: 1;
+  path.issac {
+    fill: #b7b7b7;
   }
 
-  #one {
-    grid-row-start: 5;
-    grid-column-start: 1;
+  path.max {
+    fill: #FBBC04;
   }
 
-  #two {
-    grid-row-start: 6;
-    grid-column-start: 1;
+  path.aditya {
+    fill: #00FFFF;
+  }
+  path.ryan {
+    fill: #FFE599;
   }
 
-  #three {
-    grid-row-start: 7;
-    grid-column-start: 1;
+  path.anthony {
+    fill: #A4C2F4;
   }
 
-  #four {
-    grid-row-start: 8;
-    grid-column-start: 1;
+  path.luke {
+    fill: #FF00FF;
   }
 
-  #five {
-    grid-row-start: 9;
-    grid-column-start: 1;
+  path.aneesh {
+    fill: #FF6D01;
+  }
+  path.nick {
+    fill: #93C47D;
+  }
+
+  path.joseph {
+    fill: #C39E42;
+  }
+
+  path.sydney {
+    fill: #7AF201;
+  }
+
+  path.hridiza {
+    fill: #46BDC6;
+  }
+
+  text.mackenzie {
+    font-size: 7px;
   }
