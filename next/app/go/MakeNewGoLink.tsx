@@ -1,6 +1,7 @@
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useState } from "react";
 import { CreateGoLinkProps } from "./page";
+import { useEffectAsync } from "@/lib/utils";
 
 export const GoLinkButton: React.FC<CreateGoLinkProps> = ({fetchData}) =>  {
     const { data: session } : any= useSession()
@@ -54,14 +55,12 @@ export const GoLinkButton: React.FC<CreateGoLinkProps> = ({fetchData}) =>  {
     };
 
     const [isOfficer, setIsOfficer] = useState(false);
-    useEffect(() => {
-        (async() => {
-            const response = await fetch("http://localhost:3000/api/authLevel");
-            const data = await response.json();
-            console.log(data);
-            setIsOfficer(data.isOfficer);
-        })();
-    }, [])
+    useEffectAsync(async() => {
+        const response = await fetch("http://localhost:3000/api/authLevel");
+        const data = await response.json();
+        console.log(data);
+        setIsOfficer(data.isOfficer);
+    }, []);
 
 
     if(isOfficer){

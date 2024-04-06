@@ -2,6 +2,7 @@ import { GoLinkIcon } from "@/components/common/Icons";
 import { GoLinkStar } from "@/components/common/Icons";
 import { GoLinkEdit } from "@/components/common/Icons";
 import { GoLinkDelete } from "@/components/common/Icons";
+import { useEffectAsync } from "@/lib/utils";
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useState } from "react";
 
@@ -224,13 +225,11 @@ const EditAndDelete: React.FC<GoLinkProps> = ({ id, goUrl, url, description, pin
     const { data: session } = useSession();
     const [isOfficer, setIsOfficer] = useState(false);
     
-    useEffect(() => {
-        (async() => {
-            const response = await fetch("http://localhost:3000/api/authLevel");
-            const data = await response.json();
-            setIsOfficer(data.isOfficer);            
-        })();
-    }, [])
+    useEffectAsync(async() => {
+        const response = await fetch("http://localhost:3000/api/authLevel");
+        const data = await response.json();
+        setIsOfficer(data.isOfficer);            
+    }, []);
 
     if(isOfficer) {
         return (
