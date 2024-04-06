@@ -224,10 +224,12 @@ const EditAndDelete: React.FC<GoLinkProps> = ({ id, goUrl, url, description, pin
     const { data: session } = useSession();
     const [isOfficer, setIsOfficer] = useState(false);
     
-    useCallback(async() => {
-        const response = await fetch("http://localhost:3000/api/authLevel", {body: JSON.stringify({email: session?.user?.email}), method: "PUT"});
-        const data = await response.json();
-        setIsOfficer(data.isOfficer);            
+    useEffect(() => {
+        (async() => {
+            const response = await fetch("http://localhost:3000/api/authLevel");
+            const data = await response.json();
+            setIsOfficer(data.isOfficer);            
+        })();
     }, [])
 
     if(isOfficer) {

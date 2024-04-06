@@ -19,16 +19,17 @@ const authVerifierFactory = (
   verifier: (permissions: any) => AuthOutput
 ): AuthVerifier => {
   return async (request: NextRequest) => {
-    // slice out the `Bearer ...`
-    const authToken = request.headers.get("Authorization")?.slice(7);
+    // get the token out of the next auth cookies
+    const tok = request.cookies.get("next-auth.session-token");
     // fetch permissions from the API
     const permissions = await fetch(
       process.env.NEXTAUTH_URL + "/api/authLevel",
       {
-        body: JSON.stringify({ token: authToken }),
+        body: JSON.stringify({ token: tok?.value }),
         method: "PUT",
       }
     ).then(async (res) => await res.json());
+    // console.log(permissions);
     return verifier(permissions);
   };
 };
