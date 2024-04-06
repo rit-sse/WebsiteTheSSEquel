@@ -364,7 +364,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"id\": 1,\r\n    \"url\": \"https://duckduckgo.com\",\r\n    \"golink\": \"Duck Duck Go\"\r\n}",
+					"raw": "{\r\n    \"id\": 1,\r\n    \"url\": \"https://duckduckgo.com\",\r\n    \"golink\": \"duckduckgo\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
