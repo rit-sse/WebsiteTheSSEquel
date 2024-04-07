@@ -1,8 +1,8 @@
 const MentorInfo = () => {
     return (
-        <>
-            info
-        </>
+        <div className="w-1/2">
+            mentor info TODO
+        </div>
     )
 }
 
