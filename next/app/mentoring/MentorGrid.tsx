@@ -1,4 +1,6 @@
-const MentorGrid = () => {
+import { MentorGridProps, ScheduleProps } from "./page";
+
+const MentorGrid: React.FC<MentorGridProps> = ({schedule}) => {
     return (
         <div className="w-1/2">
             <div id='content'>

@@ -4,6 +4,18 @@ import MentorInfo from './MentorInfo';
 import { useState, useEffect } from 'react';
 import './page.css'
 
+export interface ScheduleProps {
+    monday: string[];
+    tuesday: string[];
+    wednesday: string[];
+    thursday: string[];
+    friday: string[];
+}
+
+export interface MentorGridProps {
+    schedule: ScheduleProps[];
+}
+
 const MentorPage = () => {
     const [schedule, setSchedule] = useState(); 
 
@@ -11,7 +23,13 @@ const MentorPage = () => {
         (async() => {
             const response = await fetch("http://localhost:3000/api/mentorSchedule");
             const scheduleData = await response.json();
-            setSchedule(scheduleData);
+            setSchedule(scheduleData.map((item: {monday: string[], tuesday: string[], wednesday: string[], thursday: string[], friday: string[]}) => ({
+                monday: item.monday,
+                tuesday: item.tuesday,
+                wednesday: item.wednesday,
+                thursday: item.thursday,
+                friday: item.friday,
+            })));
 
             console.log(scheduleData);
 
@@ -23,7 +41,8 @@ const MentorPage = () => {
         <>
             <div className='flex'>
                 <MentorInfo></MentorInfo>
-                <MentorGrid></MentorGrid>
+                {/* <MentorGrid schedule={schedule}></MentorGrid>  */}
+                {/* I am still stunted on this bruh */}
             </div>
         </>
     )
