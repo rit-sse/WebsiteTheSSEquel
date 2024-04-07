@@ -1,11 +1,11 @@
-.border {
+/* .border {
   border: 1px solid black
 }
 
 #mentor-calendar > * {
   border: 1px solid black
 
-}
+} */
 
 
 
@@ -23,7 +23,7 @@ main {
   }
 
   path {
-    stroke: black;
+    /* stroke: black; */
   }
 
   text.small-name {

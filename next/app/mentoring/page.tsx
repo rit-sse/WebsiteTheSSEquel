@@ -1,9 +1,17 @@
+import MentorGrid from './MentorGrid';
+import MentorInfo from './MentorInfo';
 import './page.css'
+
 const MentorPage = () => {
     return (
+        <>
+        <MentorInfo></MentorInfo>
+        <MentorGrid></MentorGrid>
+        
+        
         <div id='content'>
             <div id='mentor-info'>Metnor Info</div>
-            <div id='mentor-canlendar'>
+            <div id='mentor-calendar'>
             <svg xmlns='http://www.w3.org/2000/svg' viewBox='-10 -10 300 470'>
             
             <path className='kovu' d="M45 45 h 45 v45 h-45 z"/>
@@ -203,6 +211,7 @@ const MentorPage = () => {
                 <p id='mon-10'>mon-10</p> */}
             </div>
         </div>
+        </>
     )
 }
 
