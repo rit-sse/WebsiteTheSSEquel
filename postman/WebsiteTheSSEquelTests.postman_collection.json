@@ -352,7 +352,7 @@
 							"pm.test(\"Response for PUT /api/golinks\", function () {\r",
 							"    var jsonData = pm.response.json();\r",
 							"    pm.expect(jsonData.url).to.equal(\"https://duckduckgo.com\");\r",
-							"    pm.expect(jsonData.golink).to.equal(\"Duck Duck Go\");\r",
+							"    pm.expect(jsonData.golink).to.equal(\"duckduckgo\");\r",
 							"});"
 						],
 						"type": "text/javascript"
@@ -364,7 +364,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"id\": 1,\r\n    \"url\": \"https://duckduckgo.com\",\r\n    \"golink\": \"Duck Duck Go\"\r\n}",
+					"raw": "{\r\n    \"id\": 1,\r\n    \"url\": \"https://duckduckgo.com\",\r\n    \"golink\": \"duckduckgo\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
