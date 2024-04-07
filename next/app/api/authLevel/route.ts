@@ -107,7 +107,7 @@ export async function GET(request: NextRequest) {
   };
 
   if (authToken == null) {
-    return new NextResponse("No session token", { status: 400 });
+    return Response.json(authLevel);
   }
 
   const user = await prisma.user.findFirst({

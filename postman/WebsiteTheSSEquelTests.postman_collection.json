@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "c7392ac2-8ac5-42f9-85cd-19da9994ac3b",
+		"_postman_id": "8bb37602-7263-403c-b22c-ee883dea827a",
 		"name": "WebsiteTheSSEquelTests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "31102735"
@@ -104,7 +104,8 @@
 							"    pm.expect(jsonData.name).to.equal(\"Johnathaniel\");\r",
 							"});"
 						],
-						"type": "text/javascript"
+						"type": "text/javascript",
+						"packages": {}
 					}
 				}
 			],
@@ -112,8 +113,8 @@
 				"method": "PUT",
 				"header": [
 					{
-						"key": "Authorization",
-						"value": "Bearer 123",
+						"key": "Cookie",
+						"value": "next-auth.session-token=123",
 						"type": "text"
 					}
 				],
@@ -153,7 +154,8 @@
 							"    pm.expect(pm.response.text()).to.equal(\"Access Denied; need to be Officer to access\");\r",
 							"});"
 						],
-						"type": "text/javascript"
+						"type": "text/javascript",
+						"packages": {}
 					}
 				}
 			],
@@ -290,7 +292,8 @@
 							"    pm.expect(jsonData.hourBlockId).to.equal(2);\r",
 							"});"
 						],
-						"type": "text/javascript"
+						"type": "text/javascript",
+						"packages": {}
 					}
 				}
 			],
@@ -298,8 +301,8 @@
 				"method": "PUT",
 				"header": [
 					{
-						"key": "Authorization",
-						"value": "Bearer 123",
+						"key": "Cookie",
+						"value": "next-auth.session-token=123",
 						"type": "text"
 					}
 				],
@@ -415,10 +418,11 @@
 							"pm.test(\"Response for PUT /api/golinks\", function () {\r",
 							"    var jsonData = pm.response.json();\r",
 							"    pm.expect(jsonData.url).to.equal(\"https://duckduckgo.com\");\r",
-							"    pm.expect(jsonData.golink).to.equal(\"duckduckgo\");\r",
+							"    pm.expect(jsonData.golink).to.equal(\"Duck Duck Go\");\r",
 							"});"
 						],
-						"type": "text/javascript"
+						"type": "text/javascript",
+						"packages": {}
 					}
 				}
 			],
@@ -426,8 +430,8 @@
 				"method": "PUT",
 				"header": [
 					{
-						"key": "Authorization",
-						"value": "Bearer 123",
+						"key": "Cookie",
+						"value": "next-auth.session-token=123",
 						"type": "text"
 					}
 				],

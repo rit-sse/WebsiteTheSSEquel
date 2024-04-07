@@ -472,7 +472,6 @@ async function seedSession() {
     where: { id: "1" },
     update: {},
     create: {
-      id: "1",
       expires: new Date(),
       sessionToken: "123",
       userId: 1,
@@ -482,7 +481,6 @@ async function seedSession() {
     where: { id: "2" },
     update: {},
     create: {
-      id: "2",
       expires: new Date(),
       sessionToken: "124",
       userId: 2,
@@ -493,7 +491,6 @@ async function seedSession() {
     where: { id: "3" },
     update: {},
     create: {
-      id: "3",
       expires: new Date(),
       sessionToken: "125",
       userId: 3,
