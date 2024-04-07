@@ -64,7 +64,7 @@ const navItems: NavItemProps[] = [
     },
     {
         title: "Projects",
-        route: "#",
+        route: "/projects",
     },
     { // Go links dropdown removed. Check commit d2f1d82 in feature branch if we need to restore the dropdowns.
         title: "Go Links",
@@ -80,7 +80,7 @@ const Navbar: React.FC = () => {
     return (
         <nav
             id="navbar"
-            className="sticky top-0 z-50 flex items-center justify-center bg-base-100 bg-opacity-0 filter backdrop-blur-sm"
+            className="top-0 z-50 flex items-center justify-center bg-opacity-100 filter"
         >
             <div
                 id="nav-content"

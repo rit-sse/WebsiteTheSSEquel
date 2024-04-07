@@ -4,6 +4,7 @@
 /node_modules
 /.pnp
 .pnp.js
+package-lock.json
 
 # testing
 /coverage
@@ -44,3 +45,7 @@ next-env.d.ts
 
 # jetbrains
 .idea
+
+# nix envs
+.envrc
+.direnv
