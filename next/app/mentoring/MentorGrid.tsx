@@ -1,8 +1,35 @@
-import { MentorGridProps, ScheduleProps } from "./page";
+import { MentorGridProps} from "./page";
 
 const MentorGrid: React.FC<MentorGridProps> = ({schedule}) => {
     return (
+        
         <div className="w-1/2">
+
+        {/* Gibberish -- Shows how to display */}
+        <div className="mentor-grid">
+            {Object.entries(schedule).map(([day, daySchedule]) => (
+                <div key={day} className="day-schedule">
+                    <h2>{day}</h2>
+                    <div>
+                        {Object.entries(daySchedule).map(([hour, mentors]) => (
+                            <div key={hour} className="hour-schedule">
+                                <h3>{hour}</h3>
+                                <ul>
+                                    {mentors.map((mentor, index) => (
+                                        <li key={index}>{mentor}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            ))}
+        </div>
+
+
+
+
+
             <div id='content'>
             <div id='mentor-calendar'>
             <svg xmlns='http://www.w3.org/2000/svg' viewBox='-10 -10 300 470'>
