@@ -1,8 +1,24 @@
+"use client"
 import MentorGrid from './MentorGrid';
 import MentorInfo from './MentorInfo';
+import { useState, useEffect } from 'react';
 import './page.css'
 
 const MentorPage = () => {
+    const [schedule, setSchedule] = useState(); 
+
+    useEffect(() => {
+        (async() => {
+            const response = await fetch("http://localhost:3000/api/mentorSchedule");
+            const scheduleData = await response.json();
+            setSchedule(scheduleData);
+
+            console.log(scheduleData);
+
+        })();
+
+
+    }, [])
     return (
         <>
         <MentorInfo></MentorInfo>
@@ -13,6 +29,7 @@ const MentorPage = () => {
             <div id='mentor-info'>Metnor Info</div>
             <div id='mentor-calendar'>
             <svg xmlns='http://www.w3.org/2000/svg' viewBox='-10 -10 300 470'>
+            <text id='a'></text>
             
             <path className='kovu' d="M45 45 h 45 v45 h-45 z"/>
             <path className='kovu' d="M90 45 h 45 v45 h-45 z"/>
