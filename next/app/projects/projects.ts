@@ -1,3 +1,6 @@
+const placeholder_w = 400;
+const placeholder_h = 240;
+const defaultImage = `https://dummyimage.com/${placeholder_w}x${placeholder_h}`
 export interface Project{
     logo: string;
     title: string;
@@ -10,7 +13,7 @@ export interface Project{
 
 export const projectsData: Project[] = [
     {
-        logo: "💼",
+        logo: defaultImage,
         title: "Project 1",
         lead: "lead 1",
         contact: "lead1@email.com",
@@ -19,7 +22,7 @@ export const projectsData: Project[] = [
         progress: "In Progress"
     },
     {
-        logo: "🦋",
+        logo: defaultImage,
         title: "Project 2",
         lead: "Lead 2",
         contact: "lead2@email.com",
@@ -27,7 +30,7 @@ export const projectsData: Project[] = [
         progress: "Conceptualization"
     },
     {
-        logo: "🎱",
+        logo: defaultImage,
         title: "Project 3",
         lead: "Lead 3",
         contact: "lead3@email.com",

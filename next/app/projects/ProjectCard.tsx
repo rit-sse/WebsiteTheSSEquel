@@ -5,9 +5,9 @@ const ProjectCard = ({logo, title, lead, contact, description, stack, progress}:
   return (
     <div className="rounded-lg bg-base-100 w-10/12 py-8 px-12 mx-auto flex flex-row items-center content-center gap-10 my-10">
       {/* Left half */}
-      <div className="text-9xl">{logo || "❓"}</div>
+      <img src={logo} />
 
-      {/* Right half */}
+      {/* Right half */}                                   
       <div>
         {/* Heading */}
         <h1 className="text-2xl font-bold text-primary text-left mb-4">
