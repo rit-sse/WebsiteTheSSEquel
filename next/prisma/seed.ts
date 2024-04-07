@@ -559,6 +559,40 @@ async function seedVerificationToken() {
   console.log({ verificationToken1, verificationToken2, verificationToken3 });
 }
 
+async function seedEvents() {
+  const event1 = await prisma.event.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      title: "Keeping it Silly",
+      date: new Date(),
+      description: "we keep it silly :3",
+    },
+  });
+
+  const event2 = await prisma.event.upsert({
+    where: { id: 2 },
+    update: {},
+    create: {
+      title: "Catan Tournament",
+      date: new Date(),
+      description: "Elyza will win again.",
+    },
+  });
+
+  const event3 = await prisma.event.upsert({
+    where: { id: 3 },
+    update: {},
+    create: {
+      title: "AAA",
+      date: new Date(),
+      description: "ooops",
+    },
+  });
+
+  console.log({ event1, event2, event3 });
+}
+
 async function main() {
   try {
     await seedUser();
@@ -577,6 +611,7 @@ async function main() {
     await seedAccount();
     await seedSession();
     await seedVerificationToken();
+    await seedEvents();
   } catch (e) {
     console.error(e);
   }
