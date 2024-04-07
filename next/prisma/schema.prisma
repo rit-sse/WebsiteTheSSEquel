@@ -63,13 +63,13 @@ model OfficerPosition {
   id Int @id @default(autoincrement())
 
   //Store position title as a String 
-  title String @db.VarChar(40)
+  title String @unique
 
   //States primary as a boolean
   is_primary Boolean @default(false)
 
   //Store email as a unique String
-  email String @unique @db.VarChar(40)
+  email String @unique
 
   //Relational fields
   officers Officer[]
@@ -86,7 +86,7 @@ model Officer {
   user_id Int
 
   //Store active status as a boolean
-  is_active Boolean
+  is_active Boolean @default(true)
 
   //Store startDate and endDate as a DateTime
   start_date DateTime
@@ -110,12 +110,11 @@ model Mentor {
   //Stores active status as a Boolean
   isActive Boolean
 
-  //Relatinal fieldS
+  //Relatinal fields
   mentorSkill MentorSkill[]
   courseTaken CourseTaken[]
   schedule    Schedule[]
-  //Refrence field
-  mentor      User          @relation(fields: [user_Id], references: [id])
+  user        User          @relation(fields: [user_Id], references: [id])
 }
 
 model Skill {
@@ -123,7 +122,7 @@ model Skill {
   id          Int           @id @default(autoincrement())
   //Store skill as a unique String
   skill       String        @unique
-  //Relatinal field
+  //Relational field
   mentorSkill MentorSkill[]
 }
 
@@ -145,6 +144,9 @@ model Department {
 
   //Store title as a String
   title String
+
+  //Store short title as a String
+  shortTitle String @default("GCIS")
 
   //Relatinal field
   course Course[]
@@ -211,14 +213,26 @@ model GoLinks {
   //Store an automatically generated unique int for id
   id Int @id @default(autoincrement())
 
-  golink      String // The golink (ex: "discord" in "sse.rit.edu/go/discord")
-  url         String // The URL the golink redirects to
-  description String
-  isPublic    Boolean  @default(false)
-  isPinned    Boolean  @default(false)
-  author      String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime
+  //Store short link as a String
+  golink String
+
+  //Store url as a String
+  url String
+
+  //Description as a String
+  description String?
+
+  //createdAt stored as a DateTime default to the timestamp it was created at
+  createdAt DateTime @default(now())
+
+  //updatedAt stores the time the link was last updated
+  updatedAt DateTime
+
+  //Determines if a link is public or not
+  isPublic Boolean @default(false)
+
+  //isPinned is a boolean value to determine if a user is pinned or not
+  isPinned Boolean @default(false)
 }
 
 //Account model represents an account in the system.
@@ -255,9 +269,13 @@ model Session {
 }
 
 model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
+  id         Int    @id @default(autoincrement())
+  //identifier is a string that is unique and is used to identify the token
+  identifier String @unique
 
-  @@unique([identifier, token])
+  //token is a string that is unique and is used to verify the token
+  token String @unique
+
+  //expires is a DateTime that represents the expiration date of the token
+  expires DateTime
 }

@@ -67,7 +67,7 @@ const NavItem: React.FC<NavItemProps & OnClickProps> = ({
                         <Link
                             onClick={onClickFunc}
                             key={index}
-                            href={item.route!}
+                            href={item.route ?? "#"}
                             className={`px-2 py-2 text-md
                                         hover:bg-secondary focus:bg-secondary transition-colors duration-200 ${
                                 // Add rounded corners to bottom of first and top of last item in sub-item groups

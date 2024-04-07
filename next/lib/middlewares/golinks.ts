@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isUrlValid } from "../utils";
+import goLinkData from "@/app/go/goLinkData";
 
-
-const golinks: Record<string, string> = {
-    "google": "https://google.com/",
-    "next": "https://nextjs.org/",
-    "agile": "https://agilemanifesto.org/"
-}
-
-const getDestinationUrl = async (goLink: string) => {
-    return golinks[goLink];
+const getDestinationUrl = async (goUrl: string) => {
+    for (let goLink of goLinkData) {
+        if (goLink.goUrl === goUrl) {
+            return goLink.url;
+        }
+    }
 }
 
 /** Middleware to handle golinks.
