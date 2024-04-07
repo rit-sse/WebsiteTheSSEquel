@@ -7,6 +7,15 @@
 
 } */
 
+rect {
+  stroke: currentColor;
+}
+text {
+  fill: currentColor;
+}
+text > mentorBlock {
+  fill: black;
+}
 
 
 main {
