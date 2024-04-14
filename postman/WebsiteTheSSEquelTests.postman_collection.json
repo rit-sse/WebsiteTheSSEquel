@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "c7392ac2-8ac5-42f9-85cd-19da9994ac3b",
+		"_postman_id": "8bb37602-7263-403c-b22c-ee883dea827a",
 		"name": "WebsiteTheSSEquelTests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "31102735"
@@ -104,7 +104,58 @@
 							"    pm.expect(jsonData.name).to.equal(\"Johnathaniel\");\r",
 							"});"
 						],
-						"type": "text/javascript"
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "next-auth.session-token=123",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\": 1,\r\n    \"name\": \"Johnathaniel\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3000/api/user/",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"user",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/api/user no auth",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Response for PUT /api/user without auth\", function () {\r",
+							"    pm.expect(pm.response.code).to.equal(403);\r",
+							"    pm.expect(pm.response.text()).to.equal(\"Access Denied; need to be Officer to access\");\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
 					}
 				}
 			],
@@ -121,14 +172,15 @@
 					}
 				},
 				"url": {
-					"raw": "localhost:3000/api/user",
+					"raw": "localhost:3000/api/user/",
 					"host": [
 						"localhost"
 					],
 					"port": "3000",
 					"path": [
 						"api",
-						"user"
+						"user",
+						""
 					]
 				}
 			},
@@ -240,13 +292,20 @@
 							"    pm.expect(jsonData.hourBlockId).to.equal(2);\r",
 							"});"
 						],
-						"type": "text/javascript"
+						"type": "text/javascript",
+						"packages": {}
 					}
 				}
 			],
 			"request": {
 				"method": "PUT",
-				"header": [],
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "next-auth.session-token=123",
+						"type": "text"
+					}
+				],
 				"body": {
 					"mode": "raw",
 					"raw": "{\r\n    \"id\": 1,\r\n    \"hourBlockId\": 2\r\n}",
@@ -257,14 +316,15 @@
 					}
 				},
 				"url": {
-					"raw": "localhost:3000/api/schedule",
+					"raw": "localhost:3000/api/schedule/",
 					"host": [
 						"localhost"
 					],
 					"port": "3000",
 					"path": [
 						"api",
-						"schedule"
+						"schedule",
+						""
 					]
 				}
 			},
@@ -326,7 +386,13 @@
 			],
 			"request": {
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer 123",
+						"type": "text"
+					}
+				],
 				"url": {
 					"raw": "localhost:3000/api/golinks/officer",
 					"host": [
@@ -352,19 +418,26 @@
 							"pm.test(\"Response for PUT /api/golinks\", function () {\r",
 							"    var jsonData = pm.response.json();\r",
 							"    pm.expect(jsonData.url).to.equal(\"https://duckduckgo.com\");\r",
-							"    pm.expect(jsonData.golink).to.equal(\"duckduckgo\");\r",
+							"    pm.expect(jsonData.golink).to.equal(\"duck-duck-go\");\r",
 							"});"
 						],
-						"type": "text/javascript"
+						"type": "text/javascript",
+						"packages": {}
 					}
 				}
 			],
 			"request": {
 				"method": "PUT",
-				"header": [],
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "next-auth.session-token=123",
+						"type": "text"
+					}
+				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"id\": 1,\r\n    \"url\": \"https://duckduckgo.com\",\r\n    \"golink\": \"duckduckgo\"\r\n}",
+					"raw": "{\r\n    \"id\": 1,\r\n    \"url\": \"https://duckduckgo.com\",\r\n    \"golink\": \"duck-duck-go\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"

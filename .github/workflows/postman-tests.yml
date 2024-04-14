@@ -2,7 +2,7 @@
 name: Postman tests
 on:
   push:
-    branches: [main, dev/postman-tests, dev/api]
+    branches: [main, dev/postman-tests, dev/api, dev/auth-api]
 jobs:
   run-and-test:
     runs-on: ubuntu-latest
@@ -40,6 +40,10 @@ jobs:
 
         # run the API in the background. This will host it on localhost:3000
       - name: Start API
+        env:
+          NEXTAUTH_URL: "http://localhost:3000"
+          # this doesn't actually have to be a secret on CI
+          NEXTAUTH_SECRET: "123"
         run: |
           cd next
           npm run dev &
@@ -54,4 +58,6 @@ jobs:
           reporters: cli
 
       - name: Output summary to console
-        run: echo ${{ steps.run-newman.outputs.summary }}
+        if: always()
+        run: |
+          echo ${{ steps.run-newman.outputs.summary }}

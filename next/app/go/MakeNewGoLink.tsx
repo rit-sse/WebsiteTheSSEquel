@@ -1,9 +1,10 @@
 import { useSession } from "next-auth/react";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { CreateGoLinkProps } from "./page";
+import { useEffectAsync } from "@/lib/utils";
 
 export const GoLinkButton: React.FC<CreateGoLinkProps> = ({fetchData}) =>  {
-    const { data: session } = useSession()
+    const { data: session } : any= useSession()
     const [title, setTitle] = useState(""); 
     const [url, setUrl] = useState(""); 
     const [description, setDescription] = useState(""); 
@@ -29,6 +30,7 @@ export const GoLinkButton: React.FC<CreateGoLinkProps> = ({fetchData}) =>  {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + session?.accessToken
                 },
                 // In body, make sure parameter names MATCH the ones in api/golinks/route.ts for the POST request
                 // Left is backend parameter names, right is our front end names
@@ -52,15 +54,24 @@ export const GoLinkButton: React.FC<CreateGoLinkProps> = ({fetchData}) =>  {
         } catch (error) {}
     };
 
-    if(session){
+    const [isOfficer, setIsOfficer] = useState(false);
+    useEffectAsync(async() => {
+        const response = await fetch("http://localhost:3000/api/authLevel");
+        const data = await response.json();
+        console.log(data);
+        setIsOfficer(data.isOfficer);
+    }, []);
+
+
+    if(isOfficer){
         return (
             <>
                 <button 
                 onClick={(func) =>{
                     func.preventDefault();
-                    if(document) {
-                        (document.getElementById('create-golink') as HTMLFormElement).showModal();
-                    }
+                        if(document) {
+                            (document.getElementById('create-golink') as HTMLFormElement).showModal();
+                        }
                     }
                 }
                 className="
