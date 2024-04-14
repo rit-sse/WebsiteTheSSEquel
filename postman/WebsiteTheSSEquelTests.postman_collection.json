@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "8bb37602-7263-403c-b22c-ee883dea827a",
+		"_postman_id": "55b46e01-ca93-4c62-9b8f-081a2d4c34fd",
 		"name": "WebsiteTheSSEquelTests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "31102735"
@@ -106,13 +106,20 @@
 											"    })",
 											"})"
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
 							"request": {
 								"method": "POST",
-								"header": [],
+								"header": [
+									{
+										"key": "Cookie",
+										"value": "next-auth.session-token=123",
+										"type": "text"
+									}
+								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n    \"skill\": \"Rust\",\n    \"mentor_Id\": 1\n}"
@@ -143,13 +150,20 @@
 											"    pm.expect(data).eql(\"skill Python already exists\");",
 											"})"
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
 							"request": {
 								"method": "POST",
-								"header": [],
+								"header": [
+									{
+										"key": "Cookie",
+										"value": "next-auth.session-token=123",
+										"type": "text"
+									}
+								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n    \"skill\": \"Python\",\n    \"mentor_Id\": 3\n}"
@@ -260,13 +274,20 @@
 											"    });",
 											"});"
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
 							"request": {
 								"method": "PUT",
-								"header": [],
+								"header": [
+									{
+										"key": "Cookie",
+										"value": "next-auth.session-token=123",
+										"type": "text"
+									}
+								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n    \"id\": 4,\n    \"skill\": \"Mojo\"\n}"
@@ -300,13 +321,20 @@
 											"    });",
 											"});"
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
 							"request": {
 								"method": "PUT",
-								"header": [],
+								"header": [
+									{
+										"key": "Cookie",
+										"value": "next-auth.session-token=123",
+										"type": "text"
+									}
+								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n    \"id\": 4\n}"
@@ -337,13 +365,20 @@
 											"    pm.expect(data).eql(\"skill Java already exists\");",
 											"});"
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
 							"request": {
 								"method": "PUT",
-								"header": [],
+								"header": [
+									{
+										"key": "Cookie",
+										"value": "next-auth.session-token=123",
+										"type": "text"
+									}
+								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n    \"id\": 4,\n    \"skill\": \"Java\"\n}"
@@ -454,13 +489,20 @@
 											"    });",
 											"})"
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
 							"request": {
 								"method": "DELETE",
-								"header": [],
+								"header": [
+									{
+										"key": "Cookie",
+										"value": "next-auth.session-token=123",
+										"type": "text"
+									}
+								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n    \"id\": 4\n}",
@@ -723,13 +765,20 @@
 											"    });",
 											"});"
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
 							"request": {
 								"method": "POST",
-								"header": [],
+								"header": [
+									{
+										"key": "Cookie",
+										"value": "next-auth.session-token=123",
+										"type": "text"
+									}
+								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n    \"mentor_Id\": 3,\n    \"skill_Id\": 3\n}",
@@ -865,13 +914,20 @@
 											"    });",
 											"});"
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
 							"request": {
 								"method": "PUT",
-								"header": [],
+								"header": [
+									{
+										"key": "Cookie",
+										"value": "next-auth.session-token=123",
+										"type": "text"
+									}
+								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n    \"id\": 4,\n    \"mentor_Id\": 2,\n    \"skill_Id\": 2\n}",
@@ -911,13 +967,20 @@
 											"    });",
 											"});"
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
 							"request": {
 								"method": "PUT",
-								"header": [],
+								"header": [
+									{
+										"key": "Cookie",
+										"value": "next-auth.session-token=123",
+										"type": "text"
+									}
+								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n    \"id\": 1\n}",
@@ -1054,13 +1117,20 @@
 											"    });",
 											"});"
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
 							"request": {
 								"method": "DELETE",
-								"header": [],
+								"header": [
+									{
+										"key": "Cookie",
+										"value": "next-auth.session-token=123",
+										"type": "text"
+									}
+								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n    \"id\": 4\n}",
@@ -1331,13 +1401,20 @@
 											"    })",
 											"});"
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
 							"request": {
 								"method": "POST",
-								"header": [],
+								"header": [
+									{
+										"key": "Cookie",
+										"value": "next-auth.session-token=123",
+										"type": "text"
+									}
+								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n    \"mentorId\": 3,\n    \"courseId\": 3\n}",
@@ -1482,13 +1559,20 @@
 											"    });",
 											"});"
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
 							"request": {
 								"method": "PUT",
-								"header": [],
+								"header": [
+									{
+										"key": "Cookie",
+										"value": "next-auth.session-token=123",
+										"type": "text"
+									}
+								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n    \"id\": 4,\n    \"mentorId\": 2,\n    \"courseId\": 2\n}",
@@ -1528,13 +1612,20 @@
 											"    });",
 											"});"
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
 							"request": {
 								"method": "PUT",
-								"header": [],
+								"header": [
+									{
+										"key": "Cookie",
+										"value": "next-auth.session-token=123",
+										"type": "text"
+									}
+								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n    \"id\": 1\n}",
@@ -1679,13 +1770,20 @@
 											"    });",
 											"});"
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
 							"request": {
 								"method": "DELETE",
-								"header": [],
+								"header": [
+									{
+										"key": "Cookie",
+										"value": "next-auth.session-token=123",
+										"type": "text"
+									}
+								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n    \"id\": 4\n}",
@@ -1873,13 +1971,20 @@
 											"    pm.expect(jsonData.name).to.equal(\"Johnathaniel\");\r",
 											"});"
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
 							"request": {
 								"method": "PUT",
-								"header": [],
+								"header": [
+									{
+										"key": "Cookie",
+										"value": "next-auth.session-token=123",
+										"type": "text"
+									}
+								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\r\n    \"id\": 1,\r\n    \"name\": \"Johnathaniel\"\r\n}",
@@ -2034,13 +2139,20 @@
 											"    pm.expect(jsonData.hourBlockId).to.equal(2);\r",
 											"});"
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
 							"request": {
 								"method": "PUT",
-								"header": [],
+								"header": [
+									{
+										"key": "Cookie",
+										"value": "next-auth.session-token=123",
+										"type": "text"
+									}
+								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\r\n    \"id\": 1,\r\n    \"hourBlockId\": 2\r\n}",
@@ -2151,7 +2263,13 @@
 							],
 							"request": {
 								"method": "PUT",
-								"header": [],
+								"header": [
+									{
+										"key": "Cookie",
+										"value": "next-auth.session-token=123",
+										"type": "text"
+									}
+								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\r\n    \"id\": 1,\r\n    \"url\": \"https://duckduckgo.com\",\r\n    \"golink\": \"duck-duck-go\"\r\n}",
@@ -2265,13 +2383,20 @@
 											"    pm.expect(jsonData).to.eql([]);\r",
 											"});"
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
 							"request": {
 								"method": "GET",
-								"header": [],
+								"header": [
+									{
+										"key": "Cookie",
+										"value": "next-auth.session-token=123",
+										"type": "text"
+									}
+								],
 								"url": {
 									"raw": "localhost:3000/api/golinks/officer",
 									"host": [
