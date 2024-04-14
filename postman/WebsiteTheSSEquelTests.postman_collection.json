@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "07240a66-282d-410d-88a6-172975f5ef11",
+		"_postman_id": "cdd5addb-433b-4232-a50e-e71d4b4e1b0b",
 		"name": "WebsiteTheSSEquelTests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "32906494"
+		"_exporter_id": "31102735"
 	},
 	"item": [
 		{
@@ -619,6 +619,9 @@
 										"exec": [
 											"pm.test(\"Response for GET /api/mentorSkill\", () => {",
 											"    var jsonData = pm.response.json();",
+											"    jsonData.forEach((value) => {",
+											"        delete value.mentor.expirationDate;",
+											"    })",
 											"    pm.expect(jsonData).to.eql([",
 											"        {",
 											"            \"id\": 1,",
@@ -627,7 +630,6 @@
 											"            \"mentor\": {",
 											"                \"id\": 1,",
 											"                \"user_Id\": 1,",
-											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"skill\": {",
@@ -642,7 +644,6 @@
 											"            \"mentor\": {",
 											"                \"id\": 2,",
 											"                \"user_Id\": 2,",
-											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"skill\": {",
@@ -657,7 +658,6 @@
 											"            \"mentor\": {",
 											"                \"id\": 3,",
 											"                \"user_Id\": 3,",
-											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"skill\": {",
@@ -668,7 +668,8 @@
 											"    ]);",
 											"});"
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -952,6 +953,7 @@
 										"exec": [
 											"pm.test(\"Response for GET /api/mentorSkill\", () => {",
 											"    var json = pm.response.json();",
+											"    json.forEach((value) => delete value.mentor.expirationDate);",
 											"    pm.expect(json).eql([",
 											"        {",
 											"            \"id\": 1,",
@@ -960,7 +962,6 @@
 											"            \"mentor\": {",
 											"                \"id\": 1,",
 											"                \"user_Id\": 1,",
-											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"skill\": {",
@@ -975,7 +976,6 @@
 											"            \"mentor\": {",
 											"                \"id\": 2,",
 											"                \"user_Id\": 2,",
-											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"skill\": {",
@@ -990,7 +990,6 @@
 											"            \"mentor\": {",
 											"                \"id\": 3,",
 											"                \"user_Id\": 3,",
-											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"skill\": {",
@@ -1005,7 +1004,6 @@
 											"            \"mentor\": {",
 											"                \"id\": 2,",
 											"                \"user_Id\": 2,",
-											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"skill\": {",
@@ -1016,7 +1014,8 @@
 											"    ]);",
 											"});"
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -1097,6 +1096,7 @@
 										"exec": [
 											"pm.test(\"Repsonse for GET /api/mentorSkill\", () => {",
 											"    var jsonData = pm.response.json();",
+											"    jsonData.forEach((value) => delete value.mentor.expirationDate);",
 											"    pm.expect(jsonData).to.eql([",
 											"        {",
 											"            \"id\": 1,",
@@ -1105,7 +1105,6 @@
 											"            \"mentor\": {",
 											"                \"id\": 1,",
 											"                \"user_Id\": 1,",
-											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"skill\": {",
@@ -1120,7 +1119,6 @@
 											"            \"mentor\": {",
 											"                \"id\": 2,",
 											"                \"user_Id\": 2,",
-											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"skill\": {",
@@ -1135,7 +1133,6 @@
 											"            \"mentor\": {",
 											"                \"id\": 3,",
 											"                \"user_Id\": 3,",
-											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"skill\": {",
@@ -1146,7 +1143,8 @@
 											"    ]);",
 											"});"
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -1181,6 +1179,7 @@
 										"exec": [
 											"pm.test(\"Response for GET /api/mentorSkill/1\", () => {",
 											"    var json = pm.response.json();",
+											"    delete json.mentor.expirationDate;",
 											"    pm.expect(json).eql({",
 											"        \"id\": 1,",
 											"        \"mentor_Id\": 1,",
@@ -1188,7 +1187,6 @@
 											"        \"mentor\": {",
 											"            \"id\": 1,",
 											"            \"user_Id\": 1,",
-											"            \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"            \"isActive\": true",
 											"        },",
 											"        \"skill\": {",
@@ -1198,7 +1196,8 @@
 											"    })",
 											"});"
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -1239,6 +1238,7 @@
 										"exec": [
 											"pm.test(\"Response for GET /api/courseTaken\", () => {",
 											"    var json = pm.response.json();",
+											"    json.forEach(value => delete value.mentor.expirationDate);",
 											"    pm.expect(json).eql([",
 											"        {",
 											"            \"id\": 1,",
@@ -1247,7 +1247,6 @@
 											"            \"mentor\": {",
 											"                \"id\": 1,",
 											"                \"user_Id\": 1,",
-											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"course\": {",
@@ -1264,7 +1263,6 @@
 											"            \"mentor\": {",
 											"                \"id\": 2,",
 											"                \"user_Id\": 2,",
-											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"course\": {",
@@ -1281,7 +1279,6 @@
 											"            \"mentor\": {",
 											"                \"id\": 3,",
 											"                \"user_Id\": 3,",
-											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"course\": {",
@@ -1294,7 +1291,8 @@
 											"    ]);",
 											"});"
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -1375,6 +1373,7 @@
 										"exec": [
 											"pm.test(\"Response for GET /api/courseTaken\", () => {",
 											"    var json = pm.response.json();",
+											"    json.forEach((value) => delete value.mentor.expirationDate);",
 											"    pm.expect(json).eql([",
 											"        {",
 											"            \"id\": 1,",
@@ -1383,7 +1382,6 @@
 											"            \"mentor\": {",
 											"                \"id\": 1,",
 											"                \"user_Id\": 1,",
-											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"course\": {",
@@ -1400,7 +1398,6 @@
 											"            \"mentor\": {",
 											"                \"id\": 2,",
 											"                \"user_Id\": 2,",
-											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"course\": {",
@@ -1417,7 +1414,6 @@
 											"            \"mentor\": {",
 											"                \"id\": 3,",
 											"                \"user_Id\": 3,",
-											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"course\": {",
@@ -1434,7 +1430,6 @@
 											"            \"mentor\": {",
 											"                \"id\": 3,",
 											"                \"user_Id\": 3,",
-											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"course\": {",
@@ -1447,7 +1442,8 @@
 											"    ]);",
 											"});"
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -1574,6 +1570,7 @@
 										"exec": [
 											"pm.test(\"Response for GET /api/courseTaken\", () => {",
 											"    var json = pm.response.json();",
+											"    json.forEach((value) => delete value.mentor.expirationDate);",
 											"    pm.expect(json).eql([",
 											"        {",
 											"            \"id\": 1,",
@@ -1582,7 +1579,6 @@
 											"            \"mentor\": {",
 											"                \"id\": 1,",
 											"                \"user_Id\": 1,",
-											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"course\": {",
@@ -1599,7 +1595,6 @@
 											"            \"mentor\": {",
 											"                \"id\": 2,",
 											"                \"user_Id\": 2,",
-											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"course\": {",
@@ -1616,7 +1611,6 @@
 											"            \"mentor\": {",
 											"                \"id\": 3,",
 											"                \"user_Id\": 3,",
-											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"course\": {",
@@ -1633,7 +1627,6 @@
 											"            \"mentor\": {",
 											"                \"id\": 2,",
 											"                \"user_Id\": 2,",
-											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"course\": {",
@@ -1646,7 +1639,8 @@
 											"    ]);",
 											"});"
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -1727,6 +1721,7 @@
 										"exec": [
 											"pm.test(\"Response for GET /api/courseTaken\", () => {",
 											"    var json = pm.response.json();",
+											"    json.forEach((value) => delete value.mentor.expirationDate);",
 											"    pm.expect(json).eql([",
 											"        {",
 											"            \"id\": 1,",
@@ -1735,7 +1730,6 @@
 											"            \"mentor\": {",
 											"                \"id\": 1,",
 											"                \"user_Id\": 1,",
-											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"course\": {",
@@ -1752,7 +1746,6 @@
 											"            \"mentor\": {",
 											"                \"id\": 2,",
 											"                \"user_Id\": 2,",
-											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"course\": {",
@@ -1769,7 +1762,6 @@
 											"            \"mentor\": {",
 											"                \"id\": 3,",
 											"                \"user_Id\": 3,",
-											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"course\": {",
@@ -1782,7 +1774,8 @@
 											"    ]);",
 											"});"
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -2151,10 +2144,11 @@
 											"pm.test(\"Response for PUT /api/golinks\", function () {\r",
 											"    var jsonData = pm.response.json();\r",
 											"    pm.expect(jsonData.url).to.equal(\"https://duckduckgo.com\");\r",
-											"    pm.expect(jsonData.golink).to.equal(\"Duck Duck Go\");\r",
+											"    pm.expect(jsonData.golink).to.equal(\"duck-duck-go\");\r",
 											"});"
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -2163,7 +2157,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"id\": 1,\r\n    \"url\": \"https://duckduckgo.com\",\r\n    \"golink\": \"Duck Duck Go\"\r\n}",
+									"raw": "{\r\n    \"id\": 1,\r\n    \"url\": \"https://duckduckgo.com\",\r\n    \"golink\": \"duck-duck-go\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
