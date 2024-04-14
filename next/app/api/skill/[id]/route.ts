@@ -10,7 +10,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
 				id,
 			},
 			select: {
-                id: true,
+        id: true,
 				skill: true,
 				mentorSkill: {
 					select: {

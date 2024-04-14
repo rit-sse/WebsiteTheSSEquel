@@ -13,29 +13,25 @@ export const metadata: Metadata = {
 const About = () => {
   return (
     <>
-      <div className="px-4 py-16 flex flex-1 flex-col items-center w-11/12">
-        <h1
-          className="bg-gradient-to-t from-primary to-secondary bg-clip-text
-          text-4xl/[3rem] font-extrabold text-transparent md:text-5xl/[4rem]"
-        >
-          About Us
-        </h1>
+      <section>
+        <div className="text-page-structure">
+          <h1>About Us</h1>
+          <div className="subtitle-structure">
+            <p>
+              The Society of Software Engineers at RIT fosters a vibrant community
+              of tech enthusiasts, bridging academia with industry partnerships
+              from giants like Microsoft to Apple, ensuring our members thrive in
+              their future careers.
+            </p>
+          </div>
 
-        <div className="w-full md:w-5/6 space-y-24 pb-8">
-          <p className="w-3/5 mt-4 text-center sm:text-xl/relaxed m-auto">
-            The Society of Software Engineers at RIT fosters a vibrant community
-            of tech enthusiasts, bridging academia with industry partnerships
-            from giants like Microsoft to Apple, ensuring our members thrive in
-            their future careers.
-          </p>
+          <ZCardContainer contentSlots={
+            slotData.map(slot => new AboutUsSlot(
+                slot.imageSrc, slot.name, slot.description, slot.alt
+            ))
+          } />
         </div>
-
-        <ZCardContainer contentSlots={
-          slotData.map(slot => new AboutUsSlot(
-              slot.imageSrc, slot.name, slot.description, slot.alt
-          ))
-        } />
-      </div>
+      </section>
     </>
   );
 };
