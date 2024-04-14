@@ -58,6 +58,4 @@ jobs:
           reporters: cli
 
       - name: Output summary to console
-        if: always()
-        run: |
-          echo ${{ steps.run-newman.outputs.summary }}
+        run: echo ${{ steps.run-newman.outputs.summary }}
