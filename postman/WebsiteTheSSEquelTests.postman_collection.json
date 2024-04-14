@@ -1,463 +1,2420 @@
 {
 	"info": {
-		"_postman_id": "8bb37602-7263-403c-b22c-ee883dea827a",
+		"_postman_id": "55b46e01-ca93-4c62-9b8f-081a2d4c34fd",
 		"name": "WebsiteTheSSEquelTests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "31102735"
 	},
 	"item": [
 		{
-			"name": "/api/user",
-			"event": [
+			"name": "skill",
+			"item": [
 				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Response for GET /api/user\", function () {\r",
-							"    var jsonData = pm.response.json();\r",
-							"    pm.expect(jsonData).to.eql([\r",
-							"        {\r",
-							"            \"id\": 1,\r",
-							"            \"name\": \"John Doe\",\r",
-							"            \"email\": \"johndoe@rit.edu\"\r",
-							"        },\r",
-							"        {\r",
-							"            \"id\": 2,\r",
-							"            \"name\": \"Jane Doe\",\r",
-							"            \"email\": \"janedoe@rit.edu\"\r",
-							"        },\r",
-							"        {\r",
-							"            \"id\": 3,\r",
-							"            \"name\": \"John Smith\",\r",
-							"            \"email\": \"johnsmith@rit.edu\"\r",
-							"        }\r",
-							"    ]);\r",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "localhost:3000/api/user",
-					"host": [
-						"localhost"
-					],
-					"port": "3000",
-					"path": [
-						"api",
-						"user"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "/api/user/[id]",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Response for GET /api/user/[id]\", function () {\r",
-							"    var jsonData = pm.response.json();\r",
-							"    pm.expect(jsonData).to.eql({\r",
-							"            \"name\": \"John Doe\",\r",
-							"            \"email\": \"johndoe@rit.edu\"\r",
-							"        });\r",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "localhost:3000/api/user/1",
-					"host": [
-						"localhost"
-					],
-					"port": "3000",
-					"path": [
-						"api",
-						"user",
-						"1"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "/api/user",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Response for PUT /api/user\", function () {\r",
-							"    var jsonData = pm.response.json();\r",
-							"    pm.expect(jsonData.name).to.equal(\"Johnathaniel\");\r",
-							"});"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "PUT",
-				"header": [
-					{
-						"key": "Cookie",
-						"value": "next-auth.session-token=123",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"id\": 1,\r\n    \"name\": \"Johnathaniel\"\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
+					"name": "GET",
+					"item": [
+						{
+							"name": "Skill Expect items",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Assert expected value for /api/skill\", () => {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData).to.eql([",
+											"        {",
+											"            \"id\": 1,",
+											"            \"skill\": \"Java\",",
+											"            \"mentorSkill\": [",
+											"                {",
+											"                    \"id\": 1,",
+											"                    \"mentor_Id\": 1,",
+											"                    \"skill_Id\": 1",
+											"                }",
+											"            ]",
+											"        },",
+											"        {",
+											"            \"id\": 2,",
+											"            \"skill\": \"c++\",",
+											"            \"mentorSkill\": [",
+											"                {",
+											"                    \"id\": 2,",
+											"                    \"mentor_Id\": 2,",
+											"                    \"skill_Id\": 2",
+											"                }",
+											"            ]",
+											"        },",
+											"        {",
+											"            \"id\": 3,",
+											"            \"skill\": \"Python\",",
+											"            \"mentorSkill\": [",
+											"                {",
+											"                    \"id\": 3,",
+											"                    \"mentor_Id\": 3,",
+											"                    \"skill_Id\": 3",
+											"                }",
+											"            ]",
+											"        }",
+											"    ])",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"skill\": \"Rust\",\n    \"mentor_Id\": 1\n}"
+								},
+								"url": {
+									"raw": "localhost:3000/api/skill",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"skill"
+									]
+								}
+							},
+							"response": []
 						}
-					}
-				},
-				"url": {
-					"raw": "localhost:3000/api/user/",
-					"host": [
-						"localhost"
-					],
-					"port": "3000",
-					"path": [
-						"api",
-						"user",
-						""
 					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "/api/user no auth",
-			"event": [
+				},
 				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Response for PUT /api/user without auth\", function () {\r",
-							"    pm.expect(pm.response.code).to.equal(403);\r",
-							"    pm.expect(pm.response.text()).to.equal(\"Access Denied; need to be Officer to access\");\r",
-							"});"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "PUT",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"id\": 1,\r\n    \"name\": \"Johnathaniel\"\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
+					"name": "POST",
+					"item": [
+						{
+							"name": "Skill Expect created item",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for POST /api/skill\", () => {",
+											"    var data = pm.response.json();",
+											"    pm.expect(data).eql({",
+											"        \"id\": 4,",
+											"        \"skill\": \"Rust\"",
+											"    })",
+											"})"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Cookie",
+										"value": "next-auth.session-token=123",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"skill\": \"Rust\",\n    \"mentor_Id\": 1\n}"
+								},
+								"url": {
+									"raw": "localhost:3000/api/skill",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"skill"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Skill Expect already exists error",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for POST /api/skill\", () => {",
+											"    var data = pm.response.text();",
+											"    pm.expect(data).eql(\"skill Python already exists\");",
+											"})"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Cookie",
+										"value": "next-auth.session-token=123",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"skill\": \"Python\",\n    \"mentor_Id\": 3\n}"
+								},
+								"url": {
+									"raw": "localhost:3000/api/skill",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"skill"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Skill Expect changes",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for GET /api/skill\", () => {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData).to.eql([",
+											"        {",
+											"            \"id\": 1,",
+											"            \"skill\": \"Java\",",
+											"            \"mentorSkill\": [",
+											"                {",
+											"                    \"id\": 1,",
+											"                    \"mentor_Id\": 1,",
+											"                    \"skill_Id\": 1",
+											"                }",
+											"            ]",
+											"        },",
+											"        {",
+											"            \"id\": 2,",
+											"            \"skill\": \"c++\",",
+											"            \"mentorSkill\": [",
+											"                {",
+											"                    \"id\": 2,",
+											"                    \"mentor_Id\": 2,",
+											"                    \"skill_Id\": 2",
+											"                }",
+											"            ]",
+											"        },",
+											"        {",
+											"            \"id\": 3,",
+											"            \"skill\": \"Python\",",
+											"            \"mentorSkill\": [",
+											"                {",
+											"                    \"id\": 3,",
+											"                    \"mentor_Id\": 3,",
+											"                    \"skill_Id\": 3",
+											"                }",
+											"            ]",
+											"        },",
+											"        {",
+											"            \"id\": 4,",
+											"            \"skill\": \"Rust\",",
+											"            \"mentorSkill\": []",
+											"        }",
+											"    ])",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "localhost:3000/api/skill",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"skill"
+									]
+								}
+							},
+							"response": []
 						}
-					}
+					]
 				},
-				"url": {
-					"raw": "localhost:3000/api/user/",
-					"host": [
-						"localhost"
-					],
-					"port": "3000",
-					"path": [
-						"api",
-						"user",
-						""
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "/api/schedule",
-			"event": [
 				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Response for GET /api/schedule\", function () {\r",
-							"    var jsonData = pm.response.json();\r",
-							"    // delete data we don't want to verify\r",
-							"    jsonData.forEach((obj) => {\r",
-							"        delete obj[\"mentor\"];\r",
-							"        delete obj[\"hourBlock\"];\r",
-							"    });\r",
-							"    pm.expect(jsonData).to.eql([\r",
-							"        {\r",
-							"            \"id\": 1,\r",
-							"            \"mentorId\": 1,\r",
-							"            \"hourBlockId\": 1\r",
-							"        },\r",
-							"        {\r",
-							"            \"id\": 2,\r",
-							"            \"mentorId\": 2,\r",
-							"            \"hourBlockId\": 2\r",
-							"        },\r",
-							"        {\r",
-							"            \"id\": 3,\r",
-							"            \"mentorId\": 3,\r",
-							"            \"hourBlockId\": 3\r",
-							"        }\r",
-							"    ]);\r",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "localhost:3000/api/schedule",
-					"host": [
-						"localhost"
-					],
-					"port": "3000",
-					"path": [
-						"api",
-						"schedule"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "/api/schedule/[id]",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Response for GET /api/schedule/[id]\", function () {\r",
-							"    var jsonData = pm.response.json();\r",
-							"    delete jsonData[\"mentor\"];\r",
-							"    delete jsonData[\"hourBlock\"];\r",
-							"    pm.expect(jsonData).to.eql({\r",
-							"        \"id\": 1,\r",
-							"        \"mentorId\": 1,\r",
-							"        \"hourBlockId\": 1\r",
-							"    });\r",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "localhost:3000/api/schedule/1",
-					"host": [
-						"localhost"
-					],
-					"port": "3000",
-					"path": [
-						"api",
-						"schedule",
-						"1"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "/api/schedule",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Response for PUT /api/schedule\", function () {\r",
-							"    var jsonData = pm.response.json();\r",
-							"    pm.expect(jsonData.hourBlockId).to.equal(2);\r",
-							"});"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "PUT",
-				"header": [
-					{
-						"key": "Cookie",
-						"value": "next-auth.session-token=123",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"id\": 1,\r\n    \"hourBlockId\": 2\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
+					"name": "PUT",
+					"item": [
+						{
+							"name": "Skill Expect updated item",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for PUT /api/skill\", () => {",
+											"    var data = pm.response.json();",
+											"    pm.expect(data).eql({",
+											"        \"id\": 4,",
+											"        \"skill\": \"Mojo\"",
+											"    });",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Cookie",
+										"value": "next-auth.session-token=123",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"id\": 4,\n    \"skill\": \"Mojo\"\n}"
+								},
+								"url": {
+									"raw": "localhost:3000/api/skill",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"skill"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Skill Expect same item wtih no changes",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for PUT /api/skill\", () => {",
+											"    var data = pm.response.json();",
+											"    pm.expect(data).eql({",
+											"        \"id\": 4,",
+											"        \"skill\": \"Mojo\"",
+											"    });",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Cookie",
+										"value": "next-auth.session-token=123",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"id\": 4\n}"
+								},
+								"url": {
+									"raw": "localhost:3000/api/skill",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"skill"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Skill Expect already exists error",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for PUT /api/skill\", () => {",
+											"    var data = pm.response.text();",
+											"    pm.expect(data).eql(\"skill Java already exists\");",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Cookie",
+										"value": "next-auth.session-token=123",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"id\": 4,\n    \"skill\": \"Java\"\n}"
+								},
+								"url": {
+									"raw": "localhost:3000/api/skill",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"skill"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Skill Expect changes",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response from GET /api/skill\", () => {",
+											"    var data = pm.response.json();",
+											"    pm.expect(data).eql([",
+											"        {",
+											"            \"id\": 1,",
+											"            \"skill\": \"Java\",",
+											"            \"mentorSkill\": [",
+											"                {",
+											"                    \"id\": 1,",
+											"                    \"mentor_Id\": 1,",
+											"                    \"skill_Id\": 1",
+											"                }",
+											"            ]",
+											"        },",
+											"        {",
+											"            \"id\": 2,",
+											"            \"skill\": \"c++\",",
+											"            \"mentorSkill\": [",
+											"                {",
+											"                    \"id\": 2,",
+											"                    \"mentor_Id\": 2,",
+											"                    \"skill_Id\": 2",
+											"                }",
+											"            ]",
+											"        },",
+											"        {",
+											"            \"id\": 3,",
+											"            \"skill\": \"Python\",",
+											"            \"mentorSkill\": [",
+											"                {",
+											"                    \"id\": 3,",
+											"                    \"mentor_Id\": 3,",
+											"                    \"skill_Id\": 3",
+											"                }",
+											"            ]",
+											"        },",
+											"        {",
+											"            \"id\": 4,",
+											"            \"skill\": \"Mojo\",",
+											"            \"mentorSkill\": []",
+											"        }",
+											"    ])",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "localhost:3000/api/skill",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"skill"
+									]
+								}
+							},
+							"response": []
 						}
-					}
+					]
 				},
-				"url": {
-					"raw": "localhost:3000/api/schedule/",
-					"host": [
-						"localhost"
-					],
-					"port": "3000",
-					"path": [
-						"api",
-						"schedule",
-						""
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "/api/golinks/public",
-			"event": [
 				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Response for GET /api/golinks/public\", function () {\r",
-							"    var jsonData = pm.response.json();\r",
-							"    for (value of jsonData) {\r",
-							"        delete value.createdAt;\r",
-							"        delete value.updatedAt;\r",
-							"    }\r",
-							"    pm.expect(jsonData).to.eql([{ \"id\": 1, \"golink\": \"sse\", \"url\": \"sse.rit.edu\", \"description\": \"SSE Website\", \"isPublic\": true, \"isPinned\": true }, { \"id\": 2, \"golink\": \"google\", \"url\": \"google.com\", \"description\": \"An underground and unknown search engine\", \"isPublic\": true, \"isPinned\": true }, { \"id\": 3, \"golink\": \"youtube\", \"url\": \"youtube.com\", \"description\": \"A small video sharing website\", \"isPublic\": true, \"isPinned\": true }]);\r",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "localhost:3000/api/golinks/public",
-					"host": [
-						"localhost"
-					],
-					"port": "3000",
-					"path": [
-						"api",
-						"golinks",
-						"public"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "/api/golinks/officer",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Response for GET /api/golinks/officer\", function () {\r",
-							"    var jsonData = pm.response.json();\r",
-							"    pm.expect(jsonData).to.eql([]);\r",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "Bearer 123",
-						"type": "text"
-					}
-				],
-				"url": {
-					"raw": "localhost:3000/api/golinks/officer",
-					"host": [
-						"localhost"
-					],
-					"port": "3000",
-					"path": [
-						"api",
-						"golinks",
-						"officer"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "/api/golinks/",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Response for PUT /api/golinks\", function () {\r",
-							"    var jsonData = pm.response.json();\r",
-							"    pm.expect(jsonData.url).to.equal(\"https://duckduckgo.com\");\r",
-							"    pm.expect(jsonData.golink).to.equal(\"duck-duck-go\");\r",
-							"});"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "PUT",
-				"header": [
-					{
-						"key": "Cookie",
-						"value": "next-auth.session-token=123",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"id\": 1,\r\n    \"url\": \"https://duckduckgo.com\",\r\n    \"golink\": \"duck-duck-go\"\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
+					"name": "DELETE",
+					"item": [
+						{
+							"name": "Skill Expect deleted item",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response from DELETE /api/skill\", () => {",
+											"    var data = pm.response.json();",
+											"    pm.expect(data).eql({",
+											"            \"id\": 4,",
+											"            \"skill\": \"Mojo\",",
+											"    });",
+											"})"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Cookie",
+										"value": "next-auth.session-token=123",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"id\": 4\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:3000/api/skill",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"skill"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Skill Expect changes",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response from GET /api/skill\", () => {",
+											"    var data = pm.response.json();",
+											"    pm.expect(data).eql([",
+											"        {",
+											"            \"id\": 1,",
+											"            \"skill\": \"Java\",",
+											"            \"mentorSkill\": [",
+											"                {",
+											"                    \"id\": 1,",
+											"                    \"mentor_Id\": 1,",
+											"                    \"skill_Id\": 1",
+											"                }",
+											"            ]",
+											"        },",
+											"        {",
+											"            \"id\": 2,",
+											"            \"skill\": \"c++\",",
+											"            \"mentorSkill\": [",
+											"                {",
+											"                    \"id\": 2,",
+											"                    \"mentor_Id\": 2,",
+											"                    \"skill_Id\": 2",
+											"                }",
+											"            ]",
+											"        },",
+											"        {",
+											"            \"id\": 3,",
+											"            \"skill\": \"Python\",",
+											"            \"mentorSkill\": [",
+											"                {",
+											"                    \"id\": 3,",
+											"                    \"mentor_Id\": 3,",
+											"                    \"skill_Id\": 3",
+											"                }",
+											"            ]",
+											"        }",
+											"    ])",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "localhost:3000/api/skill",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"skill"
+									]
+								}
+							},
+							"response": []
 						}
-					}
+					]
 				},
-				"url": {
-					"raw": "localhost:3000/api/golinks/",
-					"host": [
-						"localhost"
-					],
-					"port": "3000",
-					"path": [
-						"api",
-						"golinks",
-						""
+				{
+					"name": "GET [id]",
+					"item": [
+						{
+							"name": "Skill Expect item",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"\", () => {",
+											"    var data = pm.response.json();",
+											"    pm.expect(data).eql({",
+											"        \"id\": 1,",
+											"        \"skill\": \"Java\",",
+											"        \"mentorSkill\": [",
+											"            {",
+											"                \"id\": 1,",
+											"                \"mentor_Id\": 1,",
+											"                \"skill_Id\": 1",
+											"            }",
+											"        ]",
+											"    });",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "localhost:3000/api/skill/1",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"skill",
+										"1"
+									]
+								}
+							},
+							"response": []
+						}
 					]
 				}
-			},
-			"response": []
+			]
+		},
+		{
+			"name": "mentorSkill",
+			"item": [
+				{
+					"name": "GET",
+					"item": [
+						{
+							"name": "MentorSkill Expect items",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for GET /api/mentorSkill\", () => {",
+											"    var jsonData = pm.response.json();",
+											"    jsonData.forEach((value) => {",
+											"        delete value.mentor.expirationDate;",
+											"    })",
+											"    pm.expect(jsonData).to.eql([",
+											"        {",
+											"            \"id\": 1,",
+											"            \"mentor_Id\": 1,",
+											"            \"skill_Id\": 1,",
+											"            \"mentor\": {",
+											"                \"id\": 1,",
+											"                \"user_Id\": 1,",
+											"                \"isActive\": true",
+											"            },",
+											"            \"skill\": {",
+											"                \"id\": 1,",
+											"                \"skill\": \"Java\"",
+											"            }",
+											"        },",
+											"        {",
+											"            \"id\": 2,",
+											"            \"mentor_Id\": 2,",
+											"            \"skill_Id\": 2,",
+											"            \"mentor\": {",
+											"                \"id\": 2,",
+											"                \"user_Id\": 2,",
+											"                \"isActive\": true",
+											"            },",
+											"            \"skill\": {",
+											"                \"id\": 2,",
+											"                \"skill\": \"c++\"",
+											"            }",
+											"        },",
+											"        {",
+											"            \"id\": 3,",
+											"            \"mentor_Id\": 3,",
+											"            \"skill_Id\": 3,",
+											"            \"mentor\": {",
+											"                \"id\": 3,",
+											"                \"user_Id\": 3,",
+											"                \"isActive\": true",
+											"            },",
+											"            \"skill\": {",
+											"                \"id\": 3,",
+											"                \"skill\": \"Python\"",
+											"            }",
+											"        }",
+											"    ]);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:3000/api/mentorSkill",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"mentorSkill"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "POST",
+					"item": [
+						{
+							"name": "MentorSkill Expect created item",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for POST /api/mentorSkill\", () => {",
+											"    var json = pm.response.json();",
+											"    pm.expect(json).eql({",
+											"        \"id\": 4,",
+											"        \"mentor_Id\": 3,",
+											"        \"skill_Id\": 3",
+											"    });",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Cookie",
+										"value": "next-auth.session-token=123",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"mentor_Id\": 3,\n    \"skill_Id\": 3\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:3000/api/mentorSkill",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"mentorSkill"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "MentorSkill Expect changes",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for GET /api/mentorSkill\", () => {",
+											"    var json = pm.response.json();",
+											"    json.forEach((value) => delete value.mentor.expirationDate);",
+											"    pm.expect(json).eql([",
+											"        {",
+											"            \"id\": 1,",
+											"            \"mentor_Id\": 1,",
+											"            \"skill_Id\": 1,",
+											"            \"mentor\": {",
+											"                \"id\": 1,",
+											"                \"user_Id\": 1,",
+											"                \"isActive\": true",
+											"            },",
+											"            \"skill\": {",
+											"                \"id\": 1,",
+											"                \"skill\": \"Java\"",
+											"            }",
+											"        },",
+											"        {",
+											"            \"id\": 2,",
+											"            \"mentor_Id\": 2,",
+											"            \"skill_Id\": 2,",
+											"            \"mentor\": {",
+											"                \"id\": 2,",
+											"                \"user_Id\": 2,",
+											"                \"isActive\": true",
+											"            },",
+											"            \"skill\": {",
+											"                \"id\": 2,",
+											"                \"skill\": \"c++\"",
+											"            }",
+											"        },",
+											"        {",
+											"            \"id\": 3,",
+											"            \"mentor_Id\": 3,",
+											"            \"skill_Id\": 3,",
+											"            \"mentor\": {",
+											"                \"id\": 3,",
+											"                \"user_Id\": 3,",
+											"                \"isActive\": true",
+											"            },",
+											"            \"skill\": {",
+											"                \"id\": 3,",
+											"                \"skill\": \"Python\"",
+											"            }",
+											"        },",
+											"        {",
+											"            \"id\": 4,",
+											"            \"mentor_Id\": 3,",
+											"            \"skill_Id\": 3,",
+											"            \"mentor\": {",
+											"                \"id\": 3,",
+											"                \"user_Id\": 3,",
+											"                \"isActive\": true",
+											"            },",
+											"            \"skill\": {",
+											"                \"id\": 3,",
+											"                \"skill\": \"Python\"",
+											"            }",
+											"        }",
+											"    ]);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "localhost:3000/api/mentorSkill",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"mentorSkill"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "PUT",
+					"item": [
+						{
+							"name": "MentorSkill Expect updated item",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for PUT /api/mentorSkill\", () => {",
+											"    var json = pm.response.json();",
+											"    pm.expect(json).eql({",
+											"        \"id\": 4,",
+											"        \"mentor_Id\": 2,",
+											"        \"skill_Id\": 2",
+											"    });",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Cookie",
+										"value": "next-auth.session-token=123",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"id\": 4,\n    \"mentor_Id\": 2,\n    \"skill_Id\": 2\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:3000/api/mentorSkill",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"mentorSkill"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "MentorSkill Expect same item with no changes",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for PUT /api/mentorSkill\", () => {",
+											"    var json = pm.response.json();",
+											"    pm.expect(json).eql({",
+											"        \"id\": 1,",
+											"        \"mentor_Id\": 1,",
+											"        \"skill_Id\": 1",
+											"    });",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Cookie",
+										"value": "next-auth.session-token=123",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"id\": 1\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:3000/api/mentorSkill",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"mentorSkill"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "MentorSkill Expect changes",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for GET /api/mentorSkill\", () => {",
+											"    var json = pm.response.json();",
+											"    json.forEach((value) => delete value.mentor.expirationDate);",
+											"    pm.expect(json).eql([",
+											"        {",
+											"            \"id\": 1,",
+											"            \"mentor_Id\": 1,",
+											"            \"skill_Id\": 1,",
+											"            \"mentor\": {",
+											"                \"id\": 1,",
+											"                \"user_Id\": 1,",
+											"                \"isActive\": true",
+											"            },",
+											"            \"skill\": {",
+											"                \"id\": 1,",
+											"                \"skill\": \"Java\"",
+											"            }",
+											"        },",
+											"        {",
+											"            \"id\": 2,",
+											"            \"mentor_Id\": 2,",
+											"            \"skill_Id\": 2,",
+											"            \"mentor\": {",
+											"                \"id\": 2,",
+											"                \"user_Id\": 2,",
+											"                \"isActive\": true",
+											"            },",
+											"            \"skill\": {",
+											"                \"id\": 2,",
+											"                \"skill\": \"c++\"",
+											"            }",
+											"        },",
+											"        {",
+											"            \"id\": 3,",
+											"            \"mentor_Id\": 3,",
+											"            \"skill_Id\": 3,",
+											"            \"mentor\": {",
+											"                \"id\": 3,",
+											"                \"user_Id\": 3,",
+											"                \"isActive\": true",
+											"            },",
+											"            \"skill\": {",
+											"                \"id\": 3,",
+											"                \"skill\": \"Python\"",
+											"            }",
+											"        },",
+											"        {",
+											"            \"id\": 4,",
+											"            \"mentor_Id\": 2,",
+											"            \"skill_Id\": 2,",
+											"            \"mentor\": {",
+											"                \"id\": 2,",
+											"                \"user_Id\": 2,",
+											"                \"isActive\": true",
+											"            },",
+											"            \"skill\": {",
+											"                \"id\": 2,",
+											"                \"skill\": \"c++\"",
+											"            }",
+											"        }",
+											"    ]);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "localhost:3000/api/mentorSkill",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"mentorSkill"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "DELETE",
+					"item": [
+						{
+							"name": "MentorSkill Expect deleted item",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for DELETE /api/mentorSkill\", () => {",
+											"    var json = pm.response.json();",
+											"    pm.expect(json).eql({",
+											"        \"id\": 4,",
+											"        \"mentor_Id\": 2,",
+											"        \"skill_Id\": 2",
+											"    });",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Cookie",
+										"value": "next-auth.session-token=123",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"id\": 4\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:3000/api/mentorSkill",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"mentorSkill"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "MentorSkill Expect changes",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Repsonse for GET /api/mentorSkill\", () => {",
+											"    var jsonData = pm.response.json();",
+											"    jsonData.forEach((value) => delete value.mentor.expirationDate);",
+											"    pm.expect(jsonData).to.eql([",
+											"        {",
+											"            \"id\": 1,",
+											"            \"mentor_Id\": 1,",
+											"            \"skill_Id\": 1,",
+											"            \"mentor\": {",
+											"                \"id\": 1,",
+											"                \"user_Id\": 1,",
+											"                \"isActive\": true",
+											"            },",
+											"            \"skill\": {",
+											"                \"id\": 1,",
+											"                \"skill\": \"Java\"",
+											"            }",
+											"        },",
+											"        {",
+											"            \"id\": 2,",
+											"            \"mentor_Id\": 2,",
+											"            \"skill_Id\": 2,",
+											"            \"mentor\": {",
+											"                \"id\": 2,",
+											"                \"user_Id\": 2,",
+											"                \"isActive\": true",
+											"            },",
+											"            \"skill\": {",
+											"                \"id\": 2,",
+											"                \"skill\": \"c++\"",
+											"            }",
+											"        },",
+											"        {",
+											"            \"id\": 3,",
+											"            \"mentor_Id\": 3,",
+											"            \"skill_Id\": 3,",
+											"            \"mentor\": {",
+											"                \"id\": 3,",
+											"                \"user_Id\": 3,",
+											"                \"isActive\": true",
+											"            },",
+											"            \"skill\": {",
+											"                \"id\": 3,",
+											"                \"skill\": \"Python\"",
+											"            }",
+											"        }",
+											"    ]);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "localhost:3000/api/mentorSkill",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"mentorSkill"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "GET [id]",
+					"item": [
+						{
+							"name": "MentorSkill Expect item",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for GET /api/mentorSkill/1\", () => {",
+											"    var json = pm.response.json();",
+											"    delete json.mentor.expirationDate;",
+											"    pm.expect(json).eql({",
+											"        \"id\": 1,",
+											"        \"mentor_Id\": 1,",
+											"        \"skill_Id\": 1,",
+											"        \"mentor\": {",
+											"            \"id\": 1,",
+											"            \"user_Id\": 1,",
+											"            \"isActive\": true",
+											"        },",
+											"        \"skill\": {",
+											"            \"id\": 1,",
+											"            \"skill\": \"Java\"",
+											"        }",
+											"    })",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "localhost:3000/api/mentorSkill/1",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"mentorSkill",
+										"1"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "courseTaken",
+			"item": [
+				{
+					"name": "GET",
+					"item": [
+						{
+							"name": "CourseTaken Expect items",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for GET /api/courseTaken\", () => {",
+											"    var json = pm.response.json();",
+											"    json.forEach(value => delete value.mentor.expirationDate);",
+											"    pm.expect(json).eql([",
+											"        {",
+											"            \"id\": 1,",
+											"            \"mentorId\": 1,",
+											"            \"courseId\": 1,",
+											"            \"mentor\": {",
+											"                \"id\": 1,",
+											"                \"user_Id\": 1,",
+											"                \"isActive\": true",
+											"            },",
+											"            \"course\": {",
+											"                \"id\": 1,",
+											"                \"title\": \"Software Development I\",",
+											"                \"departmentId\": 2,",
+											"                \"code\": 123",
+											"            }",
+											"        },",
+											"        {",
+											"            \"id\": 2,",
+											"            \"mentorId\": 2,",
+											"            \"courseId\": 2,",
+											"            \"mentor\": {",
+											"                \"id\": 2,",
+											"                \"user_Id\": 2,",
+											"                \"isActive\": true",
+											"            },",
+											"            \"course\": {",
+											"                \"id\": 2,",
+											"                \"title\": \"Software Development II\",",
+											"                \"departmentId\": 2,",
+											"                \"code\": 124",
+											"            }",
+											"        },",
+											"        {",
+											"            \"id\": 3,",
+											"            \"mentorId\": 3,",
+											"            \"courseId\": 3,",
+											"            \"mentor\": {",
+											"                \"id\": 3,",
+											"                \"user_Id\": 3,",
+											"                \"isActive\": true",
+											"            },",
+											"            \"course\": {",
+											"                \"id\": 3,",
+											"                \"title\": \"CS For AP Students\",",
+											"                \"departmentId\": 1,",
+											"                \"code\": 140",
+											"            }",
+											"        }",
+											"    ]);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "localhost:3000/api/courseTaken",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"courseTaken"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "POST",
+					"item": [
+						{
+							"name": "CourseTaken Expect created item",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for POST /api/courseTaken\", () => {",
+											"    var json = pm.response.json();",
+											"    pm.expect(json).eql({",
+											"        \"id\": 4,",
+											"        \"mentorId\": 3,",
+											"        \"courseId\": 3",
+											"    })",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Cookie",
+										"value": "next-auth.session-token=123",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"mentorId\": 3,\n    \"courseId\": 3\n}",
+									"options": {
+										"raw": {
+											"language": "text"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:3000/api/courseTaken",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"courseTaken"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "CourseTaken Expect items",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for GET /api/courseTaken\", () => {",
+											"    var json = pm.response.json();",
+											"    json.forEach((value) => delete value.mentor.expirationDate);",
+											"    pm.expect(json).eql([",
+											"        {",
+											"            \"id\": 1,",
+											"            \"mentorId\": 1,",
+											"            \"courseId\": 1,",
+											"            \"mentor\": {",
+											"                \"id\": 1,",
+											"                \"user_Id\": 1,",
+											"                \"isActive\": true",
+											"            },",
+											"            \"course\": {",
+											"                \"id\": 1,",
+											"                \"title\": \"Software Development I\",",
+											"                \"departmentId\": 2,",
+											"                \"code\": 123",
+											"            }",
+											"        },",
+											"        {",
+											"            \"id\": 2,",
+											"            \"mentorId\": 2,",
+											"            \"courseId\": 2,",
+											"            \"mentor\": {",
+											"                \"id\": 2,",
+											"                \"user_Id\": 2,",
+											"                \"isActive\": true",
+											"            },",
+											"            \"course\": {",
+											"                \"id\": 2,",
+											"                \"title\": \"Software Development II\",",
+											"                \"departmentId\": 2,",
+											"                \"code\": 124",
+											"            }",
+											"        },",
+											"        {",
+											"            \"id\": 3,",
+											"            \"mentorId\": 3,",
+											"            \"courseId\": 3,",
+											"            \"mentor\": {",
+											"                \"id\": 3,",
+											"                \"user_Id\": 3,",
+											"                \"isActive\": true",
+											"            },",
+											"            \"course\": {",
+											"                \"id\": 3,",
+											"                \"title\": \"CS For AP Students\",",
+											"                \"departmentId\": 1,",
+											"                \"code\": 140",
+											"            }",
+											"        },",
+											"        {",
+											"            \"id\": 4,",
+											"            \"mentorId\": 3,",
+											"            \"courseId\": 3,",
+											"            \"mentor\": {",
+											"                \"id\": 3,",
+											"                \"user_Id\": 3,",
+											"                \"isActive\": true",
+											"            },",
+											"            \"course\": {",
+											"                \"id\": 3,",
+											"                \"title\": \"CS For AP Students\",",
+											"                \"departmentId\": 1,",
+											"                \"code\": 140",
+											"            }",
+											"        }",
+											"    ]);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "localhost:3000/api/courseTaken",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"courseTaken"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "PUT",
+					"item": [
+						{
+							"name": "CourseTaken Expect updated item",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for PUT /api/courseTaken\", () => {",
+											"    var json = pm.response.json();",
+											"    pm.expect(json).eql({",
+											"        \"id\": 4,",
+											"        \"mentorId\": 2,",
+											"        \"courseId\": 2",
+											"    });",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Cookie",
+										"value": "next-auth.session-token=123",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"id\": 4,\n    \"mentorId\": 2,\n    \"courseId\": 2\n}",
+									"options": {
+										"raw": {
+											"language": "text"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:3000/api/courseTaken",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"courseTaken"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "CourseTaken Expect item with no changes",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for PUT /api/courseTaken\", () => {",
+											"    var json = pm.response.json();",
+											"    pm.expect(json).eql({",
+											"        \"id\": 1,",
+											"        \"mentorId\": 1,",
+											"        \"courseId\": 1",
+											"    });",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Cookie",
+										"value": "next-auth.session-token=123",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"id\": 1\n}",
+									"options": {
+										"raw": {
+											"language": "text"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:3000/api/courseTaken",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"courseTaken"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "CourseTaken Expect items",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for GET /api/courseTaken\", () => {",
+											"    var json = pm.response.json();",
+											"    json.forEach((value) => delete value.mentor.expirationDate);",
+											"    pm.expect(json).eql([",
+											"        {",
+											"            \"id\": 1,",
+											"            \"mentorId\": 1,",
+											"            \"courseId\": 1,",
+											"            \"mentor\": {",
+											"                \"id\": 1,",
+											"                \"user_Id\": 1,",
+											"                \"isActive\": true",
+											"            },",
+											"            \"course\": {",
+											"                \"id\": 1,",
+											"                \"title\": \"Software Development I\",",
+											"                \"departmentId\": 2,",
+											"                \"code\": 123",
+											"            }",
+											"        },",
+											"        {",
+											"            \"id\": 2,",
+											"            \"mentorId\": 2,",
+											"            \"courseId\": 2,",
+											"            \"mentor\": {",
+											"                \"id\": 2,",
+											"                \"user_Id\": 2,",
+											"                \"isActive\": true",
+											"            },",
+											"            \"course\": {",
+											"                \"id\": 2,",
+											"                \"title\": \"Software Development II\",",
+											"                \"departmentId\": 2,",
+											"                \"code\": 124",
+											"            }",
+											"        },",
+											"        {",
+											"            \"id\": 3,",
+											"            \"mentorId\": 3,",
+											"            \"courseId\": 3,",
+											"            \"mentor\": {",
+											"                \"id\": 3,",
+											"                \"user_Id\": 3,",
+											"                \"isActive\": true",
+											"            },",
+											"            \"course\": {",
+											"                \"id\": 3,",
+											"                \"title\": \"CS For AP Students\",",
+											"                \"departmentId\": 1,",
+											"                \"code\": 140",
+											"            }",
+											"        },",
+											"        {",
+											"            \"id\": 4,",
+											"            \"mentorId\": 2,",
+											"            \"courseId\": 2,",
+											"            \"mentor\": {",
+											"                \"id\": 2,",
+											"                \"user_Id\": 2,",
+											"                \"isActive\": true",
+											"            },",
+											"            \"course\": {",
+											"                \"id\": 2,",
+											"                \"title\": \"Software Development II\",",
+											"                \"departmentId\": 2,",
+											"                \"code\": 124",
+											"            }",
+											"        }",
+											"    ]);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "localhost:3000/api/courseTaken",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"courseTaken"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "DELETE",
+					"item": [
+						{
+							"name": "CourseTaken Expect deleted item",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for DELETE /api/courseTaken\", () => {",
+											"    var json = pm.response.json();",
+											"    pm.expect(json).eql({",
+											"        \"id\": 4,",
+											"        \"mentorId\": 2,",
+											"        \"courseId\": 2",
+											"    });",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Cookie",
+										"value": "next-auth.session-token=123",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"id\": 4\n}",
+									"options": {
+										"raw": {
+											"language": "text"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:3000/api/courseTaken",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"courseTaken"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "CourseTaken Expect items",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for GET /api/courseTaken\", () => {",
+											"    var json = pm.response.json();",
+											"    json.forEach((value) => delete value.mentor.expirationDate);",
+											"    pm.expect(json).eql([",
+											"        {",
+											"            \"id\": 1,",
+											"            \"mentorId\": 1,",
+											"            \"courseId\": 1,",
+											"            \"mentor\": {",
+											"                \"id\": 1,",
+											"                \"user_Id\": 1,",
+											"                \"isActive\": true",
+											"            },",
+											"            \"course\": {",
+											"                \"id\": 1,",
+											"                \"title\": \"Software Development I\",",
+											"                \"departmentId\": 2,",
+											"                \"code\": 123",
+											"            }",
+											"        },",
+											"        {",
+											"            \"id\": 2,",
+											"            \"mentorId\": 2,",
+											"            \"courseId\": 2,",
+											"            \"mentor\": {",
+											"                \"id\": 2,",
+											"                \"user_Id\": 2,",
+											"                \"isActive\": true",
+											"            },",
+											"            \"course\": {",
+											"                \"id\": 2,",
+											"                \"title\": \"Software Development II\",",
+											"                \"departmentId\": 2,",
+											"                \"code\": 124",
+											"            }",
+											"        },",
+											"        {",
+											"            \"id\": 3,",
+											"            \"mentorId\": 3,",
+											"            \"courseId\": 3,",
+											"            \"mentor\": {",
+											"                \"id\": 3,",
+											"                \"user_Id\": 3,",
+											"                \"isActive\": true",
+											"            },",
+											"            \"course\": {",
+											"                \"id\": 3,",
+											"                \"title\": \"CS For AP Students\",",
+											"                \"departmentId\": 1,",
+											"                \"code\": 140",
+											"            }",
+											"        }",
+											"    ]);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "localhost:3000/api/courseTaken",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"courseTaken"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "user",
+			"item": [
+				{
+					"name": "GET",
+					"item": [
+						{
+							"name": "/api/user",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for GET /api/user\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData).to.eql([\r",
+											"        {\r",
+											"            \"id\": 1,\r",
+											"            \"name\": \"John Doe\",\r",
+											"            \"email\": \"johndoe@rit.edu\"\r",
+											"        },\r",
+											"        {\r",
+											"            \"id\": 2,\r",
+											"            \"name\": \"Jane Doe\",\r",
+											"            \"email\": \"janedoe@rit.edu\"\r",
+											"        },\r",
+											"        {\r",
+											"            \"id\": 3,\r",
+											"            \"name\": \"John Smith\",\r",
+											"            \"email\": \"johnsmith@rit.edu\"\r",
+											"        }\r",
+											"    ]);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "localhost:3000/api/user",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"user"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "POST",
+					"item": []
+				},
+				{
+					"name": "PUT",
+					"item": [
+						{
+							"name": "/api/user",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for PUT /api/user\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.name).to.equal(\"Johnathaniel\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Cookie",
+										"value": "next-auth.session-token=123",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"id\": 1,\r\n    \"name\": \"Johnathaniel\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:3000/api/user",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"user"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "DELETE",
+					"item": []
+				},
+				{
+					"name": "GET [id]",
+					"item": [
+						{
+							"name": "/api/user/[id]",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for GET /api/user/[id]\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData).to.eql({\r",
+											"        \"name\": \"Johnathaniel\",\r",
+											"        \"email\": \"johndoe@rit.edu\"\r",
+											"    });\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "localhost:3000/api/user/1",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"user",
+										"1"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "schedule",
+			"item": [
+				{
+					"name": "GET",
+					"item": [
+						{
+							"name": "/api/schedule",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for GET /api/schedule\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    // delete data we don't want to verify\r",
+											"    jsonData.forEach((obj) => {\r",
+											"        delete obj[\"mentor\"];\r",
+											"        delete obj[\"hourBlock\"];\r",
+											"    });\r",
+											"    pm.expect(jsonData).to.eql([\r",
+											"        {\r",
+											"            \"id\": 1,\r",
+											"            \"mentorId\": 1,\r",
+											"            \"hourBlockId\": 1\r",
+											"        },\r",
+											"        {\r",
+											"            \"id\": 2,\r",
+											"            \"mentorId\": 2,\r",
+											"            \"hourBlockId\": 2\r",
+											"        },\r",
+											"        {\r",
+											"            \"id\": 3,\r",
+											"            \"mentorId\": 3,\r",
+											"            \"hourBlockId\": 3\r",
+											"        }\r",
+											"    ]);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "localhost:3000/api/schedule",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"schedule"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "POST",
+					"item": []
+				},
+				{
+					"name": "PUT",
+					"item": [
+						{
+							"name": "/api/schedule",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for PUT /api/schedule\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.hourBlockId).to.equal(2);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Cookie",
+										"value": "next-auth.session-token=123",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"id\": 1,\r\n    \"hourBlockId\": 2\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:3000/api/schedule",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"schedule"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "DELETE",
+					"item": []
+				},
+				{
+					"name": "GET [id]",
+					"item": [
+						{
+							"name": "/api/schedule/[id]",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for GET /api/schedule/[id]\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    delete jsonData[\"mentor\"];\r",
+											"    delete jsonData[\"hourBlock\"];\r",
+											"    pm.expect(jsonData).to.eql({\r",
+											"        \"id\": 1,\r",
+											"        \"mentorId\": 1,\r",
+											"        \"hourBlockId\": 2\r",
+											"    });\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "localhost:3000/api/schedule/1",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"schedule",
+										"1"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "golinks",
+			"item": [
+				{
+					"name": "GET",
+					"item": []
+				},
+				{
+					"name": "POST",
+					"item": []
+				},
+				{
+					"name": "PUT",
+					"item": [
+						{
+							"name": "/api/golinks/",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for PUT /api/golinks\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.url).to.equal(\"https://duckduckgo.com\");\r",
+											"    pm.expect(jsonData.golink).to.equal(\"duck-duck-go\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Cookie",
+										"value": "next-auth.session-token=123",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"id\": 1,\r\n    \"url\": \"https://duckduckgo.com\",\r\n    \"golink\": \"duck-duck-go\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:3000/api/golinks/",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"golinks",
+										""
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "DELETE",
+					"item": []
+				},
+				{
+					"name": "GET [public]",
+					"item": [
+						{
+							"name": "/api/golinks/public",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for GET /api/golinks/public\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    for (value of jsonData) {\r",
+											"        delete value.createdAt;\r",
+											"        delete value.updatedAt;\r",
+											"    }\r",
+											"    pm.expect(jsonData).to.eql([\r",
+											"        {\r",
+											"            \"id\": 2,\r",
+											"            \"golink\": \"google\",\r",
+											"            \"url\": \"google.com\",\r",
+											"            \"description\": \"An underground and unknown search engine\",\r",
+											"            \"isPublic\": true,\r",
+											"            \"isPinned\": true\r",
+											"        },\r",
+											"        {\r",
+											"            \"id\": 3,\r",
+											"            \"golink\": \"youtube\",\r",
+											"            \"url\": \"youtube.com\",\r",
+											"            \"description\": \"A small video sharing website\",\r",
+											"            \"isPublic\": true,\r",
+											"            \"isPinned\": true\r",
+											"        },\r",
+											"        {\r",
+											"            \"id\": 1,\r",
+											"            \"golink\": \"duck-duck-go\",\r",
+											"            \"url\": \"https://duckduckgo.com\",\r",
+											"            \"description\": \"SSE Website\",\r",
+											"            \"isPublic\": true,\r",
+											"            \"isPinned\": true\r",
+											"        }\r",
+											"    ]);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "localhost:3000/api/golinks/public",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"golinks",
+										"public"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "GET [officer]",
+					"item": [
+						{
+							"name": "/api/golinks/officer",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for GET /api/golinks/officer\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData).to.eql([]);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Cookie",
+										"value": "next-auth.session-token=123",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "localhost:3000/api/golinks/officer",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"golinks",
+										"officer"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
 		}
 	]
 }
