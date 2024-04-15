@@ -1,14 +1,7 @@
 import { Event } from "./events/event";
 
-const placeholder_w = 540;
-const placeholder_h = 400;
-const defaultImage = `https://dummyimage.com/${placeholder_w}x${placeholder_h}`
 const defaultDescription = `This is a description of the event. Lorem ipsum dolor sit amet,
-                            consectetur adipiscing elit. Integer ullamcorper dui eu ex laoreet,
-                            sagittis aliquet mauris ornare. Nullam urna magna, hendrerit nec tortor
-                            porttitor, dignissim vulputate neque. Etiam accumsan ut leo sit amet lacinia.
-                            Nam euismod risus nec nunc commodo, quis laoreet ligula mollis.
-                            Mauris sodales ac neque quis blandit. Aenean vel lobortis eros.`
+                            consectetur adipiscing elit. Integer ullamcorper.`
 
 interface HomepageContent {
     description: string;
@@ -30,26 +23,26 @@ export default {
     twitchLink: "https://www.twitch.tv/rit_sse",
 } satisfies HomepageContent;
 
-export const upcomingEvents = [
+export const UpcomingEvents = [
     {
-        title: "SSE Open House",
-        date: "April 13, 2024",
+        title: "Spring Fling",
+        date: "April 13th 5:00pm",
         location: "GOL-1400",
-        imageSrc: defaultImage,
+        imageSrc: "spring-fling-2.png",
         description: defaultDescription
     },
     {
-        title: "PowerPoint Karaoke",
-        date: "April 22, 2024",
+        title: "SSE Mentoring Review Session",
+        date: "April 22nd 6:00pm",
         location: "GOL-1670",
-        imageSrc: defaultImage,
+        imageSrc: "mentoring-review-session-1.png",
         description: defaultDescription
     },
     {
         title: "Micro Talks 2.0",
-        date: "April 24, 2024",
+        date: "April 24th 4:00pm",
         location: "GOL-1670",
-        imageSrc: defaultImage,
+        imageSrc: "talks-1.jpg",
         description: defaultDescription
     },
 ] satisfies Event[];
