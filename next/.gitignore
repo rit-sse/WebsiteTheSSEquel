@@ -46,6 +46,14 @@ next-env.d.ts
 # jetbrains
 .idea
 
-# nix envs
+# jetbrains
+.idea
+
+# jetbrains
+.idea
+
+# Nix
+flake.nix
+flake.lock
 .envrc
 .direnv
