@@ -10,7 +10,6 @@ export async function GET(request: Request, { params }: { params: { id: string }
 				id,
 			},
 			select: {
-        id: true,
 				skill: true,
 				mentorSkill: {
 					select: {
@@ -29,3 +28,4 @@ export async function GET(request: Request, { params }: { params: { id: string }
 		return new Response("Invalid Skill ID", { status: 400 });
 	}
 }
+

@@ -4,7 +4,6 @@ const prisma = new PrismaClient();
 function validateGoLink(goLink: string) {
   return /^[a-z\-]+$/.test(goLink);
 }
-
 /**
  * HTTP POST request to /api/golinks
  * Create a new Golink
@@ -32,7 +31,6 @@ export async function POST(request: Request) {
       status: 422,
     });
   }
-
   const newGolink = await prisma.goLinks.create({
     data: {
       golink: golink,

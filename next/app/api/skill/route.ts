@@ -5,6 +5,7 @@ const prisma = new PrismaClient();
 export async function GET() {
 	const skills = await prisma.skill.findMany({
 		select: {
+      id: true,
 			skill: true,
 			mentorSkill: {
 				select: {
@@ -66,6 +67,17 @@ export async function PUT(request: Request) {
 		})) != null;
 	if (!skill_exists) {
 		return new Response(`Coulnd't find skill ID ${body.id}`, { status: 404 });
+	}
+
+	if (body.skill != undefined) {
+		const skill_in_use = await prisma.skill.findUnique({
+			where: {
+				skill: body.skill,
+			},
+		});
+		if (skill_in_use != undefined && skill_in_use?.id != body.id) {
+			return new Response(`skill ${body.skill} already exists`, { status: 422 });
+		}
 	}
 
 	const skill = await prisma.skill.update({
