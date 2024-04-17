@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { CTAButton } from '@/components/common/CTAButton';
 import HomepageContent from './HomepageContent';
 import { UpcomingEvents } from './HomepageContent';
-import EventCard from './events/EventCard';
+import { EventCard } from './events/EventCard';
 
 export default function Home() {
     return (
@@ -37,7 +37,7 @@ export default function Home() {
 
             {/* Upcoming Events */}
             <h1 className='mt-5'>Upcoming Events</h1>
-            <div className='mt-5 grid gap-8 grid-cols-3 items-stretch w-10/12'>
+            <div className='mt-5 grid gap-8 grid-cols-3 w-10/12'>
                 {UpcomingEvents.map((event, idx) => (
                     <EventCard key={idx} {...event} />
                 ))}
