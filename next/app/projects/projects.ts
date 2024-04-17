@@ -13,7 +13,7 @@ export interface Project{
 
 export const projectsData: Project[] = [
     {
-        logo: defaultImage,
+        logo: "/images/projects-1.gif",
         title: "Project 1",
         lead: "lead 1",
         contact: "lead1@email.com",
@@ -22,7 +22,7 @@ export const projectsData: Project[] = [
         progress: "In Progress"
     },
     {
-        logo: defaultImage,
+        logo: "/images/projects-3.jpg",
         title: "Project 2",
         lead: "Lead 2",
         contact: "lead2@email.com",
@@ -30,7 +30,7 @@ export const projectsData: Project[] = [
         progress: "Conceptualization"
     },
     {
-        logo: defaultImage,
+        logo: "/images/projects-4.jpg",
         title: "Project 3",
         lead: "Lead 3",
         contact: "lead3@email.com",

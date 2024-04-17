@@ -1,11 +1,17 @@
 import React from "react";
 import { Project } from "./projects";
+import Image from "next/image";
 
 const ProjectCard = ({logo, title, lead, contact, description, stack, progress}: Project) => {
   return (
     <div className="rounded-lg bg-base-100 w-10/12 py-8 px-12 mx-auto flex flex-row items-center content-center gap-10 my-10">
       {/* Left half */}
-      <img src={logo} />
+      <Image 
+        src={logo} 
+        alt={title}
+        width="400"
+        height="240"
+      />
 
       {/* Right half */}                                   
       <div>
