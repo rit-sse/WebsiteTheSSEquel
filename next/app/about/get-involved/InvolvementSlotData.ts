@@ -39,7 +39,7 @@ export default [
             aquatic beings. If you would like to give a talk of your own please reach out to our Talk Head!`
     },
     {
-        imageSrc: defaultImage,
+        imageSrc: "/images/student-involvement-1.jpg",
         title: 'Help Clean the Lab',
         body: `With all this happening, the lab can get a bit messy. 
             This is a great opportunity to gain membership here by participating 

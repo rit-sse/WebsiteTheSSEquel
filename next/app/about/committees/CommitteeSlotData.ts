@@ -21,7 +21,7 @@ export default [
         description: defaultDescription
     },
     {
-        imageSrc: defaultImage,
+        imageSrc: "/images/talks-2.jpg",
         name: 'Public Relations',
         description: defaultDescription
     },
@@ -31,7 +31,7 @@ export default [
         description: defaultDescription
     },
     {
-        imageSrc: defaultImage,
+        imageSrc: "/images/mentoring-review-session-1.png",
         name: 'Marketing',
         description: defaultDescription
     },
