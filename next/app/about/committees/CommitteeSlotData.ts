@@ -11,12 +11,12 @@ const defaultDescription = `This is a description of the committee. Lorem ipsum 
 
 export default [
     {
-        imageSrc: defaultImage,
+        imageSrc: "/images/events1.jpg",
         name: 'Events',
         description: defaultDescription
     },
     {
-        imageSrc: defaultImage,
+        imageSrc: "/images/talks-1.jpg",
         name: 'Talks',
         description: defaultDescription
     },
@@ -26,7 +26,7 @@ export default [
         description: defaultDescription
     },
     {
-        imageSrc: defaultImage,
+        imageSrc: "/images/mentoring.jpg",
         name: 'Mentoring',
         description: defaultDescription
     },
@@ -36,12 +36,12 @@ export default [
         description: defaultDescription
     },
     {
-        imageSrc: defaultImage,
+        imageSrc: "/images/student-involvement-1.jpg",
         name: 'Student Outreach',
         description: defaultDescription
     },
     {
-        imageSrc: defaultImage,
+        imageSrc: "/images/tech-committee-1.jpg",
         name: 'Tech Committee',
         description: defaultDescription
     }
