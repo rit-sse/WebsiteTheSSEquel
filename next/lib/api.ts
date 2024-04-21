@@ -25,25 +25,20 @@ export type Api<T> = {
 
 function routeFactory<T>(route: string): Api<T> {
   return {
-    create: (item): Promise<Response> =>
-      fetch(process.env.NEXTAUTH_URL + "/api/" + route, {
+    create: async (item) =>
+      fetch("/api/" + route, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify(item),
       }),
     fetch: async () =>
-      fetch(process.env.NEXTAUTH_URL + "/api/" + route).then((response) =>
-        response.json()
-      ),
-    update: (item) =>
-      fetch(process.env.NEXTAUTH_URL + "/api/" + route, {
+      fetch("/api/" + route).then((response) => response.json()),
+    update: async (item) =>
+      fetch("/api/" + route, {
         method: "PUT",
         body: JSON.stringify(item),
       }),
-    delete: (id) =>
-      fetch(process.env.NEXTAUTH_URL + "/api/" + route, {
+    delete: async (id) =>
+      fetch("/api/" + route, {
         method: "DELETE",
         body: JSON.stringify({ id }),
       }),
@@ -53,36 +48,9 @@ function routeFactory<T>(route: string): Api<T> {
 export const skillsApi: Api<Skill> = routeFactory("skills");
 
 export const goLinksApi: Api<GoLink> = {
-  create: (golink) =>
-    fetch(process.env.NEXTAUTH_URL + "/api/golinks", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(golink),
-    }),
-  fetch: () =>
-    fetch(process.env.NEXTAUTH_URL + "/api/golinks/public").then((response) =>
-      response.json()
-    ),
-  update: (golink) =>
-    fetch(process.env.NEXTAUTH_URL + `/api/golinks`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(golink),
-    }),
-  delete: (id) =>
-    fetch(process.env.NEXTAUTH_URL + `/api/golinks`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        id: id,
-      }),
-    }),
+  ...routeFactory("golinks"),
+  fetch: async () =>
+    fetch("/api/golinks/public").then((response) => response.json()),
 };
 
 export type AuthLevel = {
@@ -93,7 +61,7 @@ export type AuthLevel = {
 };
 
 export async function fetchAuthLevel(): Promise<AuthLevel> {
-  const response = await fetch(process.env.NEXTAUTH_URL + "/api/authLevel");
+  const response = await fetch("/api/authLevel");
   const data = await response.json();
   return data;
 }
