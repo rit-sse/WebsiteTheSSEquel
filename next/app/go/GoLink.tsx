@@ -2,6 +2,7 @@ import { GoLinkIcon } from "@/components/common/Icons";
 import { GoLinkStar } from "@/components/common/Icons";
 import { GoLinkEdit } from "@/components/common/Icons";
 import { GoLinkDelete } from "@/components/common/Icons";
+import { deleteGolink, fetchAuthLevel, updateGolink } from "@/lib/api";
 import { useEffectAsync } from "@/lib/utils";
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useState } from "react";
@@ -35,19 +36,13 @@ const GoLink: React.FC<GoLinkProps> = ({ id, goUrl, url, description, pinned, fe
 
     const handleEdit = async () => {
         try {
-            const response = await fetch(`http://localhost:3000/api/golinks`, {
-                method: 'PUT', // Assuming you are using PUT method for editing
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    id: id,
-                    golink: newTitle, 
-                    url: newUrl,
-                    description: newDescription,
-                    isPinned: newPinned,
-                    isPublic: !officer
-                }),
+            const response = await updateGolink({
+                id: id,
+                golink: newTitle, 
+                url: newUrl,
+                description: newDescription,
+                isPinned: newPinned,
+                isPublic: !officer
             });
     
             if (response.ok) {
@@ -59,15 +54,7 @@ const GoLink: React.FC<GoLinkProps> = ({ id, goUrl, url, description, pinned, fe
 
     const handleDelete = async () => {
         try {
-            const response = await fetch(`http://localhost:3000/api/golinks`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    id: id
-                }),
-            });
+            const response = await deleteGolink(id);
     
             if (response.ok) {
                 handleCancel(); 
@@ -226,8 +213,7 @@ const EditAndDelete: React.FC<GoLinkProps> = ({ id, goUrl, url, description, pin
     const [isOfficer, setIsOfficer] = useState(false);
     
     useEffectAsync(async() => {
-        const response = await fetch("http://localhost:3000/api/authLevel");
-        const data = await response.json();
+        const data = await fetchAuthLevel();
         setIsOfficer(data.isOfficer);            
     }, []);
 

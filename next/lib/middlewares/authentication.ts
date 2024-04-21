@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { fetchAuthLevel } from "../api";
 
 /**
  * A function to verify if a request should be let through. This function should handle the required authLevel
@@ -22,13 +23,7 @@ const authVerifierFactory = (
     // get the token from the cookie
     const token = request.cookies.get("next-auth.session-token")?.value;
     // fetch permissions from the API
-    const permissions = await fetch(
-      process.env.NEXTAUTH_URL + "/api/authLevel",
-      {
-        body: JSON.stringify({ token }),
-        method: "PUT",
-      }
-    ).then(async (res) => await res.json());
+    const permissions = await fetchAuthLevel();
     // console.log(permissions);
     return verifier(permissions);
   };
