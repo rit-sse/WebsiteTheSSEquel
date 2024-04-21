@@ -1,6 +1,16 @@
+/**
+ * Remove the "id" key from an object type
+ */
 export type NoId<T> = {
   [P in keyof T as Exclude<P, "id">]: T[P];
 };
+
+/**
+ * Make every key except "id" optional
+ */
+export type NonExhaustive<T> = {
+  [P in keyof T]?: T[P];
+} & { id: number };
 
 export type GoLink = {
   id: number;
@@ -16,14 +26,25 @@ export type Skill = {
   skill: string;
 };
 
-export type Api<T> = {
+/**
+ * A collection of functions to wrap API methods working with a given type
+ *
+ * create: create a new item
+ *
+ * fetch: fetch all items
+ *
+ * update: update an existing item
+ *
+ * delete: remove an item
+ */
+export type ApiWrapper<T> = {
   create: (item: NoId<T>) => Promise<Response>;
   fetch: () => Promise<T[]>;
-  update: (item: T) => Promise<Response>;
+  update: (item: NonExhaustive<T>) => Promise<Response>;
   delete: (id: number) => Promise<Response>;
 };
 
-function routeFactory<T>(route: string): Api<T> {
+function apiWrapperFactory<T>(route: string): ApiWrapper<T> {
   return {
     create: async (item) =>
       fetch("/api/" + route, {
@@ -45,10 +66,10 @@ function routeFactory<T>(route: string): Api<T> {
   };
 }
 
-export const skillsApi: Api<Skill> = routeFactory("skills");
+export const skillsApi: ApiWrapper<Skill> = apiWrapperFactory("skills");
 
-export const goLinksApi: Api<GoLink> = {
-  ...routeFactory("golinks"),
+export const goLinksApi: ApiWrapper<GoLink> = {
+  ...apiWrapperFactory("golinks"),
   fetch: async () =>
     fetch("/api/golinks/public").then((response) => response.json()),
 };
