@@ -3,7 +3,7 @@
 import GoLinksContainer from "@/app/go/GoLinksContainer";
 import { GoLinkProps } from "./GoLink";
 import { useCallback, useEffect, useState } from "react";
-import { fetchGolinks } from "@/lib/api";
+import { goLinksApi } from "@/lib/api";
 
 export interface CreateGoLinkProps {
   fetchData: () => Promise<void>;
@@ -17,7 +17,7 @@ export interface GoLinksContainerProps {
 const GoLinksPage = () => {
   const [goLinkData, setGoLinkData]: [any[], any] = useState([]);
   const fetchData = useCallback(async () => {
-    const data = await fetchGolinks();
+    const data = await goLinksApi.fetch();
     setGoLinkData(
       data.map((item) => ({
         id: item.id,

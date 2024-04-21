@@ -33,11 +33,10 @@ function routeFactory<T>(route: string): Api<T> {
         },
         body: JSON.stringify(item),
       }),
-    fetch: async () => {
-      const response = await fetch(process.env.NEXTAUTH_URL + "/api/" + route);
-      const data = await response.json();
-      return data;
-    },
+    fetch: async () =>
+      fetch(process.env.NEXTAUTH_URL + "/api/" + route).then((response) =>
+        response.json()
+      ),
     update: (item) =>
       fetch(process.env.NEXTAUTH_URL + "/api/" + route, {
         method: "PUT",
@@ -53,45 +52,38 @@ function routeFactory<T>(route: string): Api<T> {
 
 export const skillsApi: Api<Skill> = routeFactory("skills");
 
-export async function createGolink(golink: NoId<GoLink>): Promise<Response> {
-  return await fetch(process.env.NEXTAUTH_URL + "/api/golinks", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(golink),
-  });
-}
-
-export async function fetchGolinks(): Promise<GoLink[]> {
-  const response = await fetch(
-    process.env.NEXTAUTH_URL + "/api/golinks/public"
-  );
-  const data = await response.json();
-  return data;
-}
-
-export async function updateGolink(golink: GoLink): Promise<Response> {
-  return await fetch(process.env.NEXTAUTH_URL + `/api/golinks`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(golink),
-  });
-}
-
-export async function deleteGolink(id: number): Promise<Response> {
-  return await fetch(process.env.NEXTAUTH_URL + `/api/golinks`, {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      id: id,
+export const goLinksApi: Api<GoLink> = {
+  create: (golink) =>
+    fetch(process.env.NEXTAUTH_URL + "/api/golinks", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(golink),
     }),
-  });
-}
+  fetch: () =>
+    fetch(process.env.NEXTAUTH_URL + "/api/golinks/public").then((response) =>
+      response.json()
+    ),
+  update: (golink) =>
+    fetch(process.env.NEXTAUTH_URL + `/api/golinks`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(golink),
+    }),
+  delete: (id) =>
+    fetch(process.env.NEXTAUTH_URL + `/api/golinks`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id: id,
+      }),
+    }),
+};
 
 export type AuthLevel = {
   isUser: boolean;

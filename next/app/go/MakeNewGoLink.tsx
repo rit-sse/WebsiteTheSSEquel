@@ -2,7 +2,7 @@ import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useState } from "react";
 import { CreateGoLinkProps } from "./page";
 import { useEffectAsync } from "@/lib/utils";
-import { createGolink, fetchAuthLevel } from "@/lib/api";
+import { goLinksApi, fetchAuthLevel } from "@/lib/api";
 
 export const GoLinkButton: React.FC<CreateGoLinkProps> = ({ fetchData }) => {
   const { data: session }: any = useSession();
@@ -27,7 +27,7 @@ export const GoLinkButton: React.FC<CreateGoLinkProps> = ({ fetchData }) => {
 
   const handleCreate = async () => {
     try {
-      const response = await createGolink({
+      const response = await goLinksApi.create({
         golink: title,
         url: url,
         description: description,
