@@ -1,5 +1,7 @@
 "use client"
 import { Metadata } from "next";
+import { EventCard } from '../EventCard';
+import { Event } from "../event";
 import UpcomingEvents from "./UpcomingEvents";
 import { useCallback, useEffect, useState } from "react";
 
@@ -14,7 +16,7 @@ export interface EventProps {
 }
 
 export interface UpcomingEventsProps {
-    eventsData: EventProps[];
+    eventsData: Event[];
     fetchData: () => Promise<void>; 
 }
 
@@ -24,13 +26,12 @@ export default function EventsCalendar() {
         const response = await fetch("http://localhost:3000/api/event");
         const data = await response.json();
         
-        setEventsData(data.map((item: { id: number, title: string; description: string; date: string; image: string; location: string;}) => ({
-            id: item.id,
+        setEventsData(data.map((item: { title: string; description: string; date: string; imageSrc: string; location: string;}) => ({
             title: item.title,
-            description: item.description,
             date: item.date, 
-            image: item.image ?? '', 
-            location: item.location ?? ''
+            location: item.location ?? '',
+            imageSrc: item.imageSrc ?? "images/codfather.jpg", 
+            description: item.description
         })));
     }, [])
     useEffect(() => {
