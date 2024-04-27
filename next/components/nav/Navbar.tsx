@@ -8,7 +8,6 @@ import SSELogoSmall from "../common/SSELogoSmall";
 import AuthButton from "./AuthButton";
 import DarkModeToggle from "../common/DarkModeToggle";
 
-
 const navItems: NavItemProps[] = [
     {
         title: "Home",
@@ -66,28 +65,11 @@ const navItems: NavItemProps[] = [
     },
     {
         title: "Projects",
-        route: "#",
+        route: "/projects",
     },
-    { // Go links dropdown should be extracted to it's own component since the nav items are dynamic (depending on what's pinned)
+    { // Go links dropdown removed. Check commit d2f1d82 in feature branch if we need to restore the dropdowns.
         title: "Go Links",
-        subItems: [
-            {
-                title: "View All",
-                route: "#",
-            },
-            {
-                title: "Go Link 1",
-                route: "#",
-            },
-            {
-                title: "Go Link 2",
-                route: "#",
-            },
-            {
-                title: "Go Link 3",
-                route: "#",
-            },
-        ],
+        route: "/go"
     }
 ];
 
@@ -99,7 +81,7 @@ const Navbar: React.FC = () => {
     return (
         <nav
             id="navbar"
-            className="top-0 z-50 flex items-center justify-center bg-base-100 bg-opacity-0 filter"
+            className="top-0 z-50 flex items-center justify-center bg-opacity-100 filter"
         >
             <div
                 id="nav-content"
