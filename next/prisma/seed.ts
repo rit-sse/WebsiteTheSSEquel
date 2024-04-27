@@ -574,6 +574,8 @@ async function seedEvents() {
       title: "Catan Tournament",
       date: new Date("2023-11-1 12:00:00"),
       description: "Elyza will win again.",
+	  image: "codfather.jpg",
+	  location: "poop fart",
     },
   });
 
@@ -584,10 +586,24 @@ async function seedEvents() {
       title: "AAA",
       date: new Date("2023-11-1 12:00:00"),
       description: "ooops",
+	  image: "codfather.jpg",
+	  location: "poop fart",
     },
   });
 
-  console.log({ event1, event2, event3 });
+  const event4 = await prisma.event.upsert({
+    where: { id: 4 },
+    update: {},
+    create: {
+      title: "Bing bing",
+      date: new Date("2023-11-1 12:00:00"),
+      description: "bing bing bing",
+	  image: "codfather.jpg",
+	  location: "poop bing",
+    },
+  });
+
+  console.log({ event1, event2, event3, event4 });
 }
 
 async function main() {

@@ -20,19 +20,9 @@ const UpcomingEvents: React.FC<UpcomingEventsProps> = ({ eventsData, fetchData }
                   Today ({currentDate})
                </label>
                <div className="collapse-content"> 
-               {eventsData.map((item: Event) => (
-                  <EventCard {...item}/>
-               ))}
-               {/* {eventsData.map((event) => (
-                  <div key={event.id} className="event">
-                  <h2>{event.title}</h2>
-                  <p>{event.description}</p>
-                  <p>{event.date}</p>
-                  <p>{event.image}</p>
-                  {event.image && <img src={event.image} alt={event.title} />}
-                  <p>{event.location}</p> */}
-              {/* </div> */}
-            {/* ))} */}
+                  {eventsData.map((item: Event) => (
+                     <EventCard {...item}/>
+                  ))}
                </div>
             </div>
          </div>

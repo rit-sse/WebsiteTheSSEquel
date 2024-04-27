@@ -26,11 +26,11 @@ export default function EventsCalendar() {
         const response = await fetch("http://localhost:3000/api/event");
         const data = await response.json();
         
-        setEventsData(data.map((item: { title: string; description: string; date: string; imageSrc: string; location: string;}) => ({
+        setEventsData(data.map((item: { title: string; description: string; date: string; image: string; location: string;}) => ({
             title: item.title,
             date: item.date, 
-            location: item.location ?? '',
-            imageSrc: item.imageSrc ?? "images/codfather.jpg", 
+            location: item.location,
+            image: item.image, 
             description: item.description
         })));
     }, [])
@@ -42,11 +42,11 @@ export default function EventsCalendar() {
     
     return (
         <>
+            {console.log(eventsData)}
             <div className="text-page-structure">
                 <h1>Upcoming Events</h1>
                 {/* <div className="subtitle-structure"><p></p></div> */}
                 <UpcomingEvents eventsData={eventsData} fetchData={fetchData}/>
-
 
             </div>
         </>

@@ -28,21 +28,21 @@ export const UpcomingEvents = [
         title: "Spring Fling",
         date: "April 13th 5:00pm",
         location: "GOL-1400",
-        imageSrc: "spring-fling-2.png",
+        image: "spring-fling-2.png",
         description: defaultDescription
     },
     {
         title: "SSE Mentoring Review Session",
         date: "April 22nd 6:00pm",
         location: "GOL-1670",
-        imageSrc: "mentoring-review-session-1.png",
+        image: "mentoring-review-session-1.png",
         description: defaultDescription
     },
     {
         title: "Micro Talks 2.0",
         date: "April 24th 4:00pm",
         location: "GOL-1670",
-        imageSrc: "talks-1.jpg",
+        image: "talks-1.jpg",
         description: defaultDescription
     },
 ] satisfies Event[];
