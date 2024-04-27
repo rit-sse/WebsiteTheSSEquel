@@ -9,9 +9,9 @@ import { EventCard } from './events/EventCard';
 
 export default function Home() {
     return (
-        <>
+        <div className='space-y-24'>
             {/* Hero section */}
-            <div className='h-auto md:h-[55vh] my-auto flex flex-col md:flex-row items-center md:justify-evenly'>
+            <div className='h-auto md:h-[55vh] my-auto flex flex-col md:flex-row items-center md:justify-evenly mt-24'>
                 <div className="flex flex-col justify-center w-auto md:w-2/5">
                     <h1 className='text-center md:text-left'>
                         Society of
@@ -36,12 +36,16 @@ export default function Home() {
             </div>
 
             {/* Upcoming Events */}
-            <h1 className='mt-5'>Upcoming Events</h1>
-            <div className='mt-5 grid gap-8 grid-cols-3 w-10/12'>
-                {UpcomingEvents.map((event, idx) => (
-                    <EventCard key={idx} {...event} />
-                ))}
+            <div>
+              <h1 className='mt-5'>Upcoming Events</h1>
+              <div className='flex flex-row justify-center items-center'>
+                <div className='mt-8 grid gap-8 grid-cols-3 w-10/12'>
+                    {UpcomingEvents.map((event, idx) => (
+                        <EventCard key={idx} {...event} />
+                    ))}
+                </div>
+              </div>
             </div>
-        </>
+        </div>
     );
 }
