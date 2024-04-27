@@ -4,7 +4,7 @@ const defaultImage = `https://dummyimage.com/${placeholder_w}x${placeholder_h}`
 
 const data: {imageSrc: string, name: string, description: string, alt:string}[] = [
     {
-        imageSrc: defaultImage,
+        imageSrc: "/images/mentoring-review-session-1.png",
         name: "All-In-One Hub For Developers",
         description: `GOL-1670 offers weekday Software Engineering mentoring and
                 tutoring. Experience the SSE Winter Ball, partake in trips and
@@ -13,7 +13,7 @@ const data: {imageSrc: string, name: string, description: string, alt:string}[] 
         alt: "All-In-One Hub For Developers"
     },
     {
-        imageSrc: defaultImage,
+        imageSrc: "/images/tech-committee-1.jpg",
         name: "Hands-On Experience",
         description: `In the Projects Committee, SSE members collaborate on unique
                 software projects, from singing tesla coils to multitouch walls.
