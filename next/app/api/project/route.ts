@@ -36,7 +36,7 @@ export async function GET() {
 /**
  * Create a new project
  * HTTP POST request to /api/project/
- * @param request { name: string, email: string }
+ * @param request { title: string, description: string, leaderId: number, image: string, techStack: string, progress: string }
  * @return project object that was created
  */
 export async function POST(request: Request) {
