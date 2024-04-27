@@ -13,7 +13,7 @@ export interface EventProps {
     id: number;
     title: string;
     description: string;
-    date: string;
+    date: string; // change to a Date type sometime soon
     image: string;
     location: string;
     fetchData: () => Promise<void>; 
