@@ -35,6 +35,28 @@ model User {
   officers Officer[]
   account  Account[]
   session  Session[]
+  projects Project[]
+}
+
+model Project {
+  //Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
+
+  // short title of this project
+  title       String
+  // image used on the page for this project
+  image       String
+  // short description of the technologies used in the project
+  techStack   String
+  // longer description of the project
+  description String
+  // short string describing the current status of the project
+  progress    String
+
+  // Relational fields
+  // references the user who is acting as team leader for the project
+  leaderId Int  @map("user_id")
+  leader   User @relation(fields: [leaderId], references: [id])
 }
 
 model Quote {

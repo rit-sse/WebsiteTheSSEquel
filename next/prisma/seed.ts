@@ -29,6 +29,18 @@ async function seedUser() {
 	console.log({ johndoe, janedoe, johnsmith });
 }
 
+async function seedProject() {
+	const website_rebuild = await prisma.project.upsert({where: {id: 1}, update: {}, create: {
+		title: "SSE Website Rebuild",
+		image: "",
+		techStack: "Next.js, Prisma",
+		description: "Webbed site go brrr",
+		progress: "Vibin",
+		leaderId: 1
+	}});
+	console.log({website_rebuild});
+}
+
 async function seedQuote() {
 	const quote1 = await prisma.quote.upsert({
 		where: { id: 1 },
@@ -559,6 +571,7 @@ async function seedVerificationToken() {
 async function main() {
 	try {
 		await seedUser();
+		await seedProject();
 		await seedQuote();
 		await seedOfficerPosition();
 		await seedOfficer();
