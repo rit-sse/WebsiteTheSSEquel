@@ -8,6 +8,7 @@ import { Inter } from 'next/font/google'
 import { Providers } from "./Providers";
 import { getServerSession } from "next-auth";
 import { authOptions } from "./api/auth/[...nextauth]/route";
+import ScrollToTopButton from "@/components/nav/ScrollToTopButton";
 
 
 const inter = Inter({
@@ -40,6 +41,7 @@ export default async function RootLayout({
           <main className="flex flex-col grow items-center p-2 md:p-4 lg:p-6 xl:p-8">
             {children}
           </main>
+          <ScrollToTopButton/>
           <Footer />
         </Providers>
       </body>
