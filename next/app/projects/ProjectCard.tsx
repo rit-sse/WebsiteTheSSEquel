@@ -6,12 +6,15 @@ const ProjectCard = ({logo, title, lead, contact, description, stack, progress}:
   return (
     <div className="rounded-lg bg-base-100 w-10/12 py-8 px-12 mx-auto flex flex-row items-center content-center gap-10 my-10">
       {/* Left half */}
-      <Image 
-        src={logo} 
-        alt={title}
-        width="400"
-        height="240"
-      />
+      <div className="flex justify-center items-center object-cover w-[400px] h-[240px] overflow-hidden">
+        <Image 
+          src={logo}
+          alt={title}
+          width={400}
+          height={240}
+          objectFit="cover"
+        />
+      </div>
 
       {/* Right half */}                                   
       <div>
