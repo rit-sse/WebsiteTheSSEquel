@@ -65,6 +65,17 @@
     @apply w-full;
     @apply py-2;
   }
+  
+  .upcoming-collapse > .collapse-child{
+    @apply bg-base-100;
+    @apply rounded-md;
+    @apply shadow-md;
+    @apply hover:shadow-lg;
+    @apply transition-shadow;
+    @apply border-2;
+    @apply border-base-content;
+    @apply hover:border-info;
+  }
 
 
   
