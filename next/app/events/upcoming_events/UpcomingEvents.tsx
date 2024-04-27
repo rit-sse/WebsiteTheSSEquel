@@ -5,7 +5,7 @@ const UpcomingEvents = () => {
    return (
         <>
 
-         <div className="">
+         <div className="upcoming-collapse pt-6">
             <div className="collapse bg-base-200">
                <input type="checkbox" id="today-collapse" className="peer" />
                <label htmlFor="today-collapse" className="collapse-title text-xl font-medium">
@@ -17,7 +17,7 @@ const UpcomingEvents = () => {
             </div>
          </div>
 
-         <div className="">
+         <div className="upcoming-collapse">
             <div className="collapse bg-base-200">
                <input type="checkbox" id="week-collapse" className="peer" />
                <label htmlFor="week-collapse" className="collapse-title text-xl font-medium">
@@ -29,7 +29,7 @@ const UpcomingEvents = () => {
             </div>
          </div>
 
-         <div className="">
+         <div className="upcoming-collapse">
             <div className="collapse bg-base-200">
                <input type="checkbox" id="month-collapse" className="peer" />
                <label htmlFor="month-collapse" className="collapse-title text-xl font-medium">
@@ -41,7 +41,7 @@ const UpcomingEvents = () => {
             </div>
          </div>
 
-         <div className="">
+         <div className="upcoming-collapse">
             <div className="collapse bg-base-200">
                <input type="checkbox" id="3month-collapse" className="peer" />
                <label htmlFor="3month-collapse" className="collapse-title text-xl font-medium">
