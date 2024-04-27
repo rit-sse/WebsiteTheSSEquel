@@ -1,3 +1,5 @@
+import { DateTime } from "next-auth/providers/kakao";
+
 /**
  * Remove the "id" key from an object type
  */
@@ -26,6 +28,32 @@ export type Skill = {
   skill: string;
 };
 
+export type HourBlock = {
+  id: number;
+  weekday: string;
+  startTime: DateTime;
+};
+
+export type Mentor = {
+  id: number;
+  userId: number;
+  expirationDate: DateTime;
+  isActive: boolean;
+};
+
+export type MentorRead = Mentor & {};
+
+export type Schedule = {
+  id: number;
+  mentorId: number;
+  hourBlockId: number;
+};
+
+export type ScheduleRead = Schedule & {
+  mentor: Mentor;
+  hourBlock: HourBlock;
+};
+
 /**
  * A collection of functions to wrap API methods working with a given type
  *
@@ -37,14 +65,14 @@ export type Skill = {
  *
  * delete: remove an item
  */
-export type ApiWrapper<T> = {
-  create: (item: NoId<T>) => Promise<Response>;
-  fetch: () => Promise<T[]>;
-  update: (item: NonExhaustive<T>) => Promise<Response>;
+export type ApiWrapper<R, W = NoId<R>> = {
+  create: (item: W) => Promise<Response>;
+  fetch: () => Promise<R[]>;
+  update: (item: NonExhaustive<W>) => Promise<Response>;
   delete: (id: number) => Promise<Response>;
 };
 
-function apiWrapperFactory<T>(route: string): ApiWrapper<T> {
+function apiWrapperFactory<R, W>(route: string): ApiWrapper<R, W> {
   return {
     create: async (item) =>
       fetch("/api/" + route, {
@@ -67,12 +95,17 @@ function apiWrapperFactory<T>(route: string): ApiWrapper<T> {
 }
 
 export const skillsApi: ApiWrapper<Skill> = apiWrapperFactory("skills");
+export const hourBlockApi: ApiWrapper<HourBlock> =
+  apiWrapperFactory("hourBlocks");
 
 export const goLinksApi: ApiWrapper<GoLink> = {
   ...apiWrapperFactory("golinks"),
   fetch: async () =>
     fetch("/api/golinks/public").then((response) => response.json()),
 };
+
+export const scheduleApi: ApiWrapper<ScheduleRead, Schedule> =
+  apiWrapperFactory("schedule");
 
 export type AuthLevel = {
   isUser: boolean;
