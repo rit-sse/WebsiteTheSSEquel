@@ -3,12 +3,6 @@ import { Metadata } from "next";
 import UpcomingEvents from "./UpcomingEvents";
 import { useCallback, useEffect, useState } from "react";
 
-export const metadata: Metadata = {
-    title: "Upcoming Events",
-    description:
-      "hi :3"
-};
-
 export interface EventProps {
     id: number;
     title: string;
