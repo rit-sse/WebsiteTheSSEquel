@@ -1,5 +1,4 @@
 import { Metadata } from "next";
-import UpcomingEvents from "./UpcomingEvents";
 
 export const metadata: Metadata = {
     title: "Events Calendar",
@@ -11,7 +10,7 @@ export default function EventsCalendar() {
     return (
         <>
             <div className="flex flex-col items-center w-full h-screen max-w-screen-xl">            
-                <UpcomingEvents/>
+                poop
             </div>
         </>
     );
