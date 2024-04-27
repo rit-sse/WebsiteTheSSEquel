@@ -48,31 +48,48 @@ export async function POST(request: Request) {
   }
 
   // make sure the name and email properties are included
-  if (!("name" in body && "email" in body)) {
-    return new Response('"name" and "email" must be included in request body', {
+  if (
+    !(
+      "title" in body &&
+      "description" in body &&
+      "leaderId" in body &&
+      "image" in body &&
+      "techStack" in body &&
+      "progress" in body
+    )
+  ) {
+    return new Response("All Project fields must be included in request body", {
       status: 422,
     });
   }
-  const name = body.name;
-  const email = body.email;
+  const title = body.title;
+  const description = body.description;
+  const leaderId = body.leaderId;
+  const image = body.image;
+  const techStack = body.techStack;
+  const progress = body.progress;
 
   try {
-    const user = await prisma.user.create({
+    const user = await prisma.project.create({
       data: {
-        name,
-        email,
+        title,
+        description,
+        leaderId,
+        image,
+        techStack,
+        progress,
       },
     });
     return Response.json(user, { status: 201 });
   } catch (e) {
-    return new Response(`Failed to create user: ${e}`, { status: 500 });
+    return new Response(`Failed to create project: ${e}`, { status: 500 });
   }
 }
 
 /**
- * HTTP DELETE request to /api/user
+ * HTTP DELETE request to /api/project
  * @param request { id: number }
- * @returns user object previously at { id }
+ * @returns project object previously at { id }
  */
 export async function DELETE(request: Request) {
   let body;
@@ -88,41 +105,19 @@ export async function DELETE(request: Request) {
   }
   const id = body.id;
 
-  const userExists = prisma.user.findUnique({ where: { id } });
-  if (userExists == null) {
-    return new Response(`Couldn't find user ID ${id}`, { status: 404 });
-  }
-
   try {
-    await prisma.quote.deleteMany({ where: { user_id: id } });
-    await prisma.officer.deleteMany({
-      where: { user_id: id },
-    });
-    await prisma.account.deleteMany({ where: { userId: id } });
-    await prisma.session.deleteMany({ where: { userId: id } });
-    const mentors = await prisma.mentor.findMany({ where: { user_Id: id } });
-    // to delete a user, we must delete their mentor status
-    for (const mentor of mentors) {
-      // but to delete a mentor, we must delete all of their courses, schedule, and skills
-      await prisma.courseTaken.deleteMany({
-        where: { mentorId: mentor.id },
-      });
-      await prisma.schedule.deleteMany({ where: { mentorId: mentor.id } });
-      await prisma.mentorSkill.deleteMany({ where: { mentor_Id: mentor.id } });
-    }
-    await prisma.mentor.deleteMany({ where: { user_Id: id } });
-    const user = await prisma.user.delete({ where: { id } });
-    return Response.json(user);
+    const project = await prisma.project.delete({ where: { id } });
+    return Response.json(project);
   } catch (e) {
-    return new Response(`Failed to delete user: ${e}`, { status: 500 });
+    return new Response(`Failed to delete project: ${e}`, { status: 500 });
   }
 }
 
 /**
- * Update an existing user
- * HTTP PUT request to /api/user
+ * Update an existing project
+ * HTTP PUT request to /api/project
  * @param request { id: number, name?: string, email?: string }
- * @returns updated user object
+ * @returns updated project object
  */
 export async function PUT(request: Request) {
   let body;
@@ -139,22 +134,41 @@ export async function PUT(request: Request) {
   const id = body.id;
 
   // only update fields the caller wants to update
-  const data: { name?: string; email?: string } = {};
-  if ("name" in body) {
-    data.name = body.name;
+  const data: {
+    title?: string;
+    leaderId?: number;
+    image?: string;
+    techStack?: string;
+    description?: string;
+    progress?: string;
+  } = {};
+  if ("title" in body) {
+    data.title = body.title;
   }
-  if ("email" in body) {
-    data.email = body.email;
+  if ("leaderId" in body) {
+    data.leaderId = body.leaderId;
+  }
+  if ("image" in body) {
+    data.image = body.image;
+  }
+  if ("techStack" in body) {
+    data.image = body.image;
+  }
+  if ("description" in body) {
+    data.description = body.description;
+  }
+  if ("progress" in body) {
+    data.progress = body.progress;
   }
 
   try {
-    const user = await prisma.user.update({
+    const user = await prisma.project.update({
       where: { id },
       data,
     });
     return Response.json(user);
   } catch (e) {
     // make sure the selected user exists
-    return new Response(`Failed to update user: ${e}`, { status: 500 });
+    return new Response(`Failed to update project: ${e}`, { status: 500 });
   }
 }
