@@ -29,7 +29,8 @@ export default function EventsCalendar() {
     const fetchData = useCallback(async() => {
         const response = await fetch("http://localhost:3000/api/event");
         const data = await response.json();
-        setEventsData(data.map((item: { id: number, title: string; description: string; date: Date; image: string; location: string;}) => ({
+        
+        setEventsData(data.map((item: { id: number, title: string; description: string; date: string; image: string; location: string;}) => ({
             id: item.id,
             title: item.title,
             description: item.description,
@@ -50,6 +51,7 @@ export default function EventsCalendar() {
                 <h1>Upcoming Events</h1>
                 {/* <div className="subtitle-structure"><p></p></div> */}
                 <UpcomingEvents eventsData={eventsData} fetchData={fetchData}/>
+
 
             </div>
         </>
