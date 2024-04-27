@@ -1,7 +1,7 @@
 "use client"
 import { UpcomingEventsProps } from './page';
 
-const UpcomingEvents: React.FC<UpcomingEventsProps> = () => {
+const UpcomingEvents: React.FC<UpcomingEventsProps> = ({ eventsData, fetchData }) => {
    const currentDate = new Intl.DateTimeFormat('en-US', { 
       year: 'numeric', 
       month: 'long', 
@@ -18,7 +18,7 @@ const UpcomingEvents: React.FC<UpcomingEventsProps> = () => {
                   Today ({currentDate})
                </label>
                <div className="collapse-content"> 
-                  <p>hello</p>
+                  
                </div>
             </div>
          </div>

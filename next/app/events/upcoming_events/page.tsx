@@ -1,3 +1,4 @@
+"use client"
 import { Metadata } from "next";
 import UpcomingEvents from "./UpcomingEvents";
 import { useCallback, useEffect, useState } from "react";
