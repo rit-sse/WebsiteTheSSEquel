@@ -1,7 +1,7 @@
 "use client"
-import { useState, useEffect } from 'react';
+import { UpcomingEventsProps } from './page';
 
-const UpcomingEvents = () => {
+const UpcomingEvents: React.FC<UpcomingEventsProps> = () => {
    const currentDate = new Intl.DateTimeFormat('en-US', { 
       year: 'numeric', 
       month: 'long', 
