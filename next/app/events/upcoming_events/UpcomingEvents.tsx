@@ -2,6 +2,12 @@
 import { useState, useEffect } from 'react';
 
 const UpcomingEvents = () => {
+   const currentDate = new Intl.DateTimeFormat('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: '2-digit' 
+    }).format(new Date());
+   
    return (
         <>
 
@@ -9,7 +15,7 @@ const UpcomingEvents = () => {
             <div className="collapse collapse-arrow bg-base-200 collapse-child">
                <input type="checkbox" id="today-collapse" className="peer" />
                <label htmlFor="today-collapse" className="collapse-title text-xl font-medium">
-                  Today (date)
+                  Today ({currentDate})
                </label>
                <div className="collapse-content"> 
                   <p>hello</p>

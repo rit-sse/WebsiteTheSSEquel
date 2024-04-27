@@ -562,7 +562,7 @@ async function seedEvents() {
     update: {},
     create: {
       title: "Keeping it Silly",
-      date: new Date(),
+      date: new Date("2023-11-1 12:00:00"),
       description: "we keep it silly :3",
     },
   });
@@ -572,7 +572,7 @@ async function seedEvents() {
     update: {},
     create: {
       title: "Catan Tournament",
-      date: new Date(),
+      date: new Date("2023-11-1 12:00:00"),
       description: "Elyza will win again.",
     },
   });
@@ -582,7 +582,7 @@ async function seedEvents() {
     update: {},
     create: {
       title: "AAA",
-      date: new Date(),
+      date: new Date("2023-11-1 12:00:00"),
       description: "ooops",
     },
   });
