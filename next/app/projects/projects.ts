@@ -13,7 +13,7 @@ export interface Project{
 
 export const projectsData: Project[] = [
     {
-        logo: "/images/projects-1.gif",
+        logo: "/images/projects-5.jpg",
         title: "Project 1",
         lead: "lead 1",
         contact: "lead1@email.com",
