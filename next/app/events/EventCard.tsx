@@ -1,11 +1,10 @@
 'use client'
 import { Event } from "./event";
-import Image from 'next/image';
 
 export const EventCard: React.FC<Event> = (event: Event) => {
     console.log(event.image)
     return (
-        <div className={`mx-2 mb-2 shadow-lg rounded overflow-hidden ${event.image ? '' : 'pt-4'}`}>
+        <div className={`mx-2 mb-2 shadow-lg rounded overflow-hidden bg-base-200 ${event.image ? '' : 'pt-4'}`}>
           {event.image && (
             <div className="relative w-full" style={{ paddingTop: '56.25%' }}>
               <img src={event.image} className="absolute w-full h-full object-cover top-0 left-0" alt={event.title} />
