@@ -87,9 +87,10 @@
   }
 
   .event-card{
-    @apply m-3;
+    /* @apply m-3;
     @apply min-w-min;
-    /* @apply w-1/3; */
+    @apply relative;
+    @apply w-1/3;
     @apply flex; 
     @apply flex-col; 
     @apply shadow-md; 
@@ -100,7 +101,7 @@
     @apply shadow-md;
     @apply transition-shadow;
     @apply border-2;
-    @apply border-base-content;
+    @apply border-base-content; */
   }
 
 

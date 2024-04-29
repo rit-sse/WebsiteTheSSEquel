@@ -5,24 +5,18 @@ import Image from 'next/image';
 export const EventCard: React.FC<Event> = (event: Event) => {
     console.log(event.image)
     return (
-        <div className={`event-card ${event.image ? '' : 'pt-4'}`}>
+        <div className={`mx-2 mb-2 shadow-lg rounded overflow-hidden ${event.image ? '' : 'pt-4'}`}>
           {event.image && (
-            <img src={event.image} className="w-full h-1/3" alt={event.title} />
-            // <Image
-            //                 src={slot.getImageSrc()}
-            //                 alt={slot.getAlt()}
-            //                 width='540'
-            //                 height='400'
-            //                 className="w-full h-auto rounded-md"
-            //             />
+            <div className="relative w-full" style={{ paddingTop: '56.25%' }}>
+              <img src={event.image} className="absolute w-full h-full object-cover top-0 left-0" alt={event.title} />
+            </div>
           )}
-          <div className="px-4 pb-4">
-            <h4 className="text-primary">{event.title.slice(0, 1).toUpperCase() + event.title.slice(1)}</h4>
-            <h5>{event.date}</h5>
-            <h5>{event.location}</h5>
-            <p>{event.description}</p>
+          <div className={`${event.image ? 'mt-2' : ''} px-4 pb-4`}>
+            <h4 className="text-lg font-bold">{event.title}</h4>
+            <p className="text-sm">{event.date}</p>
+            <p className="text-sm">{event.location}</p>
+            <p className="text-sm">{event.description}</p>
           </div>
         </div>
       );
-      
 }
