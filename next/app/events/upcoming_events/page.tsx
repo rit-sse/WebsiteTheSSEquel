@@ -18,7 +18,7 @@ export interface UpcomingEventsProps {
     fetchData: () => Promise<void>; 
 }
 
-export default function EventsCalendar() {
+export default function UpcomingEventsPage() {
     const [eventsData, setEventsData] = useState([]);
     const fetchData = useCallback(async() => {
         const response = await fetch("http://localhost:3000/api/event");

@@ -625,7 +625,7 @@ async function seedEvents() {
 	  image: "/images/spring-fling-2.png",
 	  location: "poop Fling",
 	},
-});
+  });
 
   console.log({ event1, event2, event3, event4, event5, event6 });
 }
