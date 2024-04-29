@@ -42,7 +42,7 @@ export const UpcomingEvents = [
         title: "Micro Talks 2.0",
         date: "April 24th 4:00pm",
         location: "GOL-1670",
-        image: "talks-1.jpg",
+        image: "codfather.jpg",
         description: defaultDescription
     },
 ] satisfies Event[];

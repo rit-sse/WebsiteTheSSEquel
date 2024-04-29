@@ -1,6 +1,4 @@
 "use client"
-import { Metadata } from "next";
-import { EventCard } from '../EventCard';
 import { Event } from "../event";
 import UpcomingEvents from "./UpcomingEvents";
 import { useCallback, useEffect, useState } from "react";
@@ -30,7 +28,7 @@ export default function EventsCalendar() {
             title: item.title,
             date: item.date, 
             location: item.location,
-            image: item.image, 
+            image: item.image, //TODO remove prepending /images/
             description: item.description
         })));
     }, [])

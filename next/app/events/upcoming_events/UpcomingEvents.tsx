@@ -12,7 +12,6 @@ const UpcomingEvents: React.FC<UpcomingEventsProps> = ({ eventsData, fetchData }
    
    return (
         <>
-
          <div className="upcoming-collapse pt-6">
             <div className="collapse collapse-arrow bg-base-200 collapse-child">
                <input type="checkbox" id="today-collapse" className="peer" />
