@@ -571,9 +571,9 @@ async function main() {
 		await seedHourBlock();
 		await seedSchedule();
 		await seedGoLinks();
-		await seedAccount();
-		await seedSession();
-		await seedVerificationToken();
+		// await seedAccount();
+		// await seedSession();
+		// await seedVerificationToken();
 	} catch (e) {
 		console.error(e);
 	}
