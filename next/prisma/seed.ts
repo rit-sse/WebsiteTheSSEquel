@@ -436,8 +436,8 @@ async function seedAccount() {
 		create: {
 			id: 1,
 			userId: 1,
-			type: "google",
-			provider: "google.com",
+			type: "oauth",
+			provider: "google",
 			providerAccountId: "789",
 			refresh_token: "123",
 			access_token: "123",
@@ -454,8 +454,8 @@ async function seedAccount() {
 		create: {
 			id: 2,
 			userId: 2,
-			type: "google",
-			provider: "google.com",
+			type: "oauth",
+			provider: "google",
 			providerAccountId: "123",
 			refresh_token: "123",
 			access_token: "123",
@@ -472,8 +472,8 @@ async function seedAccount() {
 		create: {
 			id: 3,
 			userId: 3,
-			type: "google",
-			provider: "google.com",
+			type: "oauth",
+			provider: "google",
 			providerAccountId: "456",
 			refresh_token: "123",
 			access_token: "123",
@@ -571,9 +571,9 @@ async function main() {
 		await seedHourBlock();
 		await seedSchedule();
 		await seedGoLinks();
-		// await seedAccount();
-		// await seedSession();
-		// await seedVerificationToken();
+		await seedAccount();
+		await seedSession();
+		await seedVerificationToken();
 	} catch (e) {
 		console.error(e);
 	}
