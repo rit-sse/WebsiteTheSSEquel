@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "55b46e01-ca93-4c62-9b8f-081a2d4c34fd",
+		"_postman_id": "07240a66-282d-410d-88a6-172975f5ef11",
 		"name": "WebsiteTheSSEquelTests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "31102735"
+		"_exporter_id": "32906494"
 	},
 	"item": [
 		{
@@ -106,20 +106,13 @@
 											"    })",
 											"})"
 										],
-										"type": "text/javascript",
-										"packages": {}
+										"type": "text/javascript"
 									}
 								}
 							],
 							"request": {
 								"method": "POST",
-								"header": [
-									{
-										"key": "Cookie",
-										"value": "next-auth.session-token=123",
-										"type": "text"
-									}
-								],
+								"header": [],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n    \"skill\": \"Rust\",\n    \"mentor_Id\": 1\n}"
@@ -150,20 +143,13 @@
 											"    pm.expect(data).eql(\"skill Python already exists\");",
 											"})"
 										],
-										"type": "text/javascript",
-										"packages": {}
+										"type": "text/javascript"
 									}
 								}
 							],
 							"request": {
 								"method": "POST",
-								"header": [
-									{
-										"key": "Cookie",
-										"value": "next-auth.session-token=123",
-										"type": "text"
-									}
-								],
+								"header": [],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n    \"skill\": \"Python\",\n    \"mentor_Id\": 3\n}"
@@ -274,20 +260,13 @@
 											"    });",
 											"});"
 										],
-										"type": "text/javascript",
-										"packages": {}
+										"type": "text/javascript"
 									}
 								}
 							],
 							"request": {
 								"method": "PUT",
-								"header": [
-									{
-										"key": "Cookie",
-										"value": "next-auth.session-token=123",
-										"type": "text"
-									}
-								],
+								"header": [],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n    \"id\": 4,\n    \"skill\": \"Mojo\"\n}"
@@ -321,20 +300,13 @@
 											"    });",
 											"});"
 										],
-										"type": "text/javascript",
-										"packages": {}
+										"type": "text/javascript"
 									}
 								}
 							],
 							"request": {
 								"method": "PUT",
-								"header": [
-									{
-										"key": "Cookie",
-										"value": "next-auth.session-token=123",
-										"type": "text"
-									}
-								],
+								"header": [],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n    \"id\": 4\n}"
@@ -365,20 +337,13 @@
 											"    pm.expect(data).eql(\"skill Java already exists\");",
 											"});"
 										],
-										"type": "text/javascript",
-										"packages": {}
+										"type": "text/javascript"
 									}
 								}
 							],
 							"request": {
 								"method": "PUT",
-								"header": [
-									{
-										"key": "Cookie",
-										"value": "next-auth.session-token=123",
-										"type": "text"
-									}
-								],
+								"header": [],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n    \"id\": 4,\n    \"skill\": \"Java\"\n}"
@@ -489,20 +454,13 @@
 											"    });",
 											"})"
 										],
-										"type": "text/javascript",
-										"packages": {}
+										"type": "text/javascript"
 									}
 								}
 							],
 							"request": {
 								"method": "DELETE",
-								"header": [
-									{
-										"key": "Cookie",
-										"value": "next-auth.session-token=123",
-										"type": "text"
-									}
-								],
+								"header": [],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n    \"id\": 4\n}",
@@ -661,9 +619,6 @@
 										"exec": [
 											"pm.test(\"Response for GET /api/mentorSkill\", () => {",
 											"    var jsonData = pm.response.json();",
-											"    jsonData.forEach((value) => {",
-											"        delete value.mentor.expirationDate;",
-											"    })",
 											"    pm.expect(jsonData).to.eql([",
 											"        {",
 											"            \"id\": 1,",
@@ -672,6 +627,7 @@
 											"            \"mentor\": {",
 											"                \"id\": 1,",
 											"                \"user_Id\": 1,",
+											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"skill\": {",
@@ -686,6 +642,7 @@
 											"            \"mentor\": {",
 											"                \"id\": 2,",
 											"                \"user_Id\": 2,",
+											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"skill\": {",
@@ -700,6 +657,7 @@
 											"            \"mentor\": {",
 											"                \"id\": 3,",
 											"                \"user_Id\": 3,",
+											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"skill\": {",
@@ -710,8 +668,7 @@
 											"    ]);",
 											"});"
 										],
-										"type": "text/javascript",
-										"packages": {}
+										"type": "text/javascript"
 									}
 								}
 							],
@@ -765,20 +722,13 @@
 											"    });",
 											"});"
 										],
-										"type": "text/javascript",
-										"packages": {}
+										"type": "text/javascript"
 									}
 								}
 							],
 							"request": {
 								"method": "POST",
-								"header": [
-									{
-										"key": "Cookie",
-										"value": "next-auth.session-token=123",
-										"type": "text"
-									}
-								],
+								"header": [],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n    \"mentor_Id\": 3,\n    \"skill_Id\": 3\n}",
@@ -811,7 +761,6 @@
 										"exec": [
 											"pm.test(\"Response for GET /api/mentorSkill\", () => {",
 											"    var json = pm.response.json();",
-											"    json.forEach((value) => delete value.mentor.expirationDate);",
 											"    pm.expect(json).eql([",
 											"        {",
 											"            \"id\": 1,",
@@ -820,6 +769,7 @@
 											"            \"mentor\": {",
 											"                \"id\": 1,",
 											"                \"user_Id\": 1,",
+											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"skill\": {",
@@ -834,6 +784,7 @@
 											"            \"mentor\": {",
 											"                \"id\": 2,",
 											"                \"user_Id\": 2,",
+											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"skill\": {",
@@ -848,6 +799,7 @@
 											"            \"mentor\": {",
 											"                \"id\": 3,",
 											"                \"user_Id\": 3,",
+											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"skill\": {",
@@ -862,6 +814,7 @@
 											"            \"mentor\": {",
 											"                \"id\": 3,",
 											"                \"user_Id\": 3,",
+											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"skill\": {",
@@ -914,20 +867,13 @@
 											"    });",
 											"});"
 										],
-										"type": "text/javascript",
-										"packages": {}
+										"type": "text/javascript"
 									}
 								}
 							],
 							"request": {
 								"method": "PUT",
-								"header": [
-									{
-										"key": "Cookie",
-										"value": "next-auth.session-token=123",
-										"type": "text"
-									}
-								],
+								"header": [],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n    \"id\": 4,\n    \"mentor_Id\": 2,\n    \"skill_Id\": 2\n}",
@@ -967,20 +913,13 @@
 											"    });",
 											"});"
 										],
-										"type": "text/javascript",
-										"packages": {}
+										"type": "text/javascript"
 									}
 								}
 							],
 							"request": {
 								"method": "PUT",
-								"header": [
-									{
-										"key": "Cookie",
-										"value": "next-auth.session-token=123",
-										"type": "text"
-									}
-								],
+								"header": [],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n    \"id\": 1\n}",
@@ -1013,7 +952,6 @@
 										"exec": [
 											"pm.test(\"Response for GET /api/mentorSkill\", () => {",
 											"    var json = pm.response.json();",
-											"    json.forEach((value) => delete value.mentor.expirationDate);",
 											"    pm.expect(json).eql([",
 											"        {",
 											"            \"id\": 1,",
@@ -1022,6 +960,7 @@
 											"            \"mentor\": {",
 											"                \"id\": 1,",
 											"                \"user_Id\": 1,",
+											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"skill\": {",
@@ -1036,6 +975,7 @@
 											"            \"mentor\": {",
 											"                \"id\": 2,",
 											"                \"user_Id\": 2,",
+											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"skill\": {",
@@ -1050,6 +990,7 @@
 											"            \"mentor\": {",
 											"                \"id\": 3,",
 											"                \"user_Id\": 3,",
+											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"skill\": {",
@@ -1064,6 +1005,7 @@
 											"            \"mentor\": {",
 											"                \"id\": 2,",
 											"                \"user_Id\": 2,",
+											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"skill\": {",
@@ -1074,8 +1016,7 @@
 											"    ]);",
 											"});"
 										],
-										"type": "text/javascript",
-										"packages": {}
+										"type": "text/javascript"
 									}
 								}
 							],
@@ -1117,20 +1058,13 @@
 											"    });",
 											"});"
 										],
-										"type": "text/javascript",
-										"packages": {}
+										"type": "text/javascript"
 									}
 								}
 							],
 							"request": {
 								"method": "DELETE",
-								"header": [
-									{
-										"key": "Cookie",
-										"value": "next-auth.session-token=123",
-										"type": "text"
-									}
-								],
+								"header": [],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n    \"id\": 4\n}",
@@ -1163,7 +1097,6 @@
 										"exec": [
 											"pm.test(\"Repsonse for GET /api/mentorSkill\", () => {",
 											"    var jsonData = pm.response.json();",
-											"    jsonData.forEach((value) => delete value.mentor.expirationDate);",
 											"    pm.expect(jsonData).to.eql([",
 											"        {",
 											"            \"id\": 1,",
@@ -1172,6 +1105,7 @@
 											"            \"mentor\": {",
 											"                \"id\": 1,",
 											"                \"user_Id\": 1,",
+											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"skill\": {",
@@ -1186,6 +1120,7 @@
 											"            \"mentor\": {",
 											"                \"id\": 2,",
 											"                \"user_Id\": 2,",
+											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"skill\": {",
@@ -1200,6 +1135,7 @@
 											"            \"mentor\": {",
 											"                \"id\": 3,",
 											"                \"user_Id\": 3,",
+											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"skill\": {",
@@ -1210,8 +1146,7 @@
 											"    ]);",
 											"});"
 										],
-										"type": "text/javascript",
-										"packages": {}
+										"type": "text/javascript"
 									}
 								}
 							],
@@ -1246,7 +1181,6 @@
 										"exec": [
 											"pm.test(\"Response for GET /api/mentorSkill/1\", () => {",
 											"    var json = pm.response.json();",
-											"    delete json.mentor.expirationDate;",
 											"    pm.expect(json).eql({",
 											"        \"id\": 1,",
 											"        \"mentor_Id\": 1,",
@@ -1254,6 +1188,7 @@
 											"        \"mentor\": {",
 											"            \"id\": 1,",
 											"            \"user_Id\": 1,",
+											"            \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"            \"isActive\": true",
 											"        },",
 											"        \"skill\": {",
@@ -1263,8 +1198,7 @@
 											"    })",
 											"});"
 										],
-										"type": "text/javascript",
-										"packages": {}
+										"type": "text/javascript"
 									}
 								}
 							],
@@ -1305,7 +1239,6 @@
 										"exec": [
 											"pm.test(\"Response for GET /api/courseTaken\", () => {",
 											"    var json = pm.response.json();",
-											"    json.forEach(value => delete value.mentor.expirationDate);",
 											"    pm.expect(json).eql([",
 											"        {",
 											"            \"id\": 1,",
@@ -1314,6 +1247,7 @@
 											"            \"mentor\": {",
 											"                \"id\": 1,",
 											"                \"user_Id\": 1,",
+											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"course\": {",
@@ -1330,6 +1264,7 @@
 											"            \"mentor\": {",
 											"                \"id\": 2,",
 											"                \"user_Id\": 2,",
+											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"course\": {",
@@ -1346,6 +1281,7 @@
 											"            \"mentor\": {",
 											"                \"id\": 3,",
 											"                \"user_Id\": 3,",
+											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"course\": {",
@@ -1358,8 +1294,7 @@
 											"    ]);",
 											"});"
 										],
-										"type": "text/javascript",
-										"packages": {}
+										"type": "text/javascript"
 									}
 								}
 							],
@@ -1401,20 +1336,13 @@
 											"    })",
 											"});"
 										],
-										"type": "text/javascript",
-										"packages": {}
+										"type": "text/javascript"
 									}
 								}
 							],
 							"request": {
 								"method": "POST",
-								"header": [
-									{
-										"key": "Cookie",
-										"value": "next-auth.session-token=123",
-										"type": "text"
-									}
-								],
+								"header": [],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n    \"mentorId\": 3,\n    \"courseId\": 3\n}",
@@ -1447,7 +1375,6 @@
 										"exec": [
 											"pm.test(\"Response for GET /api/courseTaken\", () => {",
 											"    var json = pm.response.json();",
-											"    json.forEach((value) => delete value.mentor.expirationDate);",
 											"    pm.expect(json).eql([",
 											"        {",
 											"            \"id\": 1,",
@@ -1456,6 +1383,7 @@
 											"            \"mentor\": {",
 											"                \"id\": 1,",
 											"                \"user_Id\": 1,",
+											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"course\": {",
@@ -1472,6 +1400,7 @@
 											"            \"mentor\": {",
 											"                \"id\": 2,",
 											"                \"user_Id\": 2,",
+											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"course\": {",
@@ -1488,6 +1417,7 @@
 											"            \"mentor\": {",
 											"                \"id\": 3,",
 											"                \"user_Id\": 3,",
+											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"course\": {",
@@ -1504,6 +1434,7 @@
 											"            \"mentor\": {",
 											"                \"id\": 3,",
 											"                \"user_Id\": 3,",
+											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"course\": {",
@@ -1516,8 +1447,7 @@
 											"    ]);",
 											"});"
 										],
-										"type": "text/javascript",
-										"packages": {}
+										"type": "text/javascript"
 									}
 								}
 							],
@@ -1559,20 +1489,13 @@
 											"    });",
 											"});"
 										],
-										"type": "text/javascript",
-										"packages": {}
+										"type": "text/javascript"
 									}
 								}
 							],
 							"request": {
 								"method": "PUT",
-								"header": [
-									{
-										"key": "Cookie",
-										"value": "next-auth.session-token=123",
-										"type": "text"
-									}
-								],
+								"header": [],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n    \"id\": 4,\n    \"mentorId\": 2,\n    \"courseId\": 2\n}",
@@ -1612,20 +1535,13 @@
 											"    });",
 											"});"
 										],
-										"type": "text/javascript",
-										"packages": {}
+										"type": "text/javascript"
 									}
 								}
 							],
 							"request": {
 								"method": "PUT",
-								"header": [
-									{
-										"key": "Cookie",
-										"value": "next-auth.session-token=123",
-										"type": "text"
-									}
-								],
+								"header": [],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n    \"id\": 1\n}",
@@ -1658,7 +1574,6 @@
 										"exec": [
 											"pm.test(\"Response for GET /api/courseTaken\", () => {",
 											"    var json = pm.response.json();",
-											"    json.forEach((value) => delete value.mentor.expirationDate);",
 											"    pm.expect(json).eql([",
 											"        {",
 											"            \"id\": 1,",
@@ -1667,6 +1582,7 @@
 											"            \"mentor\": {",
 											"                \"id\": 1,",
 											"                \"user_Id\": 1,",
+											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"course\": {",
@@ -1683,6 +1599,7 @@
 											"            \"mentor\": {",
 											"                \"id\": 2,",
 											"                \"user_Id\": 2,",
+											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"course\": {",
@@ -1699,6 +1616,7 @@
 											"            \"mentor\": {",
 											"                \"id\": 3,",
 											"                \"user_Id\": 3,",
+											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"course\": {",
@@ -1715,6 +1633,7 @@
 											"            \"mentor\": {",
 											"                \"id\": 2,",
 											"                \"user_Id\": 2,",
+											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"course\": {",
@@ -1727,8 +1646,7 @@
 											"    ]);",
 											"});"
 										],
-										"type": "text/javascript",
-										"packages": {}
+										"type": "text/javascript"
 									}
 								}
 							],
@@ -1770,20 +1688,13 @@
 											"    });",
 											"});"
 										],
-										"type": "text/javascript",
-										"packages": {}
+										"type": "text/javascript"
 									}
 								}
 							],
 							"request": {
 								"method": "DELETE",
-								"header": [
-									{
-										"key": "Cookie",
-										"value": "next-auth.session-token=123",
-										"type": "text"
-									}
-								],
+								"header": [],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n    \"id\": 4\n}",
@@ -1816,7 +1727,6 @@
 										"exec": [
 											"pm.test(\"Response for GET /api/courseTaken\", () => {",
 											"    var json = pm.response.json();",
-											"    json.forEach((value) => delete value.mentor.expirationDate);",
 											"    pm.expect(json).eql([",
 											"        {",
 											"            \"id\": 1,",
@@ -1825,6 +1735,7 @@
 											"            \"mentor\": {",
 											"                \"id\": 1,",
 											"                \"user_Id\": 1,",
+											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"course\": {",
@@ -1841,6 +1752,7 @@
 											"            \"mentor\": {",
 											"                \"id\": 2,",
 											"                \"user_Id\": 2,",
+											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"course\": {",
@@ -1857,6 +1769,7 @@
 											"            \"mentor\": {",
 											"                \"id\": 3,",
 											"                \"user_Id\": 3,",
+											"                \"expirationDate\": \"2023-11-01T16:00:00.000Z\",",
 											"                \"isActive\": true",
 											"            },",
 											"            \"course\": {",
@@ -1869,8 +1782,7 @@
 											"    ]);",
 											"});"
 										],
-										"type": "text/javascript",
-										"packages": {}
+										"type": "text/javascript"
 									}
 								}
 							],
@@ -1971,20 +1883,13 @@
 											"    pm.expect(jsonData.name).to.equal(\"Johnathaniel\");\r",
 											"});"
 										],
-										"type": "text/javascript",
-										"packages": {}
+										"type": "text/javascript"
 									}
 								}
 							],
 							"request": {
 								"method": "PUT",
-								"header": [
-									{
-										"key": "Cookie",
-										"value": "next-auth.session-token=123",
-										"type": "text"
-									}
-								],
+								"header": [],
 								"body": {
 									"mode": "raw",
 									"raw": "{\r\n    \"id\": 1,\r\n    \"name\": \"Johnathaniel\"\r\n}",
@@ -2139,20 +2044,13 @@
 											"    pm.expect(jsonData.hourBlockId).to.equal(2);\r",
 											"});"
 										],
-										"type": "text/javascript",
-										"packages": {}
+										"type": "text/javascript"
 									}
 								}
 							],
 							"request": {
 								"method": "PUT",
-								"header": [
-									{
-										"key": "Cookie",
-										"value": "next-auth.session-token=123",
-										"type": "text"
-									}
-								],
+								"header": [],
 								"body": {
 									"mode": "raw",
 									"raw": "{\r\n    \"id\": 1,\r\n    \"hourBlockId\": 2\r\n}",
@@ -2253,26 +2151,19 @@
 											"pm.test(\"Response for PUT /api/golinks\", function () {\r",
 											"    var jsonData = pm.response.json();\r",
 											"    pm.expect(jsonData.url).to.equal(\"https://duckduckgo.com\");\r",
-											"    pm.expect(jsonData.golink).to.equal(\"duck-duck-go\");\r",
+											"    pm.expect(jsonData.golink).to.equal(\"Duck Duck Go\");\r",
 											"});"
 										],
-										"type": "text/javascript",
-										"packages": {}
+										"type": "text/javascript"
 									}
 								}
 							],
 							"request": {
 								"method": "PUT",
-								"header": [
-									{
-										"key": "Cookie",
-										"value": "next-auth.session-token=123",
-										"type": "text"
-									}
-								],
+								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"id\": 1,\r\n    \"url\": \"https://duckduckgo.com\",\r\n    \"golink\": \"duck-duck-go\"\r\n}",
+									"raw": "{\r\n    \"id\": 1,\r\n    \"url\": \"https://duckduckgo.com\",\r\n    \"golink\": \"Duck Duck Go\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -2335,7 +2226,7 @@
 											"        },\r",
 											"        {\r",
 											"            \"id\": 1,\r",
-											"            \"golink\": \"duck-duck-go\",\r",
+											"            \"golink\": \"Duck Duck Go\",\r",
 											"            \"url\": \"https://duckduckgo.com\",\r",
 											"            \"description\": \"SSE Website\",\r",
 											"            \"isPublic\": true,\r",
@@ -2383,20 +2274,13 @@
 											"    pm.expect(jsonData).to.eql([]);\r",
 											"});"
 										],
-										"type": "text/javascript",
-										"packages": {}
+										"type": "text/javascript"
 									}
 								}
 							],
 							"request": {
 								"method": "GET",
-								"header": [
-									{
-										"key": "Cookie",
-										"value": "next-auth.session-token=123",
-										"type": "text"
-									}
-								],
+								"header": [],
 								"url": {
 									"raw": "localhost:3000/api/golinks/officer",
 									"host": [
@@ -2407,6 +2291,454 @@
 										"api",
 										"golinks",
 										"officer"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "project",
+			"item": [
+				{
+					"name": "GET",
+					"item": [
+						{
+							"name": "Project Expect Items",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for GET /api/project\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    console.log(jsonData);\r",
+											"    pm.expect(jsonData).to.eql([\r",
+											"        {\r",
+											"            \"id\": 1,\r",
+											"            \"title\": \"Website Rebuild\",\r",
+											"            \"description\": \"The new SSE website.\",\r",
+											"            \"repoLink\": \"https://github.com/rit-sse/WebsiteTheSSEquel\",\r",
+											"            \"contentURL\": \"/api/project/content/WEBSITE_REBUILD.md\"\r",
+											"        },\r",
+											"        {\r",
+											"            \"id\": 2,\r",
+											"            \"title\": \"Wave Machine\",\r",
+											"            \"description\": \"A machine to automatically wave to tour groups.\",\r",
+											"            \"repoLink\": \"https://github.com/rit-sse/robo-waver\",\r",
+											"            \"contentURL\": \"/api/project/content/WAVE_MACHINE.md\"\r",
+											"        },\r",
+											"        {\r",
+											"            \"id\": 3,\r",
+											"            \"title\": \"Tour Sensor\",\r",
+											"            \"description\": \"A proximity sensor to detect tours.\",\r",
+											"            \"repoLink\": \"https://github.com/rit-sse/tour-sensor\",\r",
+											"            \"contentURL\": \"/api/project/content/TOUR_SENSOR.md\"\r",
+											"        }\r",
+											"    ]);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "localhost:3000/api/project",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"project"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "POST",
+					"item": [
+						{
+							"name": "Project Expected Created Item",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for POST /api/project\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData).to.eql({",
+											"        \"id\": 4,",
+											"        \"title\": \"Course Planner\",",
+											"        \"description\": \"Semester by Semester Course Organizer\",",
+											"        \"repoLink\": \"https://github.com/rit-sse/CoursePlanner\",",
+											"        \"contentURL\": \"/api/project/content/COURSE_PLANNER.md\"",
+											"    });",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"title\": \"Course Planner\",\n    \"description\": \"Semester by Semester Course Organizer\",\n    \"repoLink\": \"https://github.com/rit-sse/CoursePlanner\",\n    \"contentURL\": \"/api/project/content/COURSE_PLANNER.md\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:3000/api/project",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"project"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Project Expected Items",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for GET /api/project\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData).to.eql([",
+											"        {",
+											"            \"id\": 1,",
+											"            \"title\": \"Website Rebuild\",",
+											"            \"description\": \"The new SSE website.\",",
+											"            \"repoLink\": \"https://github.com/rit-sse/WebsiteTheSSEquel\",",
+											"            \"contentURL\": \"/api/project/content/WEBSITE_REBUILD.md\"",
+											"        },",
+											"        {",
+											"            \"id\": 2,",
+											"            \"title\": \"Wave Machine\",",
+											"            \"description\": \"A machine to automatically wave to tour groups.\",",
+											"            \"repoLink\": \"https://github.com/rit-sse/robo-waver\",",
+											"            \"contentURL\": \"/api/project/content/WAVE_MACHINE.md\"",
+											"        },",
+											"        {",
+											"            \"id\": 3,",
+											"            \"title\": \"Tour Sensor\",",
+											"            \"description\": \"A proximity sensor to detect tours.\",",
+											"            \"repoLink\": \"https://github.com/rit-sse/tour-sensor\",",
+											"            \"contentURL\": \"/api/project/content/TOUR_SENSOR.md\"",
+											"        },",
+											"        {",
+											"            \"id\": 4,",
+											"            \"title\": \"Course Planner\",",
+											"            \"description\": \"Semester by Semester Course Organizer\",",
+											"            \"repoLink\": \"https://github.com/rit-sse/CoursePlanner\",",
+											"            \"contentURL\": \"/api/project/content/COURSE_PLANNER.md\"",
+											"        }",
+											"    ]);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "localhost:3000/api/project",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"project"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "PUT",
+					"item": [
+						{
+							"name": "Project Expected Updated Item",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for PUT /api/schedule\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData).to.eql({\r",
+											"        \"id\": 1,\r",
+											"        \"title\": \"Epic New Title\",\r",
+											"        \"description\": \"The new SSE website.\",\r",
+											"        \"repoLink\": \"https://github.com/rit-sse/WebsiteTheSSEquel\",\r",
+											"        \"contentURL\": \"/api/project/content/WEBSITE_REBUILD.md\"\r",
+											"    });\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"id\": 1,\r\n    \"title\": \"Epic New Title\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:3000/api/project",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"project"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Project Expected Items",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for GET /api/project\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData).to.eql([",
+											"        {",
+											"            \"id\": 1,",
+											"            \"title\": \"Epic New Title\",",
+											"            \"description\": \"The new SSE website.\",",
+											"            \"repoLink\": \"https://github.com/rit-sse/WebsiteTheSSEquel\",",
+											"            \"contentURL\": \"/api/project/content/WEBSITE_REBUILD.md\"",
+											"        },",
+											"        {",
+											"            \"id\": 2,",
+											"            \"title\": \"Wave Machine\",",
+											"            \"description\": \"A machine to automatically wave to tour groups.\",",
+											"            \"repoLink\": \"https://github.com/rit-sse/robo-waver\",",
+											"            \"contentURL\": \"/api/project/content/WAVE_MACHINE.md\"",
+											"        },",
+											"        {",
+											"            \"id\": 3,",
+											"            \"title\": \"Tour Sensor\",",
+											"            \"description\": \"A proximity sensor to detect tours.\",",
+											"            \"repoLink\": \"https://github.com/rit-sse/tour-sensor\",",
+											"            \"contentURL\": \"/api/project/content/TOUR_SENSOR.md\"",
+											"        }",
+											"    ]);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "localhost:3000/api/project",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"project"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "DELETE",
+					"item": [
+						{
+							"name": "Project Expected Deleted Item",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for GET /api/project\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData).to.eql({",
+											"        \"id\": 1,",
+											"        \"title\": \"Website Rebuild\",",
+											"        \"description\": \"The new SSE website.\",",
+											"        \"repoLink\": \"https://github.com/rit-sse/WebsiteTheSSEquel\",",
+											"        \"contentURL\": \"/api/project/content/WEBSITE_REBUILD.md\"",
+											"    });",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"id\": 1\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:3000/api/project",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"project"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Project Expected Items",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for GET /api/project\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData).to.eql([",
+											"        {",
+											"            \"id\": 2,",
+											"            \"title\": \"Wave Machine\",",
+											"            \"description\": \"A machine to automatically wave to tour groups.\",",
+											"            \"repoLink\": \"https://github.com/rit-sse/robo-waver\",",
+											"            \"contentURL\": \"/api/project/content/WAVE_MACHINE.md\"",
+											"        },",
+											"        {",
+											"            \"id\": 3,",
+											"            \"title\": \"Tour Sensor\",",
+											"            \"description\": \"A proximity sensor to detect tours.\",",
+											"            \"repoLink\": \"https://github.com/rit-sse/tour-sensor\",",
+											"            \"contentURL\": \"/api/project/content/TOUR_SENSOR.md\"",
+											"        }",
+											"    ]);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "localhost:3000/api/project",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"project"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "GET [id]",
+					"item": [
+						{
+							"name": "Project Expected Item",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response for GET /api/schedule/[id]\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData).to.eql({\r",
+											"        \"id\": 3,\r",
+											"        \"title\": \"Tour Sensor\",\r",
+											"        \"description\": \"A proximity sensor to detect tours.\",\r",
+											"        \"repoLink\": \"https://github.com/rit-sse/tour-sensor\",\r",
+											"        \"contentURL\": \"/api/project/content/TOUR_SENSOR.md\"\r",
+											"    });\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:3000/api/project/3",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"project",
+										"3"
 									]
 								}
 							},
