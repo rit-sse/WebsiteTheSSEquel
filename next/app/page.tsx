@@ -35,11 +35,11 @@ export default function Home() {
                 </div>
             </div>
 
-            {/* Upcoming Events */}
+            {/* Upcoming Ev ents */}
             <div>
               <h1 className='mt-5'>Upcoming Events</h1>
-              <div className='flex flex-row justify-center items-center'>
-                <div className='mt-8 grid gap-8 grid-cols-3 w-10/12'>
+              <div className='flex lg:flex-row sm:flex-col justify-center items-center'>
+                <div className='mt-8 grid md:gap-8 lg:gap-4 grid-cols-3 w-10/12'>
                     {UpcomingEvents.map((event, idx) => (
                         <EventCard key={idx} {...event} />
                     ))}
