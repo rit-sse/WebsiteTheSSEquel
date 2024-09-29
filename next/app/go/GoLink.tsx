@@ -282,9 +282,11 @@ const EditAndDelete: React.FC<GoLinkProps> = ({
   const { data: session } = useSession();
   const [isOfficer, setIsOfficer] = useState(false);
 
-  useEffectAsync(async () => {
-    const data = await fetchAuthLevel();
-    setIsOfficer(data.isOfficer);
+  useEffect(() => {
+    (async () => {
+      const data = await fetchAuthLevel();
+      setIsOfficer(data.isOfficer);
+    })();
   }, []);
 
   if (isOfficer) {

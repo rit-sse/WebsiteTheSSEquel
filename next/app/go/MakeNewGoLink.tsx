@@ -1,5 +1,5 @@
 import { useSession } from "next-auth/react";
-import { useCallback, useEffect, useState } from "react";
+import { use, useCallback, useEffect, useState } from "react";
 import { CreateGoLinkProps } from "./page";
 import { useEffectAsync } from "@/lib/utils";
 import { goLinksApi, fetchAuthLevel } from "@/lib/api";
@@ -44,10 +44,13 @@ export const GoLinkButton: React.FC<CreateGoLinkProps> = ({ fetchData }) => {
   };
 
   const [isOfficer, setIsOfficer] = useState(false);
-  useEffectAsync(async () => {
-    const data = await fetchAuthLevel();
-    console.log(data);
-    setIsOfficer(data.isOfficer);
+
+  useEffect(() => {
+    (async () => {
+      const data = await fetchAuthLevel();
+      console.log(data);
+      setIsOfficer(data.isOfficer);
+    })
   }, []);
 
   if (isOfficer) {
