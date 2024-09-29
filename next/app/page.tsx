@@ -5,6 +5,7 @@ import { CTAButton } from '@/components/common/CTAButton';
 import HomepageContent from './HomepageContent';
 import { UpcomingEvents } from './HomepageContent';
 import { EventCard } from './events/EventCard';
+import Image from 'next/image';
 
 export default function Home() {
     return (
@@ -30,7 +31,7 @@ export default function Home() {
                     </div>
                 </div>
                 <div className='flex mt-12 md:mt-0 w-11/12 md:w-[45%] sm:h-full justify-center'>
-                    <img src="student-involvement-1.jpg" alt="Tech committee meeting" className="w-full h-auto rounded-[60px]" />
+                    <Image src={`/student-involvement-1.jpg`} alt="Tech committee meeting" className="w-full h-auto rounded-[60px]" width={1000} height={1000} />
                 </div>
             </div>
 
