@@ -1,23 +1,29 @@
+'use client'
 // This file renders the home page route (/) of the website.
 // We know that this is the homepage because this file resides in the root of the `app` directory.
-
 import Image from 'next/image'
 import { CTAButton } from '@/components/common/CTAButton';
 import HomepageContent from './HomepageContent';
 import { UpcomingEvents } from './HomepageContent';
 import { EventCard } from './events/EventCard';
+import Typewriter from 'typewriter-effect';
 
-export default function Home() {
+const Home = () => {
     return (
         <div className='space-y-24'>
             {/* Hero section */}
             <div className='h-auto md:h-[55vh] my-auto flex flex-col md:flex-row items-center md:justify-evenly mt-24'>
                 <div className="flex flex-col justify-center w-auto md:w-2/5">
                     <h1 className='text-center md:text-left'>
-                        Society of
-                        <span className="block lg:inline"> Software Engineers </span>
+                        Society of Software
+                        <Typewriter
+                            options={{
+                                strings: ['Engineers','Lovers', 'Nerds', 'Losers'],
+                                autoStart: true,
+                                loop: true,
+                            }}
+                        />
                     </h1>
-
                     <p className="mx-auto mt-4 sm:text-xl/relaxed text-center md:text-left">
                         {HomepageContent.description}
                     </p>
@@ -37,15 +43,17 @@ export default function Home() {
 
             {/* Upcoming Events */}
             <div>
-              <h1 className='mt-5'>Upcoming Events</h1>
-              <div className='flex flex-row justify-center items-center'>
-                <div className='mt-8 grid gap-8 grid-cols-3 w-10/12'>
-                    {UpcomingEvents.map((event, idx) => (
-                        <EventCard key={idx} {...event} />
-                    ))}
+                <h1 className='mt-5'>Upcoming Events</h1>
+                <div className='flex flex-row justify-center items-center'>
+                    <div className='mt-8 grid gap-8 grid-cols-3 w-10/12'>
+                        {UpcomingEvents.map((event, idx) => (
+                            <EventCard key={idx} {...event} />
+                        ))}
+                    </div>
                 </div>
-              </div>
             </div>
         </div>
     );
 }
+
+export default Home;
