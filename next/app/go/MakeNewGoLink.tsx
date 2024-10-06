@@ -129,7 +129,7 @@ export const GoLinkButton: React.FC<CreateGoLinkProps> = ({ fetchData }) => {
             <div className="form-control">
               <label className="label cursor-pointer">
                 <span className="label-text">
-                  Officer (Won't be publicly shown)
+                  Officer (Won&apos;t be publicly shown)
                 </span>
                 <input
                   type="checkbox"
