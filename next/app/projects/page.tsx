@@ -19,7 +19,7 @@ const Projects = () => {
         </h1>
         <div className="mt-3 text-xl text-center">
           <div className="leading-8">Our mission is simple.</div>
-          <div className="leading-8">Want to build? We'll make it happen.</div>
+          <div className="leading-8">Want to build? We&apos;ll make it happen.</div>
           <div className="text-xl text-primary opacity-70 mt-1">
             Write to <span className="hover:underline hover:font-bold"><a href="mailto:projects@sse.rit.edu">projects@sse.rit.edu</a></span> for more info.
           </div>

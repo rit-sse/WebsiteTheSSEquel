@@ -59,7 +59,7 @@ const GoLinksContainer: React.FC<GoLinksContainerProps> = ({
 
           <p className="text-center mx-auto mt-4 text-xl/relaxed">
             GoLinks are a type of URL shortcut that allow you to access the
-            SSE's frequently used external websites or resources. Important
+            SSE&apos;s frequently used external websites or resources. Important
             and/or relevant golinks are marked with a gold star.
           </p>
         </div>
@@ -100,7 +100,7 @@ const GoLinksContainer: React.FC<GoLinksContainerProps> = ({
 
           <p className="text-center mx-auto mt-4 text-xl/relaxed">
             GoLinks are a type of URL shortcut that allow you to access the
-            SSE's frequently used external websites or resources. Important
+            SSE&apos;s frequently used external websites or resources. Important
             and/or relevant golinks are marked with a gold star.
           </p>
         </div>
