@@ -16,6 +16,7 @@ const config: Config = {
           "success": "#4ade80",
           "warning": "#fbbf24",
           "error": "#ef4444",
+          "info-content" : "#172630",
         },
         'light': {
           "primary": "#5f88ab",
@@ -28,6 +29,7 @@ const config: Config = {
           "success": "#4ade80",
           "warning": "#fbbf24",
           "error": "#ef4444",
+          "info-content": "#ffffff",
         },
       },
     ],

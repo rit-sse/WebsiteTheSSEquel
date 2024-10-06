@@ -1,11 +1,11 @@
 // This file renders the home page route (/) of the website.
 // We know that this is the homepage because this file resides in the root of the `app` directory.
 
-import Image from 'next/image'
 import { CTAButton } from '@/components/common/CTAButton';
 import HomepageContent from './HomepageContent';
 import { UpcomingEvents } from './HomepageContent';
 import { EventCard } from './events/EventCard';
+import Image from 'next/image';
 
 export default function Home() {
     return (
@@ -30,21 +30,19 @@ export default function Home() {
                         <CTAButton href="/about/get-involved" text="Get Involved" />
                     </div>
                 </div>
-                <div className='flex mt-12 md:mt-0 w-11/12 sm:w-[45%] sm:h-full justify-center'>
-                    <img src="student-involvement-1.jpg" alt="Tech committee meeting" className="w-full h-auto rounded-[60px]" />
+                <div className='flex mt-12 md:mt-0 w-11/12 md:w-[45%] sm:h-full justify-center'>
+                    <Image src={`/student-involvement-1.jpg`} alt="Tech committee meeting" className="w-full h-auto rounded-[60px]" width={1000} height={1000} />
                 </div>
             </div>
 
             {/* Upcoming Events */}
             <div>
               <h1 className='mt-5'>Upcoming Events</h1>
-              <div className='flex flex-row justify-center items-center'>
-                <div className='mt-8 grid gap-8 grid-cols-3 w-10/12'>
+                <div className='flex flex-col xl:flex-row justify-center items-center mt-8 md:gap-8 lg:gap-4 '>
                     {UpcomingEvents.map((event, idx) => (
                         <EventCard key={idx} {...event} />
                     ))}
                 </div>
-              </div>
             </div>
         </div>
     );
