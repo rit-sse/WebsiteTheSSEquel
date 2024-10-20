@@ -96,6 +96,7 @@ const ROUTES: { [key: string]: AuthVerifier } = {
   course: nonGetOfficerVerifier,
   courseTaken: nonGetMentorVerifier,
   departments: nonGetOfficerVerifier,
+  events: nonGetOfficerVerifier,
   golinks: goLinkVerifier,
   hourBlocks: nonGetOfficerVerifier,
   mentor: nonGetOfficerVerifier,
