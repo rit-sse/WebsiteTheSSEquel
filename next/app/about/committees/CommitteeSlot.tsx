@@ -21,15 +21,17 @@ export class CommitteeSlot implements ZCardContent {
     }
 
     toContent(): FC<{}> {
-        return () => {
+        const name = this.name;
+        const description = this.description;
+        return function slotContent() {
             return (
                 <div className="general-classes">
                     <h2 className='name-classes'>
-                        {this.name}
+                        {name}
                     </h2>
                 
                     <p className='description-classes'>
-                        {this.description}
+                        {description}
                     </p>
                 </div>
             );

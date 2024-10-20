@@ -7,7 +7,7 @@ import Footer from "@/components/Footer";
 import { Inter } from 'next/font/google'
 import { Providers } from "./Providers";
 import { getServerSession } from "next-auth";
-import { authOptions } from "./api/auth/[...nextauth]/route";
+import { authOptions } from "./api/auth/[...nextauth]";
 import ScrollToTopButton from "@/components/nav/ScrollToTopButton";
 
 
