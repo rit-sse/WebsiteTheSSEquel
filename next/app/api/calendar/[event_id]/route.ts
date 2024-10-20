@@ -19,6 +19,6 @@ export async function GET(
 
   // TODO: Where does the token go?
   return await fetch(
-    `https://calendar.google.com/calendars/${calendar_id}/events/${id}`
+    `https://www.googleapis.com/calendar/v3/calendars/${calendar_id}/events/${id}`
   );
 }

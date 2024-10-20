@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
 
   // TODO: Where does the token go?
   return await fetch(
-    `https://calendar.google.com/calendars/${calendar_id}/events`
+    `https://www.googleapis.com/calendar/v3/calendars/${calendar_id}/events`
   );
 }
 
@@ -29,6 +29,26 @@ export async function GET(request: NextRequest) {
  * @returns
  */
 export async function POST(request: NextRequest) {
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return new Response("Invalid JSON", { status: 422 });
+  }
+
+  // verify the id is included
+  if (
+    !(
+      "summary" in body &&
+      "description" in body &&
+      "location" in body &&
+      "start" in body &&
+      "end" in body
+    )
+  ) {
+    return new Response("ID must be included", { status: 422 });
+  }
+
   const gcal_token = await getToken();
   // TODO: Where do we get this?
   const calendar_id = 0;
@@ -36,7 +56,7 @@ export async function POST(request: NextRequest) {
   // TODO: Where does the token go?
   // TODO: Request Body
   return await fetch(
-    `https://calendar.google.com/calendars/${calendar_id}/events`,
+    `https://www.googleapis.com/calendar/v3/calendars/${calendar_id}/events`,
     { method: "POST" }
   );
 }
@@ -45,6 +65,8 @@ export async function POST(request: NextRequest) {
  * HTTP PUT to /api/calendar
  *
  * Edits an event
+ *
+ * Internally, this is mapped go gcal's PATCH method because it supports partial changes
  *
  * @param request
  * @returns
@@ -57,8 +79,8 @@ export async function PUT(request: NextRequest) {
   // TODO: Where does the token go?
   // TODO: Request Body
   return await fetch(
-    `https://calendar.google.com/calendars/${calendar_id}/events`,
-    { method: "PUT" }
+    `https://www.googleapis.com/calendar/v3/calendars/${calendar_id}/events`,
+    { method: "PATCH" }
   );
 }
 
@@ -90,7 +112,7 @@ export async function DELETE(request: NextRequest) {
 
   // TODO: Where does the token go?
   return await fetch(
-    `https://calendar.google.com/calendars/${calendar_id}/events/${id}`,
+    `https://www.googleapis.com/calendar/v3/calendars/${calendar_id}/events/${id}`,
     { method: "DELETE" }
   );
 }
