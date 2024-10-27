@@ -1,7 +1,6 @@
 import { useSession } from "next-auth/react";
 import { use, useCallback, useEffect, useState } from "react";
 import { CreateGoLinkProps } from "./page";
-import { useEffectAsync } from "@/lib/utils";
 import { goLinksApi, fetchAuthLevel } from "@/lib/api";
 
 export const GoLinkButton: React.FC<CreateGoLinkProps> = ({ fetchData }) => {
