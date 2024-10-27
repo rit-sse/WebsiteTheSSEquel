@@ -3,7 +3,6 @@ import { GoLinkStar } from "@/components/common/Icons";
 import { GoLinkEdit } from "@/components/common/Icons";
 import { GoLinkDelete } from "@/components/common/Icons";
 import { fetchAuthLevel, goLinksApi } from "@/lib/api";
-import { useEffectAsync } from "@/lib/utils";
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useState } from "react";
 
