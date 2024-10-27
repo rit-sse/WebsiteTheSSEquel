@@ -21,15 +21,17 @@ export class InvolvementSlot implements ZCardContent {
     }
 
     toContent(): FC<{}> {
-        return () => {       
+        const title = this.title;
+        const body = this.body;
+        return function slotData() {       
             return (
                 <div className='general-classes'>
                     <h2 className='title-classes'>
-                        {this.title}
+                        {title}
                     </h2>
                 
                     <p className='description-classes'>
-                        {this.body}
+                        {body}
                     </p>
                 </div>
             );

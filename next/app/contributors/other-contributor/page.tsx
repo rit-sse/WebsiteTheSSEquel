@@ -1,1 +1,7 @@
-// Write your first page here!
+export default function Page() {
+  return (
+    <div>
+      <h1>Page</h1>
+    </div>
+  );
+}
