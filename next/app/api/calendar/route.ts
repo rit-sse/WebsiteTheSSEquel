@@ -14,9 +14,11 @@ export async function GET(request: NextRequest) {
   // TODO: Where do we get this?
   const calendar_id = 0;
 
-  // TODO: Where does the token go?
   return await fetch(
-    `https://www.googleapis.com/calendar/v3/calendars/${calendar_id}/events`
+    `https://www.googleapis.com/calendar/v3/calendars/${calendar_id}/events`,
+    {
+      headers: { Authorization: `Bearer ${gcal_token}` },
+    }
   );
 }
 
@@ -76,11 +78,10 @@ export async function PUT(request: NextRequest) {
   // TODO: Where do we get this?
   const calendar_id = 0;
 
-  // TODO: Where does the token go?
   // TODO: Request Body
   return await fetch(
     `https://www.googleapis.com/calendar/v3/calendars/${calendar_id}/events`,
-    { method: "PATCH" }
+    { method: "PATCH", headers: { Authorization: `Bearer ${gcal_token}` } }
   );
 }
 
@@ -113,6 +114,6 @@ export async function DELETE(request: NextRequest) {
   // TODO: Where does the token go?
   return await fetch(
     `https://www.googleapis.com/calendar/v3/calendars/${calendar_id}/events/${id}`,
-    { method: "DELETE" }
+    { method: "DELETE", headers: { Authorization: `Bearer ${gcal_token}` } }
   );
 }

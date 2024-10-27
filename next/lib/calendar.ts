@@ -1,8 +1,6 @@
 import jwt from "jsonwebtoken";
 import fs from "fs";
 
-const config = JSON.parse(fs.readFileSync("config.json", "utf8"));
-
 let accessToken = new Promise<string>((resolve, reject) => {
   resolve("");
 });
@@ -16,14 +14,14 @@ export const getToken = async () => {
   accessToken = new Promise<string>(async (resolve, reject) => {
     const token = jwt.sign(
       {
-        iss: config.client_email,
+        iss: process.env.GCAL_CLIENT_EMAIL,
         scope:
           "https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/calendar.events",
         aud: "https://oauth2.googleapis.com/token",
         exp: Math.floor(Date.now() / 1000) + 3600,
         iat: Math.floor(Date.now() / 1000),
       },
-      config.private_key,
+      process.env.GCAL_PRIVATE_KEY,
       {
         algorithm: "RS256",
       }
