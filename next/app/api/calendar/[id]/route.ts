@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { getToken } from "../../../../lib/calendar";
 
 /**
- * HTTP GET to /api/calendar/[event_id]
+ * HTTP GET to /api/calendar/[id]
  *
  * List all of the events in the calendar
  *
