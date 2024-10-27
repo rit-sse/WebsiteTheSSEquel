@@ -14,11 +14,9 @@ export async function GET(
   { params: { id } }: { params: { id: string } }
 ) {
   const gcal_token = await getToken();
-  // TODO: Where do we get this?
-  const calendar_id = 0;
 
   return await fetch(
-    `https://www.googleapis.com/calendar/v3/calendars/${calendar_id}/events/${id}`,
+    `https://www.googleapis.com/calendar/v3/calendars/${process.env.GCAL_CAL_ID}/events/${id}`,
     { headers: { Authorization: `Bearer ${gcal_token}` } }
   );
 }

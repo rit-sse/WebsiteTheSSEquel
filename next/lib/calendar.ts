@@ -21,7 +21,7 @@ export const getToken = async () => {
         exp: Math.floor(Date.now() / 1000) + 3600,
         iat: Math.floor(Date.now() / 1000),
       },
-      process.env.GCAL_PRIVATE_KEY,
+      process.env.GCAL_PRIVATE_KEY as string,
       {
         algorithm: "RS256",
       }
@@ -48,22 +48,3 @@ export const getToken = async () => {
   expiry = Math.floor(Date.now() / 1000) + 3600;
   return await accessToken;
 };
-
-// const fetchCalendar = async () => {
-//   // mintime is the current time in RFC3339 format
-//   const mintime = new Date().toISOString();
-
-//   const calendarRes = await fetch(
-//     "https://www.googleapis.com/calendar/v3/calendars/????/events?timeMin=" +
-//       mintime,
-//     {
-//       method: "GET",
-//       headers: {
-//         Authorization: `Bearer ${accessToken}`,
-//       },
-//     }
-//   );
-
-//   const calendarData = (await calendarRes.json()) as any;
-//   console.log(calendarData);
-// };

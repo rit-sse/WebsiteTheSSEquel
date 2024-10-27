@@ -11,11 +11,9 @@ import { getToken } from "../../../lib/calendar";
  */
 export async function GET(request: NextRequest) {
   const gcal_token = await getToken();
-  // TODO: Where do we get this?
-  const calendar_id = 0;
 
   return await fetch(
-    `https://www.googleapis.com/calendar/v3/calendars/${calendar_id}/events`,
+    `https://www.googleapis.com/calendar/v3/calendars/${process.env.GCAL_CAL_ID}/events`,
     {
       headers: { Authorization: `Bearer ${gcal_token}` },
     }
@@ -52,14 +50,11 @@ export async function POST(request: NextRequest) {
   }
 
   const gcal_token = await getToken();
-  // TODO: Where do we get this?
-  const calendar_id = 0;
 
-  // TODO: Where does the token go?
   // TODO: Request Body
   return await fetch(
-    `https://www.googleapis.com/calendar/v3/calendars/${calendar_id}/events`,
-    { method: "POST" }
+    `https://www.googleapis.com/calendar/v3/calendars/${process.env.GCAL_CAL_ID}/events`,
+    { method: "POST", headers: { Authorization: `Bearer ${gcal_token}` } }
   );
 }
 
@@ -75,12 +70,10 @@ export async function POST(request: NextRequest) {
  */
 export async function PUT(request: NextRequest) {
   const gcal_token = await getToken();
-  // TODO: Where do we get this?
-  const calendar_id = 0;
 
   // TODO: Request Body
   return await fetch(
-    `https://www.googleapis.com/calendar/v3/calendars/${calendar_id}/events`,
+    `https://www.googleapis.com/calendar/v3/calendars/${process.env.GCAL_CAL_ID}/events`,
     { method: "PATCH", headers: { Authorization: `Bearer ${gcal_token}` } }
   );
 }
@@ -108,12 +101,9 @@ export async function DELETE(request: NextRequest) {
   const id = body.id;
 
   const gcal_token = await getToken();
-  // TODO: Where do we get this?
-  const calendar_id = 0;
 
-  // TODO: Where does the token go?
   return await fetch(
-    `https://www.googleapis.com/calendar/v3/calendars/${calendar_id}/events/${id}`,
+    `https://www.googleapis.com/calendar/v3/calendars/${process.env.GCAL_CAL_ID}/events/${id}`,
     { method: "DELETE", headers: { Authorization: `Bearer ${gcal_token}` } }
   );
 }
