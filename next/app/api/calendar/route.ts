@@ -51,10 +51,19 @@ export async function POST(request: NextRequest) {
 
   const gcal_token = await getToken();
 
-  // TODO: Request Body
   return await fetch(
     `https://www.googleapis.com/calendar/v3/calendars/${process.env.GCAL_CAL_ID}/events`,
-    { method: "POST", headers: { Authorization: `Bearer ${gcal_token}` } }
+    {
+      method: "POST",
+      headers: { Authorization: `Bearer ${gcal_token}` },
+      body: JSON.stringify({
+        summary: body.summary,
+        description: body.description,
+        location: body.location,
+        start: body.start,
+        end: body.end,
+      }),
+    }
   );
 }
 

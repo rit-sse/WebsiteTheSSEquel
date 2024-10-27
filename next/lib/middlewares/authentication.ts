@@ -93,10 +93,10 @@ const nonGetMentorVerifier = nonGetVerifier(mentorVerifier);
  * correspond to the key "golinks"
  */
 const ROUTES: { [key: string]: AuthVerifier } = {
+  calendar: nonGetOfficerVerifier,
   course: nonGetOfficerVerifier,
   courseTaken: nonGetMentorVerifier,
   departments: nonGetOfficerVerifier,
-  events: nonGetOfficerVerifier,
   golinks: goLinkVerifier,
   hourBlocks: nonGetOfficerVerifier,
   mentor: nonGetOfficerVerifier,
