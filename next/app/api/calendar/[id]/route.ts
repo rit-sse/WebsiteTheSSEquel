@@ -16,7 +16,9 @@ export async function GET(
   const gcal_token = await getToken();
 
   return await fetch(
-    `https://www.googleapis.com/calendar/v3/calendars/${process.env.GCAL_CAL_ID}/events/${id}`,
+    `https://www.googleapis.com/calendar/v3/calendars/${
+      process.env.GCAL_CAL_ID || "primary"
+    }/events/${id}`,
     { headers: { Authorization: `Bearer ${gcal_token}` } }
   );
 }

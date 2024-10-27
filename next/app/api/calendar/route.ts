@@ -13,7 +13,9 @@ export async function GET(request: NextRequest) {
   const gcal_token = await getToken();
 
   return await fetch(
-    `https://www.googleapis.com/calendar/v3/calendars/${process.env.GCAL_CAL_ID}/events`,
+    `https://www.googleapis.com/calendar/v3/calendars/${
+      process.env.GCAL_CAL_ID || "primary"
+    }/events`,
     {
       headers: { Authorization: `Bearer ${gcal_token}` },
     }
@@ -52,7 +54,9 @@ export async function POST(request: NextRequest) {
   const gcal_token = await getToken();
 
   return await fetch(
-    `https://www.googleapis.com/calendar/v3/calendars/${process.env.GCAL_CAL_ID}/events`,
+    `https://www.googleapis.com/calendar/v3/calendars/${
+      process.env.GCAL_CAL_ID || "primary"
+    }/events`,
     {
       method: "POST",
       headers: { Authorization: `Bearer ${gcal_token}` },
@@ -82,7 +86,9 @@ export async function PUT(request: NextRequest) {
 
   // TODO: Request Body
   return await fetch(
-    `https://www.googleapis.com/calendar/v3/calendars/${process.env.GCAL_CAL_ID}/events`,
+    `https://www.googleapis.com/calendar/v3/calendars/${
+      process.env.GCAL_CAL_ID || "primary"
+    }/events`,
     { method: "PATCH", headers: { Authorization: `Bearer ${gcal_token}` } }
   );
 }
@@ -112,7 +118,9 @@ export async function DELETE(request: NextRequest) {
   const gcal_token = await getToken();
 
   return await fetch(
-    `https://www.googleapis.com/calendar/v3/calendars/${process.env.GCAL_CAL_ID}/events/${id}`,
+    `https://www.googleapis.com/calendar/v3/calendars/${
+      process.env.GCAL_CAL_ID || "primary"
+    }/events/${id}`,
     { method: "DELETE", headers: { Authorization: `Bearer ${gcal_token}` } }
   );
 }
