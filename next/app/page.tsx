@@ -11,10 +11,10 @@ export default function Home() {
     return (
         <div className='space-y-24'>
             {/* Hero Component */}
-            <div className="hero h-auto my-auto flex flex-col items-center md:justify-evenly mt-24">
+            <div className="hero h-auto my-auto flex flex-col items-center md:justify-evenly mt-0 md:mt-4 lg:mt-24">
                 <div className="hero-content flex-col lg:flex-row">
                     <div className="text-center lg:text-left">
-                        <h1 className="text-5xl font-bold leading-relaxed text-center lg:text-left">
+                        <h1 className="text-4xl md:text-5xl font-bold leading-relaxed  md:leading-normal text-center lg:text-left">
                         Society of 
                             <span className="block lg:inline"> Software Engineers </span>
                         </h1>
