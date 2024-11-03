@@ -37,7 +37,7 @@ export default function Home() {
 
             {/* Upcoming Events */}
             <div>
-              <h1 className='mt-5'>Upcoming Events</h1>
+              <h1 className='mt-5 text-4xl md:text-5xl'>Upcoming Events</h1>
                 <div className='flex flex-col xl:flex-row justify-center items-center mt-8 md:gap-8 lg:gap-4 '>
                     {UpcomingEvents.map((event, idx) => (
                         <EventCard key={idx} {...event} />
