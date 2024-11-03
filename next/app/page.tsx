@@ -9,9 +9,9 @@ import Image from 'next/image';
 
 export default function Home() {
     return (
-        <div className='space-y-24 mt-10'>
+        <div className='space-y-24'>
             {/* Hero Component */}
-            <div className="hero h-[80vh]">
+            <div className="hero h-auto my-auto flex flex-col items-center md:justify-evenly mt-24">
                 <div className="hero-content flex-col lg:flex-row">
                     <div className="text-center lg:text-left">
                         <h1 className="text-5xl font-bold leading-relaxed text-center lg:text-left">
@@ -29,7 +29,7 @@ export default function Home() {
                             <CTAButton href="/about/get-involved" text="Get Involved" />
                         </div>
                     </div>
-                    <div className="mt-12 lg:mt-0">
+                    <div className="flex mt-12 md:mt-0 w-11/12 md:w-[70%] lg:w-full justify-center">
                         <Image src="/student-involvement-1.jpg" alt="Tech committee meeting" className="rounded-[60px]" width={1000} height={1000} priority />
                     </div>
                 </div>
