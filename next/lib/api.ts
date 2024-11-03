@@ -54,6 +54,20 @@ export type ScheduleRead = Schedule & {
   hourBlock: HourBlock;
 };
 
+export type Officer = {
+  is_active: boolean;
+  start_date: string;
+  end_date: string;
+  user: {
+    name: string;
+    email: string;
+  };
+  position: {
+    is_primary: true;
+    title: string;
+  };
+};
+
 /**
  * A collection of functions to wrap API methods working with a given type
  *
@@ -106,6 +120,8 @@ export const goLinksApi: ApiWrapper<GoLink> = {
 
 export const scheduleApi: ApiWrapper<ScheduleRead, Schedule> =
   apiWrapperFactory("schedule");
+
+export const officerApi: ApiWrapper<Officer> = apiWrapperFactory("schedule");
 
 export type AuthLevel = {
   isUser: boolean;
