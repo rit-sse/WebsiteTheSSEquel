@@ -17,7 +17,7 @@ export const teamData = {
   primary_officers: [
     {
       avatar: `https://source.boringavatars.com/beam/${Math.floor(Math.random() * 100)}/?colors=A4C7F4,6196D6,6196D6,161F27,F0F4F9`,
-      name: "Jonathan Cruz",
+      name: "Jonathan Cru",
       title: "President",
       desc: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Eum, eius amet consectetur.",
       linkedin: "#",

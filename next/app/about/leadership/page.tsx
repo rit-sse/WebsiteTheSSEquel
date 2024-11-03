@@ -1,7 +1,32 @@
+"use client";
+
 import OfficerCard from "./OfficerCard";
 import { teamData, Team } from "./team";
+import { useState, useCallback, useEffect } from "react";
 
 export default function Leadership() {
+  const [goLinkData, setGoLinkData]: [any[], any] = useState([]); //This makes a variable (const) right because react hates you
+  const fetchData = useCallback(async () => {
+    const data = await goLinksApi.fetch();
+    setGoLinkData(
+      data.map((item) => ({
+        id: item.id,
+        goUrl: item.golink,
+        url: item.url,
+        description: item.description ?? "",
+        pinned: item.isPinned,
+      }))
+    );
+  }, []);
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+  /*
+  goLinkData = getting the data
+  setGoLinkData = changing the data
+  useState() is the fcn that sets up the getting of the variable i guess
+  - Abby + Ryanne
+  */
   let team: Team = teamData;
 
   team.committee_heads.sort((a, b) => {
