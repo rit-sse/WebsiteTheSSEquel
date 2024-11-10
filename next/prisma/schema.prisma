@@ -35,7 +35,7 @@ model User {
     officers Officer[]
     account  Account[]
     session  Session[]
-    projects Project[]
+    projects UserProject[]
 }
 
 model Quote {
@@ -303,5 +303,17 @@ model Project {
     contentURL String?
 
     // Relational Field
-    contributers User[]
+    contributers UserProject[]
+}
+
+model UserProject {
+    id Int @id @default(autoincrement())
+
+    // Foreign Keys
+    userId    Int
+    projectId Int
+
+    // Relational Fields
+    user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+    project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }

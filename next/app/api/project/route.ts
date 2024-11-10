@@ -24,20 +24,20 @@ export async function POST(request: Request) {
 		return new Response("title must be a string", { status: 422 });
 	}
 	if (typeof body.description != "string") {
-		return new Response("description must be a string", { status: 422 });
+		return new Response("'description' must be a string", { status: 422 });
 	}
 
 	let repoLink = "";
 	let contentURL = "";
 	if ("repoLink" in body) {
 		if (typeof body.repoLink != "string") {
-			return new Response("repoLink must be a string", { status: 422 });
+			return new Response("'repoLink' must be a string", { status: 422 });
 		}
 		repoLink = body.repoLink;
 	}
 	if ("contentURL" in body) {
 		if (typeof body.contentURL != "string") {
-			return new Response("contentURL must be a string", { status: 422 });
+			return new Response("'contentURL' must be a string", { status: 422 });
 		}
 		contentURL = body.contentURL;
 	}
@@ -66,7 +66,7 @@ export async function PUT(request: Request) {
 	}
 
 	if (typeof body.id != "number") {
-		return new Response("id must be an integer", { status: 422 });
+		return new Response("'id' must be an integer", { status: 422 });
 	}
 
 	const project_exists =
@@ -75,32 +75,32 @@ export async function PUT(request: Request) {
 		})) !== null;
 
 	if (!project_exists) {
-		return new Response(`project of id: ${body.id} doesn't exist`, { status: 404 });
+		return new Response(`project of 'id': ${body.id} doesn't exist`, { status: 404 });
 	}
 
 	const data: { title?: string; description?: string; repoLink?: string; contentURL?: string } =
 		{};
 	if ("title" in body) {
 		if (typeof body.title != "string") {
-			return new Response("title must be a string", { status: 422 });
+			return new Response("'title' must be a string", { status: 422 });
 		}
 		data.title = body.title;
 	}
 	if ("description" in body) {
 		if (typeof body.description != "string") {
-			return new Response("description must be a string", { status: 422 });
+			return new Response("'description' must be a string", { status: 422 });
 		}
 		data.description = body.description;
 	}
 	if ("repoLink" in body) {
 		if (typeof body.repoLink != "string") {
-			return new Response("repoLink must be a string", { status: 422 });
+			return new Response("'repoLink' must be a string", { status: 422 });
 		}
 		data.repoLink = body.repoLink;
 	}
 	if ("contentURL" in body) {
 		if (typeof body.contentURL != "string") {
-			return new Response("contentURL must be a string", { status: 422 });
+			return new Response("'contentURL' must be a string", { status: 422 });
 		}
 		data.contentURL = body.contentURL;
 	}
@@ -112,7 +112,7 @@ export async function PUT(request: Request) {
 		data,
 	});
 
-	return Response.json(project, { status: 201 });
+	return Response.json(project, { status: 200 });
 }
 
 export async function DELETE(request: Request) {
@@ -128,7 +128,7 @@ export async function DELETE(request: Request) {
 	}
 
 	if (typeof body.id != "number") {
-		return new Response("id must be an integer", { status: 422 });
+		return new Response("'id' must be an integer", { status: 422 });
 	}
 
 	const projectExists =
@@ -139,12 +139,12 @@ export async function DELETE(request: Request) {
 		})) != null;
 
 	if (!projectExists) {
-		return new Response(`project with id ${body.id} doesn't exist`, { status: 404 });
+		return new Response(`project with 'id' ${body.id} doesn't exist`, { status: 404 });
 	}
 
 	const project = await prisma.project.delete({
 		where: { id: body.id },
 	});
 
-	return Response.json(project, { status: 201 });
+	return Response.json(project, { status: 200 });
 }

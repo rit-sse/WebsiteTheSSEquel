@@ -590,6 +590,34 @@ async function seedProject() {
 	console.log({ project1, project2, project3 });
 }
 
+async function seedUserProject() {
+	const userProject1 = await prisma.userProject.upsert({
+		where: { id: 1 },
+		update: {},
+		create: {
+			userId: 1,
+			projectId: 1,
+		},
+	});
+	const userProject2 = await prisma.userProject.upsert({
+		where: { id: 2 },
+		update: {},
+		create: {
+			userId: 2,
+			projectId: 2,
+		},
+	});
+	const userProject3 = await prisma.userProject.upsert({
+		where: { id: 3 },
+		update: {},
+		create: {
+			userId: 3,
+			projectId: 3,
+		},
+	});
+	console.log({ userProject1, userProject2, userProject3 });
+}
+
 async function main() {
 	try {
 		await seedUser();
@@ -609,6 +637,7 @@ async function main() {
 		await seedSession();
 		await seedVerificationToken();
 		await seedProject();
+		await seedUserProject();
 	} catch (e) {
 		console.error(e);
 	}
