@@ -20,12 +20,25 @@ export async function POST(request: Request) {
 		});
 	}
 
+	if (typeof body.title != "string") {
+		return new Response("title must be a string", { status: 422 });
+	}
+	if (typeof body.description != "string") {
+		return new Response("description must be a string", { status: 422 });
+	}
+
 	let repoLink = "";
 	let contentURL = "";
 	if ("repoLink" in body) {
+		if (typeof body.repoLink != "string") {
+			return new Response("repoLink must be a string", { status: 422 });
+		}
 		repoLink = body.repoLink;
 	}
 	if ("contentURL" in body) {
+		if (typeof body.contentURL != "string") {
+			return new Response("contentURL must be a string", { status: 422 });
+		}
 		contentURL = body.contentURL;
 	}
 
@@ -52,6 +65,10 @@ export async function PUT(request: Request) {
 		return new Response("'id' must be included in the body", { status: 400 });
 	}
 
+	if (typeof body.id != "number") {
+		return new Response("id must be an integer", { status: 422 });
+	}
+
 	const project_exists =
 		(await prisma.project.findUnique({
 			where: { id: body.id },
@@ -64,15 +81,27 @@ export async function PUT(request: Request) {
 	const data: { title?: string; description?: string; repoLink?: string; contentURL?: string } =
 		{};
 	if ("title" in body) {
+		if (typeof body.title != "string") {
+			return new Response("title must be a string", { status: 422 });
+		}
 		data.title = body.title;
 	}
 	if ("description" in body) {
+		if (typeof body.description != "string") {
+			return new Response("description must be a string", { status: 422 });
+		}
 		data.description = body.description;
 	}
 	if ("repoLink" in body) {
+		if (typeof body.repoLink != "string") {
+			return new Response("repoLink must be a string", { status: 422 });
+		}
 		data.repoLink = body.repoLink;
 	}
 	if ("contentURL" in body) {
+		if (typeof body.contentURL != "string") {
+			return new Response("contentURL must be a string", { status: 422 });
+		}
 		data.contentURL = body.contentURL;
 	}
 
@@ -96,6 +125,10 @@ export async function DELETE(request: Request) {
 
 	if (!("id" in body)) {
 		return new Response("'id' must be included in the body", { status: 400 });
+	}
+
+	if (typeof body.id != "number") {
+		return new Response("id must be an integer", { status: 422 });
 	}
 
 	const projectExists =
