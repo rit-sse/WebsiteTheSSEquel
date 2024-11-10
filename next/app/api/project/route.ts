@@ -61,16 +61,26 @@ export async function PUT(request: Request) {
 		return new Response(`project of id: ${body.id} doesn't exist`, { status: 404 });
 	}
 
-	const project = prisma.project.update({
+	const data: { title?: string; description?: string; repoLink?: string; contentURL?: string } =
+		{};
+	if ("title" in body) {
+		data.title = body.title;
+	}
+	if ("description" in body) {
+		data.description = body.description;
+	}
+	if ("repoLink" in body) {
+		data.repoLink = body.repoLink;
+	}
+	if ("contentURL" in body) {
+		data.contentURL = body.contentURL;
+	}
+
+	const project = await prisma.project.update({
 		where: {
 			id: body.id,
 		},
-		data: {
-			title: body.title,
-			description: body.description,
-			repoLink: body.repoLink,
-			contentURL: body.contentURL,
-		}
+		data,
 	});
 
 	return Response.json(project, { status: 201 });
@@ -86,6 +96,17 @@ export async function DELETE(request: Request) {
 
 	if (!("id" in body)) {
 		return new Response("'id' must be included in the body", { status: 400 });
+	}
+
+	const projectExists =
+		(await prisma.project.findUnique({
+			where: {
+				id: body.id,
+			},
+		})) != null;
+
+	if (!projectExists) {
+		return new Response(`project with id ${body.id} doesn't exist`, { status: 404 });
 	}
 
 	const project = await prisma.project.delete({

@@ -561,7 +561,6 @@ async function seedProject() {
 		where: { id: 1 },
 		update: {},
 		create: {
-			id: 1,
 			title: "Website Rebuild",
 			description: "The new SSE website.",
 			repoLink: "https://github.com/rit-sse/WebsiteTheSSEquel",
@@ -572,7 +571,6 @@ async function seedProject() {
 		where: { id: 2 },
 		update: {},
 		create: {
-			id: 2,
 			title: "Wave Machine",
 			description: "A machine to automatically wave to tour groups.",
 			repoLink: "https://github.com/rit-sse/robo-waver",
@@ -583,7 +581,6 @@ async function seedProject() {
 		where: { id: 3 },
 		update: {},
 		create: {
-			id: 3,
 			title: "Tour Sensor",
 			description: "A proximity sensor to detect tours.",
 			repoLink: "https://github.com/rit-sse/tour-sensor",
