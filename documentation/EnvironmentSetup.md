@@ -27,7 +27,7 @@ The above is just a placeholder, you'll need to fill in each entry with the appr
 
 1. Download and install [PostgreSQL](https://www.postgresql.org/download/) 14. This is the database management system we are using for the project. When you visit the downloads page, click on your operating system and look for the following in the subsequent page: [![PostgreSQL 14 Download Page](https://i.imgur.com/VlfCWO6.png)](https://www.postgresql.org/download/)
 
-2. Run the installer and follow the instructions to install PostgreSQL. Make sure you remember the password you set for the database superuser.
+2. Run the installer and follow the instructions to install PostgreSQL. If/when the installer asks which packages you want to download, ensure you only select PostgreSQL 14. Make sure you remember the password you set for the database superuser.
 
 3. Open up pgAdmin 4. This should have been installed along with PostgreSQL. Click on the `Servers` dropdown in the top left corner and select `PostgreSQL 14`. You will be prompted to enter the password you set for the database superuser.
 
@@ -64,6 +64,6 @@ The `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` can be found again later by go
 ## Building the Local Database
 If you run the project now, you'll encounter schema errors. This is because the local database hasn't been built. We use Prisma for managing the Postgres database, so we'll use [Prisma's migrate command](https://www.prisma.io/docs/concepts/components/prisma-migrate/migrate-development-production) to build the db tables using the schema defined in the [schema.prisma](../next/prisma/schema.prisma) file.
 
-In the /next/ directory, run `npx prisma migrate dev`.  
+In the /next/ directory, run `npx prisma migrate dev`. Then run `npx prisma db seed` to populate the database with test data.
 
 That's it! You should now be able to run `npm run dev` and view the website at `localhost:3000` with authentication and access to your local database instance. Try logging in with your RIT email.

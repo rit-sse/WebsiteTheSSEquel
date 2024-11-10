@@ -1,6 +1,8 @@
 import Link from "next/link";
 
-
+/**
+ * Call to Action Button
+ */
 export const CTAButton: React.FC<{ href: string, text: string }> = ({ href, text }) => (
     <Link
         href={href}

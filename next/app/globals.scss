@@ -3,78 +3,6 @@
 @tailwind utilities;
 
 @layer base {
-  .text-page-structure {
-    @apply mx-auto;
-    @apply max-w-screen-xl;
-    @apply px-4;
-    @apply py-16;
-    @apply lg:flex;
-    @apply flex;
-    @apply flex-1;
-    @apply flex-col;
-    @apply items-center;
-    @apply w-11/12;
-  }
-  .text-page-structure > h1 {
-    @apply bg-gradient-to-br;
-    @apply from-primary;
-    @apply to-primary;
-    @apply bg-clip-text;
-    @apply text-4xl/[3rem];
-    @apply font-extrabold;
-    @apply text-transparent;
-    @apply sm:text-5xl/[4rem];
-    @apply text-center;
-  }
-
-  .subtitle-structure {
-    @apply w-full;
-    @apply md:w-5/6;
-    @apply space-y-24; 
-    @apply pb-8;
-  }
-
-  .subtitle-structure p {
-    @apply text-center; 
-    @apply mx-auto; 
-    @apply mt-4; 
-    @apply text-xl/relaxed;
-  }
-
-  .general-classes{
-    @apply text-left;
-    @apply pt-4;
-    @apply pb-32;
-    @apply md:py-16;
-  }
-
-  .name-classes{
-    @apply bg-clip-text;
-    @apply font-bold;
-    @apply text-3xl/[3rem];
-  }
-
-  .description-classes{
-    @apply mt-4;
-    @apply pb-4;
-    @apply text-xl/relaxed;
-  }
-  /* .text-page-structure > div {
-    @apply w-full;
-    @apply md:w-5/6;
-    @apply space-y-24; 
-    @apply pb-8;
-  }
-  .text-page-structure > div > p {
-    @apply w-3/5; 
-    @apply mt-4;
-    @apply text-center; 
-    @apply sm:text-xl/relaxed; 
-    @apply m-auto;
-  } */
-
-
-  
   h1 {
     @apply bg-gradient-to-br;
     @apply from-primary;
@@ -138,7 +66,6 @@
   ul {
     @apply list-disc;
     @apply text-base-content;
-    @apply sm:text-xl/relaxed;
     @apply ml-12;
 
     // apply a bottom margin if the next element is a heading
@@ -183,14 +110,17 @@
     @apply whitespace-nowrap;
     @apply divide-y divide-base-content;
     @apply my-4;
+    @apply table-fixed;
   }
 
   th {
     @apply px-6 py-3 text-left text-xs font-medium uppercase tracking-wider;
+    @apply overflow-auto;
   }
 
   td {
     @apply px-6 py-4 whitespace-nowrap;
+    @apply overflow-auto;
   }
 
   tr {
@@ -229,7 +159,65 @@
       gap: 24px;
     }
   }
+}
 
+@layer components {
+  .text-page-structure {
+    @apply mx-auto;
+    @apply max-w-screen-xl;
+    @apply px-4;
+    @apply py-16;
+    @apply lg:flex;
+    @apply flex;
+    @apply flex-1;
+    @apply flex-col;
+    @apply items-center;
+    @apply w-11/12;
+  }
+  .text-page-structure > h1 {
+    @apply bg-gradient-to-br;
+    @apply from-primary;
+    @apply to-primary;
+    @apply bg-clip-text;
+    @apply text-4xl/[3rem];
+    @apply font-extrabold;
+    @apply text-transparent;
+    @apply sm:text-5xl/[4rem];
+    @apply text-center;
+  }
+
+  .subtitle-structure {
+    @apply w-full;
+    @apply md:w-5/6;
+    @apply space-y-24; 
+    @apply pb-8;
+  }
+
+  .subtitle-structure p {
+    @apply text-center; 
+    @apply mx-auto; 
+    @apply mt-4; 
+    @apply text-xl/relaxed;
+  }
+
+  .general-classes{
+    @apply text-left;
+    @apply pt-4;
+    @apply pb-32;
+    @apply md:py-16;
+  }
+
+  .name-classes{
+    @apply bg-clip-text;
+    @apply font-bold;
+    @apply text-3xl/[3rem];
+  }
+
+  .description-classes{
+    @apply mt-4;
+    @apply pb-4;
+    @apply text-xl/relaxed;
+  }
 }
 
 ::selection {
