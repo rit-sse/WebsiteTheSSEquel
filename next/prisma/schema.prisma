@@ -242,7 +242,7 @@ model GoLinks {
 }
 
 //Account model represents an account in the system.
-//It contains information about the user, the type of account, and the authentication `vider.
+//It contains information about the user, the type of account, and the authentication provider.
 model Account {
     //Store an automatically generated unique int for id
     id Int @id @default(autoincrement())
