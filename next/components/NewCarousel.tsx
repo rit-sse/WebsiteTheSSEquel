@@ -1,8 +1,7 @@
-// src/Carousel.js
 "use client";
 import React, { useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
+
 
 interface Props {
   images: string[];
@@ -10,7 +9,6 @@ interface Props {
 
 const NewCarousel = ({ images }: Props) => {
   const [activeIndex, setActiveIndex] = useState(0);
-  const imageWidth = 5000;
   const nextSlide = () => {
     setActiveIndex((prevIndex) =>
       prevIndex === images.length - 1 ? 0 : prevIndex + 1
@@ -22,13 +20,13 @@ const NewCarousel = ({ images }: Props) => {
     );
   };
   return (
-    <div className="carousel w-300px md:w-2000px rounded-[60px]">
-      <div id="slide1" className="carousel-item relative w-full">
+    <div className="carousel rounded-[60px]">
+      <div className="carousel-item relative w-full">
         <Image
           src={images[activeIndex]}
-          height={1}
-          width={imageWidth}
-          className="object-cover"
+          width={5000}
+          height={3000}
+          className="object-cover w-[648px] md:w-[5000px] md:h-[700px]"
         alt={`image ${activeIndex}`}
         />
         <div className="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 transform justify-between">
