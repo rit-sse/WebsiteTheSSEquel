@@ -47,13 +47,13 @@ export const GoLinkButton: React.FC<CreateGoLinkProps> = ({ fetchData }) => {
   const [isOfficer, setIsOfficer] = useState(false);
 
   useEffect(() => {
-    async () => {
+    (async () => {
       const data = await fetch("/api/authLevel").then((response) =>
         response.json()
       );
       console.log(data);
       setIsOfficer(data.isOfficer);
-    };
+    })();
   }, []);
 
   if (isOfficer) {
