@@ -1,7 +1,6 @@
 import { useSession } from "next-auth/react";
 import { use, useCallback, useEffect, useState } from "react";
 import { CreateGoLinkProps } from "./page";
-import { goLinksApi, fetchAuthLevel } from "@/lib/api";
 
 export const GoLinkButton: React.FC<CreateGoLinkProps> = ({ fetchData }) => {
   const { data: session }: any = useSession();
@@ -26,12 +25,15 @@ export const GoLinkButton: React.FC<CreateGoLinkProps> = ({ fetchData }) => {
 
   const handleCreate = async () => {
     try {
-      const response = await goLinksApi.create({
-        golink: title,
-        url: url,
-        description: description,
-        isPinned: pinned,
-        isPublic: !officer, // If it is officer, it is not public
+      const response = await fetch("/api/golinks", {
+        method: "POST",
+        body: JSON.stringify({
+          golink: title,
+          url: url,
+          description: description,
+          isPinned: pinned,
+          isPublic: !officer, // If it is officer, it is not public
+        }),
       });
 
       if (response.ok) {
@@ -45,11 +47,13 @@ export const GoLinkButton: React.FC<CreateGoLinkProps> = ({ fetchData }) => {
   const [isOfficer, setIsOfficer] = useState(false);
 
   useEffect(() => {
-    (async () => {
-      const data = await fetchAuthLevel();
+    async () => {
+      const data = await fetch("/api/authLevel").then((response) =>
+        response.json()
+      );
       console.log(data);
       setIsOfficer(data.isOfficer);
-    })
+    };
   }, []);
 
   if (isOfficer) {
