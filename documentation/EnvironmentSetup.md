@@ -25,7 +25,7 @@ The above is just a placeholder, you'll need to fill in each entry with the appr
 
 ## Setting up a local database
 
-1. Download and install [PostgreSQL](https://www.postgresql.org/download/) 14. _Make sure you're installing 14, not any higher versions!_This is the database management system we are using for the project. When you visit the downloads page, click on your operating system and look for the following in the subsequent page: [![PostgreSQL 14 Download Page](https://i.imgur.com/VlfCWO6.png)](https://www.postgresql.org/download/)
+1. Download and install [PostgreSQL](https://www.postgresql.org/download/) 14. *Make sure you're installing 14, not any higher versions!* This is the database management system we are using for the project. When you visit the downloads page, click on your operating system and look for the following in the subsequent page: [![PostgreSQL 14 Download Page](https://i.imgur.com/VlfCWO6.png)](https://www.postgresql.org/download/)
 
 2. Run the installer and follow the instructions to install PostgreSQL. Make sure you remember the password you set for the database superuser.
 
