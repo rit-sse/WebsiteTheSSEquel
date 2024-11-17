@@ -2,11 +2,14 @@ import Carousel from "@/components/Carousel";
 
 export default function Page() {
   /* Put all pictures you want of yourself here */
-  const imageOne = ["/kitty_cat_1.jpg", "/kitty_cat_2.jpg", "/kitty_cat_3.jpg"];
+  const imageOne = [
+    "/contributors/Owen-Lafferty-GoLersBB.png",
+    "/contributors/Owen-Lafferty-meMomma.png",
+  ];
   return (
     <div>
       <h1 className="mb-8">Owen Lafferty</h1>
-      <div className="flex flex-col-reverse items-center md:items-start md:flex-row md:justify-between gap-10 mb-4">
+      <div className="flex flex-col-reverse items-center md:items-start md:flex-row gap-10">
         {/* picture of yourself */}
         <Carousel images={imageOne} />
         <div>
@@ -16,17 +19,12 @@ export default function Page() {
           </p>
           {/* About you; what you do/did */}
           <p className="m-4 text-center md:m-auto">
-            I'm a freshman here at RIT Lorem ipsum dolor sit amet consectetur, adipisicing elit.
-            Distinctio natus totam consequuntur numquam ex cumque animi,
-            exercitationem commodi quaerat sit. Veritatis minima quae illo
-            commodi sequi vero eum quam architecto? Lorem ipsum dolor sit amet
-            consectetur adipisicing elit. Natus quibusdam voluptate doloribus
-            fugiat est nostrum quae consequuntur? Itaque ad, totam accusamus,
-            eveniet quisquam porro eligendi error numquam nam temporibus
-            obcaecati. Lorem ipsum dolor sit amet, consectetur adipisicing elit.
-            Facilis labore temporibus soluta nisi accusantium, nesciunt nemo
-            deleniti delectus dolores debitis fugiat eius recusandae! Rerum quas
-            obcaecati iste recusandae unde et.
+            I'm a freshman, Software Engineering major (wow, what a surprise)
+            here at RIT (as of Fall 2024) and have been loving it so far! I'm a
+            front end developer on this project which has been very useful for
+            me. Before coming here, I never really developed anything other than
+            a basic high school project and this has really shed light into what
+            developing a project is actually like. Uhhhh. 
           </p>
         </div>
       </div>
