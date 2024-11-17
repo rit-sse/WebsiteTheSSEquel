@@ -16,8 +16,8 @@ export default function Page() {
           className="rounded-[60px]"
           alt="a cat"
         /> */}
-        <Carousel images={imageOne} />
-        {/* <NewCarousel images={imageOne} /> */}
+        {/* <Carousel images={imageOne} /> */}
+        <NewCarousel images={imageOne} />
         <div>
           {/* Type a Greeting */}
           <p className="font-bold text-2xl/relaxed text-center mb-4">
