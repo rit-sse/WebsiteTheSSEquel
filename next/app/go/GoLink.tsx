@@ -2,7 +2,6 @@ import { GoLinkIcon } from "@/components/common/Icons";
 import { GoLinkStar } from "@/components/common/Icons";
 import { GoLinkEdit } from "@/components/common/Icons";
 import { GoLinkDelete } from "@/components/common/Icons";
-import { fetchAuthLevel, goLinksApi } from "@/lib/api";
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useState } from "react";
 
@@ -42,13 +41,16 @@ const GoLink: React.FC<GoLinkProps> = ({
 
   const handleEdit = async () => {
     try {
-      const response = await goLinksApi.update({
-        id: id,
-        golink: newTitle,
-        url: newUrl,
-        description: newDescription,
-        isPinned: newPinned,
-        isPublic: !officer,
+      const response = await fetch("/api/golinks", {
+        method: "PUT",
+        body: JSON.stringify({
+          id: id,
+          golink: newTitle,
+          url: newUrl,
+          description: newDescription,
+          isPinned: newPinned,
+          isPublic: !officer,
+        }),
       });
 
       if (response.ok) {
@@ -60,7 +62,10 @@ const GoLink: React.FC<GoLinkProps> = ({
 
   const handleDelete = async () => {
     try {
-      const response = await goLinksApi.delete(id);
+      const response = await fetch("/api/golinks", {
+        method: "DELETE",
+        body: JSON.stringify({ id }),
+      });
 
       if (response.ok) {
         handleCancel();
@@ -283,7 +288,9 @@ const EditAndDelete: React.FC<GoLinkProps> = ({
 
   useEffect(() => {
     (async () => {
-      const data = await fetchAuthLevel();
+      const data = await fetch("/api/authLevel").then((response) =>
+        response.json()
+      );
       setIsOfficer(data.isOfficer);
     })();
   }, []);
