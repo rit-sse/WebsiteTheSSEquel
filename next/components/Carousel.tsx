@@ -26,7 +26,7 @@ const Carousel = ({ images }: Props) => {
             src={images[0]}
             width={5000}
             height={3000}
-            className="object-cover fixed-w-[648px] h-[750px] md:w-[5000px] md:h-[700px]"
+            className="object-cover w-[648px] h-[750px] md:w-[5000px] md:h-[700px]"
             alt={`image of me :]`}
           />
         </div>
@@ -34,12 +34,12 @@ const Carousel = ({ images }: Props) => {
     );
   } else {
     return (
-      <div className="carousel rounded-[60px] w-[648px] md:w-[5000px]">
+      <div className="carousel rounded-[60px]">
         <div className="carousel-item relative w-full">
           <Image
             src={images[activeIndex]}
-            width={5000}
-            height={3000}
+            width={2160}
+            height={1440}
             className="object-cover w-[648px] h-[750px] md:w-[5000px] md:h-[700px]"
             alt={`image number ${activeIndex + 1} of me :]`}
           />
