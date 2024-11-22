@@ -172,7 +172,7 @@ async function seedMentor() {
 	console.log({ mentor1, mentor2, mentor3 });
 }
 
-async function  seedSkill() {
+async function seedSkill() {
 	const java = await prisma.skill.upsert({
 		where: { id: 1 },
 		update: {},
@@ -556,6 +556,68 @@ async function seedVerificationToken() {
 	console.log({ verificationToken1, verificationToken2, verificationToken3 });
 }
 
+async function seedProject() {
+	const project1 = await prisma.project.upsert({
+		where: { id: 1 },
+		update: {},
+		create: {
+			title: "Website Rebuild",
+			description: "The new SSE website.",
+			repoLink: "https://github.com/rit-sse/WebsiteTheSSEquel",
+			contentURL: "/api/project/content/WEBSITE_REBUILD.md",
+		},
+	});
+	const project2 = await prisma.project.upsert({
+		where: { id: 2 },
+		update: {},
+		create: {
+			title: "Wave Machine",
+			description: "A machine to automatically wave to tour groups.",
+			repoLink: "https://github.com/rit-sse/robo-waver",
+			contentURL: "/api/project/content/WAVE_MACHINE.md",
+		},
+	});
+	const project3 = await prisma.project.upsert({
+		where: { id: 3 },
+		update: {},
+		create: {
+			title: "Tour Sensor",
+			description: "A proximity sensor to detect tours.",
+			repoLink: "https://github.com/rit-sse/tour-sensor",
+			contentURL: "/api/project/content/TOUR_SENSOR.md",
+		},
+	});
+	console.log({ project1, project2, project3 });
+}
+
+async function seedUserProject() {
+	const userProject1 = await prisma.userProject.upsert({
+		where: { id: 1 },
+		update: {},
+		create: {
+			userId: 1,
+			projectId: 1,
+		},
+	});
+	const userProject2 = await prisma.userProject.upsert({
+		where: { id: 2 },
+		update: {},
+		create: {
+			userId: 2,
+			projectId: 2,
+		},
+	});
+	const userProject3 = await prisma.userProject.upsert({
+		where: { id: 3 },
+		update: {},
+		create: {
+			userId: 3,
+			projectId: 3,
+		},
+	});
+	console.log({ userProject1, userProject2, userProject3 });
+}
+
 async function main() {
 	try {
 		await seedUser();
@@ -574,6 +636,8 @@ async function main() {
 		await seedAccount();
 		await seedSession();
 		await seedVerificationToken();
+		await seedProject();
+		await seedUserProject();
 	} catch (e) {
 		console.error(e);
 	}
