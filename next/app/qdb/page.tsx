@@ -5,7 +5,7 @@ const QuoteList = () => {
     return (
         <>
             <h1>QDB</h1>
-            <div className="flex gap-4">
+            <div className="">
                 {Quotes.map((quote, idx) => (
                     <QuoteCard key={idx} {...quote} />
                 ))}
