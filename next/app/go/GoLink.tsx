@@ -77,8 +77,6 @@ const GoLink: React.FC<GoLinkProps> = ({
 
   return (
     <>
-      {console.log(url)}
-
       <a
         href={"http://localhost:3000/go/" + goUrl}
         target="_blank"

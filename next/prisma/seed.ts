@@ -487,40 +487,40 @@ async function seedAccount() {
 	console.log({ account1, account2, account3 });
 }
 
-async function seedSession() {
-	const session1 = await prisma.session.upsert({
-		where: { id: "1" },
-		update: {},
-		create: {
-			id: "1",
-			expires: new Date("2023-11-1 12:00:00"),
-			sessionToken: "123",
-			userId: 1,
-		},
-	});
-	const session2 = await prisma.session.upsert({
-		where: { id: "2" },
-		update: {},
-		create: {
-			id: "2",
-			expires: new Date("2023-11-1 12:00:00"),
-			sessionToken: "124",
-			userId: 2,
-		},
-	});
+// async function seedSession() {
+// 	const session1 = await prisma.session.upsert({
+// 		where: { id: "1" },
+// 		update: {},
+// 		create: {
+// 			id: "1",
+// 			expires: new Date("2023-11-1 12:00:00"),
+// 			sessionToken: "123",
+// 			userId: 1,
+// 		},
+// 	});
+// 	const session2 = await prisma.session.upsert({
+// 		where: { id: "2" },
+// 		update: {},
+// 		create: {
+// 			id: "2",
+// 			expires: new Date("2023-11-1 12:00:00"),
+// 			sessionToken: "124",
+// 			userId: 2,
+// 		},
+// 	});
 
-	const session3 = await prisma.session.upsert({
-		where: { id: "3" },
-		update: {},
-		create: {
-			id: "3",
-			expires: new Date("2023-11-1 12:00:00"),
-			sessionToken: "125",
-			userId: 3,
-		},
-	});
-	console.log({ session1, session2, session3 });
-}
+// 	const session3 = await prisma.session.upsert({
+// 		where: { id: "3" },
+// 		update: {},
+// 		create: {
+// 			id: "3",
+// 			expires: new Date("2023-11-1 12:00:00"),
+// 			sessionToken: "125",
+// 			userId: 3,
+// 		},
+// 	});
+// 	console.log({ session1, session2, session3 });
+// }
 
 async function seedVerificationToken() {
 	const verificationToken1 = await prisma.verificationToken.upsert({
@@ -634,7 +634,7 @@ async function main() {
 		await seedSchedule();
 		await seedGoLinks();
 		await seedAccount();
-		await seedSession();
+		// await seedSession();
 		await seedVerificationToken();
 		await seedProject();
 		await seedUserProject();
