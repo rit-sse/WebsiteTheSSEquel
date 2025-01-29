@@ -7,6 +7,20 @@ import { useState } from "react";
 const Projects = () => {
   const [projects, setProjects] = useState(projectsData);
 
+  // Separates projects that are in progress and ones that are done.
+  // This helps to not only make it more clear, but also better to work with.
+  const inProgress:Project[] = []
+  const done:Project[] = []
+
+  // Sort them from projects array.
+  for(let project of projects) {
+    if(project.progress != "Complete") {
+      inProgress.push(project);
+    } else {
+      done.push(project);
+    }
+  } 
+
   return (
     <>
       {/* Intro */}
@@ -27,8 +41,28 @@ const Projects = () => {
       </section>
 
       {/* Exhibit */}
-      <section className="exihibit">
+      {/* <section className="exihibit">
         {projects.map((project, key) => (
+          <ProjectCard key={key} {...project} />
+        ))}
+      </section> */}
+      <section className="exhibit w-4/5">
+        <h1
+          className="bg-gradient-to-t from-primary to-secondary 
+              bg-clip-text text-4xl font-extrabold text-transparent md:text-2xl text-left">
+          Current Projects
+        </h1>
+        {inProgress.map((project, key) => (
+          <ProjectCard key={key} {...project} />
+        ))}
+      </section>
+      <section className="exhibit w-4/5">
+        <h1
+          className="bg-gradient-to-t from-primary to-secondary 
+              bg-clip-text text-4xl font-extrabold text-transparent md:text-2xl text-left">
+          Past Projects
+        </h1>
+        {done.map((project, key) => (
           <ProjectCard key={key} {...project} />
         ))}
       </section>

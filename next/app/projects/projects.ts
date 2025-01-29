@@ -38,4 +38,94 @@ export const projectsData: Project[] = [
         stack: "Stack",
         progress: "Complete"
     },
+    {
+        logo: "",
+        title: "empty project",
+        lead: "Lead 4",
+        contact: "lead4@email.com",
+        description: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quia, aliquid. Laudantium veritatis veniam praesentium nesciunt facilis quod quam nihil labore perferendis, qui molestiae ad quibusdam magnam consequatur tempore, hic minus!",
+        stack: "Stack",
+        progress: "Complete"
+    },
+    {
+        logo: "",
+        title: "empty project",
+        lead: "Lead 4",
+        contact: "lead4@email.com",
+        description: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quia, aliquid. Laudantium veritatis veniam praesentium nesciunt facilis quod quam nihil labore perferendis, qui molestiae ad quibusdam magnam consequatur tempore, hic minus!",
+        stack: "Stack",
+        progress: "Complete"
+    },
+    {
+        logo: "",
+        title: "empty project",
+        lead: "Lead 4",
+        contact: "lead4@email.com",
+        description: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quia, aliquid. Laudantium veritatis veniam praesentium nesciunt facilis quod quam nihil labore perferendis, qui molestiae ad quibusdam magnam consequatur tempore, hic minus!",
+        stack: "Stack",
+        progress: "Complete"
+    },
+    {
+        logo: "",
+        title: "empty project",
+        lead: "Lead 4",
+        contact: "lead4@email.com",
+        description: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quia, aliquid. Laudantium veritatis veniam praesentium nesciunt facilis quod quam nihil labore perferendis, qui molestiae ad quibusdam magnam consequatur tempore, hic minus!",
+        stack: "Stack",
+        progress: "Complete"
+    },
+    {
+        logo: "",
+        title: "empty project",
+        lead: "Lead 4",
+        contact: "lead4@email.com",
+        description: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quia, aliquid. Laudantium veritatis veniam praesentium nesciunt facilis quod quam nihil labore perferendis, qui molestiae ad quibusdam magnam consequatur tempore, hic minus!",
+        stack: "Stack",
+        progress: "Complete"
+    },
+    {
+        logo: "",
+        title: "empty project",
+        lead: "Lead 4",
+        contact: "lead4@email.com",
+        description: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quia, aliquid. Laudantium veritatis veniam praesentium nesciunt facilis quod quam nihil labore perferendis, qui molestiae ad quibusdam magnam consequatur tempore, hic minus!",
+        stack: "Stack",
+        progress: "Complete"
+    },
+    {
+        logo: "",
+        title: "empty project",
+        lead: "Lead 4",
+        contact: "lead4@email.com",
+        description: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quia, aliquid. Laudantium veritatis veniam praesentium nesciunt facilis quod quam nihil labore perferendis, qui molestiae ad quibusdam magnam consequatur tempore, hic minus!",
+        stack: "Stack",
+        progress: "Complete"
+    },
+    {
+        logo: "",
+        title: "empty project",
+        lead: "Lead 4",
+        contact: "lead4@email.com",
+        description: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quia, aliquid. Laudantium veritatis veniam praesentium nesciunt facilis quod quam nihil labore perferendis, qui molestiae ad quibusdam magnam consequatur tempore, hic minus!",
+        stack: "Stack",
+        progress: "Complete"
+    },
+    {
+        logo: "",
+        title: "empty project",
+        lead: "Lead 4",
+        contact: "lead4@email.com",
+        description: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quia, aliquid. Laudantium veritatis veniam praesentium nesciunt facilis quod quam nihil labore perferendis, qui molestiae ad quibusdam magnam consequatur tempore, hic minus!",
+        stack: "Stack",
+        progress: "Complete"
+    },
+    {
+        logo: "",
+        title: "empty project",
+        lead: "Lead 4",
+        contact: "lead4@email.com",
+        description: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quia, aliquid. Laudantium veritatis veniam praesentium nesciunt facilis quod quam nihil labore perferendis, qui molestiae ad quibusdam magnam consequatur tempore, hic minus!",
+        stack: "Stack",
+        progress: "Complete"
+    },
 ] 
