@@ -53,7 +53,7 @@ const Projects = () => {
           Current Projects
         </h1>
         {inProgress.map((project, key) => (
-          <ProjectCard key={key} {...project} />
+          <ProjectCard key={key} project={project} />
         ))}
       </section>
       <section className="exhibit w-4/5">
@@ -63,7 +63,7 @@ const Projects = () => {
           Past Projects
         </h1>
         {done.map((project, key) => (
-          <ProjectCard key={key} {...project} />
+          <ProjectCard key={key} project={project}/>
         ))}
       </section>
     </>
