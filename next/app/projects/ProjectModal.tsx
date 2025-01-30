@@ -30,10 +30,10 @@ const ProjectModal = ({enabled, setEnabled, project}: ProjectModalInterface ) =>
                         
                     </div>
                     {/* Actual Modal Container */}
-                    <div className="relative w-[900px] h-[600px] z-[50] bg-base-100 rounded-l overflow-hidden
+                    <div className="relative w-[900px] h-[600px] z-[50] bg-base-100 rounded-lg overflow-hidden
                                     flex justify-center items-center">
                         {/* This is the top accent bar. */}
-                        <div className="absolute top-0 left-o w-[100%] h-[15px] bg-base-200 rounded-l">
+                        <div className="absolute top-0 left-o w-[100%] h-[15px] bg-accent rounded-t-lg">
                         </div>
                         {/* Actual Modal Content */}
                         <div className="flex w-[90%] h-[90%] flex-col">
