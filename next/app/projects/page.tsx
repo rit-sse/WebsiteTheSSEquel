@@ -14,7 +14,7 @@ const Projects = () => {
 
   // Sort them from projects array.
   for(let project of projects) {
-    if(project.progress != "Complete") {
+    if(!project.completed) {
       inProgress.push(project);
     } else {
       done.push(project);
@@ -41,11 +41,7 @@ const Projects = () => {
       </section>
 
       {/* Exhibit */}
-      {/* <section className="exihibit">
-        {projects.map((project, key) => (
-          <ProjectCard key={key} {...project} />
-        ))}
-      </section> */}
+      {/* Load the projects that are currently in the works first. */}
       <section className="exhibit w-4/5">
         <h1
           className="bg-gradient-to-t from-primary to-secondary 
@@ -56,6 +52,7 @@ const Projects = () => {
           <ProjectCard key={key} project={project} />
         ))}
       </section>
+      {/* Load past projects that are done. */}
       <section className="exhibit w-4/5">
         <h1
           className="bg-gradient-to-t from-primary to-secondary 
@@ -65,6 +62,7 @@ const Projects = () => {
         {done.map((project, key) => (
           <ProjectCard key={key} project={project}/>
         ))}
+        
       </section>
     </>
   );
