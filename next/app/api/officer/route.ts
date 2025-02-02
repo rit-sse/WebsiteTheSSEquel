@@ -4,6 +4,13 @@ export const dynamic = "force-dynamic";
 
 const prisma = new PrismaClient();
 
+/**
+ * HTTP GET request to /api/officer
+ * Gets all existing officers
+ * @returns [{is_active: boolean, start_date: date, end_date: date,
+ *            user: {name: string, email: string},
+ *            position: {is_primary: boolean, title: string}}]
+ */
 export async function GET() {
   const officer = await prisma.officer.findMany({
     select: {
@@ -48,16 +55,27 @@ export async function POST(request: Request) {
     );
   }
   const { user_email, position, start_date, end_date } = body;
+  const user_id = (
+    await prisma.user.findFirst({
+      where: { email: user_email },
+      select: { id: true },
+    })
+  )?.id;
+  const position_id = (
+    await prisma.officerPosition.findFirst({
+      where: { title: position },
+      select: { id: true },
+    })
+  )?.id;
+  // If we couldn't find the user or position ID, give up
+  if (user_id === undefined || position_id === undefined) {
+    return new Response("User and position not found", { status: 404 });
+  }
+  // the previous officer in that position should become inactive
   await prisma.officer.updateMany({
     where: { position: { title: position } },
     data: { is_active: false },
   });
-  const user_id = (
-    await prisma.user.findFirst({ where: { email: user_email } })
-  )?.id;
-  const position_id = (
-    await prisma.officerPosition.findFirst({ where: { email: user_email } })
-  )?.id;
   const newOfficer = await prisma.officer.create({
     data: { user_id, position_id, start_date, end_date },
   });
@@ -65,38 +83,10 @@ export async function POST(request: Request) {
 }
 
 /**
- * HTTP DELETE request to /api/golinks
- * @param request {id:number}
- * @returns golink object previously at { id }
- */
-export async function DELETE(request: Request) {
-  let body;
-  try {
-    body = await request.json();
-  } catch {
-    return new Response("Invalid JSON", { status: 422 });
-  }
-
-  // verify the id is included
-  if (!("id" in body)) {
-    return new Response("ID must be included", { status: 422 });
-  }
-  const id = body.id;
-
-  const goLinkExists = await prisma.goLinks.findUnique({ where: { id } });
-  if (goLinkExists == null) {
-    return new Response(`Couldn't find GoLink ID ${id}`);
-  }
-
-  const goLink = await prisma.goLinks.delete({ where: { id } });
-  return Response.json(goLink);
-}
-
-/**
- * HTTP PUT request to /api/golinks
- * Update an existing golink
- * @param request {id: number, url?: string, golink?: string, description?: string, isPinned?: boolean, isPublic?: boolean}
- * @returns updated golink object
+ * HTTP PUT request to /api/officer
+ * Update an existing officer
+ * @param request {id: number, start_date?: date, end_date?: date}
+ * @returns updated officer object
  */
 export async function PUT(request: Request) {
   let body;
@@ -116,36 +106,22 @@ export async function PUT(request: Request) {
 
   // only include updated fields
   const data: {
-    url?: string;
-    golink?: string;
-    description?: string;
-    isPinned?: boolean;
-    isPublic?: boolean;
+    start_date?: string;
+    end_date?: string;
   } = {};
-  if ("url" in body) {
-    data.url = body.url;
+  if ("start_date" in body) {
+    data.start_date = body.start_date;
   }
-  if ("golink" in body) {
-    const goLink = body.golink;
-
-    data.golink = goLink;
-  }
-  if ("description" in body) {
-    data.description = body.description;
-  }
-  if ("isPinned" in body) {
-    data.isPinned = body.isPinned;
-  }
-  if ("isPublic" in body) {
-    data.isPublic = body.isPublic;
+  if ("end_date" in body) {
+    data.end_date = body.end_date;
   }
 
   // apply updates to database
   try {
-    const golink = await prisma.goLinks.update({ where: { id }, data });
-    return Response.json(golink);
+    const officer = await prisma.officer.update({ where: { id }, data });
+    return Response.json(officer);
   } catch (e) {
-    // make sure the selected golink exists
-    return new Response(`Failed to update golink: ${e}`, { status: 500 });
+    // make sure the selected officer exists
+    return new Response(`Failed to update officer: ${e}`, { status: 500 });
   }
 }
