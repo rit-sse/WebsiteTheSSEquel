@@ -1,9 +1,16 @@
 import { PrismaClient } from "@prisma/client";
 
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
 const prisma = new PrismaClient();
 
+/**
+ * HTTP GET request to /api/officer/active
+ * Gets all active officers
+ * @returns [{is_active: boolean, start_date: date, end_date: date,
+ *            user: {name: string, email: string},
+ *            position: {is_primary: boolean, title: string}}]
+ */
 export async function GET() {
   const officer = await prisma.officer.findMany({
     where: { is_active: true },
