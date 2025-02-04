@@ -3,12 +3,12 @@ import { Project } from "./projects";
 import Image from "next/image";
 import ProjectModal from "./ProjectModal";
 
-// This is used to create teh structure of the Project Card arguments.
+// This is used to create the structure of the Project Card arguments.
 interface ProjectCardArguments {
   project: Project
 }
 
-const ProjectCard = ({project, propKey}: {project: Project, propKey: number}) => {
+const ProjectCard = ({project, propKey, isOfficer}: {project: Project, propKey: number, isOfficer: boolean}) => {
   // If the project.logo is empty, we are repalcing it with the placeholder image
   let projectBackground = project.logo == "" ? "images/SSEProjectPlaceholder.png" : project.logo
   
@@ -61,7 +61,7 @@ const ProjectCard = ({project, propKey}: {project: Project, propKey: number}) =>
         
       </div>
       {/* Project Modal associated with the card */}
-      <ProjectModal enabled={modalEnabled} setEnabled={setModalEnabled} project={project}/> 
+      <ProjectModal enabled={modalEnabled} setEnabled={setModalEnabled} project={project} isOfficer={isOfficer}/> 
     </div>
   )
 };

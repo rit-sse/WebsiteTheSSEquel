@@ -1,11 +1,12 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import ProjectCard from "./ProjectCard";
 import { Project, projectsData } from "./projects";
 import { useState } from "react";
 
 const Projects = () => {
   const [projects, setProjects] = useState(projectsData);
+  const [isOfficer, setOfficer] = useState(false);
 
   // Separates projects that are in progress and ones that are done.
   // This helps to not only make it more clear, but also better to work with.
@@ -20,6 +21,16 @@ const Projects = () => {
       done.push(project);
     }
   } 
+
+  useEffect(() => {
+    // Fetch the user's ID.
+    fetch("/api/authLevel")
+    .then(resp => resp.json())
+    .then(resp => {
+      console.log(resp)
+      setOfficer(resp["isOfficer"]);
+    })
+  }, [])
 
   return (
     <>
@@ -40,6 +51,11 @@ const Projects = () => {
         </div>
       </section>
 
+      {/* Officer-only Add Project Modal Button */}
+      { isOfficer ? 
+        <button className="bg-primary text-base-100 px-[25px] py-[10px] rounded-lg">Add Project</button>
+        : undefined}
+      
       {/* Exhibit */}
       {/* Load the projects that are currently in the works first. */}
       <section className="exhibit w-4/5">
@@ -49,7 +65,7 @@ const Projects = () => {
           Current Projects
         </h1>
         {inProgress.map((project, key) => (
-          <ProjectCard key={key} project={project} propKey={key} />
+          <ProjectCard key={key} project={project} propKey={key} isOfficer={isOfficer} />
         ))}
       </section>
       {/* Load past projects that are done. */}
@@ -60,7 +76,7 @@ const Projects = () => {
           Past Projects
         </h1>
         {done.map((project, key) => (
-          <ProjectCard key={key} project={project} propKey={key}/>
+          <ProjectCard key={key} project={project} propKey={key} isOfficer={isOfficer}/>
         ))}
         
       </section>
