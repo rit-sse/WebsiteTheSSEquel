@@ -1,17 +1,41 @@
 "use client";
 import React, { useEffect } from "react";
 import ProjectCard from "./ProjectCard";
-import { Project, projectsData } from "./projects";
+import { Project } from "./projects";
 import { useState } from "react";
+import AddProjectModal from "./AddProjectModal";
 
 const Projects = () => {
-  const [projects, setProjects] = useState(projectsData);
+  const [projects, setProjects] = useState([]);
   const [isOfficer, setOfficer] = useState(false);
+
+  // Enables the AddProject modal. setAddProjectModalEnabled is passed to the modal in order for certain functions (such as clicking the black background and the exit button) to close the modal.
+  let [addProjectModalEnabled, setAddProjectModalEnabled] = useState(false);
 
   // Separates projects that are in progress and ones that are done.
   // This helps to not only make it more clear, but also better to work with.
   const inProgress:Project[] = []
   const done:Project[] = []
+
+  
+  useEffect(() => {
+    // Fetch the user's ID.
+    fetch("/api/authLevel")
+    .then(resp => resp.json())
+    .then(resp => {
+      console.log(resp)
+      setOfficer(resp["isOfficer"]);
+      setOfficer(true);
+    })
+
+    // Fetch projects.
+    fetch("/api/project")
+    .then(res => res.json())
+    .then(resp => {
+      setProjects(resp)
+      console.log(resp)
+    })
+  }, [])
 
   // Sort them from projects array.
   for(let project of projects) {
@@ -20,17 +44,11 @@ const Projects = () => {
     } else {
       done.push(project);
     }
-  } 
+  }
 
-  useEffect(() => {
-    // Fetch the user's ID.
-    fetch("/api/authLevel")
-    .then(resp => resp.json())
-    .then(resp => {
-      console.log(resp)
-      setOfficer(resp["isOfficer"]);
-    })
-  }, [])
+  let enableModal = () => {
+    setAddProjectModalEnabled(true);
+  }
 
   return (
     <>
@@ -53,12 +71,12 @@ const Projects = () => {
 
       {/* Officer-only Add Project Modal Button */}
       { isOfficer ? 
-        <button className="bg-primary text-base-100 px-[25px] py-[10px] rounded-lg">Add Project</button>
+        <button className="bg-primary text-base-100 px-[25px] py-[10px] rounded-lg" onClick={enableModal}>Add Project</button>
         : undefined}
       
       {/* Exhibit */}
       {/* Load the projects that are currently in the works first. */}
-      <section className="exhibit w-4/5">
+      <section className="exhibit w-4/5 min-h-[328px]">
         <h1
           className="bg-gradient-to-t from-primary to-secondary 
               bg-clip-text text-4xl font-extrabold text-transparent md:text-2xl text-left">
@@ -69,7 +87,7 @@ const Projects = () => {
         ))}
       </section>
       {/* Load past projects that are done. */}
-      <section className="exhibit w-4/5">
+      <section className="exhibit w-4/5 min-h-[328px]">
         <h1
           className="bg-gradient-to-t from-primary to-secondary 
               bg-clip-text text-4xl font-extrabold text-transparent md:text-2xl text-left">
@@ -80,6 +98,7 @@ const Projects = () => {
         ))}
         
       </section>
+      <AddProjectModal enabled={addProjectModalEnabled} setEnabled={setAddProjectModalEnabled}/>
     </>
   );
 };

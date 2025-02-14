@@ -9,8 +9,12 @@ interface ProjectCardArguments {
 }
 
 const ProjectCard = ({project, propKey, isOfficer}: {project: Project, propKey: number, isOfficer: boolean}) => {
-  // If the project.logo is empty, we are repalcing it with the placeholder image
-  let projectBackground = project.logo == "" ? "images/SSEProjectPlaceholder.png" : project.logo
+  // If the project.logo is empty, we are replacing it with the placeholder image
+  let projectBackground = (
+    (project.logo == "") || 
+    (project.logo == undefined)
+  ) ? "images/SSEProjectPlaceholder.png" : project.logo
+
   
   // This is used for the transition. The opacity of the card uses this.
   let [cardOpacity, setOpacity] = useState(0)
