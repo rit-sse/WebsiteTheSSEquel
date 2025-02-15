@@ -1,12 +1,15 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { Dispatch, SetStateAction, useEffect } from "react";
 import ProjectCard from "./ProjectCard";
 import { Project } from "./projects";
 import { useState } from "react";
 import AddProjectModal from "./AddProjectModal";
 
 const Projects = () => {
-  const [projects, setProjects] = useState([]);
+  // projects has an array of Project[]
+  // Also, Dispatch<SetStateAction<never[]>> makes sure this format is followed. Otherwise, an error would occur
+  // Also ALSO, the above dispatch is apparently required so I can declare projects to be Project[], so that project.completed would not throw an error in VSCode
+  const [projects, setProjects]: [Project[], Dispatch<SetStateAction<never[]>>] = useState([]);
   const [isOfficer, setOfficer] = useState(false);
 
   // Enables the AddProject modal. setAddProjectModalEnabled is passed to the modal in order for certain functions (such as clicking the black background and the exit button) to close the modal.

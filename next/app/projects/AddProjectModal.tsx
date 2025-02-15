@@ -1,4 +1,6 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import ProjectModalInput from "./ProjectModalComponents/ProjectModalInput";
+import ProjectModalDropdown from "./ProjectModalComponents/ProjectModalDropdown";
 
 const AddProjectModal = ({
                             enabled,
@@ -8,6 +10,24 @@ const AddProjectModal = ({
                             enabled: boolean,
                             setEnabled: Function
                         }) => {
+
+    // useStates for the text inputs
+    const [titleText, setTitle] = useState("");
+    const [description, setDescription] = useState("");
+    const [selectUser, setUser] = useState(1);
+    const [progress, setProgress] = useState("");
+    const [repoLink, setRepoLink] = useState("");
+    const [contentURL, setContentURL] = useState("");
+    const [projectImage, setProjectImage] = useState("");
+
+    const [users, setUsers] = useState([]);
+    useEffect(() => {
+        fetch("/api/user")
+        .then(resp => resp.json())
+        .then((resp) => {
+            setUsers(resp)
+        })
+    }, [])
 
     // This sets the modal visiblity to false. setEnabled a function passed through as setAddProjectModal in ProjectModal.tsx
     let exit = () => {
@@ -23,7 +43,7 @@ const AddProjectModal = ({
                     <div className="absolute top-0 left-0 w-[100%] h-[100%] backdrop-blur-[15px] bg-black/25" onClick={exit}></div>
 
                     {/* Actual Modal Container */}
-                    <div className="relative w-[900px] h-[600px] z-[50] bg-base-100 rounded-lg overflow-hidden
+                    <div className="relative w-[900px] h-[700px] z-[50] bg-base-100 rounded-lg overflow-hidden
                                     flex justify-center items-center">
                         {/* This is the top accent bar. */}
                         <div className="absolute top-0 left-o w-[100%] h-[15px] bg-accent rounded-t-lg">
@@ -46,8 +66,26 @@ const AddProjectModal = ({
                                     </svg>
                                 </div>
                             </div>
+                            {/* Actual content of the Modal */}
+                            <div className="flex h-[90%] w-[100%] flex-col items-center">
+                                <ProjectModalInput label="Title" setTextState={setTitle} />
+                                <ProjectModalInput label="Description" setTextState={setDescription} isRichText={true}/>
+                                <ProjectModalDropdown text={"Select Lead"} setState={setUser} options={users} />
+                                <ProjectModalInput label="Progress" setTextState={setProgress} />
+                                <ProjectModalInput label="Repository Link" setTextState={setRepoLink} />
+                                <ProjectModalInput label="Content URL" setTextState={setContentURL} />
+                                <ProjectModalInput label="Project Image URL" setTextState={setProjectImage} />
 
+                                <div className="mt-[20px] flex w-full justify-end">
+                                    <div className="">
+                                        <button className="bg-base-300 p-[12px] px-[25px] rounded-lg">Add</button>
+                                        <button className="bg-base-200 p-[10px] px-[25px] rounded-lg ml-[15px]">Cancel</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+
+                        
                     </div>
             </div>
             : // Else, return something empty.
