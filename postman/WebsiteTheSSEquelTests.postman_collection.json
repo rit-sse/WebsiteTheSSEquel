@@ -2763,19 +2763,19 @@
 			]
 		},
 		{
-			"name": "userProject",
+			"name": "projectContributor",
 			"item": [
 				{
 					"name": "GET",
 					"item": [
 						{
-							"name": "UserProject Expect Items",
+							"name": "ProjectContributor Expect Items",
 							"event": [
 								{
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Response for GET /api/userProject\", function () {",
+											"pm.test(\"Response for GET /api/projectContributor\", function () {",
 											"    var jsonData = pm.response.json();",
 											"    console.log(jsonData);",
 											"    pm.expect(jsonData).to.eql([",
@@ -2847,14 +2847,14 @@
 									}
 								},
 								"url": {
-									"raw": "localhost:3000/api/userProject",
+									"raw": "localhost:3000/api/projectContributor",
 									"host": [
 										"localhost"
 									],
 									"port": "3000",
 									"path": [
 										"api",
-										"userProject"
+										"projectContributor"
 									]
 								}
 							},
@@ -2866,13 +2866,13 @@
 					"name": "POST",
 					"item": [
 						{
-							"name": "UserProject Created Item",
+							"name": "ProjectContributor Created Item",
 							"event": [
 								{
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Response for POST /api/userProject\", function () {",
+											"pm.test(\"Response for POST /api/projectContributor\", function () {",
 											"    var jsonData = pm.response.json();",
 											"    console.log(jsonData);",
 											"    pm.expect(jsonData).to.eql(",
@@ -2911,27 +2911,27 @@
 									}
 								},
 								"url": {
-									"raw": "localhost:3000/api/userProject",
+									"raw": "localhost:3000/api/projectContributor",
 									"host": [
 										"localhost"
 									],
 									"port": "3000",
 									"path": [
 										"api",
-										"userProject"
+										"projectContributor"
 									]
 								}
 							},
 							"response": []
 						},
 						{
-							"name": "UserProject Expected Items",
+							"name": "ProjectContributor Expected Items",
 							"event": [
 								{
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Response for GET /api/userProject\", function () {",
+											"pm.test(\"Response for GET /api/projectContributor\", function () {",
 											"    var jsonData = pm.response.json();",
 											"    console.log(jsonData);",
 											"    pm.expect(jsonData).to.eql([",
@@ -3018,14 +3018,14 @@
 									}
 								},
 								"url": {
-									"raw": "localhost:3000/api/userProject",
+									"raw": "localhost:3000/api/projectContributor",
 									"host": [
 										"localhost"
 									],
 									"port": "3000",
 									"path": [
 										"api",
-										"userProject"
+										"projectContributor"
 									]
 								}
 							},
@@ -3037,13 +3037,13 @@
 					"name": "PUT",
 					"item": [
 						{
-							"name": "UserProject Updated Item",
+							"name": "ProjectContributor Updated Item",
 							"event": [
 								{
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Response for PUT /api/userProject\", function () {",
+											"pm.test(\"Response for PUT /api/projectContributor\", function () {",
 											"    var jsonData = pm.response.json();",
 											"    console.log(jsonData);",
 											"    pm.expect(jsonData).to.eql(",
@@ -3082,27 +3082,27 @@
 									}
 								},
 								"url": {
-									"raw": "localhost:3000/api/userProject",
+									"raw": "localhost:3000/api/projectContributor",
 									"host": [
 										"localhost"
 									],
 									"port": "3000",
 									"path": [
 										"api",
-										"userProject"
+										"projectContributor"
 									]
 								}
 							},
 							"response": []
 						},
 						{
-							"name": "UserProject Expected Items",
+							"name": "ProjectContributor Expected Items",
 							"event": [
 								{
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Response for GET /api/userProject\", function () {",
+											"pm.test(\"Response for GET /api/projectContributor\", function () {",
 											"    var jsonData = pm.response.json();",
 											"    console.log(jsonData);",
 											"    pm.expect(jsonData).to.eql([",
@@ -3189,14 +3189,14 @@
 									}
 								},
 								"url": {
-									"raw": "localhost:3000/api/userProject",
+									"raw": "localhost:3000/api/projectContributor",
 									"host": [
 										"localhost"
 									],
 									"port": "3000",
 									"path": [
 										"api",
-										"userProject"
+										"projectContributor"
 									]
 								}
 							},
@@ -3208,13 +3208,13 @@
 					"name": "DELETE",
 					"item": [
 						{
-							"name": "UserProject Deleted Item",
+							"name": "ProjectContributor Deleted Item",
 							"event": [
 								{
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Response for DELETE /api/userProject\", function () {",
+											"pm.test(\"Response for DELETE /api/projectContributor\", function () {",
 											"    var jsonData = pm.response.json();",
 											"    console.log(jsonData);",
 											"    pm.expect(jsonData).to.eql(",
@@ -3253,27 +3253,27 @@
 									}
 								},
 								"url": {
-									"raw": "localhost:3000/api/userProject",
+									"raw": "localhost:3000/api/projectContributor",
 									"host": [
 										"localhost"
 									],
 									"port": "3000",
 									"path": [
 										"api",
-										"userProject"
+										"projectContributor"
 									]
 								}
 							},
 							"response": []
 						},
 						{
-							"name": "UserProject Expected Items",
+							"name": "ProjectContributor Expected Items",
 							"event": [
 								{
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Response for GET /api/userProject\", function () {",
+											"pm.test(\"Response for GET /api/projectContributor\", function () {",
 											"    var jsonData = pm.response.json();",
 											"    console.log(jsonData);",
 											"    pm.expect(jsonData).to.eql([",
@@ -3345,14 +3345,14 @@
 									}
 								},
 								"url": {
-									"raw": "localhost:3000/api/userProject",
+									"raw": "localhost:3000/api/projectContributor",
 									"host": [
 										"localhost"
 									],
 									"port": "3000",
 									"path": [
 										"api",
-										"userProject"
+										"projectContributor"
 									]
 								}
 							},
@@ -3364,13 +3364,13 @@
 					"name": "GET [id]",
 					"item": [
 						{
-							"name": "UserProject Expected Item",
+							"name": "ProjectContributor Expected Item",
 							"event": [
 								{
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Response for GET /api/userProject/1\", function () {",
+											"pm.test(\"Response for GET /api/projectContributor/1\", function () {",
 											"    var jsonData = pm.response.json();",
 											"    console.log(jsonData);",
 											"    pm.expect(jsonData).to.eql(",
@@ -3400,14 +3400,14 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "localhost:3000/api/userProject/1",
+									"raw": "localhost:3000/api/projectContributor/1",
 									"host": [
 										"localhost"
 									],
 									"port": "3000",
 									"path": [
 										"api",
-										"userProject",
+										"projectContributor",
 										"1"
 									]
 								}

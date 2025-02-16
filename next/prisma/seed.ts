@@ -596,8 +596,8 @@ async function seedProject() {
 	console.log({ project1, project2, project3 });
 }
 
-async function seedUserProject() {
-	const userProject1 = await prisma.projectContributor.upsert({
+async function seedProjectContributor() {
+	const projectContributor1 = await prisma.projectContributor.upsert({
 		where: { id: 1 },
 		update: {},
 		create: {
@@ -605,7 +605,7 @@ async function seedUserProject() {
 			projectId: 1,
 		},
 	});
-	const userProject2 = await prisma.projectContributor.upsert({
+	const projectContributor2 = await prisma.projectContributor.upsert({
 		where: { id: 2 },
 		update: {},
 		create: {
@@ -613,7 +613,7 @@ async function seedUserProject() {
 			projectId: 2,
 		},
 	});
-	const userProject3 = await prisma.projectContributor.upsert({
+	const projectContributor3 = await prisma.projectContributor.upsert({
 		where: { id: 3 },
 		update: {},
 		create: {
@@ -621,7 +621,7 @@ async function seedUserProject() {
 			projectId: 3,
 		},
 	});
-	console.log({ userProject1, userProject2, userProject3 });
+	console.log({ projectContributor1, projectContributor2, projectContributor3 });
 }
 
 async function main() {
@@ -643,7 +643,7 @@ async function main() {
 		await seedSession();
 		await seedVerificationToken();
 		await seedProject();
-		await seedUserProject();
+		await seedProjectContributor();
 	} catch (e) {
 		console.error(e);
 	}
