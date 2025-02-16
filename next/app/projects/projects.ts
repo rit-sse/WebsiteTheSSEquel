@@ -11,7 +11,8 @@ export interface Project{
     progress: string;
     repoLink: string;
     completed: boolean;
-    leadid: number
+    leadid: number;
+    projectImage: string;
 }
 
 // export const projectsData: Project[] = [

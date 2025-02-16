@@ -78,7 +78,7 @@ const AddProjectModal = ({
 
                                 <div className="mt-[20px] flex w-full justify-end">
                                     <div className="">
-                                        <button className="bg-base-300 p-[12px] px-[25px] rounded-lg">Add</button>
+                                        <button className="bg-success text-black p-[12px] px-[25px] rounded-lg">Add</button>
                                         <button className="bg-base-200 p-[10px] px-[25px] rounded-lg ml-[15px]">Cancel</button>
                                     </div>
                                 </div>
