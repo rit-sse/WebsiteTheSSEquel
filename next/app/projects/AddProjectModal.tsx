@@ -35,17 +35,23 @@ const AddProjectModal = ({
     }
 
     let upload = () => {
-        console.log(
-            {
-                "title": titleText,
-                "description": description,
-                "leadid": selectUser,
-                "progress": progress,
-                "repoLink": repoLink,
-                "contentURL": contentURL,
-                "projectImage": projectImage
+        let payload = {
+            "title": titleText,
+            "description": description,
+            "leadid": parseInt(selectUser),
+            "progress": progress,
+            "repoLink": repoLink,
+            "contentURL": contentURL,
+            "projectImage": projectImage
+        }
+        console.log(payload)
+        fetch("/api/project", {
+            method: "POST",
+            body: JSON.stringify(payload),
+            headers: {
+                "Content-Type": "application/json"
             }
-        )
+        })
     }
 
     return(
