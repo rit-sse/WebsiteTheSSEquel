@@ -33,6 +33,21 @@ const AddProjectModal = ({
     let exit = () => {
         setEnabled(false)
     }
+
+    let upload = () => {
+        console.log(
+            {
+                "title": titleText,
+                "description": description,
+                "leadid": selectUser,
+                "progress": progress,
+                "repoLink": repoLink,
+                "contentURL": contentURL,
+                "projectImage": projectImage
+            }
+        )
+    }
+
     return(
         <div>
             {/* Check if the Add Project Modal is enabled or not. */}
@@ -68,17 +83,17 @@ const AddProjectModal = ({
                             </div>
                             {/* Actual content of the Modal */}
                             <div className="flex h-[90%] w-[100%] flex-col items-center">
-                                <ProjectModalInput label="Title" setTextState={setTitle} />
-                                <ProjectModalInput label="Description" setTextState={setDescription} isRichText={true}/>
+                                <ProjectModalInput label="Title" setTextState={setTitle} presetValue={titleText}/>
+                                <ProjectModalInput label="Description" setTextState={setDescription} isRichText={true} presetValue={description}/>
                                 <ProjectModalDropdown text={"Select Lead"} setState={setUser} options={users} />
-                                <ProjectModalInput label="Progress" setTextState={setProgress} />
-                                <ProjectModalInput label="Repository Link" setTextState={setRepoLink} />
-                                <ProjectModalInput label="Content URL" setTextState={setContentURL} />
-                                <ProjectModalInput label="Project Image URL" setTextState={setProjectImage} />
+                                <ProjectModalInput label="Progress" setTextState={setProgress}  presetValue={progress}/>
+                                <ProjectModalInput label="Repository Link" setTextState={setRepoLink}  presetValue={repoLink}/>
+                                <ProjectModalInput label="Content URL" setTextState={setContentURL}  presetValue={contentURL}/>
+                                <ProjectModalInput label="Project Image URL" setTextState={setProjectImage}  presetValue={projectImage}/>
 
                                 <div className="mt-[20px] flex w-full justify-end">
                                     <div className="">
-                                        <button className="bg-success text-black p-[12px] px-[25px] rounded-lg">Add</button>
+                                        <button className="bg-success text-black p-[12px] px-[25px] rounded-lg" onClick={upload}>Add</button>
                                         <button className="bg-base-200 p-[10px] px-[25px] rounded-lg ml-[15px]">Cancel</button>
                                     </div>
                                 </div>

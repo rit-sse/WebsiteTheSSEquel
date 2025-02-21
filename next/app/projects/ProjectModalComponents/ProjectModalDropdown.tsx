@@ -9,9 +9,8 @@ interface ProjectModalDropdownArguments {
 
 const ProjectModalDropdown = ({text = "", setState, options, select = ""}: ProjectModalDropdownArguments) => {
     function changeValue(element: ChangeEvent<HTMLSelectElement>) {
-        console.log(element.target.value)
+        setState(element.target.value)
     }
-    console.log(options)
     return(
         <div className="flex w-full justify-between">
             <p>{text}</p>

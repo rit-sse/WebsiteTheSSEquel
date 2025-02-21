@@ -17,7 +17,7 @@ const ProjectModalInput = (
 ) => {
 
     const changeValue = (evt: FormEvent<HTMLTextAreaElement> | FormEvent<HTMLInputElement>) => {
-        setTextState(evt.currentTarget.value)
+        setTextState(evt.target.value)
     }
 
     return(
@@ -25,7 +25,7 @@ const ProjectModalInput = (
             <p>{label}</p>
             {   
                 isRichText ?
-                <textarea className="w-full bg-base-200" value={presetValue} onInput={changeValue}/>
+                <textarea className="w-full bg-base-200" value={presetValue} onChange={changeValue}/>
                 :
                 <input className="w-full bg-base-200" value={presetValue} onInput={changeValue}/>
             }
