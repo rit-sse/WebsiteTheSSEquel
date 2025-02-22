@@ -27,9 +27,10 @@ const ProjectModal = ({enabled, setEnabled, project, isOfficer}: ProjectModalInt
 
     // If the project.logo is empty, we are replacing it with the placeholder image
     let projectBackground = (
-        (project.logo == "") || 
-        (project.logo == undefined)
-    ) ? "images/SSEProjectPlaceholder.png" : project.logo
+        (project.projectImage == "") || 
+        (project.projectImage == undefined) ||
+        (project.projectImage == null)
+    ) ? "images/SSEProjectPlaceholder.png" : project.projectImage
 
     // This is quite the deceiving name. This just sets the modal visiblity to false. setEnabled a function passed through as setModalEnabled in ProjectModal.tsx
     let unload = () => {
@@ -110,7 +111,7 @@ const ProjectModal = ({enabled, setEnabled, project, isOfficer}: ProjectModalInt
                                 </div>
                             </div>
                             {/* Actual content of the Modal */}
-                            <div className="flex h-[90%] w-[100%] items-center justify-center">
+                            <div className="flex h-[90%] w-[100%] items-center justify-center relative  ">
                                 {/* Image of the project */}
                                 <div className="relative h-full w-full overflow-hidden rounded-l">
                                     {/* This is split into 3 parts.
@@ -122,59 +123,71 @@ const ProjectModal = ({enabled, setEnabled, project, isOfficer}: ProjectModalInt
                                     <div className="absolute top-0 left-0 w-[100%] h-[100%] backdrop-blur-[15px] bg-black/25 rounded-l"> </div>
                                     <img className="absolute w-full h-full object-contain z-20 rounded-l" src={projectBackground}/>
                                 </div>
-                                {/*  Text Container */}
-                                <div className="w-full h-full p-[0px] pl-[20px]">
+                                    {/*  Text Container */}
+                                    <div className="w-full h-full p-[0px] pl-[20px]">
+                                        {
+                                            editMode ?
+                                            <ProjectModalInput label="Title" setTextState={setProjectTitle} presetValue={projectTitle} />
+                                            :
+                                            undefined
+                                        }
+                                        {/* Lead */}
+                                        {
+                                            editMode ?
+                                                <ProjectModalDropdown text="Lead Select" setState={setLeadID} select={lead.name} options={users}/>
+                                            :
+                                            <p className="text-xl"><span className="font-bold">Lead:</span> {lead.name}</p>
+                                        
+                                        }
+                                        {/* Contact */}
+                                        {
+                                            editMode ?
+                                            undefined
+                                            :
+                                            <p className="text-xl"><span className="font-bold">Contact:</span> {lead.email}</p>
+                                        }
+                                        {/* Description */}
+                                        {
+                                            editMode ?
+                                            <ProjectModalInput label="Description" setTextState={setDescription} presetValue={project.description} />
+                                            :
+                                            <p className="text-lg mb-[10px]">{project.description}</p>
+                                        }
+                                        {/* Email */}
+                                        {
+                                            editMode ?
+                                            undefined
+                                            :
+                                            <ProjectLink url={"mailto:" + project.contact} text="Email"/>
+                                        }
+                                        {/* Repo Link */}
+                                        {
+                                            editMode ?
+                                            <ProjectModalInput label="Repository Link" setTextState={setRepoLink} presetValue={project.repoLink} />
+                                            :
+                                            <ProjectLink url={project.repoLink} text="Repo Link" />
+                                        }
+                                        {/* Project Image URL */}
+                                        {
+                                            editMode ?
+                                            <ProjectModalInput label="Project Image" setTextState={setRepoLink} presetValue={project.projectImage} />
+                                            :
+                                            undefined
+                                        }
+                                        
+                                    </div>
+
+                                    {/* Hear me out, a flex box might have been better to place these add/cancel buttons for the Edit view, but I was NOT trying to mess around with that. */}
                                     {
                                         editMode ?
-                                        <ProjectModalInput label="Title" setTextState={setProjectTitle} presetValue={projectTitle} />
+                                        <div className="absolute bottom-0 right-0">
+
+                                        <button className="bg-success text-black p-[12px] px-[25px] rounded-lg" >Edit</button>
+                                        <button className="bg-error p-[10px] px-[25px] rounded-lg ml-[15px]" >Delete</button>
+                                        </div>
                                         :
                                         undefined
                                     }
-                                    {/* Lead */}
-                                    {
-                                        editMode ?
-                                            <ProjectModalDropdown text="Lead Select" setState={setLeadID} select={lead.name} options={users}/>
-                                        :
-                                        <p className="text-xl"><span className="font-bold">Lead:</span> {lead.name}</p>
-                                    
-                                    }
-                                    {/* Contact */}
-                                    {
-                                        editMode ?
-                                        undefined
-                                        :
-                                        <p className="text-xl"><span className="font-bold">Contact:</span> {lead.email}</p>
-                                    }
-                                    {/* Description */}
-                                    {
-                                        editMode ?
-                                        <ProjectModalInput label="Description" setTextState={setDescription} presetValue={project.description} />
-                                        :
-                                        <p className="text-lg mb-[10px]">{project.description}</p>
-                                    }
-                                    {/* Email */}
-                                    {
-                                        editMode ?
-                                        undefined
-                                        :
-                                        <ProjectLink url={"mailto:" + project.contact} text="Email"/>
-                                    }
-                                    {/* Repo Link */}
-                                    {
-                                        editMode ?
-                                        <ProjectModalInput label="Repository Link" setTextState={setRepoLink} presetValue={project.repoLink} />
-                                        :
-                                        <ProjectLink url={project.repoLink} text="Repo Link" />
-                                    }
-                                    {/* Project Image URL */}
-                                    {
-                                        editMode ?
-                                        <ProjectModalInput label="Project Image" setTextState={setRepoLink} presetValue={project.projectImage} />
-                                        :
-                                        undefined
-                                    }
-                                    
-                                </div>
                             </div>
                         </div>
                     </div>

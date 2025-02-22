@@ -51,6 +51,8 @@ const AddProjectModal = ({
             headers: {
                 "Content-Type": "application/json"
             }
+        }).then(() => {
+            exit();
         })
     }
 
@@ -100,7 +102,7 @@ const AddProjectModal = ({
                                 <div className="mt-[20px] flex w-full justify-end">
                                     <div className="">
                                         <button className="bg-success text-black p-[12px] px-[25px] rounded-lg" onClick={upload}>Add</button>
-                                        <button className="bg-base-200 p-[10px] px-[25px] rounded-lg ml-[15px]">Cancel</button>
+                                        <button className="bg-base-200 p-[10px] px-[25px] rounded-lg ml-[15px]" onClick={exit}>Cancel</button>
                                     </div>
                                 </div>
                             </div>
