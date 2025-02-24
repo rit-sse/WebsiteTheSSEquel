@@ -67,6 +67,27 @@ const ProjectModal = ({enabled, setEnabled, project, isOfficer}: ProjectModalInt
         })
     }, [])
 
+    let editProject = () => {
+        let payload = {
+            id: project.id,
+            title: projectTitle,
+            descrption: desc,
+            repoLink: repoLink,
+            contentURL: project.contentURL
+        }
+
+        fetch("/api/project", {
+            method: "PUT",
+            body: JSON.stringify(payload),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then(() => {
+            unload()
+            location.reload()
+        })
+
+    }
     return(
         <div >
             {
@@ -158,7 +179,7 @@ const ProjectModal = ({enabled, setEnabled, project, isOfficer}: ProjectModalInt
                                             editMode ?
                                             undefined
                                             :
-                                            <ProjectLink url={"mailto:" + project.contact} text="Email"/>
+                                            <ProjectLink url={"mailto:" + lead.email} text="Email"/>
                                         }
                                         {/* Repo Link */}
                                         {
@@ -182,7 +203,7 @@ const ProjectModal = ({enabled, setEnabled, project, isOfficer}: ProjectModalInt
                                         editMode ?
                                         <div className="absolute bottom-0 right-0">
 
-                                        <button className="bg-success text-black p-[12px] px-[25px] rounded-lg" >Edit</button>
+                                        <button className="bg-success text-black p-[12px] px-[25px] rounded-lg" onClick={editProject}>Edit</button>
                                         <button className="bg-error p-[10px] px-[25px] rounded-lg ml-[15px]" >Delete</button>
                                         </div>
                                         :
