@@ -18,11 +18,21 @@ interface User {
     email: string
 }
 
+/**
+ * A ProjectModal gives the information for a project. If the user is an officer, additional features are presented such as the abiltiy to edit the project.
+ * @param enabled Whether the ProjectModal associated with a ProejctCard is enabled.
+ * @param setEnabled The useState that is associated with the enabled variable
+ * @param project The project information associated
+ * @param isOFficer If the user accessign this is an officer.
+ * @returns ProjectModal with any appropiate adjustments.
+ */
 const ProjectModal = ({enabled, setEnabled, project, isOfficer}: ProjectModalInterface ) => {
+    // Get the lead user.
     let [lead, setLead] = useState({
         name: "",
         email: ""
     });
+    // If the editing is enabled. some components are visible and disables other components not relevant to editing.
     const [editMode, setEditMode] = useState(false);
 
     // If the project.logo is empty, we are replacing it with the placeholder image
@@ -42,12 +52,17 @@ const ProjectModal = ({enabled, setEnabled, project, isOfficer}: ProjectModalInt
     let enableEditProjectModal = () => {
         setEditMode(true);
     }
+    
+    // This is used for our payload. These are adjustable variables.
+    // Using the project variable itself (which should not be done anyways) is inefficient.
+    // These correlate to the Project model in schema.prisma, make any adjustments if necessary.
     const [users, setUsers] = useState([]);
     const [projectTitle, setProjectTitle] = useState(project.title)
     const [leadid, setLeadID] = useState(project.leadid);
     const [desc, setDescription] = useState(project.description)
     const [repoLink, setRepoLink] = useState(project.repoLink)
     const [imageLink, setImageLink] = useState(project.projectImage)
+    // Get all the users.
     useEffect(() => {
         fetch("/api/user")
         .then(resp => resp.json())
@@ -56,6 +71,8 @@ const ProjectModal = ({enabled, setEnabled, project, isOfficer}: ProjectModalInt
         })
     }, [])
 
+    // Fetch the lead user and get their information.
+    // This iwll be displayed on the project modal.
     useEffect(() => {
         fetch("/api/user/" + project.leadid)
         .then(resp => resp.json())
@@ -68,7 +85,11 @@ const ProjectModal = ({enabled, setEnabled, project, isOfficer}: ProjectModalInt
         })
     }, [])
 
+    // Function that sends off our edited data to the server to make adjustments.
     let editProject = () => {
+        // This uses the variables made in the edit project modal
+        // id uses the project.id, as it is assumed to stay constant.
+        // That also goes for the contentURL
         let payload = {
             id: project.id,
             title: projectTitle,
@@ -78,6 +99,8 @@ const ProjectModal = ({enabled, setEnabled, project, isOfficer}: ProjectModalInt
             projectImage: imageLink
         }
 
+        // Send a PUT request to /api/project, with the edited project information alongside appropiate headers.
+        // Once done, we unload and refresh the page to get the updated projects.
         fetch("/api/project", {
             method: "PUT",
             body: JSON.stringify(payload),
@@ -148,6 +171,12 @@ const ProjectModal = ({enabled, setEnabled, project, isOfficer}: ProjectModalInt
                                 </div>
                                     {/*  Text Container */}
                                     <div className="w-full h-full p-[0px] pl-[20px]">
+                                        {/* 
+                                            There are two layers for this:
+                                            Edit Mode and Normal mode.
+                                            Edit Mode creates inputs that are adjustable, and hiding those that are not relevant.
+                                            Normal Mode shows like, well, a normal display.
+                                        */}
                                         {
                                             editMode ?
                                             <ProjectModalInput label="Title" setTextState={setProjectTitle} presetValue={projectTitle} />
@@ -163,6 +192,7 @@ const ProjectModal = ({enabled, setEnabled, project, isOfficer}: ProjectModalInt
                                         
                                         }
                                         {/* Contact */}
+                                        {/* This disappears if edit mode is enabled, as its associated with the lead, so therefore it is not needed */}
                                         {
                                             editMode ?
                                             undefined
@@ -177,6 +207,7 @@ const ProjectModal = ({enabled, setEnabled, project, isOfficer}: ProjectModalInt
                                             <p className="text-lg mb-[10px]">{project.description}</p>
                                         }
                                         {/* Email */}
+                                        {/* This disappears if edit mode is enabled, as its associated with the lead, so therefore it is not needed */}
                                         {
                                             editMode ?
                                             undefined

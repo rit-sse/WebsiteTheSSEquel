@@ -15,8 +15,6 @@ const ProjectCard = ({project, propKey, isOfficer}: {project: Project, propKey: 
     (project.projectImage == undefined) ||
     (project.projectImage == null)
   ) ? "images/SSEProjectPlaceholder.png" : project.projectImage
-
-
   
   // This is used for the transition. The opacity of the card uses this.
   let [cardOpacity, setOpacity] = useState(0)
@@ -24,6 +22,8 @@ const ProjectCard = ({project, propKey, isOfficer}: {project: Project, propKey: 
   // Enables the modal. setModalEnabled is passed to the modal in order for certain functions (such as clicking the black background and the exit button) to close the modal.
   let [modalEnabled, setModalEnabled] = useState(false);
 
+  // This is the beginning transition. This is responsible for the "sliding up" effect on load.
+  // This gets sets to an empty string on useEffect
   let [translationLoad, setTransitionDelay] = useState("translateY(15px)");
 
   // Used as the onClick function to appear the Modal
@@ -36,7 +36,9 @@ const ProjectCard = ({project, propKey, isOfficer}: {project: Project, propKey: 
   useEffect(() => {
     propKey += 1;
     setTimeout(() => {
+        // MAKE IT APPEAR!!
         setOpacity(1);
+        // MAKE IT SLIDE UP!
         setTransitionDelay("");
     }, 30 * propKey);
   }, [])

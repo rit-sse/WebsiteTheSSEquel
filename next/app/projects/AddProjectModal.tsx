@@ -2,6 +2,12 @@ import React, { useEffect, useState } from "react";
 import ProjectModalInput from "./ProjectModalComponents/ProjectModalInput";
 import ProjectModalDropdown from "./ProjectModalComponents/ProjectModalDropdown";
 
+/**
+ * Creates the AddProjectModal. This is where Officers or other authorized users can create projects
+ * @param enabled If the modal is enabled
+ * @param setEnabled The useState that is associated with the enabled value. 
+ * @returns AddProjectModal with any adjustments
+ */
 const AddProjectModal = ({
                             enabled,
                             setEnabled
@@ -12,6 +18,9 @@ const AddProjectModal = ({
                         }) => {
 
     // useStates for the text inputs
+    /**
+     * I hope this is pretty self-explainatory. Though if the Project Model changes in the near future, reflect it with "model Project" in schema.prisma
+     */
     const [titleText, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [selectUser, setUser] = useState(1);
@@ -21,11 +30,12 @@ const AddProjectModal = ({
     const [projectImage, setProjectImage] = useState("");
 
     const [users, setUsers] = useState([]);
+    // Get all the users
     useEffect(() => {
-        fetch("/api/user")
-        .then(resp => resp.json())
+        fetch("/api/user") // Fetch users
+        .then(resp => resp.json()) // JSON parse it.
         .then((resp) => {
-            setUsers(resp)
+            setUsers(resp) // Set our user array.
         })
     }, [])
 
@@ -34,17 +44,21 @@ const AddProjectModal = ({
         setEnabled(false)
     }
 
+    // Uploading function whwen the user is done.
     let upload = () => {
+        // The payload. This uses all the variables set before.
+        // TODO: Make sure there are checks in place so there are no values missing.
         let payload = {
             "title": titleText,
             "description": description,
-            "leadid": parseInt(selectUser),
+            "leadid": parseInt(selectUser), // This might seem a bit sloppy, but it was somehow getting passed through as a string...
             "progress": progress,
             "repoLink": repoLink,
             "contentURL": contentURL,
             "projectImage": projectImage
         }
-        console.log(payload)
+        // Make a POST request to /api/project with the payload, alongside appropiate headers. Once done, exit the Project Modal.
+        // TODO: Make a message alerting the user that the process started, this prevents the user from spamming that Add button.
         fetch("/api/project", {
             method: "POST",
             body: JSON.stringify(payload),
@@ -91,6 +105,7 @@ const AddProjectModal = ({
                             </div>
                             {/* Actual content of the Modal */}
                             <div className="flex h-[90%] w-[100%] flex-col items-center">
+                                {/* These ProjectModalInputs are associated to their respective variables. */}
                                 <ProjectModalInput label="Title" setTextState={setTitle} presetValue={titleText}/>
                                 <ProjectModalInput label="Description" setTextState={setDescription} isRichText={true} presetValue={description}/>
                                 <ProjectModalDropdown text={"Select Lead"} setState={setUser} options={users} />
@@ -99,19 +114,24 @@ const AddProjectModal = ({
                                 <ProjectModalInput label="Content URL" setTextState={setContentURL}  presetValue={contentURL}/>
                                 <ProjectModalInput label="Project Image URL" setTextState={setProjectImage}  presetValue={projectImage}/>
 
+                                {/* 
+                                    Add/Cancel button container 
+                                    Creates spacing at the top, and it uses a flex to shove all the buttons to the right.
+                                */}
                                 <div className="mt-[20px] flex w-full justify-end">
+                                    {/* Sppoky div! Don't worry, this just groups the buttons together. */}
                                     <div className="">
+                                        {/* Add button */}
                                         <button className="bg-success text-black p-[12px] px-[25px] rounded-lg" onClick={upload}>Add</button>
+                                        {/* Cancel button */}
                                         <button className="bg-base-200 p-[10px] px-[25px] rounded-lg ml-[15px]" onClick={exit}>Cancel</button>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
-                        
                     </div>
             </div>
-            : // Else, return something empty.
+            : // If the add project modal enabled is not true (aka no events made it open), return something empty.
             undefined}
         </div>
     )
