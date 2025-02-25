@@ -28,7 +28,6 @@ const Projects = () => {
     .then(resp => {
       console.log(resp)
       setOfficer(resp["isOfficer"]);
-      setOfficer(true);
     })
 
     // Fetch projects.
