@@ -115,8 +115,19 @@ const ProjectModal = ({enabled, setEnabled, project, isOfficer}: ProjectModalInt
             unload()
             location.reload()
         })
-
     }
+
+    // Sppoky
+    let deleteProject = () => {
+        fetch("/api/project", {
+            method: "DELETE",
+            body: JSON.stringify({id: project.id})
+        }).then(() => {
+            unload();
+            location.reload()
+        })
+    }
+
     return(
         <div >
             {
@@ -247,7 +258,7 @@ const ProjectModal = ({enabled, setEnabled, project, isOfficer}: ProjectModalInt
                                         <div className="absolute bottom-0 right-0">
 
                                         <button className="bg-success text-black p-[12px] px-[25px] rounded-lg" onClick={editProject}>Edit</button>
-                                        <button className="bg-error p-[10px] px-[25px] rounded-lg ml-[15px]" >Delete</button>
+                                        <button className="bg-error p-[10px] px-[25px] rounded-lg ml-[15px]" onClick={deleteProject}>Delete</button>
                                         </div>
                                         :
                                         undefined
