@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import ProjectModalInput from "./ProjectModalComponents/ProjectModalInput";
 import ProjectModalDropdown from "./ProjectModalComponents/ProjectModalDropdown";
+import ProjectModalCheckbox from "./ProjectModalComponents/ProjectModalCheckbox";
 
 /**
  * Creates the AddProjectModal. This is where Officers or other authorized users can create projects
@@ -28,6 +29,7 @@ const AddProjectModal = ({
     const [repoLink, setRepoLink] = useState("");
     const [contentURL, setContentURL] = useState("");
     const [projectImage, setProjectImage] = useState("");
+    const [completed, setCompleted] = useState(false);
 
     const [users, setUsers] = useState([]);
     // Get all the users
@@ -55,7 +57,8 @@ const AddProjectModal = ({
             "progress": progress,
             "repoLink": repoLink,
             "contentURL": contentURL,
-            "projectImage": projectImage
+            "projectImage": projectImage,
+            "completed": completed
         }
         // Make a POST request to /api/project with the payload, alongside appropiate headers. Once done, exit the Project Modal.
         // TODO: Make a message alerting the user that the process started, this prevents the user from spamming that Add button.
@@ -67,6 +70,7 @@ const AddProjectModal = ({
             }
         }).then(() => {
             exit();
+            location.reload()
         })
     }
 
@@ -104,7 +108,7 @@ const AddProjectModal = ({
                                 </div>
                             </div>
                             {/* Actual content of the Modal */}
-                            <div className="flex h-[90%] w-[100%] flex-col items-center">
+                            <div className="flex h-[90%] w-[100%] flex-col items-center overflow-y-scroll">
                                 {/* These ProjectModalInputs are associated to their respective variables. */}
                                 <ProjectModalInput label="Title" setTextState={setTitle} presetValue={titleText}/>
                                 <ProjectModalInput label="Description" setTextState={setDescription} isRichText={true} presetValue={description}/>
@@ -113,7 +117,7 @@ const AddProjectModal = ({
                                 <ProjectModalInput label="Repository Link" setTextState={setRepoLink}  presetValue={repoLink}/>
                                 <ProjectModalInput label="Content URL" setTextState={setContentURL}  presetValue={contentURL}/>
                                 <ProjectModalInput label="Project Image URL" setTextState={setProjectImage}  presetValue={projectImage}/>
-
+                                <ProjectModalCheckbox label="Completed" checked={completed} setChecked={setCompleted}/>
                                 {/* 
                                     Add/Cancel button container 
                                     Creates spacing at the top, and it uses a flex to shove all the buttons to the right.

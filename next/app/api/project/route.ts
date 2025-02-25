@@ -14,9 +14,9 @@ export async function POST(request: Request) {
     return new Response("Invalid JSON", { status: 422 });
   }
 
-  if (!("title" in body && "description" in body && "leadid" in body)) {
+  if (!("title" in body && "description" in body && "leadid" in body && "completed" in body)) {
     return new Response(
-      "'title', 'description', 'leadid' must be included in the body",
+      "'title', 'description', 'leadid', 'completed' must be included in the body",
       {
         status: 400,
       }
@@ -32,6 +32,9 @@ export async function POST(request: Request) {
   if (typeof body.leadid != "number") {
     return new Response("'leadid' must be a number", { status: 422 });
   }
+  if (typeof body.completed != "boolean") {
+    return new Response("'completed' must be a number", { status: 422 });
+  }
 
   const data: {
     title: string;
@@ -41,7 +44,8 @@ export async function POST(request: Request) {
     contentURL?: string;
     progress?: string;
     projectImage?: string;
-  } = { title: body.title, description: body.description, leadid: body.leadid };
+    completed: boolean;
+  } = { title: body.title, description: body.description, leadid: body.leadid, completed: body.completed };
 
   if ("repoLink" in body) {
     if (typeof body.repoLink != "string") {
@@ -66,6 +70,12 @@ export async function POST(request: Request) {
       return new Response("'projectImage' must be a string", { status: 422 });
     }
     data.projectImage = body.projectImage;
+  }
+  if ("completed" in body) {
+    if (typeof body.completed != "boolean") {
+      return new Response("'completed' must be a boolean", { status: 422 });
+    }
+    data.completed = body.completed;
   }
 
   const project = await prisma.project.create({
@@ -106,6 +116,9 @@ export async function PUT(request: Request) {
     description?: string;
     repoLink?: string;
     contentURL?: string;
+    leadid?: number;
+    projectImage?: string;
+    completed?: boolean;
   } = {};
   if ("title" in body) {
     if (typeof body.title != "string") {
@@ -130,6 +143,24 @@ export async function PUT(request: Request) {
       return new Response("'contentURL' must be a string", { status: 422 });
     }
     data.contentURL = body.contentURL;
+  }
+  if ("leadid" in body) {
+    if (typeof body.leadid != "number") {
+      return new Response("'leadid' must be a number", { status: 422 });
+    }
+    data.leadid = body.leadid;
+  }
+  if ("projectImage" in body) {
+    if (typeof body.projectImage != "string") {
+      return new Response("'projectImage' must be a string", { status: 422 });
+    }
+    data.projectImage = body.projectImage;
+  }
+  if ("completed" in body) {
+    if (typeof body.completed != "boolean") {
+      return new Response("'completed' must be a boolean", { status: 422 });
+    }
+    data.completed = body.completed;
   }
 
   const project = await prisma.project.update({

@@ -3,6 +3,7 @@ import { Project } from "./projects";
 import ProjectLink from "./ProjectLink";
 import ProjectModalInput from "./ProjectModalComponents/ProjectModalInput";
 import ProjectModalDropdown from "./ProjectModalComponents/ProjectModalDropdown";
+import ProjectModalCheckbox from "./ProjectModalComponents/ProjectModalCheckbox";
 
 // This is used to structure the arguments for the Project Modal
 interface ProjectModalInterface {
@@ -62,6 +63,7 @@ const ProjectModal = ({enabled, setEnabled, project, isOfficer}: ProjectModalInt
     const [desc, setDescription] = useState(project.description)
     const [repoLink, setRepoLink] = useState(project.repoLink)
     const [imageLink, setImageLink] = useState(project.projectImage)
+    const [completed, setCompleted] = useState(project.completed);
     // Get all the users.
     useEffect(() => {
         fetch("/api/user")
@@ -96,7 +98,9 @@ const ProjectModal = ({enabled, setEnabled, project, isOfficer}: ProjectModalInt
             description: desc,
             repoLink: repoLink,
             contentURL: project.contentURL,
-            projectImage: imageLink
+            leadid: parseInt(leadid),
+            projectImage: imageLink,
+            completed: completed
         }
 
         // Send a PUT request to /api/project, with the edited project information alongside appropiate headers.
@@ -228,7 +232,13 @@ const ProjectModal = ({enabled, setEnabled, project, isOfficer}: ProjectModalInt
                                             :
                                             undefined
                                         }
-                                        
+                                        {/* Project Completed */}
+                                        {
+                                            editMode ?
+                                            <ProjectModalCheckbox label="Completed" checked={completed} setChecked={setCompleted} />
+                                            :
+                                            undefined
+                                        }
                                     </div>
 
                                     {/* Hear me out, a flex box might have been better to place these add/cancel buttons for the Edit view, but I was NOT trying to mess around with that. */}

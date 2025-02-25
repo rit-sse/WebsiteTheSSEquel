@@ -311,6 +311,9 @@ model Project {
 
     // A link to an image representing the project
     projectImage String?
+    
+    // Determines if the project has been completed or not
+    completed Boolean @default(false)
 
     // Relational Fields
     lead         User                 @relation(fields: [leadid], references: [id])
