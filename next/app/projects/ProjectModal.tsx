@@ -47,6 +47,7 @@ const ProjectModal = ({enabled, setEnabled, project, isOfficer}: ProjectModalInt
     const [leadid, setLeadID] = useState(project.leadid);
     const [desc, setDescription] = useState(project.description)
     const [repoLink, setRepoLink] = useState(project.repoLink)
+    const [imageLink, setImageLink] = useState(project.projectImage)
     useEffect(() => {
         fetch("/api/user")
         .then(resp => resp.json())
@@ -71,9 +72,10 @@ const ProjectModal = ({enabled, setEnabled, project, isOfficer}: ProjectModalInt
         let payload = {
             id: project.id,
             title: projectTitle,
-            descrption: desc,
+            description: desc,
             repoLink: repoLink,
-            contentURL: project.contentURL
+            contentURL: project.contentURL,
+            projectImage: imageLink
         }
 
         fetch("/api/project", {
@@ -170,7 +172,7 @@ const ProjectModal = ({enabled, setEnabled, project, isOfficer}: ProjectModalInt
                                         {/* Description */}
                                         {
                                             editMode ?
-                                            <ProjectModalInput label="Description" setTextState={setDescription} presetValue={project.description} />
+                                            <ProjectModalInput label="Description" setTextState={setDescription} presetValue={desc} isRichText={true}/>
                                             :
                                             <p className="text-lg mb-[10px]">{project.description}</p>
                                         }
@@ -184,14 +186,14 @@ const ProjectModal = ({enabled, setEnabled, project, isOfficer}: ProjectModalInt
                                         {/* Repo Link */}
                                         {
                                             editMode ?
-                                            <ProjectModalInput label="Repository Link" setTextState={setRepoLink} presetValue={project.repoLink} />
+                                            <ProjectModalInput label="Repository Link" setTextState={setRepoLink} presetValue={repoLink} />
                                             :
                                             <ProjectLink url={project.repoLink} text="Repo Link" />
                                         }
                                         {/* Project Image URL */}
                                         {
                                             editMode ?
-                                            <ProjectModalInput label="Project Image" setTextState={setRepoLink} presetValue={project.projectImage} />
+                                            <ProjectModalInput label="Project Image" setTextState={setImageLink} presetValue={imageLink} />
                                             :
                                             undefined
                                         }

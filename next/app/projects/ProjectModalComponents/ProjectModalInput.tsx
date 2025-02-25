@@ -27,7 +27,7 @@ const ProjectModalInput = (
                 isRichText ?
                 <textarea className="w-full bg-base-200" value={presetValue} onChange={changeValue}/>
                 :
-                <input className="w-full bg-base-200" value={presetValue} onInput={changeValue}/>
+                <input className="w-full bg-base-200" value={presetValue} onChange={changeValue}/>
             }
         </div>
     )
