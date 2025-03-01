@@ -36,10 +36,10 @@ const ProjectModalDropdown = ({text = "", setState, options, select = ""}: Proje
                     if (element.name == select) {
                         // If the condition succeeds, return the option as selected.
                         // I did not make a check if theres duplicates, as I assume there are no duplicate names
-                        return <option value={element.id} selected={true}>{element.name}</option>
+                        return <option value={element.id} selected={true} key={key}>{element.name}</option>
                     } 
                     // Return as normal.
-                    return <option value={element.id}>{element.name}</option>
+                    return <option value={element.id} key={key}>{element.name}</option>
                 })}
             </select>
         </div>
