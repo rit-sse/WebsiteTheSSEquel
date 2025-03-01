@@ -78,7 +78,7 @@ const Projects = () => {
       
       {/* Exhibit */}
       {/* Load the projects that are currently in the works first. */}
-      <section className="exhibit w-4/5 min-h-[328px]">
+      <section className="exhibit w-4/5 min-h-[400px]">
         <h1
           className="bg-gradient-to-t from-primary to-secondary 
               bg-clip-text text-4xl font-extrabold text-transparent md:text-2xl text-left">
@@ -89,7 +89,7 @@ const Projects = () => {
         ))}
       </section>
       {/* Load past projects that are done. */}
-      <section className="exhibit w-4/5 min-h-[328px]">
+      <section className="exhibit w-4/5 min-h-[400px]">
         <h1
           className="bg-gradient-to-t from-primary to-secondary 
               bg-clip-text text-4xl font-extrabold text-transparent md:text-2xl text-left">

@@ -48,6 +48,27 @@ const AddProjectModal = ({
 
     // Uploading function whwen the user is done.
     let upload = () => {
+        // Lets check for the fields if they are valid. If they are not, they get pushed to invalidFields
+        // We do not need to check selectUser as there is a default (1)
+        // We are trimming these fields to prevent white-space from succeeding.
+        let invalidFields = [];
+        if(titleText.trim() == "")
+            invalidFields.push("title");
+        if(description.trim() == "")
+            invalidFields.push("description");
+        if(progress.trim() == "")
+            invalidFields.push("progress");
+        if(repoLink.trim() == "")
+            invalidFields.push("repoLink")
+        if(contentURL.trim() == "")
+            invalidFields.push("contentURL");    
+
+        // If invalidFields captured any cases, then we know something went wrong, alert the user, and join the missing fields into a string.
+        if(invalidFields.length > 0) {
+            alert("The required fields: \n\- " + invalidFields.join("\n\- ") + " \nare empty!")
+            return;
+        }
+
         // The payload. This uses all the variables set before.
         // TODO: Make sure there are checks in place so there are no values missing.
         let payload = {
@@ -84,7 +105,7 @@ const AddProjectModal = ({
                     <div className="absolute top-0 left-0 w-[100%] h-[100%] backdrop-blur-[15px] bg-black/25" onClick={exit}></div>
 
                     {/* Actual Modal Container */}
-                    <div className="relative w-[900px] h-[700px] z-[50] bg-base-100 rounded-lg overflow-hidden
+                    <div className="relative w-[900px] h-[800px] z-[50] bg-base-100 rounded-lg overflow-hidden
                                     flex justify-center items-center">
                         {/* This is the top accent bar. */}
                         <div className="absolute top-0 left-o w-[100%] h-[15px] bg-accent rounded-t-lg">
