@@ -59,9 +59,7 @@ const AddProjectModal = ({
         if(progress.trim() == "")
             invalidFields.push("progress");
         if(repoLink.trim() == "")
-            invalidFields.push("repoLink")
-        if(contentURL.trim() == "")
-            invalidFields.push("contentURL");    
+            invalidFields.push("repoLink")  
 
         // If invalidFields captured any cases, then we know something went wrong, alert the user, and join the missing fields into a string.
         if(invalidFields.length > 0) {
@@ -72,12 +70,17 @@ const AddProjectModal = ({
             return;
         }
 
+        // This might seem a bit sloppy, but it was somehow getting passed through as a string...
+        let selectUserID: any = selectUser;
+        if(typeof selectUserID == "string" || selectUserID instanceof String) {
+            selectUserID = parseInt(selectUserID.toString())
+        }
         // The payload. This uses all the variables set before.
         // TODO: Make sure there are checks in place so there are no values missing.
         let payload = {
             "title": titleText,
             "description": description,
-            "leadid": parseInt(selectUser), // This might seem a bit sloppy, but it was somehow getting passed through as a string...
+            "leadid": selectUserID, 
             "progress": progress,
             "repoLink": repoLink,
             "contentURL": contentURL,
@@ -134,11 +137,11 @@ const AddProjectModal = ({
                             {/* Actual content of the Modal */}
                             <div className="flex h-[90%] w-[100%] flex-col items-center overflow-y-scroll">
                                 {/* These ProjectModalInputs are associated to their respective variables. */}
-                                <ProjectModalInput label="Title" setTextState={setTitle} presetValue={titleText}/>
-                                <ProjectModalInput label="Description" setTextState={setDescription} isRichText={true} presetValue={description}/>
+                                <ProjectModalInput label="Title *" setTextState={setTitle} presetValue={titleText}/>
+                                <ProjectModalInput label="Description *" setTextState={setDescription} isRichText={true} presetValue={description}/>
                                 <ProjectModalDropdown text={"Select Lead"} setState={setUser} options={users} />
-                                <ProjectModalInput label="Progress" setTextState={setProgress}  presetValue={progress}/>
-                                <ProjectModalInput label="Repository Link" setTextState={setRepoLink}  presetValue={repoLink}/>
+                                <ProjectModalInput label="Progress *" setTextState={setProgress}  presetValue={progress}/>
+                                <ProjectModalInput label="Repository Link *" setTextState={setRepoLink}  presetValue={repoLink}/>
                                 <ProjectModalInput label="Content URL" setTextState={setContentURL}  presetValue={contentURL}/>
                                 <ProjectModalInput label="Project Image URL" setTextState={setProjectImage}  presetValue={projectImage}/>
                                 <ProjectModalCheckbox label="Completed" checked={completed} setChecked={setCompleted}/>

@@ -89,6 +89,11 @@ const ProjectModal = ({enabled, setEnabled, project, isOfficer}: ProjectModalInt
 
     // Function that sends off our edited data to the server to make adjustments.
     let editProject = () => {
+        // This might seem a bit sloppy, but it was somehow getting passed through as a string...
+        let selectUserID: any = leadid;
+        if(typeof selectUserID == "string" || selectUserID instanceof String) {
+            selectUserID = parseInt(selectUserID.toString())
+        }
         // This uses the variables made in the edit project modal
         // id uses the project.id, as it is assumed to stay constant.
         // That also goes for the contentURL
@@ -98,7 +103,7 @@ const ProjectModal = ({enabled, setEnabled, project, isOfficer}: ProjectModalInt
             description: desc,
             repoLink: repoLink,
             contentURL: project.contentURL,
-            leadid: parseInt(leadid),
+            leadid: selectUserID,
             projectImage: imageLink,
             completed: completed
         }
