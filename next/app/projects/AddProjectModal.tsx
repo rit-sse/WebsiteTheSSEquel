@@ -65,6 +65,9 @@ const AddProjectModal = ({
 
         // If invalidFields captured any cases, then we know something went wrong, alert the user, and join the missing fields into a string.
         if(invalidFields.length > 0) {
+            // Ok this looks REALLY weird but what it does is combined 3 strings together.
+            // First substring and the last substring are modified so that when we join invalidFields, it'll show up as a proper list.
+            // a.k.a Each field will be split with a "- (invalid field)" without it going on the same line as the first and last substrings.
             alert("The required fields: \n\- " + invalidFields.join("\n\- ") + " \nare empty!")
             return;
         }
