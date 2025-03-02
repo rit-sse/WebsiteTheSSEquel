@@ -24,8 +24,15 @@ const ProjectModalInput = (
 ) => {
 
     // Any onChange events fire this. The setTextSTate is fired with target's (the element) value.
-    const changeValue = (evt: FormEvent<HTMLTextAreaElement> | FormEvent<HTMLInputElement>) => {
-        setTextState(evt.target.value)
+    const changeValue_rich = (evt: FormEvent<HTMLTextAreaElement>) => {
+        let target = evt.target as HTMLTextAreaElement;
+        setTextState(target.value);
+    }
+
+    // Any onChange events fire this. The setTextSTate is fired with target's (the element) value.
+    const changeValue_input = (evt: FormEvent<HTMLInputElement>) => {
+        let target = evt.target as HTMLInputElement;
+        setTextState(target.value);
     }
 
     return(
@@ -36,9 +43,9 @@ const ProjectModalInput = (
             {/* The actual input. If isRichText, the top one is used, otherwise, the bottom will be used */}
             {   
                 isRichText ?
-                <textarea className="w-full bg-base-200" value={presetValue} onChange={changeValue}/>
+                <textarea className="w-full bg-base-200" value={presetValue} onChange={changeValue_rich}/>
                 :
-                <input className="w-full bg-base-200" value={presetValue} onChange={changeValue}/>
+                <input className="w-full bg-base-200" value={presetValue} onChange={changeValue_input}/>
             }
         </div>
     )
