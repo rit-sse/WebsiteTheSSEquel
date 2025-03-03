@@ -3,10 +3,12 @@ import React from "react";
 import TimeCard from "./mentorTimeCard";
 import { mockmentors } from "./mentor";
 import MentorBoard from "./mentorBoard";
+import MentorList from "./mentorList";
 
 export default function mentoring() {
     return(<>
-        <div className="flex flex-col items-center w-full h-screen max-w-screen-xl">
+        <div className="">
+            <MentorList/>
             <MentorBoard/>
         </div>
     </>)
