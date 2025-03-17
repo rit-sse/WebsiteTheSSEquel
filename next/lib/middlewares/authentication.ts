@@ -105,6 +105,8 @@ const ROUTES: { [key: string]: AuthVerifier } = {
   schedule: nonGetMentorVerifier,
   skill: nonGetOfficerVerifier,
   user: nonGetOfficerVerifier,
+  project: nonGetOfficerVerifier,
+  projectContributor: nonGetOfficerVerifier,
 };
 
 const accessDenied = (authType: string) => {
