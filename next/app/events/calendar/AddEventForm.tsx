@@ -58,11 +58,13 @@ export default function AddEventForm ({ isOpen, onClose, events, setEvents }: Fo
         const idString = newEvent.id.toString();
 
         // Post to Google Calendar
+        // Min Length required for an ID in Google Calendar API
+        let minLengthID = 5; 
         await fetch('http://localhost:3000/api/event/calendar', { 
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                id: "0".repeat(5 - idString.length).concat(idString),
+                id: "0".repeat(minLengthID - idString.length).concat(idString),
                 title: eventName,
                 location: location,
                 description: description,
