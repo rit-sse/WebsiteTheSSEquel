@@ -7,7 +7,7 @@ import AuthButton from "./AuthButton";
 import MobileNavDropdown from "./MobileNavDropdown";
 import NavItem, { NavItemProps } from "./NavItem";
 
-const navItems: NavItemProps[] = [
+const navItems: (NavItemProps & { render?: React.ReactNode})[] = [
     {
         title: "Home",
         route: "/",
@@ -73,6 +73,7 @@ const navItems: NavItemProps[] = [
     },
     {
         title: "Login",
+        render: <AuthButton />
     }
 ];
 
@@ -107,13 +108,9 @@ const Navbar: React.FC = () => {
                 <div className="hidden md:visible md:inline-flex">
                     <ul className="inline-flex flex-row flex-nowrap justify-between text-center text-lg">
                         {navItems.map((navItem, index) => (
-                            navItem.title === "Login" ? (
-                                <li className="flex flex-row justify-center items-center" key={index}>
-                                    <AuthButton />
-                                </li>
-                            ) : (
-                                <NavItem key={index} {...navItem} onClickFunc={blurOnClick} />
-                            )
+                            <li className="flex flex-row justify-center items-center" key={index}>
+                                {navItem.render || <NavItem key={index} {...navItem} onClickFunc={blurOnClick} />}
+                            </li>
                         ))}
                         
                     </ul>
