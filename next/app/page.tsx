@@ -1,13 +1,24 @@
 // This file renders the home page route (/) of the website.
 // We know that this is the homepage because this file resides in the root of the `app` directory.
 
-import Image from 'next/image'
 import { CTAButton } from '@/components/common/CTAButton';
 import HomepageContent from './HomepageContent';
-import { UpcomingEvents } from './HomepageContent';
 import { EventCard } from './events/EventCard';
+import { Event } from "./events/event";
+import { compareDateStrings, formatDate } from './events/calendar/utils';
 
-export default function Home() {
+export default async function Home() {
+
+    let events: Event[] = await fetch('http://localhost:3000/api/event').then((resp) => resp.json());
+
+    // Only display first 3 upcoming events
+    events = events.filter((event) => {
+        return (Date.now() - (new Date(event.date).getTime())) < 0; // is negative if event is in the future
+    });
+    events = events.sort((event1, event2) => compareDateStrings(event1.date, event2.date))
+    events = events.slice(0, 3);
+    console.log(events);
+
     return (
         <div className='space-y-24'>
             {/* Hero section */}
@@ -40,9 +51,12 @@ export default function Home() {
               <h1 className='mt-5'>Upcoming Events</h1>
               <div className='flex flex-row justify-center items-center'>
                 <div className='mt-8 grid gap-8 grid-cols-3 w-10/12'>
-                    {UpcomingEvents.map((event, index) => (
-                        <EventCard key={index} {...event} />
-                    ))}
+                    {events.map((event, index) => {
+                        event.date = formatDate(event.date);
+                        return (
+                            <EventCard key={index} {...event} />
+                        )
+                    })}
                 </div>
               </div>
             </div>
