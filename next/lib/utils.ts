@@ -12,3 +12,5 @@ export const isUrlValid = (str: string) => {
   );
   return pattern.test(str);
 };
+
+export const MENTOR_HEAD_TITLE = "Mentor Head";
