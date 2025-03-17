@@ -99,10 +99,10 @@ export default function AddEventForm ({ isOpen, onClose, events, setEvents }: Fo
             <input type="datetime-local" className="bg-base-100" placeholder="MM/DD/YYYY" value={datetime} onChange={(e) => setDatetime(e.target.value)}/>
 
             <label className="-mb-2">Description</label>
-            <textarea className="bg-base-100" placeholder="(Optional)" value={description} onChange={(e) => setDescription(e.target.value)}/>
+            <textarea className="bg-base-100" placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)}/>
 
             <label className="-mb-2">Event Image</label>
-            <input className="bg-base-100" placeholder="Google Drive Link" value={image} onChange={(e) => setImage(e.target.value)}/>
+            <input className="bg-base-100" placeholder="Google Drive Share Link" value={image} onChange={(e) => setImage(e.target.value)}/>
 
             { loading ?
                 <p className="border border-solid border-gray-700 bg-secondary text-base-content text-center text-base">Loading...</p>

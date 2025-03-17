@@ -36,6 +36,7 @@ export default function EditEventForm ({ isOpen, onClose, setModalEvent, event, 
     // Fill in the event card when the modal is opened
     useEffect(() => {
         if(isOpen){
+            // Convert UTC time to New York TimeZone (EST/EDT)
             const date: Date = new Date(event.date);
             const offset = date.getTimezoneOffset() * 60000;
             setEventName(event.title ?? "");
@@ -51,7 +52,7 @@ export default function EditEventForm ({ isOpen, onClose, setModalEvent, event, 
         e.preventDefault();
         setLoading(true);
 
-        // Reformat googledrive image link so that <img> can display it
+        // Reformat googledrive image share link so that <img> can display it
         const googleImageMatch = image.match(RegExp("d/([^/]+)/view"));
         var googleImageLink = googleImageMatch ? `https://drive.google.com/thumbnail?id=${googleImageMatch[1]}` : "";
 
@@ -70,13 +71,14 @@ export default function EditEventForm ({ isOpen, onClose, setModalEvent, event, 
         })
         const newEvent = await res.json();
         const idString = newEvent.id.toString();
+        let minLengthID = 5; 
 
         // Update to Google Calendar
         await fetch('http://localhost:3000/api/event/calendar', { 
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                id: "0".repeat(5 - idString.length).concat(idString),
+                id: "0".repeat(minLengthID - idString.length).concat(idString),
                 title: eventName,
                 location: location,
                 description: description,
@@ -119,10 +121,10 @@ export default function EditEventForm ({ isOpen, onClose, setModalEvent, event, 
             <input type="datetime-local" className="bg-base-100" placeholder="MM/DD/YYYY" value={datetime} onChange={(e) => setDatetime(e.target.value)}/>
 
             <label className="-mb-2">Description</label>
-            <textarea className="bg-base-100" placeholder="(Optional)" value={description} onChange={(e) => setDescription(e.target.value)}/>
+            <textarea className="bg-base-100" placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)}/>
 
             <label className="-mb-2">Event Image</label>
-            <input className="bg-base-100" placeholder="Google Drive Link" value={image} onChange={(e) => setImage(e.target.value)}/>
+            <input className="bg-base-100" placeholder="Google Drive Share Link" value={image} onChange={(e) => setImage(e.target.value)}/>
 
             { loading ?
                 <p className="border border-solid border-gray-700 bg-secondary text-base-content text-center text-base">Loading...</p>

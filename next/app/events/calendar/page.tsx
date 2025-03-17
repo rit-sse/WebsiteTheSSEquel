@@ -10,11 +10,13 @@ import ManageEventsCard from "./ManageEventsCard";
 import { compareDateStrings } from "./utils";
 
 export default function EventsCalendar() {
-    const [modalAdd, setModalAdd] = useState(false);
-    const [modalEdit, setModalEdit] = useState(false);
-    const [modalEvent, setModalEvent] = useState(false);
-    const [selectedEvent, setSelectedEvent] = useState<Event>({} as Event);
-    const [events, setEvents] = useState<Event[]>([]);
+    const [modalAdd, setModalAdd] = useState(false); // Modal for adding new events
+    const [modalEdit, setModalEdit] = useState(false); // Modal for editing events
+    const [modalEvent, setModalEvent] = useState(false); // Modal for viewing event details
+    
+    // These states are shared by the modals
+    const [selectedEvent, setSelectedEvent] = useState<Event>({} as Event); // Current event being viewed
+    const [events, setEvents] = useState<Event[]>([]); // Array of all events
 
     useEffect(() => {
         fetchEvents();
