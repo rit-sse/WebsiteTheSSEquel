@@ -48,10 +48,11 @@ export default function EventForm ({ onClose, isOpen, event, openEditModal, even
                 id: "0".repeat(minLengthID - idString.length).concat(idString)
             })
         }).then(async (res) => { console.log(await res.text()) })
+
+        // Find and remove the deleted event, then update state
         const updatedEvents = events.filter((e : Event) => {
             return e.id != event.id;
         })
-
         setEvents(updatedEvents);
         onClose();
     }
@@ -65,7 +66,7 @@ export default function EventForm ({ onClose, isOpen, event, openEditModal, even
 
     return (
         <div className="flex flex-row w-lg">
-            { confirming ?
+            { confirming ? // Confirmation prompt to make sure delete is intentional
                 <div className="flex flex-col fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary rounded-md p-4">
                     <p className="py-2 px-4 text-md">Are you sure?</p>
                     <div className="flex flex-row justify-around">

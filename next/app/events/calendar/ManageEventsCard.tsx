@@ -56,6 +56,7 @@ const ManageEventCard = ({ modalAdd, modalEvent, setSelectedEvent, events }: Pro
                 <div className="py-5 flex flex-col gap-2 w-full px-2 overflow-y-auto max-h-96">
 
                     {Object.entries(events).map(([key, event]) => (
+                    // Display all stored events
                     <button key={ key } onClick={ openEventModal } value={ (event as Event).id } className="text-sm bg-secondary hover:bg-primary rounded-md flex justify-center items-center min-h-12 active:bg-neutral truncate text-base-100">
                         { (event as Event).title }
                     </button>

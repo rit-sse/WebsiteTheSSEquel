@@ -26,14 +26,16 @@ interface FormProps {
 }
 
 export default function EditEventForm ({ isOpen, onClose, setModalEvent, event, setSelectedEvent, events, setEvents }: FormProps)  {
-    const [loading, setLoading] =  useState(false);
+    const [loading, setLoading] =  useState(false); // Toggled while waiting for API to respond
+
+    // States for holding form data
     const [eventName, setEventName] = useState("");
     const [location, setLocation] = useState("");
     const [datetime, setDatetime] = useState("");
     const [description, setDescription] = useState("");
     const [image, setImage] = useState("");
 
-    // Fill in the event card when the modal is opened
+    // Fill in the event card with event data when the modal is opened
     useEffect(() => {
         if(isOpen){
             // Convert UTC time to New York TimeZone (EST/EDT)
@@ -41,6 +43,7 @@ export default function EditEventForm ({ isOpen, onClose, setModalEvent, event, 
             const offset = date.getTimezoneOffset() * 60000;
             setEventName(event.title ?? "");
             setLocation(event.location ?? "");
+            // Slice timezone indicator off at end of ISOString
             setDatetime(new Date(date.getTime() - offset).toISOString().slice(0, 16) ?? "");
             setDescription(event.description ?? "");
             setImage(event.image ?? "");
@@ -69,8 +72,10 @@ export default function EditEventForm ({ isOpen, onClose, setModalEvent, event, 
                 image: googleImageLink
             })
         })
+        // Grab newly created event
         const newEvent = await res.json();
         const idString = newEvent.id.toString();
+        // Min Length required for an ID in Google Calendar API
         let minLengthID = 5; 
 
         // Update to Google Calendar
@@ -87,10 +92,11 @@ export default function EditEventForm ({ isOpen, onClose, setModalEvent, event, 
             })
         }).then(async (res) => { console.log(await res.text()) })
 
-        // Update the events state to reflect change
+        // Find and remove the old event
         let updatedEvents = events.filter((e : Event) => {
             return (e as Event).id != newEvent.id;
         })
+        // Add the updated event, sort chronologically and set new state
         updatedEvents.push(newEvent);
         updatedEvents.sort((event1, event2) => compareDateStrings(event1.date, event2.date));
         setEvents(updatedEvents);
@@ -101,6 +107,9 @@ export default function EditEventForm ({ isOpen, onClose, setModalEvent, event, 
         clearForm();
     }
 
+    /**
+     * Clears all values in the form, called when form is closed or submitted
+     */
     const clearForm = () => {
         setEventName("");
         setLocation("");

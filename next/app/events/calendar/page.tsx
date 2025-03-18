@@ -22,6 +22,9 @@ export default function EventsCalendar() {
         fetchEvents();
     }, []);
 
+    /**
+     * Get all events from Google Calendar
+     */
     const fetchEvents = async () =>{
         const resp = await fetch('http://localhost:3000/api/event');
         let res: Event[] = await resp.json();

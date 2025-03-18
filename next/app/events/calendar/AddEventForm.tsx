@@ -20,7 +20,9 @@ interface FormProps {
 }
 
 export default function AddEventForm ({ isOpen, onClose, events, setEvents }: FormProps)  {
-    const [loading, setLoading] =  useState(false);
+    const [loading, setLoading] =  useState(false); // Toggled while waiting for API to respond
+
+    // States for holding form data
     const [eventName, setEventName] = useState("");
     const [location, setLocation] = useState("");
     const [datetime, setDatetime] = useState("");
@@ -34,6 +36,9 @@ export default function AddEventForm ({ isOpen, onClose, events, setEvents }: Fo
         }
     }, [isOpen]);
 
+    /**
+     * Build and send body of POST request to api/event/calendar route from form data
+     */
     const onSubmit = async (event: any) =>{
         event.preventDefault();
         setLoading(true);
@@ -54,6 +59,7 @@ export default function AddEventForm ({ isOpen, onClose, events, setEvents }: Fo
                 image: googleImageLink
             })
         })
+        // Store the newly created event
         const newEvent = await res.json();
         const idString = newEvent.id.toString();
 
@@ -71,7 +77,10 @@ export default function AddEventForm ({ isOpen, onClose, events, setEvents }: Fo
                 date: new Date(datetime).toISOString(),
             })
         }).then(async (res) => { console.log(await res.text()) })
+
+        // Append new event to the current events array
         let updatedEvents: Event[] = [...events, newEvent];
+        // Sort events in chronological order and update the state
         updatedEvents.sort((event1, event2) => compareDateStrings(event1.date, event2.date));
         setEvents(updatedEvents);
         setLoading(false);
@@ -79,6 +88,9 @@ export default function AddEventForm ({ isOpen, onClose, events, setEvents }: Fo
         clearForm();
     }
 
+    /**
+     * Clears all values in the form, called when form is closed or submitted
+     */
     const clearForm = () => {
         setEventName("");
         setLocation("");
@@ -104,7 +116,7 @@ export default function AddEventForm ({ isOpen, onClose, events, setEvents }: Fo
             <label className="-mb-2">Event Image</label>
             <input className="bg-base-100" placeholder="Google Drive Share Link" value={image} onChange={(e) => setImage(e.target.value)}/>
 
-            { loading ?
+            { loading ? // Submit button changes to Loading... while waiting for API to respond
                 <p className="border border-solid border-gray-700 bg-secondary text-base-content text-center text-base">Loading...</p>
                 :
                 <input type="submit" className="border border-solid border-gray-700 bg-secondary text-base-content hover:bg-primary"/>

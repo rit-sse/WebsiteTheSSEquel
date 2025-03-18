@@ -13,9 +13,14 @@ const auth = new google.auth.OAuth2(
 // Top right settings -> Use your own OAuth credentials -> Enter client ID & Secret -> Select scopes -> Authorize APIs -> Exchange Authorization Code for tokens - > Copy and store refresh token from console
 // Scopes: https://www.googleapis.com/auth/calendar, https://www.googleapis.com/auth/calendar.events
 
+// GoogleCalendarAPI Client
 auth.setCredentials({ refresh_token: process.env.GOOGLE_REFRESH_TOKEN });
 const calendar = google.calendar({ version: 'v3', auth });
 
+/**
+ * HTTP GET request to api/event/calendar/
+ * @returns List of all Google Calendar events
+ */
 export async function GET(){
     const response = await calendar.events.list({
         calendarId: process.env.GOOGLE_CALENDAR_ID
@@ -24,6 +29,11 @@ export async function GET(){
     return new Response(JSON.stringify({ data: response.data }), { status: 200 })
 }
 
+/**
+ * HTTP POST request to api/event/calendar/
+ * @param request - { id: int, title: string, location: string, description: string, start: ISOString }
+ * @returns 200 status code if successful
+ */
 export async function POST(request: Request) {
     let body;
     try {
@@ -44,7 +54,6 @@ export async function POST(request: Request) {
         description,
         start: { dateTime: new Date(date).toISOString(), timeZone: 'America/New_York' },
         end: { dateTime: new Date(new Date(date).getTime() + 60 * 60 * 1000).toISOString(), timeZone: 'America/New_York' },
-        // attachments: [{ fileUrl: imageLink, title: "Event Icon", mimeType: "image/jpeg" }]
     };
 
     try {
@@ -52,7 +61,6 @@ export async function POST(request: Request) {
             auth: auth,
             calendarId: process.env.GOOGLE_CALENDAR_ID,
             requestBody: event,
-            // supportsAttachments: true,
         })
 
         return new Response('Event added to Google Calendar', { status: 200 });
@@ -62,6 +70,11 @@ export async function POST(request: Request) {
     }
 }
 
+/**
+ * HTTP PUT request to api/event/calendar/
+ * @param request - { id: int, title: string, location: string, description: string, start: ISOString }
+ * @returns 200 status code if successful
+ */
 export async function PUT(request: Request) {
     let body;
     try {
@@ -99,6 +112,11 @@ export async function PUT(request: Request) {
     }
 }
 
+/**
+ * HTTP DELETE request to api/event/calendar/
+ * @param request - { id: int }
+ * @returns 200 status code if successful
+ */
 export async function DELETE(request: Request){
     let body;
     try {
