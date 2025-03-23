@@ -1,3 +1,6 @@
+"use client"
+
+import { useEffect, useState } from "react";
 import { GitHubIcon, LinkedInIcon, EmailIcon } from "../../../components/common/Icons";
 import { TeamMember } from "./team";
 
@@ -6,6 +9,18 @@ interface OfficerCardProps {
 }
 
 export default function OfficerCard({ teamMember }: OfficerCardProps) {
+  const [isOfficer, setIsOfficer] = useState(false);
+
+  useEffect(() => {
+      userStatus();  
+  }, []);
+
+  const userStatus = async () =>{
+      const response = await fetch("http://localhost:3000/api/authLevel");
+      const userData = await response.json();
+      setIsOfficer(userData.isOfficer);
+  }
+  
   return (
     <div className="mt-4">
       <div className="w-24 h-24 mx-auto">

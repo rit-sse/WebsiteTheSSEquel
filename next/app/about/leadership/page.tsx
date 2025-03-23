@@ -1,8 +1,14 @@
+"use client"
+
+import { useState } from "react";
 import OfficerCard from "./OfficerCard";
+import OfficerForm from "./OfficerForm";
+import OfficerFormModal from "./OfficerFormModal";
 import { teamData, Team } from "./team";
 
 export default function Leadership() {
-  let team: Team = teamData;
+  const [open, setOpen] = useState(false);
+  const [team, setTeam] = useState(teamData);
 
   team.committee_heads.sort((a, b) => {
     if (a.title < b.title) {
@@ -14,6 +20,9 @@ export default function Leadership() {
   return (
     <>
       <section className="mt-16">
+        <OfficerFormModal isOpen={open} onClose={async () => setOpen(false)}>
+          <OfficerForm />
+        </OfficerFormModal>
         <div className="max-w-screen-xl mx-auto px-4 text-center md:px-8">
           <div className="content-center">
             {/* Meet our team */}
@@ -27,6 +36,7 @@ export default function Leadership() {
               <p className="mt-3 text-xl leading-8">
                 Have questions? Feel free to reach out to any of our officers!
               </p>
+              <button onClick={() => setOpen(true)}>Open Form</button>
             </div>
           </div>
 
