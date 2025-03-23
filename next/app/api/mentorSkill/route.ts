@@ -60,7 +60,9 @@ export async function POST(request: NextRequest) {
       },
     })) == null
   ) {
-    return new Response(null, { status: 403 });
+    return new Response("Must be signed in to modify your skills", {
+      status: 403,
+    });
   }
 
   const mentorSkill = await prisma.mentorSkill.create({
@@ -84,7 +86,7 @@ export async function PUT(request: NextRequest) {
     return new Response("'id' must be in body", { status: 400 });
   }
 
-  // A mentor may only modify their own courses taken
+  // A mentor may only modify their own skills
   if (
     (await prisma.user.findFirst({
       where: {
@@ -97,7 +99,9 @@ export async function PUT(request: NextRequest) {
       },
     })) == null
   ) {
-    return new Response(null, { status: 403 });
+    return new Response("Must be signed in to modify your skills", {
+      status: 403,
+    });
   }
 
   const mentorSkill_exists =
@@ -156,7 +160,7 @@ export async function DELETE(request: NextRequest) {
     return new Response("", { status: 0 });
   }
 
-  // A mentor may only modify their own courses taken
+  // A mentor may only modify their own skills
   if (
     (await prisma.user.findFirst({
       where: {
@@ -169,7 +173,9 @@ export async function DELETE(request: NextRequest) {
       },
     })) == null
   ) {
-    return new Response(null, { status: 403 });
+    return new Response("Must be signed in to modify your skills", {
+      status: 403,
+    });
   }
 
   const mentorSkill_exists =

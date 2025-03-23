@@ -71,7 +71,9 @@ export async function POST(request: NextRequest) {
       },
     })) == null
   ) {
-    return new Response(null, { status: 403 });
+    return new Response("Must be signed in to modify your courses taken", {
+      status: 403,
+    });
   }
 
   try {
@@ -120,7 +122,9 @@ export async function PUT(request: NextRequest) {
       },
     })) == null
   ) {
-    return new Response(null, { status: 403 });
+    return new Response("Must be signed in to modify your courses taken", {
+      status: 403,
+    });
   }
 
   try {
@@ -170,7 +174,9 @@ export async function DELETE(request: NextRequest) {
       },
     })) == null
   ) {
-    return new Response(null, { status: 403 });
+    return new Response("Must be signed in to modify your courses taken", {
+      status: 403,
+    });
   }
 
   try {

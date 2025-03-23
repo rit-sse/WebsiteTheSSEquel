@@ -73,7 +73,9 @@ export async function POST(request: NextRequest) {
       },
     })) == null
   ) {
-    return new Response(null, { status: 403 });
+    return new Response("Only the mentoring head may modify mentorships", {
+      status: 403,
+    });
   }
 
   try {
@@ -129,7 +131,9 @@ export async function DELETE(request: NextRequest) {
       },
     })) == null
   ) {
-    return new Response(null, { status: 403 });
+    return new Response("Only the mentoring head may modify mentorships", {
+      status: 403,
+    });
   }
   // mentor object from database
   const mentorExists = await prisma.mentor.findUnique({ where: { id: id } });
@@ -192,7 +196,9 @@ export async function PUT(request: NextRequest) {
       },
     })) == null
   ) {
-    return new Response(null, { status: 403 });
+    return new Response("Only the mentoring head may modify mentorships", {
+      status: 403,
+    });
   }
   // only update included fields
   const data: {

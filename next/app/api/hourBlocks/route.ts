@@ -63,7 +63,12 @@ export async function POST(request: NextRequest) {
       },
     })) == null
   ) {
-    return new Response(null, { status: 403 });
+    return new Response(
+      "Only the mentoring head may modify the mentoring schedule",
+      {
+        status: 403,
+      }
+    );
   }
 
   const weekday = body.weekday;
@@ -124,7 +129,10 @@ export async function PUT(request: NextRequest) {
       },
     })) == null
   ) {
-    return new Response(null, { status: 403 });
+    return new Response(
+      "Only the mentoring head may modify the mentoring schedule",
+      { status: 403 }
+    );
   }
 
   const data: {
@@ -190,7 +198,10 @@ export async function DELETE(request: NextRequest) {
       },
     })) == null
   ) {
-    return new Response(null, { status: 403 });
+    return new Response(
+      "Only the mentoring head may modify the mentoring schedule",
+      { status: 403 }
+    );
   }
 
   const id = body.id;
