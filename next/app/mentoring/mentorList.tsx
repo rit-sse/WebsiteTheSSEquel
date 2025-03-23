@@ -7,10 +7,10 @@ import { MentorTimeSlot } from "./mentorTimeslot";
 import { AllMentorTime } from "./timeSlot";
 import { time } from "console";
 
+const emptyMentor:Mentors = {name: "Time Unfilled",time:[],courses:[],major: ""}
 const mentors:Mentors[] = mockmentors;
-const mentorMajors:Mentors[][] = [];
-
 function sortMentors(mentor:Mentors[]){
+    var mentorMajors:Mentors[][] = [];
     for(let i = 0; i < mentor.length; i++){
         var oldMajor:boolean = false
         for(let k = 0; k < mentorMajors.length; k++){
@@ -25,10 +25,12 @@ function sortMentors(mentor:Mentors[]){
             mentorMajors.push(x) 
         }
     }
+    return mentorMajors;
 }
 
 const MentorList = () =>{
-    sortMentors(mentors)
+    var mentorMajors:Mentors[][] = [];
+    mentorMajors = sortMentors(mentors)
     return(
         <div className="w-80 bg-gray-800 text-white p-6 rounded-2xl border border-gray-500 float-left">
             <h2 className="text-2xl font-bold text-center mb-4">Mentors</h2>
@@ -36,7 +38,9 @@ const MentorList = () =>{
                 <h3 className="text-lg font-semibold border-b border-gray-500 pb-1 mb-2">{major[0].major}</h3>
                 <div className="grid grid-cols-2 gap-x-6">
                     {major.map((mentor)=>(
-                        <span>{mentor.name}</span>
+                        <span>
+                            {mentor.name}
+                        </span>
                     ))}
                 </div>
             </div>))}

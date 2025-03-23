@@ -12,10 +12,10 @@ import { time } from "console";
 const emptyMentor:Mentors = {name: "Time Unfilled",time:[],courses:[],major: ""}
 const emptyTimeslot:MentorTimeSlot = {mentor1: emptyMentor, mentor2:emptyMentor, isdualTimeSlot:false}
 //current representation for an empty timeslot
-const board: MentorTimeSlot[][] = []
 const days: string[] = ["Monday","Tuesday","Wednesday","Thursday","Friday"]
 
 function fillboard(mentor:Mentors[]){
+    var board: MentorTimeSlot[][] = []
     for(let i = 1; i<= 5; i++){
         board.push([emptyTimeslot,emptyTimeslot,emptyTimeslot,emptyTimeslot,emptyTimeslot,emptyTimeslot,emptyTimeslot,emptyTimeslot])
     }
@@ -32,27 +32,46 @@ function fillboard(mentor:Mentors[]){
             }
         }
     }
+    return board;
 }
 const MentorBoard = ()=>{
-    fillboard(mockmentors)
+    var board: MentorTimeSlot[][] = []
+    board = fillboard(mockmentors)
     return(
         <div className="float-right">
             <div className="float-left">
                 <div className="w-30 h-12">
                     
                 </div>
-                <div className="inline-block border-blue-300 border-t-[6px] border-b-[6px] border-l-[6px] rounded-l-xl">
+                <div className="">
                     {AllMentorTime[0].map((timem)=>(
-                        <div className="w-30 h-12" style={{backgroundColor: 'lightgrey',display: 'grid', placeItems: 'center'}}>
+                        <div className="w-30 h-12" style={{display: 'grid', placeItems: 'center'}}>
                             {timem.time}
                         </div>
                     ))}
                 </div>
             </div>
-            <div className="border-blue-300 border-[6px] rounded-r-xl float-right">
+            <div className="border-[2px] border-white rounded-xl overflow-hidden float-right">
+                <div className="flex gap-4 mb-4">
+                    <div className="flex items-center px-4 py-2 rounded-full text-white min-w-[175px]">
+                        <select className="bg-[#0B1C2C] text-white text-sm w-full px-1 py-0.5 leading-tight focus:outline-none rounded-xl">
+                            <option className="text-black">Mentors</option>
+                        </select>
+                    </div>
+                    <div className="flex items-center px-4 py-2 rounded-full text-white min-w-[175px]">
+                        <select className="bg-[#0B1C2C] text-white text-sm w-full px-1 py-0.5 leading-tight focus:outline-none rounded-xl">
+                            <option className="text-black">Mentors</option>
+                        </select>
+                    </div>
+                    <div className="flex items-center px-4 py-2 rounded-full text-white min-w-[175px]">
+                        <select className="bg-[#0B1C2C] text-white text-sm w-full px-1 py-0.5 leading-tight focus:outline-none rounded-xl">
+                            <option className="text-black">Mentors</option>
+                        </select>
+                    </div>
+                </div>
                 {board.map((row,rowIndex)=>(
                     <div key={rowIndex} className="inline-block">
-                        <div className="w-30 h-12"  style={{backgroundColor: 'lightgrey',display: 'grid', placeItems: 'center'}}>
+                        <div className="text-center text-blue-300 font-semibold p-2 border border-white">
                             {days[rowIndex]}
                         </div>  
                         {row.map((value) => (
@@ -66,3 +85,45 @@ const MentorBoard = ()=>{
 }
 
 export default MentorBoard
+
+function ScheduleGrid() {
+  return (
+    <div className="flex flex-col items-center p-4 bg-[#0B1C2C] min-h-screen text-white">
+      {/* Dropdown header */}
+      <div className="flex gap-4 mb-4">
+        {/* <Dropdown label="Mentors" />
+        
+        <Dropdown label="Skills" />
+        <Dropdown label="Classes" /> */}
+      </div>
+
+      {/* Schedule Table */}
+      <div className="border-[2px] border-white rounded-xl overflow-hidden">
+        <div className="grid grid-cols-5">
+          {days.map((day) => (
+            <div
+              key={day}
+              className="text-center text-blue-300 font-semibold p-2 border border-white"
+            >
+              {day}
+            </div>
+          ))}
+        </div>
+
+        {/* Grid of TimeSlots */}
+        {/* {timeSlots.map((_, rowIndex) => (
+          <div key={rowIndex} className="grid grid-cols-5">
+            {days.map((day, colIndex) => (
+              <div
+                key={colIndex}
+                className="border border-white p-2 flex flex-col items-center justify-center gap-2 bg-[#0B1C2C]"
+              >
+                <
+              </div>
+            ))}
+          </div>
+        ))} */}
+      </div>
+    </div>
+  );
+}
