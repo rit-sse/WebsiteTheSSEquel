@@ -1,27 +1,63 @@
 "use client"
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import OfficerCard from "./OfficerCard";
-import OfficerForm from "./OfficerForm";
 import OfficerFormModal from "./OfficerFormModal";
-import { teamData, Team } from "./team";
+import { Team, TeamMember } from "./team";
+import ModifyOfficers from "./ModifyOfficers";
+import ReplaceOfficerForm from "./ReplaceOfficerForm";
 
 export default function Leadership() {
   const [open, setOpen] = useState(false);
-  const [team, setTeam] = useState(teamData);
+  const [selectedOfficer, setSelectedOfficer] = useState<TeamMember>();
+  const [teamData, setTeamData] = useState<Team>({ primary_officers: [], committee_heads: [] });
 
-  team.committee_heads.sort((a, b) => {
-    if (a.title < b.title) {
-      return -1;
+  useEffect(() => {
+      getOfficers();
+  }, []);
+
+  const getOfficers = async () => {
+    var team: Team = { primary_officers: [], committee_heads: [] };
+    try {
+      const response = await fetch('http://localhost:3000/api/officer/active');
+      if (!response.ok) {
+        throw new Error('Failed to fetch officers');
+      }
+      const data = await response.json();
+  
+      team.primary_officers = data
+        .filter((officer: any) => officer.position.is_primary)
+        .map((officer: any) => ({
+          name: officer.user.name,
+          title: officer.position.title,
+          email: officer.user.email,
+        }));
+  
+      team.committee_heads = data
+        .filter((officer: any) => !officer.position.is_primary)
+        .map((officer: any) => ({
+          name: officer.user.name,
+          title: officer.position.title,
+          email: officer.user.email,
+        }));
+  
+    } catch (error) {
+      console.error('Error:', error);
     }
-    return 1;
-  });
+    team.committee_heads.sort((a, b) => {
+      if (a.title < b.title) {
+        return -1;
+      }
+      return 1;
+    });
+    setTeamData(team);
+  };
 
   return (
     <>
       <section className="mt-16">
         <OfficerFormModal isOpen={open} onClose={async () => setOpen(false)}>
-          <OfficerForm />
+          <ReplaceOfficerForm open={open} teamMember={selectedOfficer} getOfficers={getOfficers} closeModal={() => setOpen(false)}/>
         </OfficerFormModal>
         <div className="max-w-screen-xl mx-auto px-4 text-center md:px-8">
           <div className="content-center">
@@ -36,7 +72,6 @@ export default function Leadership() {
               <p className="mt-3 text-xl leading-8">
                 Have questions? Feel free to reach out to any of our officers!
               </p>
-              <button onClick={() => setOpen(true)}>Open Form</button>
             </div>
           </div>
 
@@ -46,8 +81,11 @@ export default function Leadership() {
           </h2>
           <div className="">
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {team.primary_officers.map((member, idx) => (
-                <OfficerCard key={idx} teamMember={member} />
+              {teamData.primary_officers.map((member, idx) => (
+                <div key={idx}>
+                  <OfficerCard teamMember={member} />
+                  <ModifyOfficers teamMember={member} openModal={() => setOpen(true)} setSelectedOfficer={setSelectedOfficer}/>
+                </div>
               ))}
             </div>
           </div>
@@ -58,8 +96,11 @@ export default function Leadership() {
             </h2>
             <div className="">
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 gap-y-8">
-                {team.committee_heads.map((member, idx) => (
-                  <OfficerCard key={idx} teamMember={member} />
+                {teamData.committee_heads.map((member, idx) => (
+                  <div key={idx}>
+                    <OfficerCard teamMember={member} />
+                    <ModifyOfficers teamMember={member} openModal={() => setOpen(true)} setSelectedOfficer={setSelectedOfficer}/>
+                  </div>
                 ))}
               </div>
             </div>
