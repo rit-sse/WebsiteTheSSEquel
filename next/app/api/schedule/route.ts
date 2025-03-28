@@ -1,6 +1,6 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
 const prisma = new PrismaClient();
 
@@ -9,30 +9,32 @@ const prisma = new PrismaClient();
  * @returns list of schedule objects
  */
 export async function GET() {
-  const coursesTaken = await prisma.schedule.findMany({
+  const mentorData = await prisma.mentor.findMany({
     select: {
       id: true,
-      mentorId: true,
-      hourBlockId: true,
-      mentor: {
+      user: { select: { name: true } },
+      mentorSkill: { select: { skill: true } },
+      courseTaken: {
         select: {
-          id: true,
-          user_Id: true,
-          expirationDate: true,
-          isActive: true,
+          course: {
+            select: { department: { select: { title: true } }, code: true },
+          },
         },
       },
-      hourBlock: {
+      schedule: {
         select: {
-          id: true,
-          weekday: true,
-          startTime: true,
+          hourBlock: {
+            select: {
+              startTime: true,
+              weekday: true,
+            },
+          },
         },
       },
     },
   });
 
-  return Response.json(coursesTaken);
+  return Response.json(mentorData);
 }
 
 /**
