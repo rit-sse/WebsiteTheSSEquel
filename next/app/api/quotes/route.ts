@@ -1,7 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { NextApiRequest, NextApiResponse } from "next";
-import { getSession } from "next-auth/react";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 const prisma = new PrismaClient();
 
@@ -27,53 +25,49 @@ export async function GET() {
  * @param request { dateAdded: Date, quote: string, userId: number, author?: string }
  * @returns quote object that was created
  */
-export async function POST(req: NextApiRequest, res: NextApiResponse) {
-  console.log("Test 1 - POST");
+export async function POST(req: NextRequest) {
   let body;
   try {
-    body = req.body;
+    body = await req.json();
   } catch {
-    return res.status(422).json({ error: "Invalid JSON" });
+    return Response.json({ error: "Invalid JSON" }, { status: 422 });
   }
 
-  console.log("Test 2 - POST");
-  // Validate request body
   if (!("dateAdded" in body && "quote" in body)) {
-    console.log("It happened");
-    console.log(body);
-    // return res.status(400).json({
-    //   error: '"dateAdded" and "quote" must be included in request body',
-    // });
-    return NextResponse.json({ error: '"dateAdded" and "quote" must be included in request body' }, { status: 400 })
-  }
-  console.log("Wtf check #0")
-
-  const session = await getSession({ req });
-  if (!session || !session.user) {
-    // return res.status(401).json({ error: "Not authenticated" });
-    return NextResponse.json({ error: 'Not Authenticated' }, { status: 401 })
+    return NextResponse.json(
+      { error: '"dateAdded" and "quote" must be included in request body' },
+      { status: 400 }
+    );
   }
 
-  console.log("Wtf Check #1");
   const date_added = new Date(body.dateAdded);
   const quote = body.quote;
-  const user = await prisma.user.findFirst({
-    where: { email: session.user.email as string },
-  });
-  const user_id = user?.id;
   let author;
   if ("author" in body) {
     author = body.author;
   }
 
   try {
+    const user = await prisma.user.findFirst({
+      where: {
+        session: {
+          some: {
+            sessionToken:
+              req.cookies.get("next-auth.session-token")?.value ?? "No Token",
+          },
+        },
+      },
+      select: { id: true },
+    });
+    if (user === null) throw new Error();
     const create_quote = await prisma.quote.create({
       data: {
         date_added,
         quote,
-        user_id: user_id as number,
+        user_id: user.id,
         author,
       },
+      select: {},
     });
     return Response.json(create_quote, { status: 201 });
   } catch (e) {
