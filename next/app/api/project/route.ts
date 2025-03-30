@@ -1,7 +1,20 @@
 import { PROJECTS_HEAD_TITLE } from "@/lib/utils";
 import { PrismaClient } from "@prisma/client";
 import { NextRequest } from "next/server";
+
 const prisma = new PrismaClient();
+
+async function isProjectsHead(sessionToken: string) {
+  const officerPosition = await prisma.user.findFirst({
+    where: {
+      session: { some: { sessionToken } },
+      officers: {
+        some: { is_active: true, position: { title: PROJECTS_HEAD_TITLE } },
+      },
+    },
+  });
+  return officerPosition !== null;
+}
 
 export async function GET(request: Request) {
   const projects = await prisma.project.findMany();
@@ -17,22 +30,9 @@ export async function POST(request: NextRequest) {
   }
 
   if (
-    (await prisma.user.findFirst({
-      where: {
-        session: {
-          some: {
-            sessionToken: request.cookies.get("next-auth.session-token")?.value,
-          },
-        },
-        officers: {
-          some: {
-            position: {
-              title: PROJECTS_HEAD_TITLE,
-            },
-          },
-        },
-      },
-    })) == null
+    !isProjectsHead(
+      request.cookies.get("next-auth.session-token")?.value ?? "NO TOKEN"
+    )
   ) {
     return new Response("Only the projects head may modify projects", {
       status: 403,
@@ -89,35 +89,22 @@ export async function PUT(request: NextRequest) {
     return new Response("Invalid JSON", { status: 422 });
   }
 
-  if (
-    (await prisma.user.findFirst({
-      where: {
-        session: {
-          some: {
-            sessionToken: request.cookies.get("next-auth.session-token")?.value,
-          },
-        },
-        officers: {
-          some: {
-            position: {
-              title: PROJECTS_HEAD_TITLE,
-            },
-          },
-        },
-      },
-    })) == null
-  ) {
-    return new Response("Only the projects head may modify projects", {
-      status: 403,
-    });
-  }
-
   if (!("id" in body)) {
     return new Response("'id' must be included in the body", { status: 400 });
   }
 
   if (typeof body.id != "number") {
     return new Response("'id' must be an integer", { status: 422 });
+  }
+
+  if (
+    !isProjectsHead(
+      request.cookies.get("next-auth.session-token")?.value ?? "NO TOKEN"
+    )
+  ) {
+    return new Response("Only the projects head may modify projects", {
+      status: 403,
+    });
   }
 
   const project_exists =
@@ -180,35 +167,22 @@ export async function DELETE(request: NextRequest) {
     return new Response("Invalid JSON", { status: 422 });
   }
 
-  if (
-    (await prisma.user.findFirst({
-      where: {
-        session: {
-          some: {
-            sessionToken: request.cookies.get("next-auth.session-token")?.value,
-          },
-        },
-        officers: {
-          some: {
-            position: {
-              title: PROJECTS_HEAD_TITLE,
-            },
-          },
-        },
-      },
-    })) == null
-  ) {
-    return new Response("Only the projects head may modify projects", {
-      status: 403,
-    });
-  }
-
   if (!("id" in body)) {
     return new Response("'id' must be included in the body", { status: 400 });
   }
 
   if (typeof body.id != "number") {
     return new Response("'id' must be an integer", { status: 422 });
+  }
+
+  if (
+    !isProjectsHead(
+      request.cookies.get("next-auth.session-token")?.value ?? "NO TOKEN"
+    )
+  ) {
+    return new Response("Only the projects head may modify projects", {
+      status: 403,
+    });
   }
 
   const projectExists =
