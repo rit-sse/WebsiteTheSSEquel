@@ -1,7 +1,7 @@
 import { useState } from "react";
 import React from "react";
 import TimeCard from "./mentorTimeCard";
-import { mockmentors } from "./mentor";
+import { mockmentors, sortMentorClasses } from "./mentor";
 import { Mentors } from "./mentor";
 import { MentorTimeSlot } from "./mentorTimeslot";
 import { AllMentorTime } from "./timeSlot";
@@ -34,9 +34,12 @@ function fillboard(mentor:Mentors[]){
     }
     return board;
 }
+
 const MentorBoard = ()=>{
     var board: MentorTimeSlot[][] = []
     board = fillboard(mockmentors)
+    var classes: Mentors[][] = []
+    classes = sortMentorClasses(mockmentors)
     return(
         <div className="float-right">
             <div className="float-left">
@@ -56,16 +59,22 @@ const MentorBoard = ()=>{
                     <div className="flex items-center px-4 py-2 rounded-full text-white min-w-[175px]">
                         <select className="bg-[#0B1C2C] text-white text-sm w-full px-1 py-0.5 leading-tight focus:outline-none rounded-xl">
                             <option className="text-black">Mentors</option>
+                            {mockmentors.map((mentor)=>(
+                              <option className="text-black">{mentor.name}</option>
+                            ))}
                         </select>
                     </div>
                     <div className="flex items-center px-4 py-2 rounded-full text-white min-w-[175px]">
                         <select className="bg-[#0B1C2C] text-white text-sm w-full px-1 py-0.5 leading-tight focus:outline-none rounded-xl">
-                            <option className="text-black">Mentors</option>
+                            <option className="text-black">Classes</option>
+                            {classes.map((mentor)=>(
+                              <option className="text-black">{mentor[0].courses}</option>
+                            ))}
                         </select>
                     </div>
                     <div className="flex items-center px-4 py-2 rounded-full text-white min-w-[175px]">
                         <select className="bg-[#0B1C2C] text-white text-sm w-full px-1 py-0.5 leading-tight focus:outline-none rounded-xl">
-                            <option className="text-black">Mentors</option>
+                            <option className="text-black">Classes</option>
                         </select>
                     </div>
                 </div>
