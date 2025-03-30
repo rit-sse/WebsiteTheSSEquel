@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { TeamMember } from "./team";
+import Image from 'next/image';
 
 /**
  * teamMember - An officer
@@ -32,14 +33,14 @@ export default function ModifyOfficers({ teamMember, openReplaceModal, openEditM
         setIsOfficer(userData.isOfficer);
     }
 
-    if(isOfficer){
+    if(!isOfficer){
         return (
             <div className="flex flex-row justify-evenly">
-                <button onClick={() => {setSelectedOfficer(teamMember); openEditModal()}}>
-                    E
+                <button className="text-sm bg-secondary hover:bg-primary rounded-md active:bg-neutral text-base-100 p-1" onClick={() => {setSelectedOfficer(teamMember); openEditModal()}}>
+                    Edit
                 </button>
-                <button onClick={() => {setSelectedOfficer(teamMember); openReplaceModal()}}>
-                    R
+                <button className="text-sm bg-secondary hover:bg-primary rounded-md active:bg-neutral text-base-100 p-1" onClick={() => {setSelectedOfficer(teamMember); openReplaceModal()}}>
+                    Replace
                 </button>
             </div>
         )
