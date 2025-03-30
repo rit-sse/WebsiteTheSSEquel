@@ -12,9 +12,15 @@ export default function OfficerCard({ teamMember }: OfficerCardProps) {
       <div className="mt-2 flex flex-col items-center">
         <h4 className="font-bold sm:text-lg text-primary-focus">{teamMember.name}</h4>
         <p className="font-semibold">{teamMember.title}</p>
-        <p className="px-2 text-center text-sm">{teamMember.email}</p>
-        <div className="flex flex-row gap-4 mt-2 justify-center items-center">
-          <a href={`mailto:${teamMember.email}`}>
+        <p className="mt-2 px-2 text-center">{teamMember.desc}</p>
+        <div className="flex flex-row gap-4 mt-4 justify-center items-center">
+          <a href={teamMember.linkedin}>
+            <LinkedInIcon />
+          </a>
+          <a href={teamMember.github}>
+            <GitHubIcon />
+          </a>
+          <a href={teamMember.email}>
             <EmailIcon />
           </a>
         </div>

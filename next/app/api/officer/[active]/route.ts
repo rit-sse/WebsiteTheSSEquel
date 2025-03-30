@@ -15,10 +15,15 @@ export async function GET() {
   const officer = await prisma.officer.findMany({
     where: { is_active: true },
     select: {
+      id: true,
       user: {
         select: {
+          id: true,
           name: true,
           email: true,
+          linkedIn: true,
+          gitHub: true,
+          description: true
         },
       },
       position: {

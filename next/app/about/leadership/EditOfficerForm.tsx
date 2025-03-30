@@ -15,29 +15,30 @@ export default function EditOfficerForm({ open, teamMember, getOfficers, closeMo
         user_email: '',
         linkedIn: '',
         gitHub: '',
-        description: ''
+        description: '',
+        start_date: '',
+        end_date: ''
     });
     const [error, setError] = useState("")
 
     useEffect(() => {
-        setFormData((prevData) => ({
-            ...prevData,
-            position: teamMember?.title ?? ''
-        }));
-    }, [teamMember]);
+        fillForm();
+    }, [teamMember])
 
     useEffect(() => {
         if(!open){
-            clearForm();
+            fillForm();
         }
     }, [open])
 
-    const clearForm = () => {
+    const fillForm = () => {
         setFormData({
-            user_email: '',
-            linkedIn: '',
-            gitHub: '',
-            description: ''
+            user_email: teamMember?.email ?? '',
+            linkedIn: teamMember?.linkedin ?? '',
+            gitHub: teamMember?.github ?? '',
+            description: teamMember?.desc ?? '',
+            start_date: '',
+            end_date: ''
         });
     }
 
@@ -53,26 +54,38 @@ export default function EditOfficerForm({ open, teamMember, getOfficers, closeMo
         e.preventDefault();
         setError("");
         try {
-          const response = await fetch('/api/officer', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                // user_email: formData.user_email,
-                // start_date: new Date(formData.start_date).toISOString(),
-                // end_date: new Date(formData.end_date).toISOString(),
-                // position: formData.position
-            }),
-        });
-        if (response.ok) {
-            console.log('Officer changed successfully');
-            getOfficers();
-            closeModal();
-        } 
-        else {
-            const errorData = await response.text();
-            console.log(`Error: ${errorData}`);
-            setError(errorData);
-        }
+            const userResponse = await fetch('/api/user', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: teamMember?.user_id,
+                    user_email: formData.user_email,
+                    linkedIn: formData.linkedIn,
+                    gitHub: formData.gitHub,
+                    description: formData.description
+                }),
+            });
+            if (formData.start_date != '' || formData.end_date != ''){
+                const officerResponse = await fetch('/api/officer', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        id: teamMember?.officer_id,
+                        start_date: new Date(formData.start_date).toISOString(),
+                        end_date: new Date(formData.end_date).toISOString() 
+                    })
+                })
+            }
+            if (userResponse.ok) {
+                console.log('Officer changed successfully');
+                getOfficers();
+                closeModal();
+            } 
+            else {
+                const errorData = await userResponse.text();
+                console.log(`Error: ${errorData}`);
+                setError(errorData);
+            }
         } 
         catch (error) {
           console.error('Error submitting form:', error);
@@ -95,7 +108,15 @@ export default function EditOfficerForm({ open, teamMember, getOfficers, closeMo
             </div>
             <div className="flex flex-col">
                 <label>Description</label>
-                <input name="description" placeholder="Short description about officer..." value={formData.description} onChange={handleChange}/>
+                <input name="description" placeholder="Description about officer..." value={formData.description} onChange={handleChange}/>
+            </div>
+            <div className="flex flex-col">
+                <label>Start Date</label>
+                <input type="date" name="start_date" value={formData.start_date} onChange={handleChange}/>
+            </div>
+            <div className="flex flex-col">
+                <label>End Date</label>
+                <input type="date" name="end_date" value={formData.end_date} onChange={handleChange}/>
             </div>
             <button type="submit" className="p-2 bg-secondary text-base-content hover:bg-primary rounded">Submit</button>
             <label className="text-error text-center text-sm">{error}</label>

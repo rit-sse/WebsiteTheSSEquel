@@ -125,12 +125,21 @@ export async function PUT(request: Request) {
   const id = body.id;
 
   // only update fields the caller wants to update
-  const data: { name?: string; email?: string } = {};
+  const data: { name?: string; email?: string; description?: string; linkedIn?: string; gitHub?: string } = {};
   if ("name" in body) {
     data.name = body.name;
   }
   if ("email" in body) {
     data.email = body.email;
+  }
+  if ("description" in body) {
+    data.description = body.description;
+  }
+  if ("linkedIn" in body) {
+    data.linkedIn = body.linkedIn;
+  }
+  if ("gitHub" in body) {
+    data.gitHub = body.gitHub;
   }
 
   try {

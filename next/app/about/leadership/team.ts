@@ -1,7 +1,12 @@
 export interface TeamMember {
+  officer_id: string,
+  user_id: string;
   name: string;
   title: string;
-  email?: string;
+  desc?: string;
+  linkedin?: string;
+  github?: string;
+  email: string;
 }
 
 export interface Team {

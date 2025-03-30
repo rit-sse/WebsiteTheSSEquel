@@ -30,17 +30,27 @@ export default function Leadership() {
       team.primary_officers = data
         .filter((officer: any) => officer.position.is_primary)
         .map((officer: any) => ({
+          officer_id: officer.id,
+          user_id: officer.user.id,
           name: officer.user.name,
           title: officer.position.title,
           email: officer.user.email,
+          desc: officer.user.description,
+          linkedin: officer.user.linkedIn,
+          github: officer.user.gitHub
         }));
   
       team.committee_heads = data
         .filter((officer: any) => !officer.position.is_primary)
         .map((officer: any) => ({
+          officer_id: officer.id,
+          user_id: officer.user.id,
           name: officer.user.name,
           title: officer.position.title,
           email: officer.user.email,
+          desc: officer.user.description,
+          linkedin: officer.user.linkedIn,
+          github: officer.user.gitHub
         }));
   
     } catch (error) {

@@ -20,6 +20,10 @@ model User {
   //Store email as a unique String
   email String @unique
 
+  linkedIn String?
+  gitHub String?
+  description String?
+
   //Store a boolean value to determine if a user is a member or not
   //Defaults to false if not specified
   isMember Boolean @default(false)
