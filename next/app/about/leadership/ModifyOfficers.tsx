@@ -5,11 +5,12 @@ import { TeamMember } from "./team";
 
 interface ModifyOfficerProps {
     teamMember: TeamMember,
-    openModal: () => void,
+    openReplaceModal: () => void,
+    openEditModal: () => void,
     setSelectedOfficer: (teamMember: TeamMember) => void
 }
 
-export default function ModifyOfficers({ teamMember, openModal, setSelectedOfficer }: ModifyOfficerProps) {
+export default function ModifyOfficers({ teamMember, openReplaceModal, openEditModal, setSelectedOfficer }: ModifyOfficerProps) {
     const [isOfficer, setIsOfficer] = useState(false);
     
     useEffect(() => {
@@ -22,16 +23,11 @@ export default function ModifyOfficers({ teamMember, openModal, setSelectedOffic
         setIsOfficer(userData.isOfficer);
     }
 
-    const replaceClick = () => {
-        setSelectedOfficer(teamMember);
-        openModal();
-    }
-
     if(!isOfficer){ // Switch this later
         return (
-            <div className="flex flex-row justify-between">
-                <button>E</button>
-                <button onClick={replaceClick}>R</button>
+            <div className="flex flex-row justify-evenly">
+                <button onClick={() => {setSelectedOfficer(teamMember); openEditModal()}}>E</button>
+                <button onClick={() => {setSelectedOfficer(teamMember); openReplaceModal()}}>R</button>
             </div>
         )
     }

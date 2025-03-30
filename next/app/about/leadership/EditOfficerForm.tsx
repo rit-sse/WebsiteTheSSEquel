@@ -10,12 +10,12 @@ interface OfficerFormProps {
     closeModal: () => void
 }
 
-export default function ReplaceOfficerForm({ open, teamMember, getOfficers, closeModal }: OfficerFormProps) {
+export default function EditOfficerForm({ open, teamMember, getOfficers, closeModal }: OfficerFormProps) {
     const [formData, setFormData] = useState({
         user_email: '',
-        start_date: '',
-        end_date: '',
-        position: ''
+        linkedIn: '',
+        gitHub: '',
+        description: ''
     });
     const [error, setError] = useState("")
 
@@ -35,9 +35,9 @@ export default function ReplaceOfficerForm({ open, teamMember, getOfficers, clos
     const clearForm = () => {
         setFormData({
             user_email: '',
-            start_date: '',
-            end_date: '',
-            position: ''
+            linkedIn: '',
+            gitHub: '',
+            description: ''
         });
     }
 
@@ -57,14 +57,14 @@ export default function ReplaceOfficerForm({ open, teamMember, getOfficers, clos
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                user_email: formData.user_email,
-                start_date: new Date(formData.start_date).toISOString(),
-                end_date: new Date(formData.end_date).toISOString(),
-                position: formData.position
+                // user_email: formData.user_email,
+                // start_date: new Date(formData.start_date).toISOString(),
+                // end_date: new Date(formData.end_date).toISOString(),
+                // position: formData.position
             }),
         });
         if (response.ok) {
-            console.log('Officer created successfully');
+            console.log('Officer changed successfully');
             getOfficers();
             closeModal();
         } 
@@ -83,15 +83,19 @@ export default function ReplaceOfficerForm({ open, teamMember, getOfficers, clos
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div className="flex flex-col">
                 <label>Officer Email</label>
-                <input type="email" name="user_email" placeholder="RIT Email" value={formData.user_email} onChange={handleChange} required/>
+                <input type="email" name="user_email" placeholder="RIT Email" value={formData.user_email} onChange={handleChange}/>
             </div>
             <div className="flex flex-col">
-                <label>Start Date</label>
-                <input type="date" name="start_date" value={formData.start_date} onChange={handleChange} required/>
+                <label>LinkedIn</label>
+                <input name="linkedIn" placeholder="LinkedIn Profile Link" value={formData.linkedIn} onChange={handleChange}/>
             </div>
             <div className="flex flex-col">
-                <label>End Date</label>
-                <input type="date" name="end_date" value={formData.end_date} onChange={handleChange} required/>
+                <label>GitHub</label>
+                <input name="gitHub" placeholder="GitHub Link" value={formData.gitHub} onChange={handleChange}/>
+            </div>
+            <div className="flex flex-col">
+                <label>Description</label>
+                <input name="description" placeholder="Short description about officer..." value={formData.description} onChange={handleChange}/>
             </div>
             <button type="submit" className="p-2 bg-secondary text-base-content hover:bg-primary rounded">Submit</button>
             <label className="text-error text-center text-sm">{error}</label>

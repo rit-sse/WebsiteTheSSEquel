@@ -6,9 +6,11 @@ import OfficerFormModal from "./OfficerFormModal";
 import { Team, TeamMember } from "./team";
 import ModifyOfficers from "./ModifyOfficers";
 import ReplaceOfficerForm from "./ReplaceOfficerForm";
+import EditOfficerForm from "./EditOfficerForm";
 
 export default function Leadership() {
-  const [open, setOpen] = useState(false);
+  const [replaceOpen, setReplaceOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const [selectedOfficer, setSelectedOfficer] = useState<TeamMember>();
   const [teamData, setTeamData] = useState<Team>({ primary_officers: [], committee_heads: [] });
 
@@ -24,7 +26,7 @@ export default function Leadership() {
         throw new Error('Failed to fetch officers');
       }
       const data = await response.json();
-  
+      
       team.primary_officers = data
         .filter((officer: any) => officer.position.is_primary)
         .map((officer: any) => ({
@@ -56,8 +58,11 @@ export default function Leadership() {
   return (
     <>
       <section className="mt-16">
-        <OfficerFormModal isOpen={open} onClose={async () => setOpen(false)}>
-          <ReplaceOfficerForm open={open} teamMember={selectedOfficer} getOfficers={getOfficers} closeModal={() => setOpen(false)}/>
+        <OfficerFormModal isOpen={replaceOpen} onClose={async () => setReplaceOpen(false)}>
+          <ReplaceOfficerForm open={replaceOpen} teamMember={selectedOfficer} getOfficers={getOfficers} closeModal={() => setReplaceOpen(false)}/>
+        </OfficerFormModal>
+        <OfficerFormModal isOpen={editOpen} onClose={async () => setEditOpen(false)}>
+          <EditOfficerForm open={editOpen} teamMember={selectedOfficer} getOfficers={getOfficers} closeModal={() => setEditOpen(false)}/>
         </OfficerFormModal>
         <div className="max-w-screen-xl mx-auto px-4 text-center md:px-8">
           <div className="content-center">
@@ -84,7 +89,7 @@ export default function Leadership() {
               {teamData.primary_officers.map((member, idx) => (
                 <div key={idx}>
                   <OfficerCard teamMember={member} />
-                  <ModifyOfficers teamMember={member} openModal={() => setOpen(true)} setSelectedOfficer={setSelectedOfficer}/>
+                  <ModifyOfficers teamMember={member} openReplaceModal={() => setReplaceOpen(true)} openEditModal={() => setEditOpen(true)} setSelectedOfficer={setSelectedOfficer}/>
                 </div>
               ))}
             </div>
@@ -99,7 +104,7 @@ export default function Leadership() {
                 {teamData.committee_heads.map((member, idx) => (
                   <div key={idx}>
                     <OfficerCard teamMember={member} />
-                    <ModifyOfficers teamMember={member} openModal={() => setOpen(true)} setSelectedOfficer={setSelectedOfficer}/>
+                    <ModifyOfficers teamMember={member} openReplaceModal={() => setReplaceOpen(true)} openEditModal={() => setEditOpen(true)} setSelectedOfficer={setSelectedOfficer}/>
                   </div>
                 ))}
               </div>
