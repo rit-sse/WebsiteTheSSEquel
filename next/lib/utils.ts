@@ -12,9 +12,3 @@ export const isUrlValid = (str: string) => {
   );
   return pattern.test(str);
 };
-
-export const useEffectAsync = (func: () => any, deps: any[]) => {
-  return useEffect(() => {
-    func();
-  }, deps);
-};

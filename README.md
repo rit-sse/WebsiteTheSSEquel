@@ -20,7 +20,7 @@ Recommended VSCode Extensions:
 
 ## Contributing
 
-If you wish to contribute to the project, please join us at the SSE (GOL 1670) on Saturdays at 2 p.m. for our weekly tech committee meeting. Also, join us on Slack at rit-sse.slack.com. Make sure to join the `#technology` and `#projects` channels. See you there!
+If you wish to contribute to the project, please join us at the SSE (GOL 1670) on Sundays at 11 a.m. for our weekly tech workshops and at 12 p.m. for our weekly tech committee meeting. Also, join us on Slack at rit-sse.slack.com. Make sure to join the `#technology` and `#projects` channels. See you there!
 
 To see what the SSE web team is working on, check out the [GitHub Projects board](https://github.com/orgs/rit-sse/projects/2/views/10).
 

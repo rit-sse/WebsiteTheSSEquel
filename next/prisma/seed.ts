@@ -172,7 +172,7 @@ async function seedMentor() {
 	console.log({ mentor1, mentor2, mentor3 });
 }
 
-async function  seedSkill() {
+async function seedSkill() {
 	const java = await prisma.skill.upsert({
 		where: { id: 1 },
 		update: {},
@@ -436,8 +436,8 @@ async function seedAccount() {
 		create: {
 			id: 1,
 			userId: 1,
-			type: "google",
-			provider: "google.com",
+			type: "oauth",
+			provider: "google",
 			providerAccountId: "789",
 			refresh_token: "123",
 			access_token: "123",
@@ -454,8 +454,8 @@ async function seedAccount() {
 		create: {
 			id: 2,
 			userId: 2,
-			type: "google",
-			provider: "google.com",
+			type: "oauth",
+			provider: "google",
 			providerAccountId: "123",
 			refresh_token: "123",
 			access_token: "123",
@@ -472,8 +472,8 @@ async function seedAccount() {
 		create: {
 			id: 3,
 			userId: 3,
-			type: "google",
-			provider: "google.com",
+			type: "oauth",
+			provider: "google",
 			providerAccountId: "456",
 			refresh_token: "123",
 			access_token: "123",
@@ -556,6 +556,74 @@ async function seedVerificationToken() {
 	console.log({ verificationToken1, verificationToken2, verificationToken3 });
 }
 
+async function seedProject() {
+	const project1 = await prisma.project.upsert({
+		where: { id: 1 },
+		update: {},
+		create: {
+			title: "Website Rebuild",
+			description: "The new SSE website.",
+			progress: "In Progress",
+			leadid: 1,
+			repoLink: "https://github.com/rit-sse/WebsiteTheSSEquel",
+			contentURL: "/api/project/content/WEBSITE_REBUILD.md",
+		},
+	});
+	const project2 = await prisma.project.upsert({
+		where: { id: 2 },
+		update: {},
+		create: {
+			title: "Wave Machine",
+			description: "A machine to automatically wave to tour groups.",
+			progress: "Limbo",
+			leadid: 2,
+			repoLink: "https://github.com/rit-sse/robo-waver",
+			contentURL: "/api/project/content/WAVE_MACHINE.md",
+		},
+	});
+	const project3 = await prisma.project.upsert({
+		where: { id: 3 },
+		update: {},
+		create: {
+			title: "Tour Sensor",
+			description: "A proximity sensor to detect tours.",
+			progress: "Unknown",
+			leadid: 3,
+			repoLink: "https://github.com/rit-sse/tour-sensor",
+			contentURL: "/api/project/content/TOUR_SENSOR.md",
+		},
+	});
+	console.log({ project1, project2, project3 });
+}
+
+async function seedProjectContributor() {
+	const projectContributor1 = await prisma.projectContributor.upsert({
+		where: { id: 1 },
+		update: {},
+		create: {
+			userId: 1,
+			projectId: 1,
+		},
+	});
+	const projectContributor2 = await prisma.projectContributor.upsert({
+		where: { id: 2 },
+		update: {},
+		create: {
+			userId: 2,
+			projectId: 2,
+		},
+	});
+	const projectContributor3 = await prisma.projectContributor.upsert({
+		where: { id: 3 },
+		update: {},
+		create: {
+			userId: 3,
+			projectId: 3,
+		},
+	});
+	console.log({ projectContributor1, projectContributor2, projectContributor3 });
+}
+
 async function main() {
 	try {
 		await seedUser();
@@ -574,6 +642,8 @@ async function main() {
 		await seedAccount();
 		await seedSession();
 		await seedVerificationToken();
+		await seedProject();
+		await seedProjectContributor();
 	} catch (e) {
 		console.error(e);
 	}

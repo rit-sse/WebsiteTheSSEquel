@@ -1,14 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import NavItem, { NavItemProps } from "./NavItem";
-import MobileNavDropdown from "./MobileNavDropdown";
 import SSELogoFull from "../common/SSELogoFull";
 import SSELogoSmall from "../common/SSELogoSmall";
 import AuthButton from "./AuthButton";
-import DarkModeToggle from "../common/DarkModeToggle";
+import MobileNavDropdown from "./MobileNavDropdown";
+import NavItem, { NavItemProps } from "./NavItem";
 
-const navItems: NavItemProps[] = [
+const navItems: (NavItemProps & { render?: React.ReactNode})[] = [
     {
         title: "Home",
         route: "/",
@@ -39,7 +38,8 @@ const navItems: NavItemProps[] = [
             {
                 title: "Primary Officer's Policy",
                 route: "/about/primary-officers-policy",
-            }
+            },
+            
         ],
     },
     {
@@ -70,6 +70,10 @@ const navItems: NavItemProps[] = [
     { // Go links dropdown removed. Check commit d2f1d82 in feature branch if we need to restore the dropdowns.
         title: "Go Links",
         route: "/go"
+    },
+    {
+        title: "Login",
+        render: <AuthButton />
     }
 ];
 
@@ -104,11 +108,11 @@ const Navbar: React.FC = () => {
                 <div className="hidden md:visible md:inline-flex">
                     <ul className="inline-flex flex-row flex-nowrap justify-between text-center text-lg">
                         {navItems.map((navItem, index) => (
-                            <NavItem key={index} {...navItem} onClickFunc={blurOnClick} />
+                            <li className="flex flex-row justify-center items-center" key={index}>
+                                {navItem.render || <NavItem key={index} {...navItem} onClickFunc={blurOnClick} />}
+                            </li>
                         ))}
-                        <li className="flex flex-row justify-center items-center">
-                            <AuthButton />
-                        </li>
+                        
                     </ul>
                 </div>
                 <div className="dropdown dropdown-end md:hidden justify-end ">
