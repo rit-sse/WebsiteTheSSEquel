@@ -107,7 +107,7 @@ export async function DELETE(request: Request) {
 /**
  * Update an existing user
  * HTTP PUT request to /api/user
- * @param request { id: number, name?: string, email?: string }
+ * @param request { id: number, name?: string, email?: string, linkedIn?: string, gitHub?: string, description?: string }
  * @returns updated user object
  */
 export async function PUT(request: Request) {

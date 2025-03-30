@@ -7,8 +7,8 @@ const prisma = new PrismaClient();
 /**
  * HTTP GET request to /api/officer/active
  * Gets all active officers
- * @returns [{is_active: boolean, start_date: date, end_date: date,
- *            user: {name: string, email: string},
+ * @returns [{is_active: boolean, id: string, start_date: date, end_date: date,
+ *            user: {id: string, name: string, email: string},
  *            position: {is_primary: boolean, title: string}}]
  */
 export async function GET() {

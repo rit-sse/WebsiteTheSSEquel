@@ -3,6 +3,12 @@
 import { useEffect, useState } from "react";
 import { TeamMember } from "./team";
 
+/**
+ * open - State of edit form modal
+ * teamMember - Currently selected officer to be edited
+ * getOfficers - Function to get active officers, used to update the list
+ * closeModal - Function to close the form's modal
+ */
 interface OfficerFormProps {
     open: boolean,
     teamMember?: TeamMember,
@@ -21,10 +27,12 @@ export default function EditOfficerForm({ open, teamMember, getOfficers, closeMo
     });
     const [error, setError] = useState("")
 
+    // Fill form with current officer data
     useEffect(() => {
         fillForm();
     }, [teamMember])
 
+    // Fill form with current officer data when it is closed to undo any unsubmitted changes
     useEffect(() => {
         if(!open){
             fillForm();
@@ -54,6 +62,7 @@ export default function EditOfficerForm({ open, teamMember, getOfficers, closeMo
         e.preventDefault();
         setError("");
         try {
+            // Call to user route to update officer's user data
             const userResponse = await fetch('/api/user', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
@@ -65,7 +74,9 @@ export default function EditOfficerForm({ open, teamMember, getOfficers, closeMo
                     description: formData.description
                 }),
             });
-            if (formData.start_date != '' || formData.end_date != ''){
+
+            // Call to officer route if the start and end dates are modified
+            if (formData.start_date != '' && formData.end_date != ''){
                 const officerResponse = await fetch('/api/officer', {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
@@ -76,6 +87,7 @@ export default function EditOfficerForm({ open, teamMember, getOfficers, closeMo
                     })
                 })
             }
+            
             if (userResponse.ok) {
                 console.log('Officer changed successfully');
                 getOfficers();

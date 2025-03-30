@@ -9,11 +9,15 @@ import ReplaceOfficerForm from "./ReplaceOfficerForm";
 import EditOfficerForm from "./EditOfficerForm";
 
 export default function Leadership() {
+  // States to manage opening/closing of modals
   const [replaceOpen, setReplaceOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  // State of the current selected officer (being edited / replaced)
   const [selectedOfficer, setSelectedOfficer] = useState<TeamMember>();
+  // State list of all active officers
   const [teamData, setTeamData] = useState<Team>({ primary_officers: [], committee_heads: [] });
 
+  // Get all active officers when page opens
   useEffect(() => {
       getOfficers();
   }, []);
@@ -27,6 +31,7 @@ export default function Leadership() {
       }
       const data = await response.json();
       
+      // Map primary officers to TeamMember
       team.primary_officers = data
         .filter((officer: any) => officer.position.is_primary)
         .map((officer: any) => ({
@@ -40,6 +45,7 @@ export default function Leadership() {
           github: officer.user.gitHub
         }));
   
+      // Map committee officers to TeamMember
       team.committee_heads = data
         .filter((officer: any) => !officer.position.is_primary)
         .map((officer: any) => ({
@@ -56,6 +62,7 @@ export default function Leadership() {
     } catch (error) {
       console.error('Error:', error);
     }
+    // Sort officers by title
     team.committee_heads.sort((a, b) => {
       if (a.title < b.title) {
         return -1;
@@ -68,6 +75,7 @@ export default function Leadership() {
   return (
     <>
       <section className="mt-16">
+        {/* Modals for editing and replacing officer forms */}
         <OfficerFormModal isOpen={replaceOpen} onClose={async () => setReplaceOpen(false)}>
           <ReplaceOfficerForm open={replaceOpen} teamMember={selectedOfficer} getOfficers={getOfficers} closeModal={() => setReplaceOpen(false)}/>
         </OfficerFormModal>
@@ -99,6 +107,7 @@ export default function Leadership() {
               {teamData.primary_officers.map((member, idx) => (
                 <div key={idx}>
                   <OfficerCard teamMember={member} />
+                  {/* Edit and Remove buttons, only officers can see */}
                   <ModifyOfficers teamMember={member} openReplaceModal={() => setReplaceOpen(true)} openEditModal={() => setEditOpen(true)} setSelectedOfficer={setSelectedOfficer}/>
                 </div>
               ))}
@@ -114,6 +123,7 @@ export default function Leadership() {
                 {teamData.committee_heads.map((member, idx) => (
                   <div key={idx}>
                     <OfficerCard teamMember={member} />
+                    {/* Edit and Remove buttons, only officers can see */}
                     <ModifyOfficers teamMember={member} openReplaceModal={() => setReplaceOpen(true)} openEditModal={() => setEditOpen(true)} setSelectedOfficer={setSelectedOfficer}/>
                   </div>
                 ))}

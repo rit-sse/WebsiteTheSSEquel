@@ -3,6 +3,12 @@
 import { useEffect, useState } from "react";
 import { TeamMember } from "./team";
 
+/**
+ * open - State of replace form modal
+ * teamMember - Currently selected officer to be replaced
+ * getOfficers - Function to get active officers, used to update the list
+ * closeModal - Function to close the form's modal
+ */
 interface OfficerFormProps {
     open: boolean,
     teamMember?: TeamMember,
@@ -10,6 +16,9 @@ interface OfficerFormProps {
     closeModal: () => void
 }
 
+/**
+ * Form to replace an existing officer in a current position
+ */
 export default function ReplaceOfficerForm({ open, teamMember, getOfficers, closeModal }: OfficerFormProps) {
     const [formData, setFormData] = useState({
         user_email: '',
@@ -19,6 +28,7 @@ export default function ReplaceOfficerForm({ open, teamMember, getOfficers, clos
     });
     const [error, setError] = useState("")
 
+    // Fill form the selected officer's position
     useEffect(() => {
         setFormData((prevData) => ({
             ...prevData,
@@ -26,6 +36,7 @@ export default function ReplaceOfficerForm({ open, teamMember, getOfficers, clos
         }));
     }, [teamMember]);
 
+    // Clear form if closed
     useEffect(() => {
         if(!open){
             clearForm();
