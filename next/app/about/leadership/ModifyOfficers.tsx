@@ -32,7 +32,7 @@ export default function ModifyOfficers({ teamMember, openReplaceModal, openEditM
         setIsOfficer(userData.isOfficer);
     }
 
-    if(!isOfficer){ // Switch this later
+    if(isOfficer){
         return (
             <div className="flex flex-row justify-evenly">
                 <button onClick={() => {setSelectedOfficer(teamMember); openEditModal()}}>
