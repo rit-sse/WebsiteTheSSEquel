@@ -1,7 +1,7 @@
 import { useState } from "react";
 import React from "react";
 import TimeCard from "./mentorTimeCard";
-import { mockmentors, sortMentorClasses } from "./mentor";
+import { getData, mockmentors, sortMentorClasses } from "./mentor";
 import { Mentors } from "./mentor";
 import { MentorTimeSlot } from "./mentorTimeslot";
 import { AllMentorTime } from "./timeSlot";
@@ -36,6 +36,7 @@ function fillboard(mentor:Mentors[]){
 }
 
 const MentorBoard = ()=>{
+    getData()
     var board: MentorTimeSlot[][] = []
     board = fillboard(mockmentors)
     var classes: Mentors[][] = []

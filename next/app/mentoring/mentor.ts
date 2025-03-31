@@ -54,3 +54,16 @@ export function sortMentorClasses(mentor:Mentors[]){
     }
     return mentorClasses;
 }
+
+export async function getData(): Promise<Mentors[]> {
+    const data:Mentors[] = []
+    try{
+        var response = await fetch("/api/mentor")
+        if (response.ok){
+            const data:Mentors[] = await response.json()
+            console.log("got data")
+            return data;
+        }
+    } catch(error) {throw error}
+    return data
+}
