@@ -567,6 +567,8 @@ async function seedProject() {
 			leadid: 1,
 			repoLink: "https://github.com/rit-sse/WebsiteTheSSEquel",
 			contentURL: "/api/project/content/WEBSITE_REBUILD.md",
+			projectImage: "",
+			completed: false
 		},
 	});
 	const project2 = await prisma.project.upsert({
@@ -579,6 +581,8 @@ async function seedProject() {
 			leadid: 2,
 			repoLink: "https://github.com/rit-sse/robo-waver",
 			contentURL: "/api/project/content/WAVE_MACHINE.md",
+			projectImage: "",
+			completed: false
 		},
 	});
 	const project3 = await prisma.project.upsert({
@@ -591,6 +595,8 @@ async function seedProject() {
 			leadid: 3,
 			repoLink: "https://github.com/rit-sse/tour-sensor",
 			contentURL: "/api/project/content/TOUR_SENSOR.md",
+			projectImage: "",
+			completed: false
 		},
 	});
 	console.log({ project1, project2, project3 });
