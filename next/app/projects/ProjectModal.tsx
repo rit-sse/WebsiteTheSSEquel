@@ -104,9 +104,11 @@ const ProjectModal = ({enabled, setEnabled, project, isOfficer}: ProjectModalInt
             repoLink: repoLink,
             contentURL: project.contentURL,
             leadid: selectUserID,
-            projectImage: imageLink,
+            projectImage: (imageLink == null ? "" : imageLink),
             completed: completed
         }
+
+        console.log(JSON.stringify(payload))
 
         // Send a PUT request to /api/project, with the edited project information alongside appropiate headers.
         // Once done, we unload and refresh the page to get the updated projects.
