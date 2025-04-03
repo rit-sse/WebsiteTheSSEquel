@@ -1,12 +1,27 @@
+import { PROJECTS_HEAD_TITLE } from "@/lib/utils";
 import { PrismaClient } from "@prisma/client";
+import { NextRequest } from "next/server";
+
 const prisma = new PrismaClient();
+
+async function isProjectsHead(sessionToken: string) {
+  const officerPosition = await prisma.user.findFirst({
+    where: {
+      session: { some: { sessionToken } },
+      officers: {
+        some: { is_active: true, position: { title: PROJECTS_HEAD_TITLE } },
+      },
+    },
+  });
+  return officerPosition !== null;
+}
 
 export async function GET(request: Request) {
   const projects = await prisma.project.findMany();
   return Response.json(projects);
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   let body;
   try {
     body = await request.json();
@@ -14,7 +29,24 @@ export async function POST(request: Request) {
     return new Response("Invalid JSON", { status: 422 });
   }
 
-  if (!("title" in body && "description" in body && "leadid" in body && "completed" in body)) {
+  if (
+    !isProjectsHead(
+      request.cookies.get("next-auth.session-token")?.value ?? "NO TOKEN"
+    )
+  ) {
+    return new Response("Only the projects head may modify projects", {
+      status: 403,
+    });
+  }
+
+  if (
+    !(
+      "title" in body &&
+      "description" in body &&
+      "leadid" in body &&
+      "completed" in body
+    )
+  ) {
     return new Response(
       "'title', 'description', 'leadid', 'completed' must be included in the body",
       {
@@ -45,7 +77,12 @@ export async function POST(request: Request) {
     progress?: string;
     projectImage?: string;
     completed: boolean;
-  } = { title: body.title, description: body.description, leadid: body.leadid, completed: body.completed };
+  } = {
+    title: body.title,
+    description: body.description,
+    leadid: body.leadid,
+    completed: body.completed,
+  };
 
   if ("repoLink" in body) {
     if (typeof body.repoLink != "string") {
@@ -77,6 +114,12 @@ export async function POST(request: Request) {
     }
     data.completed = body.completed;
   }
+  if (typeof body.title != "string") {
+    return new Response("title must be a string", { status: 422 });
+  }
+  if (typeof body.description != "string") {
+    return new Response("'description' must be a string", { status: 422 });
+  }
 
   const project = await prisma.project.create({
     data,
@@ -84,7 +127,7 @@ export async function POST(request: Request) {
   return Response.json(project, { status: 201 });
 }
 
-export async function PUT(request: Request) {
+export async function PUT(request: NextRequest) {
   let body;
   try {
     body = await request.json();
@@ -100,11 +143,29 @@ export async function PUT(request: Request) {
     return new Response("'id' must be an integer", { status: 422 });
   }
 
+  if (
+    !isProjectsHead(
+      request.cookies.get("next-auth.session-token")?.value ?? "NO TOKEN"
+    )
+  ) {
+    return new Response("Only the projects head may modify projects", {
+      status: 403,
+    });
+  }
+  if (typeof body.id != "number") {
+    return new Response("'id' must be an integer", { status: 422 });
+  }
+
   const project_exists =
     (await prisma.project.findUnique({
       where: { id: body.id },
     })) !== null;
 
+  if (!project_exists) {
+    return new Response(`project of 'id': ${body.id} doesn't exist`, {
+      status: 404,
+    });
+  }
   if (!project_exists) {
     return new Response(`project of 'id': ${body.id} doesn't exist`, {
       status: 404,
@@ -172,8 +233,7 @@ export async function PUT(request: Request) {
 
   return Response.json(project, { status: 200 });
 }
-
-export async function DELETE(request: Request) {
+export async function DELETE(request: NextRequest) {
   let body;
   try {
     body = await request.json();
@@ -184,7 +244,23 @@ export async function DELETE(request: Request) {
   if (!("id" in body)) {
     return new Response("'id' must be included in the body", { status: 400 });
   }
+  if (!("id" in body)) {
+    return new Response("'id' must be included in the body", { status: 400 });
+  }
 
+  if (typeof body.id != "number") {
+    return new Response("'id' must be an integer", { status: 422 });
+  }
+
+  if (
+    !isProjectsHead(
+      request.cookies.get("next-auth.session-token")?.value ?? "NO TOKEN"
+    )
+  ) {
+    return new Response("Only the projects head may modify projects", {
+      status: 403,
+    });
+  }
   if (typeof body.id != "number") {
     return new Response("'id' must be an integer", { status: 422 });
   }

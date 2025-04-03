@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
+import { NextRequest } from "next/server";
 
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
 const prisma = new PrismaClient();
 
@@ -72,12 +73,30 @@ export async function POST(request: Request) {
  * @param request { id: number, dateAdded?: Date, quote?: string, userId?: number, author?: string }
  * @returns updated quote object
  */
-export async function PUT(request: Request) {
+export async function PUT(request: NextRequest) {
   let body;
   try {
     body = await request.json();
   } catch {
     return new Response("Invalid JSON", { status: 422 });
+  }
+
+  //check if user_id is valid
+  if (
+    prisma.user.findFirst({
+      where: {
+        id: body.userId,
+        session: {
+          some: {
+            sessionToken: request.cookies.get("next-auth.session-token")?.value,
+          },
+        },
+      },
+    }) === null
+  ) {
+    return new Response("Must be signed in to edit your quotes", {
+      status: 403,
+    });
   }
 
   //check if id is in request
@@ -88,32 +107,13 @@ export async function PUT(request: Request) {
   }
   const id = body.id;
 
-  //check if user_id is valid
-  try {
-    prisma.user.findUniqueOrThrow({
-      where: { id: body.userId },
-    });
-  } catch {
-    return new Response("invalid userId value", { status: 404 });
-  }
-
   const data: {
-    date_added?: Date;
     quote?: string;
-    user_id?: number;
     author?: string;
   } = {};
 
-  if ("dateAdded" in body) {
-    data.date_added = new Date(body.dateAdded);
-  }
-
   if ("quote" in body) {
     data.quote = body.quote;
-  }
-
-  if ("userId" in body) {
-    data.user_id = body.userId;
   }
 
   if ("author" in body) {
@@ -136,12 +136,30 @@ export async function PUT(request: Request) {
  * @param request { id: number }
  * @returns quote object deleted at { id }
  */
-export async function DELETE(request: Request) {
+export async function DELETE(request: NextRequest) {
   let body;
   try {
     body = await request.json();
   } catch {
     return new Response("Invalid JSON", { status: 422 });
+  }
+
+  //check if user_id is valid
+  if (
+    prisma.user.findFirst({
+      where: {
+        id: body.userId,
+        session: {
+          some: {
+            sessionToken: request.cookies.get("next-auth.session-token")?.value,
+          },
+        },
+      },
+    }) === null
+  ) {
+    return new Response("Must be signed in to edit your quotes", {
+      status: 403,
+    });
   }
 
   //verify id is included

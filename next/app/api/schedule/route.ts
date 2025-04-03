@@ -1,6 +1,8 @@
+import { MENTOR_HEAD_TITLE } from "@/lib/utils";
 import { Prisma, PrismaClient } from "@prisma/client";
+import { NextRequest } from "next/server";
 
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
 const prisma = new PrismaClient();
 
@@ -42,12 +44,40 @@ export async function GET() {
  * @param {number} request.hourBlockId identifier for hour block
  * @returns schedule object that was created
  */
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   let body;
   try {
     body = await request.json();
   } catch {
     return new Response("Invalid JSON", { status: 422 });
+  }
+
+  // Only the mentor head may modify the mentor schedule
+  if (
+    (await prisma.user.findFirst({
+      where: {
+        session: {
+          some: {
+            sessionToken: request.cookies.get("next-auth.session-token")?.value,
+          },
+        },
+        officers: {
+          some: {
+            position: {
+              title: MENTOR_HEAD_TITLE,
+            },
+            is_active: true,
+          },
+        },
+      },
+    })) == null
+  ) {
+    return new Response(
+      "Only the mentoring head may modify the mentor schedule",
+      {
+        status: 403,
+      }
+    );
   }
 
   if (!("mentorId" in body && "hourBlockId" in body)) {
@@ -78,12 +108,40 @@ export async function POST(request: Request) {
  * @param {number|undefined} request.hourBlockId identifier for hourBlock
  * @returns schedule object that was updated
  */
-export async function PUT(request: Request) {
+export async function PUT(request: NextRequest) {
   let body;
   try {
     body = await request.json();
   } catch {
     return new Response("Invalid JSON", { status: 422 });
+  }
+
+  // Only the mentor head may modify the mentor schedule
+  if (
+    (await prisma.user.findFirst({
+      where: {
+        session: {
+          some: {
+            sessionToken: request.cookies.get("next-auth.session-token")?.value,
+          },
+        },
+        officers: {
+          some: {
+            position: {
+              title: MENTOR_HEAD_TITLE,
+            },
+            is_active: true,
+          },
+        },
+      },
+    })) == null
+  ) {
+    return new Response(
+      "Only the mentoring head may modify the mentor schedule",
+      {
+        status: 403,
+      }
+    );
   }
 
   if (!("id" in body)) {
@@ -112,12 +170,40 @@ export async function PUT(request: Request) {
  * @param {number} reuqest.id id of the object being deleted
  * @returns schedule previously at { id }
  */
-export async function DELETE(request: Request) {
+export async function DELETE(request: NextRequest) {
   let body;
   try {
     body = await request.json();
   } catch {
     return new Response("Invalid JSON", { status: 422 });
+  }
+
+  // Only the mentor head may modify the mentor schedule
+  if (
+    (await prisma.user.findFirst({
+      where: {
+        session: {
+          some: {
+            sessionToken: request.cookies.get("next-auth.session-token")?.value,
+          },
+        },
+        officers: {
+          some: {
+            position: {
+              title: MENTOR_HEAD_TITLE,
+            },
+            is_active: true,
+          },
+        },
+      },
+    })) == null
+  ) {
+    return new Response(
+      "Only the mentoring head may modify the mentor schedule",
+      {
+        status: 403,
+      }
+    );
   }
 
   if (!("id" in body)) {
