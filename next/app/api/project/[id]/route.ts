@@ -18,5 +18,5 @@ export async function GET(request: Request, { params }: { params: { id: string }
 		return new Response(`project of 'id' ${id} doesn't exist`);
 	}
 
-	return Response.json(project, { status: 201 });
+	return Response.json(project, { status: 200 });
 }

@@ -19,9 +19,18 @@ async function isProjectsHead(sessionToken: string) {
 export async function GET(request: Request) {
   const projects = await prisma.project.findMany();
   return Response.json(projects);
+  const projects = await prisma.project.findMany();
+  return Response.json(projects);
 }
 
 export async function POST(request: NextRequest) {
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return new Response("Invalid JSON", { status: 422 });
+  }
+export async function POST(request: Request) {
   let body;
   try {
     body = await request.json();
@@ -38,16 +47,70 @@ export async function POST(request: NextRequest) {
       status: 403,
     });
   }
-
-  if (!("title" in body && "description" in body)) {
+  
+  if (!("title" in body && "description" in body && "leadid" in body && "completed" in body)) {
     return new Response(
-      "'title' and 'description' must be included in the body",
+      "'title', 'description', 'leadid', 'completed' must be included in the body",
       {
         status: 400,
       }
     );
   }
 
+  if (typeof body.title != "string") {
+    return new Response("title must be a string", { status: 422 });
+  }
+  if (typeof body.description != "string") {
+    return new Response("'description' must be a string", { status: 422 });
+  }
+  if (typeof body.leadid != "number") {
+    return new Response("'leadid' must be a number", { status: 422 });
+  }
+  if (typeof body.completed != "boolean") {
+    return new Response("'completed' must be a number", { status: 422 });
+  }
+
+  const data: {
+    title: string;
+    description: string;
+    leadid: number;
+    repoLink?: string;
+    contentURL?: string;
+    progress?: string;
+    projectImage?: string;
+    completed: boolean;
+  } = { title: body.title, description: body.description, leadid: body.leadid, completed: body.completed };
+
+  if ("repoLink" in body) {
+    if (typeof body.repoLink != "string") {
+      return new Response("'repoLink' must be a string", { status: 422 });
+    }
+    data.repoLink = body.repoLink;
+  }
+  if ("contentURL" in body) {
+    if (typeof body.contentURL != "string") {
+      return new Response("'contentURL' must be a string", { status: 422 });
+    }
+    data.contentURL = body.contentURL;
+  }
+  if ("progress" in body) {
+    if (typeof body.repoLink != "string") {
+      return new Response("'progress' must be a string", { status: 422 });
+    }
+    data.progress = body.progress;
+  }
+  if ("projectImage" in body) {
+    if (typeof body.projectImage != "string") {
+      return new Response("'projectImage' must be a string", { status: 422 });
+    }
+    data.projectImage = body.projectImage;
+  }
+  if ("completed" in body) {
+    if (typeof body.completed != "boolean") {
+      return new Response("'completed' must be a boolean", { status: 422 });
+    }
+    data.completed = body.completed;
+  }
   if (typeof body.title != "string") {
     return new Response("title must be a string", { status: 422 });
   }
@@ -71,6 +134,10 @@ export async function POST(request: NextRequest) {
   }
 
   const project = await prisma.project.create({
+    data,
+  });
+  return Response.json(project, { status: 201 });
+  const project = await prisma.project.create({
     data: {
       title: body.title,
       description: body.description,
@@ -88,7 +155,17 @@ export async function PUT(request: NextRequest) {
   } catch {
     return new Response("Invalid JSON", { status: 422 });
   }
+export async function PUT(request: Request) {
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return new Response("Invalid JSON", { status: 422 });
+  }
 
+  if (!("id" in body)) {
+    return new Response("'id' must be included in the body", { status: 400 });
+  }
   if (!("id" in body)) {
     return new Response("'id' must be included in the body", { status: 400 });
   }
@@ -106,7 +183,14 @@ export async function PUT(request: NextRequest) {
       status: 403,
     });
   }
+  if (typeof body.id != "number") {
+    return new Response("'id' must be an integer", { status: 422 });
+  }
 
+  const project_exists =
+    (await prisma.project.findUnique({
+      where: { id: body.id },
+    })) !== null;
   const project_exists =
     (await prisma.project.findUnique({
       where: { id: body.id },
@@ -117,7 +201,63 @@ export async function PUT(request: NextRequest) {
       status: 404,
     });
   }
+  if (!project_exists) {
+    return new Response(`project of 'id': ${body.id} doesn't exist`, {
+      status: 404,
+    });
+  }
 
+  const data: {
+    title?: string;
+    description?: string;
+    repoLink?: string;
+    contentURL?: string;
+    leadid?: number;
+    projectImage?: string;
+    completed?: boolean;
+  } = {};
+  if ("title" in body) {
+    if (typeof body.title != "string") {
+      return new Response("'title' must be a string", { status: 422 });
+    }
+    data.title = body.title;
+  }
+  if ("description" in body) {
+    if (typeof body.description != "string") {
+      return new Response("'description' must be a string", { status: 422 });
+    }
+    data.description = body.description;
+  }
+  if ("repoLink" in body) {
+    if (typeof body.repoLink != "string") {
+      return new Response("'repoLink' must be a string", { status: 422 });
+    }
+    data.repoLink = body.repoLink;
+  }
+  if ("contentURL" in body) {
+    if (typeof body.contentURL != "string") {
+      return new Response("'contentURL' must be a string", { status: 422 });
+    }
+    data.contentURL = body.contentURL;
+  }
+  if ("leadid" in body) {
+    if (typeof body.leadid != "number") {
+      return new Response("'leadid' must be a number", { status: 422 });
+    }
+    data.leadid = body.leadid;
+  }
+  if ("projectImage" in body) {
+    if (typeof body.projectImage != "string") {
+      return new Response("'projectImage' must be a string", { status: 422 });
+    }
+    data.projectImage = body.projectImage;
+  }
+  if ("completed" in body) {
+    if (typeof body.completed != "boolean") {
+      return new Response("'completed' must be a boolean", { status: 422 });
+    }
+    data.completed = body.completed;
+  }
   const data: {
     title?: string;
     description?: string;
@@ -155,7 +295,14 @@ export async function PUT(request: NextRequest) {
     },
     data,
   });
+  const project = await prisma.project.update({
+    where: {
+      id: body.id,
+    },
+    data,
+  });
 
+  return Response.json(project, { status: 200 });
   return Response.json(project, { status: 200 });
 }
 
@@ -166,7 +313,17 @@ export async function DELETE(request: NextRequest) {
   } catch {
     return new Response("Invalid JSON", { status: 422 });
   }
+export async function DELETE(request: Request) {
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return new Response("Invalid JSON", { status: 422 });
+  }
 
+  if (!("id" in body)) {
+    return new Response("'id' must be included in the body", { status: 400 });
+  }
   if (!("id" in body)) {
     return new Response("'id' must be included in the body", { status: 400 });
   }
@@ -184,7 +341,16 @@ export async function DELETE(request: NextRequest) {
       status: 403,
     });
   }
+  if (typeof body.id != "number") {
+    return new Response("'id' must be an integer", { status: 422 });
+  }
 
+  const projectExists =
+    (await prisma.project.findUnique({
+      where: {
+        id: body.id,
+      },
+    })) != null;
   const projectExists =
     (await prisma.project.findUnique({
       where: {
@@ -197,10 +363,19 @@ export async function DELETE(request: NextRequest) {
       status: 404,
     });
   }
+  if (!projectExists) {
+    return new Response(`project with 'id' ${body.id} doesn't exist`, {
+      status: 404,
+    });
+  }
 
   const project = await prisma.project.delete({
     where: { id: body.id },
   });
+  const project = await prisma.project.delete({
+    where: { id: body.id },
+  });
 
+  return Response.json(project, { status: 200 });
   return Response.json(project, { status: 200 });
 }

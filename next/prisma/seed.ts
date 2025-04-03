@@ -563,6 +563,8 @@ async function seedProject() {
 		create: {
 			title: "Website Rebuild",
 			description: "The new SSE website.",
+			progress: "In Progress",
+			leadid: 1,
 			repoLink: "https://github.com/rit-sse/WebsiteTheSSEquel",
 			contentURL: "/api/project/content/WEBSITE_REBUILD.md",
 		},
@@ -573,6 +575,8 @@ async function seedProject() {
 		create: {
 			title: "Wave Machine",
 			description: "A machine to automatically wave to tour groups.",
+			progress: "Limbo",
+			leadid: 2,
 			repoLink: "https://github.com/rit-sse/robo-waver",
 			contentURL: "/api/project/content/WAVE_MACHINE.md",
 		},
@@ -583,6 +587,8 @@ async function seedProject() {
 		create: {
 			title: "Tour Sensor",
 			description: "A proximity sensor to detect tours.",
+			progress: "Unknown",
+			leadid: 3,
 			repoLink: "https://github.com/rit-sse/tour-sensor",
 			contentURL: "/api/project/content/TOUR_SENSOR.md",
 		},
@@ -590,8 +596,8 @@ async function seedProject() {
 	console.log({ project1, project2, project3 });
 }
 
-async function seedUserProject() {
-	const userProject1 = await prisma.userProject.upsert({
+async function seedProjectContributor() {
+	const projectContributor1 = await prisma.projectContributor.upsert({
 		where: { id: 1 },
 		update: {},
 		create: {
@@ -599,7 +605,7 @@ async function seedUserProject() {
 			projectId: 1,
 		},
 	});
-	const userProject2 = await prisma.userProject.upsert({
+	const projectContributor2 = await prisma.projectContributor.upsert({
 		where: { id: 2 },
 		update: {},
 		create: {
@@ -607,7 +613,7 @@ async function seedUserProject() {
 			projectId: 2,
 		},
 	});
-	const userProject3 = await prisma.userProject.upsert({
+	const projectContributor3 = await prisma.projectContributor.upsert({
 		where: { id: 3 },
 		update: {},
 		create: {
@@ -615,7 +621,7 @@ async function seedUserProject() {
 			projectId: 3,
 		},
 	});
-	console.log({ userProject1, userProject2, userProject3 });
+	console.log({ projectContributor1, projectContributor2, projectContributor3 });
 }
 
 async function main() {
@@ -637,7 +643,7 @@ async function main() {
 		await seedSession();
 		await seedVerificationToken();
 		await seedProject();
-		await seedUserProject();
+		await seedProjectContributor();
 	} catch (e) {
 		console.error(e);
 	}

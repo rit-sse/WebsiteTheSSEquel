@@ -1,22 +1,8 @@
-import { PROJECTS_HEAD_TITLE } from "@/lib/utils";
 import { PrismaClient } from "@prisma/client";
-import { NextRequest } from "next/server";
 const prisma = new PrismaClient();
 
-async function isProjectsHead(sessionToken: string) {
-  const officerPosition = await prisma.user.findFirst({
-    where: {
-      session: { some: { sessionToken } },
-      officers: {
-        some: { is_active: true, position: { title: PROJECTS_HEAD_TITLE } },
-      },
-    },
-  });
-  return officerPosition !== null;
-}
-
 export async function GET(request: Request) {
-  const userProjects = await prisma.userProject.findMany({
+  const projectContributors = await prisma.projectContributor.findMany({
     select: {
       id: true,
       user: {
@@ -37,10 +23,10 @@ export async function GET(request: Request) {
       },
     },
   });
-  return Response.json(userProjects, { status: 200 });
+  return Response.json(projectContributors, { status: 200 });
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   let body: { userId: number; projectId: number };
   try {
     body = await request.json();
@@ -64,13 +50,7 @@ export async function POST(request: NextRequest) {
     return new Response("'projectId' must be a number", { status: 422 });
   }
 
-  if (
-    !isProjectsHead(request.cookies.get("next-auth.session-token")?.value ?? "NO TOKEN")
-  ) {
-	return new Response("Only the projects head may modify users on projects", {status: 403});
-  }
-
-  const userProject = await prisma.userProject.create({
+  const projectContributor = await prisma.projectContributor.create({
     data: {
       userId: body.userId,
       projectId: body.projectId,
@@ -95,10 +75,10 @@ export async function POST(request: NextRequest) {
       },
     },
   });
-  return Response.json(userProject, { status: 201 });
+  return Response.json(projectContributor, { status: 201 });
 }
 
-export async function PUT(request: NextRequest) {
+export async function PUT(request: Request) {
   let body: { id: number; userId?: number; projectId?: number };
   try {
     body = await request.json();
@@ -115,22 +95,17 @@ export async function PUT(request: NextRequest) {
     return new Response("'id' must be a number", { status: 422 });
   }
 
-  if (
-    !isProjectsHead(request.cookies.get("next-auth.session-token")?.value ?? "NO TOKEN")
-  ) {
-	return new Response("Only the projects head may modify users on projects", {status: 403});
-  }
-
-  const userProjectExists =
-    (await prisma.userProject.findUnique({
+  const projectContributorExists =
+    (await prisma.projectContributor.findUnique({
       where: {
         id: body.id,
       },
     })) != null;
-  if (!userProjectExists) {
-    return new Response(`userProject with 'id' ${body.id} doesn't exist`, {
-      status: 404,
-    });
+  if (!projectContributorExists) {
+    return new Response(
+      `projectContributor with 'id' ${body.id} doesn't exist`,
+      { status: 404 }
+    );
   }
 
   let data: { userId?: number; projectId?: number } = {};
@@ -147,7 +122,7 @@ export async function PUT(request: NextRequest) {
     data.projectId = body.projectId;
   }
 
-  const userProject = await prisma.userProject.update({
+  const projectContributor = await prisma.projectContributor.update({
     where: {
       id: body.id,
     },
@@ -172,10 +147,10 @@ export async function PUT(request: NextRequest) {
       },
     },
   });
-  return Response.json(userProject, { status: 200 });
+  return Response.json(projectContributor, { status: 200 });
 }
 
-export async function DELETE(request: NextRequest) {
+export async function DELETE(request: Request) {
   let body: { id: number };
   try {
     body = await request.json();
@@ -187,24 +162,20 @@ export async function DELETE(request: NextRequest) {
     return new Response("'id' must be included in the body");
   }
 
-  if (
-    !isProjectsHead(request.cookies.get("next-auth.session-token")?.value ?? "NO TOKEN")
-  ) {
-	return new Response("Only the projects head may modify users on projects", {status: 403});
-  }
-
-  const userProjectExists =
-    (await prisma.userProject.findUnique({
+  const projectContributorExists =
+    (await prisma.projectContributor.findUnique({
       where: {
         id: body.id,
       },
     })) != null;
 
-  if (!userProjectExists) {
-    return new Response(`userProject with 'id' ${body.id} doesn't exist`);
+  if (!projectContributorExists) {
+    return new Response(
+      `projectContributor with 'id' ${body.id} doesn't exist`
+    );
   }
 
-  const userProject = await prisma.userProject.delete({
+  const projectContributor = await prisma.projectContributor.delete({
     where: {
       id: body.id,
     },
@@ -228,5 +199,5 @@ export async function DELETE(request: NextRequest) {
       },
     },
   });
-  return Response.json(userProject, { status: 200 });
+  return Response.json(projectContributor, { status: 200 });
 }

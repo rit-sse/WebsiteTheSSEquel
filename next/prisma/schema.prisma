@@ -30,12 +30,13 @@ model User {
     emailVerified DateTime?
 
     // relational fields
-    mentor   Mentor[]
-    quotes   Quote[]
-    officers Officer[]
-    account  Account[]
-    session  Session[]
-    projects UserProject[]
+    mentor               Mentor[]
+    quotes               Quote[]
+    officers             Officer[]
+    account              Account[]
+    session              Session[]
+    projectContributions ProjectContributor[]
+    projects             Project[]
 }
 
 model Quote {
@@ -296,17 +297,30 @@ model Project {
     // A short description of the project
     description String
 
+    // leader of the project
+    leadid Int
+
+    // details on the progress of the project
+    progress String?
+
     // The link to the repo hosting the project
     repoLink String?
 
     // The api route pointing to the markdown file for the content of the page.
     contentURL String?
 
-    // Relational Field
-    contributers UserProject[]
+    // A link to an image representing the project
+    projectImage String?
+    
+    // Determines if the project has been completed or not
+    completed Boolean @default(false)
+
+    // Relational Fields
+    lead         User                 @relation(fields: [leadid], references: [id])
+    contributors ProjectContributor[]
 }
 
-model UserProject {
+model ProjectContributor {
     id Int @id @default(autoincrement())
 
     // Foreign Keys
