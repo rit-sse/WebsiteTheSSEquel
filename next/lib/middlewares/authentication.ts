@@ -103,12 +103,11 @@ const ROUTES: { [key: string]: AuthVerifier } = {
   mentorSkill: nonGetMentorVerifier,
   officer: nonGetOfficerVerifier,
   project: nonGetOfficerVerifier,
+  projectContributor: nonGetOfficerVerifier,
   quotes: nonGetOfficerVerifier,
   schedule: nonGetMentorVerifier,
   skills: nonGetOfficerVerifier,
   user: nonGetOfficerVerifier,
-  project: nonGetOfficerVerifier,
-  projectContributor: nonGetOfficerVerifier,
   userProject: nonGetOfficerVerifier,
 };
 
