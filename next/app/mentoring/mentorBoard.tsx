@@ -1,7 +1,7 @@
 import { useState } from "react";
 import React from "react";
 import TimeCard from "./mentorTimeCard";
-import { getData, mockmentors, sortMentorClasses, sortMentorMajor } from "./mentor";
+import { getData, setSchedule, setSkills, getMentorClasses, sortMentorMajor } from "./mentor";
 import { Mentors } from "./mentor";
 import { MentorTimeSlot } from "./mentorTimeslot";
 import { AllMentorTime } from "./timeSlot";
@@ -9,7 +9,7 @@ import { time } from "console";
 //board to represent mentors and their times/schedules
 //0 = monday,1=tuesday,2=wednesday,3=thursday,4=friday
 //0-8 is the times from 10am to 6pm
-const emptyMentor:Mentors = {name: "Time Unfilled",time:[],courses:[],major: ""}
+const emptyMentor:Mentors = {name: "Time Unfilled",time:[],courses:[],major: "",id:0,skills:[]}
 const emptyTimeslot:MentorTimeSlot = {mentor1: emptyMentor, mentor2:emptyMentor, isdualTimeSlot:false}
 //current representation for an empty timeslot
 const days: string[] = ["Monday","Tuesday","Wednesday","Thursday","Friday"]
@@ -39,13 +39,16 @@ const MentorBoard = async ()=>{
     var mentors:Mentors[] = []
     await getData(mentors)
     var board: MentorTimeSlot[][] = []
+    await setSchedule(mentors)
+    await setSkills(mentors)
     board = fillboard(mentors)
-    var classes: Mentors[][] = []
-    classes = sortMentorClasses(mentors)
+    var classes:String[] = []
+    await getMentorClasses(classes,mentors)
+    console.log(mentors)
     return(
         <div className="float-right">
             <div className="float-left">
-                <div className="w-30 h-12">
+                <div className="w-30 h-24">
 
                 </div>
                 <div className="">
@@ -61,7 +64,7 @@ const MentorBoard = async ()=>{
                     <div className="flex items-center px-4 py-2 rounded-full text-white min-w-[175px]">
                         <select className="bg-[#0B1C2C] text-white text-sm w-full px-1 py-0.5 leading-tight focus:outline-none rounded-xl">
                             <option className="text-black">Mentors</option>
-                            {mockmentors.map((mentor)=>(
+                            {mentors.map((mentor)=>(
                               <option className="text-black">{mentor.name}</option>
                             ))}
                         </select>
@@ -70,13 +73,13 @@ const MentorBoard = async ()=>{
                         <select className="bg-[#0B1C2C] text-white text-sm w-full px-1 py-0.5 leading-tight focus:outline-none rounded-xl">
                             <option className="text-black">Classes</option>
                             {classes.map((mentor)=>(
-                              <option className="text-black">{mentor[0].courses}</option>
+                              <option className="text-black">{mentor}</option>
                             ))}
                         </select>
                     </div>
                     <div className="flex items-center px-4 py-2 rounded-full text-white min-w-[175px]">
                         <select className="bg-[#0B1C2C] text-white text-sm w-full px-1 py-0.5 leading-tight focus:outline-none rounded-xl">
-                            <option className="text-black">Classes</option>
+                            <option className="text-black">Skills</option>
                         </select>
                     </div>
                 </div>

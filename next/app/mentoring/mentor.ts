@@ -1,25 +1,14 @@
-import { AllMentorTime } from "./timeSlot"
+import { AllMentorTime, getMentorTime } from "./timeSlot"
 import { Time } from "./timeSlot"
 
 export interface Mentors{
+    id:number
     name: string
     major: string
     time: Time[]
     courses: string[]
+    skills: string[]
 }
-
-interface Skills{
-    mentorID: number
-    skill: string
-}
-export const mockmentors: Mentors[] = [
-    {major: "SWEN", name: "John Mentor", time: [AllMentorTime[2][2],AllMentorTime[3][1],AllMentorTime[1][2]],courses:["SWEN-261","SWEN-123","SWEN-444"]},
-    {major: "SWEN", name: "SSE Dave", time: [AllMentorTime[1][2],AllMentorTime[3][4],AllMentorTime[2][3]],courses:["SWEN-261","SWEN-214","SWEN-250"]},
-    {major: "CS", name: "Jackoson Es",time: [AllMentorTime[1][3],AllMentorTime[4][5],AllMentorTime[2][4]],courses:["SWEN-334","SWEN-261"]},
-    {major: "GDD",name: "Anthony Peng",time: [AllMentorTime[1][3],AllMentorTime[2][5],AllMentorTime[4][1]],courses:["SWEN-261","SWEN-444"]}
-]
-
-
 
 export function sortMentorMajor(mentor:Mentors[]){
     var mentorMajors:Mentors[][] = [];
@@ -40,43 +29,48 @@ export function sortMentorMajor(mentor:Mentors[]){
     return mentorMajors;
 }
 
-export function sortMentorClasses(mentor:Mentors[]){
-    var mentorClasses:Mentors[][] = [];
-    for(let i = 0; i < mentor.length; i++){
-        var oldClass:boolean = false
-        for(let k = 0; k < mentorClasses.length; k++){
-            if(mentorClasses[k][0].courses == mentor[i].courses){
-                mentorClasses[k].push(mentor[i])
-                oldClass = true
-            }
-        }
-        if(oldClass == false){
-            var x:Mentors[] = []
-            x.push(mentor[i])
-            mentorClasses.push(x) 
-        }
-    }
-    return mentorClasses;
-}
-
-export async function getData(mentorList:Mentors[]) {
+export async function getMentorClasses(string:String[],mentors:Mentors[]){
     var data:any[] = []
-    var skills:Skills[] = []
-    await getSkills(skills)
     try{
-        var response = await fetch("http://localhost:3000/api/mentor")
+        var response = await fetch("http://localhost:3000/api/courseTaken")
         if (response.ok){
             data = await response.json()
             var i = 0
             while(i< data.length){
-                mentorList.push({major:"No Major",name: data[i].user.name,time:[AllMentorTime[1][1]],courses:[""]})
+                if(!string.includes(data[i].course.title))[
+                    string.push(data[i].course.title)
+                ]
+                var k = 0
+                while(k<mentors.length){
+                    if(mentors[k].id == data[i].mentorId){
+                        mentors[k].courses.push(data[i].course.title)
+                    }
+                    k++
+                }
                 i++
             }
         }
     } catch(error) {throw error}
 }
 
-async function getSkills(skillsList:Skills[]){
+
+
+export async function getData(mentorList:Mentors[]) {
+    var data:any[] = []
+    try{
+        var response = await fetch("http://localhost:3000/api/mentor")
+        if (response.ok){
+            data = await response.json()
+            var i = 0
+            while(i< data.length){
+                mentorList.push({major:"SWEN",name: data[i].user.name,time:[],courses:[],id:data[i].id,skills:[]})
+                i++
+            }
+        }
+    } catch(error) {throw error}
+}
+
+export async function setSkills(mentors:Mentors[]){
     var data:any[] = []
     try{
         var response = await fetch("http://localhost:3000/api/mentorSkill")
@@ -84,7 +78,43 @@ async function getSkills(skillsList:Skills[]){
             data = await response.json()
             var i = 0
             while(i<data.length){
-                skillsList.push({mentorID:data[i].mentor_Id,skill:data[i].skill.skill})
+                var k = 0
+                while(k<mentors.length){
+                    if(mentors[k].id == data[i].mentor_Id){
+                        mentors[k].skills.push(data[i].skill.skill)
+                    }
+                    k++
+                }
+                i++
+            }
+        }
+    } catch(error) {throw error}
+}
+
+export async function setSchedule(mentors:Mentors[]){
+    var data:any[] = []
+    try{
+        var response = await fetch("http://localhost:3000/api/schedule")
+        if (response.ok){
+            data = await response.json()
+            var i = 0
+            while(i<data.length){
+                var time = new Date(data[i].schedule[0].hourBlock.startTime).toLocaleTimeString('en-US', {
+                    timeZone: 'America/New_York',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false,
+                  })
+                var day = data[i].schedule[0].hourBlock.weekday
+                var name = data[i].user.name
+                var mentorTime = getMentorTime(time,day)
+                var k = 0
+                while (k < mentors.length){
+                    if(mentors[k].name == name){
+                        mentors[k].time.push(mentorTime)
+                    }
+                    k++
+                }
                 i++
             }
         }

@@ -1,5 +1,4 @@
 import React from "react";
-import { Mentors,mockmentors } from "./mentor";
 import { MentorTimeSlot } from "./mentorTimeslot";
 const TimeCard = ({mentor1,mentor2,isdualTimeSlot}:MentorTimeSlot) =>{
     if(isdualTimeSlot){

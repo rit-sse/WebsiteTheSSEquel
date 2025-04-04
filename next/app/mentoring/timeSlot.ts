@@ -47,6 +47,22 @@ export const AllMentorTime: Time[][] = [
     {day:4, time: "5:00 PM",timeslot:7}]
 ]
 
+export function getMentorTime(time:String,day:String):Time {
+    var Timeslice:String = time.slice(0,2)
+    var timeNum = 0
+    var dayNum:number = 0
+    if(day == "Monday"){dayNum = 0}else if(day == "Tuesday"){dayNum = 1}else if(day == "Wednesday"){dayNum = 2}
+    else if(day == "Thursday"){dayNum = 3}else if(day == "Friday"){dayNum = 4}
+    if(Timeslice[1] ==':'){
+        timeNum = Number(Timeslice[0]) + 2
+    } else{
+        if(Timeslice == "10"){timeNum = 0} else
+        if(Timeslice == "11"){timeNum = 1} else
+        if(Timeslice == "12"){timeNum = 2}
+    }
+    return AllMentorTime[dayNum][timeNum]
+}
+
 // function createTime(){
 //     for(let i = 0; i<= 6; i++){
 //         AllMentorTime.push([{day:i,time: "10:00 AM",timeslot:0},
