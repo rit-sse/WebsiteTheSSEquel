@@ -1,17 +1,18 @@
 import { useState } from "react";
 import React from "react";
 import TimeCard from "./mentorTimeCard";
-import { mockmentors, sortMentorMajor } from "./mentor";
+import { getData, mockmentors, sortMentorMajor } from "./mentor";
 import { Mentors } from "./mentor";
 import { MentorTimeSlot } from "./mentorTimeslot";
 import { AllMentorTime } from "./timeSlot";
 import { time } from "console";
 
 const emptyMentor:Mentors = {name: "Time Unfilled",time:[],courses:[],major: ""}
-const mentors:Mentors[] = mockmentors;
 
-const MentorList = () =>{
+const MentorList = async () =>{
     var mentorMajors:Mentors[][] = [];
+    var mentors:Mentors[] = []
+    await getData(mentors)
     mentorMajors = sortMentorMajor(mentors)
     return(
         <div className="w-80 bg-gray-800 text-white p-6 rounded-2xl border border-gray-500 float-left">

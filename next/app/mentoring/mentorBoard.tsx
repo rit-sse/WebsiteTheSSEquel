@@ -1,7 +1,7 @@
 import { useState } from "react";
 import React from "react";
 import TimeCard from "./mentorTimeCard";
-import { getData, mockmentors, sortMentorClasses } from "./mentor";
+import { getData, mockmentors, sortMentorClasses, sortMentorMajor } from "./mentor";
 import { Mentors } from "./mentor";
 import { MentorTimeSlot } from "./mentorTimeslot";
 import { AllMentorTime } from "./timeSlot";
@@ -35,17 +35,18 @@ function fillboard(mentor:Mentors[]){
     return board;
 }
 
-const MentorBoard = ()=>{
-    getData()
+const MentorBoard = async ()=>{
+    var mentors:Mentors[] = []
+    await getData(mentors)
     var board: MentorTimeSlot[][] = []
-    board = fillboard(mockmentors)
+    board = fillboard(mentors)
     var classes: Mentors[][] = []
-    classes = sortMentorClasses(mockmentors)
+    classes = sortMentorClasses(mentors)
     return(
         <div className="float-right">
             <div className="float-left">
                 <div className="w-30 h-12">
-                    
+
                 </div>
                 <div className="">
                     {AllMentorTime[0].map((timem)=>(
@@ -95,45 +96,3 @@ const MentorBoard = ()=>{
 }
 
 export default MentorBoard
-
-function ScheduleGrid() {
-  return (
-    <div className="flex flex-col items-center p-4 bg-[#0B1C2C] min-h-screen text-white">
-      {/* Dropdown header */}
-      <div className="flex gap-4 mb-4">
-        {/* <Dropdown label="Mentors" />
-        
-        <Dropdown label="Skills" />
-        <Dropdown label="Classes" /> */}
-      </div>
-
-      {/* Schedule Table */}
-      <div className="border-[2px] border-white rounded-xl overflow-hidden">
-        <div className="grid grid-cols-5">
-          {days.map((day) => (
-            <div
-              key={day}
-              className="text-center text-blue-300 font-semibold p-2 border border-white"
-            >
-              {day}
-            </div>
-          ))}
-        </div>
-
-        {/* Grid of TimeSlots */}
-        {/* {timeSlots.map((_, rowIndex) => (
-          <div key={rowIndex} className="grid grid-cols-5">
-            {days.map((day, colIndex) => (
-              <div
-                key={colIndex}
-                className="border border-white p-2 flex flex-col items-center justify-center gap-2 bg-[#0B1C2C]"
-              >
-                <
-              </div>
-            ))}
-          </div>
-        ))} */}
-      </div>
-    </div>
-  );
-}

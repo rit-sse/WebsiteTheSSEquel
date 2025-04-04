@@ -8,6 +8,10 @@ export interface Mentors{
     courses: string[]
 }
 
+interface Skills{
+    mentorID: number
+    skill: string
+}
 export const mockmentors: Mentors[] = [
     {major: "SWEN", name: "John Mentor", time: [AllMentorTime[2][2],AllMentorTime[3][1],AllMentorTime[1][2]],courses:["SWEN-261","SWEN-123","SWEN-444"]},
     {major: "SWEN", name: "SSE Dave", time: [AllMentorTime[1][2],AllMentorTime[3][4],AllMentorTime[2][3]],courses:["SWEN-261","SWEN-214","SWEN-250"]},
@@ -55,16 +59,34 @@ export function sortMentorClasses(mentor:Mentors[]){
     return mentorClasses;
 }
 
-export async function getData(): Promise<Mentors[]> {
-    const data:Mentors[] = []
+export async function getData(mentorList:Mentors[]) {
+    var data:any[] = []
+    var skills:Skills[] = []
+    await getSkills(skills)
     try{
         var response = await fetch("http://localhost:3000/api/mentor")
         if (response.ok){
-            const data:Mentors[] = await response.json()
-            console.log("got data")
-            console.log(data[1])
-            return data;
+            data = await response.json()
+            var i = 0
+            while(i< data.length){
+                mentorList.push({major:"No Major",name: data[i].user.name,time:[AllMentorTime[1][1]],courses:[""]})
+                i++
+            }
         }
     } catch(error) {throw error}
-    return data
+}
+
+async function getSkills(skillsList:Skills[]){
+    var data:any[] = []
+    try{
+        var response = await fetch("http://localhost:3000/api/mentorSkill")
+        if (response.ok){
+            data = await response.json()
+            var i = 0
+            while(i<data.length){
+                skillsList.push({mentorID:data[i].mentor_Id,skill:data[i].skill.skill})
+                i++
+            }
+        }
+    } catch(error) {throw error}
 }
