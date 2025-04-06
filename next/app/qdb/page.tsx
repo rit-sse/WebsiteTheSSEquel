@@ -34,7 +34,6 @@ const QuoteList = () => {
     useEffect(() => {
         fetchQuotes().then(setQuotes);
     }, []);
-    console.log(quotes);
 
     return (
         <>
