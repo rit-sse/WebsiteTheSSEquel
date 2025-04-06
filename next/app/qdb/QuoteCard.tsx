@@ -2,35 +2,35 @@
 
 import { GoLinkDelete, GoLinkEdit, QuoteDelete, QuoteEdit } from "@/components/common/Icons";
 import { Quote } from "./Quotes";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useEffectAsync } from "@/lib/utils";
 import { fetchAuthLevel } from "@/lib/api";
 
-
-
 export const QuoteCard = (quote: Quote) => {
 
-    const [editableQuote, setEditableQuote] = useState(quote);
+    const [editableQuote, setEditableQuote] = useState<Quote | null>(null);
 
     const handleCancel = () => {
-        setEditableQuote(quote);
-    }
+        setEditableQuote(null);
+    };
 
     const updateTag = (e: React.ChangeEvent<HTMLInputElement>) => {
         setEditableQuote((prevQuote) => ({
-            ...prevQuote,
+            ...prevQuote!,
             tags: [e.target.value],
         }));
     };
 
     const updateQuote = (e: React.ChangeEvent<HTMLInputElement>) => {
         setEditableQuote((prevQuote) => ({
-            ...prevQuote,
+            ...prevQuote!,
             quote: e.target.value,
         }));
     };
 
     const handleSave = async () => {
+        if (!editableQuote) return;
+
         try {
             const response = await fetch("/api/quotes", {
                 method: "PUT",
@@ -53,7 +53,6 @@ export const QuoteCard = (quote: Quote) => {
         }
     };
 
-
     const handleDelete = async () => {
         try {
             const response = await fetch("/api/quotes", {
@@ -65,6 +64,7 @@ export const QuoteCard = (quote: Quote) => {
             if (!response.ok) {
                 throw new Error("Failed to delete quote");
             }
+
             window.location.reload();
         } catch (error) {
             console.error(error);
@@ -78,22 +78,25 @@ export const QuoteCard = (quote: Quote) => {
         setIsOfficer(data.isOfficer);
     }, []);
 
+    const openEditModal = (quote: Quote) => {
+        console.log("Edit Modal function");
+        console.log(quote);
+        setEditableQuote(quote);
+        if (document) {
+            (
+                document.getElementById("edit-quote") as HTMLFormElement
+            ).showModal();
+        }
+    };
+
     if (isOfficer) {
         return (
             <div className="border-l-8 border-blue-500 rounded-lg bg-base-100 w-11/12 py-8 px-12 mx-auto items-center content-center gap-10 my-10">
                 <p>{quote.tags}: {quote.quote}</p>
                 <p>{quote.tags}</p>
 
-
-                {/*Button and dialog box for editing a quote*/}
-                <button onClick={(func) => {
-                    func.preventDefault();
-                    if (document) {
-                        (
-                            document.getElementById("edit-quote") as HTMLFormElement
-                        ).showModal();
-                    }
-                }}>
+                {/* Button and dialog box for editing a quote */}
+                <button onClick={() => openEditModal(quote)}>
                     <QuoteEdit />
                 </button>
                 <dialog id="edit-quote" className="modal">
@@ -104,7 +107,7 @@ export const QuoteCard = (quote: Quote) => {
                         </label>
                         <input
                             type="text"
-                            value={editableQuote.quote}
+                            value={editableQuote?.quote || ""}
                             onChange={updateQuote}
                             className="mt-1 p-2 w-full border rounded-md"
                         />
@@ -113,7 +116,7 @@ export const QuoteCard = (quote: Quote) => {
                         </label>
                         <input
                             type="text"
-                            value={editableQuote.tags}
+                            value={editableQuote?.tags[0] || ""}
                             onChange={updateTag}
                             className="mt-1 p-2 w-full border rounded-md"
                         />
@@ -143,8 +146,7 @@ export const QuoteCard = (quote: Quote) => {
                     </div>
                 </dialog>
 
-
-                {/*Button and dialog box for deleting a quote*/}
+                {/* Button and dialog box for deleting a quote */}
                 <button onClick={(func) => {
                     func.preventDefault();
                     if (document) {
@@ -182,4 +184,4 @@ export const QuoteCard = (quote: Quote) => {
             </div>
         );
     }
-}
+};
