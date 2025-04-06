@@ -2,7 +2,7 @@
 
 import { fetchAuthLevel } from "@/lib/api";
 import { useEffectAsync } from "@/lib/utils";
-import { useSession } from "next-auth/react";
+import { getSession, useSession } from "next-auth/react";
 import { useState } from "react";
 
 export const MakeNewQuote = () => {
@@ -13,16 +13,16 @@ export const MakeNewQuote = () => {
   const [author, setAuthor] = useState("");
   const [pinned, setPinned] = useState(false);
   const [officer, setOfficer] = useState(false);
+  const [userId, setUserID] = useState(0);
 
   const [isOfficer, setIsOfficer] = useState(false);
   useEffectAsync(async () => {
     const data = await fetchAuthLevel();
-    console.log(data);
     setIsOfficer(data.isOfficer);
+    setUserID(data.userId);
   }, []);
 
   const createQuote = async () => {
-    console.log(session?.user?.id);
     if (!quote.trim()) {
       alert("Quote cannot be empty");
       return;
@@ -31,9 +31,10 @@ export const MakeNewQuote = () => {
     const newQuote = {
       dateAdded: new Date().toISOString(),
       quote,
-      userId: session?.user?.id,
+      userId: userId,
       author: author || "Anonymous",
     };
+
 
     try {
       const response = await fetch("/api/quotes", {
@@ -47,14 +48,12 @@ export const MakeNewQuote = () => {
       }
 
       const result = await response.json();
-      console.log("Quote Created:", result);
-      alert("Quote successfully created!");
       setQuote("");
       setAuthor("");
     } catch (error) {
-      console.error(error);
       alert("Error creating quote");
     }
+    window.location.reload();
   };
 
   if (isOfficer) {
@@ -116,8 +115,3 @@ export const MakeNewQuote = () => {
 }
 
 export default MakeNewQuote;
-
-// // Example Usage
-// createQuote("The only limit to our realization of tomorrow is our doubts of today.", 4, "Franklin D. Roosevelt")
-//   .then((newQuote) => console.log("Quote Created:", newQuote))
-//   .catch((error) => console.error(error));

@@ -108,6 +108,7 @@ export const scheduleApi: ApiWrapper<ScheduleRead, Schedule> =
   apiWrapperFactory("schedule");
 
 export type AuthLevel = {
+  userId: number;
   isUser: boolean;
   isMember: boolean;
   isMentor: boolean;
