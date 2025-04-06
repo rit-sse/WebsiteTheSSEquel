@@ -10,18 +10,12 @@ import { fetchAuthLevel } from "@/lib/api";
 
 export const QuoteCard = (quote: Quote) => {
 
-    //Used when editing quotes
     const [editableQuote, setEditableQuote] = useState(quote);
 
-    //Resets the fields when editing a quote
-    //after the user presses cancel or the
-    //quote has been saved on the db after
-    //saving the quote.
     const handleCancel = () => {
         setEditableQuote(quote);
     }
 
-    //Used for editing the tag/author of a quote
     const updateTag = (e: React.ChangeEvent<HTMLInputElement>) => {
         setEditableQuote((prevQuote) => ({
             ...prevQuote,
@@ -29,7 +23,6 @@ export const QuoteCard = (quote: Quote) => {
         }));
     };
 
-    //Used for editing the text for a quote
     const updateQuote = (e: React.ChangeEvent<HTMLInputElement>) => {
         setEditableQuote((prevQuote) => ({
             ...prevQuote,
@@ -37,33 +30,30 @@ export const QuoteCard = (quote: Quote) => {
         }));
     };
 
-    //Updates the quote on the backend
     const handleSave = async () => {
         try {
             const response = await fetch("/api/quotes", {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    id: editableQuote.id, 
+                    id: editableQuote.id,
                     quote: editableQuote.quote,
                     author: editableQuote.tags[0]
                 }),
             });
-    
+
             if (!response.ok) {
                 throw new Error("Failed to update quote");
             }
-    
+
             window.location.reload();
         } catch (error) {
             console.error(error);
             alert("Error updating quote");
         }
     };
-    
 
-    //Removes the selected quote from the backend after
-    //a user confirms
+
     const handleDelete = async () => {
         try {
             const response = await fetch("/api/quotes", {
@@ -85,7 +75,6 @@ export const QuoteCard = (quote: Quote) => {
     const [isOfficer, setIsOfficer] = useState(false);
     useEffectAsync(async () => {
         const data = await fetchAuthLevel();
-        // console.log(data);
         setIsOfficer(data.isOfficer);
     }, []);
 
@@ -111,21 +100,21 @@ export const QuoteCard = (quote: Quote) => {
                     <div className="modal-box">
                         <p>Edit</p>
                         <label className="block text-sm font-medium text-gray-700">
-                            Person Quoted:
-                        </label>
-                        <input
-                            type="text"
-                            value={editableQuote.tags}
-                            onChange={updateTag}
-                            className="mt-1 p-2 w-full border rounded-md"
-                        />
-                        <label className="block text-sm font-medium text-gray-700">
                             Quote:
                         </label>
                         <input
                             type="text"
                             value={editableQuote.quote}
                             onChange={updateQuote}
+                            className="mt-1 p-2 w-full border rounded-md"
+                        />
+                        <label className="block text-sm font-medium text-gray-700">
+                            Person Quoted:
+                        </label>
+                        <input
+                            type="text"
+                            value={editableQuote.tags}
+                            onChange={updateTag}
                             className="mt-1 p-2 w-full border rounded-md"
                         />
                         <button className="btn btn-primary mt-4" onClick={(func) => {
@@ -160,13 +149,13 @@ export const QuoteCard = (quote: Quote) => {
                     func.preventDefault();
                     if (document) {
                         (
-                            document.getElementById("delete-quote") as HTMLFormElement
-                        ).showModal();
+                            document.getElementById(`delete-quote-${quote.id}`) as HTMLFormElement
+                        )?.showModal();
                     }
                 }}>
                     <QuoteDelete />
                 </button>
-                <dialog id="delete-quote" className="modal">
+                <dialog id={`delete-quote-${quote.id}`} className="modal">
                     <div className="modal-box">
                         <h3>Are you sure you want to delete the quote?</h3>
                         <button className="btn btn-primary mt-4" onClick={(func) => {
