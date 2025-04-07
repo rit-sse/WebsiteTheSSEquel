@@ -1,16 +1,16 @@
-import { useState } from "react";
+'use client';
+import { useEffect, useState } from 'react';
 import React from "react";
 import TimeCard from "./mentorTimeCard";
-import { getData, setSchedule, setSkills, getMentorClasses, sortMentorMajor } from "./mentor";
+import { getData, setSchedule, setSkills, getMentorClasses, sortMentorMajor, setSelectedMentor } from "./mentor";
 import { Mentors } from "./mentor";
 import { MentorTimeSlot } from "./mentorTimeslot";
 import { AllMentorTime } from "./timeSlot";
-import { time } from "console";
 //board to represent mentors and their times/schedules
 //0 = monday,1=tuesday,2=wednesday,3=thursday,4=friday
 //0-8 is the times from 10am to 6pm
-const emptyMentor:Mentors = {name: "Time Unfilled",time:[],courses:[],major: "",id:0,skills:[]}
-const emptyTimeslot:MentorTimeSlot = {mentor1: emptyMentor, mentor2:emptyMentor, isdualTimeSlot:false}
+const emptyMentor:Mentors = {name: "Time Unfilled",time:[],courses:[],major: "",id:0,skills:[],selected:false}
+const emptyTimeslot:MentorTimeSlot = {mentor1: emptyMentor, mentor2:emptyMentor, isdualTimeSlot:false,selectedMentorName:"No Mentor"}
 //current representation for an empty timeslot
 const days: string[] = ["Monday","Tuesday","Wednesday","Thursday","Friday"]
 
@@ -24,7 +24,7 @@ function fillboard(mentor:Mentors[]){
             var day:number = mentor[i].time[k].day
             var time:number = mentor[i].time[k].timeslot
             if(board[day][time].mentor1 == emptyMentor){
-                var slot:MentorTimeSlot = ({mentor1: mentor[i],mentor2:emptyMentor,isdualTimeSlot:false})
+                var slot:MentorTimeSlot = ({mentor1: mentor[i],mentor2:emptyMentor,isdualTimeSlot:false,selectedMentorName:"No Mentor"})
                 board[day][time] = slot
             } else {
                 board[day][time].mentor2 = mentor[i]
@@ -34,17 +34,52 @@ function fillboard(mentor:Mentors[]){
     }
     return board;
 }
+const useMentorSelector = (mentorList: Mentors[], mentorName:String) => {
+    const [selectedMentor, setSelectedMentor] = useState<Mentors | null>(null);
+    useEffect(() => { 
+      const foundMentor = mentorList.find(m => m.name === mentorName);
+      if (foundMentor) {
+        setSelectedMentor(foundMentor);
+      }
+    }, [mentorName, mentorList]);
+  
+    return selectedMentor;
+};
 
-const MentorBoard = async ()=>{
-    var mentors:Mentors[] = []
-    await getData(mentors)
-    var board: MentorTimeSlot[][] = []
-    await setSchedule(mentors)
-    await setSkills(mentors)
-    board = fillboard(mentors)
-    var classes:String[] = []
-    await getMentorClasses(classes,mentors)
-    console.log(mentors)
+const MentorBoard =()=>{
+  //All the data that we will be using to fill th mentor board
+    const [mentors, setMentors] = useState<Mentors[]>([]);
+    const [board, setBoard] = useState<MentorTimeSlot[][]>([]);
+    const [classes, setClasses] = useState<string[]>([]);
+    const [skills, setSkillsList] = useState<string[]>([]);
+    const [selectedName, setSelectedName] = useState('');
+    const selectedMentor = useMentorSelector(mentors, selectedName);
+
+    const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setSelectedName(e.target.value);
+    };
+
+    useEffect(() => {
+        const fetchData = async () => {
+        const mentorList: Mentors[] = [];
+        const classList: string[] = [];
+        const skillList: string[] = [];
+        await getData(mentorList);
+        await setSchedule(mentorList);
+        await setSkills(skillList, mentorList);
+        await getMentorClasses(classList, mentorList);
+        const boardData = fillboard(mentorList);
+
+        // Update state after processing
+        setMentors(mentorList);
+        setBoard(boardData);
+        setClasses(classList);
+        setSkillsList(skillList);
+        };
+
+        fetchData();
+    }, []);
+    
     return(
         <div className="float-right">
             <div className="float-left">
@@ -62,10 +97,10 @@ const MentorBoard = async ()=>{
             <div className="border-[2px] border-white rounded-xl overflow-hidden float-right">
                 <div className="flex gap-4 mb-4">
                     <div className="flex items-center px-4 py-2 rounded-full text-white min-w-[175px]">
-                        <select className="bg-[#0B1C2C] text-white text-sm w-full px-1 py-0.5 leading-tight focus:outline-none rounded-xl">
+                        <select onChange={(e) => handleSelectChange(e)}className="bg-[#0B1C2C] text-white text-sm w-full px-1 py-0.5 leading-tight focus:outline-none rounded-xl">
                             <option className="text-black">Mentors</option>
                             {mentors.map((mentor)=>(
-                              <option className="text-black">{mentor.name}</option>
+                            <option value={mentor.name} className="text-black">{mentor.name}</option>
                             ))}
                         </select>
                     </div>
@@ -80,6 +115,9 @@ const MentorBoard = async ()=>{
                     <div className="flex items-center px-4 py-2 rounded-full text-white min-w-[175px]">
                         <select className="bg-[#0B1C2C] text-white text-sm w-full px-1 py-0.5 leading-tight focus:outline-none rounded-xl">
                             <option className="text-black">Skills</option>
+                            {skills.map((skill)=>(
+                              <option className="text-black">{skill}</option>
+                            ))}
                         </select>
                     </div>
                 </div>
@@ -89,7 +127,7 @@ const MentorBoard = async ()=>{
                             {days[rowIndex]}
                         </div>  
                         {row.map((value) => (
-                            <TimeCard mentor1={value.mentor1} mentor2={value.mentor2} isdualTimeSlot={value.isdualTimeSlot}/>
+                            <TimeCard mentor1={value.mentor1} mentor2={value.mentor2} isdualTimeSlot={value.isdualTimeSlot} selectedMentorName={selectedMentor?.name ?? "No Mentor"}/>
                         ))}
                     </div>
                 ))}

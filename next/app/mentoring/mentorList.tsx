@@ -1,12 +1,6 @@
-import { useState } from "react";
 import React from "react";
-import TimeCard from "./mentorTimeCard";
 import { getData, sortMentorMajor } from "./mentor";
 import { Mentors } from "./mentor";
-import { MentorTimeSlot } from "./mentorTimeslot";
-import { AllMentorTime } from "./timeSlot";
-import { time } from "console";
-
 const MentorList = async () =>{
     var mentorMajors:Mentors[][] = [];
     var mentors:Mentors[] = []
