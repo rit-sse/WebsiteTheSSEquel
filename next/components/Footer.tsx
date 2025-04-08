@@ -1,6 +1,5 @@
 'use client'
 
-import ExternalHyperlinkText from "./common/ExternalHyperlinkText";
 import Link from "next/link";
 import HomepageContent from "@/app/HomepageContent";
 import { DiscordIcon, InstagramIcon, SlackIcon, TikTokIcon, TwitchIcon } from "./common/Icons";

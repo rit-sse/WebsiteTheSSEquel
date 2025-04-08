@@ -79,16 +79,16 @@ export default function EditEventForm ({ isOpen, onClose, setModalEvent, event, 
         let minLengthID = 5; 
 
         // Update to Google Calendar
-        await fetch('http://localhost:3000/api/event/calendar', { 
+        await fetch('http://localhost:3000/api/calendar', { 
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 id: "0".repeat(minLengthID - idString.length).concat(idString),
-                title: eventName,
+                summary: eventName,
                 location: location,
                 description: description,
-                date: new Date(datetime).toISOString(),
-                image: googleImageLink
+                start: new Date(datetime).toISOString(),
+                end: new Date(new Date(datetime).getTime() + 60 * 60 * 1000).toISOString()
             })
         }).then(async (res) => { console.log(await res.text()) })
 

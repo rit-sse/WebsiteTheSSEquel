@@ -66,17 +66,22 @@ export default function AddEventForm ({ isOpen, onClose, events, setEvents }: Fo
         // Post to Google Calendar
         // Min Length required for an ID in Google Calendar API
         let minLengthID = 5; 
-        await fetch('http://localhost:3000/api/event/calendar', { 
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                id: "0".repeat(minLengthID - idString.length).concat(idString),
-                title: eventName,
-                location: location,
-                description: description,
-                date: new Date(datetime).toISOString(),
-            })
-        }).then(async (res) => { console.log(await res.text()) })
+        try {
+            await fetch('http://localhost:3000/api/calendar', { 
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: "0".repeat(minLengthID - idString.length).concat(idString),
+                    summary: eventName,
+                    location: location,
+                    description: description,
+                    start: new Date(datetime).toISOString(),
+                    end: new Date(new Date(datetime).getTime() + 60 * 60 * 1000).toISOString()
+                })
+            }).then(async (res) => { console.log(await res.text()) })
+        } catch (error) {
+            console.log(error);
+        }
 
         // Append new event to the current events array
         let updatedEvents: Event[] = [...events, newEvent];

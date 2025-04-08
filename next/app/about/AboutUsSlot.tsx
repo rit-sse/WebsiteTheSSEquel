@@ -17,15 +17,17 @@ export class AboutUsSlot implements ZCardContent {
     getAlt = () => this.alt;
 
     toContent(): FC {
-        return () => {
+        const name = this.name;
+        const description = this.description;
+        return function slotContent() {
             return (
                 <div className='general-classes'>
                     <h2 className='title-classes'>
-                        {this.name}
+                        {name}
                     </h2>
                     
                     <p className='description-classes'>
-                        {this.description}
+                        {description}
                     </p>
                 </div>
             );

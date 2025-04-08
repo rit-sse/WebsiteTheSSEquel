@@ -2,237 +2,244 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+    provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
 }
 
 model User {
-  //Store an automatically generated unique int for id
-  id Int @id @default(autoincrement())
+    //Store an automatically generated unique int for id
+    id Int @id @default(autoincrement())
 
-  //Store first and last name as Strings
-  name String
+    //Store first and last name as Strings
+    name String
 
-  //Store email as a unique String
-  email String @unique
+    //Store email as a unique String
+    email String @unique
 
-  //Store a boolean value to determine if a user is a member or not
-  //Defaults to false if not specified
-  isMember Boolean @default(false)
+    //Store a boolean value to determine if a user is a member or not
+    //Defaults to false if not specified
+    isMember Boolean @default(false)
 
-  //Image will be saved
-  image String @default("https://source.boringavatars.com/beam/")
+    //Image will be saved
+    image String @default("https://source.boringavatars.com/beam/")
 
-  emailVerified DateTime?
+    emailVerified DateTime?
 
-  // relational fields
-  mentor   Mentor[]
-  quotes   Quote[]
-  officers Officer[]
-  account  Account[]
-  session  Session[]
+    // relational fields
+    mentor               Mentor[]
+    quotes               Quote[]
+    officers             Officer[]
+    account              Account[]
+    session              Session[]
+    projectContributions ProjectContributor[]
+    projects             Project[]
 }
 
 model Quote {
-  //Store an automatically generated unique int for id
-  id Int @id @default(autoincrement())
+    //Store an automatically generated unique int for id
+    id Int @id @default(autoincrement())
 
-  //Store the timestamp quote was added
-  date_added DateTime
+    //Store the timestamp quote was added
+    date_added DateTime
 
-  //Store quote as a String 
-  quote String @db.VarChar(255)
+    //Store quote as a String
+    quote String @db.VarChar(255)
 
-  //References userId of person who submitted the quote
-  user_id Int
+    //References userId of person who submitted the quote
+    user_id Int
 
-  //Store author, person who said the qoute, as a String, default to anonymous
-  author String @default("Anonymous")
+    //Store author, person who said the qoute, as a String, default to anonymous
+    author String @default("Anonymous")
 
-  //Relational fields
-  //Refrences user_id
-  user User @relation(fields: [user_id], references: [id])
+    //Relational fields
+    //Refrences user_id
+    user User @relation(fields: [user_id], references: [id])
 }
 
 model OfficerPosition {
-  //Store an automatically generated unique int for id
-  id Int @id @default(autoincrement())
+    //Store an automatically generated unique int for id
+    id Int @id @default(autoincrement())
 
-  //Store position title as a String 
-  title String @unique
+    //Store position title as a String
+    title String @unique
 
-  //States primary as a boolean
-  is_primary Boolean @default(false)
+    //States primary as a boolean
+    is_primary Boolean @default(false)
 
-  //Store email as a unique String
-  email String @unique
+    //Store email as a unique String
+    email String @unique
 
-  //Relational fields
-  officers Officer[]
+    //Relational fields
+    officers Officer[]
 }
 
 model Officer {
-  //Store an automatically generated unique int for id
-  id Int @id @default(autoincrement())
+    //Store an automatically generated unique int for id
+    id Int @id @default(autoincrement())
 
-  //Refrences positionId
-  position_id Int
+    //Refrences positionId
+    position_id Int
 
-  //Refrences userId
-  user_id Int
+    //Refrences userId
+    user_id Int
 
-  //Store active status as a boolean
-  is_active Boolean @default(true)
+    //Store active status as a boolean
+    is_active Boolean @default(true)
 
-  //Store startDate and endDate as a DateTime
-  start_date DateTime
-  end_date   DateTime
+    //Store startDate and endDate as a DateTime
+    start_date DateTime
+    end_date   DateTime
 
-  //Relational fields
-  user     User            @relation(fields: [user_id], references: [id])
-  position OfficerPosition @relation(fields: [position_id], references: [id])
+    //Relational fields
+    user     User            @relation(fields: [user_id], references: [id])
+    position OfficerPosition @relation(fields: [position_id], references: [id])
 }
 
 model Mentor {
-  //Store an automatically generated unique int for id
-  id Int @id @default(autoincrement())
+    //Store an automatically generated unique int for id
+    id Int @id @default(autoincrement())
 
-  //Refrences userId 
-  user_Id Int
+    //Refrences userId
+    user_Id Int
 
-  //Store expirationDate as a DateTime
-  expirationDate DateTime
+    //Store expirationDate as a DateTime
+    expirationDate DateTime
 
-  //Stores active status as a Boolean
-  isActive Boolean
+    //Stores active status as a Boolean
+    isActive Boolean
 
-  //Relatinal fields
-  mentorSkill MentorSkill[]
-  courseTaken CourseTaken[]
-  schedule    Schedule[]
-  user        User          @relation(fields: [user_Id], references: [id])
+    //Relatinal fields
+    mentorSkill MentorSkill[]
+    courseTaken CourseTaken[]
+    schedule    Schedule[]
+    user        User          @relation(fields: [user_Id], references: [id])
 }
 
 model Skill {
-  //Store an automatically generated unique int for id
-  id          Int           @id @default(autoincrement())
-  //Store skill as a unique String
-  skill       String        @unique
-  //Relational field
-  mentorSkill MentorSkill[]
+    //Store an automatically generated unique int for id
+    id Int @id @default(autoincrement())
+
+    //Store skill as a unique String
+    skill String @unique
+
+    //Relational field
+    mentorSkill MentorSkill[]
 }
 
 model MentorSkill {
-  //Store an automatically generated unique int for id
-  id        Int    @id @default(autoincrement())
-  //Refrences mentorId
-  mentor_Id Int
-  //Refrences skillId
-  skill_Id  Int
-  //Referential Fields
-  mentor    Mentor @relation(fields: [mentor_Id], references: [id])
-  skill     Skill  @relation(fields: [skill_Id], references: [id])
+    //Store an automatically generated unique int for id
+    id Int @id @default(autoincrement())
+
+    //Refrences mentorId
+    mentor_Id Int
+
+    //Refrences skillId
+    skill_Id Int
+
+    //Referential Fields
+    mentor Mentor @relation(fields: [mentor_Id], references: [id])
+    skill  Skill  @relation(fields: [skill_Id], references: [id])
 }
 
 model Department {
-  //Store an automatically generated unique int for id
-  id Int @id @default(autoincrement())
+    //Store an automatically generated unique int for id
+    id Int @id @default(autoincrement())
 
-  //Store title as a String
-  title String
+    //Store title as a String
+    title String
 
-  //Store short title as a String
-  shortTitle String @default("GCIS")
+    //Store short title as a String
+    shortTitle String @default("GCIS")
 
-  //Relatinal field
-  course Course[]
+    //Relatinal field
+    course Course[]
 }
 
 model Course {
-  //Store an automatically generated unique int for id
-  id Int @id @default(autoincrement())
+    //Store an automatically generated unique int for id
+    id Int @id @default(autoincrement())
 
-  //Store title as a String
-  title String @db.VarChar(40)
+    //Store title as a String
+    title String @db.VarChar(40)
 
-  //Refrence departmentId
-  departmentId Int
+    //Refrence departmentId
+    departmentId Int
 
-  //Stores code as an Integer
-  code Int
+    //Stores code as an Integer
+    code Int
 
-  //Relational field
-  courseTaken CourseTaken[]
+    //Relational field
+    courseTaken CourseTaken[]
 
-  //Refrence field
-  department Department @relation(fields: [departmentId], references: [id])
+    //Refrence field
+    department Department @relation(fields: [departmentId], references: [id])
 }
 
 model CourseTaken {
-  //Store an automatically generated unique int for id
-  id       Int @id @default(autoincrement())
-  mentorId Int // References Mentor.id
-  courseId Int // References Course.id
+    //Store an automatically generated unique int for id
+    id       Int @id @default(autoincrement())
+    mentorId Int // References Mentor.id
+    courseId Int // References Course.id
 
-  //Relation fields
-  mentor Mentor @relation(fields: [mentorId], references: [id])
-  course Course @relation(fields: [courseId], references: [id])
+    //Relation fields
+    mentor Mentor @relation(fields: [mentorId], references: [id])
+    course Course @relation(fields: [courseId], references: [id])
 }
 
 model HourBlock {
-  //Store an automatically generated unique int for id
-  id Int @id @default(autoincrement())
+    //Store an automatically generated unique int for id
+    id Int @id @default(autoincrement())
 
-  //Stores day of the week as a String
-  weekday String
+    //Stores day of the week as a String
+    weekday String
 
-  //Stores time block startTime as a DateTime
-  startTime DateTime @db.Time()
+    //Stores time block startTime as a DateTime
+    startTime DateTime @db.Time()
 
-  //Referenced relation field
-  schedule Schedule[]
+    //Referenced relation field
+    schedule Schedule[]
 }
 
 model Schedule {
-  //Store an automatically generated unique int for id
-  id Int @id @default(autoincrement())
+    //Store an automatically generated unique int for id
+    id Int @id @default(autoincrement())
 
-  mentorId    Int // References Mentor.id
-  hourBlockId Int // References HourBlock.id
+    mentorId    Int // References Mentor.id
+    hourBlockId Int // References HourBlock.id
 
-  //Relational fields
-  hourBlock HourBlock @relation(fields: [hourBlockId], references: [id])
-  mentor    Mentor    @relation(fields: [mentorId], references: [id])
+    //Relational fields
+    hourBlock HourBlock @relation(fields: [hourBlockId], references: [id])
+    mentor    Mentor    @relation(fields: [mentorId], references: [id])
 }
 
 model GoLinks {
-  //Store an automatically generated unique int for id
-  id Int @id @default(autoincrement())
+    //Store an automatically generated unique int for id
+    id Int @id @default(autoincrement())
 
-  //Store short link as a String
-  golink String
+    //Store short link as a String
+    golink String
 
-  //Store url as a String
-  url String
+    //Store url as a String
+    url String
 
-  //Description as a String
-  description String?
+    //Description as a String
+    description String?
 
-  //createdAt stored as a DateTime default to the timestamp it was created at
-  createdAt DateTime @default(now())
+    //createdAt stored as a DateTime default to the timestamp it was created at
+    createdAt DateTime @default(now())
 
-  //updatedAt stores the time the link was last updated
-  updatedAt DateTime
+    //updatedAt stores the time the link was last updated
+    updatedAt DateTime
 
-  //Determines if a link is public or not
-  isPublic Boolean @default(false)
+    //Determines if a link is public or not
+    isPublic Boolean @default(false)
 
-  //isPinned is a boolean value to determine if a user is pinned or not
-  isPinned Boolean @default(false)
+    //isPinned is a boolean value to determine if a user is pinned or not
+    isPinned Boolean @default(false)
 }
 
 model Event {
@@ -248,44 +255,89 @@ model Event {
 //Account model represents an account in the system.
 //It contains information about the user, the type of account, and the authentication provider.
 model Account {
-  //Store an automatically generated unique int for id
-  id Int @id @default(autoincrement())
+    //Store an automatically generated unique int for id
+    id Int @id @default(autoincrement())
 
-  //userId is a foreign key that references the id field of the User model
-  userId            Int
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String? @db.Text
-  session_state     String?
+    //userId is a foreign key that references the id field of the User model
+    userId            Int
+    type              String
+    provider          String
+    providerAccountId String
+    refresh_token     String? @db.Text
+    access_token      String? @db.Text
+    expires_at        Int?
+    token_type        String?
+    scope             String?
+    id_token          String? @db.Text
+    session_state     String?
 
-  //user is a relational field that references the User model
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+    //user is a relational field that references the User model
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([provider, providerAccountId])
+    @@unique([provider, providerAccountId])
 }
 
 model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       Int
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    id           String   @id @default(cuid())
+    sessionToken String   @unique
+    userId       Int
+    expires      DateTime
+    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model VerificationToken {
-  id         Int    @id @default(autoincrement())
-  //identifier is a string that is unique and is used to identify the token
-  identifier String @unique
+    id Int @id @default(autoincrement())
 
-  //token is a string that is unique and is used to verify the token
-  token String @unique
+    //identifier is a string that is unique and is used to identify the token
+    identifier String @unique
 
-  //expires is a DateTime that represents the expiration date of the token
-  expires DateTime
+    //token is a string that is unique and is used to verify the token
+    token String @unique
+
+    //expires is a DateTime that represents the expiration date of the token
+    expires DateTime
+}
+
+model Project {
+    id Int @id @default(autoincrement())
+
+    // The title of the project
+    title String
+
+    // A short description of the project
+    description String
+
+    // leader of the project
+    leadid Int
+
+    // details on the progress of the project
+    progress String?
+
+    // The link to the repo hosting the project
+    repoLink String?
+
+    // The api route pointing to the markdown file for the content of the page.
+    contentURL String?
+
+    // A link to an image representing the project
+    projectImage String?
+    
+    // Determines if the project has been completed or not
+    completed Boolean @default(false)
+
+    // Relational Fields
+    lead         User                 @relation(fields: [leadid], references: [id])
+    contributors ProjectContributor[]
+}
+
+model ProjectContributor {
+    id Int @id @default(autoincrement())
+
+    // Foreign Keys
+    userId    Int
+    projectId Int
+
+    // Relational Fields
+    user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+    project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }

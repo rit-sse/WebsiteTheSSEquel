@@ -93,6 +93,7 @@ const nonGetMentorVerifier = nonGetVerifier(mentorVerifier);
  * correspond to the key "golinks"
  */
 const ROUTES: { [key: string]: AuthVerifier } = {
+  calendar: nonGetOfficerVerifier,
   course: nonGetOfficerVerifier,
   courseTaken: nonGetMentorVerifier,
   departments: nonGetOfficerVerifier,
@@ -105,6 +106,8 @@ const ROUTES: { [key: string]: AuthVerifier } = {
   schedule: nonGetMentorVerifier,
   skill: nonGetOfficerVerifier,
   user: nonGetOfficerVerifier,
+  project: nonGetOfficerVerifier,
+  projectContributor: nonGetOfficerVerifier,
 };
 
 const accessDenied = (authType: string) => {

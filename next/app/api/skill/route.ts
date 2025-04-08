@@ -1,11 +1,13 @@
 import { PrismaClient } from "@prisma/client";
 
+export const dynamic = 'force-dynamic'
+
 const prisma = new PrismaClient();
 
 export async function GET() {
 	const skills = await prisma.skill.findMany({
 		select: {
-      id: true,
+			id: true,
 			skill: true,
 			mentorSkill: {
 				select: {

@@ -41,7 +41,7 @@ export default function EventForm ({ onClose, isOpen, event, openEditModal, even
         const idString = event.id?.toString() ?? "";
         let minLengthID = 5; 
         // Delete from Google Calendar
-        await fetch('http://localhost:3000/api/event/calendar', { 
+        await fetch('http://localhost:3000/api/calendar', { 
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

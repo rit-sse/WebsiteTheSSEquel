@@ -6,14 +6,14 @@ export default function AuthButton() {
 
     if (session) {
         return (
-            <HoverBoldButton text="Logout" dataLabel="Logout" onClick={() => signOut()} />
+            <HoverBoldButton className="text-left" text="Logout" dataLabel="Logout" onClick={() => signOut()} />
         );
     } else {
         return (
             // Setting the data-label to "Sign Out" is a hack to prevent
             // layout shift when the button changes from "Sign In" to "Sign Out"
             // data-label is used by the bold-pseudo CSS class to display a pseudo-element
-            <HoverBoldButton text="Login" dataLabel="Logout" onClick={() => signIn('google')} />
+            <HoverBoldButton className="text-left" text="Login" dataLabel="Logout" onClick={() => signIn('google')} />
         );
     }
 }
