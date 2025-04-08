@@ -20,7 +20,7 @@ const UpcomingEvents: React.FC<UpcomingEventsProps> = ({ eventsData, fetchData }
                </label>
                <div className="collapse-content"> 
                   {eventsData.map((item: Event) => (
-                     <EventCard {...item}/>
+                     <EventCard key={item.id} {...item}/>
                   ))}
                </div>
             </div>
