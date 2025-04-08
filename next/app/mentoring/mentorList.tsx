@@ -23,7 +23,7 @@ const MentorList = ({board, handleSelectChange}:{board:MentorTimeSlot[][],handle
     const [SelectedCells, setCells] = useState<TimeCell[]>([]);
     const [editMentor,setEditMentor] = useState(false);
     //an array of all TimeCell objects that have been selected
-
+    //We can't do much as there isn't any other post calls that i can find for anything else
     const handleCreateRestCall = async() =>{
         const response = await fetch("/api/mentor/", {
             method: "POST",

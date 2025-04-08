@@ -28,13 +28,13 @@ const MentorBoard =({mentors,board,classes,skills,selectedName,handleSelectChang
                 </div>
                 <div className="">
                     {AllMentorTime[0].map((timem)=>(
-                        <div className="w-30 h-12" style={{display: 'grid', placeItems: 'center'}}>
+                        <div className="w-30 h-12 border-gray-500 grid place-items-center">
                             {timem.time}
                         </div>
                     ))}
                 </div>
             </div>
-            <div className="border-[2px] border-white rounded-xl overflow-hidden float-right">
+            <div className="border-[2px] border-gray-500 rounded-xl overflow-hidden float-right bg-black">
                 <div className="flex gap-4 mb-4">
                     <div className="flex items-center px-4 py-2 rounded-full text-white min-w-[175px]">
                         <select onChange={(e) => handleSelectChange(e)}className="bg-[#0B1C2C] text-white text-sm w-full px-1 py-0.5 leading-tight focus:outline-none rounded-xl">
@@ -63,7 +63,7 @@ const MentorBoard =({mentors,board,classes,skills,selectedName,handleSelectChang
                 </div>
                 {board.map((row,rowIndex)=>(
                     <div key={rowIndex} className="inline-block">
-                        <div className="text-center text-blue-300 font-semibold p-2 border border-white">
+                        <div className="text-center text-blue-300 font-semibold p-2 border border-gray-500">
                             {days[rowIndex]}
                         </div>  
                         {row.map((value) => (
