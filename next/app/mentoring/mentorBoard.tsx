@@ -6,6 +6,7 @@ import { getData, setSchedule, setSkills, getMentorClasses, sortMentorMajor, set
 import { Mentors } from "./mentor";
 import { MentorTimeSlot } from "./mentorTimeslot";
 import { AllMentorTime } from "./timeSlot";
+import { useMentorSelector } from './page';
 //board to represent mentors and their times/schedules
 //0 = monday,1=tuesday,2=wednesday,3=thursday,4=friday
 //0-8 is the times from 10am to 6pm
@@ -14,70 +15,10 @@ const emptyTimeslot:MentorTimeSlot = {mentor1: emptyMentor, mentor2:emptyMentor,
 //current representation for an empty timeslot
 const days: string[] = ["Monday","Tuesday","Wednesday","Thursday","Friday"]
 
-function fillboard(mentor:Mentors[]){
-    var board: MentorTimeSlot[][] = []
-    for(let i = 1; i<= 5; i++){
-        board.push([emptyTimeslot,emptyTimeslot,emptyTimeslot,emptyTimeslot,emptyTimeslot,emptyTimeslot,emptyTimeslot,emptyTimeslot])
-    }
-    for(let i = 0; i < mentor.length; i++){
-        for(let k = 0; k < mentor[i].time.length; k++){
-            var day:number = mentor[i].time[k].day
-            var time:number = mentor[i].time[k].timeslot
-            if(board[day][time].mentor1 == emptyMentor){
-                var slot:MentorTimeSlot = ({mentor1: mentor[i],mentor2:emptyMentor,isdualTimeSlot:false,selectedMentorName:"No Mentor"})
-                board[day][time] = slot
-            } else {
-                board[day][time].mentor2 = mentor[i]
-                board[day][time].isdualTimeSlot = true
-            }
-        }
-    }
-    return board;
-}
-const useMentorSelector = (mentorList: Mentors[], mentorName:String) => {
-    const [selectedMentor, setSelectedMentor] = useState<Mentors | null>(null);
-    useEffect(() => { 
-      const foundMentor = mentorList.find(m => m.name === mentorName);
-      if (foundMentor) {
-        setSelectedMentor(foundMentor);
-      }
-    }, [mentorName, mentorList]);
-  
-    return selectedMentor;
-};
 
-const MentorBoard =()=>{
-  //All the data that we will be using to fill th mentor board
-    const [mentors, setMentors] = useState<Mentors[]>([]);
-    const [board, setBoard] = useState<MentorTimeSlot[][]>([]);
-    const [classes, setClasses] = useState<string[]>([]);
-    const [skills, setSkillsList] = useState<string[]>([]);
-    const [selectedName, setSelectedName] = useState('');
+const MentorBoard =({mentors,board,classes,skills,selectedName,handleSelectChange}:{mentors:Mentors[],board:MentorTimeSlot[][],classes:string[],skills:string[],selectedName:string,handleSelectChange:(e: React.ChangeEvent<HTMLSelectElement>) => void})=>{
+
     const selectedMentor = useMentorSelector(mentors, selectedName);
-
-    const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setSelectedName(e.target.value);
-    };
-
-    useEffect(() => {
-        const fetchData = async () => {
-            const mentorList: Mentors[] = [];
-            const classList: string[] = [];
-            const skillList: string[] = [];
-            await getData(mentorList);
-            await setSchedule(mentorList);
-            await setSkills(skillList, mentorList);
-            await getMentorClasses(classList, mentorList);
-            const boardData = fillboard(mentorList);
-
-            // Update state after processing
-            setMentors(mentorList);
-            setBoard(boardData);
-            setClasses(classList);
-            setSkillsList(skillList);
-        };
-        fetchData();
-    }, []);
     
     return(
         <div className="float-right">

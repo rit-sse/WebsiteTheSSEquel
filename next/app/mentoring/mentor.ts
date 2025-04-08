@@ -46,7 +46,6 @@ export async function getMentorClasses(string:String[],mentors:Mentors[]){
         if (response.ok){
             data = await response.json()
             var i = 0
-            
             while(i< data.length){
                 if(!string.includes(data[i].course.title))[
                     string.push(data[i].course.title)

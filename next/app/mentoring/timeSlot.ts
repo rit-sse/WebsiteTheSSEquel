@@ -3,7 +3,6 @@ export interface Time{
     time: string
     timeslot: number
 }
-
 export const AllMentorTime: Time[][] = [
     [{day:0,time: "10:00 AM",timeslot:0},
     {day:0, time: "11:00 AM",timeslot:1},
