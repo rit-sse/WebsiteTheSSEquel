@@ -61,22 +61,21 @@ const MentorBoard =()=>{
 
     useEffect(() => {
         const fetchData = async () => {
-        const mentorList: Mentors[] = [];
-        const classList: string[] = [];
-        const skillList: string[] = [];
-        await getData(mentorList);
-        await setSchedule(mentorList);
-        await setSkills(skillList, mentorList);
-        await getMentorClasses(classList, mentorList);
-        const boardData = fillboard(mentorList);
+            const mentorList: Mentors[] = [];
+            const classList: string[] = [];
+            const skillList: string[] = [];
+            await getData(mentorList);
+            await setSchedule(mentorList);
+            await setSkills(skillList, mentorList);
+            await getMentorClasses(classList, mentorList);
+            const boardData = fillboard(mentorList);
 
-        // Update state after processing
-        setMentors(mentorList);
-        setBoard(boardData);
-        setClasses(classList);
-        setSkillsList(skillList);
+            // Update state after processing
+            setMentors(mentorList);
+            setBoard(boardData);
+            setClasses(classList);
+            setSkillsList(skillList);
         };
-
         fetchData();
     }, []);
     
