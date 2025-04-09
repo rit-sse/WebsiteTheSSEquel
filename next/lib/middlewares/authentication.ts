@@ -102,12 +102,13 @@ const ROUTES: { [key: string]: AuthVerifier } = {
   mentor: nonGetOfficerVerifier,
   mentorSkill: nonGetMentorVerifier,
   officer: nonGetOfficerVerifier,
-  quotes: nonGetOfficerVerifier,
-  schedule: nonGetMentorVerifier,
-  skill: nonGetOfficerVerifier,
-  user: nonGetOfficerVerifier,
   project: nonGetOfficerVerifier,
   projectContributor: nonGetOfficerVerifier,
+  quotes: nonGetOfficerVerifier,
+  schedule: nonGetMentorVerifier,
+  skills: nonGetOfficerVerifier,
+  user: nonGetOfficerVerifier,
+  userProject: nonGetOfficerVerifier,
 };
 
 const accessDenied = (authType: string) => {
