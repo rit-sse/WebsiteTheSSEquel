@@ -1,9 +1,9 @@
 'use client';
 import React, { useEffect, useState } from "react";
-import { getData, getMentorClasses, setSchedule, setSkills, sortMentorMajor } from "./mentor";
+import { createNewMentorWithUser, getData, getMentorClasses, setSchedule, setSkills, sortMentorMajor } from "./mentor";
 import { Mentors } from "./mentor";
 import { MentorTimeSlot } from "./mentorTimeslot";
-import { AllMentorTime } from "./timeSlot";
+import { AllMentorTime, Time } from "./timeSlot";
 
 interface TimeCell{
     row:number,
@@ -18,29 +18,38 @@ const MentorList = ({board, handleSelectChange}:{board:MentorTimeSlot[][],handle
     const [isOfficer, setIsOfficer] = useState(false);
     const [creatingNewMentor,setIsCreatingNewMentor] = useState(false);
     const [newName, setNewNAme] = useState("");
+    const [newEmail, setNewEmail] = useState("");
     const [classes, setClasses] = useState<string[]>([]);
     const [skills, setSkillsList] = useState<string[]>([]);
     const [SelectedCells, setCells] = useState<TimeCell[]>([]);
+    const [SelectedTimes, setTimes] = useState<Time[]>([]);
     const [editMentor,setEditMentor] = useState(false);
+    const [isDataFilled,setDataIsFiled] = useState(true)
     //an array of all TimeCell objects that have been selected
-    //We can't do much as there isn't any other post calls that i can find for anything else
-    const handleCreateRestCall = async() =>{
-        const response = await fetch("/api/mentor/", {
-            method: "POST",
-            body: JSON.stringify({
-                expirationDate:"None",
-                isActive:true,
-                userId:mentors[mentors.length-1].id+1
-            }),
-        });
+    const handleCreateNewMentorButtonClick = async () =>{
+        if(newName!="" && newEmail!="" && classes.length != 0 && skills.length != 0 && SelectedCells.length != 0){
+            console.log(newName,newEmail,assignTimeSlots(SelectedCells),skills,classes)
+            await createNewMentorWithUser(newName,newEmail,assignTimeSlots(SelectedCells),skills,classes)
+            handleExitClick()
+            setDataIsFiled(true)
+        } else{
+            setDataIsFiled(false)
+        }
     }
-
+    const assignTimeSlots = (cells:TimeCell[]) =>{
+        const times:Time[] = []
+        for(const cell of cells){
+            times.push(AllMentorTime[cell.row][cell.col])
+        }
+        return(times)
+    }
     const handleSelectCell = (row: number, col: number, isDualMentor:boolean) => {
         if(!isDualMentor){
             if(!SelectedCells.some(cell => cell.row === row && cell.col === col)){
                 setCells(prev => [...prev, { row, col }]);
             }
         }
+
       };
     //checking for if it is a dual timeslot first then if the cell already exists within the array
     const handleMentorClick = (mentor:Mentors) => {
@@ -77,6 +86,8 @@ const MentorList = ({board, handleSelectChange}:{board:MentorTimeSlot[][],handle
         setClasses([])
         setSkillsList([])
         setCells([])
+        setNewEmail("")
+        setTimes([])
     }
     var mentorMajors:Mentors[][] = [];
     const [mentors, setMentors] = useState<Mentors[]>([]);
@@ -107,6 +118,7 @@ const MentorList = ({board, handleSelectChange}:{board:MentorTimeSlot[][],handle
     mentorMajors = sortMentorMajor(mentors)
     //this is to sort all mentors into their respective majors
     //function exists in mentor.ts
+    
     if(editMentor){
         return(<div className="w-80 bg-gray-800 text-white p-6 rounded-2xl border border-gray-500 float-left">
             <span onClick={() => handleExitClick()} className="cursor-pointer hover:underline text-sm">
@@ -114,6 +126,8 @@ const MentorList = ({board, handleSelectChange}:{board:MentorTimeSlot[][],handle
             </span>
             <h3 className="text-sm font-semibold border-b border-gray-500 pb-1 mb-2">Name</h3>
             <input type="text" className="text-sm text-gray-900 px-2 py-1 h-6" placeholder="Mentor Name" value={newName} onChange={(e) => setNewNAme(e.target.value)}/>
+            <h3 className="text-sm font-semibold border-b border-gray-500 pb-1 mb-2">Email</h3>
+            <input type="text" className="text-sm text-gray-900 px-2 py-1 h-6" placeholder="Mentor Email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)}/>
             <h3 className="text-sm font-semibold border-b border-gray-500 pb-1 mb-2">Classes</h3>
             <p className="text-sm">Enter classes seperated by commas ,</p>
             <input type="text" className=" text-sm text-gray-900 px-2 py-1 h-6" placeholder="Mentor Classes" value={classes.toString()} onChange={(e) => handleSetClasses(e.target.value)}/>
@@ -142,9 +156,6 @@ const MentorList = ({board, handleSelectChange}:{board:MentorTimeSlot[][],handle
                                 <div
                                     onClick={()=> handleSelectCell(rowIndex,colIndex,value.isdualTimeSlot)}
                                     className={`w-9 h-4 border border-white 
-                                    ${SelectedCells.find(cell => cell.row === rowIndex && cell.col === colIndex)?.col==colIndex && 
-                                    SelectedCells.find(cell => cell.row === rowIndex && cell.col === colIndex)?.row==rowIndex &&
-                                    value.mentor1.name != "Time Unfilled" ? 'bg-blue-100' : 'bg-green-500'}
                                     ${value.isdualTimeSlot ? 'bg-red-500' : 'bg-green-500'}
                                     ${value.mentor1.name != "Time Unfilled" ? 'bg-orange-500' : 'bg-green-500'}
                                     ${SelectedCells.find(cell => cell.row === rowIndex && cell.col === colIndex)?.col==colIndex && 
@@ -165,6 +176,8 @@ const MentorList = ({board, handleSelectChange}:{board:MentorTimeSlot[][],handle
                 </span>
                 <h3 className="text-sm font-semibold border-b border-gray-500 pb-1 mb-2">Name</h3>
                 <input type="text" className="text-sm text-gray-900 px-2 py-1 h-6" placeholder="Mentor Name" value={newName} onChange={(e) => setNewNAme(e.target.value)}/>
+                <h3 className="text-sm font-semibold border-b border-gray-500 pb-1 mb-2">Email</h3>
+                <input type="text" className="text-sm text-gray-900 px-2 py-1 h-6" placeholder="Mentor Email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)}/>
                 <h3 className="text-sm font-semibold border-b border-gray-500 pb-1 mb-2">Classes</h3>
                 <p className="text-sm">Enter classes seperated by commas ,</p>
                 <input type="text" className=" text-sm text-gray-900 px-2 py-1 h-6" placeholder="Mentor Classes" value={classes.toString()} onChange={(e) => handleSetClasses(e.target.value)}/>
@@ -185,29 +198,46 @@ const MentorList = ({board, handleSelectChange}:{board:MentorTimeSlot[][],handle
                         ))}
                     </div>
                 </div>
-                    {board.map((rowItem,rowIndex)=>(
-                        <div key={rowIndex} className="inline-block">
-                            <div className="w-9 h-4 text-xs">
-                                {daysAbb[rowIndex]}
-                            </div>  
-                            {rowItem.map((value,colIndex)=>(
-                                <div
-                                    onClick={()=> handleSelectCell(rowIndex,colIndex,value.isdualTimeSlot)}
-                                    className={`w-9 h-4 border border-white 
-                                    ${SelectedCells.find(cell => cell.row === rowIndex && cell.col === colIndex)?.col==colIndex && 
-                                    SelectedCells.find(cell => cell.row === rowIndex && cell.col === colIndex)?.row==rowIndex &&
-                                    value.mentor1.name != "Time Unfilled" ? 'bg-blue-100' : 'bg-green-500'}
-                                    ${value.isdualTimeSlot ? 'bg-red-500' : 'bg-green-500'}
-                                    ${value.mentor1.name != "Time Unfilled" ? 'bg-orange-500' : 'bg-green-500'}
-                                    ${SelectedCells.find(cell => cell.row === rowIndex && cell.col === colIndex)?.col==colIndex && 
-                                    SelectedCells.find(cell => cell.row === rowIndex && cell.col === colIndex)?.row==rowIndex ? 'bg-blue-500' : 'bg-green-500'}
-                                    `}
-                                />
-                            
-                            ))}
-                        </div>
+                {board.map((rowItem, rowIndex) => (
+                    <div key={rowIndex} className="inline-block">
+                        <div className="w-9 h-4 text-xs">{daysAbb[rowIndex]}</div>
+                        
+                        {rowItem.map((value, colIndex) => {
+                        const isSelected = SelectedCells.some(
+                            (cell) => cell.row === rowIndex && cell.col === colIndex
+                        );
+                        const isDual = value.isdualTimeSlot;
+                        const isFilled = value.mentor1.name !== "Time Unfilled";
+
+                        // 🧠 Conditional priority logic
+                        let bgColor = "bg-green-500"; // default
+                        if (isSelected && isFilled) {
+                            bgColor = "bg-blue-100"; // selected & filled
+                        } else if (isDual) {
+                            bgColor = "bg-red-500";
+                        } else if (isFilled) {
+                            bgColor = "bg-orange-500";
+                        } else if (isSelected) {
+                            bgColor = "bg-blue-400"; // just selected
+                        }
+
+                        return (
+                            <div
+                            key={colIndex}
+                            onClick={() => handleSelectCell(rowIndex, colIndex, value.isdualTimeSlot)}
+                            className={`w-9 h-4 border border-white ${bgColor}`}
+                            />
+                        );
+                        })}
+                    </div>
                     ))}
                 </div>
+                <FillAllSectionsWarning isDataFilled={isDataFilled}/>
+                <span>
+                    <button onClick={handleCreateNewMentorButtonClick} className="font-semibold hover:underline text-sm">
+                        Make New Mentor
+                    </button>
+                </span>
             </div>
         )
     }
@@ -227,7 +257,7 @@ const MentorList = ({board, handleSelectChange}:{board:MentorTimeSlot[][],handle
                     </div>
                 </div>))}
                 <div className="pt-4">
-                    <MakeNewMentor isOfficer={true} onCreateMentor={handleCreateNewClick}/> 
+                    <MakeNewMentor isOfficer={isOfficer} onCreateMentor={handleCreateNewClick}/> 
                 </div>
             </div>
         )
@@ -244,7 +274,7 @@ const MentorList = ({board, handleSelectChange}:{board:MentorTimeSlot[][],handle
                     </span>
                     
                     <span className="text-right">
-                        <EditMentor isOfficer={true} onEditMentor={handleEditClick} />
+                        <EditMentor isOfficer={isOfficer} onEditMentor={handleEditClick} />
                     </span>
                 </div>
 
@@ -299,6 +329,14 @@ const EditMentor = ({isOfficer,onEditMentor}: {isOfficer:boolean,onEditMentor: (
     } else {
         return(<></>)
     }
+}
+
+const FillAllSectionsWarning = ({isDataFilled}: {isDataFilled:boolean}) =>{
+    if(isDataFilled){
+        return(<></>)
+    } else return(
+        <span>Please Fill All Fields</span>
+    )
 }
 
 

@@ -1,9 +1,10 @@
 'use client'
 import React, { useEffect, useState } from "react";
-import { getData, getMentorClasses, Mentors, setSchedule, setSkills } from "./mentor";
+import { createNewMentorWithUser, getData, getMentorClasses, Mentors, setSchedule, setSkills } from "./mentor";
 import MentorBoard from "./mentorBoard";
 import MentorList from "./mentorList";
 import { MentorTimeSlot } from "./mentorTimeslot";
+import { AllMentorTime } from "./timeSlot";
 
 const emptyMentor:Mentors = {name: "Time Unfilled",time:[],courses:[],major: "",id:0,skills:[],selected:false}
 const emptyTimeslot:MentorTimeSlot = {mentor1: emptyMentor, mentor2:emptyMentor, isdualTimeSlot:false,selectedMentorName:"No Mentor"}

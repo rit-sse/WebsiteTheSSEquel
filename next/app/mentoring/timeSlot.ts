@@ -52,14 +52,32 @@ export function getMentorTime(time:String,day:String):Time {
     var dayNum:number = 0
     if(day == "Monday"){dayNum = 0}else if(day == "Tuesday"){dayNum = 1}else if(day == "Wednesday"){dayNum = 2}
     else if(day == "Thursday"){dayNum = 3}else if(day == "Friday"){dayNum = 4}
-    if(Timeslice[1] ==':'){
-        timeNum = Number(Timeslice[0]) + 2
-    } else{
-        if(Timeslice == "10"){timeNum = 0} else
-        if(Timeslice == "11"){timeNum = 1} else
-        if(Timeslice == "12"){timeNum = 2}
-    }
+    if(Timeslice == "10"){timeNum = 0} else
+    if(Timeslice == "11"){timeNum = 1} else
+    if(Timeslice == "12"){timeNum = 2} else
+    if(Timeslice == "01"){timeNum = 3} else
+    if(Timeslice == "02"){timeNum = 4} else
+    if(Timeslice == "03"){timeNum = 5} else
+    if(Timeslice == "04"){timeNum = 6} else
+    if(Timeslice == "05"){timeNum = 7}
     return AllMentorTime[dayNum][timeNum]
+}
+export function convertMentorTimetoData(mentorTime:Time){
+    var daytime = mentorTime.day
+    var time = mentorTime.time
+    var Timeslice:String = time.slice(0,2)
+    var dayString = ""
+    var timeString = ""
+    if(daytime ==0){dayString="Monday"} else if(daytime ==1){dayString="Tuesday"} else if(daytime ==2){dayString="Wednesday"}
+    else if(daytime ==3){dayString="Thursday"} else if(daytime ==4){dayString="Friday"}
+    if(Timeslice[1]==':'){
+        timeString = (Number(Timeslice[0]) + 12).toString() +':00'
+    } else if(Timeslice == "10"){timeString =Timeslice +':00'}
+    else if(Timeslice == "11"){timeString =Timeslice +':00'}
+    else if(Timeslice == "12"){timeString =Timeslice +':00'}
+    const [hours, minutes] = timeString.split(":").map(Number);
+    const actualDate = new Date(Date.UTC(1969, 11, 29 + daytime, hours, minutes));
+    return actualDate.toISOString()
 }
 
 // function createTime(){

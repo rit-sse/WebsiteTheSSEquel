@@ -61,8 +61,8 @@ export async function POST(request: Request) {
   try {
     const schedule = await prisma.schedule.create({
       data: {
-        mentorId: body.mentorId,
-        hourBlockId: body.hourBlockId,
+        mentor:{connect:{mentorId: body.mentorId}},
+        hourBlock:{connect:{hourBlockId: body.hourBlockId}}
       },
     });
     return Response.json(schedule, { status: 201 });

@@ -44,22 +44,6 @@ const MentorBoard =({mentors,board,classes,skills,selectedName,handleSelectChang
                             ))}
                         </select>
                     </div>
-                    <div className="flex items-center px-4 py-2 rounded-full text-white min-w-[175px]">
-                        <select className="bg-[#0B1C2C] text-white text-sm w-full px-1 py-0.5 leading-tight focus:outline-none rounded-xl">
-                            <option className="text-black">Classes</option>
-                            {classes.map((mentor)=>(
-                              <option className="text-black">{mentor}</option>
-                            ))}
-                        </select>
-                    </div>
-                    <div className="flex items-center px-4 py-2 rounded-full text-white min-w-[175px]">
-                        <select className="bg-[#0B1C2C] text-white text-sm w-full px-1 py-0.5 leading-tight focus:outline-none rounded-xl">
-                            <option className="text-black">Skills</option>
-                            {skills.map((skill)=>(
-                              <option className="text-black">{skill}</option>
-                            ))}
-                        </select>
-                    </div>
                 </div>
                 {board.map((row,rowIndex)=>(
                     <div key={rowIndex} className="inline-block">

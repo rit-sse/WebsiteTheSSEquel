@@ -49,14 +49,18 @@ export async function POST(request: Request) {
   }
   const expirationDate = body.expirationDate;
   const isActive = body.isActive;
-  const user_Id = body.userId;
+  const userId = body.userId;
 
   try {
     const mentor = await prisma.mentor.create({
       data: {
         expirationDate,
         isActive,
-        user_Id,
+        user: {
+          connect: {
+            id: userId, // this is the id from your User table
+          },
+        },
       },
     });
     return Response.json(mentor, { status: 201 });
