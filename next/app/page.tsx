@@ -48,7 +48,7 @@ export default async function Home() {
             </div>
 
             {/* Upcoming Events */}
-            <div>
+            {/* <div>
               <h1 className='mt-5'>Upcoming Events</h1>
               <div className='flex flex-row justify-center items-center'>
                 <div className='mt-8 grid gap-8 grid-cols-3 w-10/12'>
@@ -60,7 +60,7 @@ export default async function Home() {
                     })}
                 </div>
               </div>
-            </div>
+            </div> */}
         </div>
     );
 }
