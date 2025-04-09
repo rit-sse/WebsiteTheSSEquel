@@ -6,11 +6,9 @@ interface OfficerCardProps {
 }
 
 export default function OfficerCard({ teamMember }: OfficerCardProps) {
+
   return (
     <div className="mt-4">
-      <div className="w-24 h-24 mx-auto">
-        <img src={teamMember.avatar} className="w-full h-full rounded-full" alt="" />
-      </div>
       <div className="mt-2 flex flex-col items-center">
         <h4 className="font-bold sm:text-lg text-primary-focus">{teamMember.name}</h4>
         <p className="font-semibold">{teamMember.title}</p>
