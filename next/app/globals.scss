@@ -3,6 +3,109 @@
 @tailwind utilities;
 
 @layer base {
+  .text-page-structure {
+    @apply mx-auto;
+    @apply max-w-screen-xl;
+    @apply px-4;
+    @apply py-16;
+    @apply lg:flex;
+    @apply flex;
+    @apply flex-1;
+    @apply flex-col;
+    @apply items-center;
+    @apply w-11/12;
+    @apply pt-2;
+  }
+  .text-page-structure > h1 {
+    @apply bg-gradient-to-br;
+    @apply from-primary;
+    @apply to-primary;
+    @apply bg-clip-text;
+    @apply text-4xl/[3rem];
+    @apply font-extrabold;
+    @apply text-transparent;
+    @apply sm:text-5xl/[4rem];
+    @apply text-center;
+  }
+
+  .subtitle-structure {
+    @apply w-full;
+    @apply md:w-5/6;
+    @apply space-y-24; 
+    @apply pb-8;
+  }
+
+  .subtitle-structure p {
+    @apply text-center; 
+    @apply mx-auto; 
+    @apply mt-4; 
+    @apply text-xl/relaxed;
+  }
+
+  .general-classes{
+    @apply text-left;
+    @apply pt-4;
+    @apply pb-32;
+    @apply md:py-16;
+  }
+
+  .name-classes{
+    @apply bg-clip-text;
+    @apply font-bold;
+    @apply text-3xl/[3rem];
+  }
+
+  .description-classes{
+    @apply mt-4;
+    @apply pb-4;
+    @apply text-xl/relaxed;
+  }
+
+  .upcoming-collapse{
+    @apply w-full;
+    @apply my-2;
+  }
+
+  .collapse-content{
+    @apply flex; 
+    @apply flex-row; 
+    @apply flex-wrap; 
+    @apply justify-center;
+    @apply p-0;
+    @apply w-full;
+  }
+  
+  .upcoming-collapse > .collapse-child{
+    @apply bg-base-100;
+    @apply rounded-md;
+    @apply shadow-md;
+    @apply hover:shadow-lg;
+    @apply transition-shadow;
+    @apply border-2;
+    @apply border-base-content;
+    @apply hover:border-info;
+  }
+
+  .event-card{
+    /* @apply m-3;
+    @apply min-w-min;
+    @apply relative;
+    @apply w-1/3;
+    @apply flex; 
+    @apply flex-col; 
+    @apply shadow-md; 
+    @apply rounded-3xl; 
+    @apply overflow-hidden; 
+    @apply bg-base-200;
+    @apply rounded-md;
+    @apply shadow-md;
+    @apply transition-shadow;
+    @apply border-2;
+    @apply border-base-content; */
+  }
+
+
+  
   h1 {
     @apply bg-gradient-to-br;
     @apply from-primary;

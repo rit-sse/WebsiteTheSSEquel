@@ -242,6 +242,16 @@ model GoLinks {
     isPinned Boolean @default(false)
 }
 
+model Event {
+  id Int @id @default(autoincrement())
+
+  title       String
+  date        DateTime
+  location    String?
+  image       String?
+  description String
+}
+
 //Account model represents an account in the system.
 //It contains information about the user, the type of account, and the authentication provider.
 model Account {

@@ -1,19 +1,22 @@
 'use client'
 import { Event } from "./event";
-import Image from "next/image";
 
 export const EventCard: React.FC<Event> = (event: Event) => {
+    console.log(event.image)
     return (
-        <div className="flex flex-row xl:flex-col shadow-md rounded-3xl overflow-hidden bg-info-content max-w-[90%] xl:max-w-[340px] h-[250px] sm:h-[300px] xl:h-[600px] m-4">
-        {/* These are the previous class attributes, they are staying here for convenience. */}
-        {/* <div className="flex flex-col shadow-md rounded-3xl overflow-hidden bg-info-content max-w-[340px]  h-[600px] md:h-[600px] m-4"> */}
-            <Image src={`/${event.imageSrc}`} className="invisible hidden sm:block sm:visible object-cover sm:w-[45%]  xl:w-full" alt="" width={1000} height={1000}/>
-            <div className="p-4">
-                <h4 className="text-primary mb-3 text-2xl">{event.title.slice(0, 1).toUpperCase() + event.title.slice(1)}</h4> {/* Make sure the title is captialized, but otherwise, this is just the title of the card */}
-                <h5 className="mb-2 text-sm">{event.date}</h5>
-                <h5 className="mb-4">{event.location}</h5>
-                <p>{event.description}</p>
+        <div className={`mx-2 mb-2 shadow-lg rounded overflow-hidden bg-base-2git 00`}>
+            <div className="relative w-full" style={{ paddingTop: '56.25%' }}>
+              {event.image ?
+              <img src={event.image} className="absolute w-full h-full object-cover top-0 left-0" alt={event.title} />
+              :
+              <img src='..\..\icon.png' className="absolute w-full h-full object-cover top-0 left-0" alt="SSE Logo" />}
             </div>
+          <div className={`px-4 pb-4`}>
+            <h4 className="text-lg font-bold">{event.title}</h4>
+            <p className="text-sm font-bold">{event.date}</p>
+            <p className="text-sm">{event.location}</p>
+            <p className="text-sm">{event.description}</p>
+          </div>
         </div>
-    );
+      );
 }

@@ -50,16 +50,16 @@ const navItems: (NavItemProps & { render?: React.ReactNode})[] = [
         title: "Events",
         subItems: [
             {
+                title: "Upcoming Events",
+                route: "/events/upcoming_events",
+            },
+            {
                 title: "View Calendar",
                 route: "/events/calendar",
             },
             {
-                title: "Winter Ball",
-                route: "#",
-            },
-            {
                 title: "Spring Fling",
-                route: "#",
+                route: "/events/springfling",
             },
         ],
     },

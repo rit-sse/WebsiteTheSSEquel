@@ -624,29 +624,104 @@ async function seedProjectContributor() {
 	console.log({ projectContributor1, projectContributor2, projectContributor3 });
 }
 
+async function seedEvents() {
+  const event1 = await prisma.event.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      title: "Keeping it Silly",
+      date: new Date("2023-11-1 12:00:00"),
+      description: "we keep it silly :3",
+    },
+  });
+
+  const event2 = await prisma.event.upsert({
+    where: { id: 2 },
+    update: {},
+    create: {
+      title: "Catan Tournament",
+      date: new Date("2023-11-1 12:00:00"),
+      description: "Elyza will win again.",
+	  image: "/images/codfather.jpg",
+	  location: "poop fart",
+    },
+  });
+
+  const event3 = await prisma.event.upsert({
+    where: { id: 3 },
+    update: {},
+    create: {
+      title: "AAA",
+      date: new Date("2023-11-1 12:00:00"),
+      description: "ooops",
+	  image: "/images/codfather.jpg",
+	  location: "poop fart",
+    },
+  });
+
+  const event4 = await prisma.event.upsert({
+    where: { id: 4 },
+    update: {},
+    create: {
+      title: "Bing bing",
+      date: new Date("2023-11-1 12:00:00"),
+      description: "bing bing bing",
+	  image: "/images/codfather.jpg",
+	  location: "poop bing",
+    },
+  });
+
+	const event5 = await prisma.event.upsert({
+		where: { id: 5 },
+		update: {},
+		create: {
+		  title: "Farihaaaa",
+		  date: new Date("2023-11-1 12:00:00"),
+		  description: "poop poop poop",
+		  image: "/images/codfather.jpg",
+		  location: "poop fariha",
+		},
+  });
+
+  const event6 = await prisma.event.upsert({
+	where: { id: 6 },
+	update: {},
+	create: {
+	  title: "Spring Fling",
+	  date: new Date("2023-11-1 12:00:00"),
+	  description: "Spring thing",
+	  image: "/images/spring-fling-2.png",
+	  location: "poop Fling",
+	},
+  });
+
+  console.log({ event1, event2, event3, event4, event5, event6 });
+}
+
 async function main() {
-	try {
-		await seedUser();
-		await seedQuote();
-		await seedOfficerPosition();
-		await seedOfficer();
-		await seedMentor();
-		await seedSkill();
-		await seedMentorSkill();
-		await seedDepartment();
-		await seedCourse();
-		await seedCourseTaken();
-		await seedHourBlock();
-		await seedSchedule();
-		await seedGoLinks();
-		await seedAccount();
-		await seedSession();
-		await seedVerificationToken();
-		await seedProject();
-		await seedProjectContributor();
-	} catch (e) {
-		console.error(e);
-	}
+  try {
+    await seedUser();
+    await seedQuote();
+    await seedOfficerPosition();
+    await seedOfficer();
+    await seedMentor();
+    await seedSkill();
+    await seedMentorSkill();
+    await seedDepartment();
+    await seedCourse();
+    await seedCourseTaken();
+    await seedHourBlock();
+    await seedSchedule();
+    await seedGoLinks();
+    await seedAccount();
+    await seedSession();
+    await seedVerificationToken();
+	await seedProject();
+	await seedProjectContributor();
+    await seedEvents();
+  } catch (e) {
+    console.error(e);
+  }
 }
 
 main()
