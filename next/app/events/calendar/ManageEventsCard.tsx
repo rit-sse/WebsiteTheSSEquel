@@ -46,7 +46,7 @@ const ManageEventCard = ({ modalAdd, modalEvent, setSelectedEvent, events }: Pro
         modalEvent();
     } 
 
-    if(!isOfficer){
+    if(isOfficer){
         return(
             <div className="max-md:w-full w-1/5 flex flex-col items-center z-1 border border-solid border-gray-700 drop-shadow-xl bg-base-100 rounded-lg">
                 <div className="mt-2">
