@@ -1,7 +1,8 @@
 export interface Event {
+    id?: string,
     title: string,
     date: string,
     location: string,
-    imageSrc: string,
+    image: string,
     description: string
 }

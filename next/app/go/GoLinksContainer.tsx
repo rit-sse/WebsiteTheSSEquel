@@ -13,13 +13,13 @@ const GoLinksContainer: React.FC<GoLinksContainerProps> = ({
   const pinnedGoLinks = goLinkData
     .filter((data) => data.pinned === true)
     .map((data, index) => (
-      <GoLink key={`pinned-${index}`} {...data} fetchData={fetchData} />
+      <GoLink key={`pinned-${data.id}`} {...data} fetchData={fetchData} />
     ));
 
   const unpinnedGoLinks = goLinkData
     .filter((data) => !data.pinned)
     .map((data, index) => (
-      <GoLink key={`unpinned-${index}`} {...data} fetchData={fetchData} />
+      <GoLink key={`unpinned-${data.id}`} {...data} fetchData={fetchData} />
     ));
 
   const [goLinkList, setGoLinkList] = useState<React.JSX.Element[]>([]);

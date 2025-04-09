@@ -1,6 +1,8 @@
+import { MENTOR_HEAD_TITLE } from "@/lib/utils";
 import { PrismaClient } from "@prisma/client";
+import { NextRequest } from "next/server";
 
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
 const prisma = new PrismaClient();
 
@@ -32,7 +34,7 @@ export async function GET() {
  * @param request { expirationDate: string, isActive: bool, userId: number }
  * @return mentor object that was created
  */
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   let body;
   try {
     body = await request.json();
@@ -50,6 +52,31 @@ export async function POST(request: Request) {
   const expirationDate = body.expirationDate;
   const isActive = body.isActive;
   const user_Id = body.userId;
+
+  // Only the mentor head may modify the mentors
+  if (
+    (await prisma.user.findFirst({
+      where: {
+        session: {
+          some: {
+            sessionToken: request.cookies.get("next-auth.session-token")?.value,
+          },
+        },
+        officers: {
+          some: {
+            position: {
+              title: MENTOR_HEAD_TITLE,
+            },
+            is_active: true,
+          },
+        },
+      },
+    })) == null
+  ) {
+    return new Response("Only the mentoring head may modify mentorships", {
+      status: 403,
+    });
+  }
 
   try {
     const mentor = await prisma.mentor.create({
@@ -70,7 +97,7 @@ export async function POST(request: Request) {
  * @param request { id: number }
  * @returns mentor object previously at { id }
  */
-export async function DELETE(request: Request) {
+export async function DELETE(request: NextRequest) {
   let body;
   try {
     body = await request.json();
@@ -83,6 +110,31 @@ export async function DELETE(request: Request) {
     return new Response("ID must be included", { status: 400 });
   }
   const id = body.id;
+
+  // Only the mentor head may modify the mentors
+  if (
+    (await prisma.user.findFirst({
+      where: {
+        session: {
+          some: {
+            sessionToken: request.cookies.get("next-auth.session-token")?.value,
+          },
+        },
+        officers: {
+          some: {
+            position: {
+              title: MENTOR_HEAD_TITLE,
+            },
+            is_active: true,
+          },
+        },
+      },
+    })) == null
+  ) {
+    return new Response("Only the mentoring head may modify mentorships", {
+      status: 403,
+    });
+  }
   // mentor object from database
   const mentorExists = await prisma.mentor.findUnique({ where: { id: id } });
   if (mentorExists == null) {
@@ -108,7 +160,7 @@ export async function DELETE(request: Request) {
  * @param request { id: number, expirationDate?: string, isActive?: bool, userId?: number }
  * @returns updated mentor object
  */
-export async function PUT(request: Request) {
+export async function PUT(request: NextRequest) {
   let body;
   try {
     body = await request.json();
@@ -124,6 +176,30 @@ export async function PUT(request: Request) {
   }
   const id = body.id;
 
+  // Only the mentor head may modify the mentors
+  if (
+    (await prisma.user.findFirst({
+      where: {
+        session: {
+          some: {
+            sessionToken: request.cookies.get("next-auth.session-token")?.value,
+          },
+        },
+        officers: {
+          some: {
+            position: {
+              title: MENTOR_HEAD_TITLE,
+            },
+            is_active: true,
+          },
+        },
+      },
+    })) == null
+  ) {
+    return new Response("Only the mentoring head may modify mentorships", {
+      status: 403,
+    });
+  }
   // only update included fields
   const data: {
     expirationDate?: string;

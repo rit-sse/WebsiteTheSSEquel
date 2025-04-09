@@ -1,7 +1,11 @@
-export default function Page() {
+import { Metadata } from "next";
+
+export default function SpringFling() {
     return (
-        <div>
-            <h1>Page</h1>
-        </div>
+        <>
+            <div className="flex flex-col items-center w-full h-screen max-w-screen-xl">            
+                poop
+            </div>
+        </>
     );
 }
