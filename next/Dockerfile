@@ -48,6 +48,7 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
 COPY --from=builder /app/public ./public
+RUN npx prisma migrate deploy
 
 # Set the correct permission for prerender cache
 RUN mkdir .next
