@@ -37,20 +37,39 @@ export const MakeNewQuote = () => {
   };
 
   const createQuote = async () => {
-    let hasEmptyFields = quotes.some(q => !q.quote.trim() || !q.author.trim());
+    let hasEmptyFields = quotes.some(q => !q.quote.trim());
 
     if (hasEmptyFields) {
       alert("All quote and author fields must be filled out.");
       return;
     }
 
-    let combinedQuote = quotes.map(q => `[${q.author}] ${q.quote}`).join("\n");
+    quotes.map(quote => {
+      if (quote.author === "") {
+        quote.author = "Anonymous";
+      }
+    })
+
+    let combinedQuote = quotes.map(q => `[${q.author}] "${q.quote}"`).join("\n");
+
+    let authorSet: string[] = [];
+    quotes.forEach(q => {
+      if (q.author.trim() && !authorSet.includes(q.author.trim())) {
+        authorSet.push(q.author.trim());
+      }
+    });
+
+    let authorString = "Anonymous";
+
+    if (authorSet.length > 0) {
+      authorString = authorSet.join(", ");
+    }
 
     const newQuote = {
       dateAdded: new Date().toISOString(),
       quote: combinedQuote,
       userId: userId,
-      author: author || "",
+      author: authorString,
     };
 
 
@@ -91,56 +110,56 @@ export const MakeNewQuote = () => {
           Add A Quote
         </button>
         <dialog id="create-quote" className="modal">
-        <div className="modal-box">
-          <h1 className="text-lg font-bold mb-4">Add a Quote</h1>
+          <div className="modal-box">
+            <h1 className="text-lg font-bold mb-4">Add a Quote</h1>
 
-          {quotes.map((entry, index) => (
-            <div key={index} className="mb-4">
-              <input
-                type="text"
-                placeholder="Enter quote"
-                value={entry.quote}
-                onChange={(e) => handleQuoteChange(index, "quote", e.target.value)}
-                className="input input-bordered w-full mb-2"
-              />
-              <input
-                type="text"
-                placeholder="Enter author (optional)"
-                value={entry.author}
-                onChange={(e) => handleQuoteChange(index, "author", e.target.value)}
-                className="input input-bordered w-full"
-              />
-              {quotes.length > 1 && (
-                <button
-                  className="btn btn-sm btn-error mt-2"
-                  onClick={() => removeQuoteField(index)}
-                >
-                  Remove
-                </button>
-              )}
+            {quotes.map((entry, index) => (
+              <div key={index} className="mb-4">
+                <input
+                  type="text"
+                  placeholder="Enter quote"
+                  value={entry.quote}
+                  onChange={(e) => handleQuoteChange(index, "quote", e.target.value)}
+                  className="input input-bordered w-full mb-2"
+                />
+                <input
+                  type="text"
+                  placeholder="Enter author (optional)"
+                  value={entry.author}
+                  onChange={(e) => handleQuoteChange(index, "author", e.target.value)}
+                  className="input input-bordered w-full"
+                />
+                {quotes.length > 1 && (
+                  <button
+                    className="btn btn-sm btn-error mt-2"
+                    onClick={() => removeQuoteField(index)}
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+            ))}
+
+            <button className="btn btn-outline btn-accent mb-4" onClick={addQuoteField}>
+              + Add another section
+            </button>
+
+            <div className="flex gap-4">
+              <button onClick={createQuote} className="btn btn-primary">
+                Submit Quotes
+              </button>
+              <button
+                className="btn"
+                onClick={(e) => {
+                  e.preventDefault();
+                  (document.getElementById("create-quote") as HTMLFormElement).close();
+                }}
+              >
+                Cancel
+              </button>
             </div>
-          ))}
-
-          <button className="btn btn-outline btn-accent mb-4" onClick={addQuoteField}>
-            + Add another section
-          </button>
-
-          <div className="flex gap-4">
-            <button onClick={createQuote} className="btn btn-primary">
-              Submit Quotes
-            </button>
-            <button
-              className="btn"
-              onClick={(e) => {
-                e.preventDefault();
-                (document.getElementById("create-quote") as HTMLFormElement).close();
-              }}
-            >
-              Cancel
-            </button>
           </div>
-        </div>
-      </dialog>
+        </dialog>
       </div>
     );
   }

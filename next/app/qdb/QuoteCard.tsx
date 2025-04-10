@@ -109,6 +109,7 @@ export const QuoteCard = (quote: Quote) => {
                 {formatQuote(quote.quote).map((line, index) => (
                     <p key={index}>{line}</p>
                 ))}
+                <br></br>
                 <p>{quote.tags}</p>
 
                 {/* Button and dialog box for editing a quote */}
