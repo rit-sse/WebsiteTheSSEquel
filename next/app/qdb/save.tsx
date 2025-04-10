@@ -2,13 +2,10 @@
 
 import { fetchAuthLevel } from "@/lib/api";
 import { useEffectAsync } from "@/lib/utils";
-import { getSession, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { useState } from "react";
 
 export const MakeNewQuote = () => {
-
-  const [quote, setQuote] = useState("");
-  const [author, setAuthor] = useState("");
   const [quotes, setQuotes] = useState([{ quote: "", author: "" }]);
   const [userId, setUserID] = useState(0);
   const [isOfficer, setIsOfficer] = useState(false);
@@ -37,62 +34,58 @@ export const MakeNewQuote = () => {
   };
 
   const createQuote = async () => {
-    let hasEmptyFields = quotes.some(q => !q.quote.trim() || !q.author.trim());
+    console.log("Called");
+    const hasEmptyFields = quotes.some(q => !q.quote.trim() || !q.author.trim());
 
     if (hasEmptyFields) {
       alert("All quote and author fields must be filled out.");
       return;
     }
+    const combinedQuote = quotes.map(q => `[${q.author}] ${q.quote}`).join("\n");
+    console.log(combinedQuote);
 
-    let combinedQuote = quotes.map(q => `[${q.author}] ${q.quote}`).join("\n");
-
-    const newQuote = {
-      dateAdded: new Date().toISOString(),
+    const data = {
+      date_added: new Date().toISOString,
       quote: combinedQuote,
-      userId: userId,
-      author: author || "",
+      author: "Anonymous",
+      user_id: userId,
     };
 
+    console.log(data);
 
     try {
       const response = await fetch("/api/quotes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newQuote),
+        body: JSON.stringify(data),
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to create quote");
-      }
+      if (!response.ok) throw new Error("Failed to create quote");
 
-      const result = await response.json();
-      setQuote("");
-      setAuthor("");
+      setQuotes([{ quote: "", author: "" }]);
+      window.location.reload();
     } catch (error) {
       alert("Error creating quote");
     }
-    window.location.reload();
-  };
+  }
 
-  if (isOfficer) {
-    return (
-      <div>
-        <button
-          onClick={(event) => {
-            event.preventDefault();
-            if (document) {
-              (
-                document.getElementById("create-quote") as HTMLFormElement
-              ).showModal();
-            }
-          }}
-          className="p-4 h-full bg-base-100 rounded-md shadow-md justify-items-center hover:shadow-lg transition-shadow border-2 border-base-content hover:border-info text-xl"
-        >
-          Add A Quote
-        </button>
-        <dialog id="create-quote" className="modal">
+  if (!isOfficer) return null;
+
+  return (
+    <div>
+      <button
+        onClick={(event) => {
+          event.preventDefault();
+          (document.getElementById("create-quote") as HTMLFormElement).showModal();
+        }}
+        className="p-4 h-full bg-base-100 rounded-md shadow-md justify-items-center hover:shadow-lg transition-shadow border-2 border-base-content hover:border-info text-xl"
+      >
+        Create Quote
+      </button>
+
+      <dialog id="create-quote" className="modal">
         <div className="modal-box">
-          <h1 className="text-lg font-bold mb-4">Add a Quote</h1>
+          <h1 className="text-lg font-bold mb-4">Add Quote(s)</h1>
 
           {quotes.map((entry, index) => (
             <div key={index} className="mb-4">
@@ -122,7 +115,7 @@ export const MakeNewQuote = () => {
           ))}
 
           <button className="btn btn-outline btn-accent mb-4" onClick={addQuoteField}>
-            + Add another section
+            + Add another quote
           </button>
 
           <div className="flex gap-4">
@@ -141,10 +134,8 @@ export const MakeNewQuote = () => {
           </div>
         </div>
       </dialog>
-      </div>
-    );
-  }
-
-}
+    </div>
+  );
+};
 
 export default MakeNewQuote;

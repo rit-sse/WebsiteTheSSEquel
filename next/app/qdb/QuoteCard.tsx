@@ -79,8 +79,6 @@ export const QuoteCard = (quote: Quote) => {
     }, []);
 
     const openEditModal = (quote: Quote) => {
-        console.log("Edit Modal function");
-        console.log(quote);
         setEditableQuote(quote);
         if (document) {
             (
@@ -89,10 +87,28 @@ export const QuoteCard = (quote: Quote) => {
         }
     };
 
+    const formatQuote = (input: string) => {
+        return input
+            .trim()
+            .split("\n")
+            .map(line => {
+                const start = line.indexOf("[");
+                const end = line.indexOf("]");
+                if (start !== -1 && end !== -1 && end > start) {
+                    const author = line.substring(start + 1, end).trim();
+                    const quote = line.substring(end + 1).trim();
+                    return `${author}: ${quote}`;
+                }
+                return line.trim();
+            });
+    };
+
     if (isOfficer) {
         return (
             <div className="border-l-8 border-blue-500 rounded-lg bg-base-100 w-11/12 py-8 px-12 mx-auto items-center content-center gap-10 my-10">
-                <p>{quote.tags}: {quote.quote}</p>
+                {formatQuote(quote.quote).map((line, index) => (
+                    <p key={index}>{line}</p>
+                ))}
                 <p>{quote.tags}</p>
 
                 {/* Button and dialog box for editing a quote */}
@@ -180,7 +196,9 @@ export const QuoteCard = (quote: Quote) => {
     } else {
         return (
             <div className="border-l-8 border-blue-500 rounded-lg bg-base-100 w-11/12 py-8 px-12 mx-auto items-center content-center gap-10 my-10">
-                <p>{quote.tags}: {quote.quote}</p>
+                {formatQuote(quote.quote).map((line, index) => (
+                    <p key={index}>{line}</p>
+                ))}
             </div>
         );
     }
