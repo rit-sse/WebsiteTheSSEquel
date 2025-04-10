@@ -43,7 +43,7 @@ export default function GetInvolved() {
                           <div className="text-left space-x-5 mt-3 flex">
                               <h2 className="bg-gradient-to-t from-primary to-secondary bg-clip-text
                           text-3xl/[3rem] font-extrabold text-transparent sm:text-3xl/[3rem]">COME TO OUR EVENTS!</h2>
-                              <CTAButton href="/events/calender" text="Events" />
+                              <CTAButton href="/events/calendar" text="Events" />
                           </div>
                       </section>
                       <section className="pt-6">
