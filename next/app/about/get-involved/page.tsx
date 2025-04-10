@@ -43,14 +43,14 @@ export default function GetInvolved() {
                           <div className="text-left space-x-5 mt-3 flex">
                               <h2 className="bg-gradient-to-t from-primary to-secondary bg-clip-text
                           text-3xl/[3rem] font-extrabold text-transparent sm:text-3xl/[3rem]">COME TO OUR EVENTS!</h2>
-                              <CTAButton href="http://localhost:3000/events" text="Events" />
+                              <CTAButton href="/events/calender" text="Events" />
                           </div>
                       </section>
                       <section className="pt-6">
                           <div className="text-left space-x-5 mt-3 flex">
                               <h2 className="bg-gradient-to-t from-primary to-secondary bg-clip-text
                           text-3xl/[3rem] font-extrabold text-transparent sm:text-3xl/[3rem]">TALK TO US!</h2>
-                              <CTAButton href="https://rit-sse.slack.com/" text="Join our Slack" />
+                              <CTAButton href="https://www.discord.gg/rNC6wj82kq" text="Join our Discord" />
                           </div>
                       </section>
                    </div>
