@@ -37,7 +37,7 @@ export default async function Home() {
                             {HomepageContent.weeklyMeetingCallout}
                         </p>
                         <div className="mt-8 flex flex-wrap gap-4 justify-center lg:justify-start">
-                            <CTAButton href={HomepageContent.slackLink} text="Join Slack" />
+                            <CTAButton href={HomepageContent.discordLink} text="Join Discord" />
                             <CTAButton href="/about/get-involved" text="Get Involved" />
                         </div>
                     </div>
