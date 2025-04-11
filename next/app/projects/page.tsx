@@ -23,7 +23,7 @@ const Projects = () => {
   
   useEffect(() => {
     // Fetch the user's ID.
-    fetch("/api/authLevel")
+    fetch("https://sse.rit.edu/api/authLevel")
     .then(resp => resp.json())
     .then(resp => {
       console.log(resp)
@@ -31,7 +31,7 @@ const Projects = () => {
     })
 
     // Fetch projects.
-    fetch("/api/project")
+    fetch("https://sse.rit.edu/api/project")
     .then(res => res.json())
     .then(resp => {
       setProjects(resp)
