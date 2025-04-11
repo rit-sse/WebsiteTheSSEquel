@@ -116,6 +116,7 @@ export const MakeNewQuote = () => {
               <div key={index} className="mb-4">
                 <input
                   type="text"
+                  id={`quote-${index}`}
                   placeholder="Enter quote"
                   value={entry.quote}
                   onChange={(e) => handleQuoteChange(index, "quote", e.target.value)}
@@ -123,6 +124,7 @@ export const MakeNewQuote = () => {
                 />
                 <input
                   type="text"
+                  id={`author-${index}`}
                   placeholder="Enter author (optional)"
                   value={entry.author}
                   onChange={(e) => handleQuoteChange(index, "author", e.target.value)}

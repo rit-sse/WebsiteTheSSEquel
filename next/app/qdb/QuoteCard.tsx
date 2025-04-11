@@ -188,6 +188,7 @@ export const QuoteCard = (quote: Quote) => {
                             <div key={index} className="mb-4">
                                 <input
                                     type="text"
+                                    id={`quote-input-${quote.id}-${index}`}
                                     placeholder="Enter quote"
                                     value={entry.quote}
                                     onChange={(e) => updateEditableQuoteField(index, "quote", e.target.value)}
@@ -195,6 +196,7 @@ export const QuoteCard = (quote: Quote) => {
                                 />
                                 <input
                                     type="text"
+                                    id={`author-input-${quote.id}-${index}`}
                                     placeholder="Enter author (optional)"
                                     value={entry.author}
                                     onChange={(e) => updateEditableQuoteField(index, "author", e.target.value)}
