@@ -31,9 +31,6 @@ export async function PUT(request: Request) {
     return new Response("Invalid JSON", { status: 422 });
   }
 
-  console.log("Running PUT request");
-  console.log(body)
-
   const authLevel = {
     isUser: false,
     isMember: false,
@@ -100,7 +97,7 @@ export async function PUT(request: Request) {
  * @returns \{isUser: boolean, isMember: boolean, isMentor: boolean, isOfficer: boolean} the auth level
  */
 export async function GET(request: NextRequest) {
-  const authToken = request.cookies.get("next-auth.session-token")?.value;
+  const authToken = request.cookies.get("__Secure-next-auth.session-token")?.value;
 
   const authLevel = {
     isUser: false,
@@ -108,7 +105,7 @@ export async function GET(request: NextRequest) {
     isMentor: false,
     isOfficer: false,
   };
-  console.log("AuthToken:", authToken);
+  // console.log("AuthToken:", authToken);
   if (authToken == null) {
     return Response.json(authLevel);
   }
@@ -136,7 +133,7 @@ export async function GET(request: NextRequest) {
     },
   });
 
-  console.log("User found by Prisma:", user);
+  // console.log("User found by Prisma:", user);
   if (user != null) {
     // deconstruct the user object
     const { mentor, officers, isMember } = user;
@@ -150,7 +147,7 @@ export async function GET(request: NextRequest) {
     authLevel.isUser = true;
   }
   else {
-    console.log("No user found")
+    // console.log("No user found")
   }
   return Response.json(authLevel);
 }
