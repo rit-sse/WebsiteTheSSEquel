@@ -26,7 +26,7 @@ const ManageEventCard = ({ modalAdd, modalEvent, setSelectedEvent, events }: Pro
     }, []);
 
     const userStatus = async () =>{
-        const response = await fetch("http://localhost:3000/api/authLevel");
+        const response = await fetch("https://sse.rit.edu/api/authLevel");
         const userData = await response.json();
         setIsOfficer(userData.isOfficer);
     }
