@@ -31,7 +31,8 @@ export async function PUT(request: Request) {
     return new Response("Invalid JSON", { status: 422 });
   }
 
-  console.log("Getting Auth for ", body, user);
+  console.log("Running PUT request");
+  console.log(body)
 
   const authLevel = {
     isUser: false,
