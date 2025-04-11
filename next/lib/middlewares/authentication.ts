@@ -20,7 +20,7 @@ const authVerifierFactory = (
 ): AuthVerifier => {
   return async (request: NextRequest) => {
     // get the token from the cookie
-    const token = request.cookies.get("next-auth.session-token")?.value;
+    const token = request.cookies.get("__Secure-next-auth.session-token")?.value;
     // fetch permissions from the API
     const permissions = await fetch(
       process.env.NEXTAUTH_URL + "/api/authLevel",
