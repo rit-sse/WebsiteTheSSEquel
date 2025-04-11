@@ -11,30 +11,32 @@ const prisma = new PrismaClient();
  * @returns list of schedule objects
  */
 export async function GET() {
-  const coursesTaken = await prisma.schedule.findMany({
+  const mentorData = await prisma.mentor.findMany({
     select: {
       id: true,
-      mentorId: true,
-      hourBlockId: true,
-      mentor: {
+      user: { select: { name: true } },
+      mentorSkill: { select: { skill: true } },
+      courseTaken: {
         select: {
-          id: true,
-          user_Id: true,
-          expirationDate: true,
-          isActive: true,
+          course: {
+            select: { department: { select: { title: true } }, code: true },
+          },
         },
       },
-      hourBlock: {
+      schedule: {
         select: {
-          id: true,
-          weekday: true,
-          startTime: true,
+          hourBlock: {
+            select: {
+              startTime: true,
+              weekday: true,
+            },
+          },
         },
       },
     },
   });
 
-  return Response.json(coursesTaken);
+  return Response.json(mentorData);
 }
 
 /**
@@ -89,8 +91,8 @@ export async function POST(request: NextRequest) {
   try {
     const schedule = await prisma.schedule.create({
       data: {
-        mentorId: body.mentorId,
-        hourBlockId: body.hourBlockId,
+        mentor:{connect:{mentorId: body.mentorId}},
+        hourBlock:{connect:{hourBlockId: body.hourBlockId}}
       },
     });
     return Response.json(schedule, { status: 201 });
