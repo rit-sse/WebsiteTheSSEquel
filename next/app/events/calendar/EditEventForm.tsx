@@ -60,7 +60,7 @@ export default function EditEventForm ({ isOpen, onClose, setModalEvent, event, 
         var googleImageLink = googleImageMatch ? `https://drive.google.com/thumbnail?id=${googleImageMatch[1]}` : "";
 
         // Update to Prisma
-        const res = await fetch('http://localhost:3000/api/event', { 
+        const res = await fetch('https://sse.rit.edu/api/event', { 
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -79,7 +79,7 @@ export default function EditEventForm ({ isOpen, onClose, setModalEvent, event, 
         let minLengthID = 5; 
 
         // Update to Google Calendar
-        await fetch('http://localhost:3000/api/calendar', { 
+        await fetch('https://sse.rit.edu/api/calendar', { 
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
