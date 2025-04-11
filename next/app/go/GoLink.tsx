@@ -41,7 +41,7 @@ const GoLink: React.FC<GoLinkProps> = ({
 
   const handleEdit = async () => {
     try {
-      const response = await fetch("/api/golinks", {
+      const response = await fetch("https://sse.rit.edu/api/golinks", {
         method: "PUT",
         body: JSON.stringify({
           id: id,
@@ -62,7 +62,7 @@ const GoLink: React.FC<GoLinkProps> = ({
 
   const handleDelete = async () => {
     try {
-      const response = await fetch("/api/golinks", {
+      const response = await fetch("https://sse.rit.edu/api/golinks", {
         method: "DELETE",
         body: JSON.stringify({ id }),
       });
@@ -80,7 +80,7 @@ const GoLink: React.FC<GoLinkProps> = ({
       {console.log(url)}
 
       <a
-        href={"http://localhost:3000/go/" + goUrl}
+        href={"https://sse.rit.edu/go/" + goUrl}
         target="_blank"
         className="
                 flex 
@@ -288,7 +288,7 @@ const EditAndDelete: React.FC<GoLinkProps> = ({
 
   useEffect(() => {
     (async () => {
-      const data = await fetch("/api/authLevel").then((response) =>
+      const data = await fetch("https://sse.rit.edu/api/authLevel").then((response) =>
         response.json()
       );
       setIsOfficer(data.isOfficer);
