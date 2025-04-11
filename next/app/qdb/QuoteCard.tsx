@@ -2,34 +2,71 @@
 
 import { GoLinkDelete, GoLinkEdit, QuoteDelete, QuoteEdit } from "@/components/common/Icons";
 import { Quote } from "./Quotes";
-import { useState, useEffect } from "react";
+import { useState, useEffect, SetStateAction } from "react";
 import { useEffectAsync } from "@/lib/utils";
 import { fetchAuthLevel } from "@/lib/api";
 
 export const QuoteCard = (quote: Quote) => {
 
     const [editableQuote, setEditableQuote] = useState<Quote | null>(null);
+    const [editableQuotes, setEditableQuotes] = useState<{ quote: string, author: string }[]>([]);
+
+    const updateEditableQuoteField = (
+        index: number,
+        field: "quote" | "author",
+        value: string
+    ) => {
+        const updatedQuotes = [...editableQuotes];
+        updatedQuotes[index][field] = value;
+        setEditableQuotes(updatedQuotes);
+    };
+
+    const removeQuoteField = (index: number) => {
+        if (editableQuotes.length > 1) {
+            const updated = editableQuotes.filter((_, i) => i !== index);
+            setEditableQuotes(updated);
+        }
+    };
+
+    const addQuoteField = () => {
+        setEditableQuotes([...editableQuotes, { quote: "", author: "" }]);
+    };
+
 
     const handleCancel = () => {
         setEditableQuote(null);
     };
 
-    const updateTag = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setEditableQuote((prevQuote) => ({
-            ...prevQuote!,
-            tags: [e.target.value],
-        }));
-    };
+    const breakUpQuoteString = (quoteString: String) => {
+        let parts = quoteString.split(/[\n\[\]]/);
+        parts = parts.filter(item => item !== "");
+        console.log(parts);
+        const quotesArray: { quote: string, author: string }[] = [];
 
-    const updateQuote = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setEditableQuote((prevQuote) => ({
-            ...prevQuote!,
-            quote: e.target.value,
-        }));
-    };
+        for (let i = 0; i < parts.length; i += 2) {
+            let quote = parts[i + 1].trim() || "Author";
+            if (quote.length > 0 && quote.charAt(0) === '"') {
+                quote = quote.substring(1);
+            }
+            if (quote.length > 0 && quote.charAt(quote.length - 1) === '"') {
+                quote = quote.substring(0, quote.length - 1);
+            }
+            const author = parts[i]?.trim() || "";
+
+            if (quote) {
+                quotesArray.push({ quote, author });
+            }
+        }
+
+        setEditableQuotes(quotesArray);
+    }
 
     const handleSave = async () => {
         if (!editableQuote) return;
+
+        const reconstructedQuote = editableQuotes
+            .map(q => `${q.quote} [${q.author}]`)
+            .join("\n");
 
         try {
             const response = await fetch("/api/quotes", {
@@ -37,8 +74,8 @@ export const QuoteCard = (quote: Quote) => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     id: editableQuote.id,
-                    quote: editableQuote.quote,
-                    author: editableQuote.tags[0]
+                    quote: reconstructedQuote,
+                    author: editableQuote.tags[0] // or however you handle this
                 }),
             });
 
@@ -78,13 +115,15 @@ export const QuoteCard = (quote: Quote) => {
         setIsOfficer(data.isOfficer);
     }, []);
 
-    const openEditModal = (quote: Quote) => {
-        setEditableQuote(quote);
-        if (document) {
+    const openEditModal = (quoteObj: Quote) => {
+        setEditableQuote(quoteObj);
+        breakUpQuoteString(quoteObj.quote);
+
+        setTimeout(() => {
             (
-                document.getElementById("edit-quote") as HTMLFormElement
-            ).showModal();
-        }
+                document.getElementById(`edit-quote-${quoteObj.id}`) as HTMLFormElement
+            )?.showModal();
+        }, 0);
     };
 
     const formatQuote = (input: string) => {
@@ -116,50 +155,68 @@ export const QuoteCard = (quote: Quote) => {
                 <button onClick={() => openEditModal(quote)}>
                     <QuoteEdit />
                 </button>
-                <dialog id="edit-quote" className="modal">
+                <dialog id={`edit-quote-${quote.id}`} className="modal">
                     <div className="modal-box">
                         <p>Edit</p>
-                        <label className="block text-sm font-medium text-gray-700">
-                            Quote:
-                        </label>
-                        <input
-                            type="text"
-                            value={editableQuote?.quote || ""}
-                            onChange={updateQuote}
-                            className="mt-1 p-2 w-full border rounded-md"
-                        />
-                        <label className="block text-sm font-medium text-gray-700">
-                            Person Quoted:
-                        </label>
-                        <input
-                            type="text"
-                            value={editableQuote?.tags[0] || ""}
-                            onChange={updateTag}
-                            className="mt-1 p-2 w-full border rounded-md"
-                        />
-                        <button className="btn btn-primary mt-4" onClick={(func) => {
-                            func.preventDefault();
-                            handleCancel();
-                            if (document) {
-                                (
-                                    document.getElementById("edit-quote") as HTMLFormElement
-                                ).close();
-                            }
-                        }}>
-                            Cancel
+                        <h1 className="text-lg font-bold mb-4">Edit Quote</h1>
+
+                        {editableQuotes.map((entry, index) => (
+                            <div key={index} className="mb-4">
+                                <input
+                                    type="text"
+                                    placeholder="Enter quote"
+                                    value={entry.quote}
+                                    onChange={(e) => updateEditableQuoteField(index, "quote", e.target.value)}
+                                    className="input input-bordered w-full mb-2"
+                                />
+                                <input
+                                    type="text"
+                                    placeholder="Enter author (optional)"
+                                    value={entry.author}
+                                    onChange={(e) => updateEditableQuoteField(index, "author", e.target.value)}
+                                    className="input input-bordered w-full"
+                                />
+                                {editableQuotes.length > 1 && (
+                                    <button
+                                        className="btn btn-sm btn-error mt-2"
+                                        onClick={() => removeQuoteField(index)}
+                                    >
+                                        Remove
+                                    </button>
+                                )}
+                            </div>
+                        ))}
+
+                        <button className="btn btn-outline btn-accent mb-4" onClick={addQuoteField}>
+                            + Add another section
                         </button>
-                        <button className="btn btn-primary mt-4" onClick={(func) => {
-                            func.preventDefault();
-                            handleSave();
-                            handleCancel();
-                            if (document) {
-                                (
-                                    document.getElementById("edit-quote") as HTMLFormElement
-                                ).close();
-                            }
-                        }}>
-                            Save
-                        </button>
+
+
+
+                        <div className="flex gap-4 mt-4">
+                            <button
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    handleSave();
+                                    handleCancel();
+                                    (document.getElementById(`edit-quote-${quote.id}`) as HTMLFormElement).close();
+                                }}
+                                className="btn btn-primary"
+                            >
+                                Save
+                            </button>
+                            <button
+                                className="btn"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    handleCancel();
+                                    (document.getElementById(`edit-quote-${quote.id}`) as HTMLFormElement).close();
+                                }}
+                            >
+                                Cancel
+                            </button>
+                        </div>
+
                     </div>
                 </dialog>
 
