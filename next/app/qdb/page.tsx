@@ -4,7 +4,6 @@ import { Quote, Quotes } from "./Quotes"
 import { QuoteCard } from "./QuoteCard"
 import { MakeNewQuote } from "./MakeNewQuote";
 import { useEffect, useState } from "react";
-// import MakeNewQuote from "./MakeNewQuote"
 
 const fetchQuotes = async () => {
     try {
@@ -14,12 +13,11 @@ const fetchQuotes = async () => {
         }
         const data = await response.json();
 
-        // Transform the fetched data to match the Quote interface
         return data.map((quote: any) => ({
             id: quote.id,
             quote: quote.quote,
             date: quote.date_added,
-            tags: quote.author ? [quote.author] : ["Anonymous"], // Use author as a tag if available
+            tags: quote.author ? [quote.author] : ["Anonymous"],
         }));
     } catch (error) {
         console.error(error);
@@ -37,7 +35,7 @@ const QuoteList = () => {
 
     return (
         <>
-            <h1>QDB</h1>
+            <h1>SSE Quotes</h1>
             <div >
 
             </div>

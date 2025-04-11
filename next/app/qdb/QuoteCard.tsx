@@ -1,8 +1,8 @@
 'use client';
 
-import { GoLinkDelete, GoLinkEdit, QuoteDelete, QuoteEdit } from "@/components/common/Icons";
+import { QuoteDelete, QuoteEdit } from "@/components/common/Icons";
 import { Quote } from "./Quotes";
-import { useState, useEffect, SetStateAction } from "react";
+import { useState } from "react";
 import { useEffectAsync } from "@/lib/utils";
 import { fetchAuthLevel } from "@/lib/api";
 
@@ -64,19 +64,42 @@ export const QuoteCard = (quote: Quote) => {
     const handleSave = async () => {
         if (!editableQuote) return;
 
-        const reconstructedQuote = editableQuotes
-            .map(q => `${q.quote} [${q.author}]`)
+        let hasEmptyFields = editableQuotes.some(q => !q.quote.trim());
+        if (hasEmptyFields) {
+            alert("All quote fields must be filled out.");
+            return;
+        }
+
+        editableQuotes.forEach((q) => {
+            if (!q.author.trim()) {
+                q.author = "Anonymous";
+            }
+        });
+
+        const combinedQuote = editableQuotes
+            .map(q => `[${q.author}] "${q.quote}"`)
             .join("\n");
+
+        let authorSet: string[] = [];
+        editableQuotes.forEach(q => {
+            if (q.author.trim() && !authorSet.includes(q.author.trim())) {
+                authorSet.push(q.author.trim());
+            }
+        });
+
+        let authorString = authorSet.length > 0 ? authorSet.join(", ") : "Anonymous";
+
+        const updatedQuote = {
+            id: editableQuote.id,
+            quote: combinedQuote,
+            author: authorString,
+        };
 
         try {
             const response = await fetch("/api/quotes", {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    id: editableQuote.id,
-                    quote: reconstructedQuote,
-                    author: editableQuote.tags[0] // or however you handle this
-                }),
+                body: JSON.stringify(updatedQuote),
             });
 
             if (!response.ok) {
@@ -89,6 +112,7 @@ export const QuoteCard = (quote: Quote) => {
             alert("Error updating quote");
         }
     };
+
 
     const handleDelete = async () => {
         try {
@@ -234,21 +258,23 @@ export const QuoteCard = (quote: Quote) => {
                 <dialog id={`delete-quote-${quote.id}`} className="modal">
                     <div className="modal-box">
                         <h3>Are you sure you want to delete the quote?</h3>
-                        <button className="btn btn-primary mt-4" onClick={(func) => {
-                            func.preventDefault();
-                            if (document) {
+                        <div className="flex gap-4 mt-4">
+                            <button className="btn btn-primary" onClick={(func) => {
+                                func.preventDefault();
                                 (
-                                    document.getElementById("delete-quote") as HTMLFormElement
+                                    document.getElementById(`delete-quote-${quote.id}`) as HTMLFormElement
                                 ).close();
-                            }
-                        }}>
-                            No
-                        </button>
-                        <button className="btn btn-primary mt-4" onClick={handleDelete}>
-                            Yes
-                        </button>
+                            }}>
+                                No
+                            </button>
+                            <button className="btn btn-primary" onClick={handleDelete}>
+                                Yes
+                            </button>
+                        </div>
                     </div>
                 </dialog>
+
+
             </div>
         );
     } else {

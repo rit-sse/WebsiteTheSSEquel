@@ -1,23 +1,24 @@
 'use client';
 
 import { fetchAuthLevel } from "@/lib/api";
-import { useEffectAsync } from "@/lib/utils";
-import { getSession, useSession } from "next-auth/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export const MakeNewQuote = () => {
 
-  const [quote, setQuote] = useState("");
-  const [author, setAuthor] = useState("");
   const [quotes, setQuotes] = useState([{ quote: "", author: "" }]);
   const [userId, setUserID] = useState(0);
   const [isOfficer, setIsOfficer] = useState(false);
 
-  useEffectAsync(async () => {
-    const data = await fetchAuthLevel();
-    setIsOfficer(data.isOfficer);
-    setUserID(data.userId);
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await fetchAuthLevel();
+      setIsOfficer(data.isOfficer);
+      setUserID(data.userId);
+    };
+  
+    fetchData();
   }, []);
+  
 
   const handleQuoteChange = (index: number, field: "quote" | "author", value: string) => {
     const updated = [...quotes];
@@ -40,7 +41,7 @@ export const MakeNewQuote = () => {
     let hasEmptyFields = quotes.some(q => !q.quote.trim());
 
     if (hasEmptyFields) {
-      alert("All quote and author fields must be filled out.");
+      alert("All quote fields must be filled out.");
       return;
     }
 
@@ -85,8 +86,6 @@ export const MakeNewQuote = () => {
       }
 
       const result = await response.json();
-      setQuote("");
-      setAuthor("");
     } catch (error) {
       alert("Error creating quote");
     }
