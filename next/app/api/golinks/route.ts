@@ -7,8 +7,6 @@ const prisma = new PrismaClient();
 function validateGoLink(goLink: string) {
   return /^[a-z\-]+$/.test(goLink);
 }
-import { prisma } from "@/lib/prisma"; // Assuming prisma client import
-import { validateGoLink } from "@/lib/utils"; // Assuming validator import
 
 /**
  * HTTP POST request to /api/golinks
