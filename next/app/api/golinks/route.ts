@@ -43,48 +43,46 @@ export async function POST(request: Request) {
   }
   // --- End Validation Check 1 ---
 
-  const { golink, url, description, isPublic, isPinned } = body;
+  // ... after getting body and validating fields ...
+const { golink, url, description, isPublic, isPinned } = body;
 
-  // --- Validation Check 2 ---
-  if (!validateGoLink(golink)) {
-    console.log(`Validation failed for golink: ${golink}`);
-    return new Response(`Invalid golink format "${golink}"; must be lowercase alphanumeric/hyphen`, {
-      status: 422, // 422 Unprocessable Entity is good for validation errors
+try {
+    // --- Add Logging Before ---
+    console.log("Attempting to create GoLink with data:", {
+        golink, url, description, isPublic, isPinned
     });
-  }
-  // --- End Validation Check 2 ---
+    console.log("Using Prisma model: prisma.goLinks"); // Adjust if model name is different
 
-  // --- Start Potential Failure Point 2 (Database Operation) ---
-  try {
-    console.log(`Attempting to create golink: ${golink}`);
-    const newGolink = await prisma.goLinks.create({ // Make sure table name is 'goLinks' or adjust
-      data: {
-        golink: golink,
-        url: url,
-        description: description,
-        isPublic: isPublic,
-        isPinned: isPinned,
-        updatedAt: new Date().toISOString(),
-      },
+    const newGolink = await prisma.goLinks.create({ // Ensure 'goLinks' matches schema
+        data: {
+            golink: golink,
+            url: url,
+            description: description,
+            isPublic: isPublic,
+            isPinned: isPinned,
+        },
     });
-    console.log(`Successfully created golink ID: ${newGolink.id}`); // Assuming an ID field exists
-    return Response.json(newGolink, { status: 201 }); // Use 201 Created for successful POST
 
-  } catch (error: any) { // Catch database errors (or others)
-    console.error("Error creating golink in database:", error);
+    // --- Add Logging After Success ---
+    console.log("Successfully created GoLink:", newGolink);
+    return Response.json(newGolink, { status: 201 });
 
-    // Check for specific Prisma errors, e.g., unique constraint violation
-    if (error.code === 'P2002') { // Prisma unique constraint error code
-        // Target field is usually in error.meta.target
-        const targetField = error.meta?.target?.[0] ?? 'field';
+} catch (error: any) {
+    // --- Enhance Logging in Catch ---
+    console.error("!!! ERROR Creating GoLink in Database !!!");
+    console.error("Error Code:", error.code); // Log Prisma error code if available
+    console.error("Error Meta:", error.meta); // Log Prisma meta info if available
+    console.error("Full Error Object:", error); // Log the entire error object
+    console.error("Stack Trace:", error.stack); // Log the stack trace
+
+    // Your existing error handling logic (like checking error.code)
+    if (error.code === 'P2002') {
+         const targetField = error.meta?.target?.[0] ?? 'field';
          console.log(`Unique constraint violation on field: ${targetField}`);
-         return new Response(`The ${targetField} '${body[targetField]}' already exists.`, { status: 409 }); // 409 Conflict is good here
+         return new Response(`The ${targetField} '${body[targetField]}' already exists.`, { status: 409 });
     }
-
-    // Generic server error for other database issues
     return new Response("Failed to create GoLink due to a server error.", { status: 500 });
   }
-}
 
 /**
  * HTTP DELETE request to /api/golinks
