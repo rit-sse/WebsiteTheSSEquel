@@ -23,7 +23,7 @@ const GoLinksPage = () => {
       description: string;
       isPinned: boolean;
       isPublic: boolean;
-    }[] = await fetch("/api/golinks/public").then((response) => response.json());
+    }[] = await fetch("https://sse.rit.edu/api/golinks/public").then((response) => response.json());
     setGoLinkData(
       data.map((item) => ({
         id: item.id,
