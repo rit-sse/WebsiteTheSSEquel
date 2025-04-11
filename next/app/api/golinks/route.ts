@@ -41,7 +41,6 @@ export async function POST(request: Request) {
       { status: 400 } // Use 400 Bad Request for missing fields
     );
   }
-}
   // --- End Validation Check 1 ---
 
   // ... after getting body and validating fields ...
