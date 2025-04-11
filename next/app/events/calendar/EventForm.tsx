@@ -30,7 +30,7 @@ export default function EventForm ({ onClose, isOpen, event, openEditModal, even
         setConfirming(false);
        
         // Delete from Prisma
-        await fetch('http://localhost:3000/api/event', { 
+        await fetch('https://sse.rit.edu/api/event', { 
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -41,7 +41,7 @@ export default function EventForm ({ onClose, isOpen, event, openEditModal, even
         const idString = event.id?.toString() ?? "";
         let minLengthID = 5; 
         // Delete from Google Calendar
-        await fetch('http://localhost:3000/api/calendar', { 
+        await fetch('https://sse.rit.edu/api/calendar', { 
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
