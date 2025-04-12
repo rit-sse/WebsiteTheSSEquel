@@ -62,6 +62,7 @@ const ProjectModal = ({enabled, setEnabled, project, isOfficer}: ProjectModalInt
     const [leadid, setLeadID] = useState(project.leadid);
     const [desc, setDescription] = useState(project.description)
     const [repoLink, setRepoLink] = useState(project.repoLink)
+    const [contentURLLink, setContentURL] = useState(project.contentURL)
     const [imageLink, setImageLink] = useState(project.projectImage)
     const [completed, setCompleted] = useState(project.completed);
     // Get all the users.
@@ -102,7 +103,7 @@ const ProjectModal = ({enabled, setEnabled, project, isOfficer}: ProjectModalInt
             title: projectTitle,
             description: desc,
             repoLink: repoLink,
-            contentURL: project.contentURL,
+            contentURL: contentURLLink,
             leadid: selectUserID,
             projectImage: (imageLink == null ? "" : imageLink),
             completed: completed
@@ -147,7 +148,7 @@ const ProjectModal = ({enabled, setEnabled, project, isOfficer}: ProjectModalInt
                         
                     </div>
                     {/* Actual Modal Container */}
-                    <div className="relative w-[900px] h-[600px] z-[50] bg-base-100 rounded-lg overflow-hidden
+                    <div className="relative w-[900px] h-[700px] z-[50] bg-base-100 rounded-lg overflow-hidden
                                     flex justify-center items-center">
                         {/* This is the top accent bar. */}
                         <div className="absolute top-0 left-o w-[100%] h-[15px] bg-accent rounded-t-lg">
@@ -175,7 +176,7 @@ const ProjectModal = ({enabled, setEnabled, project, isOfficer}: ProjectModalInt
                                 </div>
                             </div>
                             {/* Actual content of the Modal */}
-                            <div className="flex h-[90%] w-[100%] items-center justify-center relative  ">
+                            <div className="flex h-[90%] w-[100%] items-center justify-center relative ">
                                 {/* Image of the project */}
                                 <div className="relative h-full w-full overflow-hidden rounded-l">
                                     {/* This is split into 3 parts.
@@ -222,7 +223,7 @@ const ProjectModal = ({enabled, setEnabled, project, isOfficer}: ProjectModalInt
                                             editMode ?
                                             <ProjectModalInput label="Description" setTextState={setDescription} presetValue={desc} isRichText={true}/>
                                             :
-                                            <p className="text-lg mb-[10px]">{project.description}</p>
+                                            <p className="text-lg mb-[10px] max-h-[200px] overflow-scroll">{project.description}</p>
                                         }
                                         {/* Email */}
                                         {/* This disappears if edit mode is enabled, as its associated with the lead, so therefore it is not needed */}
@@ -238,6 +239,13 @@ const ProjectModal = ({enabled, setEnabled, project, isOfficer}: ProjectModalInt
                                             <ProjectModalInput label="Repository Link" setTextState={setRepoLink} presetValue={repoLink} />
                                             :
                                             <ProjectLink url={project.repoLink} text="Repo Link" />
+                                        }
+                                        {/* Content Link */}
+                                        {
+                                            editMode ?
+                                            <ProjectModalInput label="Content Link" setTextState={setContentURL} presetValue={contentURLLink} />
+                                            :
+                                            <ProjectLink url={project.contentURL} text="Content URL Link" />
                                         }
                                         {/* Project Image URL */}
                                         {
