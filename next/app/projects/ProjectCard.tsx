@@ -60,11 +60,12 @@ const ProjectCard = ({project, propKey, isOfficer}: {project: Project, propKey: 
         {/* Image Background */}
         <img src={projectBackground} className="h-[100%] w-[100%] object-cover"/>
         {/* Project Title Container */}
-        <div className="absolute bottom-[0px] w-[100%] h-[48px] bg-black/25 backdrop-blur-[15px]
+        <div className="absolute bottom-[0px] w-[100%] minh-[48px] max-h-[80px] bg-black/25 backdrop-blur-[15px]
                         p-[12px]
-                        flex items-center justify-left">
+                        flex items-center justify-left
+                        ">
           {/* Project Title */}
-          <p className="text-white text-base font-bold">{project.title}</p>
+          <p className="text-white text-base font-bold line-clamp-3" >{project.title}</p>
         </div>
         
       </div>
