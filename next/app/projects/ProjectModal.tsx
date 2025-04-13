@@ -148,8 +148,13 @@ const ProjectModal = ({enabled, setEnabled, project, isOfficer}: ProjectModalInt
                         
                     </div>
                     {/* Actual Modal Container */}
-                    <div className="relative w-[900px] h-[700px] z-[50] bg-base-100 rounded-lg overflow-hidden
-                                    flex justify-center items-center">
+                    <div className="relative w-[400px] h-[650px] z-[50] bg-base-100 rounded-lg overflow-hidden
+                                    flex justify-center items-center
+                                    
+                                    md:h-[700px]
+                                    md:w-[600px]
+                                    xl:h-[700px]
+                                    xl:w-[900px]"> {/* I HATE RESPONSIVE DESIGN */}
                         {/* This is the top accent bar. */}
                         <div className="absolute top-0 left-o w-[100%] h-[15px] bg-accent rounded-t-lg">
                         </div>
@@ -158,7 +163,9 @@ const ProjectModal = ({enabled, setEnabled, project, isOfficer}: ProjectModalInt
                             {/* This is the "top bar" of the Modal. Contains the project title text, settings (if the user is an officer), and the exit button. */}
                             <div className="flex items-center justify-between">
                                 {/* Project Title */}
-                                <h3 className="text-primary ">{project.title}</h3>
+                                <h3 className="text-primary text-[20px] p-[0px] m-[0px] text-0 leading-[1.3] pl-[5px]
+                                    lg:text-[25px]
+                                ">{project.title}</h3>
 
                                 {/* A div to group Settings and Exit so they are pushed to the far-right side. 
                                     Also this is flexed so the buttons dont stack up on each other.
@@ -176,7 +183,10 @@ const ProjectModal = ({enabled, setEnabled, project, isOfficer}: ProjectModalInt
                                 </div>
                             </div>
                             {/* Actual content of the Modal */}
-                            <div className="flex h-[90%] w-[100%] items-center justify-center relative ">
+                            <div className="flex h-[90%] w-[100%] items-center justify-center relative
+                                flex-col
+                                md:flex-row
+                                ">
                                 {/* Image of the project */}
                                 <div className="relative h-full w-full overflow-hidden rounded-l">
                                     {/* This is split into 3 parts.
@@ -189,7 +199,14 @@ const ProjectModal = ({enabled, setEnabled, project, isOfficer}: ProjectModalInt
                                     <img className="absolute w-full h-full object-contain z-20 rounded-l" src={projectBackground}/>
                                 </div>
                                     {/*  Text Container */}
-                                    <div className="w-full h-full p-[0px] pl-[20px]">
+                                    <div className="w-full h-full p-[0px] 
+                                    overflow-scroll
+                                    pb-[50px]
+
+                                    md:pl-[20px]
+                                    xl:overflow-hidden
+                                    xl:pb-[0px]
+                                    ">
                                         {/* 
                                             There are two layers for this:
                                             Edit Mode and Normal mode.
