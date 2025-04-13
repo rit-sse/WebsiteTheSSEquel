@@ -62,6 +62,7 @@ const ProjectModal = ({enabled, setEnabled, project, isOfficer}: ProjectModalInt
     const [leadid, setLeadID] = useState(project.leadid);
     const [desc, setDescription] = useState(project.description)
     const [repoLink, setRepoLink] = useState(project.repoLink)
+    const [contentURLLink, setContentURL] = useState(project.contentURL)
     const [imageLink, setImageLink] = useState(project.projectImage)
     const [completed, setCompleted] = useState(project.completed);
     // Get all the users.
@@ -102,7 +103,7 @@ const ProjectModal = ({enabled, setEnabled, project, isOfficer}: ProjectModalInt
             title: projectTitle,
             description: desc,
             repoLink: repoLink,
-            contentURL: project.contentURL,
+            contentURL: contentURLLink,
             leadid: selectUserID,
             projectImage: (imageLink == null ? "" : imageLink),
             completed: completed
@@ -147,8 +148,13 @@ const ProjectModal = ({enabled, setEnabled, project, isOfficer}: ProjectModalInt
                         
                     </div>
                     {/* Actual Modal Container */}
-                    <div className="relative w-[900px] h-[600px] z-[50] bg-base-100 rounded-lg overflow-hidden
-                                    flex justify-center items-center">
+                    <div className="relative w-[400px] h-[650px] z-[50] bg-base-100 rounded-lg overflow-hidden
+                                    flex justify-center items-center
+                                    
+                                    md:h-[700px]
+                                    md:w-[600px]
+                                    xl:h-[700px]
+                                    xl:w-[900px]"> {/* I HATE RESPONSIVE DESIGN */}
                         {/* This is the top accent bar. */}
                         <div className="absolute top-0 left-o w-[100%] h-[15px] bg-accent rounded-t-lg">
                         </div>
@@ -157,12 +163,14 @@ const ProjectModal = ({enabled, setEnabled, project, isOfficer}: ProjectModalInt
                             {/* This is the "top bar" of the Modal. Contains the project title text, settings (if the user is an officer), and the exit button. */}
                             <div className="flex items-center justify-between">
                                 {/* Project Title */}
-                                <h3 className="text-primar h-[10%]y">{project.title}</h3>
+                                <h3 className="text-primary text-[20px] p-[0px] m-[0px] text-0 leading-[1.3] pl-[5px]
+                                    lg:text-[25px]
+                                ">{project.title}</h3>
 
                                 {/* A div to group Settings and Exit so they are pushed to the far-right side. 
                                     Also this is flexed so the buttons dont stack up on each other.
                                 */}
-                                <div className="flex">
+                                <div className="flex items-center h-full justify-center">
                                     {/* Settings Button (Only shows up if the user is an officer) */}
                                     {isOfficer && !(editMode) ? 
                                         <svg width="30px" height="30px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="cursor-pointer mr-[20px]" onClick={enableEditProjectModal}>
@@ -171,15 +179,14 @@ const ProjectModal = ({enabled, setEnabled, project, isOfficer}: ProjectModalInt
                                         </svg>
                                     : undefined}
                                     {/* Exit Button */}
-                                    <svg width="30" height="30" viewBox="0 0 35 36" className="fill-primary cursor-pointer" onClick={unload}  xmlns="http://www.w3.org/2000/svg">
-                                        <g clip-path="url(#clip0_23_61)">
-                                            <path fill-rule="evenodd" clip-rule="evenodd" d="M15.9799 19.5201V32.4659H13.8773V23.1093L1.48865 35.5L0 34.0114L12.3907 21.6227H3.0341V19.5201H15.9799ZM33.5124 0.5L34.9989 1.98655L22.6103 14.3773H31.967V16.4799H19.0211V3.53408H21.1238V12.8886L33.5124 0.5Z" />
-                                        </g>
-                                    </svg>
+                                    <svg width="30px" height="30px" viewBox="-0.5 0 25 25" className="fill-primary cursor-pointer" onClick={unload} xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M3 21.32L21 3.32001" className="stroke-primary" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M3 3.32001L21 21.32" className="stroke-primary" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
                                 </div>
                             </div>
                             {/* Actual content of the Modal */}
-                            <div className="flex h-[90%] w-[100%] items-center justify-center relative  ">
+                            <div className="flex h-[90%] w-[100%] items-center justify-center relative
+                                flex-col
+                                md:flex-row
+                                ">
                                 {/* Image of the project */}
                                 <div className="relative h-full w-full overflow-hidden rounded-l">
                                     {/* This is split into 3 parts.
@@ -192,7 +199,14 @@ const ProjectModal = ({enabled, setEnabled, project, isOfficer}: ProjectModalInt
                                     <img className="absolute w-full h-full object-contain z-20 rounded-l" src={projectBackground}/>
                                 </div>
                                     {/*  Text Container */}
-                                    <div className="w-full h-full p-[0px] pl-[20px]">
+                                    <div className="w-full h-full p-[0px] 
+                                    overflow-scroll
+                                    pb-[50px]
+
+                                    md:pl-[20px]
+                                    xl:overflow-hidden
+                                    xl:pb-[0px]
+                                    ">
                                         {/* 
                                             There are two layers for this:
                                             Edit Mode and Normal mode.
@@ -226,7 +240,7 @@ const ProjectModal = ({enabled, setEnabled, project, isOfficer}: ProjectModalInt
                                             editMode ?
                                             <ProjectModalInput label="Description" setTextState={setDescription} presetValue={desc} isRichText={true}/>
                                             :
-                                            <p className="text-lg mb-[10px]">{project.description}</p>
+                                            <p className="text-lg mb-[10px] max-h-[200px] overflow-scroll">{project.description}</p>
                                         }
                                         {/* Email */}
                                         {/* This disappears if edit mode is enabled, as its associated with the lead, so therefore it is not needed */}
@@ -242,6 +256,13 @@ const ProjectModal = ({enabled, setEnabled, project, isOfficer}: ProjectModalInt
                                             <ProjectModalInput label="Repository Link" setTextState={setRepoLink} presetValue={repoLink} />
                                             :
                                             <ProjectLink url={project.repoLink} text="Repo Link" />
+                                        }
+                                        {/* Content Link */}
+                                        {
+                                            editMode ?
+                                            <ProjectModalInput label="Content Link" setTextState={setContentURL} presetValue={contentURLLink} />
+                                            :
+                                            <ProjectLink url={project.contentURL} text="Content URL Link" />
                                         }
                                         {/* Project Image URL */}
                                         {
