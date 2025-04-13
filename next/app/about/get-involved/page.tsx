@@ -27,7 +27,7 @@ export default function GetInvolved() {
                     <h1>Get Involved!</h1>
                     <div className='subtitle-structure'>
                         <p>
-                            Are you ready to make an impact? Dive in the heart of the SSE and become part of a vibrant community dedicated to innnovation and collaboration. Whether you are passionate about coding, organizing events, or fostering connections, there is a place for you here. Join us in shaping the future of the SSE as we work together to create meaningful opportunities for growth, learning, and impact. Let's build something incredible together.
+                            Are you ready to make an impact? Dive in the heart of the SSE and become part of a vibrant community dedicated to innnovation and collaboration. Whether you are passionate about coding, organizing events, or fostering connections, there is a place for you here. Join us in shaping the future of the SSE as we work together to create meaningful opportunities for growth, learning, and impact. Let&apos;s build something incredible together.
                         </p>
                     </div>
 
@@ -43,14 +43,14 @@ export default function GetInvolved() {
                           <div className="text-left space-x-5 mt-3 flex">
                               <h2 className="bg-gradient-to-t from-primary to-secondary bg-clip-text
                           text-3xl/[3rem] font-extrabold text-transparent sm:text-3xl/[3rem]">COME TO OUR EVENTS!</h2>
-                              <CTAButton href="http://localhost:3000/events" text="Events" />
+                              <CTAButton href="/events/calendar" text="Events" />
                           </div>
                       </section>
                       <section className="pt-6">
                           <div className="text-left space-x-5 mt-3 flex">
                               <h2 className="bg-gradient-to-t from-primary to-secondary bg-clip-text
                           text-3xl/[3rem] font-extrabold text-transparent sm:text-3xl/[3rem]">TALK TO US!</h2>
-                              <CTAButton href="https://rit-sse.slack.com/" text="Join our Slack" />
+                              <CTAButton href="https://www.discord.gg/rNC6wj82kq" text="Join our Discord" />
                           </div>
                       </section>
                    </div>

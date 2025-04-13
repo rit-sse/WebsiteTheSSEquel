@@ -1,59 +1,78 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Project } from "./projects";
 import Image from "next/image";
+import ProjectModal from "./ProjectModal";
 
-const ProjectCard = ({logo, title, lead, contact, description, stack, progress}: Project) => {
-  return (
-    <div className="rounded-lg bg-base-100 w-10/12 py-8 px-12 mx-auto flex flex-row items-center content-center gap-10 my-10">
-      {/* Left half */}
-      <div className="flex justify-center items-center object-cover w-[400px] h-[240px] overflow-hidden">
-        <Image 
-          src={logo}
-          alt={title}
-          width={400}
-          height={240}
-          objectFit="cover"
-        />
-      </div>
+// This is used to create the structure of the Project Card arguments.
+interface ProjectCardArguments {
+  project: Project
+}
 
-      {/* Right half */}                                   
-      <div>
-        {/* Heading */}
-        <h1 className="text-2xl font-bold text-primary text-left mb-4">
-          {title ? title : "Default"}
-        </h1>
-        
-        {/* Body */}
-        <div className="text-lg flex flex-col gap-2">
-          <div>
-            <span className="font-bold">Project Lead: </span>
-            {lead ? lead : "Default"}
-          </div>
+const ProjectCard = ({project, propKey, isOfficer}: {project: Project, propKey: number, isOfficer: boolean}) => {
+  // If the project.logo is empty, we are replacing it with the placeholder image
+  let projectBackground = (
+    (project.projectImage == "") || 
+    (project.projectImage == undefined) ||
+    (project.projectImage == null)
+  ) ? "images/SSEProjectPlaceholder.png" : project.projectImage
+  
+  // This is used for the transition. The opacity of the card uses this.
+  let [cardOpacity, setOpacity] = useState(0)
 
-          <div>
-            <span className="font-bold">Contact: </span>
-            {contact ? contact : "Default"}
-          </div>
+  // Enables the modal. setModalEnabled is passed to the modal in order for certain functions (such as clicking the black background and the exit button) to close the modal.
+  let [modalEnabled, setModalEnabled] = useState(false);
 
-          <div>
-            <span className="font-bold">Tech Stack: </span>
-            {stack ? stack : "Default"}
-          </div>
+  // This is the beginning transition. This is responsible for the "sliding up" effect on load.
+  // This gets sets to an empty string on useEffect
+  let [translationLoad, setTransitionDelay] = useState("translateY(15px)");
 
-          <div>
-            <span className="font-bold">Description: </span>
-            {description ? description : "Default"}
-          </div>
+  // Used as the onClick function to appear the Modal
+  function openModal() {
+    setModalEnabled(true);
+  }
 
-          <div>
-            <span className="font-bold">Progress: </span>
-            {progress ? progress : "Default"}
-          </div>
-
+  // On card load (using useEffect), it will use the onItem as the milisecond multiplier (to give a gradual appearance transition).
+  // It will then increment onItem so later cards will have a longer wait time.
+  useEffect(() => {
+    propKey += 1;
+    setTimeout(() => {
+        // MAKE IT APPEAR!!
+        setOpacity(1);
+        // MAKE IT SLIDE UP!
+        setTransitionDelay("");
+    }, 30 * propKey);
+  }, [])
+  
+  return(
+    // Card Container. Uses inline-block to make sure all cards line up correctly.
+    //  TODO: Lets do a grid on this instead.
+    <div className="inline-block transition-transform duration-300 ease-in-out  ">
+      {/* Card Contents */}
+      <div className="relative w-[240px] h-[320px] bg-black rounded-lg
+                       me-4 my-3 overflow-hidden
+                      
+                      transition-all
+                      duration-300 ease-in-out
+                      hover:-translate-y-2
+                      hover:shadow-xl
+                      hover:cursor-pointer
+                      " onClick={openModal} style={{opacity: cardOpacity, transform: translationLoad}}>
+        {/* Image Background */}
+        <img src={projectBackground} className="h-[100%] w-[100%] object-cover"/>
+        {/* Project Title Container */}
+        <div className="absolute bottom-[0px] w-[100%] h-[48px] bg-black/25 backdrop-blur-[15px]
+                        p-[12px]
+                        flex items-center justify-left">
+          {/* Project Title */}
+          <p className="text-white text-base font-bold">{project.title}</p>
         </div>
+        
       </div>
+      {/* Project Modal associated with the card */}
+      <ProjectModal enabled={modalEnabled} setEnabled={setModalEnabled} project={project} isOfficer={isOfficer}/> 
     </div>
-  );
+  )
 };
+
 
 export default ProjectCard;

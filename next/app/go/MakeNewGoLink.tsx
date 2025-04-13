@@ -1,8 +1,6 @@
 import { useSession } from "next-auth/react";
-import { useCallback, useEffect, useState } from "react";
+import { use, useCallback, useEffect, useState } from "react";
 import { CreateGoLinkProps } from "./page";
-import { useEffectAsync } from "@/lib/utils";
-import { goLinksApi, fetchAuthLevel } from "@/lib/api";
 
 export const GoLinkButton: React.FC<CreateGoLinkProps> = ({ fetchData }) => {
   const { data: session }: any = useSession();
@@ -27,12 +25,15 @@ export const GoLinkButton: React.FC<CreateGoLinkProps> = ({ fetchData }) => {
 
   const handleCreate = async () => {
     try {
-      const response = await goLinksApi.create({
-        golink: title,
-        url: url,
-        description: description,
-        isPinned: pinned,
-        isPublic: !officer, // If it is officer, it is not public
+      const response = await fetch("https://sse.rit.edu/api/golinks", {
+        method: "POST",
+        body: JSON.stringify({
+          golink: title,
+          url: url,
+          description: description,
+          isPinned: pinned,
+          isPublic: !officer, // If it is officer, it is not public
+        }),
       });
 
       if (response.ok) {
@@ -44,10 +45,15 @@ export const GoLinkButton: React.FC<CreateGoLinkProps> = ({ fetchData }) => {
   };
 
   const [isOfficer, setIsOfficer] = useState(false);
-  useEffectAsync(async () => {
-    const data = await fetchAuthLevel();
-    console.log(data);
-    setIsOfficer(data.isOfficer);
+
+  useEffect(() => {
+    (async () => {
+      const data = await fetch("https://sse.rit.edu/api/authLevel").then((response) =>
+        response.json()
+      );
+      console.log(data);
+      setIsOfficer(data.isOfficer);
+    })();
   }, []);
 
   if (isOfficer) {
@@ -126,7 +132,7 @@ export const GoLinkButton: React.FC<CreateGoLinkProps> = ({ fetchData }) => {
             <div className="form-control">
               <label className="label cursor-pointer">
                 <span className="label-text">
-                  Officer (Won't be publicly shown)
+                  Officer (Won&apos;t be publicly shown)
                 </span>
                 <input
                   type="checkbox"

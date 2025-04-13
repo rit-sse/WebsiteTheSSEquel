@@ -1,5 +1,3 @@
-import { useEffect } from "react";
-
 export const isUrlValid = (str: string) => {
   const pattern = new RegExp(
     "^(https?:\\/\\/)?" + // protocol
@@ -13,8 +11,5 @@ export const isUrlValid = (str: string) => {
   return pattern.test(str);
 };
 
-export const useEffectAsync = (func: () => any, deps: any[]) => {
-  return useEffect(() => {
-    func();
-  }, deps);
-};
+export const MENTOR_HEAD_TITLE = "Mentor Head";
+export const PROJECTS_HEAD_TITLE = "Projects Head";

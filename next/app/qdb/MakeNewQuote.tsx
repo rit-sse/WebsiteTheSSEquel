@@ -1,7 +1,6 @@
 'use client';
 
-import { fetchAuthLevel } from "@/lib/api";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export const MakeNewQuote = () => {
 
@@ -9,15 +8,17 @@ export const MakeNewQuote = () => {
   const [userId, setUserID] = useState(0);
   const [isOfficer, setIsOfficer] = useState(false);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const data = await fetchAuthLevel();
-      setIsOfficer(data.isOfficer);
-      setUserID(data.userId);
-    };
-  
-    fetchData();
+  const fetchData = useCallback(async () => {
+    const data = await fetch("/api/authLevel").then((response) => 
+      response.json()
+    )
+    setIsOfficer(data.isOfficer);
+    setUserID(data.userId);
   }, []);
+
+  useEffect(() => {
+    fetchData();
+}, [fetchData]);
   
 
   const handleQuoteChange = (index: number, field: "quote" | "author", value: string) => {

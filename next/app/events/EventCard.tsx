@@ -1,23 +1,22 @@
 'use client'
 import { Event } from "./event";
-import { clsx } from "clsx"; // you will need to do 'npm install' if you haven't already, as I have added this for light and dark mode color switching
-import { useTheme } from "next-themes";
-import { Theme } from '@/types/theme';
 
 export const EventCard: React.FC<Event> = (event: Event) => {
-    const { theme } = useTheme();
-
+    console.log(event.image)
     return (
-        <div className={clsx("flex flex-col shadow-md rounded-3xl overflow-hidden",
-            { "bg-white": theme === Theme.Light, "bg-[#172630]": theme === Theme.Dark, },
-        )}>
-            <img src={event.imageSrc} className="w-full h-1/3" alt="" />
-            <div className="p-4">
-                <h4 className="text-primary">{event.title.slice(0, 1).toUpperCase() + event.title.slice(1)}</h4> {/* Make sure the title is captialized, but otherwise, this is just the title of the card */}
-                <h5>{event.date}</h5>
-                <h5>{event.location}</h5>
-                <p>{event.description}</p>
+        <div className={`mx-2 mb-2 shadow-lg rounded overflow-hidden bg-base-2git 00`}>
+            <div className="relative w-full" style={{ paddingTop: '56.25%' }}>
+              {event.image ?
+              <img src={event.image} className="absolute w-full h-full object-cover top-0 left-0" alt={event.title} />
+              :
+              <img src='..\..\icon.png' className="absolute w-full h-full object-cover top-0 left-0" alt="SSE Logo" />}
             </div>
+          <div className={`px-4 pb-4`}>
+            <h4 className="text-lg font-bold">{event.title}</h4>
+            <p className="text-sm font-bold">{event.date}</p>
+            <p className="text-sm">{event.location}</p>
+            <p className="text-sm">{event.description}</p>
+          </div>
         </div>
-    );
+      );
 }

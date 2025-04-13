@@ -2,8 +2,6 @@ import { GoLinkIcon } from "@/components/common/Icons";
 import { GoLinkStar } from "@/components/common/Icons";
 import { GoLinkEdit } from "@/components/common/Icons";
 import { GoLinkDelete } from "@/components/common/Icons";
-import { fetchAuthLevel, goLinksApi } from "@/lib/api";
-import { useEffectAsync } from "@/lib/utils";
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useState } from "react";
 
@@ -43,13 +41,16 @@ const GoLink: React.FC<GoLinkProps> = ({
 
   const handleEdit = async () => {
     try {
-      const response = await goLinksApi.update({
-        id: id,
-        golink: newTitle,
-        url: newUrl,
-        description: newDescription,
-        isPinned: newPinned,
-        isPublic: !officer,
+      const response = await fetch("https://sse.rit.edu/api/golinks", {
+        method: "PUT",
+        body: JSON.stringify({
+          id: id,
+          golink: newTitle,
+          url: newUrl,
+          description: newDescription,
+          isPinned: newPinned,
+          isPublic: !officer,
+        }),
       });
 
       if (response.ok) {
@@ -61,7 +62,10 @@ const GoLink: React.FC<GoLinkProps> = ({
 
   const handleDelete = async () => {
     try {
-      const response = await goLinksApi.delete(id);
+      const response = await fetch("https://sse.rit.edu/api/golinks", {
+        method: "DELETE",
+        body: JSON.stringify({ id }),
+      });
 
       if (response.ok) {
         handleCancel();
@@ -76,7 +80,7 @@ const GoLink: React.FC<GoLinkProps> = ({
       {console.log(url)}
 
       <a
-        href={"http://localhost:3000/go/" + goUrl}
+        href={"https://sse.rit.edu/go/" + goUrl}
         target="_blank"
         className="
                 flex 
@@ -168,7 +172,7 @@ const GoLink: React.FC<GoLinkProps> = ({
           <div className="form-control">
             <label className="label cursor-pointer">
               <span className="label-text">
-                Officer (Won't be publicly shown)
+                Officer (Won&apos;t be publicly shown)
               </span>
               <input
                 type="checkbox"
@@ -282,9 +286,13 @@ const EditAndDelete: React.FC<GoLinkProps> = ({
   const { data: session } = useSession();
   const [isOfficer, setIsOfficer] = useState(false);
 
-  useEffectAsync(async () => {
-    const data = await fetchAuthLevel();
-    setIsOfficer(data.isOfficer);
+  useEffect(() => {
+    (async () => {
+      const data = await fetch("https://sse.rit.edu/api/authLevel").then((response) =>
+        response.json()
+      );
+      setIsOfficer(data.isOfficer);
+    })();
   }, []);
 
   if (isOfficer) {

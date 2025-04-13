@@ -25,7 +25,7 @@ The above is just a placeholder, you'll need to fill in each entry with the appr
 
 ## Setting up a local database
 
-1. Download and install [PostgreSQL](https://www.postgresql.org/download/) 14. This is the database management system we are using for the project. When you visit the downloads page, click on your operating system and look for the following in the subsequent page: [![PostgreSQL 14 Download Page](https://i.imgur.com/VlfCWO6.png)](https://www.postgresql.org/download/)
+1. Download and install [PostgreSQL](https://www.postgresql.org/download/) 14. *Make sure you're installing 14, not any higher versions!* This is the database management system we are using for the project. When you visit the downloads page, click on your operating system and look for the following in the subsequent page: [![PostgreSQL 14 Download Page](https://i.imgur.com/VlfCWO6.png)](https://www.postgresql.org/download/)
 
 2. Run the installer and follow the instructions to install PostgreSQL. Make sure you remember the password you set for the database superuser.
 
@@ -57,11 +57,26 @@ The above is just a placeholder, you'll need to fill in each entry with the appr
 
 10. On the next screen, select `Web application`. Name the OAuth client ID something like `SSEquel Dev`. Under `Authorized JavaScript origins`, add `http://localhost:3000`. Under `Authorized redirect URIs`, add `http://localhost:3000/api/auth/callback/google`. Click `Create`. You should be presented with a modal titled `OAuth client created`.
 
-11. Congratulations, you've created a Google OAuth client ID! You can now fill in the `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` entries in the `.env` file. 
+11. Congratulations, you've created a Google OAuth client ID! You can now fill in the `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` entries in the `.env` file.
 
 The `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` can be found again later by going to the [Credentials tab](https://console.cloud.google.com/apis/credentials) and clicking on the client ID under `OAuth 2.0 Client IDs`.
 
+## Setting up Google Calendar
+
+1. Go to the [Google Service Accounts](https://console.developers.google.com/iam-admin/serviceaccounts) page and select/create a project.
+
+2. Click `+ Create Service Account`. Enter any name, id, and description.
+
+3. Click `Create and Continue`, then `Continue`, then `Done`.
+
+4. Click the email address of the account you just created and click the `Keys` tab.
+
+5. In the `Add Key` drop-down list, select `Create new Key` and click `Create`. Your browser will download a JSON file. Keep this somewhere safe.
+
+6. Copy the `client_email` from this file to the `GCAL_CLIENT_EMAIL` entry in the `.env` file. Copy the `private_key` to the `GCAL_PRIVATE_KEY` entry.
+
 ## Building the Local Database
+
 If you run the project now, you'll encounter schema errors. This is because the local database hasn't been built. We use Prisma for managing the Postgres database, so we'll use [Prisma's migrate command](https://www.prisma.io/docs/concepts/components/prisma-migrate/migrate-development-production) to build the db tables using the schema defined in the [schema.prisma](../next/prisma/schema.prisma) file.
 
 In the /next/ directory, run `npx prisma migrate dev`. Then run `npx prisma db seed` to populate the database with test data.

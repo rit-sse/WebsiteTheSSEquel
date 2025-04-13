@@ -78,7 +78,7 @@ async function seedOfficerPosition() {
 		update: {},
 		create: {
 			title: "Vice President",
-			is_primary: false,
+			is_primary: true,
 			email: "sse-vicepresident@rit.edu",
 		},
 	});
@@ -172,7 +172,7 @@ async function seedMentor() {
 	console.log({ mentor1, mentor2, mentor3 });
 }
 
-async function  seedSkill() {
+async function seedSkill() {
 	const java = await prisma.skill.upsert({
 		where: { id: 1 },
 		update: {},
@@ -436,8 +436,8 @@ async function seedAccount() {
 		create: {
 			id: 1,
 			userId: 1,
-			type: "google",
-			provider: "google.com",
+			type: "oauth",
+			provider: "google",
 			providerAccountId: "789",
 			refresh_token: "123",
 			access_token: "123",
@@ -454,8 +454,8 @@ async function seedAccount() {
 		create: {
 			id: 2,
 			userId: 2,
-			type: "google",
-			provider: "google.com",
+			type: "oauth",
+			provider: "google",
 			providerAccountId: "123",
 			refresh_token: "123",
 			access_token: "123",
@@ -472,8 +472,8 @@ async function seedAccount() {
 		create: {
 			id: 3,
 			userId: 3,
-			type: "google",
-			provider: "google.com",
+			type: "oauth",
+			provider: "google",
 			providerAccountId: "456",
 			refresh_token: "123",
 			access_token: "123",
@@ -556,27 +556,178 @@ async function seedVerificationToken() {
 	console.log({ verificationToken1, verificationToken2, verificationToken3 });
 }
 
+async function seedProject() {
+	const project1 = await prisma.project.upsert({
+		where: { id: 1 },
+		update: {},
+		create: {
+			title: "Website Rebuild",
+			description: "The new SSE website.",
+			progress: "In Progress",
+			leadid: 1,
+			repoLink: "https://github.com/rit-sse/WebsiteTheSSEquel",
+			contentURL: "/api/project/content/WEBSITE_REBUILD.md",
+			projectImage: "",
+			completed: false
+		},
+	});
+	const project2 = await prisma.project.upsert({
+		where: { id: 2 },
+		update: {},
+		create: {
+			title: "Wave Machine",
+			description: "A machine to automatically wave to tour groups.",
+			progress: "Limbo",
+			leadid: 2,
+			repoLink: "https://github.com/rit-sse/robo-waver",
+			contentURL: "/api/project/content/WAVE_MACHINE.md",
+			projectImage: "",
+			completed: false
+		},
+	});
+	const project3 = await prisma.project.upsert({
+		where: { id: 3 },
+		update: {},
+		create: {
+			title: "Tour Sensor",
+			description: "A proximity sensor to detect tours.",
+			progress: "Unknown",
+			leadid: 3,
+			repoLink: "https://github.com/rit-sse/tour-sensor",
+			contentURL: "/api/project/content/TOUR_SENSOR.md",
+			projectImage: "",
+			completed: false
+		},
+	});
+	console.log({ project1, project2, project3 });
+}
+
+async function seedProjectContributor() {
+	const projectContributor1 = await prisma.projectContributor.upsert({
+		where: { id: 1 },
+		update: {},
+		create: {
+			userId: 1,
+			projectId: 1,
+		},
+	});
+	const projectContributor2 = await prisma.projectContributor.upsert({
+		where: { id: 2 },
+		update: {},
+		create: {
+			userId: 2,
+			projectId: 2,
+		},
+	});
+	const projectContributor3 = await prisma.projectContributor.upsert({
+		where: { id: 3 },
+		update: {},
+		create: {
+			userId: 3,
+			projectId: 3,
+		},
+	});
+	console.log({ projectContributor1, projectContributor2, projectContributor3 });
+}
+
+async function seedEvents() {
+  const event1 = await prisma.event.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      title: "Keeping it Silly",
+      date: new Date("2023-11-1 12:00:00"),
+      description: "we keep it silly :3",
+    },
+  });
+
+  const event2 = await prisma.event.upsert({
+    where: { id: 2 },
+    update: {},
+    create: {
+      title: "Catan Tournament",
+      date: new Date("2023-11-1 12:00:00"),
+      description: "Elyza will win again.",
+	  image: "/images/codfather.jpg",
+	  location: "none",
+    },
+  });
+
+  const event3 = await prisma.event.upsert({
+    where: { id: 3 },
+    update: {},
+    create: {
+      title: "AAA",
+      date: new Date("2023-11-1 12:00:00"),
+      description: "ooops",
+	  image: "/images/codfather.jpg",
+	  location: "none",
+    },
+  });
+
+  const event4 = await prisma.event.upsert({
+    where: { id: 4 },
+    update: {},
+    create: {
+      title: "Bing bing",
+      date: new Date("2023-11-1 12:00:00"),
+      description: "bing bing bing",
+	  image: "/images/codfather.jpg",
+	  location: "none",
+    },
+  });
+
+	const event5 = await prisma.event.upsert({
+		where: { id: 5 },
+		update: {},
+		create: {
+		  title: "Farihaaaa",
+		  date: new Date("2023-11-1 12:00:00"),
+		  description: "poop poop poop",
+		  image: "/images/codfather.jpg",
+		  location: "none",
+		},
+  });
+
+  const event6 = await prisma.event.upsert({
+	where: { id: 6 },
+	update: {},
+	create: {
+	  title: "Spring Fling",
+	  date: new Date("2023-11-1 12:00:00"),
+	  description: "Spring thing",
+	  image: "/images/spring-fling-2.png",
+	  location: "none",
+	},
+  });
+
+  console.log({ event1, event2, event3, event4, event5, event6 });
+}
+
 async function main() {
-	try {
-		await seedUser();
-		await seedQuote();
-		await seedOfficerPosition();
-		await seedOfficer();
-		await seedMentor();
-		await seedSkill();
-		await seedMentorSkill();
-		await seedDepartment();
-		await seedCourse();
-		await seedCourseTaken();
-		await seedHourBlock();
-		await seedSchedule();
-		await seedGoLinks();
-		await seedAccount();
-		await seedSession();
-		await seedVerificationToken();
-	} catch (e) {
-		console.error(e);
-	}
+  try {
+    await seedUser();
+    await seedQuote();
+    await seedOfficerPosition();
+    await seedOfficer();
+    await seedMentor();
+    await seedSkill();
+    await seedMentorSkill();
+    await seedDepartment();
+    await seedCourse();
+    await seedCourseTaken();
+    await seedHourBlock();
+    await seedSchedule();
+    await seedGoLinks();
+    // await seedAccount();
+    // await seedSession();
+    // await seedVerificationToken();
+	await seedProject();
+	await seedProjectContributor();
+    // await seedEvents();
+  } catch (e) {
+    console.error(e);
+  }
 }
 
 main()

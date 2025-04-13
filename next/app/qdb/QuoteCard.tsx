@@ -2,9 +2,7 @@
 
 import { QuoteDelete, QuoteEdit } from "@/components/common/Icons";
 import { Quote } from "./Quotes";
-import { useState } from "react";
-import { useEffectAsync } from "@/lib/utils";
-import { fetchAuthLevel } from "@/lib/api";
+import { useCallback, useEffect, useState } from "react";
 
 export const QuoteCard = (quote: Quote) => {
 
@@ -134,10 +132,17 @@ export const QuoteCard = (quote: Quote) => {
     };
 
     const [isOfficer, setIsOfficer] = useState(false);
-    useEffectAsync(async () => {
-        const data = await fetchAuthLevel();
+    const fetchData = useCallback(async () => {
+        
+        const data = await fetch("/api/authLevel").then((response) => 
+            response.json()
+        );
         setIsOfficer(data.isOfficer);
     }, []);
+
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
 
     const openEditModal = (quoteObj: Quote) => {
         setEditableQuote(quoteObj);

@@ -23,7 +23,7 @@ const authVerifierFactory = (
     const token = request.cookies.get("next-auth.session-token")?.value;
     // fetch permissions from the API
     const permissions = await fetch(
-      process.env.NEXTAUTH_URL + "/api/authLevel",
+      process.env.INTERNAL_API_URL + "/api/authLevel",
       {
         body: JSON.stringify({ token }),
         method: "PUT",
@@ -93,6 +93,7 @@ const nonGetMentorVerifier = nonGetVerifier(mentorVerifier);
  * correspond to the key "golinks"
  */
 const ROUTES: { [key: string]: AuthVerifier } = {
+  calendar: nonGetOfficerVerifier,
   course: nonGetOfficerVerifier,
   courseTaken: nonGetMentorVerifier,
   departments: nonGetOfficerVerifier,
@@ -101,10 +102,13 @@ const ROUTES: { [key: string]: AuthVerifier } = {
   mentor: nonGetOfficerVerifier,
   mentorSkill: nonGetMentorVerifier,
   officer: nonGetOfficerVerifier,
+  project: nonGetOfficerVerifier,
+  projectContributor: nonGetOfficerVerifier,
   quotes: nonGetOfficerVerifier,
   schedule: nonGetMentorVerifier,
-  skill: nonGetOfficerVerifier,
+  skills: nonGetOfficerVerifier,
   user: nonGetOfficerVerifier,
+  userProject: nonGetOfficerVerifier,
 };
 
 const accessDenied = (authType: string) => {
