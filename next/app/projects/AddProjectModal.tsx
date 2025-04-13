@@ -125,13 +125,10 @@ const AddProjectModal = ({
                                 <h3 className="text-primar h-[10%]y">Add Project</h3>
 
                                 {/* Exit Button Container */}
-                                <div className="flex">
+                                <div className="flex justify-center h-full items-center">
                                     {/* Exit Button */}
-                                    <svg width="30" height="30" viewBox="0 0 35 36" className="fill-primary cursor-pointer" onClick={exit}  xmlns="http://www.w3.org/2000/svg">
-                                        <g clip-path="url(#clip0_23_61)">
-                                            <path fill-rule="evenodd" clip-rule="evenodd" d="M15.9799 19.5201V32.4659H13.8773V23.1093L1.48865 35.5L0 34.0114L12.3907 21.6227H3.0341V19.5201H15.9799ZM33.5124 0.5L34.9989 1.98655L22.6103 14.3773H31.967V16.4799H19.0211V3.53408H21.1238V12.8886L33.5124 0.5Z" />
-                                        </g>
-                                    </svg>
+                                    <svg width="30px" height="30px" viewBox="-0.5 0 25 25" className="fill-primary cursor-pointer" onClick={exit} xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M3 21.32L21 3.32001" className="stroke-primary" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M3 3.32001L21 21.32" className="stroke-primary" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
+
                                 </div>
                             </div>
                             {/* Actual content of the Modal */}

@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
 
   if (
     !isProjectsHead(
-      request.cookies.get("next-auth.session-token")?.value ?? "NO TOKEN"
+      request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value ?? "NO TOKEN"
     )
   ) {
     return new Response("Only the projects head may modify projects", {
@@ -145,7 +145,7 @@ export async function PUT(request: NextRequest) {
 
   if (
     !isProjectsHead(
-      request.cookies.get("next-auth.session-token")?.value ?? "NO TOKEN"
+      request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value ?? "NO TOKEN"
     )
   ) {
     return new Response("Only the projects head may modify projects", {
@@ -254,7 +254,7 @@ export async function DELETE(request: NextRequest) {
 
   if (
     !isProjectsHead(
-      request.cookies.get("next-auth.session-token")?.value ?? "NO TOKEN"
+      request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value ?? "NO TOKEN"
     )
   ) {
     return new Response("Only the projects head may modify projects", {
