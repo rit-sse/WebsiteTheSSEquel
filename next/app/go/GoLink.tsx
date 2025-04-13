@@ -43,7 +43,7 @@ const GoLink: React.FC<GoLinkProps> = ({
 
   const handleEdit = async () => {
     try {
-      const response = await fetch("http://localhost:3000/api/golinks", {
+      const response = await fetch("api/golinks", {
         method: "PUT",
         body: JSON.stringify({
           id: id,
@@ -64,7 +64,7 @@ const GoLink: React.FC<GoLinkProps> = ({
 
   const handleDelete = async () => {
     try {
-      const response = await fetch("http://localhost:3000/api/golinks", {
+      const response = await fetch("/api/golinks", {
         method: "DELETE",
         body: JSON.stringify({ id }),
       });
@@ -82,7 +82,7 @@ const GoLink: React.FC<GoLinkProps> = ({
       {console.log(url)}
 
       <a
-        href={"http://localhost:3000/go/" + goUrl}
+        href={"/go/" + goUrl}
         target="_blank"
         className="
                 flex 
