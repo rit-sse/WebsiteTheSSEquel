@@ -2,10 +2,17 @@ import { GitHubIcon, LinkedInIcon, EmailIcon } from "../../../components/common/
 import { TeamMember } from "./team";
 
 interface OfficerCardProps {
-  teamMember: TeamMember;
+  teamMember?: TeamMember;
+  position: string;
 }
 
-export default function OfficerCard({ teamMember }: OfficerCardProps) {
+export default function OfficerCard({ teamMember, position }: OfficerCardProps) {
+  if(!teamMember){
+    teamMember = {
+      name: "N/A",
+      title: position,
+    } as TeamMember
+  }
 
   return (
     <div className="mt-4">

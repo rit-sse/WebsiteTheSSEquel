@@ -17,6 +17,9 @@ export default function Leadership() {
   // State list of all active officers
   const [teamData, setTeamData] = useState<Team>({ primary_officers: [], committee_heads: [] });
 
+  const primaryPositions = ['President', 'Vice President', 'Treasurer', 'Secretary', 'Projects Lead'];
+  const committeePositions = ['Events', 'Public Relations', 'Mentoring', 'Student Outreach', 'Talks', 'Tech Head', 'Marketing']
+
   // Get all active officers when page opens
   useEffect(() => {
       getOfficers();
@@ -104,13 +107,17 @@ export default function Leadership() {
           </h2>
           <div className="">
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {teamData.primary_officers.map((member, idx) => (
-                <div key={idx}>
-                  <OfficerCard teamMember={member} />
-                  {/* Edit and Remove buttons, only officers can see */}
-                  <ModifyOfficers teamMember={member} openReplaceModal={() => setReplaceOpen(true)} openEditModal={() => setEditOpen(true)} setSelectedOfficer={setSelectedOfficer}/>
-                </div>
-              ))}
+              {primaryPositions.map((posTitle, idx) => {
+                var teamMember = teamData.primary_officers.filter((officer) => {
+                  return officer.title == posTitle;
+                })
+                return (
+                  <div key={idx}>
+                    <OfficerCard position={posTitle} teamMember={teamMember[0] ?? undefined}/>
+                    <ModifyOfficers position={posTitle} teamMember={teamMember[0] ?? undefined} openEditModal={() => setEditOpen(true)} openReplaceModal={() => setReplaceOpen(true)} setSelectedOfficer={setSelectedOfficer} />
+                  </div>
+                )
+              })}
             </div>
           </div>
           {/* Committee Heads */}
@@ -120,13 +127,17 @@ export default function Leadership() {
             </h2>
             <div className="">
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 gap-y-8">
-                {teamData.committee_heads.map((member, idx) => (
+              {committeePositions.map((posTitle, idx) => {
+                var teamMember = teamData.committee_heads.filter((officer) => {
+                  return officer.title == posTitle;
+                })
+                return (
                   <div key={idx}>
-                    <OfficerCard teamMember={member} />
-                    {/* Edit and Remove buttons, only officers can see */}
-                    <ModifyOfficers teamMember={member} openReplaceModal={() => setReplaceOpen(true)} openEditModal={() => setEditOpen(true)} setSelectedOfficer={setSelectedOfficer}/>
+                    <OfficerCard position={posTitle} teamMember={teamMember[0] ?? undefined}/>
+                    <ModifyOfficers position={posTitle} teamMember={teamMember[0] ?? undefined} openEditModal={() => setEditOpen(true)} openReplaceModal={() => setReplaceOpen(true)} setSelectedOfficer={setSelectedOfficer} />
                   </div>
-                ))}
+                )
+              })}
               </div>
             </div>
           </div>

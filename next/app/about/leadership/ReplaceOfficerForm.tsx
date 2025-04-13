@@ -40,6 +40,7 @@ export default function ReplaceOfficerForm({ open, teamMember, getOfficers, clos
     useEffect(() => {
         if(!open){
             clearForm();
+            setError("");
         }
     }, [open])
 

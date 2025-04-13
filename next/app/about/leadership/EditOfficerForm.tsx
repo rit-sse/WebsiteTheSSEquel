@@ -77,6 +77,7 @@ export default function EditOfficerForm({ open, teamMember, getOfficers, closeMo
 
             // Call to officer route if the start and end dates are modified
             if (formData.start_date != '' && formData.end_date != ''){
+                console.log(teamMember?.officer_id);
                 const officerResponse = await fetch('/api/officer', {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
