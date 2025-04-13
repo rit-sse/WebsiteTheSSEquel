@@ -11,6 +11,7 @@ export interface GoLinkProps {
   url: string;
   description: string;
   pinned: boolean;
+  officer: boolean;
   fetchData: () => Promise<void>;
 }
 
@@ -20,20 +21,21 @@ const GoLink: React.FC<GoLinkProps> = ({
   url,
   description,
   pinned,
+  officer,
   fetchData,
 }) => {
   const [newTitle, setTitle] = useState(goUrl);
   const [newUrl, setUrl] = useState(url);
   const [newDescription, setDescription] = useState(description);
   const [newPinned, setPinned] = useState(pinned);
-  const [officer, setOfficer] = useState(false);
+  const [newOfficer, setOfficer] = useState(officer);
 
   const handleCancel = () => {
     setTitle(goUrl);
     setUrl(url);
     setDescription(description);
     setPinned(pinned);
-    setOfficer(false);
+    setOfficer(officer);
   };
 
   const editModalId = `edit-golink-${id}`;
@@ -41,7 +43,7 @@ const GoLink: React.FC<GoLinkProps> = ({
 
   const handleEdit = async () => {
     try {
-      const response = await fetch("https://sse.rit.edu/api/golinks", {
+      const response = await fetch("http://localhost:3000/api/golinks", {
         method: "PUT",
         body: JSON.stringify({
           id: id,
@@ -49,7 +51,7 @@ const GoLink: React.FC<GoLinkProps> = ({
           url: newUrl,
           description: newDescription,
           isPinned: newPinned,
-          isPublic: !officer,
+          isPublic: !newOfficer,
         }),
       });
 
@@ -62,7 +64,7 @@ const GoLink: React.FC<GoLinkProps> = ({
 
   const handleDelete = async () => {
     try {
-      const response = await fetch("https://sse.rit.edu/api/golinks", {
+      const response = await fetch("http://localhost:3000/api/golinks", {
         method: "DELETE",
         body: JSON.stringify({ id }),
       });
@@ -80,7 +82,7 @@ const GoLink: React.FC<GoLinkProps> = ({
       {console.log(url)}
 
       <a
-        href={"https://sse.rit.edu/go/" + goUrl}
+        href={"http://localhost:3000/go/" + goUrl}
         target="_blank"
         className="
                 flex 
@@ -117,6 +119,7 @@ const GoLink: React.FC<GoLinkProps> = ({
               url={url}
               description={description}
               pinned={pinned}
+              officer={officer}
               fetchData={fetchData}
             />
           </span>
@@ -144,7 +147,7 @@ const GoLink: React.FC<GoLinkProps> = ({
             <input
               type="text"
               className="grow text-gray-900"
-              placeholder="sse.rit.edu"
+              placeholder="localhost:3000"
               value={newUrl}
               onChange={(e) => setUrl(e.target.value)}
             />
@@ -177,7 +180,7 @@ const GoLink: React.FC<GoLinkProps> = ({
               <input
                 type="checkbox"
                 className="checkbox"
-                checked={officer}
+                checked={newOfficer}
                 onChange={(e) => setOfficer(e.target.checked)}
               />
             </label>
@@ -288,7 +291,7 @@ const EditAndDelete: React.FC<GoLinkProps> = ({
 
   useEffect(() => {
     (async () => {
-      const data = await fetch("https://sse.rit.edu/api/authLevel").then((response) =>
+      const data = await fetch("http://localhost:3000/api/authLevel").then((response) =>
         response.json()
       );
       setIsOfficer(data.isOfficer);
