@@ -291,7 +291,7 @@ const EditAndDelete: React.FC<GoLinkProps> = ({
 
   useEffect(() => {
     (async () => {
-      const data = await fetch("http://localhost:3000/api/authLevel").then((response) =>
+      const data = await fetch("/api/authLevel").then((response) =>
         response.json()
       );
       setIsOfficer(data.isOfficer);
