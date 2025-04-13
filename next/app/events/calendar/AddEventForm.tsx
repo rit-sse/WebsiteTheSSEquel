@@ -48,7 +48,7 @@ export default function AddEventForm ({ isOpen, onClose, events, setEvents }: Fo
         var googleImageLink = googleImageMatch ? `https://drive.google.com/thumbnail?id=${googleImageMatch[1]}` : "";
     
         // Post to Prisma
-        const res = await fetch('http://localhost:3000/api/event', { 
+        const res = await fetch('https://sse.rit.edu/api/event', { 
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -67,7 +67,7 @@ export default function AddEventForm ({ isOpen, onClose, events, setEvents }: Fo
         // Min Length required for an ID in Google Calendar API
         let minLengthID = 5; 
         try {
-            await fetch('http://localhost:3000/api/calendar', { 
+            await fetch('https://sse.rit.edu/api/calendar', { 
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
