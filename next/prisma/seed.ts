@@ -142,7 +142,6 @@ async function seedMentor() {
 		where: { id: 1 },
 		update: {},
 		create: {
-			id: 1,
 			user_Id: 1,
 			expirationDate: new Date("2023-11-1 12:00:00"),
 			isActive: true,
@@ -152,7 +151,6 @@ async function seedMentor() {
 		where: { id: 2 },
 		update: {},
 		create: {
-			id: 2,
 			user_Id: 2,
 			expirationDate: new Date("2023-11-1 12:00:00"),
 			isActive: true,
@@ -163,7 +161,6 @@ async function seedMentor() {
 		where: { id: 3 },
 		update: {},
 		create: {
-			id: 3,
 			user_Id: 3,
 			expirationDate: new Date("2023-11-1 12:00:00"),
 			isActive: true,
