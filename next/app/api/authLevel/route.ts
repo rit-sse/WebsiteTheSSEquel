@@ -97,7 +97,7 @@ export async function PUT(request: Request) {
  * @returns \{isUser: boolean, isMember: boolean, isMentor: boolean, isOfficer: boolean} the auth level
  */
 export async function GET(request: NextRequest) {
-  const authToken = request.cookies.get("__Secure-next-auth.session-token")?.value;
+  const authToken = request.cookies.get("next-auth.session-token")?.value;
 
   const authLevel = {
     isUser: false,

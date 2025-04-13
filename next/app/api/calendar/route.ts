@@ -38,10 +38,8 @@ export async function POST(request: NextRequest) {
     return new Response("Invalid JSON", { status: 422 });
   }
 
-  // verify the id is included
   if (
     !(
-      "id" in body &&
       "summary" in body &&
       "description" in body &&
       "location" in body &&
@@ -49,7 +47,7 @@ export async function POST(request: NextRequest) {
       "end" in body
     )
   ) {
-    return new Response("ID must be included", { status: 422 });
+    return new Response("Summary, Description, Location, Start, and End must be included", { status: 422 });
   }
 
   const gcal_token = await getToken();
@@ -62,7 +60,6 @@ export async function POST(request: NextRequest) {
       method: "POST",
       headers: { Authorization: `Bearer ${gcal_token}` },
       body: JSON.stringify({
-        id: body.id,
         summary: body.summary,
         description: body.description,
         location: body.location,

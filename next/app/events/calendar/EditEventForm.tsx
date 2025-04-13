@@ -60,7 +60,7 @@ export default function EditEventForm ({ isOpen, onClose, setModalEvent, event, 
         var googleImageLink = googleImageMatch ? `https://drive.google.com/thumbnail?id=${googleImageMatch[1]}` : "";
 
         // Update to Prisma
-        const res = await fetch('https://sse.rit.edu/api/event', { 
+        const res = await fetch('/api/event', { 
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -72,25 +72,23 @@ export default function EditEventForm ({ isOpen, onClose, setModalEvent, event, 
                 image: googleImageLink
             })
         })
-        // Grab newly created event
+
         const newEvent = await res.json();
-        const idString = newEvent.id.toString();
-        // Min Length required for an ID in Google Calendar API
-        let minLengthID = 5; 
+        const gCalID = newEvent.id;
 
         // Update to Google Calendar
-        await fetch('https://sse.rit.edu/api/calendar', { 
+        await fetch('/api/calendar', { 
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                id: "0".repeat(minLengthID - idString.length).concat(idString),
+                id: gCalID,
                 summary: eventName,
                 location: location,
                 description: description,
                 start: new Date(datetime).toISOString(),
                 end: new Date(new Date(datetime).getTime() + 60 * 60 * 1000).toISOString()
             })
-        }).then(async (res) => { console.log(await res.text()) })
+        }).then((res) => console.log(res.text()))
 
         // Find and remove the old event
         let updatedEvents = events.filter((e : Event) => {

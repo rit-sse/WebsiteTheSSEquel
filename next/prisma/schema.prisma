@@ -247,7 +247,7 @@ model GoLinks {
 }
 
 model Event {
-  id Int @id @default(autoincrement())
+  id String @id
 
   title       String
   date        DateTime
