@@ -35,19 +35,21 @@ export async function POST(request: Request) {
   }
 
   // make sure the required properties are included
-  if (!("title" in body && "description" in body && "date" in body)) {
+  if (!("title" in body && "description" in body && "date" in body && "id" in body)) {
     return new Response(
-      '"title", "description", and "date" must be included in request body',
+      '"id", "title", "description", and "date" must be included in request body',
       { status: 422 }
     );
   }
   const title = body.title;
   const description = body.description;
   const date = body.date;
+  const id = body.id;
 
   try {
     const event = await prisma.event.create({
       data: {
+        id,
         title,
         description,
         date,
