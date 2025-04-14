@@ -49,6 +49,8 @@ export async function POST(request: Request) {
   const id = body.id;
 
   try {
+    console.log(`Attempting to create Event in DB with ID: ${id}`);
+
     const event = await prisma.event.create({
       data: {
         id,
@@ -59,6 +61,7 @@ export async function POST(request: Request) {
         image: body.image,
       },
     });
+    console.log(`Created event with ID: ${event.id}`);
     return Response.json(event, { status: 201 });
   } catch (e) {
     return new Response(`Failed to create event: ${e}`, { status: 500 });
