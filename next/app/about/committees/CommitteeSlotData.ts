@@ -10,6 +10,7 @@ const defaultDescription = `This is a description of the committee. Lorem ipsum 
                             Mauris sodales ac neque quis blandit. Aenean vel lobortis eros.`
 
 
+// Here is what each locale should follow.
 export interface descriptionStructure {
     events: string,
     talks: string,
@@ -20,6 +21,8 @@ export interface descriptionStructure {
     tech_committee: string
 }
 
+// "Hey we are not gonna use any language other than English!"
+// I'd like this to be separated *in case* another language needs to be accommodated.
 const descriptions: {
     [locale: string]: descriptionStructure
 } = {
