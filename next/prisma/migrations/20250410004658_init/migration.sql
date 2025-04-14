@@ -135,9 +135,9 @@ CREATE TABLE "GoLinks" (
 
 -- CreateTable
 CREATE TABLE "Event" (
-    "id" TEXT NOT NULL,
+    "id" SERIAL NOT NULL,
     "title" TEXT NOT NULL,
-    "date" TIMESTAMPTZ(3) NOT NULL,
+    "date" TIMESTAMP(3) NOT NULL,
     "location" TEXT,
     "image" TEXT,
     "description" TEXT NOT NULL,
