@@ -250,7 +250,7 @@ model Event {
   id String @id
 
   title       String
-  date        DateTime
+  date        DateTime @db.Timestamptz(3)
   location    String?
   image       String?
   description String
