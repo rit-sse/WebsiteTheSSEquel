@@ -55,9 +55,9 @@ export async function POST(request: Request) {
   console.log("  title:", title, `(${typeof title})`);
   console.log("  description:", description, `(${typeof description})`);
   console.log("  date (original string):", date, `(${typeof date})`); // Log the ISO string received
-  date = new Date(date).getTime()
+  // date = new Date(date).getTime()
   // const dateObject = new Date(date); // Create the Date object
-  console.log("  date (JS Date object):", date); // Log the object itself
+  // console.log("  date (JS Date object):", date); // Log the object itself
   console.log("  location:", location, `(${typeof location})`);
   console.log("  image:", image, `(${typeof image})`);
   try {
