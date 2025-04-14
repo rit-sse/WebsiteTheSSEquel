@@ -27,10 +27,12 @@ export async function GET() {
  * @return event object that was created
  */
 export async function POST(request: Request) {
+  console.log("POST request recvied to /api/event/");
   let body;
   try {
     body = await request.json();
   } catch {
+    console.log("Invalid JSON in POST request to /api/event/");
     return new Response("Invalid JSON", { status: 422 });
   }
 
