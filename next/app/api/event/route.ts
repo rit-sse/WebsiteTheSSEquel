@@ -47,6 +47,19 @@ export async function POST(request: Request) {
   const description = body.description;
   const date = body.date;
   const id = body.id;
+  const image = body.image;
+  const location = body.location;
+
+  console.log("Data being sent to Prisma:");
+  console.log("  id:", id, `(${typeof id})`);
+  console.log("  title:", title, `(${typeof title})`);
+  console.log("  description:", description, `(${typeof description})`);
+  console.log("  date (original string):", date, `(${typeof date})`); // Log the ISO string received
+  const dateObject = new Date(date); // Create the Date object
+  console.log("  date (JS Date object):", dateObject); // Log the object itself
+  console.log("  date (isValid?):", !isNaN(dateObject.getTime())); // Check if it's a valid date
+  console.log("  location:", location, `(${typeof location})`);
+  console.log("  image:", image, `(${typeof image})`);
 
   try {
     const event = await prisma.event.create({
@@ -55,15 +68,15 @@ export async function POST(request: Request) {
         title,
         description,
         date,
-        location: body.location,
-        image: body.image,
+        location,
+        image,
       },
     });
     return Response.json(event, { status: 201 });
   } catch (e: any) {
-    console.error(`Error Code: ${e.code}`);
-    console.error(`Error Message: ${e.message}`);
-    console.error(`Stack Trace: ${e.stack}`);
+    // console.error(`Error Code: ${e.code}`);
+    // console.error(`Error Message: ${e.message}`);
+    // console.error(`Stack Trace: ${e.stack}`);
     return new Response(`Failed to create event: ${e}`, { status: 500 });
   }
 }
