@@ -46,12 +46,12 @@ export async function POST(request: Request) {
   const title = body.title;
   const description = body.description;
   const date = body.date;
-  const id = body.id;
+  // const id = body.id;
   const image = body.image;
   const location = body.location;
 
   console.log("Data being sent to Prisma:");
-  console.log("  id:", id, `(${typeof id})`);
+  // console.log("  id:", id, `(${typeof id})`);
   console.log("  title:", title, `(${typeof title})`);
   console.log("  description:", description, `(${typeof description})`);
   console.log("  date (original string):", date, `(${typeof date})`); // Log the ISO string received
@@ -60,7 +60,7 @@ export async function POST(request: Request) {
   console.log("  date (isValid?):", !isNaN(dateObject.getTime())); // Check if it's a valid date
   console.log("  location:", location, `(${typeof location})`);
   console.log("  image:", image, `(${typeof image})`);
-
+  const id = "testevent" + Math.floor(Math.random() * 10000);
   try {
     const event = await prisma.event.create({
       data: {
