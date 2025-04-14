@@ -45,22 +45,21 @@ export async function POST(request: Request) {
   }
   const title = body.title;
   const description = body.description;
-  const date = body.date;
-  // const id = body.id;
+  let date = body.date;
+  const id = body.id;
   const image = body.image;
   const location = body.location;
 
   console.log("Data being sent to Prisma:");
-  // console.log("  id:", id, `(${typeof id})`);
+  console.log("  id:", id, `(${typeof id})`);
   console.log("  title:", title, `(${typeof title})`);
   console.log("  description:", description, `(${typeof description})`);
   console.log("  date (original string):", date, `(${typeof date})`); // Log the ISO string received
-  const dateObject = new Date(date); // Create the Date object
-  console.log("  date (JS Date object):", dateObject); // Log the object itself
-  console.log("  date (isValid?):", !isNaN(dateObject.getTime())); // Check if it's a valid date
+  date = new Date(date).getTime()
+  // const dateObject = new Date(date); // Create the Date object
+  console.log("  date (JS Date object):", date); // Log the object itself
   console.log("  location:", location, `(${typeof location})`);
   console.log("  image:", image, `(${typeof image})`);
-  const id = "testevent" + Math.floor(Math.random() * 10000);
   try {
     const event = await prisma.event.create({
       data: {
