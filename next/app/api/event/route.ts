@@ -53,7 +53,7 @@ export async function POST(request: Request) {
         date,
         location: body.location,
         image: body.image,
-        id = body.id,
+        id: body.id,
       },
     });
     return Response.json(event, { status: 201 });
