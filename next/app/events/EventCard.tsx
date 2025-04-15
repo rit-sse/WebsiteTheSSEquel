@@ -2,7 +2,7 @@
 import { Event } from "./event";
 
 export const EventCard: React.FC<Event> = (event: Event) => {
-    console.log(event.image)
+    // console.log(event.image)
     return (
         <div className={`mx-2 mb-2 shadow-lg rounded overflow-hidden bg-base-2git 00`}>
             <div className="relative w-full" style={{ paddingTop: '56.25%' }}>

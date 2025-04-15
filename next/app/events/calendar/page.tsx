@@ -26,7 +26,7 @@ export default function EventsCalendar() {
      * Get all events from Google Calendar
      */
     const fetchEvents = async () =>{
-        const resp = await fetch('https://sse.rit.edu/api/event');
+        const resp = await fetch('/api/event');
         let res: Event[] = await resp.json();
         res = res.sort((event1, event2) => compareDateStrings(event1.date, event2.date))
         setEvents(res);

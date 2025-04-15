@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
       where: {
         session: {
           some: {
-            sessionToken: request.cookies.get("next-auth.session-token")?.value,
+            sessionToken: request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value,
           },
         },
         id: body.mentorId,
@@ -92,7 +92,7 @@ export async function PUT(request: NextRequest) {
       where: {
         session: {
           some: {
-            sessionToken: request.cookies.get("next-auth.session-token")?.value,
+            sessionToken: request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value,
           },
         },
         id: body.mentorId,
@@ -166,7 +166,7 @@ export async function DELETE(request: NextRequest) {
       where: {
         session: {
           some: {
-            sessionToken: request.cookies.get("next-auth.session-token")?.value,
+            sessionToken: request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value,
           },
         },
         id: body.mentorId,

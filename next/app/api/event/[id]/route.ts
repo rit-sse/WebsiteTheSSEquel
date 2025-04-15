@@ -14,7 +14,7 @@ export async function GET(
 ) {
   // make sure the provided ID is a valid integer
   try {
-    const id = parseInt(params.id);
+    const id = params.id;
     const dept = await prisma.event.findUnique({
       where: {
         id,

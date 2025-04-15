@@ -27,37 +27,55 @@ export async function GET() {
  * @return event object that was created
  */
 export async function POST(request: Request) {
+  console.log("POST request recvied to /api/event/");
   let body;
   try {
     body = await request.json();
   } catch {
+    console.log("Invalid JSON in POST request to /api/event/");
     return new Response("Invalid JSON", { status: 422 });
   }
 
   // make sure the required properties are included
-  if (!("title" in body && "description" in body && "date" in body)) {
+  if (!("title" in body && "description" in body && "date" in body && "id" in body)) {
     return new Response(
-      '"title", "description", and "date" must be included in request body',
+      '"id", "title", "description", and "date" must be included in request body',
       { status: 422 }
     );
   }
   const title = body.title;
   const description = body.description;
-  const date = body.date;
+  let date = body.date;
+  const id = body.id;
+  const image = body.image;
+  const location = body.location;
 
+  console.log("Data being sent to Prisma:");
+  console.log("  id:", id, `(${typeof id})`);
+  console.log("  title:", title, `(${typeof title})`);
+  console.log("  description:", description, `(${typeof description})`);
+  console.log("  date (original string):", date, `(${typeof date})`); // Log the ISO string received
+  // date = new Date(date).getTime()
+  // const dateObject = new Date(date); // Create the Date object
+  // console.log("  date (JS Date object):", date); // Log the object itself
+  console.log("  location:", location, `(${typeof location})`);
+  console.log("  image:", image, `(${typeof image})`);
   try {
     const event = await prisma.event.create({
       data: {
+        id,
         title,
         description,
         date,
-        location: body.location,
-        image: body.image,
-        id: body.id,
+        location,
+        image,
       },
     });
     return Response.json(event, { status: 201 });
-  } catch (e) {
+  } catch (e: any) {
+    // console.error(`Error Code: ${e.code}`);
+    // console.error(`Error Message: ${e.message}`);
+    // console.error(`Stack Trace: ${e.stack}`);
     return new Response(`Failed to create event: ${e}`, { status: 500 });
   }
 }
