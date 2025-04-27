@@ -44,7 +44,7 @@ const navItems: (NavItemProps & { render?: React.ReactNode})[] = [
     },
     {
         title: "Mentoring",
-        route: "#",
+        route: "/mentoring",
     },
     {
         title: "Events",

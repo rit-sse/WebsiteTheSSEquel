@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
   }
   const expirationDate = body.expirationDate;
   const isActive = body.isActive;
-  const user_Id = body.userId;
+  const userId = body.userId;
 
   // Only the mentor head may modify the mentors
   if (
@@ -83,7 +83,11 @@ export async function POST(request: NextRequest) {
       data: {
         expirationDate,
         isActive,
-        user_Id,
+        user: {
+          connect: {
+            id: userId, // this is the id from your User table
+          },
+        },
       },
     });
     return Response.json(mentor, { status: 201 });
