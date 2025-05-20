@@ -2,6 +2,11 @@
 
 Thank you for considering contributing to this project! We welcome contributions from everyone. Please follow the guidelines below to ensure a smooth contribution process.
 
+## Understanding the Project
+
+- To understand the project's goals and scope, please refer to the [Vision and Scope Document](./documentation/VisionAndScope.md).
+- Check the [GitHub Project Backlog](https://github.com/orgs/rit-sse/projects/2/views/10) for open issues and tasks to work on.
+
 ## How to Contribute
 
 1. Fork the repository and clone it to your local machine.
@@ -21,6 +26,22 @@ If you encounter any issues or have suggestions for improvements, please open an
 - Include relevant tests for your changes.
 - Update documentation if necessary.
 - Link the pull request to the corresponding issue if applicable.
+
+## Development Setup
+
+To set up your development environment, please refer to the [Environment Setup Guide](./documentation/EnvironmentSetup.md). This guide provides detailed instructions on installing dependencies, setting up the database, and configuring the environment variables.
+
+## Testing
+
+- Run tests using the command: `npm run test`.
+- Ensure all tests pass before submitting a pull request.
+- Add new tests for any new features or bug fixes.
+
+## Coding Style
+
+- Follow the existing code style and structure.
+- Use meaningful variable and function names.
+- Run the linter before committing: `npm run lint`.
 
 ## Code of Conduct
 
