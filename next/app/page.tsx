@@ -44,11 +44,13 @@ export default async function Home() {
                         </div>
                     </div>
                     <div className="flex mt-12 md:mt-0 w-11/12 md:w-[70%] lg:w-full justify-center">
-                        <Image src="/student-involvement-1.jpg" alt="Tech committee meeting" className="rounded-[60px]" width={1000} height={1000} priority />
+                        <Image src="/images/group.jpg" alt="Tech committee meeting" className="rounded-[60px]" width={1000} height={1000} priority />
                     </div>
                 </div>
             </div>
 
+            <br/>
+            
             {/* Upcoming Events */}
             <div>
               <h1 className='mt-5'>Upcoming Events</h1>

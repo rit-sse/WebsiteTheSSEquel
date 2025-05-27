@@ -44,12 +44,12 @@ export default [
         description: descriptions["en_US"]["events"]
     },
     {
-        imageSrc: "/images/talks-1.jpg",
+        imageSrc: "/images/nat-imagine.png",
         name: 'Talks',
         description: descriptions["en_US"]["talks"]
     },
     {
-        imageSrc: "/images/talks-2.jpg",
+        imageSrc: "/images/mtb.jpg",
         name: 'Public Relations',
         description: descriptions["en_US"]["public_relations"]
     },
@@ -59,12 +59,12 @@ export default [
         description: descriptions["en_US"]["mentoring"]
     },
     {
-        imageSrc: "/images/mentoring-review-session-1.png",
+        imageSrc: "/images/sse-booth.jpg",
         name: 'Marketing',
         description: descriptions["en_US"]["marketing"]
     },
     {
-        imageSrc: "/images/student-involvement-1.jpg",
+        imageSrc: "/images/outreach.jpg",
         name: 'Student Outreach',
         description: descriptions["en_US"]["student_outreach"]
     },
