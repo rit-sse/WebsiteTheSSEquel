@@ -7,20 +7,14 @@ import { EventCard } from './events/EventCard';
 import Image from 'next/image';
 import { Event } from "./events/event";
 import { compareDateStrings, formatDate } from './events/calendar/utils';
+import { getEvents } from './api/event/eventService';
 
 export default async function Home() {
 
-    let events = null;
-
-    const response = await fetch('http://localhost:3000/api/event');
-    console.log(response.status);
-    
+    let events = await getEvents() as Event[] | null;
 
     // Allowing developers to not have to set up the DB
-    if(response.status != 500){
-        events = await response.json() as Event[];
-        console.log(events);
-
+    if(events != null){
         // Only display first 3 upcoming events
         events = events.sort((event1, event2) => compareDateStrings(event1.date, event2.date))
         events = events.slice(0, 3);
