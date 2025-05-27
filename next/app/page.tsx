@@ -19,11 +19,9 @@ export default async function Home() {
     // Allowing developers to not have to set up the DB
     if(response.status != 500){
         events = await response.json() as Event[];
+        console.log(events);
 
         // Only display first 3 upcoming events
-        events = events.filter((event) => {
-            return (Date.now() - (new Date(event.date).getTime())) < 0; // is negative if event is in the future
-        });
         events = events.sort((event1, event2) => compareDateStrings(event1.date, event2.date))
         events = events.slice(0, 3);
         console.log(events);
