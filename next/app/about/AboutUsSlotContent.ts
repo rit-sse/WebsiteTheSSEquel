@@ -4,7 +4,7 @@ const defaultImage = `https://dummyimage.com/${placeholder_w}x${placeholder_h}`
 
 const data: {imageSrc: string, name: string, description: string, alt:string}[] = [
     {
-        imageSrc: "/images/mentoring-review-session-1.png",
+        imageSrc: "/images/locked-in.jpg",
         name: "All-In-One Hub For Developers",
         description: `GOL-1670 offers weekday Software Engineering mentoring and
                 tutoring. Experience the SSE Winter Ball, partake in trips and
