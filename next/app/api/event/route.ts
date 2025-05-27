@@ -7,17 +7,26 @@ const prisma = new PrismaClient();
  * @returns list of department objects
  */
 export async function GET() {
+  try{
   const allEvents = await prisma.event.findMany({
-    select: {
-      id: true,
-      title: true,
-      description: true,
-      date: true,
-      image: true,
-      location: true,
-    },
-  });
-  return Response.json(allEvents);
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        date: true,
+        image: true,
+        location: true,
+      },
+    });
+    return Response.json(allEvents);
+  }
+  catch{
+    // probably need to implement better error catching in the future >.<
+    return Response.json(
+      { error: "Failed GET request. Check your database connection." },
+      { status: 500 }
+    );
+  }
 }
 
 /**

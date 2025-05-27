@@ -10,15 +10,25 @@ import { compareDateStrings, formatDate } from './events/calendar/utils';
 
 export default async function Home() {
 
-    let events: Event[] = await fetch('http://localhost:3000/api/event').then((resp) => resp.json());
+    let events = null;
 
-    // Only display first 3 upcoming events
-    events = events.filter((event) => {
-        return (Date.now() - (new Date(event.date).getTime())) < 0; // is negative if event is in the future
-    });
-    events = events.sort((event1, event2) => compareDateStrings(event1.date, event2.date))
-    events = events.slice(0, 3);
-    console.log(events);
+    const response = await fetch('http://localhost:3000/api/event');
+    console.log(response.status);
+    
+
+    // Allowing developers to not have to set up the DB
+    if(response.status != 500){
+        events = await response.json() as Event[];
+
+        // Only display first 3 upcoming events
+        events = events.filter((event) => {
+            return (Date.now() - (new Date(event.date).getTime())) < 0; // is negative if event is in the future
+        });
+        events = events.sort((event1, event2) => compareDateStrings(event1.date, event2.date))
+        events = events.slice(0, 3);
+        console.log(events);
+
+    }
 
     return (
         <div className='space-y-24'>
@@ -51,6 +61,7 @@ export default async function Home() {
             <div>
               <h1 className='mt-5'>Upcoming Events</h1>
               <div className='flex flex-row justify-center items-center'>
+                {events && events.length > 0 ? (
                 <div className='mt-8 grid gap-8 grid-cols-3 w-10/12'>
                     {events.map((event, index) => {
                         event.date = formatDate(event.date);
@@ -59,6 +70,9 @@ export default async function Home() {
                         )
                     })}
                 </div>
+                ) : (
+                    <p className="text-gray-500">No events available.</p>
+                )}
               </div>
             </div>
         </div>
