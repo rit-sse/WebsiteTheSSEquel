@@ -46,48 +46,45 @@ export default function AddEventForm ({ isOpen, onClose, events, setEvents }: Fo
         // Reformat googledrive image link so that <img> can display it
         const googleImageMatch = image.match(RegExp("d/([^/]+)/view"));
         var googleImageLink = googleImageMatch ? `https://drive.google.com/thumbnail?id=${googleImageMatch[1]}` : "";
-    
-        // Post to Prisma
-        const res = await fetch('http://localhost:3000/api/event', { 
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                title: eventName,
-                location: location,
-                description: description,
-                date: new Date(datetime).toISOString(),
-                image: googleImageLink
-            })
-        })
-        // Store the newly created event
-        const newEvent = await res.json();
-        const idString = newEvent.id.toString();
 
-        // Post to Google Calendar
-        // Min Length required for an ID in Google Calendar API
-        let minLengthID = 5; 
+        // Post to Google Calendar 
         try {
-            await fetch('http://localhost:3000/api/calendar', { 
+            const gCalEvent = await fetch('/api/calendar', { 
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    id: "0".repeat(minLengthID - idString.length).concat(idString),
                     summary: eventName,
                     location: location,
                     description: description,
                     start: new Date(datetime).toISOString(),
                     end: new Date(new Date(datetime).getTime() + 60 * 60 * 1000).toISOString()
                 })
-            }).then(async (res) => { console.log(await res.text()) })
+            }).then((res) => res.json());
+            console.log(gCalEvent);
+            const gCalID = gCalEvent.id;
+
+            // Post to Prisma
+            const newEvent = await fetch('/api/event', { 
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: gCalID,
+                    title: eventName,
+                    location: location,
+                    description: description,
+                    date: new Date(datetime).toISOString(),
+                    image: googleImageLink
+                })
+            }).then((res) => res.json());
+        
+            // Append new event to the current events array
+            let updatedEvents: Event[] = [...events, newEvent];
+            // Sort events in chronological order and update the state
+            updatedEvents.sort((event1, event2) => compareDateStrings(event1.date, event2.date));
+            setEvents(updatedEvents);
         } catch (error) {
             console.log(error);
         }
-
-        // Append new event to the current events array
-        let updatedEvents: Event[] = [...events, newEvent];
-        // Sort events in chronological order and update the state
-        updatedEvents.sort((event1, event2) => compareDateStrings(event1.date, event2.date));
-        setEvents(updatedEvents);
         setLoading(false);
         onClose();
         clearForm();

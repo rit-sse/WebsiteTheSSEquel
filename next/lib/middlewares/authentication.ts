@@ -20,10 +20,11 @@ const authVerifierFactory = (
 ): AuthVerifier => {
   return async (request: NextRequest) => {
     // get the token from the cookie
-    const token = request.cookies.get("next-auth.session-token")?.value;
+    const token = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
+
     // fetch permissions from the API
     const permissions = await fetch(
-      process.env.NEXTAUTH_URL + "/api/authLevel",
+      process.env.INTERNAL_API_URL + "/api/authLevel",
       {
         body: JSON.stringify({ token }),
         method: "PUT",

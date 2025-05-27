@@ -39,7 +39,7 @@ export default async function Home() {
                             {HomepageContent.weeklyMeetingCallout}
                         </p>
                         <div className="mt-8 flex flex-wrap gap-4 justify-center lg:justify-start">
-                            <CTAButton href={HomepageContent.slackLink} text="Join Slack" />
+                            <CTAButton href={HomepageContent.discordLink} text="Join Discord" />
                             <CTAButton href="/about/get-involved" text="Get Involved" />
                         </div>
                     </div>
@@ -50,7 +50,7 @@ export default async function Home() {
             </div>
 
             {/* Upcoming Events */}
-            <div>
+            {/* <div>
               <h1 className='mt-5'>Upcoming Events</h1>
               <div className='flex flex-row justify-center items-center'>
                 {events && events.length > 0 ? (
@@ -66,7 +66,7 @@ export default async function Home() {
                     <p className="text-gray-500">No events available.</p>
                 )}
               </div>
-            </div>
+            </div> */}
         </div>
     );
 }

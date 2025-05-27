@@ -45,11 +45,11 @@ export default [
             This is a great opportunity to gain membership here by participating 
             in lab cleanup sessions! Check out our calendar for the next lab cleaning, or talk to our Lab Ops Head.`
     },
-    {
-        imageSrc: "/images/tech-committee-1.jpg",
-        title: 'Come to Tech Committee',
-        body: `If you would like to help rebuild the SSE website, come to GOL-1670 on Sundays at 1PM!
-        It's a great way to get some experience developing websites, and looks excellent on your resume!
-        Plus, you get to have food, and make new friends!`
-    }
+    // {
+    //     imageSrc: "/images/tech-committee-1.jpg",
+    //     title: 'Come to Tech Committee',
+    //     body: `If you would like to help rebuild the SSE website, come to GOL-1670 on Sundays at 1PM!
+    //     It's a great way to get some experience developing websites, and looks excellent on your resume!
+    //     Plus, you get to have food, and make new friends!`
+    // }
 ]

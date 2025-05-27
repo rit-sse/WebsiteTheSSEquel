@@ -12,10 +12,6 @@ const Footer: React.FC = () => {
                 <DarkModeToggle />
             </div>
             <div className="flex flex-row items-center justify-end gap-2 flex-grow">
-                <Link href={HomepageContent.slackLink} className='group rounded-md' aria-label="Link to Slack" target='_blank' rel='noopener noreferrer'>
-                    <SlackIcon className='w-8 h-8 fill-primary hover:fill-primary-focus group-focus:fill-primary-focus' />
-                </Link>
-
                 <Link href={HomepageContent.discordLink} className='group rounded-md' aria-label="Link to Discord" target='_blank' rel='noopener noreferrer'>
                     <DiscordIcon className='w-8 h-8 fill-primary hover:fill-primary-focus group-focus:fill-primary-focus' />
                 </Link>
