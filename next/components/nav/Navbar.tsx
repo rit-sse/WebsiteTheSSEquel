@@ -23,10 +23,10 @@ const navItems: (NavItemProps & { render?: React.ReactNode})[] = [
                 title: "Get Involved",
                 route: "/about/get-involved",
             },
-            {
-                title: "Leadership",
-                route: "/about/leadership",
-            },
+            // {
+            //     title: "Leadership",
+            //     route: "/about/leadership",
+            // },
             {
                 title: "Committees",
                 route: "/about/committees",
@@ -42,24 +42,20 @@ const navItems: (NavItemProps & { render?: React.ReactNode})[] = [
             
         ],
     },
-    {
-        title: "Mentoring",
-        route: "#",
-    },
+    // {
+    //     title: "Mentoring",
+    //     route: "#",
+    // },
     {
         title: "Events",
         subItems: [
-            {
-                title: "Upcoming Events",
-                route: "/events/upcoming_events",
-            },
+            // {
+            //     title: "Upcoming Events",
+            //     route: "/events/upcoming_events",
+            // },
             {
                 title: "View Calendar",
                 route: "/events/calendar",
-            },
-            {
-                title: "Spring Fling",
-                route: "/events/springfling",
             },
         ],
     },
@@ -115,7 +111,7 @@ const Navbar: React.FC = () => {
                         
                     </ul>
                 </div>
-                <div className="dropdown dropdown-end md:hidden justify-end ">
+                <div className="dropdown dropdown-end md:hidden justify-end" tabIndex={0}>
                     <div className="flex flex-row">
                         <Hamburger />
                     </div>

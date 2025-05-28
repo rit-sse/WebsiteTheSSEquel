@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { isUrlValid } from "../utils";
 
 const getDestinationUrl = async (goUrl: string) => {
-  const response = await fetch(process.env.NEXTAUTH_URL + "/api/go/" + goUrl);
+  const response = await fetch(process.env.INTERNAL_API_URL + "/api/go/" + goUrl);
   if (response.ok) {
     const url = await response.text();
     return url.startsWith("http") ? url : "https://" + url;

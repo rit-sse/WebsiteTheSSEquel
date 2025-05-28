@@ -9,7 +9,7 @@ const defaultDescription = `This is a description of the committee. Lorem ipsum 
 
 export default [
     {
-        imageSrc: "/images/mentoring-review-session-1.png",
+        imageSrc: "/images/gen-meeting.jpg",
         title: 'Come to General Meeting',
         body: `We have a general meeting every week on Monday at 1 PM in the SSE lab (GOL 1670). Come join us
             to stay up to date with what's happening in the SSE and to meet other members! If you have any questions,
@@ -24,14 +24,14 @@ export default [
         If you would like to apply to be a mentor, please reach out to our Mentoring Head.`
     },
     {
-        imageSrc: "/images/projects-2.gif",
+        imageSrc: "/images/jetmon-project.png",
         title: 'Join a Project',
         body: `Collaboration is a core value of the SSE. We have a variety of projects that you can join (including this website!).
             Check out our projects page to see what we're working on. Don't see anything you like? Reach out to our projects head
             to start your own project! An SSE project can be anything with a software component, so get creative!`
     },
     {
-        imageSrc: "/images/talks-2.jpg",
+        imageSrc: "/images/fish.jpg",
         title: 'Attend or Give a Talk',
         body: `We don't always talk about technical software topics, we often delve into diverse topics, such as 
             the amusing appearances of various aquatic creatures. Our enthusiasm for this particular subject matter has led 
@@ -39,17 +39,17 @@ export default [
             aquatic beings. If you would like to give a talk of your own please reach out to our Talk Head!`
     },
     {
-        imageSrc: "/images/student-involvement-1.jpg",
+        imageSrc: "/images/shhhh.jpg",
         title: 'Help Clean the Lab',
         body: `With all this happening, the lab can get a bit messy. 
             This is a great opportunity to gain membership here by participating 
             in lab cleanup sessions! Check out our calendar for the next lab cleaning, or talk to our Lab Ops Head.`
     },
-    {
-        imageSrc: "/images/tech-committee-1.jpg",
-        title: 'Come to Tech Committee',
-        body: `If you would like to help rebuild the SSE website, come to GOL-1670 on Sundays at 1PM!
-        It's a great way to get some experience developing websites, and looks excellent on your resume!
-        Plus, you get to have food, and make new friends!`
-    }
+    // {
+    //     imageSrc: "/images/tech-committee-1.jpg",
+    //     title: 'Come to Tech Committee',
+    //     body: `If you would like to help rebuild the SSE website, come to GOL-1670 on Sundays at 1PM!
+    //     It's a great way to get some experience developing websites, and looks excellent on your resume!
+    //     Plus, you get to have food, and make new friends!`
+    // }
 ]
