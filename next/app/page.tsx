@@ -19,8 +19,9 @@ export default async function Home() {
         const currentDate = new Date();
 
         // Only display first 3 upcoming events
-        events = events.filter((value => compareDateStrings(currentDate.toISOString(), value.date) < 0));
-        events = events.slice(0, 3);
+        events = events.filter((value => compareDateStrings(currentDate.toISOString(), value.date) < 0))
+                        .sort((a, b) => compareDateStrings(a.date, b.date))
+                        .slice(0, 3);
         console.log(events);
 
     }
