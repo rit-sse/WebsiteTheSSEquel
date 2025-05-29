@@ -12,12 +12,16 @@ import { getEvents } from './api/event/eventService';
 export default async function Home() {
 
     let events = await getEvents() as Event[] | null;
-
+    
     // Allowing developers to not have to set up the DB
     if(events != null){
+
+        const currentDate = new Date();
+
         // Only display first 3 upcoming events
-        events = events.sort((event1, event2) => compareDateStrings(event1.date, event2.date))
-        events = events.slice(0, 3);
+        events = events.filter((value => compareDateStrings(currentDate.toISOString(), value.date) < 0))
+                        .sort((a, b) => compareDateStrings(a.date, b.date))
+                        .slice(0, 3);
         console.log(events);
 
     }
@@ -56,7 +60,7 @@ export default async function Home() {
               <h1 className='mt-5'>Upcoming Events</h1>
               <div className='flex flex-row justify-center items-center'>
                 {events && events.length > 0 ? (
-                <div className='mt-8 grid gap-8 grid-cols-3 w-10/12'>
+                <div className='mt-8 grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-11/12 sm:w-10/12'>
                     {events.map((event, index) => {
                         event.date = formatDate(event.date);
                         return (
