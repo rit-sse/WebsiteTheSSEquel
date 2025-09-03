@@ -14,7 +14,7 @@ interface HomepageContent {
 
 export default {
     description: "An academic organization at the Rochester Institute of Technology providing mentoring and community to students in Golisano College.",
-    weeklyMeetingCallout: "Come to our weekly meetings on Mondays at 1:00 PM in GOL-1670!",
+    weeklyMeetingCallout: "Come to our weekly meetings on Wednesday at 3:00 PM in GOL-1670!",
     discordLink: "https://www.discord.gg/rNC6wj82kq",
     instagramLink: "https://www.instagram.com/rit_sse/",
     tiktokLink: "https://www.tiktok.com/@rit_sse",

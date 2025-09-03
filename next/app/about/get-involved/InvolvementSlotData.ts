@@ -11,7 +11,7 @@ export default [
     {
         imageSrc: "/images/gen-meeting.jpg",
         title: 'Come to General Meeting',
-        body: `We have a general meeting every week on Monday at 1 PM in the SSE lab (GOL 1670). Come join us
+        body: `We have a general meeting every week on Wednesday at 3 PM in the SSE lab (GOL 1670). Come join us
             to stay up to date with what's happening in the SSE and to meet other members! If you have any questions,
             feel free to reach out to any of the officers (found on the Leadership page). The lab is open every weekday
             from 10 AM to 6 PM. Feel free to stop by and hang out, we love meeting new people!`
@@ -35,7 +35,7 @@ export default [
         title: 'Attend or Give a Talk',
         body: `We don't always talk about technical software topics, we often delve into diverse topics, such as 
             the amusing appearances of various aquatic creatures. Our enthusiasm for this particular subject matter has led 
-            to the establishment of Funny Fish Friday, a designated day for engaging in lively conversations about these quirky 
+            to the establishment of Funny Fauna Friday, a designated day for engaging in lively conversations about these quirky 
             aquatic beings. If you would like to give a talk of your own please reach out to our Talk Head!`
     },
     {
