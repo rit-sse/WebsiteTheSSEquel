@@ -78,7 +78,7 @@ async function seedOfficerPosition() {
 		update: {},
 		create: {
 			title: "Vice President",
-			is_primary: true,
+			is_primary: false,
 			email: "sse-vicepresident@rit.edu",
 		},
 	});
@@ -647,7 +647,7 @@ async function seedEvents() {
       date: new Date("2023-11-1 12:00:00"),
       description: "Elyza will win again.",
 	  image: "/images/codfather.jpg",
-	  location: "none",
+	  location: "poop fart",
     },
   });
 
@@ -658,7 +658,7 @@ async function seedEvents() {
       date: new Date("2023-11-1 12:00:00"),
       description: "ooops",
 	  image: "/images/codfather.jpg",
-	  location: "none",
+	  location: "poop fart",
     },
   });
 
@@ -669,7 +669,7 @@ async function seedEvents() {
       date: new Date("2023-11-1 12:00:00"),
       description: "bing bing bing",
 	  image: "/images/codfather.jpg",
-	  location: "none",
+	  location: "poop bing",
     },
   });
 
@@ -680,7 +680,7 @@ async function seedEvents() {
 		  date: new Date("2023-11-1 12:00:00"),
 		  description: "poop poop poop",
 		  image: "/images/codfather.jpg",
-		  location: "none",
+		  location: "poop fariha",
 		},
   });
 
@@ -691,7 +691,7 @@ async function seedEvents() {
 	  date: new Date("2023-11-1 12:00:00"),
 	  description: "Spring thing",
 	  image: "/images/spring-fling-2.png",
-	  location: "none",
+	  location: "poop Fling",
 	},
   });
 
@@ -713,12 +713,12 @@ async function main() {
     await seedHourBlock();
     await seedSchedule();
     await seedGoLinks();
-    // await seedAccount();
-    // await seedSession();
-    // await seedVerificationToken();
+    await seedAccount();
+    await seedSession();
+    await seedVerificationToken();
 	await seedProject();
 	await seedProjectContributor();
-    // await seedEvents();
+    await seedEvents();
   } catch (e) {
     console.error(e);
   }
