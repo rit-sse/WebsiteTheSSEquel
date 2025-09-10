@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "cross-env INTERNAL_API_URL=\"localhost:3000\" SESSION_COOKIE_NAME=\"next-auth.session-token\" next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -55,6 +55,7 @@
     "prisma": "^5.4.2",
     "supertest": "^6.3.3",
     "ts-node": "^10.9.1",
-    "typescript": "^5.2.2"
+    "typescript": "^5.2.2",
+    "cross-env": "^10.0.0"
   }
 }
