@@ -23,10 +23,10 @@ const navItems: (NavItemProps & { render?: React.ReactNode})[] = [
                 title: "Get Involved",
                 route: "/about/get-involved",
             },
-            // {
-            //     title: "Leadership",
-            //     route: "/about/leadership",
-            // },
+            {
+                 title: "Leadership",
+                 route: "/about/leadership",
+            },
             {
                 title: "Committees",
                 route: "/about/committees",
