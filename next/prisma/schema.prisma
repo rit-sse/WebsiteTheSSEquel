@@ -116,11 +116,11 @@ model Mentor {
     //Stores active status as a Boolean
     isActive Boolean
 
-    //Relatinal fields
-    mentorSkill MentorSkill[]
-    courseTaken CourseTaken[]
-    schedule    Schedule[]
-    user        User          @relation(fields: [user_Id], references: [id])
+    // Relational fields
+    mentorSkill     MentorSkill[]
+    courseTaken     CourseTaken[]
+    mentoringBlocks ScheduleBlock[]
+    user            User          @relation(fields: [user_Id], references: [id])
 }
 
 model Skill {
@@ -194,30 +194,27 @@ model CourseTaken {
     course Course @relation(fields: [courseId], references: [id])
 }
 
-model HourBlock {
-    //Store an automatically generated unique int for id
+model Schedule {
     id Int @id @default(autoincrement())
 
-    //Stores day of the week as a String
-    weekday String
-
-    //Stores time block startTime as a DateTime
-    startTime DateTime @db.Time()
-
-    //Referenced relation field
-    schedule Schedule[]
+    // The name of the schedule is only shown to officers
+    name String
+    blocks ScheduleBlock[]
 }
 
-model Schedule {
-    //Store an automatically generated unique int for id
+model ScheduleBlock {
     id Int @id @default(autoincrement())
 
-    mentorId    Int // References Mentor.id
-    hourBlockId Int // References HourBlock.id
+    weekday Int // Index of day of week [1,5]
+    startHour Int // Start hour in 24h time
 
-    //Relational fields
-    hourBlock HourBlock @relation(fields: [hourBlockId], references: [id])
-    mentor    Mentor    @relation(fields: [mentorId], references: [id])
+    // Relation references
+    mentorId Int
+    scheduleId Int 
+
+    // Referenced relation field
+    mentor Mentor @relation(fields: [mentorId], references: [id])
+    schedule Schedule @relation(fields: [scheduleId], references: [id])
 }
 
 model GoLinks {

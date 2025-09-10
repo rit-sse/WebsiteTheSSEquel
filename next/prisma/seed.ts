@@ -325,63 +325,26 @@ async function seedCourseTaken() {
 	console.log({ courseTaken1, courseTaken2, courseTaken3 });
 }
 
-async function seedHourBlock() {
-	const hourBlock1 = await prisma.hourBlock.upsert({
-		where: { id: 1 },
-		update: {},
-		create: {
-			weekday: "Monday",
-			startTime: new Date("2023-11-1 12:00:00"),
-		},
-	});
-	const hourBlock2 = await prisma.hourBlock.upsert({
-		where: { id: 2 },
-		update: {},
-		create: {
-			weekday: "Tuesday",
-			startTime: new Date("2023-11-2 12:00:00"),
-		},
-	});
-	const hourBlock3 = await prisma.hourBlock.upsert({
-		where: { id: 3 },
-		update: {},
-		create: {
-			weekday: "Wednesday",
-			startTime: new Date("2023-11-3 12:00:00"),
-		},
-	});
-	console.log({ hourBlock1, hourBlock2, hourBlock3 });
-}
-
 async function seedSchedule() {
 	const schedule1 = await prisma.schedule.upsert({
+		where: { id: 0 },
+		update: {},
+		create: {
+			id: 0,
+			name: 'Production',
+		},
+	});
+
+	const schedule2 = await prisma.schedule.upsert({
 		where: { id: 1 },
 		update: {},
 		create: {
 			id: 1,
-			mentorId: 1,
-			hourBlockId: 1,
+			name: 'Staging',
 		},
 	});
-	const schedule2 = await prisma.schedule.upsert({
-		where: { id: 2 },
-		update: {},
-		create: {
-			id: 2,
-			mentorId: 2,
-			hourBlockId: 2,
-		},
-	});
-	const schedule3 = await prisma.schedule.upsert({
-		where: { id: 3 },
-		update: {},
-		create: {
-			id: 3,
-			mentorId: 3,
-			hourBlockId: 3,
-		},
-	});
-	console.log({ schedule1, schedule2, schedule3 });
+
+	console.log({ schedule1, schedule2 });
 }
 
 async function seedGoLinks() {
@@ -710,7 +673,7 @@ async function main() {
     await seedDepartment();
     await seedCourse();
     await seedCourseTaken();
-    await seedHourBlock();
+    // await seedHourBlock();
     await seedSchedule();
     await seedGoLinks();
     // await seedAccount();
