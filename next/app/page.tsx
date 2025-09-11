@@ -8,10 +8,22 @@ import Image from 'next/image';
 import { Event } from "./events/event";
 import { compareDateStrings, formatDate } from './events/calendar/utils';
 import { getEvents } from './api/event/eventService';
+import path from 'path';
+import fs from "fs";
 
 export default async function Home() {
 
     let events = await getEvents() as Event[] | null;
+
+    const sponsorDirectory = path.join(process.cwd(), "public", "images", "sponsors");
+    const sponsorNames = fs.readdirSync(sponsorDirectory);
+    const sponsors = sponsorNames.map((sponsorName) => ({
+        original: `/images/sponsors/${sponsorName}`,
+    }));
+
+    for(const sponsor of sponsors){
+        console.log(sponsor.original);
+    }
     
     // Allowing developers to not have to set up the DB
     if(events != null){
@@ -72,6 +84,18 @@ export default async function Home() {
                     <p className="text-gray-500">No events available.</p>
                 )}
               </div>
+            </div>
+
+            {/* Sponsors */}
+            <div>
+                <h2 className='mt-5'>Sponsors</h2>
+                <div className=''>
+                    {sponsors.map(sponsorName => {
+                        return(
+                            <Image className="m-4 inline" key={sponsorName.original} src={sponsorName.original} width={200} height={200} objectFit='contain' alt="sponsor"/>
+                        )
+                    })}
+                </div>
             </div>
         </div>
     );
