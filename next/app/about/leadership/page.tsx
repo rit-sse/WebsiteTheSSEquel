@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import OfficerCard from "./OfficerCard";
-import OfficerFormModel from "./OfficerFormModel";
+import OfficerFormModal from "./OfficerFormModal";
 import { Team, TeamMember } from "./team";
 import ModifyOfficers from "./ModifyOfficers";
 import ReplaceOfficerForm from "./ReplaceOfficerForm";
@@ -76,12 +76,12 @@ export default function Leadership() {
 		<>
 			<section className="mt-16">
 				{/* Modals for editing and replacing officer forms */}
-				<OfficerFormModel isOpen={replaceOpen} onClose={async () => setReplaceOpen(false)}>
-					<ReplaceOfficerForm open={replaceOpen} teamMember={selectedOfficer} getOfficers={getOfficers} closeModal={() => setReplaceOpen(false)} />
-				</OfficerFormModel>
-				<OfficerFormModel isOpen={editOpen} onClose={async () => setEditOpen(false)}>
+				<OfficerFormModal isOpen={replaceOpen} onClose={async () => setReplaceOpen(false)}>
+					<ReplaceOfficerForm open={replaceOpen} teamMember={selectedOfficer} getOfficers={getOfficers} closeModel={() => setReplaceOpen(false)} />
+				</OfficerFormModal>
+				<OfficerFormModal isOpen={editOpen} onClose={async () => setEditOpen(false)}>
 					<EditOfficerForm open={editOpen} teamMember={selectedOfficer} getOfficers={getOfficers} closeModal={() => setEditOpen(false)} />
-				</OfficerFormModel>
+				</OfficerFormModal>
 				<div className="max-w-screen-xl mx-auto px-4 text-center md:px-8">
 					<div className="content-center">
 						{/* Meet our team */}
@@ -108,7 +108,7 @@ export default function Leadership() {
 								<div key={idx}>
 									<OfficerCard teamMember={member} />
 									{/* Edit and Remove buttons, only officers can see */}
-									<ModifyOfficers teamMember={member} openReplaceModel={() => setReplaceOpen(true)} openEditModal={() => setEditOpen(true)} setSelectedOfficer={setSelectedOfficer} />
+									<ModifyOfficers teamMember={member} openReplaceModal={() => setReplaceOpen(true)} openEditModal={() => setEditOpen(true)} setSelectedOfficer={setSelectedOfficer} />
 								</div>
 							))}
 						</div>
