@@ -30,6 +30,7 @@ export default function Leadership() {
 				throw new Error('Failed to fetch officers');
 			}
 			const data = await response.json();
+			console.log(data.user)
 
 			// Map primary officers to TeamMember
 			team.primary_officers = data
@@ -38,6 +39,7 @@ export default function Leadership() {
 					officer_id: officer.id,
 					user_id: officer.user.id,
 					name: officer.user.name,
+					image: officer.user.image,
 					title: officer.position.title,
 					email: officer.user.email,
 					desc: officer.user.description,
@@ -52,6 +54,7 @@ export default function Leadership() {
 					officer_id: officer.id,
 					user_id: officer.user.id,
 					name: officer.user.name,
+					image: officer.user.image,
 					title: officer.position.title,
 					email: officer.user.email,
 					desc: officer.user.description,

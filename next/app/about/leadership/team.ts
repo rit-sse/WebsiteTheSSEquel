@@ -2,6 +2,7 @@ export interface TeamMember {
   officer_id: string,
   user_id: string;
   name: string;
+  image?: string;
   title: string;
   desc?: string;
   linkedin?: string;
