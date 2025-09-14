@@ -19,6 +19,9 @@ GOOGLE_CLIENT_SECRET="google cloud OAuth client secret"
 
 NEXTAUTH_URL="http://localhost:3000"
 NEXTAUTH_SECRET="random string of characters used for encryption -- feel free to make this up or use openssl to generate one"
+
+GCAL_CLIENT_EMAIL="gcal client email"
+GCAL_PRIVATE_KEY="gcal private key"
 ```
 
 The above is just a placeholder, you'll need to fill in each entry with the appropriate information. First, let's step through setting up a local database.

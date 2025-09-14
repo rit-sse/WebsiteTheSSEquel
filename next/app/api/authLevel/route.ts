@@ -71,7 +71,7 @@ export async function PUT(request: Request) {
  * HTTP GET request to /api/authLevel/
  */
 export async function GET(request: NextRequest) {
-  const authToken = request.cookies.get("next-auth.session-token")?.value;
+  const authToken = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
 
   const authLevel: {
     userId: number | null;

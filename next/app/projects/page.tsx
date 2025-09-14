@@ -23,7 +23,7 @@ const Projects = () => {
   
   useEffect(() => {
     // Fetch the user's ID.
-    fetch("https://sse.rit.edu/api/authLevel")
+    fetch("/api/authLevel")
     .then(resp => resp.json())
     .then(resp => {
       console.log(resp)
@@ -31,7 +31,7 @@ const Projects = () => {
     })
 
     // Fetch projects.
-    fetch("https://sse.rit.edu/api/project")
+    fetch("/api/project")
     .then(res => res.json())
     .then(resp => {
       setProjects(resp)
@@ -81,7 +81,10 @@ const Projects = () => {
       <section className="exhibit w-4/5 min-h-[400px]">
         <h1
           className="bg-gradient-to-t from-primary to-secondary 
-              bg-clip-text text-4xl font-extrabold text-transparent md:text-2xl text-left">
+              bg-clip-text text-4xl font-extrabold text-transparent md:text-2xl
+              text-center
+              
+              lg:text-left">
           Current Projects
         </h1>
         {inProgress.map((project, key) => (
@@ -92,7 +95,10 @@ const Projects = () => {
       <section className="exhibit w-4/5 min-h-[400px]">
         <h1
           className="bg-gradient-to-t from-primary to-secondary 
-              bg-clip-text text-4xl font-extrabold text-transparent md:text-2xl text-left">
+              bg-clip-text text-4xl font-extrabold text-transparent md:text-2xl
+              text-center
+              
+              lg:text-left">
           Past Projects
         </h1>
         {done.map((project, key) => (

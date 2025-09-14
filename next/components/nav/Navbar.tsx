@@ -111,7 +111,7 @@ const Navbar: React.FC = () => {
                         
                     </ul>
                 </div>
-                <div className="dropdown dropdown-end md:hidden justify-end ">
+                <div className="dropdown dropdown-end md:hidden justify-end" tabIndex={0}>
                     <div className="flex flex-row">
                         <Hamburger />
                     </div>

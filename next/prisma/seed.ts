@@ -631,20 +631,18 @@ async function seedProjectContributor() {
 }
 
 async function seedEvents() {
-  const event1 = await prisma.event.upsert({
-    where: { id: 1 },
-    update: {},
-    create: {
+  const event1 = await prisma.event.create({
+    data: {
+	  id: "1" ,
       title: "Keeping it Silly",
       date: new Date("2023-11-1 12:00:00"),
       description: "we keep it silly :3",
     },
   });
 
-  const event2 = await prisma.event.upsert({
-    where: { id: 2 },
-    update: {},
-    create: {
+  const event2 = await prisma.event.create({
+    data: {
+	  id: "2",
       title: "Catan Tournament",
       date: new Date("2023-11-1 12:00:00"),
       description: "Elyza will win again.",
@@ -653,10 +651,9 @@ async function seedEvents() {
     },
   });
 
-  const event3 = await prisma.event.upsert({
-    where: { id: 3 },
-    update: {},
-    create: {
+  const event3 = await prisma.event.create({
+    data: {
+	  id: "3",
       title: "AAA",
       date: new Date("2023-11-1 12:00:00"),
       description: "ooops",
@@ -665,10 +662,9 @@ async function seedEvents() {
     },
   });
 
-  const event4 = await prisma.event.upsert({
-    where: { id: 4 },
-    update: {},
-    create: {
+  const event4 = await prisma.event.create({
+    data: {
+	  id: "4",
       title: "Bing bing",
       date: new Date("2023-11-1 12:00:00"),
       description: "bing bing bing",
@@ -677,10 +673,9 @@ async function seedEvents() {
     },
   });
 
-	const event5 = await prisma.event.upsert({
-		where: { id: 5 },
-		update: {},
-		create: {
+	const event5 = await prisma.event.create({
+		data: {
+		  id: "5",
 		  title: "Farihaaaa",
 		  date: new Date("2023-11-1 12:00:00"),
 		  description: "poop poop poop",
@@ -689,10 +684,9 @@ async function seedEvents() {
 		},
   });
 
-  const event6 = await prisma.event.upsert({
-	where: { id: 6 },
-	update: {},
-	create: {
+  const event6 = await prisma.event.create({
+	data: {
+	  id: "6",
 	  title: "Spring Fling",
 	  date: new Date("2023-11-1 12:00:00"),
 	  description: "Spring thing",

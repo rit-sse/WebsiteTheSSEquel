@@ -25,7 +25,7 @@ export const GoLinkButton: React.FC<CreateGoLinkProps> = ({ fetchData }) => {
 
   const handleCreate = async () => {
     try {
-      const response = await fetch("https://sse.rit.edu/api/golinks", {
+      const response = await fetch("/api/golinks", {
         method: "POST",
         body: JSON.stringify({
           golink: title,
@@ -48,7 +48,7 @@ export const GoLinkButton: React.FC<CreateGoLinkProps> = ({ fetchData }) => {
 
   useEffect(() => {
     (async () => {
-      const data = await fetch("https://sse.rit.edu/api/authLevel").then((response) =>
+      const data = await fetch("/api/authLevel").then((response) =>
         response.json()
       );
       console.log(data);
