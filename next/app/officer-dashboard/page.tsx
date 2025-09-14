@@ -1,8 +1,16 @@
 "use client";
 import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import DashboardButton from "./DashboardButton";
+import DashContainer from "./dashboard/DashContainer";
 
 const OfficerDashboard = () => {
+
+  const dashboardPages: { [key: string]: React.FC } = {
+    "Dashboard": DashContainer
+  };
+
+  const [selectedPage, setSelectedPage] = useState<string>("Dashboard");
+
   return (
     <>
       <div className="w-[80%] flex items-start justify-between">
@@ -12,8 +20,10 @@ const OfficerDashboard = () => {
           <DashboardButton isEnabled={false} text="Account Management"/>
           <DashboardButton isEnabled={false} text="Website Management"/>
         </div>
-        <div className="w-[75%] h-[150px] bg-white rounded-[14px]">
-
+        <div className="w-[75%] p-[15px] bg-white rounded-[14px]">
+          {
+            React.createElement(dashboardPages[selectedPage])
+          }
         </div>
       </div>
     </>
