@@ -40,7 +40,7 @@ const QuoteList = () => {
 
             </div>
             <MakeNewQuote></MakeNewQuote>
-            <div className="">
+            <div className="w-full">
                 {quotes.map((quote, idx) => (
                     <QuoteCard key={idx} {...quote} />
                 ))}

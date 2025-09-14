@@ -173,9 +173,9 @@ export const QuoteCard = (quote: Quote) => {
 
     if (isOfficer) {
         return (
-            <div className="border-l-8 border-blue-500 rounded-lg bg-base-100 w-11/12 py-8 px-12 mx-auto items-center content-center gap-10 my-10">
+            <div className="border-l-8 border-blue-500 rounded-lg bg-base-100 w-11/12 py-5 px-12 mx-auto items-center content-center gap-10 my-4">
                 {formatQuote(quote.quote).map((line, index) => (
-                    <p key={index}>{line}</p>
+                    <p className="" key={index}>{line}</p>
                 ))}
                 <br></br>
                 <p>{quote.tags}</p>
@@ -286,7 +286,7 @@ export const QuoteCard = (quote: Quote) => {
         );
     } else {
         return (
-            <div className="border-l-8 border-blue-500 rounded-lg bg-base-100 w-11/12 py-8 px-12 mx-auto items-center content-center gap-10 my-10">
+            <div className="border-l-8 border-blue-500 rounded-lg bg-base-100 w-11/12 py-5 px-12 mx-auto items-center content-center gap-10 my-4">
                 {formatQuote(quote.quote).map((line, index) => (
                     <p key={index}>{line}</p>
                 ))}
