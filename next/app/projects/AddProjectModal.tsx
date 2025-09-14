@@ -58,8 +58,6 @@ const AddProjectModal = ({
             invalidFields.push("description");
         if(progress.trim() == "")
             invalidFields.push("progress");
-        if(repoLink.trim() == "")
-            invalidFields.push("repoLink")  
 
         // If invalidFields captured any cases, then we know something went wrong, alert the user, and join the missing fields into a string.
         if(invalidFields.length > 0) {
@@ -138,7 +136,7 @@ const AddProjectModal = ({
                                 <ProjectModalInput label="Description *" setTextState={setDescription} isRichText={true} presetValue={description}/>
                                 <ProjectModalDropdown text={"Select Lead"} setState={setUser} options={users} />
                                 <ProjectModalInput label="Progress *" setTextState={setProgress}  presetValue={progress}/>
-                                <ProjectModalInput label="Repository Link *" setTextState={setRepoLink}  presetValue={repoLink}/>
+                                <ProjectModalInput label="Repository Link" setTextState={setRepoLink}  presetValue={repoLink}/>
                                 <ProjectModalInput label="Content URL" setTextState={setContentURL}  presetValue={contentURL}/>
                                 <ProjectModalInput label="Project Image URL" setTextState={setProjectImage}  presetValue={projectImage}/>
                                 <ProjectModalCheckbox label="Completed" checked={completed} setChecked={setCompleted}/>
