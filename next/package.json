@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "cross-env INTERNAL_API_URL=\"localhost:3000\" SESSION_COOKIE_NAME=\"next-auth.session-token\" next dev",
+    "dev": "cross-env INTERNAL_API_URL=\"http://localhost:3000\" SESSION_COOKIE_NAME=\"next-auth.session-token\" next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
