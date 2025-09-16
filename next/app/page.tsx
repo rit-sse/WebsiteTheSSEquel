@@ -102,7 +102,7 @@ export default async function Home() {
                 <div className=''>
                     {sponsors.map(sponsorName => {
                         return(
-                            <a className='gap-2'href={sponsorName.link}>
+                            <a key={sponsorName.original} className='gap-2' href={sponsorName.link}>
                                 <Image className="m-4 inline" key={sponsorName.original} src={sponsorName.original} width={200} height={200} objectFit='contain' alt="sponsor"/>
                             </a>
                         )
