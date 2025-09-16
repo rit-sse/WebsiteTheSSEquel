@@ -17,7 +17,7 @@ export default async function Home() {
 
     // lazy implementation of sponsor links, will go back and change this later
     const sponsorLinks: string[] = [];
-    sponsorLinks.push("https://www.rit.edu/computing/");
+    //sponsorLinks.push("https://www.rit.edu/computing/");
     sponsorLinks.push("https://www.mindex.com/");
 
     const sponsorDirectory = path.join(process.cwd(), "public", "images", "sponsors");
@@ -103,7 +103,7 @@ export default async function Home() {
                     {sponsors.map(sponsorName => {
                         return(
                             <a className='gap-2'href={sponsorName.link}>
-                            <Image className="m-4 inline" key={sponsorName.original} src={sponsorName.original} width={200} height={200} objectFit='contain' alt="sponsor"/>
+                                <Image className="m-4 inline" key={sponsorName.original} src={sponsorName.original} width={200} height={200} objectFit='contain' alt="sponsor"/>
                             </a>
                         )
                     })}
