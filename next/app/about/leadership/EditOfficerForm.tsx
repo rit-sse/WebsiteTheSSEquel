@@ -62,6 +62,11 @@ export default function EditOfficerForm({ open, teamMember, getOfficers, closeMo
         e.preventDefault();
         setError("");
         try {
+
+            if (!teamMember?.user_id) {
+                setError("Misisng user_id for this officer.");
+                return;
+            }
             // Call to user route to update officer's user data
             const userResponse = await fetch('/api/user', {
                 method: 'PUT',
@@ -74,6 +79,11 @@ export default function EditOfficerForm({ open, teamMember, getOfficers, closeMo
                     description: formData.description
                 }),
             });
+
+            if (!userResponse.ok) {
+                const text = await userResponse.text();
+                throw new Error(`Error: ${text}`);
+            }
 
             // Call to officer route if the start and end dates are modified
             if (formData.start_date != '' && formData.end_date != ''){
