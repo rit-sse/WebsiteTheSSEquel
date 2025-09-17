@@ -1,3 +1,7 @@
+# John tries out messing with the SSE website
+# please do NOT take ts serious :skull:
+- I'm a smart guy i promise
+
 # Society of Software Engineers Website: the SSEquel
 
 This repo contains the source code for the Society of Software Engineers' website. Built using Next.js, the website is a hub for information about the SSE and provides tools to manage its various data needs.
