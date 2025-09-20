@@ -3,17 +3,12 @@
 import { useEffect, useState } from "react";
 import { TeamMember } from "./team";
 
-/**
- * open - State of edit form modal
- * teamMember - Currently selected officer to be edited
- * getOfficers - Function to get active officers, used to update the list
- * closeModal - Function to close the form's modal
- */
+
 interface OfficerFormProps {
-    open: boolean,
-    teamMember?: TeamMember,
-    getOfficers: () => void,
-    closeModal: () => void
+    open: boolean, // open - State of edit form modal
+    teamMember?: TeamMember, // teamMember - Currently selected officer to be edited
+    getOfficers: () => void, // getOfficers - Function to get active officers, used to update the list
+    closeModal: () => void // closeModal - Function to close the form's modal
 }
 
 export default function EditOfficerForm({ open, teamMember, getOfficers, closeModal }: OfficerFormProps) {
@@ -99,7 +94,6 @@ export default function EditOfficerForm({ open, teamMember, getOfficers, closeMo
             }
             
             if (userResponse.ok) {
-                console.log('Officer changed successfully');
                 getOfficers();
                 closeModal();
             } 
