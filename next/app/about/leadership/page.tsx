@@ -25,7 +25,7 @@ export default function Leadership() {
 	const getOfficers = async () => {
 		var team: Team = { primary_officers: [], committee_heads: [] };
 		try {
-			const response = await fetch('http://localhost:3000/api/officer/active');
+			const response = await fetch('/api/officer/active');
 			if (!response.ok) {
 				throw new Error('Failed to fetch officers');
 			}
