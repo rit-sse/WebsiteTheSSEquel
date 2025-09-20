@@ -62,6 +62,16 @@ export default function EditOfficerForm({ open, teamMember, getOfficers, closeMo
                 setError("Misisng user_id for this officer.");
                 return;
             }
+
+            let linkedInValue = formData.linkedIn;
+            if (linkedInValue.startsWith("www.")) {
+                linkedInValue = "https://" + linkedInValue;
+            }
+
+            let gitHubValue = formData.gitHub;
+            if (gitHubValue.startsWith("www.")) {
+                gitHubValue = "https://" + gitHubValue;
+            }
             // Call to user route to update officer's user data
             const userResponse = await fetch('/api/user', {
                 method: 'PUT',
@@ -69,8 +79,8 @@ export default function EditOfficerForm({ open, teamMember, getOfficers, closeMo
                 body: JSON.stringify({
                     id: teamMember?.user_id,
                     user_email: formData.user_email,
-                    linkedIn: formData.linkedIn,
-                    gitHub: formData.gitHub,
+                    linkedIn: linkedInValue,
+                    gitHub: gitHubValue,
                     description: formData.description
                 }),
             });
