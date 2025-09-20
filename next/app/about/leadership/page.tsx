@@ -106,7 +106,7 @@ export default function Leadership() {
 						Primary Officers
 					</h2>
 					<div className="">
-						<div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+						<div className="w-full flex flex-row justify-center space-x-5">
 							{teamData.primary_officers.map((member, idx) => (
 								<div key={idx}>
 									<OfficerCard teamMember={member} />
@@ -122,7 +122,7 @@ export default function Leadership() {
 							Committee Heads
 						</h2>
 						<div className="mt-5">
-							<div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 gap-y-8">
+							<div className="w-full flex flex-row justify-center space-x-5">
 								{teamData.committee_heads.map((member, idx) => (
 									<div key={idx}>
 										<OfficerCard teamMember={member} />

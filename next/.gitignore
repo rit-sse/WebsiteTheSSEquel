@@ -58,6 +58,4 @@ flake.lock
 .envrc
 .direnv
 
-# package / package-lock
-package.json
 
