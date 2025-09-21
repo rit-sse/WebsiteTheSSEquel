@@ -1,3 +1,4 @@
+"use client"
 import React, { useEffect, useState } from 'react';
 
 const UserManagement: React.FC = () => {
@@ -16,22 +17,22 @@ const UserManagement: React.FC = () => {
                     .then(officerdata => {
                         console.log(officerdata)
                         for (let user of userdata) {
-                            let isOfficer = false;
+                            let userInfo = {
+                                "name": user["name"],
+                                "email": user["email"],
+                                "isOfficer": false,
+                                "officerRegistered": false
+                            }
                             for (let officer of officerdata) {
-                                if (officer["user"]["email"] == user["email"] && officer["is_active"]) {
-                                    isOfficer = true;
+                                if (officer["user"]["email"] == user["email"]) {
+                                    userInfo["officerRegistered"] = true;
+                                    if(officer["is_active"]) {
+                                        userInfo["isOfficer"] = true;
+                                    }
                                 }
                             }
-                            console.log({
-                                "name": user["name"],
-                                "email": user["email"],
-                                "isOfficer": isOfficer
-                            })
-                            usersTemp.push({
-                                "name": user["name"],
-                                "email": user["email"],
-                                "isOfficer": isOfficer
-                            })
+                            console.log(userInfo)
+                            usersTemp.push(userInfo)
                         }
                         setUsers(usersTemp)
                     })
@@ -47,7 +48,7 @@ const UserManagement: React.FC = () => {
                         <th className="border px-4 py-2 bg-gray-200">Name</th>
                         <th className="border px-4 py-2 bg-gray-200">Email</th>
                         <th className="border px-4 py-2 bg-gray-200">Officer Status</th>
-                        <th className='border px-4 py-2 bg-gray-200'>Edit</th>
+                        <th className='border px-4 py-2 bg-gray-200 w-[10%]'>Edit</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -55,7 +56,7 @@ const UserManagement: React.FC = () => {
                         <tr key={idx} className={idx % 2 === 0 ? "bg-white" : "bg-gray-100"}>
                             <td className="border px-4 py-2">{user.name}</td>
                             <td className="border px-4 py-2">{user.email}</td>
-                            <td className="border px-4 py-2">{user.isOfficer ? "True" : "False"}</td>
+                            <td className="border px-4 py-2">{user.isOfficer ? "Active" : "Not Active"} {user.officerRegistered ? "(In Officer Table)" : ""}</td>
                             <td className="border px-4 py-2">
                                 <button
                                     className="bg-blue-500 text-white w-full py-1 rounded hover:bg-blue-600"
