@@ -117,7 +117,7 @@ export default function Leadership() {
 						</div>
 					</div>
 					{/* Committee Heads */}
-					<div className="mt-10">
+					<div className="">
 						<h2 className="text-xl text-center font-extrabold text-primary-focus sm:text-3xl my-12">
 							Committee Heads
 						</h2>
