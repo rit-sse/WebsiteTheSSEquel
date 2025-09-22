@@ -106,7 +106,7 @@ export default function Leadership() {
 						Primary Officers
 					</h2>
 					<div className="">
-						<div className="w-full flex flex-row justify-center space-x-5">
+						<div className="w-full flex flex-row justify-center gap-5">
 							{teamData.primary_officers.map((member, idx) => (
 								<div key={idx}>
 									<OfficerCard teamMember={member} />
@@ -121,8 +121,7 @@ export default function Leadership() {
 						<h2 className="text-xl text-center font-extrabold text-primary-focus sm:text-3xl my-12">
 							Committee Heads
 						</h2>
-						<div className="mt-5">
-							<div className="w-full flex flex-row justify-center space-x-5">
+						<div className="w-full flex flex-row justify-center gap-5">
 								{teamData.committee_heads.map((member, idx) => (
 									<div key={idx}>
 										<OfficerCard teamMember={member} />
@@ -130,7 +129,6 @@ export default function Leadership() {
 										<ModifyOfficers teamMember={member} openReplaceModal={() => setReplaceOpen(true)} openEditModal={() => setEditOpen(true)} setSelectedOfficer={setSelectedOfficer} />
 									</div>
 								))}
-							</div>
 						</div>
 					</div>
 				</div>
