@@ -1,4 +1,6 @@
 import { PrismaClient } from "@prisma/client";
+import { error } from "console";
+import { NextResponse } from "next/server";
 
 const prisma = new PrismaClient();
 
@@ -18,11 +20,12 @@ export async function GET() {
         location: true,
       },
     });
-    return Response.json(allEvents);
+    return NextResponse.json(allEvents);
   }
-  catch{
+  catch(error){
     // probably need to implement better error catching in the future >.<
-    return Response.json(
+    console.error("database error:", error);
+    return NextResponse.json(
       { error: "Failed GET request. Check your database connection." },
       { status: 500 }
     );

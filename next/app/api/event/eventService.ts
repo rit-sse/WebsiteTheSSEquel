@@ -8,12 +8,13 @@ export async function getEvents(){
         select: {
             id: true,
             title: true,
-            description: true,
             date: true,
+            description: true,
             image: true,
             location: true,
         },
         });
+        // console.log(allEvents);
     return allEvents;
   }
   catch{
