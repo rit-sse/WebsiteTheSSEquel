@@ -31,6 +31,7 @@ const OfficerDashboard = () => {
             <p className="w-full pl-[25px] py-[12px] border-b-[1px] text-[18px]">Officer Dashboard</p>
             <DashboardButton isEnabled={true} text="User Management"/>
             <DashboardButton isEnabled={false} text="Website Management"/>
+            <DashboardButton isEnabled={false} text="Assets/Resources"/>
           </div>
           <div className="w-[75%] p-[15px] bg-white rounded-[14px]">
             {
