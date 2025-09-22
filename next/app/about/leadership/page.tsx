@@ -117,11 +117,11 @@ export default function Leadership() {
 						</div>
 					</div>
 					{/* Committee Heads */}
-					<div className="">
+					<div className="w-full">
 						<h2 className="text-xl text-center font-extrabold text-primary-focus sm:text-3xl my-12">
 							Committee Heads
 						</h2>
-						<div className="w-full flex flex-row justify-center gap-5">
+						<div className="w-full flex-wrap flex flex-row justify-center">
 								{teamData.committee_heads.map((member, idx) => (
 									<div key={idx}>
 										<OfficerCard teamMember={member} />
