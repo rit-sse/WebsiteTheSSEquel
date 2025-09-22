@@ -10,8 +10,8 @@ interface OfficerCardProps {
 export default function OfficerCard({ teamMember }: OfficerCardProps) {
 
   return (
-    <div className="mt-4">
-      <div className="mt-2 flex flex-col items-center">
+    <div className="mt-4 w-full flex justify-center">
+      <div className="mt-2 flex flex-col items-center w-full max-w-xs sm:max-w-sm px-4">
         {teamMember.image != "https://source.boringavatars.com/beam/" ? (
           <Image src={teamMember.image} alt="Photo of team member" width={96} height={96} className="rounded-full object-cover"/> 
         ) : (
