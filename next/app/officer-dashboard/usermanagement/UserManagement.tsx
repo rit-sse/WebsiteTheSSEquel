@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 
 const UserManagement: React.FC = () => {
 
-    let [users, setUsers] = useState([]);
+    let [users, setUsers] = useState<{name: string, email: string, isOfficer: boolean, officerRegistered: boolean}[]>([]);
 
     useEffect(() => {
         let usersTemp = [
@@ -48,7 +48,7 @@ const UserManagement: React.FC = () => {
                         <th className="border px-4 py-2 bg-gray-200">Name</th>
                         <th className="border px-4 py-2 bg-gray-200">Email</th>
                         <th className="border px-4 py-2 bg-gray-200">Officer Status</th>
-                        <th className='border px-4 py-2 bg-gray-200 w-[10%]'>Edit</th>
+                        <th className='border px-4 py-2 bg-gray-200 w-[10%]'>View</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -62,7 +62,7 @@ const UserManagement: React.FC = () => {
                                     className="bg-blue-500 text-white w-full py-1 rounded hover:bg-blue-600"
                                     onClick={() => console.log(idx)}
                                 >
-                                    Edit
+                                    View
                                 </button>
                             </td>
                         </tr>
