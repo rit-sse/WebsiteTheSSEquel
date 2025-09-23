@@ -1,9 +1,12 @@
 "use client"
-import React, { useEffect, useState } from 'react';
+import React, { ChangeEvent, KeyboardEvent, KeyboardEventHandler, useEffect, useState } from 'react';
+
 
 const UserManagement: React.FC = () => {
+    type userType = {name: string, email: string, isOfficer: boolean, officerRegistered: boolean, officerPosition: string};
 
-    let [users, setUsers] = useState<{name: string, email: string, isOfficer: boolean, officerRegistered: boolean, officerPosition: string}[]>([]);
+    let [users, setUsers] = useState<userType[]>([]);
+    let [visibleUsers, setVisible] = useState<userType[]>([]);
 
     useEffect(() => {
         let usersTemp = [
@@ -37,14 +40,29 @@ const UserManagement: React.FC = () => {
                             usersTemp.push(userInfo)
                         }
                         setUsers(usersTemp)
+                        setVisible(usersTemp);
                     })
             });
     }, [])
 
+    function searchUsersByName(event: ChangeEvent<HTMLInputElement>): void {
+        if(event.target.value != "") {
+            let usersVis: userType[] = []
+            for(let user of users) {
+                if(user.name.toLowerCase().includes(event.target.value.toLowerCase())) {
+                    usersVis.push(user);
+                }
+            }
+            setVisible(usersVis);
+        } else {
+            setVisible(users);
+        }
+    }
+
     return (
         <div className='px-[10px]'>
             <h2>User Management</h2>
-            <input className="font-mono rounded-lg" placeholder='Search by name' />
+            <input className="font-mono rounded-lg" placeholder='Search by name' onChange={searchUsersByName} />
             <table className="w-full border-collapse font-mono">
                 <thead>
                     <tr>
@@ -55,7 +73,7 @@ const UserManagement: React.FC = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {users.map((user: any, idx: number) => (
+                    {visibleUsers.map((user: any, idx: number) => (
                         <tr key={idx} className={idx % 2 === 0 ? "bg-white" : "bg-gray-100"}>
                             <td className="border px-4 py-2">{user.name}</td>
                             <td className="border px-4 py-2">{user.email}</td>

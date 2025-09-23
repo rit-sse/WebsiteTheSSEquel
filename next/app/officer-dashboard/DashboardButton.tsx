@@ -5,15 +5,17 @@ import React from 'react';
 interface DashboardButtonProps {
     isEnabled: boolean;
     text: string,
+    callback: Function
 }
 
-const DashboardButton: React.FC<DashboardButtonProps> = ({ isEnabled, text }) => {
+const DashboardButton: React.FC<DashboardButtonProps> = ({ isEnabled, text, callback }) => {
     return (
         <a
             className={
                 "h-[60px] w-full text-[18px] pl-[25px] relative flex items-center justify-start cursor-pointer" +
                 (isEnabled ? " bg-[rgba(0,0,0,.05)]" : " opacity-[.5]")
             }
+            onClick={() => {callback()}}
         >
             {text}
             {isEnabled && (
