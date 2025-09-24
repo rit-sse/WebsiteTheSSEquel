@@ -99,6 +99,11 @@ export const GoLinkButton: React.FC<CreateGoLinkProps> = ({ fetchData }) => {
                 onChange={(e) => handleSetTitle(e.target.value)}
               />
             </label>
+            
+            <label className="my-2 input input-bordered flex items-center gap-2">
+              Special characters ex: ('.', '&', '@', etc.) are invalid for names and Do Not Work.
+            </label>
+
             <label className="my-2 input input-bordered flex items-center gap-2">
               Go Link URL:
               <input
