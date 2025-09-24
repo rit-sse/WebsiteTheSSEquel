@@ -1,12 +1,16 @@
 "use client"
 import React, { ChangeEvent, KeyboardEvent, KeyboardEventHandler, useEffect, useState } from 'react';
+import UserModal from './UserModal';
 
+type userType = {name: string, email: string, isOfficer: boolean, officerRegistered: boolean, officerPosition: string};
 
 const UserManagement: React.FC = () => {
-    type userType = {name: string, email: string, isOfficer: boolean, officerRegistered: boolean, officerPosition: string};
+    
+    let [userEditModalVis, setUserEditModalVis] = useState<boolean>(false);
 
     let [users, setUsers] = useState<userType[]>([]);
     let [visibleUsers, setVisible] = useState<userType[]>([]);
+    let [currentEditUser, setCurrentEditUser] = useState<userType>();
 
     useEffect(() => {
         let usersTemp = [
@@ -61,6 +65,7 @@ const UserManagement: React.FC = () => {
 
     return (
         <div className='px-[10px]'>
+            {userEditModalVis && currentEditUser != undefined ? <UserModal user={currentEditUser} visibleHook={setUserEditModalVis}/> : <></>}
             <h2>User Management</h2>
             <input className="font-mono rounded-lg" placeholder='Search by name' onChange={searchUsersByName} />
             <table className="w-full border-collapse font-mono">
@@ -81,7 +86,7 @@ const UserManagement: React.FC = () => {
                             <td className="border px-4 py-2">
                                 <button
                                     className="bg-blue-500 text-white w-full py-1 rounded hover:bg-blue-600"
-                                    onClick={() => console.log(idx)}
+                                    onClick={() => {setCurrentEditUser(visibleUsers[idx]); setUserEditModalVis(true)}}
                                 >
                                     View
                                 </button>

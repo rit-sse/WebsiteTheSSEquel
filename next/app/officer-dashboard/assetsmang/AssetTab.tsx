@@ -2,9 +2,9 @@ import React from 'react';
 
 const AssetTab: React.FC = () => {
     return (
-        <div>
+        <div className='px-[10px]'>
             <h2>Asset Management</h2>
-            {/* Add asset management UI here */}
+            <p>Stub for Asset Management. This will control the files that we have on our website</p>
         </div>
     );
 };
