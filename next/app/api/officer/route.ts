@@ -14,6 +14,7 @@ const prisma = new PrismaClient();
 export async function GET() {
   const officer = await prisma.officer.findMany({
     select: {
+      id: true,
       is_active: true,
       start_date: true,
       end_date: true,
@@ -106,9 +107,21 @@ export async function PUT(request: Request) {
 
   // only include updated fields
   const data: {
+    position_id?: number,
+    user_id?: number,
+    is_active?: boolean
     start_date?: string;
     end_date?: string;
   } = {};
+  if ("position_id" in body) {
+    data.position_id = body.position_id;
+  }
+  if ("user_id" in body) {
+    data.user_id = body.user_id;
+  }
+  if ("is_active" in body) {
+    data.is_active = body.is_active;
+  }
   if ("start_date" in body) {
     data.start_date = body.start_date;
   }
