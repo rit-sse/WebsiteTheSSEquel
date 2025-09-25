@@ -142,6 +142,7 @@ const GoLink: React.FC<GoLinkProps> = ({
               onChange={(e) => setTitle(e.target.value)}
             />
           </label>
+
           <label className="my-2 input input-bordered flex items-center gap-2">
             Go Link URL:
             <input
