@@ -101,7 +101,7 @@ export const GoLinkButton: React.FC<CreateGoLinkProps> = ({ fetchData }) => {
             </label>
             
             <label className="my-2 input input-bordered flex items-center gap-2">
-              Special characters ex: ('.', '&', '@', etc.) are invalid for names and Do Not Work.
+              Special characters ex: (&apos.&apos, &apos&&apos, &apos@&apos, etc.) are invalid for names and Do Not Work.
             </label>
 
             <label className="my-2 input input-bordered flex items-center gap-2">
