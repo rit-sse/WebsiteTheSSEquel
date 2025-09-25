@@ -2,7 +2,7 @@
 import React, { ChangeEvent, KeyboardEvent, KeyboardEventHandler, useEffect, useState } from 'react';
 import UserModal from './UserModal';
 
-type userType = {name: string, email: string, isOfficer: boolean, officerRegistered: boolean, officerPosition: string};
+type userType = {id: number, name: string, email: string, isOfficer: boolean, officerRegistered: boolean, officerPosition: string};
 
 const UserManagement: React.FC = () => {
     
@@ -25,6 +25,7 @@ const UserManagement: React.FC = () => {
                         console.log(officerdata)
                         for (let user of userdata) {
                             let userInfo = {
+                                "id": user["id"],
                                 "name": user["name"],
                                 "email": user["email"],
                                 "isOfficer": false,
