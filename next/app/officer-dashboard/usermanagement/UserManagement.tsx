@@ -2,7 +2,7 @@
 import React, { ChangeEvent, KeyboardEvent, KeyboardEventHandler, useEffect, useState } from 'react';
 import UserModal from './UserModal';
 
-type userType = {id: number, name: string, email: string, isOfficer: boolean, officerRegistered: boolean, officerPosition: string};
+type userType = {id: number, name: string, email: string, isOfficer: boolean, officerRegistered: boolean, officerPosition: string, officerId: number};
 
 const UserManagement: React.FC = () => {
     
@@ -30,7 +30,8 @@ const UserManagement: React.FC = () => {
                                 "email": user["email"],
                                 "isOfficer": false,
                                 "officerRegistered": false,
-                                "officerPosition": ""
+                                "officerPosition": "",
+                                "officerId": 0
                             }
                             for (let officer of officerdata) {
                                 if (officer["user"]["email"] == user["email"]) {
@@ -38,6 +39,7 @@ const UserManagement: React.FC = () => {
                                     if(officer["is_active"]) {
                                         userInfo["isOfficer"] = true;
                                         userInfo["officerPosition"] = officer["position"]["title"]
+                                        userInfo["officerId"] = officer["id"] 
                                     }
                                 }
                             }

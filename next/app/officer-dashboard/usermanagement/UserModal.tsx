@@ -1,6 +1,6 @@
 import React, { ChangeEvent, KeyboardEvent, useEffect, useState } from 'react'
 
-type userType = {id: number, name: string, email: string, isOfficer: boolean, officerRegistered: boolean, officerPosition: string };
+type userType = {id: number, name: string, email: string, isOfficer: boolean, officerRegistered: boolean, officerPosition: string, officerId: number };
 
 const UserModal: React.FC<{ user: userType, visibleHook: Function }> = ({ user, visibleHook }) => {
 
@@ -10,7 +10,8 @@ const UserModal: React.FC<{ user: userType, visibleHook: Function }> = ({ user, 
     const [isOfficer, setIsOfficer] = useState<boolean>(false);
     const [officerRegistered, setOfficerRegistered] = useState<boolean>(false);
     const [officerPosition, setOfficerPosition] = useState<string>("");
-    const [availablePositions, setAvailablePositions] = useState<string[]>([]);
+    const [officerId, setOfficerId] = useState<number>(0);
+    const [availablePositions, setAvailablePositions] = useState<{[name: string]: number}>({});
     useEffect(() => {
         setUserID(user.id);
         setName(user.name ?? "");
@@ -18,11 +19,16 @@ const UserModal: React.FC<{ user: userType, visibleHook: Function }> = ({ user, 
         setIsOfficer(user.isOfficer ?? false);
         setOfficerRegistered(user.officerRegistered ?? false);
         setOfficerPosition(user.officerPosition ?? "");
+        setOfficerId(user.officerId ?? 0);
 
         fetch("/api/officerPositions")
             .then(resp => resp.json())
-            .then((resp: {title: string}[]) => {
-                setAvailablePositions(resp.map((val, id) => (val['title'])))
+            .then((resp: {id: number, title: string}[]) => {
+                let temp: {[name: string]: number} = {}
+                for(let x of resp) {
+                    temp[x["title"]] = x["id"]
+                }
+                setAvailablePositions(temp)
             });
     }, [])
 
@@ -34,10 +40,31 @@ const UserModal: React.FC<{ user: userType, visibleHook: Function }> = ({ user, 
             isOfficer: isOfficer,
             officerRegistered: officerRegistered,
             officerPosition: officerPosition,
+            officerId: officerId
         }
 
-        if(userPayload.officerRegistered) {
-            console.log("Is officer registered, simple!")
+        if(userPayload.officerRegistered && userPayload.officerPosition != "None") {
+            let now = new Date()
+            let offsetnow = new Date(new Date(now).setMonth(now.getMonth() + 8));
+            fetch("/api/officer", {
+                method:"PUT",
+                body: JSON.stringify({
+                    "id": officerId,
+                    "position_id": availablePositions[officerPosition],
+                    "user_id": userPayload.id,
+                    "is_active": true,
+                    'start_date': now.toISOString(),
+                    'end_date': offsetnow.toISOString()
+                })
+            })
+            .then(resp => resp.json())
+            .then(resp => {
+                console.log(resp)
+                visibleHook(false);
+                window.location.reload()
+            })
+            .catch(err => console.log(err))
+
         } else {
             console.log("Not officer registered, will require a more detailed placement");
         }
@@ -70,7 +97,7 @@ const UserModal: React.FC<{ user: userType, visibleHook: Function }> = ({ user, 
                         <select value={officerPosition != "" ? officerPosition : "None"} onChange={e => {setOfficerPosition(e.target.value)}}>
                             <option value="None">None</option>
                             {
-                                availablePositions.map((val, ind) => (
+                                Object.keys(availablePositions).map((val, ind) => (
                                     <option key={ind} value={val}>{val}</option>
                                 ))
                             }
@@ -78,7 +105,7 @@ const UserModal: React.FC<{ user: userType, visibleHook: Function }> = ({ user, 
                     </div>
                     <div className='w-full mt-2 flex justify-end'>
                         <button className='py-[8px] px-[15px] bg-green-200 rounded-lg' onClick={setUserInformation}>Submit</button>
-                        <button className='py-[8px] px-[15px] bg-red-200 rounded-lg ml-[5px]'>Cancel</button>
+                        <button className='py-[8px] px-[15px] bg-red-200 rounded-lg ml-[5px]' onClick={() => {visibleHook(false)}}>Cancel</button>
                     </div>
                 </div>
             </div>
