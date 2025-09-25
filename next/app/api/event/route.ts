@@ -72,12 +72,12 @@ export async function POST(request: Request) {
   try {
     const event = await prisma.event.create({
       data: {
-        id,
+        id: body.id,
         title,
         description,
         date,
-        location,
-        image,
+        location: body.location,
+        image: body.image,
       },
     });
     return Response.json(event, { status: 201 });

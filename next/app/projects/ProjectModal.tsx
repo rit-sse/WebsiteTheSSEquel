@@ -250,19 +250,36 @@ const ProjectModal = ({enabled, setEnabled, project, isOfficer}: ProjectModalInt
                                             :
                                             <ProjectLink url={"mailto:" + lead.email} text="Email"/>
                                         }
+
+                                        {/* Below will look at little stinky with the wrapped stuff */}
+                                        {/* It checks if edit mode is on, and if it isnt, it checks the value to make sure its nonempty */}
                                         {/* Repo Link */}
                                         {
                                             editMode ?
                                             <ProjectModalInput label="Repository Link" setTextState={setRepoLink} presetValue={repoLink} />
                                             :
-                                            <ProjectLink url={project.repoLink} text="Repo Link" />
+                                            <>
+                                                {
+                                                project.repoLink != "" ?    
+                                                <ProjectLink url={project.repoLink} text="Repo Link" />
+                                                :
+                                                undefined
+                                                }
+                                            </>
                                         }
                                         {/* Content Link */}
                                         {
                                             editMode ?
                                             <ProjectModalInput label="Content Link" setTextState={setContentURL} presetValue={contentURLLink} />
                                             :
-                                            <ProjectLink url={project.contentURL} text="Content URL Link" />
+                                            <>
+                                            {
+                                                project.contentURL != "" ?
+                                                <ProjectLink url={project.contentURL} text="Content URL Link" />
+                                                :
+                                                undefined
+                                            }
+                                            </>
                                         }
                                         {/* Project Image URL */}
                                         {
