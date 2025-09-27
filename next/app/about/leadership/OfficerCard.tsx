@@ -8,7 +8,6 @@ interface OfficerCardProps {
 }
 
 export default function OfficerCard({ teamMember }: OfficerCardProps) {
-
   return (
     <div className="mt-4 w-full flex justify-center">
       <div className="mt-2 flex flex-col items-center w-full max-w-xs sm:max-w-sm px-4">
@@ -21,15 +20,21 @@ export default function OfficerCard({ teamMember }: OfficerCardProps) {
         <p className="font-semibold">{teamMember.title}</p>
         <p className="mt-2 px-2 text-center">{teamMember.desc}</p>
         <div className="w-full flex flex-row gap-4 justify-center items-center">
-          <a href={teamMember.linkedin}>
-            <LinkedInIcon />
-          </a>
-          <a href={teamMember.github}>
-            <GitHubIcon />
-          </a>
-          <a href={teamMember.email}>
-            <EmailIcon />
-          </a>
+          {teamMember.linkedin && (
+            <a href={teamMember.linkedin} target="_blank" rel="noopener noreferrer">
+              <LinkedInIcon />
+            </a>
+          )}
+          {teamMember.github && (
+            <a href={teamMember.github} target="_blank" rel="noopener noreferrer">
+              <GitHubIcon />
+            </a>
+          )}
+          {teamMember.email && (
+            <a href={`mailto:${teamMember.email}`}>
+              <EmailIcon />
+            </a>
+          )}
         </div>
       </div>
     </div>
