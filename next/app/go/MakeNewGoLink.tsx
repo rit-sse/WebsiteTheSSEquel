@@ -1,6 +1,7 @@
 import { useSession } from "next-auth/react";
 import { use, useCallback, useEffect, useState } from "react";
 import { CreateGoLinkProps } from "./page";
+import { deepEqual, equal, notDeepEqual } from "assert";
 
 export const GoLinkButton: React.FC<CreateGoLinkProps> = ({ fetchData }) => {
   const { data: session }: any = useSession();
@@ -12,7 +13,16 @@ export const GoLinkButton: React.FC<CreateGoLinkProps> = ({ fetchData }) => {
 
   const handleSetTitle = (givenTitle: string) => {
     const title = givenTitle.toLowerCase().split(" ").join("-");
-    setTitle(title);
+    const special_chars_regexp = new RegExp("[\\<\\>~`!@#$%^&*()|_=+\\[\\]{}:;,./\\\\?0-9]+", "g"); // check for special characters and numbersin the title
+    let matches = title.match(special_chars_regexp);
+    let prev_title = title;
+
+    if (matches != null) {
+      alert("Special Characters ex: ('.', '&', '@', etc.) and Numbers are invalid for names and Do Not Work."); // Send an alert of invaid characters
+      prev_title = title.substring(0, (prev_title.length-1))
+    }
+
+      setTitle(prev_title);
   };
 
   const handleCancel = () => {
@@ -96,12 +106,8 @@ export const GoLinkButton: React.FC<CreateGoLinkProps> = ({ fetchData }) => {
                 className="grow text-gray-900"
                 placeholder="The SSE Website"
                 value={title}
-                onChange={(e) => handleSetTitle(e.target.value)}
+                onChange={((e) => handleSetTitle(e.target.value))}
               />
-            </label>
-            
-            <label className="my-2 input input-bordered flex items-center gap-2">
-              Special characters ex: (&apos.&apos, &apos&&apos, &apos@&apos, etc.) are invalid for names and Do Not Work.
             </label>
 
             <label className="my-2 input input-bordered flex items-center gap-2">
