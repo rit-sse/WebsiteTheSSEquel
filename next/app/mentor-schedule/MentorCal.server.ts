@@ -5,7 +5,7 @@
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/authOptions"
 import { prisma } from '@/lib/prisma'
-import { ScheduleType } from "./page.types"
+import { ScheduleType } from "./MentorCal.types"
 
 export async function isMentor() {
 	const session = await getServerSession(authOptions)
@@ -19,6 +19,26 @@ export async function isMentor() {
 			}
 		}
 	})
+}
+
+export async function getMentorNames(){
+	if (!await isMentor()) return []
+	const mentors = await prisma.mentor.findMany({
+		where: {
+			isActive: true,
+		},
+		select: {
+			user: {
+				select: {
+					id: true,
+					name: true,
+					email: true,
+				}
+			}
+		}
+	})
+
+	return mentors.map(({ user }) => user)
 }
 
 export async function getMentorSchedule(id: number = 0): Promise<ScheduleType[]> {

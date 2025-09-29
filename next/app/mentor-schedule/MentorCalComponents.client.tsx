@@ -1,17 +1,13 @@
 "use client"
 
-import { useState } from "react"
-import Modal from "@/components/Modal"
+import { useRef } from "react"
 import type { ScheduleType } from "./MentorCal.types"
 import { format24hHour, mentorColors } from "./MentorCal.client"
 
 // Client Components
 
 export function AddMentorButton({ day, hour }: { day: number; hour: number }) {
-	const [isModalOpen, setIsModalOpen] = useState(false)
-
-	const handleOpenModal = () => setIsModalOpen(true)
-	const handleCloseModal = () => setIsModalOpen(false)
+	let modalRef = useRef<HTMLDialogElement>(null)
 	const daysOfTheWeek = [
 		"Sunday",
 		"Monday",
@@ -25,27 +21,25 @@ export function AddMentorButton({ day, hour }: { day: number; hour: number }) {
 	return (
 		<>
 			<button
-				onClick={handleOpenModal}
+				onClick={() => modalRef.current?.showModal()}
 				className="flex gap-2 items-center justify-center w-full h-full opacity-10 hover:opacity-100 focus-visible:opacity-100 transition focus-visible:outline outline-primary"
 			>
 				<AddIcon />
 				Add
 			</button>
-			<Modal isOpen={isModalOpen} onClose={handleCloseModal}>
-				<article className="bg-white border-2 border-accent-content py-4 pb-1 px-6 rounded-lg justify-between items-start relative">
+			<dialog className="modal" ref={modalRef}>
+				<article className="modal-box">
 					<h2 className="leading-snug">Assign Mentor</h2>
 					<p className="pb-2">
 						{daysOfTheWeek[day]} from {format24hHour(hour)} to{" "}
 						{format24hHour(hour + 1)}
 					</p>
+					<input type="text" list="mentorList" />
 				</article>
-				<button
-					className="absolute right-8 top-4 text-gray-400 hover:text-gray-600 transition-colors"
-					onClick={handleCloseModal}
-				>
-					<ExitIcon />
-				</button>
-			</Modal>
+				<form method="dialog" className="modal-backdrop">
+					<button>close</button>
+				</form>
+			</dialog>
 		</>
 	)
 }
@@ -57,31 +51,30 @@ export function MentorButton({
 	data: ScheduleType
 	index: number
 }) {
-	const [isModalOpen, setIsModalOpen] = useState(false)
-
-	const handleOpenModal = () => setIsModalOpen(true)
-	const handleCloseModal = () => setIsModalOpen(false)
-
+	let ref = useRef<HTMLDialogElement>(null)
 	return (
 		<>
 			<button
-				style={{
-					"--custom-color": mentorColors[mentor.id-1 % mentorColors.length]
-				} as React.CSSProperties}
-				onClick={handleOpenModal}
+				style={
+					{
+						"--custom-color":
+							mentorColors[mentor.id - (1 % mentorColors.length)],
+					} as React.CSSProperties
+				}
+				onClick={() => ref.current?.showModal()}
 				className={`py-4 my-2 ${
 					!index ? "mx-2" : "mr-2"
 				} flex hover:scale-[0.98] active:scale-95 transition rounded-xl items-center justify-center w-full bg-custom !text-black`}
 			>
 				{mentor.name.split(" ")?.[0] || "Mentor"}
 			</button>
-			<Modal isOpen={isModalOpen} onClose={handleCloseModal}>
-				<article className="bg-white border-2 border-accent-content pt-4 pb-1 px-6 rounded-lg justify-between items-start relative">
+			<dialog ref={ref} className="modal">
+				<article className="modal-box">
 					<header className="flex gap-4">
 						<img
 							src={mentor.image}
 							alt={`Picture of ${mentor.name}`}
-							className="w-24 h-24 object-contain rounded-lg text-[0px] bg-white shrink-0 border-2 border-accent-content"
+							className="w-24 h-24 object-contain rounded-lg text-[0px] shrink-0 border-2 border-accent-content"
 							loading="lazy"
 						/>
 						<section>
@@ -90,6 +83,15 @@ export function MentorButton({
 								{mentor.description || "Mentor @ SSE"}
 							</p>
 						</section>
+						<details className="dropdown dropdown-end ml-auto">
+							<summary className="btn btn-square btn-ghost m-1">
+								<Hamburger />
+							</summary>
+							<ul className="menu dropdown-content bg-base-200 rounded-box z-1 w-52 p-2 shadow-sm">
+								<li>Edit</li>
+								<li>Deallocate</li>
+							</ul>
+						</details>
 					</header>
 					<main className="grid grid-cols-1 gap-4 w-full py-4 overflow-x-auto">
 						{!!mentor.takenCourses.length && (
@@ -137,14 +139,11 @@ export function MentorButton({
 							</section>
 						)}
 					</main>
-					<button
-						className="absolute right-4 top-4 text-gray-400 hover:text-gray-600 transition-colors"
-						onClick={handleCloseModal}
-					>
-						<ExitIcon />
-					</button>
 				</article>
-			</Modal>
+				<form method="dialog" className="modal-backdrop">
+					<button>close</button>
+				</form>
+			</dialog>
 		</>
 	)
 }
@@ -183,3 +182,23 @@ export const ExitIcon = () => (
 		/>
 	</svg>
 )
+
+const Hamburger: React.FC = () => {
+	return (
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			className="h-6 w-6"
+			fill="none"
+			viewBox="0 0 24 24"
+			stroke="currentColor"
+		>
+			<title>Menu</title>
+			<path
+				strokeLinecap="round"
+				strokeLinejoin="round"
+				strokeWidth="2"
+				d="M4 6h16M4 12h16m-7 6h7"
+			/>
+		</svg>
+	)
+}

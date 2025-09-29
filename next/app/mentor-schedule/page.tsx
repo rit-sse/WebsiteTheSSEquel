@@ -1,9 +1,10 @@
-import { getMentorSchedule, isMentor } from "./MentorCal.server"
-import { MentorCalendar, Header } from "./MentorCalComponents.server"
+import { getMentorNames, getMentorSchedule, isMentor } from "./MentorCal.server"
+import { MentorCalendar, Header, MentorDataList } from "./MentorCalComponents.server"
 
 export default async function Page() {
 	const mentorStatus = await isMentor()
 	const mentorBlocks = await getMentorSchedule()
+	const mentorList = mentorStatus ? await getMentorNames() : []
 
 	return (
 		<main className="w-full max-w-7xl px-8 md:px-0 py-6 space-y-10">
@@ -12,6 +13,7 @@ export default async function Page() {
 				<strong> SSE</strong> and get help from our student mentors!
 			</Header>
 			<MentorCalendar isMentor={mentorStatus} mentorBlocks={mentorBlocks} />
+			<MentorDataList data={mentorList} />
 		</main>
 	)
 }

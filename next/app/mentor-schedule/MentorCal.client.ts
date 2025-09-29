@@ -17,8 +17,6 @@ export const mentorColors = [
 	'oklch(71.5% 0.143 215.221)',// cyan-500
 ]
 
-
-
 // Helper functions
 export function format24hHour(hour: number) {
 	return `${hour % 12 || '12'}${hour >= 12 ? 'PM' : 'AM'}`
