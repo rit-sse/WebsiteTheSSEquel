@@ -19,7 +19,7 @@ export async function GET(
   const redirect = await prisma.goLinks.findFirst({
     where: {
       golink,
-      isPublic: true,
+      //isPublic: true,
     },
   });
   if (redirect == null) {
