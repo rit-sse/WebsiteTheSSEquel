@@ -6,6 +6,7 @@ import SSELogoSmall from "../common/SSELogoSmall";
 import AuthButton from "./AuthButton";
 import MobileNavDropdown from "./MobileNavDropdown";
 import NavItem, { NavItemProps } from "./NavItem";
+import { useEffect, useState } from "react";
 
 const navItems: (NavItemProps & { render?: React.ReactNode})[] = [
     {
@@ -74,6 +75,14 @@ const navItems: (NavItemProps & { render?: React.ReactNode})[] = [
 ];
 
 const Navbar: React.FC = () => {
+    const [isOfficer, setOfficer] = useState<boolean>(false);
+    useEffect(() => {
+        fetch("/api/authLevel")
+        .then(resp => resp.json())
+        .then(resp => setOfficer(resp["isOfficer"]))
+    }, [])
+
+
     const blurOnClick = (e: React.MouseEvent) => {
         (e.currentTarget as HTMLElement).blur();
     };
@@ -108,7 +117,9 @@ const Navbar: React.FC = () => {
                                 {navItem.render || <NavItem key={index} {...navItem} onClickFunc={blurOnClick} />}
                             </li>
                         ))}
-                        
+                        {isOfficer ? <li className="flex flex-row justify-center items-center">
+                                 <NavItem title="Officer Dash" route={"/officer-dashboard"} subItems={[]} onClickFunc={blurOnClick} />
+                            </li> : ""}
                     </ul>
                 </div>
                 <div className="dropdown dropdown-end md:hidden justify-end" tabIndex={0}>

@@ -23,7 +23,7 @@ const MobileNavDropdown: React.FC<{ navItems: NavItemProps[] } & OnClickProps> =
         <li className="list-none" key={index}>
           {navItem.route ? (
             
-            <Link className="hover:bg-secondary focus:bg-secondary" href={navItem.route} onClick={(e) => handleNavigationClick(e)}>
+            <Link className="cursor-pointer hover:bg-secondary focus:bg-secondary" href={navItem.route} onClick={(e) => handleNavigationClick(e)}>
               <summary>{navItem.title}</summary>
             </Link>
           ) : (
@@ -32,7 +32,7 @@ const MobileNavDropdown: React.FC<{ navItems: NavItemProps[] } & OnClickProps> =
               <ul>
                 {navItem.subItems?.map((subItem, subIndex) => (
                   <li className="list-none" key={subIndex}>
-                    <Link href={subItem.route || ""} className="hover:bg-secondary focus:bg-secondary" onClick={(e) => handleNavigationClick(e)}>
+                    <Link href={subItem.route || ""} className="cursor-pointer hover:bg-secondary focus:bg-secondary" onClick={(e) => handleNavigationClick(e)}>
                       <summary>{subItem.title}</summary>
                     </Link>
                   </li>

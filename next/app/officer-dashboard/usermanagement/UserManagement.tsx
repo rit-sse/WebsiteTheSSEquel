@@ -2,10 +2,10 @@
 import React, { ChangeEvent, KeyboardEvent, KeyboardEventHandler, useEffect, useState } from 'react';
 import UserModal from './UserModal';
 
-type userType = {id: number, name: string, email: string, isOfficer: boolean, officerRegistered: boolean, officerPosition: string, officerId: number};
+type userType = { id: number, name: string, email: string, isOfficer: boolean, officerRegistered: boolean, officerPosition: string, officerId: number };
 
 const UserManagement: React.FC = () => {
-    
+
     let [userEditModalVis, setUserEditModalVis] = useState<boolean>(false);
 
     let [users, setUsers] = useState<userType[]>([]);
@@ -35,15 +35,18 @@ const UserManagement: React.FC = () => {
                             }
                             for (let officer of officerdata) {
                                 if (officer["user"]["email"] == user["email"]) {
+
                                     userInfo["officerRegistered"] = true;
-                                    if(officer["is_active"]) {
+                                    if (officer["is_active"]) {
                                         userInfo["isOfficer"] = true;
                                         userInfo["officerPosition"] = officer["position"]["title"]
-                                        userInfo["officerId"] = officer["id"] 
                                     }
+                                    userInfo["officerId"] = officer["id"]
+
+
                                 }
                             }
-                            console.log(userInfo)
+
                             usersTemp.push(userInfo)
                         }
                         setUsers(usersTemp)
@@ -53,10 +56,10 @@ const UserManagement: React.FC = () => {
     }, [])
 
     function searchUsersByName(event: ChangeEvent<HTMLInputElement>): void {
-        if(event.target.value != "") {
+        if (event.target.value != "") {
             let usersVis: userType[] = []
-            for(let user of users) {
-                if(user.name.toLowerCase().includes(event.target.value.toLowerCase())) {
+            for (let user of users) {
+                if (user.name.toLowerCase().includes(event.target.value.toLowerCase())) {
                     usersVis.push(user);
                 }
             }
@@ -68,7 +71,7 @@ const UserManagement: React.FC = () => {
 
     return (
         <div className='px-[10px]'>
-            {userEditModalVis && currentEditUser != undefined ? <UserModal user={currentEditUser} visibleHook={setUserEditModalVis}/> : <></>}
+            {userEditModalVis && currentEditUser != undefined ? <UserModal user={currentEditUser} visibleHook={setUserEditModalVis} /> : <></>}
             <h2>User Management</h2>
             <input className="font-mono rounded-lg" placeholder='Search by name' onChange={searchUsersByName} />
             <table className="w-full border-collapse font-mono">
@@ -89,7 +92,7 @@ const UserManagement: React.FC = () => {
                             <td className="border px-4 py-2">
                                 <button
                                     className="bg-blue-500 text-white w-full py-1 rounded hover:bg-blue-600"
-                                    onClick={() => {setCurrentEditUser(visibleUsers[idx]); setUserEditModalVis(true)}}
+                                    onClick={() => { setCurrentEditUser(visibleUsers[idx]); setUserEditModalVis(true) }}
                                 >
                                     View
                                 </button>
