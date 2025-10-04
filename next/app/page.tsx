@@ -8,10 +8,30 @@ import Image from 'next/image';
 import { Event } from "./events/event";
 import { compareDateStrings, formatDate } from './events/calendar/utils';
 import { getEvents } from './api/event/eventService';
+import path from 'path';
+import fs from "fs";
+import { Sponsor } from '@/components/common/Sponsor';
 
 export default async function Home() {
 
     let events = await getEvents() as Event[] | null;
+
+    // sponsorLinks is list of urls for each sponsor, must be in order of images/sponsor folder
+    const sponsorLinks: string[] = [];
+    sponsorLinks.push("https://www.rit.edu/computing/");
+    sponsorLinks.push("https://www.mtb.com/");
+    sponsorLinks.push("https://www.mindex.com/");
+
+    // creates sponsor array to hold url and image of each sponsor
+    const sponsorDirectory = path.join(process.cwd(), "public", "images", "sponsors");
+    const sponsorNames = fs.readdirSync(sponsorDirectory);
+    const sponsors = sponsorNames.map((sponsorName) => ({
+        imageLink: `/images/sponsors/${sponsorName}`,
+        url: "",
+    }));
+    for(let i = 0; i < sponsorLinks.length; i++){
+        sponsors[i].url = sponsorLinks[i];
+    }
     
     // Allowing developers to not have to set up the DB
     if(events != null){
@@ -72,6 +92,18 @@ export default async function Home() {
                     <p className="text-gray-500">No events available.</p>
                 )}
               </div>
+            </div>
+
+            {/* Sponsors */}
+            <div>
+                <h2 className='mt-5'>Sponsors</h2>
+                <div className=''>
+                    {sponsors.map(sponsorName => {
+                        return(
+                            <Sponsor key={sponsorName.url} url={sponsorName.url} imageLink={sponsorName.imageLink}/>
+                        )
+                    })}
+                </div>
             </div>
         </div>
     );
