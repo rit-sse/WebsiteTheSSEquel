@@ -100,7 +100,7 @@ export default async function Home() {
                 <div className=''>
                     {sponsors.map(sponsorName => {
                         return(
-                            <Sponsor url={sponsorName.url} imageLink={sponsorName.imageLink}/>
+                            <Sponsor key={sponsorName.url} url={sponsorName.url} imageLink={sponsorName.imageLink}/>
                         )
                     })}
                 </div>
