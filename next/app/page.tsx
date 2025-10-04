@@ -10,29 +10,27 @@ import { compareDateStrings, formatDate } from './events/calendar/utils';
 import { getEvents } from './api/event/eventService';
 import path from 'path';
 import fs from "fs";
+import { Sponsor } from '@/components/common/Sponsor';
 
 export default async function Home() {
 
     let events = await getEvents() as Event[] | null;
 
-    // lazy implementation of sponsor links, will go back and change this later
+    // sponsorLinks is list of urls for each sponsor, must be in order of images/sponsor folder
     const sponsorLinks: string[] = [];
-    //sponsorLinks.push("https://www.rit.edu/computing/");
+    sponsorLinks.push("https://www.rit.edu/computing/");
+    sponsorLinks.push("https://www.mtb.com/");
     sponsorLinks.push("https://www.mindex.com/");
 
+    // creates sponsor array to hold url and image of each sponsor
     const sponsorDirectory = path.join(process.cwd(), "public", "images", "sponsors");
     const sponsorNames = fs.readdirSync(sponsorDirectory);
     const sponsors = sponsorNames.map((sponsorName) => ({
-        original: `/images/sponsors/${sponsorName}`,
-        link: "",
+        imageLink: `/images/sponsors/${sponsorName}`,
+        url: "",
     }));
-
     for(let i = 0; i < sponsorLinks.length; i++){
-        sponsors[i].link = sponsorLinks[i];
-    }
-
-    for(const sponsor of sponsors){
-        console.log(sponsor.original);
+        sponsors[i].url = sponsorLinks[i];
     }
     
     // Allowing developers to not have to set up the DB
@@ -102,9 +100,7 @@ export default async function Home() {
                 <div className=''>
                     {sponsors.map(sponsorName => {
                         return(
-                            <a key={sponsorName.original} className='gap-2' href={sponsorName.link}>
-                                <Image className="m-4 inline" key={sponsorName.original} src={sponsorName.original} width={200} height={200} objectFit='contain' alt="sponsor"/>
-                            </a>
+                            <Sponsor url={sponsorName.url} imageLink={sponsorName.imageLink}/>
                         )
                     })}
                 </div>
