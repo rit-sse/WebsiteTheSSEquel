@@ -28,14 +28,14 @@ export default function ModifyOfficers({ teamMember, openReplaceModal, openEditM
     }, []);
     
     const userStatus = async () =>{
-        const response = await fetch("http://localhost:3000/api/authLevel");
+        const response = await fetch("/api/authLevel");
         const userData = await response.json();
         setIsOfficer(userData.isOfficer);
     }
 
-    if(!isOfficer){
+    if(isOfficer){
         return (
-            <div className="flex flex-row justify-evenly">
+            <div className="flex flex-row justify-center gap-4">
                 <button className="text-sm bg-secondary hover:bg-primary rounded-md active:bg-neutral text-base-100 p-1" onClick={() => {setSelectedOfficer(teamMember); openEditModal()}}>
                     Edit
                 </button>

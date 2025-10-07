@@ -78,7 +78,7 @@ async function seedOfficerPosition() {
 		update: {},
 		create: {
 			title: "Vice President",
-			is_primary: false,
+			is_primary: true,
 			email: "sse-vicepresident@rit.edu",
 		},
 	});
@@ -631,73 +631,67 @@ async function seedProjectContributor() {
 }
 
 async function seedEvents() {
-  const event1 = await prisma.event.upsert({
-    where: { id: 1 },
-    update: {},
-    create: {
+  const event1 = await prisma.event.create({
+    data: {
+	  id: "1" ,
       title: "Keeping it Silly",
       date: new Date("2023-11-1 12:00:00"),
       description: "we keep it silly :3",
     },
   });
 
-  const event2 = await prisma.event.upsert({
-    where: { id: 2 },
-    update: {},
-    create: {
+  const event2 = await prisma.event.create({
+    data: {
+	  id: "2",
       title: "Catan Tournament",
       date: new Date("2023-11-1 12:00:00"),
       description: "Elyza will win again.",
 	  image: "/images/codfather.jpg",
-	  location: "poop fart",
+	  location: "none",
     },
   });
 
-  const event3 = await prisma.event.upsert({
-    where: { id: 3 },
-    update: {},
-    create: {
+  const event3 = await prisma.event.create({
+    data: {
+	  id: "3",
       title: "AAA",
       date: new Date("2023-11-1 12:00:00"),
       description: "ooops",
 	  image: "/images/codfather.jpg",
-	  location: "poop fart",
+	  location: "none",
     },
   });
 
-  const event4 = await prisma.event.upsert({
-    where: { id: 4 },
-    update: {},
-    create: {
+  const event4 = await prisma.event.create({
+    data: {
+	  id: "4",
       title: "Bing bing",
       date: new Date("2023-11-1 12:00:00"),
       description: "bing bing bing",
 	  image: "/images/codfather.jpg",
-	  location: "poop bing",
+	  location: "none",
     },
   });
 
-	const event5 = await prisma.event.upsert({
-		where: { id: 5 },
-		update: {},
-		create: {
+	const event5 = await prisma.event.create({
+		data: {
+		  id: "5",
 		  title: "Farihaaaa",
 		  date: new Date("2023-11-1 12:00:00"),
 		  description: "poop poop poop",
 		  image: "/images/codfather.jpg",
-		  location: "poop fariha",
+		  location: "none",
 		},
   });
 
-  const event6 = await prisma.event.upsert({
-	where: { id: 6 },
-	update: {},
-	create: {
+  const event6 = await prisma.event.create({
+	data: {
+	  id: "6",
 	  title: "Spring Fling",
 	  date: new Date("2023-11-1 12:00:00"),
 	  description: "Spring thing",
 	  image: "/images/spring-fling-2.png",
-	  location: "poop Fling",
+	  location: "none",
 	},
   });
 
@@ -719,12 +713,12 @@ async function main() {
     await seedHourBlock();
     await seedSchedule();
     await seedGoLinks();
-    await seedAccount();
-    await seedSession();
-    await seedVerificationToken();
+    // await seedAccount();
+    // await seedSession();
+    // await seedVerificationToken();
 	await seedProject();
 	await seedProjectContributor();
-    await seedEvents();
+    // await seedEvents();
   } catch (e) {
     console.error(e);
   }

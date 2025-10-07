@@ -7,18 +7,24 @@ import { EventCard } from './events/EventCard';
 import Image from 'next/image';
 import { Event } from "./events/event";
 import { compareDateStrings, formatDate } from './events/calendar/utils';
+import { getEvents } from './api/event/eventService';
 
 export default async function Home() {
 
-    let events: Event[] = await fetch('http://localhost:3000/api/event').then((resp) => resp.json());
+    let events = await getEvents() as Event[] | null;
+    
+    // Allowing developers to not have to set up the DB
+    if(events != null){
 
-    // Only display first 3 upcoming events
-    events = events.filter((event) => {
-        return (Date.now() - (new Date(event.date).getTime())) < 0; // is negative if event is in the future
-    });
-    events = events.sort((event1, event2) => compareDateStrings(event1.date, event2.date))
-    events = events.slice(0, 3);
-    console.log(events);
+        const currentDate = new Date();
+
+        // Only display first 3 upcoming events
+        events = events.filter((value => compareDateStrings(currentDate.toISOString(), value.date) < 0))
+                        .sort((a, b) => compareDateStrings(a.date, b.date))
+                        .slice(0, 3);
+        console.log(events);
+
+    }
 
     return (
         <div className='space-y-24'>
@@ -37,21 +43,24 @@ export default async function Home() {
                             {HomepageContent.weeklyMeetingCallout}
                         </p>
                         <div className="mt-8 flex flex-wrap gap-4 justify-center lg:justify-start">
-                            <CTAButton href={HomepageContent.slackLink} text="Join Slack" />
+                            <CTAButton href={HomepageContent.discordLink} text="Join Discord" />
                             <CTAButton href="/about/get-involved" text="Get Involved" />
                         </div>
                     </div>
                     <div className="flex mt-12 md:mt-0 w-11/12 md:w-[70%] lg:w-full justify-center">
-                        <Image src="/student-involvement-1.jpg" alt="Tech committee meeting" className="rounded-[60px]" width={1000} height={1000} priority />
+                        <Image src="/images/group.jpg" alt="Tech committee meeting" className="rounded-[60px]" width={1000} height={1000} priority />
                     </div>
                 </div>
             </div>
 
+            <br/>
+            
             {/* Upcoming Events */}
             <div>
               <h1 className='mt-5'>Upcoming Events</h1>
               <div className='flex flex-row justify-center items-center'>
-                <div className='mt-8 grid gap-8 grid-cols-3 w-10/12'>
+                {events && events.length > 0 ? (
+                <div className='mt-8 grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-11/12 sm:w-10/12'>
                     {events.map((event, index) => {
                         event.date = formatDate(event.date);
                         return (
@@ -59,6 +68,9 @@ export default async function Home() {
                         )
                     })}
                 </div>
+                ) : (
+                    <p className="text-gray-500">No events available.</p>
+                )}
               </div>
             </div>
         </div>

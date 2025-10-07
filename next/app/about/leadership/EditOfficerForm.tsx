@@ -3,17 +3,12 @@
 import { useEffect, useState } from "react";
 import { TeamMember } from "./team";
 
-/**
- * open - State of edit form modal
- * teamMember - Currently selected officer to be edited
- * getOfficers - Function to get active officers, used to update the list
- * closeModal - Function to close the form's modal
- */
+
 interface OfficerFormProps {
-    open: boolean,
-    teamMember?: TeamMember,
-    getOfficers: () => void,
-    closeModal: () => void
+    open: boolean, // open - State of edit form modal
+    teamMember?: TeamMember, // teamMember - Currently selected officer to be edited
+    getOfficers: () => void, // getOfficers - Function to get active officers, used to update the list
+    closeModal: () => void // closeModal - Function to close the form's modal
 }
 
 export default function EditOfficerForm({ open, teamMember, getOfficers, closeModal }: OfficerFormProps) {
@@ -62,6 +57,21 @@ export default function EditOfficerForm({ open, teamMember, getOfficers, closeMo
         e.preventDefault();
         setError("");
         try {
+
+            if (!teamMember?.user_id) {
+                setError("Misisng user_id for this officer.");
+                return;
+            }
+
+            let linkedInValue = formData.linkedIn;
+            if (linkedInValue.startsWith("www.")) {
+                linkedInValue = "https://" + linkedInValue;
+            }
+
+            let gitHubValue = formData.gitHub;
+            if (gitHubValue.startsWith("www.")) {
+                gitHubValue = "https://" + gitHubValue;
+            }
             // Call to user route to update officer's user data
             const userResponse = await fetch('/api/user', {
                 method: 'PUT',
@@ -69,11 +79,16 @@ export default function EditOfficerForm({ open, teamMember, getOfficers, closeMo
                 body: JSON.stringify({
                     id: teamMember?.user_id,
                     user_email: formData.user_email,
-                    linkedIn: formData.linkedIn,
-                    gitHub: formData.gitHub,
+                    linkedIn: linkedInValue,
+                    gitHub: gitHubValue,
                     description: formData.description
                 }),
             });
+
+            if (!userResponse.ok) {
+                const text = await userResponse.text();
+                throw new Error(`Error: ${text}`);
+            }
 
             // Call to officer route if the start and end dates are modified
             if (formData.start_date != '' && formData.end_date != ''){
@@ -89,7 +104,6 @@ export default function EditOfficerForm({ open, teamMember, getOfficers, closeMo
             }
             
             if (userResponse.ok) {
-                console.log('Officer changed successfully');
                 getOfficers();
                 closeModal();
             } 

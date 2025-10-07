@@ -35,7 +35,7 @@ const NavItem: React.FC<NavItemProps & OnClickProps> = ({
     return (
         <div className="list-none inline-flex items-center">
             <div
-                className={`relative inline-block justify-start items-center group p-3 rounded-md ${route ? "cursor-pointer" : ""
+                className={`relative inline-block justify-start items-center group p-3 rounded-md  ${route ? "cursor-pointer" : ""
                     }`}
             >
                 {route ? (
@@ -69,7 +69,7 @@ const NavItem: React.FC<NavItemProps & OnClickProps> = ({
                             key={index}
                             href={item.route ?? "#"}
                             className={`px-2 py-2 text-md
-                                        hover:bg-secondary focus:bg-secondary transition-colors duration-200 ${
+                                        hover:bg-secondary focus:bg-secondary transition-colors duration-200 rounded-md ${
                                 // Add rounded corners to bottom of first and top of last item in sub-item groups
                                 index === 0
                                     ? "rounded-t-lg"
