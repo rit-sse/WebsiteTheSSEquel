@@ -23,7 +23,7 @@ export default async function Home() {
             "url": "https://www.rit.edu/computing/" 
         }, 
         {
-            "image": "/images/sponsors/M&T.svg",
+            "image": "/images/sponsors/M_and_T.png",
             "url": "https://www.mtb.com/"
         },
         {
