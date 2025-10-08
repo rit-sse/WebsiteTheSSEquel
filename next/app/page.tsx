@@ -42,7 +42,6 @@ export default async function Home() {
                         .sort((a, b) => compareDateStrings(a.date, b.date))
                         .slice(0, 3);
         console.log(events);
-
     }
 
     return (

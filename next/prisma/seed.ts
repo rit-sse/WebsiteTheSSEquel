@@ -718,7 +718,7 @@ async function main() {
     // await seedVerificationToken();
 	await seedProject();
 	await seedProjectContributor();
-    // await seedEvents();
+    await seedEvents();
   } catch (e) {
     console.error(e);
   }
