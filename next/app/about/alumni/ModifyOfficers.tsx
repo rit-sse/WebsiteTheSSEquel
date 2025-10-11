@@ -1,26 +1,26 @@
 "use client"
 
 import { useEffect, useState } from "react";
-import { TeamMember } from "./team";
+import { AlumniMember } from "./alumni";
 import Image from 'next/image';
 
 /**
- * teamMember - An officer
+ * alumniMember - An alumni
  * openReplaceModal - Function to open the replace modal form
  * openEditModal - Function to open the edit modal form
  * setSelectedOfficer - Function to set the selectedOfficer state
  */
 interface ModifyOfficerProps {
-    teamMember: TeamMember,
+    alumniMember: AlumniMember,
     openReplaceModal: () => void,
     openEditModal: () => void,
-    setSelectedOfficer: (teamMember: TeamMember) => void
+    setSelectedAlumni: (alumniMember: AlumniMember) => void
 }
 
 /**
- * Component that reveals Edit / Replace button to officers
+ * Component that reveals Edit / Replace button to alumni
  */
-export default function ModifyOfficers({ teamMember, openReplaceModal, openEditModal, setSelectedOfficer }: ModifyOfficerProps) {
+export default function ModifyOfficers({ alumniMember, openReplaceModal, openEditModal, setSelectedAlumni }: ModifyOfficerProps) {
     const [isOfficer, setIsOfficer] = useState(false);
     
     useEffect(() => {
@@ -36,10 +36,10 @@ export default function ModifyOfficers({ teamMember, openReplaceModal, openEditM
     if(isOfficer){
         return (
             <div className="flex flex-row justify-center gap-4">
-                <button className="text-sm bg-secondary hover:bg-primary rounded-md active:bg-neutral text-base-100 p-1" onClick={() => {setSelectedOfficer(teamMember); openEditModal()}}>
+                <button className="text-sm bg-secondary hover:bg-primary rounded-md active:bg-neutral text-base-100 p-1" onClick={() => {setSelectedAlumni(alumniMember); openEditModal()}}>
                     Edit
                 </button>
-                <button className="text-sm bg-secondary hover:bg-primary rounded-md active:bg-neutral text-base-100 p-1" onClick={() => {setSelectedOfficer(teamMember); openReplaceModal()}}>
+                <button className="text-sm bg-secondary hover:bg-primary rounded-md active:bg-neutral text-base-100 p-1" onClick={() => {setSelectedAlumni(alumniMember); openReplaceModal()}}>
                     Replace
                 </button>
             </div>

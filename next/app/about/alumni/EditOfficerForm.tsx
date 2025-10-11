@@ -1,17 +1,17 @@
 "use client"
 
 import { useEffect, useState } from "react";
-import { TeamMember } from "./team";
+import { AlumniMember } from "./alumni";
 
 
 interface OfficerFormProps {
     open: boolean, // open - State of edit form modal
-    teamMember?: TeamMember, // teamMember - Currently selected officer to be edited
+    alumniMember?: AlumniMember, // alumniMember - Currently selected officer to be edited
     getOfficers: () => void, // getOfficers - Function to get active officers, used to update the list
     closeModal: () => void // closeModal - Function to close the form's modal
 }
 
-export default function EditOfficerForm({ open, teamMember, getOfficers, closeModal }: OfficerFormProps) {
+export default function EditOfficerForm({ open, alumniMember, getOfficers, closeModal }: OfficerFormProps) {
     const [formData, setFormData] = useState({
         user_email: '',
         linkedIn: '',
@@ -22,12 +22,13 @@ export default function EditOfficerForm({ open, teamMember, getOfficers, closeMo
     });
     const [error, setError] = useState("")
 
-    // Fill form with current officer data
+    // Fill form with current 
+    //  data
     useEffect(() => {
         fillForm();
-    }, [teamMember])
+    }, [alumniMember])
 
-    // Fill form with current officer data when it is closed to undo any unsubmitted changes
+    // Fill form with current alumni data when it is closed to undo any unsubmitted changes
     useEffect(() => {
         if(!open){
             fillForm();
@@ -36,10 +37,10 @@ export default function EditOfficerForm({ open, teamMember, getOfficers, closeMo
 
     const fillForm = () => {
         setFormData({
-            user_email: teamMember?.email ?? '',
-            linkedIn: teamMember?.linkedin ?? '',
-            gitHub: teamMember?.github ?? '',
-            description: teamMember?.desc ?? '',
+            user_email: alumniMember?.email ?? '',
+            linkedIn: alumniMember?.linkedin ?? '',
+            gitHub: alumniMember?.github ?? '',
+            description: alumniMember?.desc ?? '',
             start_date: '',
             end_date: ''
         });
@@ -58,8 +59,8 @@ export default function EditOfficerForm({ open, teamMember, getOfficers, closeMo
         setError("");
         try {
 
-            if (!teamMember?.user_id) {
-                setError("Misisng user_id for this officer.");
+            if (!alumniMember?.user_id) {
+                setError("Misisng user_id for this alumni.");
                 return;
             }
 
@@ -77,7 +78,7 @@ export default function EditOfficerForm({ open, teamMember, getOfficers, closeMo
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    id: teamMember?.user_id,
+                    id: alumniMember?.user_id,
                     user_email: formData.user_email,
                     linkedIn: linkedInValue,
                     gitHub: gitHubValue,
@@ -96,7 +97,7 @@ export default function EditOfficerForm({ open, teamMember, getOfficers, closeMo
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        id: teamMember?.officer_id,
+                        id: alumniMember?.alumni_id,
                         start_date: new Date(formData.start_date).toISOString(),
                         end_date: new Date(formData.end_date).toISOString() 
                     })

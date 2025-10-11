@@ -1,5 +1,5 @@
-export interface TeamMember {
-  officer_id: string,
+export interface AlumniMember {
+  alumni_id: string,
   user_id: string;
   name: string;
   image: string;
@@ -11,6 +11,5 @@ export interface TeamMember {
 }
 
 export interface Team {
-  primary_officers: TeamMember[];
-  committee_heads: TeamMember[];
+  primary_officers: AlumniMember[];
 }

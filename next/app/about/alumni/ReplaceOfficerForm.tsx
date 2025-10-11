@@ -1,25 +1,25 @@
 "use client"
 
 import { useEffect, useState } from "react";
-import { TeamMember } from "./team";
+import { AlumniMember } from "./alumni";
 
 /**
  * open - State of replace form modal
- * teamMember - Currently selected officer to be replaced
+ * alumniMember - Currently selected alumni to be replaced
  * getOfficers - Function to get active officers, used to update the list
  * closeModal - Function to close the form's modal
  */
 interface OfficerFormProps {
 	open: boolean,
-	teamMember?: TeamMember,
+	alumniMember?: AlumniMember,
 	getOfficers: () => void,
 	closeModel: () => void
 }
 
 /**
- * Form to replace an existing officer in a current position
+ * Form to replace an existing alumni in a current position
  */
-export default function ReplaceOfficerForm({ open, teamMember, getOfficers, closeModel }: OfficerFormProps) {
+export default function ReplaceOfficerForm({ open, alumniMember, getOfficers, closeModel }: OfficerFormProps) {
 	const [formData, setFormData] = useState({
 		user_email: '',
 		start_date: '',
@@ -28,13 +28,13 @@ export default function ReplaceOfficerForm({ open, teamMember, getOfficers, clos
 	});
 	const [error, setError] = useState("")
 
-	// Fill form the selected officer's position
+	// Fill form the selected alumni's position
 	useEffect(() => {
 		setFormData((prevData) => ({
 			...prevData,
-			position: teamMember?.title ?? ''
+			position: alumniMember?.title ?? ''
 		}));
-	}, [teamMember]);
+	}, [alumniMember]);
 
 	// Clear form if closed
 	useEffect(() => {
@@ -75,7 +75,7 @@ export default function ReplaceOfficerForm({ open, teamMember, getOfficers, clos
 				}),
 			});
 			if (response.ok) {
-				console.log('Officer created successfully');
+				console.log('Alumni created successfully');
 				getOfficers();
 				closeModel();
 			}

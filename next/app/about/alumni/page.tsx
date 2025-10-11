@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import OfficerCard from "./OfficerCard";
 import OfficerFormModal from "./OfficerFormModal";
-import { Team, TeamMember } from "./team";
+import { Team, AlumniMember } from "./alumni";
 import ModifyOfficers from "./ModifyOfficers";
 import ReplaceOfficerForm from "./ReplaceOfficerForm";
 import EditOfficerForm from "./EditOfficerForm";
@@ -13,9 +13,9 @@ export default function Leadership() {
 	const [replaceOpen, setReplaceOpen] = useState(false);
 	const [editOpen, setEditOpen] = useState(false);
 	// State of the current selected officer (being edited / replaced)
-	const [selectedOfficer, setSelectedOfficer] = useState<TeamMember>();
+	const [selectedAlumni, setSelectedAlumni] = useState<AlumniMember>();
 	// State list of all active officers
-	const [teamData, setTeamData] = useState<Team>({ primary_officers: [], committee_heads: [] });
+	const [teamData, setTeamData] = useState<Team>({ primary_officers: []});
 
 	// Get all active officers when page opens
 	useEffect(() => {
@@ -23,7 +23,7 @@ export default function Leadership() {
 	}, []);
 
 	const getOfficers = async () => {
-		var team: Team = { primary_officers: [], committee_heads: [] };
+		var team: Team = { primary_officers: []};
 		try {
 			const response = await fetch('/api/officer/active');
 			if (!response.ok) {
@@ -32,24 +32,9 @@ export default function Leadership() {
 			const data = await response.json();
 			console.log(data.user)
 
-			// Map primary officers to TeamMember
+			// Map primary officers to AlimnuMember
 			team.primary_officers = data
 				.filter((officer: any) => officer.position.is_primary)
-				.map((officer: any) => ({
-					officer_id: officer.id,
-					user_id: officer.user.id,
-					name: officer.user.name,
-					image: officer.user.image,
-					title: officer.position.title,
-					email: officer.user.email,
-					desc: officer.user.description,
-					linkedin: officer.user.linkedIn,
-					github: officer.user.gitHub
-				}));
-
-			// Map committee officers to TeamMember
-			team.committee_heads = data
-				.filter((officer: any) => !officer.position.is_primary)
 				.map((officer: any) => ({
 					officer_id: officer.id,
 					user_id: officer.user.id,
@@ -65,13 +50,6 @@ export default function Leadership() {
 		} catch (error) {
 			console.error('Error:', error);
 		}
-		// Sort officers by title
-		team.committee_heads.sort((a, b) => {
-			if (a.title < b.title) {
-				return -1;
-			}
-			return 1;
-		});
 		setTeamData(team);
 	};
 
@@ -80,10 +58,10 @@ export default function Leadership() {
 			<section className="mt-16">
 				{/* Modals for editing and replacing officer forms */}
 				<OfficerFormModal isOpen={replaceOpen} onClose={async () => setReplaceOpen(false)}>
-					<ReplaceOfficerForm open={replaceOpen} teamMember={selectedOfficer} getOfficers={getOfficers} closeModel={() => setReplaceOpen(false)} />
+					<ReplaceOfficerForm open={replaceOpen} alumniMember={selectedAlumni} getOfficers={getOfficers} closeModel={() => setReplaceOpen(false)} />
 				</OfficerFormModal>
 				<OfficerFormModal isOpen={editOpen} onClose={async () => setEditOpen(false)}>
-					<EditOfficerForm open={editOpen} teamMember={selectedOfficer} getOfficers={getOfficers} closeModal={() => setEditOpen(false)} />
+					<EditOfficerForm open={editOpen} alumniMember={selectedAlumni} getOfficers={getOfficers} closeModal={() => setEditOpen(false)} />
 				</OfficerFormModal>
 				<div className="max-w-screen-xl mx-auto px-4 text-center md:px-8">
 					<div className="content-center">
@@ -92,7 +70,7 @@ export default function Leadership() {
 							<h1
 								className="bg-gradient-to-t from-primary to-secondary bg-clip-text text-4xl font-extrabold text-transparent md:text-5xl"
 							>
-								Meet our Alumni
+								Meet the Alumni
 							</h1>
 							<p className="mt-3 text-xl leading-8">
 								A dedicated page for alumni of the SSE
@@ -101,16 +79,13 @@ export default function Leadership() {
 					</div>
 
 					{/* Alumni */}
-					<div className="text-xl text-center font-extrabold text-primary-focus sm:text-3xl my-12">
-						<div>Some random person</div>
-					</div>
 					<div className="">
 						<div className="w-full flex flex-row justify-center gap-5">
 							{teamData.primary_officers.map((member, idx) => (
 								<div key={idx}>
-									<OfficerCard teamMember={member} />
+									<OfficerCard alumniMember={member} />
 									{/* Edit and Remove buttons, only officers can see */}
-									<ModifyOfficers teamMember={member} openReplaceModal={() => setReplaceOpen(true)} openEditModal={() => setEditOpen(true)} setSelectedOfficer={setSelectedOfficer} />
+									<ModifyOfficers alumniMember={member} openReplaceModal={() => setReplaceOpen(true)} openEditModal={() => setEditOpen(true)} setSelectedAlumni={setSelectedAlumni} />
 								</div>
 							))}
 						</div>
