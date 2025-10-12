@@ -8,10 +8,29 @@ import Image from 'next/image';
 import { Event } from "./events/event";
 import { compareDateStrings, formatDate } from './events/calendar/utils';
 import { getEvents } from './api/event/eventService';
+import path from 'path';
+import fs from "fs";
+import { Sponsor } from '@/components/common/Sponsor';
 
 export default async function Home() {
 
     let events = await getEvents() as Event[] | null;
+
+    // creates sponsor dictionary to hold url and image of each sponsor
+    const sponsors = [
+        {
+            "image": "/images/sponsors/gcis.png",
+            "url": "https://www.rit.edu/computing/" 
+        }, 
+        {
+            "image": "/images/sponsors/M_and_T.png",
+            "url": "https://www.mtb.com/"
+        },
+        {
+            "image": "/images/sponsors/mindex.png",
+            "url": "https://www.mindex.com/"
+        }
+    ]
     
     // Allowing developers to not have to set up the DB
     if(events != null){
@@ -23,7 +42,6 @@ export default async function Home() {
                         .sort((a, b) => compareDateStrings(a.date, b.date))
                         .slice(0, 3);
         console.log(events);
-
     }
 
     return (
@@ -72,6 +90,18 @@ export default async function Home() {
                     <p className="text-gray-500">No events available.</p>
                 )}
               </div>
+            </div>
+
+            {/* Sponsors */}
+            <div>
+                <h2 className='mt-5'>Sponsors</h2>
+                <div className=''>
+                    {sponsors.map(sponsorName => {
+                        return(
+                            <Sponsor key={sponsorName.url} url={sponsorName.url} imageLink={sponsorName.image}/>
+                        )
+                    })}
+                </div>
             </div>
         </div>
     );
