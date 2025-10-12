@@ -81,6 +81,24 @@ const UserModal: React.FC<{ user: userType, visibleHook: Function }> = ({ user, 
                 })
                 .catch(err => console.log(err))
             }
+        } else {
+            let now = new Date();
+            fetch("/api/officer", {
+                method: "PUT",
+                body: JSON.stringify({
+                    "id": userPayload.officerId,
+                    "position_id": availablePositions[officerPosition],
+                    "user_id": userPayload.id,
+                    "is_active": false,
+                    'start_date': now.toISOString(),
+                    'end_date': now.toISOString()
+                })
+            }).then(resp => resp.json())
+            .then(resp => {
+                visibleHook(false);
+                window.location.reload()
+            })
+            .catch(err => console.log(err))
         }
     }
 
