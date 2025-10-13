@@ -25,22 +25,21 @@ export default function Leadership() {
 	const getAlumni = async () => {
 		var team: Team = { alumni_member: []};
 		try {
-			const response = await fetch('/api/officer/active'); // TO-DO: Check the /api/officer file and see how to make it for alumni
+			const response = await fetch('/api/alumni/active');
 			if (!response.ok) {
 				throw new Error('Failed to fetch alumni');
 			}
 			const data = await response.json();
 			console.log(data.user)
 
-			// Map primary alumni to AlimnuMember
+			// Map alumni to AlimnuMember
 			team.alumni_member = data
-				.filter((alumni: any) => alumni.position.is_primary)
+				.filter((alumni: any) => alumni)
 				.map((alumni: any) => ({
 					alumni_id: alumni.id,
 					user_id: alumni.user.id,
 					name: alumni.user.name,
 					image: alumni.user.image,
-					title: alumni.position.title,
 					email: alumni.user.email,
 					desc: alumni.user.description,
 					linkedin: alumni.user.linkedIn,

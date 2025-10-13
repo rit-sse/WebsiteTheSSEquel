@@ -24,17 +24,8 @@ export default function ReplaceAlumniForm({ open, alumniMember, getAlumni, close
 		user_email: '',
 		start_date: '',
 		end_date: '',
-		position: ''
 	});
 	const [error, setError] = useState("")
-
-	// Fill form the selected alumni's position
-	useEffect(() => {
-		setFormData((prevData) => ({
-			...prevData,
-			position: alumniMember?.title ?? ''
-		}));
-	}, [alumniMember]);
 
 	// Clear form if closed
 	useEffect(() => {
@@ -48,7 +39,6 @@ export default function ReplaceAlumniForm({ open, alumniMember, getAlumni, close
 			user_email: '',
 			start_date: '',
 			end_date: '',
-			position: ''
 		});
 	}
 
@@ -64,14 +54,13 @@ export default function ReplaceAlumniForm({ open, alumniMember, getAlumni, close
 		e.preventDefault();
 		setError("");
 		try {
-			const response = await fetch('/api/officer', { // TO-DO: Check the /api/officer file and see how to make it for alumni
+			const response = await fetch('/api/alumni', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
 					user_email: formData.user_email,
 					start_date: new Date(formData.start_date).toISOString(),
 					end_date: new Date(formData.end_date).toISOString(),
-					position: formData.position
 				}),
 			});
 			if (response.ok) {

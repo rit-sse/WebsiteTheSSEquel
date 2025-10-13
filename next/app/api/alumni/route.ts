@@ -6,10 +6,9 @@ const prisma = new PrismaClient();
 
 /**
  * HTTP GET request to /api/alumni
- * Gets all existing officers
+ * Gets all existing alumni
  * @returns [{is_active: boolean, start_date: date, end_date: date,
  *            user: {name: string, email: string},
- *            position: {is_primary: boolean, title: string}}]
  */
 export async function GET() {
   const alumni = await prisma.alumni.findMany({
@@ -22,13 +21,7 @@ export async function GET() {
           name: true,
           email: true,
         },
-      },
-      position: {
-        select: {
-          is_primary: true,
-          title: true,
-        },
-      },
+      }
     },
   });
   return Response.json(alumni);
@@ -36,8 +29,8 @@ export async function GET() {
 
 /**
  * HTTP POST request to /api/alumni
- * Create a new officer
- * @param request {user_email: string, start_date: date, end_date: date, position: string}
+ * Create a new alumni
+ * @param request {user_email: string, start_date: date, end_date: date}
  */
 export async function POST(request: Request) {
   const body = await request.json();
@@ -49,11 +42,11 @@ export async function POST(request: Request) {
     )
   ) {
     return new Response(
-      ' "user_email","position","start_date" and "end_date" are all required',
+      ' "user_email","start_date" and "end_date" are all required',
       { status: 400 }
     );
   }
-  const { user_email, position, start_date, end_date } = body;
+  const { user_email, start_date, end_date } = body;
   const user_id = (
     await prisma.user.findFirst({
       where: { email: user_email },
@@ -63,9 +56,9 @@ export async function POST(request: Request) {
 }
 /**
  * HTTP PUT request to /api/alumni
- * Update an existing officer
+ * Update an existing alumni
  * @param request {id: number, start_date?: date, end_date?: date}
- * @returns updated officer object
+ * @returns updated alumni object
  */
 export async function PUT(request: Request) {
   let body;
@@ -97,10 +90,10 @@ export async function PUT(request: Request) {
 
   // apply updates to database
   try {
-    const officer = await prisma.officer.update({ where: { id }, data });
+    const alumni = await prisma.alumni.update({ where: { id }, data });
     return Response.json(alumni);
   } catch (e) {
-    // make sure the selected officer exists
-    return new Response(`Failed to update officer: ${e}`, { status: 500 });
+    // make sure the selected alumni exists
+    return new Response(`Failed to update alumni: ${e}`, { status: 500 });
   }
 }

@@ -93,7 +93,7 @@ export default function EditAlumniForm({ open, alumniMember, getAlumni, closeMod
 
             // Call to alumni route if the start and end dates are modified
             if (formData.start_date != '' && formData.end_date != ''){
-                const alumniResponse = await fetch('/api/officer', { // TO-DO: Check the /api/officer file and see how to make it for alumni
+                const alumniResponse = await fetch('/api/alumni', {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({

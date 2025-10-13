@@ -9,7 +9,6 @@ const prisma = new PrismaClient();
  * Gets all active alumni
  * @returns [{is_active: boolean, id: string, start_date: date, end_date: date,
  *            user: {id: string, name: string, email: string},
- *            position: {is_primary: boolean, title: string}}]
  */
 export async function GET() {
   const alumni = await prisma.alumni.findMany({
@@ -25,12 +24,6 @@ export async function GET() {
           image: true,
           gitHub: true,
           description: true
-        },
-      },
-      position: {
-        select: {
-          is_primary: true,
-          title: true,
         },
       },
     },
