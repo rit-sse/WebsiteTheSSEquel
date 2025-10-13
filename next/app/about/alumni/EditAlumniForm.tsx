@@ -4,14 +4,14 @@ import { useEffect, useState } from "react";
 import { AlumniMember } from "./alumni";
 
 
-interface OfficerFormProps {
+interface AlumniFormProps {
     open: boolean, // open - State of edit form modal
-    alumniMember?: AlumniMember, // alumniMember - Currently selected officer to be edited
-    getOfficers: () => void, // getOfficers - Function to get active officers, used to update the list
+    alumniMember?: AlumniMember, // alumniMember - Currently selected alumni to be edited
+    getAlumni: () => void, // getAlumni - Function to get active alumni, used to update the list
     closeModal: () => void // closeModal - Function to close the form's modal
 }
 
-export default function EditOfficerForm({ open, alumniMember, getOfficers, closeModal }: OfficerFormProps) {
+export default function EditAlumniForm({ open, alumniMember, getAlumni, closeModal }: AlumniFormProps) {
     const [formData, setFormData] = useState({
         user_email: '',
         linkedIn: '',
@@ -73,7 +73,7 @@ export default function EditOfficerForm({ open, alumniMember, getOfficers, close
             if (gitHubValue.startsWith("www.")) {
                 gitHubValue = "https://" + gitHubValue;
             }
-            // Call to user route to update officer's user data
+            // Call to user route to update alumni's user data
             const userResponse = await fetch('/api/user', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
@@ -91,9 +91,9 @@ export default function EditOfficerForm({ open, alumniMember, getOfficers, close
                 throw new Error(`Error: ${text}`);
             }
 
-            // Call to officer route if the start and end dates are modified
+            // Call to alumni route if the start and end dates are modified
             if (formData.start_date != '' && formData.end_date != ''){
-                const officerResponse = await fetch('/api/officer', {
+                const alumniResponse = await fetch('/api/officer', { // TO-DO: Check the /api/officer file and see how to make it for alumni
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -105,7 +105,7 @@ export default function EditOfficerForm({ open, alumniMember, getOfficers, close
             }
             
             if (userResponse.ok) {
-                getOfficers();
+                getAlumni();
                 closeModal();
             } 
             else {
@@ -122,7 +122,7 @@ export default function EditOfficerForm({ open, alumniMember, getOfficers, close
     return (
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div className="flex flex-col">
-                <label>Officer Email</label>
+                <label>Alumni Email</label>
                 <input type="email" name="user_email" placeholder="RIT Email" value={formData.user_email} onChange={handleChange}/>
             </div>
             <div className="flex flex-col">
@@ -135,7 +135,7 @@ export default function EditOfficerForm({ open, alumniMember, getOfficers, close
             </div>
             <div className="flex flex-col">
                 <label>Description</label>
-                <input name="description" placeholder="Description about officer..." value={formData.description} onChange={handleChange}/>
+                <input name="description" placeholder="Description about alumni..." value={formData.description} onChange={handleChange}/>
             </div>
             <div className="flex flex-col">
                 <label>Start Date</label>

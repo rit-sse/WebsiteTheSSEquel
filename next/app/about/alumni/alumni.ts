@@ -11,5 +11,5 @@ export interface AlumniMember {
 }
 
 export interface Team {
-  primary_officers: AlumniMember[];
+  alumni_member: AlumniMember[];
 }

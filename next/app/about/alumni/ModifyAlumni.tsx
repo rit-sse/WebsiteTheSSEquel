@@ -8,9 +8,9 @@ import Image from 'next/image';
  * alumniMember - An alumni
  * openReplaceModal - Function to open the replace modal form
  * openEditModal - Function to open the edit modal form
- * setSelectedOfficer - Function to set the selectedOfficer state
+ * setSelectedAlumni - Function to set the selectedAlumni state
  */
-interface ModifyOfficerProps {
+interface ModifyAlumniProps {
     alumniMember: AlumniMember,
     openReplaceModal: () => void,
     openEditModal: () => void,
@@ -20,8 +20,8 @@ interface ModifyOfficerProps {
 /**
  * Component that reveals Edit / Replace button to alumni
  */
-export default function ModifyOfficers({ alumniMember, openReplaceModal, openEditModal, setSelectedAlumni }: ModifyOfficerProps) {
-    const [isOfficer, setIsOfficer] = useState(false);
+export default function ModifyAlumni({ alumniMember, openReplaceModal, openEditModal, setSelectedAlumni }: ModifyAlumniProps) {
+    const [isAlumni, setIsAlumni] = useState(false);
     
     useEffect(() => {
         userStatus();  
@@ -30,10 +30,10 @@ export default function ModifyOfficers({ alumniMember, openReplaceModal, openEdi
     const userStatus = async () =>{
         const response = await fetch("/api/authLevel");
         const userData = await response.json();
-        setIsOfficer(userData.isOfficer);
+        setIsAlumni(userData.isAlumni);
     }
 
-    if(isOfficer){
+    if(isAlumni){
         return (
             <div className="flex flex-row justify-center gap-4">
                 <button className="text-sm bg-secondary hover:bg-primary rounded-md active:bg-neutral text-base-100 p-1" onClick={() => {setSelectedAlumni(alumniMember); openEditModal()}}>

@@ -6,20 +6,20 @@ import { AlumniMember } from "./alumni";
 /**
  * open - State of replace form modal
  * alumniMember - Currently selected alumni to be replaced
- * getOfficers - Function to get active officers, used to update the list
+ * getAlumni - Function to get active alumni, used to update the list
  * closeModal - Function to close the form's modal
  */
-interface OfficerFormProps {
+interface AlumniFormProps {
 	open: boolean,
 	alumniMember?: AlumniMember,
-	getOfficers: () => void,
+	getAlumni: () => void,
 	closeModel: () => void
 }
 
 /**
  * Form to replace an existing alumni in a current position
  */
-export default function ReplaceOfficerForm({ open, alumniMember, getOfficers, closeModel }: OfficerFormProps) {
+export default function ReplaceAlumniForm({ open, alumniMember, getAlumni, closeModel }: AlumniFormProps) {
 	const [formData, setFormData] = useState({
 		user_email: '',
 		start_date: '',
@@ -64,7 +64,7 @@ export default function ReplaceOfficerForm({ open, alumniMember, getOfficers, cl
 		e.preventDefault();
 		setError("");
 		try {
-			const response = await fetch('/api/officer', {
+			const response = await fetch('/api/officer', { // TO-DO: Check the /api/officer file and see how to make it for alumni
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
@@ -76,7 +76,7 @@ export default function ReplaceOfficerForm({ open, alumniMember, getOfficers, cl
 			});
 			if (response.ok) {
 				console.log('Alumni created successfully');
-				getOfficers();
+				getAlumni();
 				closeModel();
 			}
 			else {
@@ -93,7 +93,7 @@ export default function ReplaceOfficerForm({ open, alumniMember, getOfficers, cl
 	return (
 		<form onSubmit={handleSubmit} className="flex flex-col gap-4">
 			<div className="flex flex-col">
-				<label>Officer Email</label>
+				<label>Alumni Email</label>
 				<input type="email" name="user_email" placeholder="RIT Email" value={formData.user_email} onChange={handleChange} required />
 			</div>
 			<div className="flex flex-col">

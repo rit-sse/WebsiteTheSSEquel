@@ -1,50 +1,50 @@
 "use client"
 
 import { useEffect, useState } from "react";
-import OfficerCard from "./OfficerCard";
-import OfficerFormModal from "./OfficerFormModal";
+import AlumniCard from "./AlumniCard";
+import AlumniFormModal from "./AlumniFormModal";
 import { Team, AlumniMember } from "./alumni";
-import ModifyOfficers from "./ModifyOfficers";
-import ReplaceOfficerForm from "./ReplaceOfficerForm";
-import EditOfficerForm from "./EditOfficerForm";
+import ModifyAlumni from "./ModifyAlumni";
+import ReplaceAlumniForm from "./ReplaceAlumniForm";
+import EditAlumniForm from "./EditAlumniForm";
 
 export default function Leadership() {
 	// States to manage opening/closing of modals
 	const [replaceOpen, setReplaceOpen] = useState(false);
 	const [editOpen, setEditOpen] = useState(false);
-	// State of the current selected officer (being edited / replaced)
+	// State of the current selected alumni (being edited / replaced)
 	const [selectedAlumni, setSelectedAlumni] = useState<AlumniMember>();
-	// State list of all active officers
-	const [teamData, setTeamData] = useState<Team>({ primary_officers: []});
+	// State list of all active alumni
+	const [teamData, setTeamData] = useState<Team>({ alumni_member: []});
 
-	// Get all active officers when page opens
+	// Get all active alumni when page opens
 	useEffect(() => {
-		getOfficers();
+		getAlumni();
 	}, []);
 
-	const getOfficers = async () => {
-		var team: Team = { primary_officers: []};
+	const getAlumni = async () => {
+		var team: Team = { alumni_member: []};
 		try {
-			const response = await fetch('/api/officer/active');
+			const response = await fetch('/api/officer/active'); // TO-DO: Check the /api/officer file and see how to make it for alumni
 			if (!response.ok) {
-				throw new Error('Failed to fetch officers');
+				throw new Error('Failed to fetch alumni');
 			}
 			const data = await response.json();
 			console.log(data.user)
 
-			// Map primary officers to AlimnuMember
-			team.primary_officers = data
-				.filter((officer: any) => officer.position.is_primary)
-				.map((officer: any) => ({
-					officer_id: officer.id,
-					user_id: officer.user.id,
-					name: officer.user.name,
-					image: officer.user.image,
-					title: officer.position.title,
-					email: officer.user.email,
-					desc: officer.user.description,
-					linkedin: officer.user.linkedIn,
-					github: officer.user.gitHub
+			// Map primary alumni to AlimnuMember
+			team.alumni_member = data
+				.filter((alumni: any) => alumni.position.is_primary)
+				.map((alumni: any) => ({
+					alumni_id: alumni.id,
+					user_id: alumni.user.id,
+					name: alumni.user.name,
+					image: alumni.user.image,
+					title: alumni.position.title,
+					email: alumni.user.email,
+					desc: alumni.user.description,
+					linkedin: alumni.user.linkedIn,
+					github: alumni.user.gitHub
 				}));
 
 		} catch (error) {
@@ -56,13 +56,13 @@ export default function Leadership() {
 	return (
 		<>
 			<section className="mt-16">
-				{/* Modals for editing and replacing officer forms */}
-				<OfficerFormModal isOpen={replaceOpen} onClose={async () => setReplaceOpen(false)}>
-					<ReplaceOfficerForm open={replaceOpen} alumniMember={selectedAlumni} getOfficers={getOfficers} closeModel={() => setReplaceOpen(false)} />
-				</OfficerFormModal>
-				<OfficerFormModal isOpen={editOpen} onClose={async () => setEditOpen(false)}>
-					<EditOfficerForm open={editOpen} alumniMember={selectedAlumni} getOfficers={getOfficers} closeModal={() => setEditOpen(false)} />
-				</OfficerFormModal>
+				{/* Modals for editing and replacing alumni forms */}
+				<AlumniFormModal isOpen={replaceOpen} onClose={async () => setReplaceOpen(false)}>
+					<ReplaceAlumniForm open={replaceOpen} alumniMember={selectedAlumni} getAlumni={getAlumni} closeModel={() => setReplaceOpen(false)} />
+				</AlumniFormModal>
+				<AlumniFormModal isOpen={editOpen} onClose={async () => setEditOpen(false)}>
+					<EditAlumniForm open={editOpen} alumniMember={selectedAlumni} getAlumni={getAlumni} closeModal={() => setEditOpen(false)} />
+				</AlumniFormModal>
 				<div className="max-w-screen-xl mx-auto px-4 text-center md:px-8">
 					<div className="content-center">
 						{/* Meet our team */}
@@ -81,11 +81,11 @@ export default function Leadership() {
 					{/* Alumni */}
 					<div className="">
 						<div className="w-full flex flex-row justify-center gap-5">
-							{teamData.primary_officers.map((member, idx) => (
+							{teamData.alumni_member.map((member, idx) => (
 								<div key={idx}>
-									<OfficerCard alumniMember={member} />
-									{/* Edit and Remove buttons, only officers can see */}
-									<ModifyOfficers alumniMember={member} openReplaceModal={() => setReplaceOpen(true)} openEditModal={() => setEditOpen(true)} setSelectedAlumni={setSelectedAlumni} />
+									<AlumniCard alumniMember={member} />
+									{/* Edit and Remove buttons, only alumni can see */}
+									<ModifyAlumni alumniMember={member} openReplaceModal={() => setReplaceOpen(true)} openEditModal={() => setEditOpen(true)} setSelectedAlumni={setSelectedAlumni} />
 								</div>
 							))}
 						</div>
