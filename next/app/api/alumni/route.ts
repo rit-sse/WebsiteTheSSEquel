@@ -13,7 +13,6 @@ const prisma = new PrismaClient();
 export async function GET() {
   const alumni = await prisma.alumni.findMany({
     select: {
-      is_active: true,
       start_date: true,
       end_date: true,
       user: {

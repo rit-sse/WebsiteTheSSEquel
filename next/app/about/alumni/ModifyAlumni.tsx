@@ -21,19 +21,19 @@ interface ModifyAlumniProps {
  * Component that reveals Edit / Replace button to alumni
  */
 export default function ModifyAlumni({ alumniMember, openReplaceModal, openEditModal, setSelectedAlumni }: ModifyAlumniProps) {
-    const [isAlumni, setIsAlumni] = useState(false);
+    const [isOfficer, setIsOfficer] = useState(false);
     
     useEffect(() => {
         userStatus();  
     }, []);
     
-    const userStatus = async () =>{
+    const userStatus = async () =>{ // checks if the current user is an officer
         const response = await fetch("/api/authLevel");
         const userData = await response.json();
-        setIsAlumni(userData.isAlumni);
+        setIsOfficer(userData.isOfficer);
     }
 
-    if(isAlumni){
+    if(isOfficer){
         return (
             <div className="flex flex-row justify-center gap-4">
                 <button className="text-sm bg-secondary hover:bg-primary rounded-md active:bg-neutral text-base-100 p-1" onClick={() => {setSelectedAlumni(alumniMember); openEditModal()}}>

@@ -7,6 +7,12 @@ import { Team, AlumniMember } from "./alumni";
 import ModifyAlumni from "./ModifyAlumni";
 import ReplaceAlumniForm from "./ReplaceAlumniForm";
 import EditAlumniForm from "./EditAlumniForm";
+import CreateAlumniButton from "./MakeNewAlumni";
+
+
+export interface CreateAlumniProps {
+  fetchData: () => Promise<void>;
+}
 
 export default function Leadership() {
 	// States to manage opening/closing of modals
@@ -32,7 +38,7 @@ export default function Leadership() {
 			const data = await response.json();
 			console.log(data.user)
 
-			// Map alumni to AlimnuMember
+			// Map alumni to AlimniMember
 			team.alumni_member = data
 				.filter((alumni: any) => alumni)
 				.map((alumni: any) => ({
@@ -43,7 +49,9 @@ export default function Leadership() {
 					email: alumni.user.email,
 					desc: alumni.user.description,
 					linkedin: alumni.user.linkedIn,
-					github: alumni.user.gitHub
+					github: alumni.user.gitHub,
+					quote: alumni.quote,
+					previous_roles: alumni.previous_roles
 				}));
 
 		} catch (error) {
@@ -71,10 +79,24 @@ export default function Leadership() {
 							>
 								Meet the Alumni
 							</h1>
-							<p className="mt-3 text-xl leading-8">
+							<p className="mt-3 text-xl leading-8 text-center">
 								A dedicated page for alumni of the SSE
 							</p>
 						</div>
+					</div>
+
+					<div // Create Alumni Button
+						className="
+								grid
+								grid-cols-1
+								sm:grid-cols-1
+								md:grid-cols-2
+								lg:grid-cols-2
+								gap-4
+								md:p-4
+							"
+					>
+						<CreateAlumniButton fetchData={getAlumni} />
 					</div>
 
 					{/* Alumni */}
@@ -83,7 +105,7 @@ export default function Leadership() {
 							{teamData.alumni_member.map((member, idx) => (
 								<div key={idx}>
 									<AlumniCard alumniMember={member} />
-									{/* Edit and Remove buttons, only alumni can see */}
+									{/* Edit and Remove buttons, only officers can see */}
 									<ModifyAlumni alumniMember={member} openReplaceModal={() => setReplaceOpen(true)} openEditModal={() => setEditOpen(true)} setSelectedAlumni={setSelectedAlumni} />
 								</div>
 							))}

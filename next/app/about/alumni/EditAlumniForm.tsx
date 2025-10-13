@@ -18,7 +18,9 @@ export default function EditAlumniForm({ open, alumniMember, getAlumni, closeMod
         gitHub: '',
         description: '',
         start_date: '',
-        end_date: ''
+        end_date: '',
+        quote: '',
+        previous_roles: ''
     });
     const [error, setError] = useState("")
 
@@ -41,15 +43,17 @@ export default function EditAlumniForm({ open, alumniMember, getAlumni, closeMod
             linkedIn: alumniMember?.linkedin ?? '',
             gitHub: alumniMember?.github ?? '',
             description: alumniMember?.desc ?? '',
+            quote: alumniMember?.quote ?? '',
+            previous_roles: alumniMember?.previous_roles ?? '',
             start_date: '',
-            end_date: ''
+            end_date: '',
         });
     }
 
     const handleChange = (e: any) => {
         const { name, value } = e.target;
         setFormData((prevData) => ({
-          ...prevData,
+          ...prevData, 
           [name]: value,
         }));
     };
@@ -82,7 +86,9 @@ export default function EditAlumniForm({ open, alumniMember, getAlumni, closeMod
                     user_email: formData.user_email,
                     linkedIn: linkedInValue,
                     gitHub: gitHubValue,
-                    description: formData.description
+                    description: formData.description,
+                    quote: formData.quote,
+                    previous_roles: formData.previous_roles
                 }),
             });
 
@@ -144,6 +150,14 @@ export default function EditAlumniForm({ open, alumniMember, getAlumni, closeMod
             <div className="flex flex-col">
                 <label>End Date</label>
                 <input type="date" name="end_date" value={formData.end_date} onChange={handleChange}/>
+            </div>
+            <div className="flex flex-col">
+                <label>Quote</label>
+                <input name="quote" placeholder="Alumni quote..." value={formData.quote} onChange={handleChange}/>
+            </div>
+            <div className="flex flex-col">
+                <label>Previous Roles</label>
+                <input name="previous_roles" placeholder="Alumni's previous role(s)..." value={formData.previous_roles} onChange={handleChange}/>
             </div>
             <button type="submit" className="p-2 bg-secondary text-base-content hover:bg-primary rounded">Submit</button>
             <label className="text-error text-center text-sm">{error}</label>

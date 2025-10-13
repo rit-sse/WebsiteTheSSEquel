@@ -12,7 +12,6 @@ const prisma = new PrismaClient();
  */
 export async function GET() {
   const alumni = await prisma.alumni.findMany({
-    where: { is_active: true },
     select: {
       id: true,
       user: {
@@ -23,10 +22,10 @@ export async function GET() {
           linkedIn: true,
           image: true,
           gitHub: true,
-          description: true
+          description: true,
         },
       },
-    },
+    }, 
   });
   return Response.json(alumni);
 }
