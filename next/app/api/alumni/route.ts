@@ -5,14 +5,14 @@ export const dynamic = "force-dynamic";
 const prisma = new PrismaClient();
 
 /**
- * HTTP GET request to /api/officer
+ * HTTP GET request to /api/alumni
  * Gets all existing officers
  * @returns [{is_active: boolean, start_date: date, end_date: date,
  *            user: {name: string, email: string},
  *            position: {is_primary: boolean, title: string}}]
  */
 export async function GET() {
-  const officer = await prisma.officer.findMany({
+  const alumni = await prisma.alumni.findMany({
     select: {
       is_active: true,
       start_date: true,
@@ -31,11 +31,11 @@ export async function GET() {
       },
     },
   });
-  return Response.json(officer);
+  return Response.json(alumni);
 }
 
 /**
- * HTTP POST request to /api/officer
+ * HTTP POST request to /api/alumni
  * Create a new officer
  * @param request {user_email: string, start_date: date, end_date: date, position: string}
  */
@@ -45,8 +45,7 @@ export async function POST(request: Request) {
     !(
       "user_email" in body &&
       "start_date" in body &&
-      "end_date" in body &&
-      "position" in body
+      "end_date" in body
     )
   ) {
     return new Response(
@@ -61,29 +60,9 @@ export async function POST(request: Request) {
       select: { id: true },
     })
   )?.id;
-  const position_id = (
-    await prisma.officerPosition.findFirst({
-      where: { title: position },
-      select: { id: true },
-    })
-  )?.id;
-  // If we couldn't find the user or position ID, give up
-  if (user_id === undefined || position_id === undefined) {
-    return new Response("User and position not found", { status: 404 });
-  }
-  // the previous officer in that position should become inactive
-  await prisma.officer.updateMany({
-    where: { position: { title: position } },
-    data: { is_active: false },
-  });
-  const newOfficer = await prisma.officer.create({
-    data: { user_id, position_id, start_date, end_date },
-  });
-  return Response.json(newOfficer);
 }
-
 /**
- * HTTP PUT request to /api/officer
+ * HTTP PUT request to /api/alumni
  * Update an existing officer
  * @param request {id: number, start_date?: date, end_date?: date}
  * @returns updated officer object
@@ -119,7 +98,7 @@ export async function PUT(request: Request) {
   // apply updates to database
   try {
     const officer = await prisma.officer.update({ where: { id }, data });
-    return Response.json(officer);
+    return Response.json(alumni);
   } catch (e) {
     // make sure the selected officer exists
     return new Response(`Failed to update officer: ${e}`, { status: 500 });

@@ -5,14 +5,14 @@ export const dynamic = "force-dynamic";
 const prisma = new PrismaClient();
 
 /**
- * HTTP GET request to /api/officer/active
- * Gets all active officers
+ * HTTP GET request to /api/alumni/active
+ * Gets all active alumni
  * @returns [{is_active: boolean, id: string, start_date: date, end_date: date,
  *            user: {id: string, name: string, email: string},
  *            position: {is_primary: boolean, title: string}}]
  */
 export async function GET() {
-  const officer = await prisma.officer.findMany({
+  const alumni = await prisma.alumni.findMany({
     where: { is_active: true },
     select: {
       id: true,
@@ -35,5 +35,5 @@ export async function GET() {
       },
     },
   });
-  return Response.json(officer);
+  return Response.json(alumni);
 }

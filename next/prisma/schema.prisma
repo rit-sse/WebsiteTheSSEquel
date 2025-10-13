@@ -41,6 +41,25 @@ model User {
     session              Session[]
     projectContributions ProjectContributor[]
     projects             Project[]
+    alumni               Alumni[]
+}
+
+model Alumni {
+    //Store an automatically generated unique int for id
+    id Int @id @default(autoincrement())
+
+    //Refrences userId
+    user_id Int
+
+    //Store active status as a boolean
+    is_active Boolean @default(true)
+
+    //Store startDate and endDate as a DateTime
+    start_date DateTime
+    end_date   DateTime
+
+    //Relational fields
+    user     User            @relation(fields: [user_id], references: [id])
 }
 
 model Quote {
