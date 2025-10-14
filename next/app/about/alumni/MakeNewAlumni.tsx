@@ -2,13 +2,16 @@
 
 import { useSession } from "next-auth/react";
 import { use, useCallback, useEffect, useState } from "react";
-import { CreateAlumniProps } from "./page";
 import { deepEqual, equal, notDeepEqual } from "assert";
+
+interface CreateAlumniProps {
+  fetchData: () => Promise<void>;
+}
 
 export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) => {
   const { data: session }: any = useSession();
-  const [alumni_id, setAlumniID] = useState(1);
-  const [user_id, setUserID] = useState(1);
+  const [alumni_id, setAlumniID] = useState("");
+  const [user_id, setUserID] = useState("");
   const [name, setName] = useState("");
   const [title, setTitle] = useState("");
   const [quote, setQuote] = useState("");
@@ -21,8 +24,8 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
   const [end_date, setEndDate] = useState("");
 
   const [formData, setFormData] = useState({
-    alumni_id: 1,
-    user_id: 1,
+    alumni_id: '',
+    user_id: '',
     name: '',
     title: '',
     quote: '',

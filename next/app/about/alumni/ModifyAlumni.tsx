@@ -12,7 +12,7 @@ import Image from 'next/image';
  */
 interface ModifyAlumniProps {
     alumniMember: AlumniMember,
-    openReplaceModal: () => void,
+    openDeleteModal: () => void,
     openEditModal: () => void,
     setSelectedAlumni: (alumniMember: AlumniMember) => void
 }
@@ -20,7 +20,7 @@ interface ModifyAlumniProps {
 /**
  * Component that reveals Edit / Replace button to alumni
  */
-export default function ModifyAlumni({ alumniMember, openReplaceModal, openEditModal, setSelectedAlumni }: ModifyAlumniProps) {
+export default function ModifyAlumni({ alumniMember, openDeleteModal, openEditModal, setSelectedAlumni }: ModifyAlumniProps) {
     const [isOfficer, setIsOfficer] = useState(false);
     
     useEffect(() => {
@@ -39,8 +39,8 @@ export default function ModifyAlumni({ alumniMember, openReplaceModal, openEditM
                 <button className="text-sm bg-secondary hover:bg-primary rounded-md active:bg-neutral text-base-100 p-1" onClick={() => {setSelectedAlumni(alumniMember); openEditModal()}}>
                     Edit
                 </button>
-                <button className="text-sm bg-secondary hover:bg-primary rounded-md active:bg-neutral text-base-100 p-1" onClick={() => {setSelectedAlumni(alumniMember); openReplaceModal()}}>
-                    Replace
+                <button className="text-sm bg-secondary hover:bg-primary rounded-md active:bg-neutral text-base-100 p-1" onClick={() => {setSelectedAlumni(alumniMember); openDeleteModal()}}>
+                    Delete
                 </button>
             </div>
         )

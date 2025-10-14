@@ -5,18 +5,13 @@ import AlumniCard from "./AlumniCard";
 import AlumniFormModal from "./AlumniFormModal";
 import { Team, AlumniMember } from "./alumni";
 import ModifyAlumni from "./ModifyAlumni";
-import ReplaceAlumniForm from "./ReplaceAlumniForm";
 import EditAlumniForm from "./EditAlumniForm";
 import CreateAlumniButton from "./MakeNewAlumni";
-
-
-export interface CreateAlumniProps {
-  fetchData: () => Promise<void>;
-}
+import DeleteAlumniButton from "./DeleteAlumni";
 
 export default function Leadership() {
 	// States to manage opening/closing of modals
-	const [replaceOpen, setReplaceOpen] = useState(false);
+	const [deleteOpen, setDeleteOpen] = useState(false);
 	const [editOpen, setEditOpen] = useState(false);
 	// State of the current selected alumni (being edited / replaced)
 	const [selectedAlumni, setSelectedAlumni] = useState<AlumniMember>();
@@ -64,8 +59,8 @@ export default function Leadership() {
 		<>
 			<section className="mt-16">
 				{/* Modals for editing and replacing alumni forms */}
-				<AlumniFormModal isOpen={replaceOpen} onClose={async () => setReplaceOpen(false)}>
-					<ReplaceAlumniForm open={replaceOpen} alumniMember={selectedAlumni} getAlumni={getAlumni} closeModel={() => setReplaceOpen(false)} />
+				<AlumniFormModal isOpen={deleteOpen} onClose={async () => setDeleteOpen(false)}>
+					<DeleteAlumniButton open={editOpen} alumniMember={selectedAlumni} fetchData={getAlumni} closeModal={() => setEditOpen(false)}/>
 				</AlumniFormModal>
 				<AlumniFormModal isOpen={editOpen} onClose={async () => setEditOpen(false)}>
 					<EditAlumniForm open={editOpen} alumniMember={selectedAlumni} getAlumni={getAlumni} closeModal={() => setEditOpen(false)} />
@@ -82,22 +77,13 @@ export default function Leadership() {
 							<p className="mt-3 text-xl leading-8 text-center">
 								A dedicated page for alumni of the SSE
 							</p>
+							<div // Create Alumni Button
+								className="gap-4 md:p-4">
+								<CreateAlumniButton fetchData={getAlumni} />
+							</div>
 						</div>
 					</div>
-
-					<div // Create Alumni Button
-						className="
-								grid
-								grid-cols-1
-								sm:grid-cols-1
-								md:grid-cols-2
-								lg:grid-cols-2
-								gap-4
-								md:p-4
-							"
-					>
-						<CreateAlumniButton fetchData={getAlumni} />
-					</div>
+					
 
 					{/* Alumni */}
 					<div className="">
@@ -106,7 +92,7 @@ export default function Leadership() {
 								<div key={idx}>
 									<AlumniCard alumniMember={member} />
 									{/* Edit and Remove buttons, only officers can see */}
-									<ModifyAlumni alumniMember={member} openReplaceModal={() => setReplaceOpen(true)} openEditModal={() => setEditOpen(true)} setSelectedAlumni={setSelectedAlumni} />
+									<ModifyAlumni alumniMember={member} openDeleteModal={() => setDeleteOpen(true)} openEditModal={() => setEditOpen(true)} setSelectedAlumni={setSelectedAlumni} />
 								</div>
 							))}
 						</div>

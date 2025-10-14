@@ -52,7 +52,7 @@ export async function POST(request: Request) {
       select: { id: true },
     })
   )?.id;
-  // If we couldn't find the user or position ID, give up
+  // If we couldn't find the user ID, give up
   if (user_id === undefined) {
     return new Response("User and position not found", { status: 404 });
   }
@@ -108,5 +108,47 @@ export async function PUT(request: Request) {
   } catch (e) {
     // make sure the selected alumni exists
     return new Response(`Failed to update alumni: ${e}`, { status: 500 });
+  }
+}
+
+/**
+ * HTTP DELETE request to /api/alumni
+ * @param request {id:number}
+ * @returns alumni object previously at { id }
+ */
+export async function DELETE(request: Request) {
+  console.log("received delete request");
+  let body: any;
+
+  try {
+    body = await request.json();
+  } catch (error) {
+    console.error("Failed to parse request JSON:", error);
+    return new Response("Invalid JSON payload", { status: 400 });
+  }
+
+  console.log(typeof body.id)
+  if (!("id" in body) || typeof body.id !== 'number') {
+    return new Response("A numeric `id` must be included in the request body", { status: 400 });
+  }
+  const id = body.id;
+
+  try {
+    console.log(`Attempting to delete Alumni with ID: ${id}`);
+    const deletedAlumni = await prisma.alumni.delete({ where: { id } });
+    console.log(`Successfully deleted Alumni ID: ${id}`, deletedAlumni);
+    return Response.json(deletedAlumni, { status: 200 });
+
+  } catch (error: any) {
+    console.error(`!!! ERROR Deleting Alumni ID ${id} !!!`);
+    console.error("Error Code:", error.code);
+    console.error("Full Error Object:", JSON.stringify(error, null, 2));
+    console.error("Stack Trace:", error.stack);
+
+    // If we couldn't find the ID, give up
+    if (id === undefined) {
+      return new Response("Alumni ID not found", { status: 404 });
+    }
+    return new Response("Failed to delete Alumni due to a server error.", { status: 500 });
   }
 }
