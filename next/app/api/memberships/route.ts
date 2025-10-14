@@ -18,7 +18,10 @@ export async function GET() {
         ],
     });
 
+    console.log('grouped: ', grouped)
+
     const userIds = grouped.map(g => g.userId);
+    console.log('userIds: ', userIds)
     const users = await prisma.user.findMany({
         where: {
             id: {
@@ -31,13 +34,18 @@ export async function GET() {
         }
     });
 
-    const byId = new Map(users.map(u => [u.id, u]))
+    console.log('users: ', users)
 
-    const items = grouped.map((g) => {
-        name: byId.get(g.userId)?.name ?? `User ${g.userId}`
-        membershipsCount: g._count.userId
-        lastMembershipAt: g._max.dateGiven
-    })
+    const byId = new Map(users.map(u => [u.id, u]))
+    console.log('byId: ', byId)
+
+    const items = grouped.map((g) => ({
+        name: byId.get(Number(g.userId))?.name ?? `User ${g.userId}`,
+        membershipsCount: g._count.userId,
+        lastMembershipAt: g._max.dateGiven,
+    }));
+
+    console.log('items: ', items)
 
     return Response.json(items)
 
