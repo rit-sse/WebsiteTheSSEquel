@@ -14,7 +14,9 @@ export async function GET() {
         },
 
         orderBy: {
-            userId: 'desc'
+            _count: {
+                userId: 'desc'
+            }
         }
     });
 
