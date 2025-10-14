@@ -51,12 +51,13 @@ model Alumni {
     //Refrences userId
     user_id Int
 
-    //Store active status as a boolean
-    is_active Boolean @default(true)
+    //Store Quote and Previous Roles
+    quote String            @default("")
+    previous_roles String[] @default([""])
 
     //Store startDate and endDate as a DateTime
-    start_date DateTime
-    end_date   DateTime
+    start_date String
+    end_date   String
 
     //Relational fields
     user     User            @relation(fields: [user_id], references: [id])

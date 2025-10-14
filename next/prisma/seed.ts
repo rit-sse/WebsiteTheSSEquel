@@ -199,6 +199,31 @@ async function seedSkill() {
 	console.log({ java, cpp, python });
 }
 
+async function seedAlumni() {
+	const alumni1 = await prisma.alumni.upsert({
+		where: { id: 1 },
+		update: {},
+		create: {
+			id: 1,
+			user_id: 1,
+			start_date: ("2023-11-1 12:00:00"),
+			end_date: ("2023-11-1 12:00:00"),
+		},
+	});
+	const alumni2 = await prisma.alumni.upsert({
+		where: { id: 2 },
+		update: {},
+		create: {
+			id: 2,
+			user_id: 2,
+			start_date: ("2023-11-1 12:00:00"),
+			end_date: ("2023-11-1 12:00:00"),
+		},
+	});
+	console.log({ alumni1, alumni2 });
+
+}
+
 async function seedMentorSkill() {
 	const mentorSkill1 = await prisma.mentorSkill.upsert({
 		where: { id: 1 },
@@ -705,6 +730,7 @@ async function main() {
     await seedOfficerPosition();
     await seedOfficer();
     await seedMentor();
+	await seedAlumni();
     await seedSkill();
     await seedMentorSkill();
     await seedDepartment();

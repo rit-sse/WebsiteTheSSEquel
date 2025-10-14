@@ -57,8 +57,13 @@ export async function POST(request: Request) {
     return new Response("User and position not found", { status: 404 });
   }
   // Set the new alumni
-  const newAlumni = await prisma.alumni.create({ data: { user_id, start_date, end_date } });
-  return Response.json(newAlumni);
+  try {
+    const newAlumni = await prisma.alumni.create({ data: { user_id, start_date, end_date } });
+    return Response.json(newAlumni);
+  } catch (e) {
+    // make sure the alumni was created
+    return new Response(`Failed to create alumni: ${e}`, { status: 500 });
+  }
   
 }
 
