@@ -23,46 +23,6 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
   const [start_date, setStartDate] = useState("");
   const [end_date, setEndDate] = useState("");
 
-  const [formData, setFormData] = useState({
-    alumni_id: '',
-    user_id: '',
-    name: '',
-    title: '',
-    quote: '',
-    previous_roles: '',
-    description: '',
-    linkedin: '',
-    github: '',
-		user_email: '',
-		start_date: '',
-		end_date: '',
-	});
-	const [error, setError] = useState("")
-
-	// Clear form if closed
-	// useEffect(() => {
-	// 	if (!open) {
-	// 		clearForm();
-	// 	}
-	// }, [open])
-
-	// const clearForm = () => {
-	// 	setFormData({
-  //     alumni_id: 1,
-  //     user_id: 1,
-  //     name: '',
-  //     title: '',
-  //     quote: '',
-  //     previous_roles: '',
-  //     description: '',
-  //     linkedin: '',
-  //     github: '',
-  //     user_email: '',
-  //     start_date: '',
-  //     end_date: '',
-	// 	});
-	// }
-
   // Handle setting the variables
   const handleSetName = (givenName: string) => {    
       setName(givenName);
@@ -124,6 +84,11 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             user_email: email,
+            linkedIn: linkedin,
+            gitHub: github,
+            description: description,
+            quote: quote,
+            previous_roles: previous_roles,
             start_date: start_date,
             end_date: end_date
         })
@@ -183,7 +148,7 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
           <div className="modal-box">
             <h3 className="font-bold py-4 text-xlg">Create Alumni</h3>
 
-            <label className="my-2 input input-bordered flex items-center gap-2">
+            {/* <label className="my-2 input input-bordered flex items-center gap-2">
               Alumni Name:
               <input
                 type="text"
@@ -192,67 +157,7 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
                 value={name}
                 onChange={((e) => handleSetName(e.target.value))}
               />
-            </label>
-            <label className="my-2 input input-bordered flex items-center gap-2">
-              Title:
-              <input
-                type="text"
-                className="grow text-gray-900"
-                placeholder="Alumni Title"
-                value={title}
-                onChange={((e) => handleSetTitle(e.target.value))}
-              />
-            </label>
-            <label className="my-2 input input-bordered flex items-center gap-2">
-              Quote:
-              <input
-                type="text"
-                className="grow text-gray-900"
-                placeholder="Alumni Quote"
-                value={quote}
-                onChange={((e) => handleSetQuote(e.target.value))}
-              />
-            </label>
-            <label className="my-2 input input-bordered flex items-center gap-2">
-              Previous Roles:
-              <input
-                type="text"
-                className="grow text-gray-900"
-                placeholder="Alumni Previous Roles"
-                value={previous_roles}
-                onChange={((e) => handleSetPreviousRoles(e.target.value))}
-              />
-            </label>
-            {/* <label className="my-2 input input-bordered flex items-center gap-2">
-              Description:
-              <input
-                type="text"
-                className="grow text-gray-900"
-                placeholder="Alumni Description"
-                value={description}
-                onChange={((e) => handleSetDescription(e.target.value))}
-              />
             </label> */}
-            <label className="my-2 input input-bordered flex items-center gap-2">
-              LinkedIn:
-              <input
-                type="text"
-                className="grow text-gray-900"
-                placeholder="Alumni LinkedIn"
-                value={linkedin}
-                onChange={((e) => handleSetLinkedin(e.target.value))}
-              />
-            </label>
-            <label className="my-2 input input-bordered flex items-center gap-2">
-              GitHub:
-              <input
-                type="text"
-                className="grow text-gray-900"
-                placeholder="Alumni GitHub"
-                value={github}
-                onChange={((e) => handleSetGithub(e.target.value))}
-              />
-            </label>
             <label className="my-2 input input-bordered flex items-center gap-2">
               Email:
               <input
@@ -283,13 +188,62 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
                 onChange={((e) => handleSetEndDate(e.target.value))}
               />
             </label>
-
-            <textarea
+            {/* <label className="my-2 input input-bordered flex items-center gap-2">
+              Title:
+              <input
+                type="text"
+                className="grow text-gray-900"
+                placeholder="Alumni Title"
+                value={title}
+                onChange={((e) => handleSetTitle(e.target.value))}
+              />
+            </label> */}
+            {/* <label className="my-2 input input-bordered flex items-center gap-2">
+              Quote:
+              <input
+                type="text"
+                className="grow text-gray-900"
+                placeholder="Alumni Quote"
+                value={quote}
+                onChange={((e) => handleSetQuote(e.target.value))}
+              />
+            </label>
+            <label className="my-2 input input-bordered flex items-center gap-2">
+              Previous Roles:
+              <input
+                type="text"
+                className="grow text-gray-900"
+                placeholder="Alumni Previous Roles"
+                value={previous_roles}
+                onChange={((e) => handleSetPreviousRoles(e.target.value))}
+              />
+            </label> */}
+            {/* <label className="my-2 input input-bordered flex items-center gap-2">
+              LinkedIn:
+              <input
+                type="text"
+                className="grow text-gray-900"
+                placeholder="Alumni LinkedIn"
+                value={linkedin}
+                onChange={((e) => handleSetLinkedin(e.target.value))}
+              />
+            </label>
+            <label className="my-2 input input-bordered flex items-center gap-2">
+              GitHub:
+              <input
+                type="text"
+                className="grow text-gray-900"
+                placeholder="Alumni GitHub"
+                value={github}
+                onChange={((e) => handleSetGithub(e.target.value))}
+              />
+            </label> */}
+            {/* <textarea
               className="textarea textarea-bordered w-full"
               placeholder="Description (keep it short please)"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-            ></textarea>
+            ></textarea> */}
 
             <div className="flex">
               <span className="flex-grow"></span>
