@@ -86,9 +86,7 @@ export default function EditAlumniForm({ open, alumniMember, getAlumni, closeMod
                     user_email: formData.user_email,
                     linkedIn: linkedInValue,
                     gitHub: gitHubValue,
-                    description: formData.description,
-                    quote: formData.quote,
-                    previous_roles: formData.previous_roles
+                    description: formData.description
                 }),
             });
 
@@ -97,28 +95,34 @@ export default function EditAlumniForm({ open, alumniMember, getAlumni, closeMod
                 throw new Error(`Error: ${text}`);
             }
 
-            // Call to alumni route if the start and end dates are modified
-            if (formData.start_date != '' && formData.end_date != ''){
-                const alumniResponse = await fetch('/api/alumni', {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        id: alumniMember?.alumni_id,
-                        start_date: new Date(formData.start_date).toISOString(),
-                        end_date: new Date(formData.end_date).toISOString() 
-                    })
-                })
-            }
-            
+            // // Call to user route to update alumni's alumni data
+            // const alumniResponse = await fetch('/api/alumni', {
+            //     method: 'PUT',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: JSON.stringify({
+            //         id: alumniMember?.alumni_id,
+            //         start_date: new Date(formData.start_date).toISOString(),
+            //         end_date: new Date(formData.end_date).toISOString(),
+            //         quote: formData.quote,
+            //         previous_roles: formData.previous_roles
+            //     })
+            // })
+
+            // if (!alumniResponse.ok) {
+            //     const text = await alumniResponse.text();
+            //     throw new Error(`Error: ${text}`);
+            // }
+
             if (userResponse.ok) {
                 getAlumni();
                 closeModal();
             } 
             else {
-                const errorData = await userResponse.text();
-                console.log(`Error: ${errorData}`);
-                setError(errorData);
+                const errorDataUser = await userResponse.text();
+                console.log(`Error: ${errorDataUser}`);
+                setError(errorDataUser);
             }
+
         } 
         catch (error) {
           console.error('Error submitting form:', error);

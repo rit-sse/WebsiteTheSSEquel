@@ -57,41 +57,6 @@ export async function POST(request: Request) {
     return new Response("User and position not found", { status: 404 });
   }
 
-  // only include updated fields
-  const data: {
-    user_id?: number,
-    linkedIn?: string,
-    gitHub?: string,
-    description?: string,
-    quote?: string,
-    previous_roles?: string[],
-    start_date?: string;
-    end_date?: string;
-  } = {};
-
-  data.user_id = body.user_id;
-
-  if ("linkedIn" in body) {
-    data.linkedIn = body.linkedIn;
-  }
-  if ("gitHub" in body) {
-    data.gitHub = body.gitHub;
-  }
-  if ("description" in body) {
-    data.description = body.description;
-  }
-  if ("quote" in body) {
-    data.quote = body.quote;
-  }
-  if ("previous_roles" in body) {
-    data.previous_roles = body.previous_roles;
-  }
-  if ("start_date" in body) {
-    data.start_date = body.start_date;
-  }
-  if ("end_date" in body) {
-    data.end_date = body.end_date;
-  }
   // Set the new alumni
   try {
     const newAlumni = await prisma.alumni.create({ data: {user_id, start_date, end_date} });
@@ -106,7 +71,7 @@ export async function POST(request: Request) {
 /**
  * HTTP PUT request to /api/alumni
  * Update an existing alumni
- * @param request {id: number, start_date?: date, end_date?: date}
+ * @param request {id: number, quote?: string, previous_roles?: string[], start_date?: date, end_date?: date}
  * @returns updated alumni object
  */
 export async function PUT(request: Request) {
@@ -127,9 +92,18 @@ export async function PUT(request: Request) {
 
   // only include updated fields
   const data: {
+    quote?: string;
+    previous_roles?: string[];
     start_date?: string;
     end_date?: string;
   } = {};
+
+  if ("quote" in body) {
+    data.quote = body.quote;
+  }
+  if ("previous_roles" in body) {
+    data.previous_roles = body.previous_roles;
+  }
   if ("start_date" in body) {
     data.start_date = body.start_date;
   }

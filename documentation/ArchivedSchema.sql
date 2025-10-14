@@ -38,6 +38,15 @@ CREATE TABLE officer(
     end_date DATE NOT NULL
 );
 
+CREATE TABLE alumni(
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES site_user(id) NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    previous_roles TEXT[] NOT NULL,
+    quote TEXT NOT NULL
+);
+
 CREATE TABLE skill(
     id SERIAL PRIMARY KEY,
     skill VARCHAR(40) NOT NULL
