@@ -7,8 +7,8 @@ import { deepEqual, equal, notDeepEqual } from "assert";
 
 export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) => {
   const { data: session }: any = useSession();
-  const [alumni_id, setAlumniID] = useState("");
-  const [user_id, setUserID] = useState("");
+  const [alumni_id, setAlumniID] = useState(1);
+  const [user_id, setUserID] = useState(1);
   const [name, setName] = useState("");
   const [title, setTitle] = useState("");
   const [quote, setQuote] = useState("");
@@ -21,13 +21,13 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
   const [end_date, setEndDate] = useState("");
 
   const [formData, setFormData] = useState({
-    alumni_id: '',
-    user_id: '',
+    alumni_id: 1,
+    user_id: 1,
     name: '',
     title: '',
     quote: '',
     previous_roles: '',
-    desc: '',
+    description: '',
     linkedin: '',
     github: '',
 		user_email: '',
@@ -45,13 +45,13 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
 
 	const clearForm = () => {
 		setFormData({
-      alumni_id: '',
-      user_id: '',
+      alumni_id: 1,
+      user_id: 1,
       name: '',
       title: '',
       quote: '',
       previous_roles: '',
-      desc: '',
+      description: '',
       linkedin: '',
       github: '',
       user_email: '',
@@ -60,22 +60,67 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
 		});
 	}
 
+  // Handle setting the variables
+  const handleSetName = (givenName: string) => {    
+      setName(givenName);
+  };
+
   const handleSetTitle = (givenTitle: string) => {    
       setTitle(givenTitle);
   };
 
+  const handleSetQuote = (givenQuote: string) => {    
+      setQuote(givenQuote);
+  };
+
+  const handleSetPreviousRoles = (givenPreviousRoles: string) => {    
+      setPreviousRoles(givenPreviousRoles);
+  };
+
+  const handleSetDescription = (givenDescription: string) => {    
+      setDescription(givenDescription);
+  };
+
+  const handleSetLinkedin = (givenLinkedin: string) => {    
+      setLinkedin(givenLinkedin);
+  };
+
+  const handleSetGithub = (givenGithub: string) => {    
+      setGithub(givenGithub);
+  };
+
+  const handleSetEmail = (givenEmail: string) => {    
+      setEmail(givenEmail);
+  };
+
+  const handleSetStartDate = (givenStartDate: string) => {    
+      setStartDate(givenStartDate);
+  };
+
+  const handleSetEndDate = (givenEndDate: string) => {    
+      setEndDate(givenEndDate);
+  };
+
   const handleCancel = () => {
+    setName("");
     setTitle("");
+    setQuote("");
+    setPreviousRoles("");
     setDescription("");
+    setLinkedin("");
+    setGithub("");
+    setEmail("");
+    setStartDate("");
+    setEndDate("");
   };
 
   const handleCreate = async () => {
     try {
       const response = await fetch("/api/alumni", {
-        method: 'PUT',
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            id: alumni_id,
+            user_email: email,
             start_date: start_date,
             end_date: end_date
         })
@@ -83,13 +128,14 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
 
       if (response.ok) {
         handleCancel();
-        //(document.getElementById("create-golink") as HTMLDialogElement).close();
+        (document.getElementById("create-alumni") as HTMLDialogElement).close();
         fetchData();
       }
     } catch (error) {}
   };
 
-   const [isOfficer, setIsOfficer] = useState(false);
+  // Input Form shown if the current user is an Officer
+  const [isOfficer, setIsOfficer] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -109,7 +155,7 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
             func.preventDefault();
             if (document) {
               (
-                document.getElementById("create-golink") as HTMLFormElement
+                document.getElementById("create-alumni") as HTMLFormElement
               ).showModal();
             }
           }}
@@ -130,18 +176,108 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
           Create Alumni
         </button>
 
-        <dialog id="create-golink" className="modal">
+        <dialog id="create-alumni" className="modal">
           <div className="modal-box">
             <h3 className="font-bold py-4 text-xlg">Create Alumni</h3>
 
             <label className="my-2 input input-bordered flex items-center gap-2">
-              Alumni Title:
+              Alumni Name:
               <input
                 type="text"
                 className="grow text-gray-900"
-                placeholder="The SSE Website"
+                placeholder="Alumni Name"
+                value={name}
+                onChange={((e) => handleSetName(e.target.value))}
+              />
+            </label>
+            <label className="my-2 input input-bordered flex items-center gap-2">
+              Title:
+              <input
+                type="text"
+                className="grow text-gray-900"
+                placeholder="Alumni Title"
                 value={title}
                 onChange={((e) => handleSetTitle(e.target.value))}
+              />
+            </label>
+            <label className="my-2 input input-bordered flex items-center gap-2">
+              Quote:
+              <input
+                type="text"
+                className="grow text-gray-900"
+                placeholder="Alumni Quote"
+                value={quote}
+                onChange={((e) => handleSetQuote(e.target.value))}
+              />
+            </label>
+            <label className="my-2 input input-bordered flex items-center gap-2">
+              Previous Roles:
+              <input
+                type="text"
+                className="grow text-gray-900"
+                placeholder="Alumni Previous Roles"
+                value={previous_roles}
+                onChange={((e) => handleSetPreviousRoles(e.target.value))}
+              />
+            </label>
+            {/* <label className="my-2 input input-bordered flex items-center gap-2">
+              Description:
+              <input
+                type="text"
+                className="grow text-gray-900"
+                placeholder="Alumni Description"
+                value={description}
+                onChange={((e) => handleSetDescription(e.target.value))}
+              />
+            </label> */}
+            <label className="my-2 input input-bordered flex items-center gap-2">
+              LinkedIn:
+              <input
+                type="text"
+                className="grow text-gray-900"
+                placeholder="Alumni LinkedIn"
+                value={linkedin}
+                onChange={((e) => handleSetLinkedin(e.target.value))}
+              />
+            </label>
+            <label className="my-2 input input-bordered flex items-center gap-2">
+              GitHub:
+              <input
+                type="text"
+                className="grow text-gray-900"
+                placeholder="Alumni GitHub"
+                value={github}
+                onChange={((e) => handleSetGithub(e.target.value))}
+              />
+            </label>
+            <label className="my-2 input input-bordered flex items-center gap-2">
+              Email:
+              <input
+                type="text"
+                className="grow text-gray-900"
+                placeholder="Alumni Email"
+                value={email}
+                onChange={((e) => handleSetEmail(e.target.value))}
+              />
+            </label>
+            <label className="my-2 input input-bordered flex items-center gap-2">
+              Start Date:
+              <input
+                type="text"
+                className="grow text-gray-900"
+                placeholder="Alumni Start Date"
+                value={start_date}
+                onChange={((e) => handleSetStartDate(e.target.value))}
+              />
+            </label>
+            <label className="my-2 input input-bordered flex items-center gap-2">
+              Graduation Date:
+              <input
+                type="text"
+                className="grow text-gray-900"
+                placeholder="Alumni Graduation Date"
+                value={end_date}
+                onChange={((e) => handleSetEndDate(e.target.value))}
               />
             </label>
 
@@ -179,7 +315,7 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
                       handleCancel();
                       (
                         document.getElementById(
-                          "create-golink"
+                          "create-alumni"
                         ) as HTMLDialogElement
                       ).close();
                     }}

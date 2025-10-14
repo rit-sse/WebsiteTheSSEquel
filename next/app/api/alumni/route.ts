@@ -52,7 +52,18 @@ export async function POST(request: Request) {
       select: { id: true },
     })
   )?.id;
+  // If we couldn't find the user or position ID, give up
+  if (user_id === undefined) {
+    return new Response("User and position not found", { status: 404 });
+  }
+  // Set the new alumni
+  const newAlumni = await prisma.alumni.create({
+    data: { user_id, start_date, end_date },
+  });
+  return Response.json(newAlumni);
 }
+
+
 /**
  * HTTP PUT request to /api/alumni
  * Update an existing alumni
