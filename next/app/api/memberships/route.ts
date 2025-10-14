@@ -33,11 +33,11 @@ export async function GET() {
 
     const byId = new Map(users.map(u => [u.id, u]))
 
-    const items = grouped.map((g) => {
-        name: byId.get(g.userId)?.name ?? `User ${g.userId}`
-        membershipsCount: g._count.userId
-        lastMembershipAt: g._max.dateGiven
-    })
+    const items = grouped.map((g) => ({
+        name: byId.get(g.userId)?.name ?? `User ${g.userId}`,
+        membershipsCount: g._count.userId,
+        lastMembershipAt: g._max.dateGiven,
+    }))
 
     return Response.json(items)
 
