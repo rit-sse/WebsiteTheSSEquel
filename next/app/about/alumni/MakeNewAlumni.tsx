@@ -37,28 +37,28 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
 	const [error, setError] = useState("")
 
 	// Clear form if closed
-	useEffect(() => {
-		if (!open) {
-			clearForm();
-		}
-	}, [open])
+	// useEffect(() => {
+	// 	if (!open) {
+	// 		clearForm();
+	// 	}
+	// }, [open])
 
-	const clearForm = () => {
-		setFormData({
-      alumni_id: 1,
-      user_id: 1,
-      name: '',
-      title: '',
-      quote: '',
-      previous_roles: '',
-      description: '',
-      linkedin: '',
-      github: '',
-      user_email: '',
-      start_date: '',
-      end_date: '',
-		});
-	}
+	// const clearForm = () => {
+	// 	setFormData({
+  //     alumni_id: 1,
+  //     user_id: 1,
+  //     name: '',
+  //     title: '',
+  //     quote: '',
+  //     previous_roles: '',
+  //     description: '',
+  //     linkedin: '',
+  //     github: '',
+  //     user_email: '',
+  //     start_date: '',
+  //     end_date: '',
+	// 	});
+	// }
 
   // Handle setting the variables
   const handleSetName = (givenName: string) => {    

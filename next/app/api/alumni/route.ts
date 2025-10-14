@@ -57,12 +57,10 @@ export async function POST(request: Request) {
     return new Response("User and position not found", { status: 404 });
   }
   // Set the new alumni
-  const newAlumni = await prisma.alumni.create({
-    data: { user_id, start_date, end_date },
-  });
+  const newAlumni = await prisma.alumni.create({ data: { user_id, start_date, end_date } });
   return Response.json(newAlumni);
+  
 }
-
 
 /**
  * HTTP PUT request to /api/alumni
@@ -73,7 +71,7 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
   let body;
   try {
-    body = await request.json();
+    body = await request.json(); 
   } catch {
     return new Response("Invalid JSON", { status: 422 });
   }
