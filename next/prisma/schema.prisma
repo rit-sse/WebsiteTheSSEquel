@@ -41,6 +41,8 @@ model User {
     session              Session[]
     projectContributions ProjectContributor[]
     projects             Project[]
+
+    Memberships Memberships[]
 }
 
 model Quote {
@@ -344,4 +346,18 @@ model ProjectContributor {
     // Relational Fields
     user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
     project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model Memberships {
+    id Int @id @default(autoincrement())
+
+    // UserID referenced as foreign key
+    userId Int
+
+    reason String
+    dateGiven DateTime
+
+    // Relational Fields
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
 }
