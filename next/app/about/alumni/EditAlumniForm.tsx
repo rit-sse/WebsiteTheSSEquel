@@ -42,11 +42,11 @@ export default function EditAlumniForm({ open, alumniMember, getAlumni, closeMod
             user_email: alumniMember?.email ?? '',
             linkedIn: alumniMember?.linkedin ?? '',
             gitHub: alumniMember?.github ?? '',
-            description: alumniMember?.desc ?? '',
+            description: alumniMember?.description ?? '',
             quote: alumniMember?.quote ?? '',
             previous_roles: alumniMember?.previous_roles ?? '',
-            start_date: '',
-            end_date: '',
+            start_date: alumniMember?.start_date ?? '',
+            end_date: alumniMember?.end_date ?? '',
         });
     }
 
@@ -95,23 +95,25 @@ export default function EditAlumniForm({ open, alumniMember, getAlumni, closeMod
                 throw new Error(`Error: ${text}`);
             }
 
-            // // Call to user route to update alumni's alumni data
-            // const alumniResponse = await fetch('/api/alumni', {
-            //     method: 'PUT',
-            //     headers: { 'Content-Type': 'application/json' },
-            //     body: JSON.stringify({
-            //         id: alumniMember?.alumni_id,
-            //         start_date: new Date(formData.start_date).toISOString(),
-            //         end_date: new Date(formData.end_date).toISOString(),
-            //         quote: formData.quote,
-            //         previous_roles: formData.previous_roles
-            //     })
-            // })
+            // Call to user route to update alumni's alumni data if the start and end dates are modified
+            if (formData.start_date != '' && formData.end_date != ''){
+                const alumniResponse = await fetch('/api/alumni', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        id: alumniMember?.alumni_id,
+                        start_date: new Date(formData.start_date).toString(),
+                        end_date: new Date(formData.end_date).toString(),
+                        quote: formData.quote,
+                        previous_roles: formData.previous_roles
+                    })
+                })
+            }
 
-            // if (!alumniResponse.ok) {
-            //     const text = await alumniResponse.text();
-            //     throw new Error(`Error: ${text}`);
-            // }
+            if (!userResponse.ok) {
+                const text = await userResponse.text();
+                throw new Error(`Error: ${text}`);
+            }
 
             if (userResponse.ok) {
                 getAlumni();

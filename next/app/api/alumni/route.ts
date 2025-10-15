@@ -84,16 +84,14 @@ export async function PUT(request: Request) {
 
   // verify that the id is included in the request
   if (!("id" in body)) {
-    return new Response("`id` must be included in request body", {
-      status: 422,
-    });
+    return new Response("`id` must be included in request body", { status: 422 });
   }
   const id = body.id;
 
   // only include updated fields
   const data: {
     quote?: string;
-    previous_roles?: string[];
+    previous_roles?: string;
     start_date?: string;
     end_date?: string;
   } = {};

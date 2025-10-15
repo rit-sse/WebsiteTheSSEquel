@@ -17,11 +17,11 @@ export default function AlumniCard({ alumniMember }: AlumniCardProps) {
           <Avatar size={96} name={alumniMember.name || "default"} colors={["#426E8C", "#5289AF", "#86ACC7"]} variant="beam"/>
         )}
         <h4 className="font-bold sm:text-lg text-primary-focus">{alumniMember.name}</h4>
-        <p className="font-semibold">{alumniMember.title}</p>
-        <p className="mt-2 px-2 text-center">{alumniMember.desc}</p>
-        <p className="mt-2 px-2 text-center">{alumniMember.end_date}</p>
+        <p className="mt-2 px-2 text-center">{alumniMember.description}</p>
         <p className="mt-2 px-2 text-center">{alumniMember.quote}</p>
         <p className="mt-2 px-2 text-center">{alumniMember.previous_roles}</p>
+        <p className="mt-2 px-2 text-center">{alumniMember.start_date}</p>
+        <p className="mt-2 px-2 text-center">{alumniMember.end_date}</p>
         <div className="w-full flex flex-row gap-4 justify-center items-center">
           {alumniMember.linkedin && (
             <a href={alumniMember.linkedin} target="_blank" rel="noopener noreferrer">
