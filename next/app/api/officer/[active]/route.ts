@@ -22,6 +22,7 @@ export async function GET() {
           name: true,
           email: true,
           linkedIn: true,
+          image: true,
           gitHub: true,
           description: true
         },
