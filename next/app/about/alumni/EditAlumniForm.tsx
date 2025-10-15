@@ -102,8 +102,8 @@ export default function EditAlumniForm({ open, alumniMember, getAlumni, closeMod
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         id: alumniMember?.alumni_id,
-                        start_date: new Date(formData.start_date).toString(),
-                        end_date: new Date(formData.end_date).toString(),
+                        start_date: formData.start_date,
+                        end_date: formData.end_date,
                         quote: formData.quote,
                         previous_roles: formData.previous_roles
                     })
@@ -151,11 +151,11 @@ export default function EditAlumniForm({ open, alumniMember, getAlumni, closeMod
             </div>
             <div className="flex flex-col">
                 <label>Start Date</label>
-                <input type="date" name="start_date" value={formData.start_date} onChange={handleChange}/>
+                <input name="start_date" value={formData.start_date} onChange={handleChange}/>
             </div>
             <div className="flex flex-col">
                 <label>End Date</label>
-                <input type="date" name="end_date" value={formData.end_date} onChange={handleChange}/>
+                <input name="end_date" value={formData.end_date} onChange={handleChange}/>
             </div>
             <div className="flex flex-col">
                 <label>Quote</label>

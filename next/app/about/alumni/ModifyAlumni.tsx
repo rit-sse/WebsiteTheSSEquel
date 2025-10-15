@@ -40,7 +40,7 @@ export default function ModifyAlumni({ alumniMember, openDeleteModal, openEditMo
                     Edit
                 </button>
                 <button className="text-sm bg-secondary hover:bg-primary rounded-md active:bg-neutral text-base-100 p-1" onClick={() => {setSelectedAlumni(alumniMember); openDeleteModal()}}>
-                    Delete
+                    Remove
                 </button>
             </div>
         )

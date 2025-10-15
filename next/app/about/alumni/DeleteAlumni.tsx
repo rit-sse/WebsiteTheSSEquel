@@ -76,7 +76,7 @@ export const DeleteAlumniButton: React.FC<DeleteAlumniProps> = ({ open, alumniMe
     return (
         <form onSubmit={closeModal} className="flex flex-col gap-4">
             <p className="font-bold py-4 text-lg">
-                 Are you sure you want to delete this Alumni?
+                 Are you sure you want to remove this Alumni?
              </p>
             <div className="modal-action">
                 <button
@@ -88,7 +88,7 @@ export const DeleteAlumniButton: React.FC<DeleteAlumniProps> = ({ open, alumniMe
                     // ).close();
                 }}
                 >
-                Delete
+                Remove
                 </button>
 
                 <button

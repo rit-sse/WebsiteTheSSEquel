@@ -208,6 +208,8 @@ async function seedAlumni() {
 			user_id: 1,
 			start_date: ("2023-11-1 12:00:00"),
 			end_date: ("2023-11-1 12:00:00"),
+			previous_roles: "President",
+			quote: "01001000 01100101 01101100 01101100 01101111"
 		},
 	});
 	const alumni2 = await prisma.alumni.upsert({
@@ -218,6 +220,8 @@ async function seedAlumni() {
 			user_id: 2,
 			start_date: ("2023-11-1 12:00:00"),
 			end_date: ("2023-11-1 12:00:00"),
+			previous_roles: "Tech Head, Vice President",
+			quote: "Pinapple on pizza <3"
 		},
 	});
 	console.log({ alumni1, alumni2 });

@@ -14,7 +14,11 @@ const prisma = new PrismaClient();
 export async function GET() {
   const officer = await prisma.alumni.findMany({
     select: {
+      quote: true,
+      previous_roles: true,
       id: true,
+      start_date: true,
+      end_date: true,
       user: {
         select: {
           id: true,

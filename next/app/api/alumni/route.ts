@@ -45,7 +45,7 @@ export async function POST(request: Request) {
       { status: 400 }
     );
   }
-  const { user_email, start_date, end_date } = body;
+  const { user_email, start_date, end_date, quote, previous_roles} = body;
   const user_id = (
     await prisma.user.findFirst({
       where: { email: user_email },
@@ -59,7 +59,7 @@ export async function POST(request: Request) {
 
   // Set the new alumni
   try {
-    const newAlumni = await prisma.alumni.create({ data: {user_id, start_date, end_date} });
+    const newAlumni = await prisma.alumni.create({ data: {user_id, start_date, end_date, quote, previous_roles} });
     return Response.json(newAlumni);
   } catch (e) {
     // make sure the alumni was created

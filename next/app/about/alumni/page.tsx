@@ -35,18 +35,19 @@ export default function Leadership() {
 
 			// Map alumni to AlimniMember
 			team.alumni_member = data
-				.filter((alumni: any) => alumni)
 				.map((alumni: any) => ({
 					alumni_id: alumni.id,
 					user_id: alumni.user.id,
 					name: alumni.user.name,
 					image: alumni.user.image,
 					email: alumni.user.email,
-					desc: alumni.user.description,
+					description: alumni.user.description,
 					linkedin: alumni.user.linkedIn,
 					github: alumni.user.gitHub,
 					quote: alumni.quote,
-					previous_roles: alumni.previous_roles
+					previous_roles: alumni.previous_roles,
+					start_date: alumni.start_date,
+					end_date: alumni.end_date
 				}));
 
 		} catch (error) {

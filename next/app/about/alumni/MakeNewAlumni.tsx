@@ -79,6 +79,19 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
 
   const handleCreate = async () => {
     try {
+
+      const createUserResponse = await fetch("/api/user", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            name: name,
+            email: email,
+            linkedIn: linkedin,
+            gitHub: github,
+            description: description,
+        })
+      });
+
       const response = await fetch("/api/alumni", {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -148,7 +161,7 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
           <div className="modal-box">
             <h3 className="font-bold py-4 text-xlg">Create Alumni</h3>
 
-            {/* <label className="my-2 input input-bordered flex items-center gap-2">
+            <label className="my-2 input input-bordered flex items-center gap-2">
               Alumni Name:
               <input
                 type="text"
@@ -157,7 +170,7 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
                 value={name}
                 onChange={((e) => handleSetName(e.target.value))}
               />
-            </label> */}
+            </label>
             <label className="my-2 input input-bordered flex items-center gap-2">
               Email:
               <input
@@ -188,17 +201,7 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
                 onChange={((e) => handleSetEndDate(e.target.value))}
               />
             </label>
-            {/* <label className="my-2 input input-bordered flex items-center gap-2">
-              Title:
-              <input
-                type="text"
-                className="grow text-gray-900"
-                placeholder="Alumni Title"
-                value={title}
-                onChange={((e) => handleSetTitle(e.target.value))}
-              />
-            </label> */}
-            {/* <label className="my-2 input input-bordered flex items-center gap-2">
+            <label className="my-2 input input-bordered flex items-center gap-2">
               Quote:
               <input
                 type="text"
@@ -217,8 +220,8 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
                 value={previous_roles}
                 onChange={((e) => handleSetPreviousRoles(e.target.value))}
               />
-            </label> */}
-            {/* <label className="my-2 input input-bordered flex items-center gap-2">
+            </label>
+            <label className="my-2 input input-bordered flex items-center gap-2">
               LinkedIn:
               <input
                 type="text"
@@ -237,13 +240,13 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
                 value={github}
                 onChange={((e) => handleSetGithub(e.target.value))}
               />
-            </label> */}
-            {/* <textarea
+            </label>
+            <textarea
               className="textarea textarea-bordered w-full"
               placeholder="Description (keep it short please)"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-            ></textarea> */}
+            ></textarea>
 
             <div className="flex">
               <span className="flex-grow"></span>

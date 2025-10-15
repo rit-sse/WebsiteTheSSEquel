@@ -55,7 +55,7 @@ model Alumni {
     quote String            @default("")
     previous_roles String @default("")
 
-    //Store startDate and endDate as a DateTime
+    //Store startDate and endDate as a String
     start_date String
     end_date   String
 
