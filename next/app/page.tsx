@@ -15,7 +15,6 @@ export default async function Home() {
     
     // Allowing developers to not have to set up the DB
     if(events != null){
-
         const currentDate = new Date();
 
         // Only display first 3 upcoming events
