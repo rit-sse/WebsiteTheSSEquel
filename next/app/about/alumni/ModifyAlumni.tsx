@@ -27,7 +27,7 @@ export default function ModifyAlumni({ alumniMember, openDeleteModal, openEditMo
         userStatus();  
     }, []);
     
-    const userStatus = async () =>{ // checks if the current user is an officer
+    const userStatus = async () =>{ // checks if the current user is an officerdit
         const response = await fetch("/api/authLevel");
         const userData = await response.json();
         setIsOfficer(userData.isOfficer);

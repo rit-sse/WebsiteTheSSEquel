@@ -43,7 +43,7 @@ CREATE TABLE alumni(
     user_id INTEGER REFERENCES site_user(id) NOT NULL,
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
-    previous_roles TEXT[] NOT NULL,
+    previous_roles TEXT NOT NULL,
     quote TEXT NOT NULL
 );
 

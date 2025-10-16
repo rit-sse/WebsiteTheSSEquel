@@ -132,7 +132,7 @@ export default function EditAlumniForm({ open, alumniMember, getAlumni, closeMod
     };
 
     return (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-1">
             <div className="flex flex-col">
                 <label>Alumni Email</label>
                 <input type="email" name="user_email" placeholder="RIT Email" value={formData.user_email} onChange={handleChange}/>
