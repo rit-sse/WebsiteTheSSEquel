@@ -82,8 +82,6 @@ export async function POST(request: Request) {
         return new Response("Body is missing 'userId', 'reason', or 'dateGiven'.", { status: 400 });
     }
 
-    const {userId, reason, dateGiven} = body;
-
     const input = CreateMembershipSchema.parse(body);
     
     const created = await prisma.memberships.create({
