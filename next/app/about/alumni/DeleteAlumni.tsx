@@ -37,7 +37,7 @@ export const DeleteAlumniButton: React.FC<DeleteAlumniProps> = ({ open, alumniMe
         });
     }
 
-	const handleCancel = () => {
+	const handleCancel = () => { // set data to "" when canceled
     //     setName("");
     //     setTitle("");
     //     setQuote("");
@@ -83,9 +83,6 @@ export const DeleteAlumniButton: React.FC<DeleteAlumniProps> = ({ open, alumniMe
                 className="btn"
                 onClick={() => {
                     handleDelete();
-                    // (
-                    // document.getElementById( "delete-alumni") as HTMLDialogElement
-                    // ).close();
                 }}
                 >
                 Remove
@@ -95,11 +92,6 @@ export const DeleteAlumniButton: React.FC<DeleteAlumniProps> = ({ open, alumniMe
                 className="btn"
                 onClick={() => {
                     handleCancel();
-                    // (
-                    // document.getElementById(
-                    //     "delete-alumni"
-                    // ) as HTMLDialogElement
-                    // ).close();
                 }}
                 >
                 Cancel

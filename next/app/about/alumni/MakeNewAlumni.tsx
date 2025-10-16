@@ -1,17 +1,15 @@
 // TO-DO: Edit this page for making a new Alumni (It is NOT close to working)
 
-import { useSession } from "next-auth/react";
-import { use, useCallback, useEffect, useState } from "react";
-import { deepEqual, equal, notDeepEqual } from "assert";
+import { useEffect, useState } from "react";
 
 interface CreateAlumniProps {
   fetchData: () => Promise<void>;
 }
 
 export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) => {
-  const { data: session }: any = useSession();
-  const [alumni_id, setAlumniID] = useState("");
-  const [user_id, setUserID] = useState("");
+  // const { data: session }: any = useSession();
+  // const [alumni_id, setAlumniID] = useState("");
+  // const [user_id, setUserID] = useState("");
   const [name, setName] = useState("");
   const [title, setTitle] = useState("");
   const [quote, setQuote] = useState("");

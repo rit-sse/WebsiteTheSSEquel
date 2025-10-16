@@ -206,8 +206,8 @@ async function seedAlumni() {
 		create: {
 			id: 1,
 			user_id: 1,
-			start_date: ("2023-11-1 12:00:00"),
-			end_date: ("2023-11-1 12:00:00"),
+			start_date: ("Fall 2017"),
+			end_date: ("Spring 2023"),
 			previous_roles: "President",
 			quote: "01001000 01100101 01101100 01101100 01101111"
 		},
@@ -218,8 +218,8 @@ async function seedAlumni() {
 		create: {
 			id: 2,
 			user_id: 2,
-			start_date: ("2023-11-1 12:00:00"),
-			end_date: ("2023-11-1 12:00:00"),
+			start_date: ("Spring 2020"),
+			end_date: ("Fall 2025"),
 			previous_roles: "Tech Head, Vice President",
 			quote: "Pinapple on pizza <3"
 		},

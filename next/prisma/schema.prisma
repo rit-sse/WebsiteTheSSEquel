@@ -51,13 +51,13 @@ model Alumni {
     //Refrences userId
     user_id Int
 
-    //Store Quote and Previous Roles
-    quote String            @default("")
-    previous_roles String @default("")
-
     //Store startDate and endDate as a String
     start_date String
     end_date   String
+    
+    //Store Quote and Previous Roles
+    quote String            @default("")
+    previous_roles String @default("")
 
     //Relational fields
     user     User            @relation(fields: [user_id], references: [id])
