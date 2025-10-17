@@ -37,8 +37,12 @@ export function UserAutocomplete({
   const [opts, setOpts] = useState<AutocompleteOption[]>([]);
   const [open, setOpen] = useState(false);
   const [hi, setHi] = useState(0);
+  const [locked, setLocked] = useState(false);
+
 
   useEffect(() => {
+    if (locked) return;
+
     if (!debounced || debounced.length < 2) {
       setOpts([]);
       setOpen(false);
@@ -61,15 +65,20 @@ export function UserAutocomplete({
       setOpen(true);
     })().catch(() => {});
     return () => ac.abort();
-  }, [option, debounced]);
+  }, [option, debounced, locked]);
 
   function select(opt: AutocompleteOption) {
     onChange(opt);
     setQuery(opt.name);
     setOpen(false);
+    setOpts([]);
+    setLocked(true);
   }
 
   function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (locked) {
+      setLocked(false);
+    }
     if (!open || opts.length == 0) return;
     if (e.key == "ArrowDown") {
       e.preventDefault();
@@ -109,7 +118,9 @@ export function UserAutocomplete({
         className="
         absolute top-full left-0 right-0 mt-1
         bg-base-100 border border-base-300 rounded-box shadow-lg
-        max-h-64 overflow-auto z-[90]
+        max-h-64 z-[90]
+        overflow-y-auto overflow-x-hidden
+        flex-nowrap overscroll-contain
         menu p-2
         "
         >
@@ -130,7 +141,7 @@ export function UserAutocomplete({
                 >
                   <div className="flex items-center gap-2">
                     <span className="ml-auto text-xs opacity-60">ID: {o.id}</span>
-                    <div className="flex flex-col">
+                    <div className="flex flex-row items-center gap-2">
                       <span className="text-sm">{o.name}</span>
                       {o.email && (
                         <span className="text-xs opacity-60">{o.email}</span>
