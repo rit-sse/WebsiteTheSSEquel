@@ -119,9 +119,10 @@ const UserModal: React.FC<{ user: userType, visibleHook: Function }> = ({ user, 
                     <div className='w-full mt-2'>
                         <p>Email:</p>
                         <input
+                            readOnly={true}
                             value={email}
                             onChange={e => setEmail(e.target.value)}
-                            className='w-full'
+                            className='w-full bg-gray-200'
                         />
                     </div>
                     <div className='w-full mt-2'>

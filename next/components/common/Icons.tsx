@@ -267,3 +267,22 @@ export const TwitchIcon = ({ className }: IconProps) => (
         <path d="M 5.3632812 2 L 2 6.6367188 L 2 20 L 7 20 L 7 23 L 10 23 L 13 20 L 17 20 L 22 15 L 22 2 L 5.3632812 2 z M 6 4 L 20 4 L 20 13 L 17 16 L 12 16 L 9 19 L 9 16 L 6 16 L 6 4 z M 11 7 L 11 12 L 13 12 L 13 7 L 11 7 z M 16 7 L 16 12 L 18 12 L 18 7 L 16 7 z"></path>
     </svg>
 );
+
+/**
+ * Use fill-* classes to change the color of the icon.
+ */
+export const AddSquareIcon = ({ className }: IconProps) => (
+<svg
+        className={`stroke-base-content ${className || 'w-5 h-5'}`}
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+    >
+        <rect x="2" y="2" width="20" height="20" rx="2" ry="2" />
+        <line x1="15.5" y1="12" x2="8.5" y2="12" />
+        <line x1="12" y1="15.5" x2="12" y2="8.5" />
+    </svg>
+);

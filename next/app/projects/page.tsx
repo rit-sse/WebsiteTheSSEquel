@@ -106,7 +106,7 @@ const Projects = () => {
         ))}
         
       </section>
-      <AddProjectModal enabled={addProjectModalEnabled} setEnabled={setAddProjectModalEnabled}/>
+      <AddProjectModal enabled={addProjectModalEnabled} setEnabled={setAddProjectModalEnabled} reloadOnAdd={true}/>
     </>
   );
 };

@@ -1,10 +1,12 @@
 import React from 'react';
+import AddFile from './AddFile';
 
 const AssetTab: React.FC = () => {
     return (
         <div className='px-[10px]'>
             <h2>Asset Management</h2>
-            <p>Stub for Asset Management. This will control the files that we have on our website</p>
+            <AddFile />
+            <div className='h-[1px] w-full bg-black my-[10px]' />
         </div>
     );
 };
