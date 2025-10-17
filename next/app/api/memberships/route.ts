@@ -67,6 +67,28 @@ export async function GET() {
 
 }
 
+/**
+ * Handle POST /api/memberships requests to create a new membership record.
+ *
+ * Parses and validates the incoming JSON payload, ensures required fields are present,
+ * creates a membership row via Prisma, and returns the created resource.
+ *
+ * @param request - The incoming Fetch API Request object. Expected to contain a JSON body:
+ *   {
+ *     userId: string,
+ *     reason: string,
+ *     dateGiven: string | Date
+ *   }
+ *
+ * @returns A Promise resolving to a Response:
+ *   - 201: JSON body containing the created membership { id, userId, reason, dateGiven }.
+ *   - 400: "Invalid JSON Payload" when request body is not valid JSON.
+ *   - 400: "Body is missing 'userId', 'reason', or 'dateGiven'." when required keys are absent.
+ *   - 5xx: Possible server error if schema validation or database operations throw and are not caught.
+ *
+ * @throws {ZodError} If CreateMembershipSchema.parse fails validation (may result in an uncaught error
+ *         unless handled by surrounding middleware).
+ */
 export async function POST(request: Request) {
     console.log("POST /api/memberships/")
 
