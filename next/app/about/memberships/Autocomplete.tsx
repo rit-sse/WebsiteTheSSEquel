@@ -9,16 +9,24 @@ interface AutocompleteOptionProps {
   placeholder?: string;
 }
 
-function useDebouncedValue<T>(v: T, delay: number) {
-  const [d, setD] = useState(v);
+function useDebouncedValue<T>(value: T, delay: number) {
+  const [data, setD] = useState(value);
   useEffect(() => {
-    const t = setTimeout(() => setD(v), delay);
+    const t = setTimeout(() => setD(value), delay);
     return () => clearTimeout(t);
-  }, [v, delay]);
+  }, [value, delay]);
 
-  return d;
+  return data;
 }
 
+/**
+ * UserAutocomplete component — an input that fetches and displays user suggestions as the user types.
+ *
+ * @param option - Initial selected option (optional).
+ * @param onChange - Callback invoked when an option is selected or cleared.
+ * @param placeholder - Input placeholder text (defaults to "Search Users...").
+ * @returns JSX element rendering the autocomplete input and suggestion list.
+ */
 export function UserAutocomplete({
   option,
   onChange,
@@ -31,11 +39,14 @@ export function UserAutocomplete({
   const [hi, setHi] = useState(0);
 
   useEffect(() => {
-    if (debounced.length < 2) {
+    if (!debounced || debounced.length < 2) {
       setOpts([]);
       setOpen(false);
       return;
     }
+
+    if (option && debounced === option.name) return;
+
     const ac = new AbortController();
     (async () => {
       const res = await fetch(
@@ -50,7 +61,7 @@ export function UserAutocomplete({
       setOpen(true);
     })().catch(() => {});
     return () => ac.abort();
-  }, [debounced]);
+  }, [option, debounced]);
 
   function select(opt: AutocompleteOption) {
     onChange(opt);
@@ -88,6 +99,7 @@ export function UserAutocomplete({
                 onKeyDown={onKeyDown}
                 aria-autocomplete="list"
                 aria-expanded={open}
+                // eslint-disable-next-line jsx-a11y/role-has-required-aria-props
                 role="combobox"
             />
       {open && (
