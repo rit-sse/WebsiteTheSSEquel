@@ -8,6 +8,13 @@ import { AddMembershipModal } from "./AddMembershipModal";
 export default function Leaderboard() {
     const [items, setItems] = useState<LeaderboardItem[]>([]);
     const [open, setOpen] = useState(false);
+    const [isOfficer, setIsOfficer] = useState(false);
+
+    async function userStatus() {
+        const res = await fetch('/api/authLevel');
+        const data = await res.json();
+        setIsOfficer(data.isOfficer);
+    }
 
     async function load() {
         const res = await fetch("/api/memberships");
@@ -16,6 +23,7 @@ export default function Leaderboard() {
     }
 
     useEffect(() => {
+        userStatus();
         load();
     }, [])
 
@@ -23,16 +31,11 @@ export default function Leaderboard() {
         <div className="p-6">
             <div className="flex items-center justify-between gap-2">
                 <h1 className="text-xl font-semibold">Memberships Leaderboard</h1>
-                <button className="btn btn-success" onClick={() => setOpen(true)}>Add Membership</button>
+                {isOfficer && <button className="btn" onClick={() => setOpen(true)}>Add Membership</button>}
             </div>
 
             <LeaderboardTable items={items}/>
-            <AddMembershipModal open={open} onOpenChange={setOpen} onCreated={load}></AddMembershipModal>
+            {isOfficer && (<AddMembershipModal open={open} onOpenChange={setOpen} onCreated={load}></AddMembershipModal>)}
         </div>
-        
-        
-    
-        
     )
-
 }
