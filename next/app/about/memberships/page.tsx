@@ -29,12 +29,18 @@ export default function Leaderboard() {
 
     return (
         <div className="p-6">
-            <div className="flex items-center justify-between gap-2">
+            <div className="flex flex-row items-center justify-between gap-2">
                 <h1 className="text-xl font-semibold">Memberships Leaderboard</h1>
-                {isOfficer && <button className="btn" onClick={() => setOpen(true)}>Add Membership</button>}
             </div>
-
+            <div className="flex align-center w-full">
             <LeaderboardTable items={items}/>
+            </div>
+            <div className="hidden md:flex justify-end w-full">
+                {isOfficer && <button className="btn bg-base-100" onClick={() => setOpen(true)}>Add Membership</button>}
+            </div>
+            <div className="md:hidden flex justify-center w-full">
+                {isOfficer && <button className="btn bg-base-100" onClick={() => setOpen(true)}>Add Membership</button>}
+            </div>
             {isOfficer && (<AddMembershipModal open={open} onOpenChange={setOpen} onCreated={load}></AddMembershipModal>)}
         </div>
     )
