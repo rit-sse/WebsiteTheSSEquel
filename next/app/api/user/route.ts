@@ -41,12 +41,18 @@ export async function POST(request: Request) {
   }
   const name = body.name;
   const email = body.email;
+  const linkedIn = body.linkedIn;
+  const gitHub = body.gitHub;
+  const description = body.description;
 
   try {
     const user = await prisma.user.create({
       data: {
         name,
         email,
+        linkedIn,
+        gitHub,
+        description
       },
     });
     return Response.json(user, { status: 201 });
