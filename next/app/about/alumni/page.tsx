@@ -58,7 +58,7 @@ export default function Leadership() {
 
 	return (
 		<>
-			<section className="mt-16">
+			<section className="mt-16 z-50">
 				{/* Modals for editing and replacing alumni forms */}
 				<AlumniFormModal isOpen={deleteOpen} onClose={async () => setDeleteOpen(false)}>
 					<DeleteAlumniButton open={editOpen} alumniMember={selectedAlumni} fetchData={getAlumni} closeModal={() => setEditOpen(false)}/>
