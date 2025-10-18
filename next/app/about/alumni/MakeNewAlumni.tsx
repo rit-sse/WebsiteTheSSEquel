@@ -155,7 +155,7 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
           Create Alumni
         </button>
 
-        <dialog id="create-alumni" className="modal">
+        <dialog id="create-alumni" className="modal overflow-scroll">
           <div className="modal-box">
             <h3 className="font-bold py-4 text-xlg">Create Alumni</h3>
 
@@ -163,8 +163,8 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
               Alumni Name:
               <input
                 type="text"
-                className="grow text-gray-900"
-                placeholder="Alumni Name"
+                className="w-full text-gray-900"
+                placeholder="Name..."
                 value={name}
                 onChange={((e) => handleSetName(e.target.value))}
               />
@@ -173,8 +173,8 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
               Email:
               <input
                 type="text"
-                className="grow text-gray-900"
-                placeholder="Alumni Email"
+                className="w-full text-gray-900"
+                placeholder="Email..."
                 value={email}
                 onChange={((e) => handleSetEmail(e.target.value))}
               />
@@ -183,8 +183,8 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
               Start Date:
               <input
                 type="text"
-                className="grow text-gray-900"
-                placeholder="Alumni Start Date"
+                className="w-full text-gray-900"
+                placeholder="Start Date..."
                 value={start_date}
                 onChange={((e) => handleSetStartDate(e.target.value))}
               />
@@ -193,8 +193,8 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
               Graduation Date:
               <input
                 type="text"
-                className="grow text-gray-900"
-                placeholder="Alumni Graduation Date"
+                className="w-full text-gray-900"
+                placeholder="Graduation Date..."
                 value={end_date}
                 onChange={((e) => handleSetEndDate(e.target.value))}
               />
@@ -203,8 +203,8 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
               Quote:
               <input
                 type="text"
-                className="grow text-gray-900"
-                placeholder="Alumni Quote"
+                className="w-full text-gray-900"
+                placeholder="Quote..."
                 value={quote}
                 onChange={((e) => handleSetQuote(e.target.value))}
               />
@@ -213,8 +213,8 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
               Previous Roles:
               <input
                 type="text"
-                className="grow text-gray-900"
-                placeholder="Alumni Previous Roles"
+                className="w-full text-gray-900"
+                placeholder="Previous Roles..."
                 value={previous_roles}
                 onChange={((e) => handleSetPreviousRoles(e.target.value))}
               />
@@ -223,8 +223,8 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
               LinkedIn:
               <input
                 type="text"
-                className="grow text-gray-900"
-                placeholder="Alumni LinkedIn"
+                className="w-full text-gray-900"
+                placeholder="LinkedIn..."
                 value={linkedin}
                 onChange={((e) => handleSetLinkedin(e.target.value))}
               />
@@ -233,15 +233,15 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
               GitHub:
               <input
                 type="text"
-                className="grow text-gray-900"
-                placeholder="Alumni GitHub"
+                className="w-full text-gray-900"
+                placeholder="GitHub..."
                 value={github}
                 onChange={((e) => handleSetGithub(e.target.value))}
               />
             </label>
             <textarea
               className="textarea textarea-bordered w-full"
-              placeholder="Description (keep it short please)"
+              placeholder="Description (keep it short please)..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             ></textarea>

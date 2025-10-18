@@ -73,7 +73,7 @@ export default function Leadership() {
 							<h1
 								className="bg-gradient-to-t from-primary to-secondary bg-clip-text text-4xl font-extrabold text-transparent md:text-5xl"
 							>
-								Meet the Alumni
+								Meet our Alumni
 							</h1>
 							<p className="mt-3 text-xl leading-8 text-center">
 								A dedicated page for alumni of the SSE
@@ -88,7 +88,7 @@ export default function Leadership() {
 
 					{/* Alumni */}
 					<div className="">
-						<div className="w-full flex flex-row justify-center gap-5">
+						<div className="w-full flex flex-row flex-wrap justify-center gap-5">
 							{teamData.alumni_member.map((member, idx) => (
 								<div key={idx}>
 									<AlumniCard alumniMember={member} />

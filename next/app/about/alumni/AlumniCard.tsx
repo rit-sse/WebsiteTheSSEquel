@@ -16,9 +16,9 @@ export default function AlumniCard({ alumniMember }: AlumniCardProps) {
         ) : (
           <Avatar size={96} name={alumniMember.name || "default"} colors={["#426E8C", "#5289AF", "#86ACC7"]} variant="beam"/>
         )}
-        <h4 className="font-bold sm:text-lg text-primary-focus">{alumniMember.name}</h4>
-        <p className="font-semibold">&quot;{alumniMember.quote}&quot;</p>
-        <p className="font-semibold">{alumniMember.previous_roles}</p>
+        <h4 className="font-bold sm:text-lg text-primary-focus text-center">{alumniMember.name}</h4>
+        <p className="font-semibold text-center">&quot;{alumniMember.quote}&quot;</p>
+        <p className="font-semibold text-center">{alumniMember.previous_roles}&nbsp;</p>
         <p className="mt-2 px-2 text-center font-semibold">{alumniMember.end_date}</p>
 
         <div className="w-full flex flex-row gap-4 justify-center items-center">
