@@ -13,7 +13,8 @@ interface AlumniFormProps {
 
 export default function EditAlumniForm({ open, alumniMember, getAlumni, closeModal }: AlumniFormProps) {
     const [formData, setFormData] = useState({
-        user_email: '',
+        name: '',
+        email: '',
         linkedIn: '',
         gitHub: '',
         description: '',
@@ -39,7 +40,8 @@ export default function EditAlumniForm({ open, alumniMember, getAlumni, closeMod
 
     const fillForm = () => {
         setFormData({
-            user_email: alumniMember?.email ?? '',
+            name: alumniMember?.name ?? '',
+            email: alumniMember?.email ?? '',
             linkedIn: alumniMember?.linkedin ?? '',
             gitHub: alumniMember?.github ?? '',
             description: alumniMember?.description ?? '',
@@ -63,11 +65,6 @@ export default function EditAlumniForm({ open, alumniMember, getAlumni, closeMod
         setError("");
         try {
 
-            if (!alumniMember?.user_id) {
-                setError("Misisng user_id for this alumni.");
-                return;
-            }
-
             let linkedInValue = formData.linkedIn;
             if (linkedInValue.startsWith("www.")) {
                 linkedInValue = "https://" + linkedInValue;
@@ -77,50 +74,36 @@ export default function EditAlumniForm({ open, alumniMember, getAlumni, closeMod
             if (gitHubValue.startsWith("www.")) {
                 gitHubValue = "https://" + gitHubValue;
             }
-            // Call to user route to update alumni's user data
-            const userResponse = await fetch('/api/user', {
+
+            // Call to user route to update alumni's alumni data if the start and end dates are modified
+            const alumniResponse = await fetch('/api/alumni', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    id: alumniMember?.user_id,
-                    user_email: formData.user_email,
+                    id: alumniMember?.alumni_id,
+                    email: formData.email,
                     linkedIn: linkedInValue,
                     gitHub: gitHubValue,
-                    description: formData.description
-                }),
-            });
-
-            if (!userResponse.ok) {
-                const text = await userResponse.text();
-                throw new Error(`Error: ${text}`);
-            }
-
-            // Call to user route to update alumni's alumni data if the start and end dates are modified
-            if (formData.start_date != '' && formData.end_date != ''){
-                const alumniResponse = await fetch('/api/alumni', {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        id: alumniMember?.alumni_id,
-                        start_date: formData.start_date,
-                        end_date: formData.end_date,
-                        quote: formData.quote,
-                        previous_roles: formData.previous_roles
-                    })
+                    description: formData.description,
+                    start_date: formData.start_date,
+                    end_date: formData.end_date,
+                    quote: formData.quote,
+                    previous_roles: formData.previous_roles,
                 })
-            }
+            })
+            
 
-            if (!userResponse.ok) {
-                const text = await userResponse.text();
+            if (!alumniResponse.ok) {
+                const text = await alumniResponse.text();
                 throw new Error(`Error: ${text}`);
             }
 
-            if (userResponse.ok) {
+            if (alumniResponse.ok) {
                 getAlumni();
                 closeModal();
             } 
             else {
-                const errorDataUser = await userResponse.text();
+                const errorDataUser = await alumniResponse.text();
                 console.log(`Error: ${errorDataUser}`);
                 setError(errorDataUser);
             }
@@ -135,7 +118,7 @@ export default function EditAlumniForm({ open, alumniMember, getAlumni, closeMod
         <form onSubmit={handleSubmit} className="flex flex-col gap-1">
             <div className="flex flex-col">
                 <label>Alumni Email</label>
-                <input type="email" name="user_email" placeholder="RIT Email" value={formData.user_email} onChange={handleChange}/>
+                <input type="email" name="email" placeholder="RIT Email" value={formData.email} onChange={handleChange}/>
             </div>
             <div className="flex flex-col">
                 <label>LinkedIn</label>

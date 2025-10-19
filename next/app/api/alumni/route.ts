@@ -13,14 +13,17 @@ const prisma = new PrismaClient();
 export async function GET() {
   const alumni = await prisma.alumni.findMany({
     select: {
+      id: true,
+      name: true,
+      email: true,
+      linkedIn: true,
+      image: true,
+      gitHub: true,
+      description: true,
       start_date: true,
       end_date: true,
-      user: {
-        select: {
-          name: true,
-          email: true,
-        },
-      }
+      quote: true,
+      previous_roles: true
     },
   });
   return Response.json(alumni);
@@ -35,31 +38,23 @@ export async function POST(request: Request) {
   const body = await request.json();
   if (
     !(
-      "user_email" in body &&
+      "name" in body &&
+      "email" in body &&
       "start_date" in body &&
       "end_date" in body
     )
   ) {
     return new Response(
-      ' "user_email","start_date" and "end_date" are all required',
+      ' "name","email","start_date" and "end_date" are all required',
       { status: 400 }
     );
   }
-  const { user_email, start_date, end_date, quote, previous_roles} = body;
-  const user_id = (
-    await prisma.user.findFirst({
-      where: { email: user_email },
-      select: { id: true },
-    })
-  )?.id;
-  // If we couldn't find the user ID, give up
-  if (user_id === undefined) {
-    return new Response("User and position not found", { status: 404 });
-  }
+
+  const { name, email, linkedIn, gitHub, start_date, end_date, quote, previous_roles, description, image} = body;
 
   // Set the new alumni
   try {
-    const newAlumni = await prisma.alumni.create({ data: {user_id, start_date, end_date, quote, previous_roles} });
+    const newAlumni = await prisma.alumni.create({ data: {name, email, linkedIn, gitHub, start_date, end_date, quote, previous_roles, description, image} });
     return Response.json(newAlumni);
   } catch (e) {
     // make sure the alumni was created
@@ -90,10 +85,17 @@ export async function PUT(request: Request) {
 
   // only include updated fields
   const data: {
+    name?: string;
+    email?: string;
+    linkedIn?: string;
+    image?: string;
+    gitHub?: string;
+    description?: string;
     quote?: string;
     previous_roles?: string;
     start_date?: string;
     end_date?: string;
+    
   } = {};
 
   if ("quote" in body) {
@@ -107,6 +109,21 @@ export async function PUT(request: Request) {
   }
   if ("end_date" in body) {
     data.end_date = body.end_date;
+  }
+  if ("name" in body) {
+    data.name = body.name;
+  }
+  if ("email" in body) {
+    data.email = body.email;
+  }
+  if ("linkedIn" in body) {
+    data.linkedIn = body.linkedIn;
+  }
+  if ("gitHub" in body) {
+    data.gitHub = body.gitHub;
+  }
+  if ("description" in body) {
+    data.description = body.description;
   }
 
   // apply updates to database

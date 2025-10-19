@@ -37,13 +37,12 @@ export default function Leadership() {
 			team.alumni_member = data
 				.map((alumni: any) => ({
 					alumni_id: alumni.id,
-					user_id: alumni.user.id,
-					name: alumni.user.name,
-					image: alumni.user.image,
-					email: alumni.user.email,
-					description: alumni.user.description,
-					linkedin: alumni.user.linkedIn,
-					github: alumni.user.gitHub,
+					name: alumni.name,
+					image: alumni.image,
+					email: alumni.email,
+					linkedin: alumni.linkedIn,
+					github: alumni.gitHub,
+					description: alumni.description,
 					quote: alumni.quote,
 					previous_roles: alumni.previous_roles,
 					start_date: alumni.start_date,
@@ -58,7 +57,7 @@ export default function Leadership() {
 
 	return (
 		<>
-			<section className="mt-16 z-50">
+			<section className="mt-16">
 				{/* Modals for editing and replacing alumni forms */}
 				<AlumniFormModal isOpen={deleteOpen} onClose={async () => setDeleteOpen(false)}>
 					<DeleteAlumniButton open={editOpen} alumniMember={selectedAlumni} fetchData={getAlumni} closeModal={() => setEditOpen(false)}/>

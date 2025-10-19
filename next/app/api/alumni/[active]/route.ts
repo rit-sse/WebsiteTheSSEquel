@@ -19,17 +19,12 @@ export async function GET() {
       id: true,
       start_date: true,
       end_date: true,
-      user: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          linkedIn: true,
-          image: true,
-          gitHub: true,
-          description: true
-        },
-      },
+      name: true,
+      email: true,
+      linkedIn: true,
+      image: true,
+      gitHub: true,
+      description: true
     },
   });
   return Response.json(officer);

@@ -11,7 +11,6 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
   // const [alumni_id, setAlumniID] = useState("");
   // const [user_id, setUserID] = useState("");
   const [name, setName] = useState("");
-  const [title, setTitle] = useState("");
   const [quote, setQuote] = useState("");
   const [previous_roles, setPreviousRoles] = useState("");
   const [description, setDescription] = useState("");
@@ -20,14 +19,11 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
   const [email, setEmail] = useState("");
   const [start_date, setStartDate] = useState("");
   const [end_date, setEndDate] = useState("");
+  
 
   // Handle setting the variables
   const handleSetName = (givenName: string) => {    
       setName(givenName);
-  };
-
-  const handleSetTitle = (givenTitle: string) => {    
-      setTitle(givenTitle);
   };
 
   const handleSetQuote = (givenQuote: string) => {    
@@ -64,7 +60,6 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
 
   const handleCancel = () => {
     setName("");
-    setTitle("");
     setQuote("");
     setPreviousRoles("");
     setDescription("");
@@ -78,23 +73,12 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
   const handleCreate = async () => {
     try {
 
-      const createUserResponse = await fetch("/api/user", {
+      const response = await fetch("/api/alumni", {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             name: name,
             email: email,
-            linkedIn: linkedin,
-            gitHub: github,
-            description: description,
-        })
-      });
-
-      const response = await fetch("/api/alumni", {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            user_email: email,
             linkedIn: linkedin,
             gitHub: github,
             description: description,
@@ -156,7 +140,7 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
         </button>
 
         <dialog id="create-alumni" className="modal overflow-scroll">
-          <div className="modal-box">
+          <form onSubmit={handleCreate} className="modal-box">
             <h3 className="font-bold py-4 text-xlg">Create Alumni</h3>
 
             <label className="my-2 input input-bordered flex items-center gap-2">
@@ -164,19 +148,21 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
               <input
                 type="text"
                 className="w-full text-gray-900"
-                placeholder="Name..."
+                placeholder="Name (required)..."
                 value={name}
                 onChange={((e) => handleSetName(e.target.value))}
+                required
               />
             </label>
             <label className="my-2 input input-bordered flex items-center gap-2">
               Email:
               <input
-                type="text"
+                type="email"
                 className="w-full text-gray-900"
-                placeholder="Email..."
+                placeholder="Email (required)..."
                 value={email}
                 onChange={((e) => handleSetEmail(e.target.value))}
+                required
               />
             </label>
             <label className="my-2 input input-bordered flex items-center gap-2">
@@ -184,9 +170,10 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
               <input
                 type="text"
                 className="w-full text-gray-900"
-                placeholder="Start Date..."
+                placeholder="Start Date (required)..."
                 value={start_date}
                 onChange={((e) => handleSetStartDate(e.target.value))}
+                required
               />
             </label>
             <label className="my-2 input input-bordered flex items-center gap-2">
@@ -194,9 +181,10 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
               <input
                 type="text"
                 className="w-full text-gray-900"
-                placeholder="Graduation Date..."
+                placeholder="Graduation Date (required)..."
                 value={end_date}
                 onChange={((e) => handleSetEndDate(e.target.value))}
+                required
               />
             </label>
             <label className="my-2 input input-bordered flex items-center gap-2">
@@ -283,7 +271,7 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
                 </form>
               </div>
             </div>
-          </div>
+          </form>
         </dialog>
       </>
     );

@@ -1,14 +1,13 @@
 export interface AlumniMember {
   alumni_id: string;
-  user_id: string;
   name: string;
-  image: string;
-  quote: string;
-  previous_roles?: string;
-  description?: string;
+  email: string;
   linkedin?: string;
   github?: string;
-  email: string;
+  description?: string;
+  image: string;
+  quote?: string;
+  previous_roles?: string;
   start_date: string;
   end_date: string;
 }

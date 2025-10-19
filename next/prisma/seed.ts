@@ -205,19 +205,28 @@ async function seedAlumni() {
 		update: {},
 		create: {
 			id: 1,
-			user_id: 1,
+			name: "Bob",
+			email: "bob@rit.edu",
+			linkedIn: "linkedin.com/bob",
+			gitHub: "github.com/bob",
+			description: "bob is bob",
 			start_date: ("Fall 2017"),
 			end_date: ("Spring 2023"),
 			previous_roles: "President",
 			quote: "01001000 01100101 01101100 01101100 01101111"
 		},
 	});
+
 	const alumni2 = await prisma.alumni.upsert({
 		where: { id: 2 },
 		update: {},
 		create: {
 			id: 2,
-			user_id: 2,
+			name: "Fred",
+			email: "fred@rit.edu",
+			linkedIn: "linkedin.com/fred",
+			gitHub: "github.com/fred",
+			description: "fred is fred",
 			start_date: ("Spring 2020"),
 			end_date: ("Fall 2025"),
 			previous_roles: "Tech Head, Vice President",
