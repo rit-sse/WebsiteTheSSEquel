@@ -77,19 +77,19 @@ const UserManagement: React.FC = () => {
             <table className="w-full border-collapse font-mono">
                 <thead>
                     <tr>
-                        <th className="border px-4 py-2 bg-gray-200">Name</th>
-                        <th className="border px-4 py-2 bg-gray-200">Email</th>
-                        <th className="border px-4 py-2 bg-gray-200">Officer Pos.</th>
-                        <th className='border px-4 py-2 bg-gray-200 w-[10%]'>View</th>
+                        <th className="border border-base-100 px-4 py-2 bg-base-300">Name</th>
+                        <th className="border border-base-100 px-4 py-2 bg-base-300">Email</th>
+                        <th className="border border-base-100 px-4 py-2 bg-base-300">Officer Pos.</th>
+                        <th className='border border-base-100 px-4 py-2 bg-base-300 w-[10%]'>View</th>
                     </tr>
                 </thead>
                 <tbody>
                     {visibleUsers.map((user: any, idx: number) => (
-                        <tr key={idx} className={idx % 2 === 0 ? "bg-white" : "bg-gray-100"}>
-                            <td className="border px-4 py-2">{user.name}</td>
-                            <td className="border px-4 py-2">{user.email}</td>
-                            <td className="border px-4 py-2">{user.isOfficer ? user.officerPosition : "Not Officer"}</td>
-                            <td className="border px-4 py-2">
+                        <tr key={idx} className={idx % 2 === 0 ? "bg-white" : "bg-base-100"}>
+                            <td className="border border-base-100 px-4 py-2">{user.name}</td>
+                            <td className="border border-base-100 px-4 py-2">{user.email}</td>
+                            <td className="border border-base-100 px-4 py-2">{user.isOfficer ? user.officerPosition : "Not Officer"}</td>
+                            <td className="border border-base-100 px-4 py-2">
                                 <button
                                     className="bg-blue-500 text-white w-full py-1 rounded hover:bg-blue-600"
                                     onClick={() => { setCurrentEditUser(visibleUsers[idx]); setUserEditModalVis(true) }}

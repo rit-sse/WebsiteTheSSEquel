@@ -12,12 +12,14 @@ import ProjectModalCheckbox from "./ProjectModalComponents/ProjectModalCheckbox"
 const AddProjectModal = ({
                             enabled,
                             setEnabled,
-                            reloadOnAdd
+                            reloadOnAdd,
+                            reloadFunction
                         }: 
                         {
                             enabled: boolean,
                             setEnabled: Function,
-                            reloadOnAdd?: boolean
+                            reloadOnAdd?: boolean,
+                            reloadFunction?: Function
                         }) => {
 
     // useStates for the text inputs
@@ -108,6 +110,8 @@ const AddProjectModal = ({
                 setContentURL("");
                 setProjectImage("");
                 setCompleted(false);
+                if(reloadFunction)
+                    reloadFunction();
             }
         })
     }
