@@ -145,7 +145,7 @@ export default function EditAlumniForm({ open, alumniMember, getAlumni, closeMod
             </div>
             <div className="flex flex-col">
                 <label>End Date</label>
-                <input name="end_date" placeholder="(ex: Sprint 2024)" value={formData.end_date} onChange={handleChange}/>
+                <input name="end_date" placeholder="(ex: Spring 2024)" value={formData.end_date} onChange={handleChange}/>
             </div>
             <div className="flex flex-col">
                 <label>Quote</label>
