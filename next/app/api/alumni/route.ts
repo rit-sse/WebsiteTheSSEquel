@@ -125,6 +125,9 @@ export async function PUT(request: Request) {
   if ("description" in body) {
     data.description = body.description;
   }
+  if ("image" in body) {
+    data.image = body.image;
+  }
 
   // apply updates to database
   try {

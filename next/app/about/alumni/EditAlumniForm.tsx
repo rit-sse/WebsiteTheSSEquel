@@ -21,7 +21,8 @@ export default function EditAlumniForm({ open, alumniMember, getAlumni, closeMod
         start_date: '',
         end_date: '',
         quote: '',
-        previous_roles: ''
+        previous_roles: '',
+        image: '',
     });
     const [error, setError] = useState("")
 
@@ -49,6 +50,7 @@ export default function EditAlumniForm({ open, alumniMember, getAlumni, closeMod
             previous_roles: alumniMember?.previous_roles ?? '',
             start_date: alumniMember?.start_date ?? '',
             end_date: alumniMember?.end_date ?? '',
+            image: alumniMember?.image ?? '',
         });
     }
 
@@ -89,6 +91,7 @@ export default function EditAlumniForm({ open, alumniMember, getAlumni, closeMod
                     end_date: formData.end_date,
                     quote: formData.quote,
                     previous_roles: formData.previous_roles,
+                    image: formData.image,
                 })
             })
             
@@ -133,12 +136,16 @@ export default function EditAlumniForm({ open, alumniMember, getAlumni, closeMod
                 <input name="description" placeholder="Description about alumni..." value={formData.description} onChange={handleChange}/>
             </div>
             <div className="flex flex-col">
+                <label>Image</label>
+                <input name="image" placeholder="Alumni Image..." value={formData.image} onChange={handleChange}/>
+            </div>
+            <div className="flex flex-col">
                 <label>Start Date</label>
-                <input name="start_date" value={formData.start_date} onChange={handleChange}/>
+                <input name="start_date" placeholder="(ex: Fall 2023)" value={formData.start_date} onChange={handleChange}/>
             </div>
             <div className="flex flex-col">
                 <label>End Date</label>
-                <input name="end_date" value={formData.end_date} onChange={handleChange}/>
+                <input name="end_date" placeholder="(ex: Sprint 2024)" value={formData.end_date} onChange={handleChange}/>
             </div>
             <div className="flex flex-col">
                 <label>Quote</label>

@@ -19,6 +19,7 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
   const [email, setEmail] = useState("");
   const [start_date, setStartDate] = useState("");
   const [end_date, setEndDate] = useState("");
+  const [image, setImage] = useState("");
   
 
   // Handle setting the variables
@@ -58,6 +59,10 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
       setEndDate(givenEndDate);
   };
 
+  const handleSetImage = (givenImage: string) => {
+      setImage(givenImage);
+  }
+
   const handleCancel = () => {
     setName("");
     setQuote("");
@@ -85,7 +90,8 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
             quote: quote,
             previous_roles: previous_roles,
             start_date: start_date,
-            end_date: end_date
+            end_date: end_date,
+            image: image
         })
       });
 
@@ -170,7 +176,7 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
               <input
                 type="text"
                 className="w-full text-gray-900"
-                placeholder="Start Date (required)..."
+                placeholder="(required) (ex: Fall 2023)..."
                 value={start_date}
                 onChange={((e) => handleSetStartDate(e.target.value))}
                 required
@@ -181,9 +187,20 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
               <input
                 type="text"
                 className="w-full text-gray-900"
-                placeholder="Graduation Date (required)..."
+                placeholder="(required) (ex: Spring 2024)..."
                 value={end_date}
                 onChange={((e) => handleSetEndDate(e.target.value))}
+                required
+              />
+            </label>
+            <label className="my-2 input input-bordered flex items-center gap-2">
+              Image:
+              <input
+                type="text"
+                className="w-full text-gray-900"
+                placeholder="Image link (send entire web link)..."
+                value={image}
+                onChange={((e) => handleSetImage(e.target.value))}
                 required
               />
             </label>
