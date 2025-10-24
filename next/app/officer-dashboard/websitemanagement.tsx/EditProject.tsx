@@ -128,6 +128,7 @@ const EditProjectModal: FC<{ project: ProjectStrucure | null, visible: boolean, 
                             value={repoLink ?? ""}
                             onChange={(e) => setRepoLink(e.target.value)}
                             className="w-full border rounded px-3 py-2 bg-base-200"
+                            required={false}
                         />
                     </div>
 

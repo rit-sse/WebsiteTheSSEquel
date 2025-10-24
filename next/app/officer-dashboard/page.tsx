@@ -30,14 +30,14 @@ const OfficerDashboard = () => {
   if(userIsOfficer) {
     return (
       <>
-        <div className="w-[85%] flex items-start justify-between">
-          <div className="w-[24%] pb-[10px] bg-base-100 rounded-[14px]">
+        <div className="w-full md:w-[85%] flex flex-col md:flex-row items-start justify-between gap-4">
+          <div className="w-[100%] md:w-[24%] pb-[10px] bg-base-100 rounded-[14px]">
             <p className="w-full pl-[25px] py-[12px] divider-y text-[18px]">Officer Dashboard</p>
             <DashboardButton callback={() => {setSelectedPage("Account Management")} }isEnabled={(selectedPage == "Account Management")} text="User Management"/>
             <DashboardButton callback={() => {setSelectedPage("Website Management")} }isEnabled={(selectedPage == "Website Management")} text="Website Management"/>
             <DashboardButton callback={() => {setSelectedPage("Asset Management")}  }isEnabled={(selectedPage == "Asset Management")} text="Assets/Resources"/>
           </div>
-          <div className="w-[75%] p-[15px] bg-base-100 rounded-[14px]">
+          <div className="w-full md:w-[75%] p-[15px] bg-base-100 rounded-[14px]">
             {
               React.createElement(dashboardPages[selectedPage])
             }
