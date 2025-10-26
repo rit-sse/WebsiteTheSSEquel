@@ -1,7 +1,7 @@
 "use client";
 import AddProjectModal from "@/app/projects/AddProjectModal";
 import { useState, useEffect } from "react";
-import AddGoLinkModal from "../goLinksManagement/AddGoLinkModal";
+import AddGoLinkModal from "../goLinksManagement/GoLinkModal";
 import ProjectTable from "./ProjectTable";
 
 const ProjectManagementPage: React.FC = () => {
@@ -19,7 +19,6 @@ const ProjectManagementPage: React.FC = () => {
     }, [])
     return (
         <div className='px-[10px]'>
-          <AddGoLinkModal visible={golinkModalVisible} modalVisiblecallback={setGoLinkModalVisible} />
           <h2>Website Management</h2>
           <h3>Projects</h3>
           <ProjectTable isOfficer={isOfficer} />
