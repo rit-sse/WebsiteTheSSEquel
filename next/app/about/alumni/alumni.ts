@@ -5,7 +5,7 @@ export interface AlumniMember {
   linkedin?: string;
   github?: string;
   description?: string;
-  image: string;
+  image?: string;
   quote?: string;
   previous_roles?: string;
   start_date: string;
