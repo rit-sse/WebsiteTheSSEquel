@@ -5,6 +5,7 @@ import UserManagement from "./usermanagement/UserManagement";
 import ProjectManagementPage from "./projectManagement/ProjectManagementPage";
 import GoLinksManagementPage from "./goLinksManagement/GoLinksManagementPage";
 import AssetTab from "./assetsmang/AssetTab";
+import EventsManagementPage from "./eventsManagement/EventsManagementPage";
 
 const OfficerDashboard = () => {
   let [userIsOfficer, setOfficer] = useState(false);
@@ -24,6 +25,7 @@ const OfficerDashboard = () => {
     "Account Management": UserManagement,
     "Project Management": ProjectManagementPage,
     "GoLinks Management": GoLinksManagementPage,
+    "Events Management": EventsManagementPage,
     "Asset Management": AssetTab
   };
 
@@ -35,10 +37,11 @@ const OfficerDashboard = () => {
         <div className="w-full md:w-[85%] flex flex-col md:flex-row items-start justify-between gap-4">
           <div className="w-[100%] md:w-[24%] pb-[10px] bg-base-100 rounded-[14px]">
             <p className="w-full pl-[25px] py-[12px] divider-y text-[18px]">Officer Dashboard</p>
-            <DashboardButton callback={() => {setSelectedPage("Account Management")} }isEnabled={(selectedPage == "Account Management")} text="User Management"/>
-            <DashboardButton callback={() => {setSelectedPage("Project Management")} }isEnabled={(selectedPage == "Project Management")} text="Project Management"/>
-            <DashboardButton callback={() => {setSelectedPage("GoLinks Management")} }isEnabled={(selectedPage == "GoLinks Management")} text="Go Links Management"/>
-            <DashboardButton callback={() => {setSelectedPage("Asset Management")}  }isEnabled={(selectedPage == "Asset Management")} text="Assets/Resources"/>
+            {
+              (Object.keys(dashboardPages).map((pageName, index) => (
+                <DashboardButton key={index} callback={() => {setSelectedPage(pageName)} }isEnabled={(selectedPage == pageName)} text={pageName}/>
+              )))
+            }
           </div>
           <div className="w-full md:w-[75%] p-[15px] bg-base-100 rounded-[14px]">
             {
