@@ -5,19 +5,19 @@ import DarkModeToggle from "../common/DarkModeToggle";
 import { Theme } from '@/types/theme';
 import { useTheme } from "next-themes";
 import { useState } from "react";
+// import { bttntxt } from "react"
 
 export default function AuthButton() {
     const { theme, setTheme } = useTheme()
+    const [bttntxt, setbtttxt] = useState('Light Mode')
     
     
     const handleToggleChange = () => {
         const nextTheme = theme === Theme.Dark ? Theme.Light : Theme.Dark;
-        if(Theme.Dark){
-            document.getElementById("change_text")
-        }else{
-            document.getElementById("change_text")
-        }
+        const nextLabel = bttntxt === 'Dark Mode' ? 'Light Mode':'Dark Mode';
+
         setTheme(nextTheme);
+        setbtttxt(nextLabel);
     };
 
     const { data: session } = useSession();
@@ -34,7 +34,7 @@ export default function AuthButton() {
                 
                 <div className="dropdown dropdown-bottom dropdown-end">
                     
-                    <img tabIndex={0} role="button" src ="https://lh3.googleusercontent.com/a/ACg8ocIS0hBsn0dZt0yuiodYPD9RARxdpwhSjxRFNAEo_ObCzOgocg=s96-c" alt="account_img" className="w-10 h-10 rounded-full hover:border-2 hover:border-blue-500" />
+                    <img tabIndex={0} role="button" src ={session.user?.image ?? ""} alt="account_img" className="w-10 h-10 rounded-full hover:border-2 hover:border-blue-500" />
 
                     <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box w-52 p-2 cursor-pointer shadow-[0_0_12px_rgba(59,130,246,0.6)] ">
                             {/* account button  */}
@@ -48,7 +48,7 @@ export default function AuthButton() {
                             {/* settings button */}
                             {/* <li className="hover:bg-blue-200 rounded-[.5em]"><a><span>{'\u2699'}</span> Settings</a></li> */}
                            
-                            <li className="rounded-[.5em] " onClick={handleToggleChange}><a id = "change_text">DARK MODE </a></li>
+                            <li className="rounded-[.5em] " onClick={handleToggleChange}><a>{bttntxt}</a></li>
 
                             {/* <li className="hover:bg-blue-200 rounded-[.5em]"><a><span><img src="icon.png"  alt="picture" /></span>Notification</a></li> */}
                             <hr/>
