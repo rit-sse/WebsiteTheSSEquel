@@ -1,4 +1,4 @@
-import { LeaderboardItem } from "./item";
+import { LeaderboardItem } from "./membership";
 import { LeaderboardRow, LeaderboardRowMobile } from "./LeaderboardRow";
 
 interface LeaderboardProps {

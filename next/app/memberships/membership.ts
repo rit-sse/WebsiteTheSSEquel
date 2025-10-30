@@ -1,3 +1,11 @@
+export interface LeaderboardItem {
+    rank: number;
+    userId: number;
+    name: string;
+    membershipCount: number;
+    lastMembershipAt: Date;
+};
+
 export interface AutocompleteOption {
     id: number
     name: string

@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { AutocompleteOption, Membership } from "./options";
+import { AutocompleteOption, Membership } from "./membership";
 import { UserAutocomplete } from "./Autocomplete";
 
 

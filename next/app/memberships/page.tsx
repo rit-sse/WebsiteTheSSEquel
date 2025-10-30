@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { LeaderboardItem } from "./item";
+import { LeaderboardItem } from "./membership";
 import { LeaderboardTable } from "./LeaderboardTable";
 import { AddMembershipModal } from "./AddMembershipModal";
 

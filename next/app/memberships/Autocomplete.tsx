@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AutocompleteOption } from "./options";
+import { AutocompleteOption } from "./membership";
 
 interface AutocompleteOptionProps {
   option: AutocompleteOption | null;
