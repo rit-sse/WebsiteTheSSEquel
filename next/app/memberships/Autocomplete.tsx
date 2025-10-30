@@ -51,6 +51,7 @@ export function UserAutocomplete({
 
     if (option && debounced === option.name) return;
 
+
     const ac = new AbortController();
     (async () => {
       const res = await fetch(
@@ -76,9 +77,6 @@ export function UserAutocomplete({
   }
 
   function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (locked) {
-      setLocked(false);
-    }
     if (!open || opts.length == 0) return;
     if (e.key == "ArrowDown") {
       e.preventDefault();

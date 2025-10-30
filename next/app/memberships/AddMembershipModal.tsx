@@ -30,7 +30,7 @@ export function AddMembershipModal({
         } else {
             ref.current?.close();
         }
-    }, [open]);
+    }, [open, selected]);
 
     async function onSubmit(e:FormEvent) {
         e.preventDefault();
@@ -95,7 +95,7 @@ export function AddMembershipModal({
                     {error && <div className="alert alert-error py-2">{error}</div>}
                     
                     <div className="modal-action">
-                        <button type="button" className="btn" onClick={() => onOpenChange(false)}>Cancel</button>
+                        <button type="button" className="btn" onClick={() => {onOpenChange(false); setSelected(null)}}>Cancel</button>
                         <button type="submit" className="btn btn-primary" disabled={!selected || !reason.trim() || !dateGiven}>
                             {submitting ? <span className="loading loading-spinner"/> : "Save"}
                         </button>
