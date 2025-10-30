@@ -1,5 +1,5 @@
 import React from "react";
-import { LeaderboardItem } from "./item"
+import { LeaderboardItem } from "./membership"
 
 interface LeaderboardRowProps{
     item: LeaderboardItem
