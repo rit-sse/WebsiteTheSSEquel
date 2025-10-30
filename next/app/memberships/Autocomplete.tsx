@@ -39,6 +39,12 @@ export function UserAutocomplete({
   const [hi, setHi] = useState(0);
   const [locked, setLocked] = useState(false);
 
+  useEffect(() => {
+    setQuery(option?.name ?? "");
+    if (option === null) {
+      setLocked(false);
+    }
+  }, [option])
 
   useEffect(() => {
     if (locked) return;

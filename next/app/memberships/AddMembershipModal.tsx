@@ -27,10 +27,12 @@ export function AddMembershipModal({
             ref.current?.showModal();
             setSelected(null);
             setReason("");
+            setDateGiven("");
+            setError(null);
         } else {
             ref.current?.close();
         }
-    }, [open, selected]);
+    }, [open]);
 
     async function onSubmit(e:FormEvent) {
         e.preventDefault();
