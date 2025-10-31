@@ -736,6 +736,51 @@ async function seedEvents() {
   console.log({ event1, event2, event3, event4, event5, event6 });
 }
 
+async function seedMemberships() {
+	const membership1 = await prisma.memberships.create({
+		data: {
+			userId: 1,
+			reason: "Test1",
+			dateGiven: new Date("2025-10-1 12:00:00")
+		}
+	});
+
+	const membership2 = await prisma.memberships.create({
+		data: {
+			userId: 2,
+			reason: "Test2",
+			dateGiven: new Date("2025-10-2 12:00:00")
+		}
+	});
+
+	const membership3 = await prisma.memberships.create({
+		data: {
+			userId: 1,
+			reason: "Test3",
+			dateGiven: new Date("2025-10-2 12:00:00")
+		}
+	});
+
+	const membership4 = await prisma.memberships.create({
+		data: {
+			userId: 1,
+			reason: "Test4",
+			dateGiven: new Date("2025-10-3 12:00:00")
+		}
+	});
+
+	const membership5 = await prisma.memberships.create({
+		data: {
+			userId: 3,
+			reason: "Test5",
+			dateGiven: new Date("2025-10-4 12:00:00")
+		}
+	});
+
+	console.log({membership1, membership2, membership3, membership4, membership5});
+
+}
+
 async function main() {
   try {
     await seedUser();
@@ -758,6 +803,7 @@ async function main() {
 	await seedProject();
 	await seedProjectContributor();
     await seedEvents();
+	await seedMemberships();
   } catch (e) {
     console.error(e);
   }

@@ -1,0 +1,47 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { LeaderboardItem } from "./membership";
+import { LeaderboardTable } from "./LeaderboardTable";
+import { AddMembershipModal } from "./AddMembershipModal";
+
+export default function Leaderboard() {
+    const [items, setItems] = useState<LeaderboardItem[]>([]);
+    const [open, setOpen] = useState(false);
+    const [isOfficer, setIsOfficer] = useState(false);
+
+    async function userStatus() {
+        const res = await fetch('/api/authLevel');
+        const data = await res.json();
+        setIsOfficer(data.isOfficer);
+    }
+
+    async function load() {
+        const res = await fetch("/api/memberships");
+        const data = await res.json();
+        setItems(data);
+    }
+
+    useEffect(() => {
+        userStatus();
+        load();
+    }, [])
+
+    return (
+        <div className="p-6">
+            <div className="flex flex-row items-center justify-between gap-2">
+                <h1 className="text-xl font-semibold">Memberships Leaderboard</h1>
+            </div>
+            <div className="flex align-center w-full">
+            <LeaderboardTable items={items}/>
+            </div>
+            <div className="hidden md:flex justify-end w-full">
+                {isOfficer && <button className="btn bg-base-100" onClick={() => setOpen(true)}>Add Membership</button>}
+            </div>
+            <div className="md:hidden flex justify-center w-full">
+                {isOfficer && <button className="btn bg-base-100" onClick={() => setOpen(true)}>Add Membership</button>}
+            </div>
+            {isOfficer && (<AddMembershipModal open={open} onOpenChange={setOpen} onCreated={load}></AddMembershipModal>)}
+        </div>
+    )
+}

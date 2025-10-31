@@ -64,6 +64,10 @@ const navItems: (NavItemProps & { render?: React.ReactNode})[] = [
         ],
     },
     {
+        title: "Leaderboard",
+        route: "/memberships",
+    },
+    {
         title: "Projects",
         route: "/projects",
     },
