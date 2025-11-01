@@ -14,7 +14,7 @@ export function LeaderboardTable({ items, onClickUser }: LeaderboardProps) {
                 <table className="table w-full text-left">
                 <thead>
                     <tr>
-                        <th className="w-6 text-right pr-3">#</th>
+                        <th className="w-6 text-right pr-3 overflow-hidden">#</th>
                         <th>User</th>
                         <th className="text-right">Memberships</th>
                         <th>Lastest Membership</th>
