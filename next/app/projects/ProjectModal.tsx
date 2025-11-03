@@ -240,7 +240,7 @@ const ProjectModal = ({enabled, setEnabled, project, isOfficer}: ProjectModalInt
                                             editMode ?
                                             <ProjectModalInput label="Description" setTextState={setDescription} presetValue={desc} isRichText={true}/>
                                             :
-                                            <p className="text-lg mb-[10px] max-h-[200px] overflow-scroll">{project.description}</p>
+                                            <p className="text-lg mb-[10px] max-h-[200px] overflow-auto">{project.description}</p>
                                         }
                                         {/* Email */}
                                         {/* This disappears if edit mode is enabled, as its associated with the lead, so therefore it is not needed */}
