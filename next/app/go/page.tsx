@@ -32,7 +32,7 @@ let mapFunc = (item: any) => ({
 })
 
 const GoLinksPage = () => {
-  const [goLinkData, setGoLinkData]: [any[], any] = useState([]);
+  const [goLinkData, setGoLinkData]: [any[], any] = useState([{id:-1}]);
   const fetchData = useCallback(async () => {
     const data: golinkInterf[] = await fetch("/api/golinks/public").then((response) => response.json());
     const authLevel = await fetch("/api/authLevel").then(resp => resp.json())

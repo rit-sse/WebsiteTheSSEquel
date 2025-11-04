@@ -46,73 +46,39 @@ const GoLinksContainer: React.FC<GoLinksContainerProps> = ({
     updateGoLinkList(givenFilter);
   };
 
-  if (goLinkData.length === 0) {
-    return (
-      <div className="w-9/12">
-        <div className="text-center flex flex-col items-center w-full">
-          <h1
-            className="bg-gradient-to-t from-primary to-secondary bg-clip-text
-                                text-4xl/[3rem] font-extrabold text-transparent md:text-5xl/[4rem]"
-          >
-            Go Links
-          </h1>
-
-          <p className="text-center mx-auto mt-4 text-xl/relaxed">
-            GoLinks are a type of URL shortcut that allow you to access the
-            SSE&apos;s frequently used external websites or resources. Important
-            and/or relevant golinks are marked with a gold star.
-          </p>
-        </div>
-        <div className="w-full mt-4">
-          <input
-            type="text"
-            placeholder="Search golinks, etc..."
-            className="input input-bordered w-full my-5"
-            onChange={(event) => handleFilterChange(event)}
-          />
-        </div>
-        <div
-          className="
-                    grid
-                    grid-cols-1
-                    sm:grid-cols-1
-                    md:grid-cols-2
-                    lg:grid-cols-2
-                    gap-4
-                    md:p-4
-                "
+  return (
+    <div className="w-9/12">
+      <div className="text-center flex flex-col items-center w-full">
+        <h1
+          className="bg-gradient-to-t from-primary to-secondary bg-clip-text
+                              text-4xl/[3rem] font-extrabold text-transparent md:text-5xl/[4rem]"
         >
-          <GoLinkButton fetchData={fetchData} />
-        </div>
-        <div className="text-center my-10">Loading...</div>
+          Go Links
+        </h1>
+
+        <p className="text-center mx-auto mt-4 text-xl/relaxed">
+          GoLinks are a type of URL shortcut that allow you to access the
+          SSE&apos;s frequently used external websites or resources. Important
+          and/or relevant golinks are marked with a gold star.
+        </p>
       </div>
-    );
-  } else {
-    return (
-      <div className="w-9/12">
-        <div className="text-center flex flex-col items-center w-full">
-          <h1
-            className="bg-gradient-to-t from-primary to-secondary bg-clip-text
-                                text-4xl/[3rem] font-extrabold text-transparent md:text-5xl/[4rem]"
-          >
-            Go Links
-          </h1>
+      <div className="w-full mt-4">
+        <input
+          type="text"
+          placeholder="Search golinks, etc..."
+          className="input input-bordered w-full my-5"
+          onChange={(event) => handleFilterChange(event)}
+        />
+      </div>
+      {
+        //if there is any GoLink data
+        goLinkData.length > 0 ?
 
-          <p className="text-center mx-auto mt-4 text-xl/relaxed">
-            GoLinks are a type of URL shortcut that allow you to access the
-            SSE&apos;s frequently used external websites or resources. Important
-            and/or relevant golinks are marked with a gold star.
-          </p>
-        </div>
-
-        <div className="w-full mt-4">
-          <input
-            type="text"
-            placeholder="Search golinks, etc..."
-            className="input input-bordered w-full my-5"
-            onChange={(event) => handleFilterChange(event)}
-          />
-        </div>
+        //if the first one has an id of -1
+        //  set by default in ./page.tsx to represent "haven't fetched data yet"
+        goLinkData[0].id === -1 ?
+        <div className="text-center my-10">Loading...</div> //must be loading
+        : //else: this must be the recieved list
         <div
           className="
                     grid
@@ -127,9 +93,12 @@ const GoLinksContainer: React.FC<GoLinksContainerProps> = ({
           <GoLinkButton fetchData={fetchData} />
           {goLinkList}
         </div>
-      </div>
-    );
-  }
+        : //else: must be no GoLinks (only way goLinkData is ever an empty list)
+        <div className="text-center my-10">No GoLinks available</div>
+      }
+      
+    </div>
+  );
 };
 
 export default GoLinksContainer;
