@@ -8,8 +8,8 @@ import { useState } from "react";
 // import { bttntxt } from "react"
 
 export default function AuthButton() {
-    const { theme, setTheme } = useTheme()
-    const [text, setText] = useState('Light Mode')
+    const { theme, setTheme } = useTheme();
+    const [text, setText] = useState('Light Mode');
     
     
     {/*"https://www.flaticon.com/free-icons/" */}
