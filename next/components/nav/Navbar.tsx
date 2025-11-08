@@ -64,8 +64,22 @@ const navItems: (NavItemProps & { render?: React.ReactNode})[] = [
         ],
     },
     {
-        title: "Leaderboard",
-        route: "/memberships",
+        title: "Lab",
+        subItems: [
+            {
+                title: "The SSE Lab",
+                route: "/lab",
+            },
+            {
+                title: "Album",
+                route: "/lab/album",
+            },
+            {
+                title: "Memberships",
+                route: "/lab/memberships",
+            },
+            
+        ],
     },
     {
         title: "Projects",
