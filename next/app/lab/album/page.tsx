@@ -29,15 +29,16 @@ const Album = () => {
                     lg:grid-cols-3
                     gap-4
                     md:p-4
+                    
                 ">
             {images().map((image, index) => (
-              <div key={index}>
+              <div key={index} className="h-80">
                 <Image
                     src={"/images/" + image}
                     alt={image}
                     width='540'
                     height='400'
-                    className="w-full h-auto rounded-md"
+                    className="w-full h-full max-w-full max-h-full object-contain object-center"
                 />
               </div>
             ))}
