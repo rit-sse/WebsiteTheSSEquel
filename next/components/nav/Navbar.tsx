@@ -42,10 +42,10 @@ const navItems: (NavItemProps & { render?: React.ReactNode})[] = [
             
         ],
     },
-    // {
-    //     title: "Mentoring",
-    //     route: "#",
-    // },
+    {
+        title: "Mentoring",
+        route: "/mentor-schedule",
+    },
     {
         title: "Events",
         subItems: [

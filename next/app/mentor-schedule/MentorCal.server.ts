@@ -41,9 +41,9 @@ export async function getMentorNames(){
 	return mentors.map(({ user }) => user)
 }
 
-export async function getMentorSchedule(id: number = 0): Promise<ScheduleType[]> {
+export async function getMentorSchedule(id?: number): Promise<ScheduleType[]> {
 	const rawSchedule = await prisma.schedule.findFirst({
-		where: { id },
+		where: id ? { id } : undefined,
 		select: {
 			id: true,
 			blocks: {
