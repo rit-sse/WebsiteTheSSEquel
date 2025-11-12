@@ -6,7 +6,19 @@ import { format24hHour, mentorColors } from "./MentorCal.client"
 
 // Client Components
 
-export function AddMentorButton({ day, hour }: { day: number; hour: number }) {
+export function AddMentorButton({ 
+	day, 
+	hour, 
+	mentorList,
+    }: { 
+	day: number, 
+	hour: number, 
+	mentorList: { 
+			id: number
+			name: string
+			email: string
+		    }[]
+    }){
 	let modalRef = useRef<HTMLDialogElement>(null)
 	const daysOfTheWeek = [
 		"Sunday",
@@ -34,7 +46,14 @@ export function AddMentorButton({ day, hour }: { day: number; hour: number }) {
 						{daysOfTheWeek[day]} from {format24hHour(hour)} to{" "}
 						{format24hHour(hour + 1)}
 					</p>
-					<input type="text" list="mentorList" />
+					<select className="select select-bordered w-full">
+					    <option value="">-- Choose a mentor --</option>
+					    {mentorList.map((mentor) => (
+						<option key={mentor.id} value={mentor.id}>
+						    {mentor.name}
+						</option>
+					    ))}
+					</select>
 				</article>
 				<form method="dialog" className="modal-backdrop">
 					<button>close</button>

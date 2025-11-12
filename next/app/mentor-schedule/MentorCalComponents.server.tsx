@@ -3,8 +3,8 @@
 import { AddMentorButton, MentorButton } from "./MentorCalComponents.client"
 import { dayLabels, hourLabels } from "./MentorCal.client"
 import { ScheduleType } from "./MentorCal.types"
-import { prisma } from "@/lib/prisma"
-import { isMentor } from "./MentorCal.server"
+import { prisma } from "@/lib/prisma" 
+import { isMentor } from "./MentorCal.server" 
 
 export const Header = ({
 	title,
@@ -22,9 +22,11 @@ export const Header = ({
 export async function MentorCalendar({
 	mentorBlocks,
 	isMentor,
+	mentorList,
 }: {
 	mentorBlocks: ScheduleType[]
 	isMentor: boolean
+	mentorList: { id: number; name: string; email: string }[]
 }) {
 	return (
 		<>
@@ -76,12 +78,12 @@ export async function MentorCalendar({
 					<MentorButton data={data} index={index} />
 					{matchesTime.length === 1 && isMentor && (
 						<div className="overflow-hidden block group-hover:w-40 group-focus:w-40 w-0 h-full transition-[width_padding-right] group-hover:pr-2 duration-300">
-							<AddMentorButton day={day} hour={hour} />
+							<AddMentorButton day={day} hour={hour} mentorList={mentorList} />
 						</div>
 					)}
 				</div>
 			))
-		} else return isMentor && <AddMentorButton day={day} hour={hour} />
+		} else return isMentor && <AddMentorButton day={day} hour={hour} mentorList={mentorList} />
 	}
 }
 
@@ -89,8 +91,8 @@ export async function MentorDataList({ data }: { data: { id: number, name: strin
 
 	return (
 		<datalist id="mentorList">
-			{data.map(({ name, email }) => (
-				<option value={`${name} (${email})`} />
+			{data.map(({ id, name, email }) => (
+				<option key={id} value={`${name} (${email})`} />
 			))}
 		</datalist>
 	)
