@@ -347,6 +347,43 @@ async function seedSchedule() {
 	console.log({ schedule1, schedule2 });
 }
 
+async function seedScheduleBlock() {
+	const scheduleBlock1 = await prisma.scheduleBlock.upsert({
+		where: { id: 1},
+		update: {},
+		create: {
+			weekday: 1,
+			startHour: 10,
+			mentorId: 1,
+			scheduleId: 0,
+		},
+	});
+
+	const scheduleBlock2 = await prisma.scheduleBlock.upsert({
+		where: { id: 2},
+		update: {},
+		create: {
+			weekday: 3,
+			startHour: 12,
+			mentorId: 2,
+			scheduleId: 0,
+		},
+	});
+
+	const scheduleBlock3 = await prisma.scheduleBlock.upsert({
+		where: { id: 3},
+		update: {},
+		create: {
+			weekday: 5,
+			startHour: 14,
+			mentorId: 3,
+			scheduleId: 0,
+		},
+	});
+
+	console.log({ scheduleBlock1, scheduleBlock2, scheduleBlock3 });
+}
+
 async function seedGoLinks() {
 	const goLink1 = await prisma.goLinks.upsert({
 		where: { id: 1 },
@@ -675,6 +712,7 @@ async function main() {
     await seedCourseTaken();
     // await seedHourBlock();
     await seedSchedule();
+    await seedScheduleBlock();
     await seedGoLinks();
     // await seedAccount();
     // await seedSession();
