@@ -199,6 +199,44 @@ async function seedSkill() {
 	console.log({ java, cpp, python });
 }
 
+async function seedAlumni() {
+	const alumni1 = await prisma.alumni.upsert({
+		where: { id: 1 },
+		update: {},
+		create: {
+			id: 1,
+			name: "Bob",
+			email: "bob@rit.edu",
+			linkedIn: "linkedin.com/bob",
+			gitHub: "github.com/bob",
+			description: "bob is bob",
+			start_date: ("Fall 2017"),
+			end_date: ("Spring 2023"),
+			previous_roles: "President",
+			quote: "01001000 01100101 01101100 01101100 01101111"
+		},
+	});
+
+	const alumni2 = await prisma.alumni.upsert({
+		where: { id: 2 },
+		update: {},
+		create: {
+			id: 2,
+			name: "Fred",
+			email: "fred@rit.edu",
+			linkedIn: "linkedin.com/fred",
+			gitHub: "github.com/fred",
+			description: "fred is fred",
+			start_date: ("Spring 2020"),
+			end_date: ("Fall 2025"),
+			previous_roles: "Tech Head, Vice President",
+			quote: "Pinapple on pizza <3"
+		},
+	});
+	console.log({ alumni1, alumni2 });
+
+}
+
 async function seedMentorSkill() {
 	const mentorSkill1 = await prisma.mentorSkill.upsert({
 		where: { id: 1 },
@@ -698,6 +736,51 @@ async function seedEvents() {
   console.log({ event1, event2, event3, event4, event5, event6 });
 }
 
+async function seedMemberships() {
+	const membership1 = await prisma.memberships.create({
+		data: {
+			userId: 1,
+			reason: "Test1",
+			dateGiven: new Date("2025-10-1 12:00:00")
+		}
+	});
+
+	const membership2 = await prisma.memberships.create({
+		data: {
+			userId: 2,
+			reason: "Test2",
+			dateGiven: new Date("2025-10-2 12:00:00")
+		}
+	});
+
+	const membership3 = await prisma.memberships.create({
+		data: {
+			userId: 1,
+			reason: "Test3",
+			dateGiven: new Date("2025-10-2 12:00:00")
+		}
+	});
+
+	const membership4 = await prisma.memberships.create({
+		data: {
+			userId: 1,
+			reason: "Test4",
+			dateGiven: new Date("2025-10-3 12:00:00")
+		}
+	});
+
+	const membership5 = await prisma.memberships.create({
+		data: {
+			userId: 3,
+			reason: "Test5",
+			dateGiven: new Date("2025-10-4 12:00:00")
+		}
+	});
+
+	console.log({membership1, membership2, membership3, membership4, membership5});
+
+}
+
 async function main() {
   try {
     await seedUser();
@@ -705,6 +788,7 @@ async function main() {
     await seedOfficerPosition();
     await seedOfficer();
     await seedMentor();
+	await seedAlumni();
     await seedSkill();
     await seedMentorSkill();
     await seedDepartment();
@@ -719,6 +803,7 @@ async function main() {
 	await seedProject();
 	await seedProjectContributor();
     await seedEvents();
+	await seedMemberships();
   } catch (e) {
     console.error(e);
   }

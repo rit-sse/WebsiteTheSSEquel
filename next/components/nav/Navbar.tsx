@@ -25,8 +25,12 @@ const navItems: (NavItemProps & { render?: React.ReactNode})[] = [
                 route: "/about/get-involved",
             },
             {
-                 title: "Leadership",
-                 route: "/about/leadership",
+                title: "Leadership",
+                route: "/about/leadership",
+            },
+            {
+                title: "Alumni",
+                route: "/about/alumni",
             },
             {
                 title: "Committees",
@@ -59,6 +63,10 @@ const navItems: (NavItemProps & { render?: React.ReactNode})[] = [
                 route: "/events/calendar",
             },
         ],
+    },
+    {
+        title: "Leaderboard",
+        route: "/memberships",
     },
     {
         title: "Projects",

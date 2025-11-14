@@ -41,6 +41,34 @@ model User {
     session              Session[]
     projectContributions ProjectContributor[]
     projects             Project[]
+
+    Memberships Memberships[]
+}
+
+model Alumni {
+    //Store an automatically generated unique int for id
+    id Int @id @default(autoincrement())
+
+    //Store first and last name as Strings
+    name String
+
+    //Store email as a unique String
+    email String
+
+    linkedIn String?
+    gitHub String?
+    description String?
+
+    //Image will be saved
+    image String @default("https://source.boringavatars.com/beam/")
+
+    //Store startDate and endDate as a String
+    start_date String
+    end_date   String
+    
+    //Store Quote and Previous Roles
+    quote String            @default("")
+    previous_roles String @default("")
 }
 
 model Quote {
@@ -344,4 +372,18 @@ model ProjectContributor {
     // Relational Fields
     user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
     project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model Memberships {
+    id Int @id @default(autoincrement())
+
+    // UserID referenced as foreign key
+    userId Int
+
+    reason String
+    dateGiven DateTime
+
+    // Relational Fields
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
 }
