@@ -41,19 +41,50 @@ export function AddMentorButton({
 			</button>
 			<dialog className="modal" ref={modalRef}>
 				<article className="modal-box">
-					<h2 className="leading-snug">Assign Mentor</h2>
-					<p className="pb-2">
-						{daysOfTheWeek[day]} from {format24hHour(hour)} to{" "}
-						{format24hHour(hour + 1)}
-					</p>
-					<select className="select select-bordered w-full">
-					    <option value="">-- Choose a mentor --</option>
-					    {mentorList.map((mentor) => (
-						<option key={mentor.id} value={mentor.id}>
-						    {mentor.name}
-						</option>
-					    ))}
-					</select>
+					<div className="flex justify-between items-start mb-4">
+						<div>
+							<h2 className="leading-snug">Assign Mentor</h2>
+							<p className="pb-2 text-sm opacity-70">
+							    {daysOfTheWeek[day]} from {format24hHour(hour)} to{" "}
+							    {format24hHour(hour + 1)}
+							</p>
+						</div>
+						<button
+						    onClick={() => modalRef.current?.close()}
+						    className="btn btn-sm btn-circle btn-ghost"
+						>
+						    <ExitIcon />
+						</button>
+					</div>
+
+					<div className="space-y-4">
+						<div className="form-control w-full">
+							<label className="label">
+								<span className="label-text font-medium">Select Mentor</span>
+							</label>
+							<select className="select select-bordered w-full">
+								<option value="">-- Choose a Mentor --</option>
+								{mentorList.map((mentor) => (
+								    <option key={mentor.id} value={mentor.id}>
+									    {mentor.name}
+								    </option>
+								))}	
+							</select>
+						</div>
+
+						<div className="modal-action">
+							<button
+								onClick={ () => modalRef.current?.close()}
+								className="btn btn-ghost"
+							>
+							    Cancel
+							</button>
+							<button className="btn btn-primary">
+								<AddIcon />
+								Add Mentor
+							</button>
+						</div>
+					</div>
 				</article>
 				<form method="dialog" className="modal-backdrop">
 					<button>close</button>
