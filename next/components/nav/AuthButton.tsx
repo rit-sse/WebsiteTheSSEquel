@@ -1,4 +1,5 @@
 'use client';
+import Link from "next/link";
 import { signIn, signOut, useSession } from "next-auth/react";
 import HoverBoldButton from "../common/HoverBoldButton";
 import DarkModeToggle from "../common/DarkModeToggle";
@@ -40,10 +41,11 @@ export default function AuthButton() {
                             {/* account button  */}
 
                             <li className=" rounded-[.5em]">
-                                <a>
+                                <Link href="/about/user-profile">
                                     <img src= {userImage ?? undefined} alt="account_img" className="rounded-full w-10 h-10" />
                                     {userName}
-                                </a>
+
+                                </Link>
                             </li>
 
                             <li className="rounded-[.5em] " onClick={handleToggleChange}>
