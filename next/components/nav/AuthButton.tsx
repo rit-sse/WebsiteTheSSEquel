@@ -4,14 +4,16 @@ import HoverBoldButton from "../common/HoverBoldButton";
 import DarkModeToggle from "../common/DarkModeToggle";
 import { Theme } from '@/types/theme';
 import { useTheme } from "next-themes";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 // import { bttntxt } from "react"
 
 export default function AuthButton() {
     const { theme, setTheme } = useTheme();
     const [text, setText] = useState('Light Mode');
+    const [userImage, setUserImage] = useState('');
+    const [userName, setUserName] = useState('')
     
-    
+    const { data: session } = useSession();
     {/*"https://www.flaticon.com/free-icons/" */}
     
     const handleToggleChange = () => {
@@ -21,25 +23,26 @@ export default function AuthButton() {
         setTheme(nextTheme);
         setText(nextText);
     };
+    useEffect(() => {
+        setUserImage(session?.user?.image ?? "");
+        setUserName(session?.user?.name ?? "");
+    }, [])  
 
-    const { data: session } = useSession();
-
-    if (session) {
-        console.log("User image:", session.user?.image);
+    if (userImage) {
         return (
             <>
                 
-                <div className="dropdown dropdown-bottom dropdown-end">
+                <div className="dropdown dropdown-bottom dropdown-end ml-[10px]">
                     
-                    <img tabIndex={0} role="button" src ={session.user?.image ?? undefined} alt="account_img" className="w-10 h-10 rounded-full hover:border-2 hover:border-blue-500" />
+                    <img tabIndex={0} role="button" src ={userImage ?? undefined} alt="account_img" className="w-10 h-10 rounded-full hover:border-2 hover:border-blue-500" />
 
                     <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box w-52 p-2 cursor-pointer shadow-[0_0_12px_rgba(59,130,246,0.6)] ">
                             {/* account button  */}
 
-                            <li className=" rounded-[.5em] ">
+                            <li className=" rounded-[.5em]">
                                 <a>
-                                    <img src= {session.user?.image ?? undefined} alt="account_img" className="rounded-full w-10 h-10" />
-                                    {session.user?.name}
+                                    <img src= {userImage ?? undefined} alt="account_img" className="rounded-full w-10 h-10" />
+                                    {userName}
                                 </a>
                             </li>
 
