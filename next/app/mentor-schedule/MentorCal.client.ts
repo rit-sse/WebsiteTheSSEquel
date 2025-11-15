@@ -25,7 +25,9 @@ export function format24hHour(hour: number) {
 export function getHourLabels(startHour: number, endHour: number): { label: string, hour: number }[] {
 	return Array.from({ length: endHour - startHour }).map((_, h) => {
 		const hour = startHour + h
-
-		return { label: `${format24hHour(hour)}-${format24hHour(hour + 1)}`, hour }
+		return { 
+			label: `${format24hHour(hour)}-${format24hHour(hour + 1)}`, 
+			hour 
+		}
 	})
 }

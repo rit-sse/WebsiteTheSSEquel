@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef } from "react"
+import { useRef, useState } from "react"
 import type { ScheduleType } from "./MentorCal.types"
 import { format24hHour, mentorColors } from "./MentorCal.client"
 
@@ -20,6 +20,10 @@ export function AddMentorButton({
 		    }[]
     }){
 	let modalRef = useRef<HTMLDialogElement>(null)
+	const [selectedMentorId, setSelectedMentorId] = useState("")
+	const [isSubmitting, setIsSubmitting] = useState(false)
+	const [error, setError] = useState("")
+
 	const daysOfTheWeek = [
 		"Sunday",
 		"Monday",
@@ -29,6 +33,53 @@ export function AddMentorButton({
 		"Friday",
 		"Saturday",
 	]
+
+	const handleAssign = async (e: React.FormEvent) => {
+	    e.preventDefault()
+	    setError("")
+
+	    if (!selectedMentorId) {
+		setError("Select a mentor")
+		return
+	    }
+
+	    setIsSubmitting(true)
+
+	    try {
+		const response = await fetch("/api/scheduleBlock", {
+		    method: "POST",
+		    headers: {
+			"Content-Type": "application/json",
+		    },
+		    body: JSON.stringify({
+			mentorId: parseInt(selectedMentorId),
+			weekday: day,
+			startHour: hour,
+			scheduleId: 0,
+		    }),
+		})
+
+		const data = await response.json()
+
+		if (!response.ok) {
+		    throw new Error(data.error || "Failed to add mentor")
+		}
+
+		modalRef.current?.close()
+		setSelectedMentorId("")
+		window.location.reload()
+	    } catch (err) {
+		setError(err instanceof Error ? err.message : "Failed to add mentor")
+	    } finally {
+		setIsSubmitting(false)
+	    }
+	}
+
+	const handleClose = () => {
+	    setSelectedMentorId("")
+	    setError("")
+	    modalRef.current?.close()
+	}
 
 	return (
 		<>
@@ -57,34 +108,63 @@ export function AddMentorButton({
 						</button>
 					</div>
 
-					<div className="space-y-4">
+					<form onSubmit={handleAssign} className="space-y-4">
 						<div className="form-control w-full">
 							<label className="label">
 								<span className="label-text font-medium">Select Mentor</span>
 							</label>
-							<select className="select select-bordered w-full">
-								<option value="">-- Choose a Mentor --</option>
+							<select
+								className="select select-bordered w-full"
+								value={selectedMentorId}
+								onChange={(e) => setSelectedMentorId(e.target.value)}
+								disabled={isSubmitting}
+							>
+								<option value="">--- Choose a Mentor ---</option>
 								{mentorList.map((mentor) => (
-								    <option key={mentor.id} value={mentor.id}>
-									    {mentor.name}
-								    </option>
-								))}	
+									<option key={mentor.id} value={mentor.id}>
+										{mentor.name}
+									</option>
+								))}
 							</select>
 						</div>
 
+						{error && (
+						    <div className="alert alert-error">
+							    <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+								    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+							    </svg>
+							    <span>{error}</span>
+						    </div>
+						)}
+
 						<div className="modal-action">
-							<button
-								onClick={ () => modalRef.current?.close()}
+							<button 
+								type="button"
+								onClick={handleClose}
 								className="btn btn-ghost"
+								disabled={isSubmitting}
 							>
-							    Cancel
+								Cancel
 							</button>
-							<button className="btn btn-primary">
-								<AddIcon />
-								Add Mentor
+							<button
+								type="submit"
+								className="btn btn-primary"
+								disabled={isSubmitting || !selectedMentorId}
+							>
+								{isSubmitting ? (
+								    <>
+									    <span className="loading loading-spinner loading-sm"></span>
+									    Adding...
+								    </>
+								) : (
+									<>
+										<AddIcon />
+										Add Mentor
+									</>
+								)}
 							</button>
 						</div>
-					</div>
+					</form>
 				</article>
 				<form method="dialog" className="modal-backdrop">
 					<button>close</button>
@@ -137,10 +217,11 @@ export function MentorButton({
 							<summary className="btn btn-square btn-ghost m-1">
 								<Hamburger />
 							</summary>
-							<ul className="menu dropdown-content bg-base-200 rounded-box z-1 w-52 p-2 shadow-sm">
-								<li>Edit</li>
-								<li>Deallocate</li>
-							</ul>
+							<button 
+								// onClick={handleDeallocate}
+								className="menu dropdown-content bg-base-200 rounded-box z-1 w-52 p-2 shadow-sm">
+									Deallocate
+							</button>
 						</details>
 					</header>
 					<main className="grid grid-cols-1 gap-4 w-full py-4 overflow-x-auto">
