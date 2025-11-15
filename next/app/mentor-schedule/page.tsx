@@ -4,7 +4,7 @@ import { MentorCalendar, Header, MentorDataList } from "./MentorCalComponents.se
 export default async function Page() {
 	const mentorStatus = await isMentor()
 	const mentorBlocks = await getMentorSchedule()
-	const mentorList = await getMentorNames()
+	const mentorList = mentorStatus ? await getMentorNames() : []
 
 	return (
 		<main className="w-full max-w-7xl px-8 md:px-0 py-6 space-y-10">
