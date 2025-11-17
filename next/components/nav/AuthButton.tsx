@@ -29,12 +29,13 @@ export default function AuthButton() {
     }, [])  
 
     if (userImage) {
+        console.log("Refreshed")
         return (
             <>
                 
                 <div className="dropdown dropdown-bottom dropdown-end ml-[10px]">
                     
-                    <img tabIndex={0} role="button" src ={userImage ?? undefined} alt="account_img" className="w-10 h-10 rounded-full hover:border-2 hover:border-blue-500" />
+                    <img tabIndex={0} role="button" src ={userImage ?? undefined} alt="account_img" className="w-10 h-10 rounded-full hover:border-2 hover:border-blue-500" referrerPolicy="no-referrer"/>
 
                     <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box w-52 p-2 cursor-pointer shadow-[0_0_12px_rgba(59,130,246,0.6)] ">
                             {/* account button  */}
