@@ -1,8 +1,8 @@
 import Avatar from 'boring-avatars';
 import { EmailIcon, GitHubIcon, LinkedInIcon } from './Icons';
 
-interface Person {
-    person_id: string;
+export interface Person {
+    person_id?: string;
     name: string;
     image?: string;
     title?: string;
@@ -10,9 +10,10 @@ interface Person {
     links?: SocialLinks;
     start_date?: string;
     end_date?: string;
+    other_info?: string[];
 }
 
-interface SocialLinks {
+export interface SocialLinks {
     email?: string;
     linkedin?: string;
     github?: string;
@@ -27,7 +28,7 @@ interface Iconprops {
     image?: string;
 }
 
-export default function PersonCard({ person }: PersonProps) {
+export function PersonCard({ person }: PersonProps) {
     return (
         <div className="mt-2 flex flex-col items-center w-full max-w-xs sm:max-w-sm px-4">
             <Icon name={person.name} image={person.image}/>
@@ -94,7 +95,7 @@ function Information({ info }: any) {
 function BoldInformation({ info }: any) {
     if (!info) return;
     return (
-        <p className="font-semibold">
+        <p className="font-semibold text-center">
             {info}
         </p>
     );
