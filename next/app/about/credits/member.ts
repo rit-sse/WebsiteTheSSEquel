@@ -1,10 +1,12 @@
+import { Person } from "@/components/common/PersonCard";
+
 export interface CommitteeMember {
-    name: String;
-    role: String;
-    active_date: String;
-    features?: String[];
+    name: string;
+    role: string;
+    active_date: string;
+    features?: string[];
 }
 
-export interface CommitteeMemberProp {
-    member: CommitteeMember;
+export function toPerson(member: CommitteeMember): Person {
+    return {name: member.name, title: member.role, end_date: member.active_date };
 }
