@@ -15,6 +15,9 @@ const Footer: React.FC = () => {
                 <Link href="/privacy-policy" className="text-xs text-muted-foreground hover:text-primary transition-colors">
                     Privacy
                 </Link>
+                <Link href="/about/credits" className="text-xs text-muted-foreground hover:text-primary transition-colors">
+                    Credits
+                </Link>
                 <span className="text-xs text-muted-foreground/50 font-mono" title={`Build: ${commitHash}`}>
                     v{commitHash}
                 </span>
