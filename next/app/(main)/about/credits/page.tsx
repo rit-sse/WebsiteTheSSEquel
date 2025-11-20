@@ -1,5 +1,4 @@
 import { contributors } from "./contributingMembers";
-import { CommitteeMember } from "./member";
 import MemberCard from "./MemberCard";
 
 export default function Credits() {

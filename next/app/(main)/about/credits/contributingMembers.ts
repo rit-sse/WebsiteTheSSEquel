@@ -21,4 +21,4 @@ export const contributors: CommitteeMember[] = [
         role: "A very long role name", 
         active_date: "Summer 1009"
     }
-]
+].sort((m1, m2) => m1.name.localeCompare(m2.name));
