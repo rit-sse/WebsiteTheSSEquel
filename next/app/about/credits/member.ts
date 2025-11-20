@@ -1,8 +1,9 @@
 export interface CommitteeMember {
-    name: String;
-    role: String;
-    active_date: String;
-    features?: String[];
+    user_id: string; // For linking to profile page later
+    name: string;
+    role: string;
+    active_date: string;
+    features?: string[];
 }
 
 export interface CommitteeMemberProp {
