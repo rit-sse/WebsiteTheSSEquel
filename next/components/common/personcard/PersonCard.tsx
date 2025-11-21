@@ -1,5 +1,5 @@
 import Avatar from 'boring-avatars';
-import { EmailIcon, GitHubIcon, LinkedInIcon } from './Icons';
+import { EmailIcon, GitHubIcon, LinkedInIcon } from '../Icons';
 
 export interface Person {
     person_id?: string;

@@ -1,4 +1,4 @@
-import { Person } from "@/components/common/PersonCard";
+import { Person } from "@/components/common/personcard/PersonCard";
 
 export interface CommitteeMember {
     name: string;
