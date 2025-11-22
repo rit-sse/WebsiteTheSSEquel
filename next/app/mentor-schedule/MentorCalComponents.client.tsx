@@ -9,7 +9,7 @@ import { format24hHour, mentorColors } from "./MentorCal.client"
 export function AddMentorButton({ 
 	day, 
 	hour, 
-	mentorList,
+	mentorList = [],
     }: { 
 	day: number, 
 	hour: number, 
@@ -122,7 +122,7 @@ export function AddMentorButton({
 								disabled={isSubmitting}
 							>
 								<option value="">--- Choose a Mentor ---</option>
-								{mentorList.map((mentor) => (
+								{mentorList?.map((mentor) => (
 									<option key={mentor.id} value={mentor.id}>
 										{mentor.name}
 									</option>
