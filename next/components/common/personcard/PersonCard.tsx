@@ -28,6 +28,49 @@ interface Iconprops {
     image?: string;
 }
 
+export class PersonCardBuilder {
+    private keys: (keyof Person)[] = [];
+    private builders: {(person: Person, key: keyof Person): JSX.Element | undefined;}[] = [];
+
+    public create(person: Person) {
+        return (
+            <div className="mt-2 flex flex-col items-center w-full max-w-xs sm:max-w-sm px-4">
+                {this.builders.map((builder, idx) => builder(person, this.keys[idx]))}
+            </div>
+        );
+    }
+
+    public buildIcon(key: string): PersonCardBuilder {
+        this.keys.push(key as keyof Person);
+        this.builders.push(Icon);
+        return this;
+    }
+
+    public buildSocials(key: string): PersonCardBuilder {
+        this.keys.push(key as keyof Person);
+        this.builders.push(SocialInformation);
+        return this;
+    }
+
+    public buildTitle(key: string): PersonCardBuilder {
+        this.keys.push(key as keyof Person);
+        this.builders.push(Name);
+        return this;
+    }
+
+    public buildInfo(key: string): PersonCardBuilder {
+        this.keys.push(key as keyof Person);
+        this.builders.push(Information);
+        return this;
+    }
+
+    public buildBoldInfo(key: string): PersonCardBuilder {
+        this.keys.push(key as keyof Person);
+        this.builders.push(BoldInformation);
+        return this;
+    }
+}
+
 export function PersonCard({ person }: PersonProps) {
     return (
         <div className="mt-2 flex flex-col items-center w-full max-w-xs sm:max-w-sm px-4">
