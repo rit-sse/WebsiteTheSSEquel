@@ -141,7 +141,7 @@ export async function DELETE(request: NextRequest, context?: { params?: { id?: s
 
 	// allow only the mentor who owns the block to remove
 	if (block.mentor?.user?.email !== session.user.email) {
-	    return NextResponse.json({ error: "Incorrect Mentor!" }, { status: 403 })
+	    return NextResponse.json({ error: "You cannot unassign someone else!" }, { status: 403 })
 	}
 
 	await prisma.scheduleBlock.delete({ where: { id }})
