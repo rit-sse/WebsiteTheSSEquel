@@ -12,8 +12,8 @@ export default function Credits() {
                 </p>
             </div>
             <div className="flex">
-            {contributors.map(member => (
-                <MemberCard key={member.user_id} member={member}></MemberCard>
+            {contributors.map( (member, idx) => (
+                <MemberCard key={idx} member={member}></MemberCard>
             ))}
             </div>
     </section>
