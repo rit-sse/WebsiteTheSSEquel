@@ -75,11 +75,13 @@ export function AddMentorButton({
 	    }
 	}
 
+
 	const handleClose = () => {
 	    setSelectedMentorId("")
 	    setError("")
 	    modalRef.current?.close()
 	}
+
 
 	return (
 		<>
@@ -175,13 +177,34 @@ export function AddMentorButton({
 }
 
 export function MentorButton({
-	data: { mentor },
+    	data: { id, mentor },
 	index,
 }: {
 	data: ScheduleType
 	index: number
 }) {
 	let ref = useRef<HTMLDialogElement>(null)
+
+	async function handleDeallocate() {
+		try {
+			const response = await fetch(`/api/scheduleBlock`, { 
+				method: "DELETE",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ id }),
+			})
+			const contentType = response.headers.get("content-type") || ""
+
+			const body = contentType.includes("application/json") ? await response.json() : null
+
+			if (!response.ok) throw new Error(body?.error || "Failed to remove block")
+
+			ref.current?.close()
+			window.location.reload()
+		} catch (err) {
+			alert(err instanceof Error ? err.message : "Failed to remove block")
+		}
+	}
+
 	return (
 		<>
 			<button
@@ -218,7 +241,7 @@ export function MentorButton({
 								<Hamburger />
 							</summary>
 							<button 
-								// onClick={handleDeallocate}
+								onClick={handleDeallocate}
 								className="menu dropdown-content bg-base-200 rounded-box z-1 w-52 p-2 shadow-sm">
 									Deallocate
 							</button>
