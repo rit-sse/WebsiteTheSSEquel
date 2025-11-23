@@ -14,13 +14,13 @@ export async function GET(
 ) {
   try {
     const id = parseInt(params.id);
-    const hourBlock = await prisma.hourBlock.findUnique({
+    const hourBlock = await prisma.scheduleBlock.findUnique({
       where: {
         id,
       },
       select: {
         weekday: true,
-        startTime: true,
+        startHour: true,
       },
     });
     if (hourBlock == null) {
