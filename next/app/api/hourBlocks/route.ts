@@ -11,11 +11,11 @@ const prisma = new PrismaClient();
  * @returns list of hourBlock objects in model
  */
 export async function GET() {
-  const hourBlocks = await prisma.hourBlock.findMany({
+  const hourBlocks = await prisma.scheduleBlock.findMany({
     select: {
       id: true,
       weekday: true,
-      startTime: true,
+      startHour: true,
     },
   });
 
@@ -205,7 +205,7 @@ export async function DELETE(request: NextRequest) {
   }
 
   const id = body.id;
-  const blockExists = prisma.hourBlock.findUnique({ where: { id } });
+  const blockExists = prisma.scheduleBlock.findUnique({ where: { id } });
 
   //validate existence of hourBlock
   if (!blockExists) {
@@ -213,7 +213,7 @@ export async function DELETE(request: NextRequest) {
   }
 
   try {
-    const hourBlock = await prisma.hourBlock.delete({ where: { id } });
+    const hourBlock = await prisma.scheduleBlock.delete({ where: { id } });
     return Response.json(hourBlock);
   } catch (e) {
     return new Response(`Failed to delete hourBlock: ${e}`, { status: 500 });
