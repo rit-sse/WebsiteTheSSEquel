@@ -76,10 +76,10 @@ export async function POST(request: NextRequest) {
   const startTime = new Date(body.startTime);
 
   try {
-    const create_hourBlock = await prisma.hourBlock.create({
+    const create_hourBlock = await prisma.scheduleBlock.create({
       data: {
         weekday,
-        startTime,
+        startHour,
       },
     });
     return Response.json(create_hourBlock, { status: 201 });
@@ -150,7 +150,7 @@ export async function PUT(request: NextRequest) {
   }
 
   try {
-    const hourBlock = await prisma.hourBlock.update({
+    const hourBlock = await prisma.scheduleBlock.update({
       where: { id },
       data,
     });

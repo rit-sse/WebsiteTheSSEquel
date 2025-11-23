@@ -37,7 +37,7 @@ export async function GET(
           select: {
             id: true,
             weekday: true,
-            startTime: true,
+            startHour: true,
           },
         },
       },
