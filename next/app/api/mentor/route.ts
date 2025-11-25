@@ -146,7 +146,7 @@ export async function DELETE(request: NextRequest) {
   await prisma.mentorSkill.deleteMany({
     where: { mentor_Id: id },
   });
-  await prisma.schedule.deleteMany({
+  await prisma.scheduleBlock.deleteMany({
     where: { mentorId: id },
   });
 
