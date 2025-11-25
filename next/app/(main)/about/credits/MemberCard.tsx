@@ -8,7 +8,7 @@ export default function MemberCard({ member }: CommitteeMemberProp) {
             {member.name}
         </h4>
         <p className="font-semibold">
-            {member.role}
+            {member.role && member.role}
         </p>
         <p className="font-semibold">
             {member.active_date}
