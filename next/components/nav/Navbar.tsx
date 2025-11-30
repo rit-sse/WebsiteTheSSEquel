@@ -9,10 +9,6 @@ import NavItem, { NavItemProps } from "./NavItem";
 
 const navItems: (NavItemProps & { render?: React.ReactNode})[] = [
     {
-        title: "Home",
-        route: "/",
-    },
-    {
         title: "About",
         subItems: [
             {
@@ -40,7 +36,7 @@ const navItems: (NavItemProps & { render?: React.ReactNode})[] = [
                 route: "/about/constitution",
             },
             {
-                title: "Primary Officer's Policy",
+                title: "Officer's Policy",
                 route: "/about/primary-officers-policy",
             },
             
@@ -64,8 +60,17 @@ const navItems: (NavItemProps & { render?: React.ReactNode})[] = [
         ],
     },
     {
-        title: "Leaderboard",
-        route: "/memberships",
+        title: "Members",
+        subItems: [
+            {
+                title: "Leaderboard",
+                route: "/memberships",
+            },
+            {
+                title: "Challenges",
+                route: "/challenges",
+            }
+        ]
     },
     {
         title: "Projects",

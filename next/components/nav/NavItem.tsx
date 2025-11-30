@@ -24,7 +24,7 @@ const NavItem: React.FC<NavItemProps & OnClickProps> = ({
     const content = (
         <span
             data-label={title}
-            className={`flex-grow bold-pseudo ${pathname === route ? "font-semibold text-primary" : ""}
+            className={`flex-grow bold-pseudo whitespace-nowrap ${pathname === route ? "font-semibold text-primary" : ""}
                         group-hover:text-primary focus-within:text-primary focus:text-primary group-focus-within:text-primary
                         group-hover:font-semibold group-focus-within:font-semibold transition-all`}
         >
