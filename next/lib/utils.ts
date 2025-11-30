@@ -11,5 +11,10 @@ export const isUrlValid = (str: string) => {
   return pattern.test(str);
 };
 
+// merge tailwind classes
+export const cn = (...classes: (string | undefined | false)[]) => {
+  return classes.filter(Boolean).join(" ");
+}
+
 export const MENTOR_HEAD_TITLE = "Mentor Head";
 export const PROJECTS_HEAD_TITLE = "Projects Head";
