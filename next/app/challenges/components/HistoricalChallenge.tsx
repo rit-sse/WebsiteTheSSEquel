@@ -1,3 +1,5 @@
+"use client";
+
 import { CircleCheckBig, CircleDot, CircleSlash} from 'lucide-react';
 
 interface ButtonProps {
