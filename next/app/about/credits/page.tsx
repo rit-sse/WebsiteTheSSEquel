@@ -1,6 +1,5 @@
-import { PersonCard, Person, PersonCardBuilder } from "@/components/common/personcard/PersonCard";
+import { Person, PersonCardBuilder } from "@/components/common/personcard/PersonCard";
 import { toPerson } from "./member";
-import { keyof } from "zod";
 
 //Move to file elsewhere
 const contributors: Person[] = [
@@ -11,9 +10,9 @@ const contributors: Person[] = [
 
 const personCardBuilder = new PersonCardBuilder()
         .buildTitle("name")
-        .buildBoldInfo("role")
-        .buildBoldInfo("active_date");
-        //.buildInfo("features");
+        .buildBoldInfo("title")
+        .buildBoldInfo("end_date")
+        .buildInfoList("other_info");
 
 export default function Credits() {
   return (
@@ -25,7 +24,7 @@ export default function Credits() {
               Cementing the people who made this website possible over the years.
           </p>
       </div>
-      <div className="flex">
+      <div className="w-full flex flex-row flex-wrap justify-center gap-5">
       {contributors && contributors.map(member => (
           personCardBuilder.create(member)
       ))}

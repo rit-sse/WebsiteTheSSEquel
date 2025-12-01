@@ -19,22 +19,13 @@ export interface SocialLinks {
     github?: string;
 }
 
-interface PersonProps {
-    person: Person;
-}
-
-interface Iconprops {
-    name: string;
-    image?: string;
-}
-
 export class PersonCardBuilder {
     private keys: (keyof Person)[] = [];
     private builders: {(person: Person, key: keyof Person): JSX.Element | undefined;}[] = [];
 
     public create(person: Person) {
         return (
-            <div className="mt-2 flex flex-col items-center w-full max-w-xs sm:max-w-sm px-4">
+            <div className="mt-2 flex flex-col items-center max-w-xs sm:max-w-sm px-4">
                 {this.builders.map((builder, idx) => builder(person, this.keys[idx]))}
             </div>
         );
@@ -64,6 +55,12 @@ export class PersonCardBuilder {
         return this;
     }
 
+    public buildInfoList(key: string): PersonCardBuilder {
+        this.keys.push(key as keyof Person);
+        this.builders.push(InformationList);
+        return this;
+    }
+
     public buildBoldInfo(key: string): PersonCardBuilder {
         this.keys.push(key as keyof Person);
         this.builders.push(BoldInformation);
@@ -71,20 +68,8 @@ export class PersonCardBuilder {
     }
 }
 
-export function PersonCard({ person }: PersonProps) {
-    return (
-        <div className="mt-2 flex flex-col items-center w-full max-w-xs sm:max-w-sm px-4">
-            <Icon name={person.name} image={person.image}/>
-            <Name name={person.name}/>
-            <BoldInformation info={person.title}/>
-            <BoldInformation info={person.end_date}/>
-            <Information info={person.description}/>
-            <SocialInformation links={person.links}/>
-        </div>
-    );
-}
-
-function SocialInformation({ links }: any) {
+function SocialInformation(person: Person, key: keyof Person) {
+    const links: SocialLinks = person[key] as SocialLinks;
     if (!links) return;
     return (
         <div>
@@ -107,7 +92,9 @@ function SocialInformation({ links }: any) {
     );
 }
 
-function Icon({ name, image }: Iconprops) {
+function Icon(person: Person, key: keyof Person) {
+    const name = person[key] as string;
+    const image = person[key] as string;
     if (!image) return;
     else if (image == "https://source.boringavatars.com/beam/")
         return (
@@ -118,7 +105,8 @@ function Icon({ name, image }: Iconprops) {
     );
 }
 
-function Name({ name }: any) {
+function Name(person: Person, key: keyof Person) {
+    const name = person[key] as string;
     return (
         <h4 className="font-bold sm:text-lg text-primary-focus text-center">
             {name}
@@ -126,7 +114,8 @@ function Name({ name }: any) {
     );
 }
 
-function Information({ info }: any) {
+function Information(person: Person, key: keyof Person) {
+    const info = person[key] as string;
     if (!info) return;
     return (
         <p>
@@ -135,11 +124,26 @@ function Information({ info }: any) {
     );
 }
 
-function BoldInformation({ info }: any) {
+function BoldInformation(person: Person, key: keyof Person) {
+    const info = person[key] as string;
     if (!info) return;
     return (
         <p className="font-semibold text-center">
             {info}
         </p>
+    );
+}
+
+function InformationList(person: Person, key: keyof Person) {
+    const list: string[] = person[key] as string[];
+    if (!list) return;
+    return (
+        <>
+        <div>
+        {list.map((element, idx) => {
+            return (<p key={idx}>{element}</p>)
+        })}
+        </div>
+        </>
     );
 }

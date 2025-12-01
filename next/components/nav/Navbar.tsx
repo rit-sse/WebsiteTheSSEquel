@@ -36,6 +36,10 @@ const navItems: (NavItemProps & { render?: React.ReactNode})[] = [
                 route: "/about/committees",
             },
             {
+                title: "Credits",
+                route: "/about/credits",
+            },
+            {
                 title: "Constitution",
                 route: "/about/constitution",
             },
