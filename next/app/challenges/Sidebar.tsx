@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { Searchbar } from "./components/Searchbar";
 import { MonthGroup } from "./components/MonthGroup";
+import { HistoricalButton } from "./components/HistoricalChallenge";
 
 export default function Sidebar() {
     const [query, setQuery] = useState("");
@@ -50,9 +51,10 @@ export default function Sidebar() {
                         <div className="flex flex-col gap-24">
                             <MonthGroup month="January" year={2024}>
                                 {/* challenges go here */}
-                                <span>challenge 1</span>
-                                <span>challenge 2</span>
-                                <span>challenge 3</span>
+                                <HistoricalButton challengeName="Linked List Cycles Problem Text Overflow" problemState="attempted"></HistoricalButton>
+                                <HistoricalButton challengeName="Problem #2" problemState="solved"></HistoricalButton>
+                                <HistoricalButton challengeName="Problem #3" problemState="unattempted"></HistoricalButton>
+                                <HistoricalButton challengeName="Problem #4" problemState="revealed"></HistoricalButton>
                             </MonthGroup>
                         </div>
                     </div>

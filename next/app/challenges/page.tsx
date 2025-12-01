@@ -2,8 +2,6 @@ import { cn } from "@/lib/utils";
 import { HistoricalButton } from "./components/HistoricalChallenge";
 import Sidebar from "./Sidebar";
 
-// <HistoricalButton challengeName="Linked List Cycles" problemState="attempted"></HistoricalButton>
-
 export default function ChallengesPage() {
     return (
         <div className={cn(
