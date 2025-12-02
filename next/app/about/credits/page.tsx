@@ -1,4 +1,5 @@
-import { Person, PersonCardBuilder } from "@/components/common/personcard/PersonCard";
+import { PersonCardBuilder } from "@/components/common/personcard/PersonCard";
+import { Person } from "@/components/common/personcard/persondata";
 import { toPerson } from "./member";
 
 //Move to file elsewhere

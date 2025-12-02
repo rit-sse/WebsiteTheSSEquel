@@ -1,23 +1,6 @@
 import Avatar from 'boring-avatars';
 import { EmailIcon, GitHubIcon, LinkedInIcon } from '../Icons';
-
-export interface Person {
-    person_id?: string;
-    name: string;
-    image?: string;
-    title?: string;
-    description?: string;
-    links?: SocialLinks;
-    start_date?: string;
-    end_date?: string;
-    other_info?: string[];
-}
-
-export interface SocialLinks {
-    email?: string;
-    linkedin?: string;
-    github?: string;
-}
+import { Person, SocialLinks } from './persondata';
 
 export class PersonCardBuilder {
     private keys: (keyof Person)[] = [];
