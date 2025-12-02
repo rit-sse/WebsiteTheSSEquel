@@ -1,19 +1,18 @@
 import { PersonCardBuilder } from "@/components/common/personcard/PersonCard";
-import { Person } from "@/components/common/personcard/persondata";
-import { toPerson } from "./member";
+import { CommitteeMember } from "./member";
 
 //Move to file elsewhere
-const contributors: Person[] = [
+const contributors: CommitteeMember[] = [
     {name: "Name Lastname", role: "Role", active_date: "Spring 2025", features: ["One page", "2 page", "red page"]},
     {name: "Another Name", role: "Another Role", active_date: "Fall 2023", features: ["blue page"]},
     {name: "Last Name", role: "A very long role name", active_date: "Summer 1009"}
-].map(toPerson);
+];
 
-const personCardBuilder = new PersonCardBuilder()
+const personCardBuilder = new PersonCardBuilder<CommitteeMember>()
         .buildTitle("name")
-        .buildBoldInfo("title")
-        .buildBoldInfo("end_date")
-        .buildInfoList("other_info");
+        .buildBoldInfo("role")
+        .buildBoldInfo("active_date")
+        .buildInfoList("features");
 
 export default function Credits() {
   return (

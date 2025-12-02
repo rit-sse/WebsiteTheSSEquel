@@ -1,12 +1,12 @@
 import Avatar from 'boring-avatars';
 import { EmailIcon, GitHubIcon, LinkedInIcon } from '../Icons';
-import { Person, SocialLinks } from './persondata';
+import { SocialLinks } from './persondata';
 
-export class PersonCardBuilder {
-    private keys: (keyof Person)[] = [];
-    private builders: {(person: Person, key: keyof Person): JSX.Element | undefined;}[] = [];
+export class PersonCardBuilder<T> {
+    private keys: (keyof T)[] = [];
+    private builders: {(person: T, key: keyof T): JSX.Element | undefined;}[] = [];
 
-    public create(person: Person) {
+    public create(person: T) {
         return (
             <div className="mt-2 flex flex-col items-center max-w-xs sm:max-w-sm px-4">
                 {this.builders.map((builder, idx) => builder(person, this.keys[idx]))}
@@ -14,44 +14,61 @@ export class PersonCardBuilder {
         );
     }
 
-    public buildIcon(key: string): PersonCardBuilder {
-        this.keys.push(key as keyof Person);
+    /**
+     * Builds Icon from given person, the person interface MUST include 'name'
+     * @param key Key of Person that holds icon image information
+     * @returns 
+     */
+    public buildIcon(key: string): PersonCardBuilder<T> {
+        this.keys.push(key as keyof T);
         this.builders.push(Icon);
         return this;
     }
 
-    public buildSocials(key: string): PersonCardBuilder {
-        this.keys.push(key as keyof Person);
+    /**
+     * Builds a view of different links to socials, this value of person
+     * must contain SocialLinks.
+     * @param key Key of person that holds SocialLinks
+     * @returns 
+     */
+    public buildSocials(key: string): PersonCardBuilder<T> {
+        this.keys.push(key as keyof T);
         this.builders.push(SocialInformation);
         return this;
     }
 
-    public buildTitle(key: string): PersonCardBuilder {
-        this.keys.push(key as keyof Person);
+    public buildTitle(key: string): PersonCardBuilder<T> {
+        this.keys.push(key as keyof T);
         this.builders.push(Name);
         return this;
     }
 
-    public buildInfo(key: string): PersonCardBuilder {
-        this.keys.push(key as keyof Person);
+    public buildInfo(key: string): PersonCardBuilder<T> {
+        this.keys.push(key as keyof T);
         this.builders.push(Information);
         return this;
     }
 
-    public buildInfoList(key: string): PersonCardBuilder {
-        this.keys.push(key as keyof Person);
+    /**
+     * Builds a list of information stacked vertically, the value from the key
+     * must be an string[]
+     * @param key Key of person that holds a list of information
+     * @returns 
+     */
+    public buildInfoList(key: string): PersonCardBuilder<T> {
+        this.keys.push(key as keyof T);
         this.builders.push(InformationList);
         return this;
     }
 
-    public buildBoldInfo(key: string): PersonCardBuilder {
-        this.keys.push(key as keyof Person);
+    public buildBoldInfo(key: string): PersonCardBuilder<T> {
+        this.keys.push(key as keyof T);
         this.builders.push(BoldInformation);
         return this;
     }
 }
 
-function SocialInformation(person: Person, key: keyof Person) {
+function SocialInformation<T>(person: T, key: keyof T) {
     const links: SocialLinks = person[key] as SocialLinks;
     if (!links) return;
     return (
@@ -75,8 +92,8 @@ function SocialInformation(person: Person, key: keyof Person) {
     );
 }
 
-function Icon(person: Person, key: keyof Person) {
-    const name = person[key] as string;
+function Icon<T>(person: any, key: keyof T) {
+    const name = person.name; //TODO remove the any here
     const image = person[key] as string;
     if (!image) return;
     else if (image == "https://source.boringavatars.com/beam/")
@@ -88,7 +105,7 @@ function Icon(person: Person, key: keyof Person) {
     );
 }
 
-function Name(person: Person, key: keyof Person) {
+function Name<T>(person: T, key: keyof T) {
     const name = person[key] as string;
     return (
         <h4 className="font-bold sm:text-lg text-primary-focus text-center">
@@ -97,7 +114,7 @@ function Name(person: Person, key: keyof Person) {
     );
 }
 
-function Information(person: Person, key: keyof Person) {
+function Information<T>(person: T, key: keyof T) {
     const info = person[key] as string;
     if (!info) return;
     return (
@@ -107,7 +124,7 @@ function Information(person: Person, key: keyof Person) {
     );
 }
 
-function BoldInformation(person: Person, key: keyof Person) {
+function BoldInformation<T>(person: T, key: keyof T) {
     const info = person[key] as string;
     if (!info) return;
     return (
@@ -117,7 +134,7 @@ function BoldInformation(person: Person, key: keyof Person) {
     );
 }
 
-function InformationList(person: Person, key: keyof Person) {
+function InformationList<T>(person: T, key: keyof T) {
     const list: string[] = person[key] as string[];
     if (!list) return;
     return (
