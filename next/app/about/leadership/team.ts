@@ -1,3 +1,5 @@
+import { SocialLinks } from "@/components/common/personcard/persondata";
+
 export interface TeamMember {
   officer_id: string,
   user_id: string;
@@ -5,9 +7,7 @@ export interface TeamMember {
   image: string;
   title: string;
   desc?: string;
-  linkedin?: string;
-  github?: string;
-  email: string;
+  socials: SocialLinks;
 }
 
 export interface Team {

@@ -1,12 +1,12 @@
 "use client"
 
 import { useEffect, useState } from "react";
-import OfficerCard from "./OfficerCard";
 import OfficerFormModal from "./OfficerFormModal";
 import { Team, TeamMember } from "./team";
 import ModifyOfficers from "./ModifyOfficers";
 import ReplaceOfficerForm from "./ReplaceOfficerForm";
 import EditOfficerForm from "./EditOfficerForm";
+import { PersonCardBuilder } from "@/components/common/personcard/PersonCard";
 
 export default function Leadership() {
 	// States to manage opening/closing of modals
@@ -41,10 +41,12 @@ export default function Leadership() {
 					name: officer.user.name,
 					image: officer.user.image,
 					title: officer.position.title,
-					email: officer.user.email,
+					socials: { 
+						email: officer.user.email,
+						linkedin: officer.user.linkedIn,
+						github: officer.user.gitHub,
+					},
 					desc: officer.user.description,
-					linkedin: officer.user.linkedIn,
-					github: officer.user.gitHub
 				}));
 
 			// Map committee officers to TeamMember
@@ -56,10 +58,12 @@ export default function Leadership() {
 					name: officer.user.name,
 					image: officer.user.image,
 					title: officer.position.title,
-					email: officer.user.email,
+					socials: { 
+						email: officer.user.email,
+						linkedin: officer.user.linkedIn,
+						github: officer.user.gitHub,
+					},
 					desc: officer.user.description,
-					linkedin: officer.user.linkedIn,
-					github: officer.user.gitHub
 				}));
 
 		} catch (error) {
@@ -74,6 +78,11 @@ export default function Leadership() {
 		});
 		setTeamData(team);
 	};
+
+	const personCardBuilder = new PersonCardBuilder<TeamMember>()
+			.buildIcon("image")
+			.buildTitle("name")
+			.buildSocials("socials");
 
 	return (
 		<>
@@ -109,7 +118,7 @@ export default function Leadership() {
 						<div className="w-full flex flex-row justify-center gap-5">
 							{teamData.primary_officers.map((member, idx) => (
 								<div key={idx}>
-									<OfficerCard teamMember={member} />
+									{personCardBuilder.create(member)}
 									{/* Edit and Remove buttons, only officers can see */}
 									<ModifyOfficers teamMember={member} openReplaceModal={() => setReplaceOpen(true)} openEditModal={() => setEditOpen(true)} setSelectedOfficer={setSelectedOfficer} />
 								</div>
@@ -124,7 +133,7 @@ export default function Leadership() {
 						<div className="w-full flex-wrap flex flex-row justify-center">
 								{teamData.committee_heads.map((member, idx) => (
 									<div key={idx}>
-										<OfficerCard teamMember={member} />
+										{personCardBuilder.create(member)}
 										{/* Edit and Remove buttons, only officers can see */}
 										<ModifyOfficers teamMember={member} openReplaceModal={() => setReplaceOpen(true)} openEditModal={() => setEditOpen(true)} setSelectedOfficer={setSelectedOfficer} />
 									</div>

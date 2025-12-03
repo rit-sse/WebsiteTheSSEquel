@@ -8,6 +8,7 @@ import ModifyAlumni from "./ModifyAlumni";
 import EditAlumniForm from "./EditAlumniForm";
 import CreateAlumniButton from "./MakeNewAlumni";
 import DeleteAlumniButton from "./DeleteAlumni";
+import { PersonCardBuilder } from "@/components/common/personcard/PersonCard";
 
 export default function Leadership() {
 	// States to manage opening/closing of modals
@@ -39,11 +40,13 @@ export default function Leadership() {
 					alumni_id: alumni.id,
 					name: alumni.name,
 					image: alumni.image,
-					email: alumni.email,
-					linkedin: alumni.linkedIn,
-					github: alumni.gitHub,
+					socials: {
+						email: alumni.email,
+						linkedin: alumni.linkedIn,
+						github: alumni.gitHub,
+					},
 					description: alumni.description,
-					quote: alumni.quote,
+					quote: '"'+alumni.quote+'"',
 					previous_roles: alumni.previous_roles,
 					start_date: alumni.start_date,
 					end_date: alumni.end_date
@@ -54,6 +57,14 @@ export default function Leadership() {
 		}
 		setTeamData(team);
 	};
+
+	const personCardBuilder = new PersonCardBuilder<AlumniMember>()
+			.buildIcon("image")
+			.buildTitle("name")
+			.buildInfo("quote")
+			.buildBoldInfo("previous_roles")
+			.buildBoldInfo("end_date")
+			.buildSocials("socials");
 
 	return (
 		<>
@@ -90,7 +101,7 @@ export default function Leadership() {
 						<div className="w-full flex flex-row flex-wrap justify-center gap-5">
 							{teamData.alumni_member.map((member, idx) => (
 								<div key={idx}>
-									<AlumniCard alumniMember={member} />
+									{personCardBuilder.create(member)}
 									{/* Edit and Remove buttons, only officers can see */}
 									<ModifyAlumni alumniMember={member} openDeleteModal={() => setDeleteOpen(true)} openEditModal={() => setEditOpen(true)} setSelectedAlumni={setSelectedAlumni} />
 								</div>

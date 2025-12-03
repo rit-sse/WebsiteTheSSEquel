@@ -1,10 +1,10 @@
+import { SocialLinks } from "@/components/common/personcard/persondata";
+
 export interface AlumniMember {
   alumni_id: string;
   name: string;
   email: string;
-  linkedin?: string;
-  github?: string;
-  description?: string;
+  socials?: SocialLinks;
   image?: string;
   quote?: string;
   previous_roles?: string;

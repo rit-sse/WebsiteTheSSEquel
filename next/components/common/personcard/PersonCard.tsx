@@ -1,10 +1,11 @@
 import Avatar from 'boring-avatars';
 import { EmailIcon, GitHubIcon, LinkedInIcon } from '../Icons';
 import { SocialLinks } from './persondata';
+import { ReactElement } from 'react';
 
 export class PersonCardBuilder<T> {
     private keys: (keyof T)[] = [];
-    private builders: {(person: T, key: keyof T): JSX.Element | undefined;}[] = [];
+    private builders: {(person: T, key: keyof T): ReactElement | undefined;}[] = [];
 
     public create(person: T) {
         return (
@@ -72,7 +73,7 @@ function SocialInformation<T>(person: T, key: keyof T) {
     const links: SocialLinks = person[key] as SocialLinks;
     if (!links) return;
     return (
-        <div>
+        <div className="w-full flex flex-row gap-4 justify-center items-center">
             {links.linkedin && (
                 <a href={links.linkedin} target="_blank" rel="noopener noreferrer">
                     <LinkedInIcon />
@@ -118,7 +119,7 @@ function Information<T>(person: T, key: keyof T) {
     const info = person[key] as string;
     if (!info) return;
     return (
-        <p>
+        <p className="text-center">
             {info}
         </p>
     );
