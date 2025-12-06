@@ -40,6 +40,10 @@ export default function UserProfileClient() {
     const [gitHub, setGitHub] = useState('');
     const [imageUrl, setImageUrl] = useState('');
     const [loading, setLoading] = useState(true);
+    const [originalName, setOriginalName] = useState('');
+    const [orignialEmail, setOriginalEmail] = useState('');
+    const [originalDescription, setOriginalDescription] = useState('');
+
 
 
     useEffect(() => {
@@ -50,9 +54,10 @@ export default function UserProfileClient() {
                     const sessEmail = sess?.teamMember?.email ?? (sess as any)?.user?.email;
                     const sessName  = sess?.teamMember?.name  ?? (sess as any)?.user?.name;
                         
-                    if (sessEmail) setEmail(sessEmail);
-                    if (sessName) setName(sessName);
-    
+                    if (sessName) setName(sessName), setOriginalName(sessName);
+
+                    if (sessEmail){ setEmail(sessEmail), setOriginalEmail(sessEmail);}
+
                     const usersRes = await fetch('/api/user');
                     if (usersRes.ok) {
                         const users = await usersRes.json();
@@ -60,9 +65,10 @@ export default function UserProfileClient() {
                         if (me) {
                             setUserID(me.id ?? null);
                             setDescription(me.description ?? "");
-                            setLinkedIn(me.linkedIn ?? "");
-                            setGitHub(me.gitHub ?? "");
-                            setImageUrl(me.imageUrl ?? "");
+                            setOriginalDescription(me.description ?? "");
+                            // setLinkedIn(me.linkedIn ?? "");
+                            // setGitHub(me.gitHub ?? "");
+                            // setImageUrl(me.imageUrl ?? "");
                         }
                     }
                 } catch (error) {
@@ -130,7 +136,7 @@ const saveProfile = async () =>{
 
                 <div className ="flex gap-3 mt-2">
                     <button className="btn btn-primary" onClick={() => {saveProfile}}>Save Profile</button>
-                    <button className="btn" onClick={() => { setName(""); setEmail(""); setDescription("");  }}>Reset</button>
+                    <button className="btn" onClick={() => { setName(originalName); setEmail(orignialEmail); setDescription(originalDescription);  }}>Reset</button>
                 </div>
             </section>
   
