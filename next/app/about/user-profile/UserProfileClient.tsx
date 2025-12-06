@@ -19,7 +19,6 @@ import {TeamMember} from "../leadership/team";
 
 interface SessionUser  {
   teamMember?: TeamMember;
-
 };
 
 export default function UserProfileClient() {
@@ -48,9 +47,9 @@ export default function UserProfileClient() {
                 try {
                     const sessRes = await fetch('/api/auth/session');
                     const sess: SessionUser | null = await (sessRes.ok ? sessRes.json() : null);
-                    const sessEmail = sess?.teamMember?.email;
-                    const sessName = sess?.teamMember?.name;
-    
+                    const sessEmail = sess?.teamMember?.email ?? (sess as any)?.user?.email;
+                    const sessName  = sess?.teamMember?.name  ?? (sess as any)?.user?.name;
+                        
                     if (sessEmail) setEmail(sessEmail);
                     if (sessName) setName(sessName);
     
@@ -74,13 +73,27 @@ export default function UserProfileClient() {
             };
             void load();
         }, []);
+
+
+
+
     return (
         <div>
             {/* User profile client content */}
-             <label className="flex flex-col">
-                <span className="font-semibold">Bio</span>
-                <textarea className="textarea textarea-bordered mt-1" rows={4} value={description} onChange={(e) => setDescription(e.target.value)} />
-            </label>
+            <section className = "mb-6">
+                <h3 className = "text-2xl font-bold mb-4">User Profile</h3>
+                <div className="grid gap-3">
+                    <label className="flex flex-col">
+                        <span className="font-semibold">Display Name</span>
+                        <input className="input input-bordered mt-1" value={name} onChange={(e) => setName(e.target.value)} />
+                    </label>
+                </div>
+                <label className="flex flex-col">
+                    <span className="font-semibold">Bio</span>
+                    <textarea className="textarea textarea-bordered mt-1" rows={4} value={description} onChange={(e) => setDescription(e.target.value)} />
+                </label>
+            </section>
+  
         </div>
   
   
