@@ -75,7 +75,36 @@ export default function UserProfileClient() {
         }, []);
 
 
+if(loading){
+    return <div> Loading</div>
+}
 
+const saveProfile = async () =>{
+    if(!userID){
+        return setStatusMsg("User ID not found. Cannot save profile.");
+    }
+    setStatusMsg("Saving...")
+    try{
+        const payload = {
+            id: name,
+            email: email,
+            description: description,
+        }
+        const res = await fetch(`/api/user`, {
+            method: 'PUT',
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+        });
+        if(!res.ok) throw new Error ("Failed to save");
+        const updated = await res.json();
+        setName(updated.name ?? name);
+        setStatusMsg("Saved successfully.");
+        setTimeout(() => setStatusMsg(null), 3000);
+    }catch(e){
+        console.error(e);
+        setStatusMsg("Save failed. Try again.");
+    }
+};
 
     return (
         <div>
@@ -87,11 +116,22 @@ export default function UserProfileClient() {
                         <span className="font-semibold">Display Name</span>
                         <input className="input input-bordered mt-1" value={name} onChange={(e) => setName(e.target.value)} />
                     </label>
+
+                    <label className="flex flex-col">
+                        <span className="font-semibold">Email</span>
+                        <input className="input input-bordered mt-1" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                    </label>
                 </div>
+                
                 <label className="flex flex-col">
                     <span className="font-semibold">Bio</span>
                     <textarea className="textarea textarea-bordered mt-1" rows={4} value={description} onChange={(e) => setDescription(e.target.value)} />
                 </label>
+
+                <div className ="flex gap-3 mt-2">
+                    <button className="btn btn-primary" onClick={() => {saveProfile}}>Save Profile</button>
+                    <button className="btn" onClick={() => { setName(""); setEmail(""); setDescription("");  }}>Reset</button>
+                </div>
             </section>
   
         </div>
