@@ -3,7 +3,7 @@ import Sidebar from "./Sidebar";
 import { ChallengeDescription } from "../components/ChallengeDescription";
 import Markdown from "../components/ChallengeMarkdown";
 
-export type ChallengeState = "attempted" | "solved" | "unattemped" | "revealed";
+export type ChallengeState = "attempted" | "solved" | "unattempted" | "revealed";
 
 export type Challenge = {
     id: string;
@@ -46,7 +46,7 @@ Input: \`nums = [3,3], target = 6\`
 
 Output: \`[0,1]\``,
         createdAt: new Date(),
-        state: "unattemped" as const,
+        state: "unattempted" as const,
     };
 }
 
