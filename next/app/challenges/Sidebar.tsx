@@ -10,7 +10,7 @@ export default function Sidebar() {
     const [query, setQuery] = useState("");
 
     return (
-        <aside className="w-80 hidden md:flex flex-col rounded-t-2xl bg-white/[0.65] dark:bg-black/[0.65]">
+        <aside className="w-80 flex-shrink-0 hidden md:flex flex-col rounded-t-2xl bg-white/[0.65] dark:bg-black/[0.65]">
             <div className="text-xl lg:text-2xl p-6 pb-3 text-center font-bold text-primary">
                 Weekly Coding Challenges
             </div>
