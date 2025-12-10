@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { HistoricalButton } from "./components/HistoricalChallenge";
 import Sidebar from "./Sidebar";
+import { ChallengeDescription } from "./components/ChallengeDescription";
 
 // <HistoricalButton challengeName="Linked List Cycles" problemState="attempted"></HistoricalButton>
 
@@ -15,8 +16,8 @@ export default function ChallengesPage() {
             <Sidebar />
 
             {/* main scrolling content */}
-            <div className="flex grow flex-col sse-scrollbar overflow-y-auto">
-                <span>challenge</span>
+            <div className="flex grow flex-col min-w-0 gap-6 sse-scrollbar overflow-y-auto">
+                <ChallengeDescription />
                 <span>your attempts</span>
                 <span>solutions</span>
             </div>
