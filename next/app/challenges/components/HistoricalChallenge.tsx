@@ -10,8 +10,17 @@ interface ButtonProps {
 
 export function HistoricalButton({ challengeName, problemState } : ButtonProps) {
 
+    // Temporary solution, eventually we should lift up state and the dashboard
+    // should allow one button at a time to be clicked and choose the most recent
+    // one to be selected by default
     const [isSelected, setSelected] = useState(false);
 
+    /**
+     * Buttons have an icon based on whether the user has solved, attemped, not 
+     * attemped, or revealed the solution to, any particular problem
+     * The icon should be white if the button is selected, because selected buttons
+     * have a gradient background, while other buttons have a white background
+     */
     function getIconFromState(problemState: string) {
         let color = "white";
         
@@ -39,6 +48,9 @@ export function HistoricalButton({ challengeName, problemState } : ButtonProps) 
         }
     }
 
+    /**
+     * This becomes the bg-gradient-to-r element of the wrapper button element
+     */
     function getGradientFromState(problemState: string) {
         switch (problemState) {
             case "solved":
@@ -52,6 +64,10 @@ export function HistoricalButton({ challengeName, problemState } : ButtonProps) 
         }
     }
 
+    /**
+     * White background if not selected, if selected there is no background as
+     * we want the outer gradient to display on the background as well
+     */
     function getBackgroundFromState() {
         return isSelected ? "" : "bg-white";
     }
