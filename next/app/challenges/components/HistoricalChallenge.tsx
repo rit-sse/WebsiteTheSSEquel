@@ -1,10 +1,11 @@
 "use client";
 
 import { CircleCheckBig, CircleDot, CircleSlash} from 'lucide-react';
+import { ChallengeState } from '../[id]/page';
 
 interface ButtonProps {
     challengeName: string;
-    problemState: "attempted" | "solved" | "unattemped" | "revealed";
+    challengeState: ChallengeState;
 }
 
 function getIconFromState(problemState: string) {
@@ -18,11 +19,11 @@ function getIconFromState(problemState: string) {
     }
 }
 
-export function HistoricalButton({ challengeName, problemState } : ButtonProps) {
+export function HistoricalButton({ challengeName, challengeState } : ButtonProps) {
     return (
         <button className="transition-shadow shadow-md hover:shadow-lg rounded-xl flex flex-row justify-between h-10 w-56 items-center">
             <span className="truncate flex pl-3">{challengeName}</span>
-            <span className="flex pr-3">{getIconFromState(problemState)}</span>
+            <span className="flex pr-3">{getIconFromState(challengeState)}</span>
         </button>
     )
 }

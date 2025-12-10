@@ -1,29 +1,11 @@
-import { cn } from "@/lib/utils";
-import { HistoricalButton } from "./components/HistoricalChallenge";
-import Sidebar from "./Sidebar";
-import { ChallengeDescription } from "./components/ChallengeDescription";
+import { redirect } from "next/navigation";
 
-// <HistoricalButton challengeName="Linked List Cycles" problemState="attempted"></HistoricalButton>
+export default async function ChallengeRootPage() {
+    const latest = { id: 1 }; // get from database
 
-export default function ChallengesPage() {
-    return (
-        <div className={cn(
-            "relative self-stretch flex flex-row h-0 grow gap-6 px-6",
-            "-mx-2 md:-mx-4 lg:-mx-6 xl:-mx-8",
-            "-mb-2 md:-mb-4 lg:-mb-6 xl:-mb-8",
-        )}>
-            {/* fixed-width sidebar when in md+ screens */}
-            <Sidebar />
+    if (!latest) {
+        return <div className="p-6">No challenges available.</div>;
+    }
 
-            {/* main scrolling content */}
-            <div className="flex grow flex-col min-w-0 gap-6 sse-scrollbar overflow-y-auto">
-                <ChallengeDescription />
-                <span>your attempts</span>
-                <span>solutions</span>
-            </div>
-
-            {/* position under the footer - forced in root layout */}
-            <div className="hidden md:block absolute bottom-0 left-6 w-80 origin-bottom h-14 scale-y-[-1] -translate-y-[0.1px] bg-white/[0.65] dark:bg-black/[0.65]" />
-        </div>
-    );
+    redirect(`/challenges/${latest.id}`);
 }

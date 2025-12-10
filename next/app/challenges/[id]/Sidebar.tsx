@@ -2,8 +2,8 @@
 
 import { cn } from "@/lib/utils";
 import { useState } from "react";
-import { Searchbar } from "./components/Searchbar";
-import { MonthGroup } from "./components/MonthGroup";
+import { Searchbar } from "../components/Searchbar";
+import { MonthGroup } from "../components/MonthGroup";
 
 export default function Sidebar() {
     const [query, setQuery] = useState("");
@@ -15,7 +15,6 @@ export default function Sidebar() {
             </div>
 
             <div className="flex flex-col">
-                {/* current challenge */}
                 <div className="flex flex-col px-6">
                     <div className="flex flex-col py-3">
                         <span className={cn(
@@ -28,10 +27,8 @@ export default function Sidebar() {
 
                     {/* current challenge goes here */}
                 </div>
-
-                {/* historical challenges */}
+                
                 <div className="flex flex-col px-6">
-                    {/* header */}
                     <div className="flex flex-col py-3">
                         <span className={cn(
                             "flex flex-row justify-between border-b-[1.5px] border-base-content",
@@ -43,13 +40,10 @@ export default function Sidebar() {
                     </div>
 
                     <div className="flex flex-col gap-3">
-                        {/* searchbar */}
                         <Searchbar value={query} onChange={setQuery} />
-
-                        {/* list */}
+                        
                         <div className="flex flex-col gap-24">
                             <MonthGroup month="January" year={2024}>
-                                {/* challenges go here */}
                                 <span>challenge 1</span>
                                 <span>challenge 2</span>
                                 <span>challenge 3</span>
