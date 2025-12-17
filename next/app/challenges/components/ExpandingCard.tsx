@@ -1,17 +1,21 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { ChevronsDownUp, ChevronsUpDown } from "lucide-react";
-import { HTMLAttributes, ReactNode, useState } from "react";
+import { ChevronsDownUp, ChevronsUpDown, Lock } from "lucide-react";
+import { HTMLAttributes, MouseEventHandler, ReactNode, useState } from "react";
 
 interface ExpandingCardProps extends HTMLAttributes<HTMLDivElement> {
     title: string;
     barChildren: ReactNode;
     children: ReactNode;
     defaultExpanded?: boolean;
+
+    // if card is locked, it cannot be unlocked unless handleUnlock resolves to true
+    locked?: boolean;
+    handleUnlock?: () => Promise<boolean>;
 }
 
-export function ExpandingCard({ title, barChildren, children, defaultExpanded = true, className, ...props }: ExpandingCardProps) {
+export function ExpandingCard({ title, barChildren, children, defaultExpanded = true, className, locked = false, handleUnlock, ...props }: ExpandingCardProps) {
     const [expanded, setExpanded] = useState(defaultExpanded);
 
     return (
@@ -24,15 +28,26 @@ export function ExpandingCard({ title, barChildren, children, defaultExpanded = 
             {...props}
         >
             <button
-                onClick={() => setExpanded(!expanded)}
-                className="flex flex-row justify-between items-center bg-white dark:bg-base-100 px-6 py-4 w-full text-left cursor-pointer focus:outline-none"
+                onClick={async () => {
+                    if (locked) {
+                        const unlock = await (!expanded ? (handleUnlock?.() ?? true) : true);
+                        if (!unlock) return;
+                    }
+                    setExpanded(!expanded);
+                }}
+                className={cn(
+                    "flex flex-row justify-between items-center bg-white dark:bg-base-100",
+                    "px-6 py-4 w-full text-left focus:outline-none",
+                )}
                 aria-expanded={expanded}
                 type="button"
             >
                 <span className="text-2xl font-semibold text-base-content">{title}</span>
                 <div className="flex flex-row gap-2 items-center">
                     {barChildren}
-                    {expanded ? (
+                    {locked ? (
+                        <Lock className="w-6 h-6 text-base-content flex-shrink-0" />
+                    ) : expanded ? (
                         <ChevronsDownUp className="w-6 h-6 text-base-content flex-shrink-0 transition-transform" />
                     ) : (
                         <ChevronsUpDown className="w-6 h-6 text-base-content flex-shrink-0 transition-transform" />

@@ -327,6 +327,7 @@
   .sse-scrollbar {
     scrollbar-width: thin;
     scrollbar-color: theme('colors.secondary') transparent;
+    scrollbar-gutter: stable;
 
     &::-webkit-scrollbar {
       width: 8px;

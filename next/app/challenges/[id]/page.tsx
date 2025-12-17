@@ -2,12 +2,17 @@ import { cn } from "@/lib/utils";
 import Sidebar from "./Sidebar";
 import { ChallengeDescription } from "../components/ChallengeDescription";
 import Markdown from "../components/ChallengeMarkdown";
+import { AttemptCard } from "../components/AttemptCard";
+import { SolutionsCard } from "../components/SolutionsCard";
+import { ModalProvider } from "../components/ModalProvider";
 
 export type ChallengeState = "attempted" | "solved" | "unattempted" | "revealed";
+export type ChallengeType = "current" | "historical";
 
 export type Challenge = {
     id: string;
     title: string;
+    type: ChallengeType;
     description: string;
     createdAt: Date;
     state: ChallengeState;
@@ -25,6 +30,7 @@ async function fetchChallengeData(id: string): Promise<Challenge | null> {
     return { // get from database 
         id: id,
         title: "Two Sum",
+        type: "current",
         description: `Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.
 
 You may assume that each input would have exactly one solution, and you may not use the same element twice.
@@ -61,36 +67,42 @@ export default async function ChallengePage({ params }: { params: Promise<{ id: 
             <style>
                 {`footer { display: none !important; }`}
             </style>
-            <div className={cn(
-                "self-stretch flex flex-row h-0 grow gap-6 px-6 overflow-hidden",
-                "-mx-2 md:-mx-4 lg:-mx-6 xl:-mx-8",
-                "-mb-2 md:-mb-4 lg:-mb-6 xl:-mb-8",
-            )}>
-                <Sidebar />
+            <ModalProvider>
+                <div className={cn(
+                    "self-stretch flex flex-row h-0 grow gap-6 px-6 overflow-hidden",
+                    "-mx-2 md:-mx-4 lg:-mx-6 xl:-mx-8",
+                    "-mb-2 md:-mb-4 lg:-mb-6 xl:-mb-8",
+                )}>
+                    <Sidebar />
 
-                {
-                    challenge ? (
-                        <div className="relative flex grow flex-col min-w-0">
-                            <div className="flex grow flex-col gap-6 sse-scrollbar overflow-y-auto"
-                                style={{
-                                    maskImage: 'linear-gradient(to bottom, black calc(100% - 6rem), transparent 100%)',
-                                    WebkitMaskImage: 'linear-gradient(to bottom, black calc(100% - 6rem), transparent 100%)'
-                                }}
-                            >
-                                <ChallengeDescription id={challenge.id} title={challenge.title}>
-                                    <Markdown content={challenge.description} />
-                                </ChallengeDescription>
-                                <span>your attempts</span>
-                                <span>solutions</span>
+                    {
+                        challenge ? (
+                            <div className="relative flex grow flex-col min-w-0">
+                                <div className="flex grow flex-col gap-6 sse-scrollbar overflow-y-auto pb-52"
+                                    style={{
+                                        maskImage: 'linear-gradient(to bottom, black calc(100% - 6rem), transparent 100%)',
+                                        WebkitMaskImage: 'linear-gradient(to bottom, black calc(100% - 6rem), transparent 100%)'
+                                    }}
+                                >
+                                    <ChallengeDescription id={challenge.id} title={challenge.title}>
+                                        <Markdown content={challenge.description} />
+                                    </ChallengeDescription>
+                                    <AttemptCard>
+
+                                    </AttemptCard>
+                                    <SolutionsCard state={challenge.state} type={challenge.type}>
+                                        <div className="p-6"></div>
+                                    </SolutionsCard>
+                                </div>
                             </div>
-                        </div>
-                    ) : (
-                        <div className="flex flex-row grow items-center justify-center">
-                            <span className="text-base-content/50 italic">Challenge #{id} not found.</span>
-                        </div>
-                    )
-                }
-            </div>
+                        ) : (
+                            <div className="flex flex-row grow items-center justify-center">
+                                <span className="text-base-content/50 italic">Challenge #{id} not found.</span>
+                            </div>
+                        )
+                    }
+                </div>
+            </ModalProvider>
         </>
     );
 }
