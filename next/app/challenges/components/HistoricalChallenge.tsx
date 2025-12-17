@@ -88,7 +88,7 @@ export function HistoricalButton({ challengeName, problemState } : ButtonProps) 
 
     const gradientClass = `flex rounded-2xl w-full 
                     bg-gradient-to-r ${isSelected ? getLightGradientFromState() : getFullGradientFromState()}
-                    shadow-lg p-[2px]`
+                    shadow-md hover:shadow-lg p-[2px]`
 
     const backgroundClass = `${getBackgroundFromState()} transition-shadow
                             rounded-[14px] flex flex-row justify-between 
@@ -97,7 +97,7 @@ export function HistoricalButton({ challengeName, problemState } : ButtonProps) 
     return (
         // "flex rounded-xl mx-auto bg-gradient-to-tr from-red-400 via-orange-400 to-rose-400 p-[2px] shadow-lg"
         <button className={gradientClass} onClick={() => setSelected(!isSelected)}>
-                <div className={backgroundClass}>
+            <div className={backgroundClass}>
                 <span className={`flex-1 text-left overflow-hidden whitespace-nowrap text-ellipsis pl-4 pr-2 ${isSelected ? "text-white" : "text-black"}`}>{challengeName}</span>
                 <span className="flex pr-3">{getIconFromState(problemState)}</span>
             </div>
