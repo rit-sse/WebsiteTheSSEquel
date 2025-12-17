@@ -2,7 +2,12 @@ import { useState, useEffect } from 'react'
 import { useTheme } from "next-themes";
 import { Theme } from '@/types/theme';
 
-const DarkModeToggle: React.FC = () => {
+interface DarkModeToggleProps extends React.HTMLAttributes<HTMLDivElement> {
+    className?: string;
+    iconClassName?: string;
+}
+
+const DarkModeToggle = ({ className, iconClassName }: DarkModeToggleProps) => {
     const [mounted, setMounted] = useState(false)
     const { theme, setTheme } = useTheme()
 
@@ -27,7 +32,7 @@ const DarkModeToggle: React.FC = () => {
     };
 
     return (
-        <label className="swap swap-rotate w-4 hover:scale-110 px-4">
+        <label className={`swap swap-rotate w-4 hover:scale-110 px-4 ${className ?? ""}`}>
             {/* this hidden checkbox controls the state */}
             <input
                 className="hidden"
@@ -39,7 +44,7 @@ const DarkModeToggle: React.FC = () => {
 
             {/* sun icon */}
             <svg
-                className="swap-on fill-current w-7 h-7"
+                className={`swap-on fill-current w-7 h-7 ${iconClassName ?? ""}`}
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
             ><path
@@ -48,7 +53,7 @@ const DarkModeToggle: React.FC = () => {
 
             {/* moon icon */}
             <svg
-                className="swap-off fill-current w-7 h-7"
+                className={`swap-off fill-current w-7 h-7 ${iconClassName ?? ""}`}
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
             ><path
