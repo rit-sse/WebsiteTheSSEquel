@@ -1,9 +1,9 @@
 "use client";
 
 import DarkModeToggle from "@/components/common/DarkModeToggle";
-import { ChevronsDownUp, ChevronsUpDown } from "lucide-react";
-import { HTMLAttributes, useState } from "react";
+import { HTMLAttributes } from "react";
 import { AttemptBadge } from "./AttemptBadge";
+import { ExpandingCard } from "./ExpandingCard";
 
 interface ChallengeDescriptionProps extends HTMLAttributes<HTMLDivElement> {
     id: string;
@@ -11,34 +11,17 @@ interface ChallengeDescriptionProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 export function ChallengeDescription({ id, title, children }: ChallengeDescriptionProps) {
-    const [expanded, setExpanded] = useState(true);
-
     return (
-        <div className="flex flex-col flex-shrink-0 border-4 border-white dark:border-base-100 rounded-3xl overflow-hidden bg-gradient-to-b from-white/0 to-white/[0.65] dark:to-white/0">
-            <button
-                onClick={() => setExpanded(!expanded)}
-                className="flex flex-row justify-between items-center bg-white dark:bg-base-100 px-6 py-4 w-full text-left cursor-pointer"
-                aria-expanded={expanded}
-            >
-                <span className="text-2xl font-semibold text-base-content">{`${id}. ${title}`}</span>
-                <div className="flex flex-row gap-2 items-center">
+        <ExpandingCard
+            title={`${id}. ${title}`}
+            barChildren={
+                <>
                     <AttemptBadge attempts={1} solved className="mr-1" />
                     <DarkModeToggle className="hover:scale-100" iconClassName="!w-6 !h-6" />
-                    {expanded ? (
-                        <ChevronsDownUp className="w-6 h-6 text-base-content flex-shrink-0 transition-transform" />
-                    ) : (
-                        <ChevronsUpDown className="w-6 h-6 text-base-content flex-shrink-0 transition-transform" />
-                    )}
-                </div>
-            </button>
-            <div
-                className={`overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out ${expanded ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0"
-                    }`}
-            >
-                <div className="p-6 text-base">
-                    {children}
-                </div>
-            </div>
-        </div>
+                </>
+            }
+        >
+            <div className="p-6 text-base">{children}</div>
+        </ExpandingCard>
     );
 }
