@@ -12,7 +12,7 @@ function AttemptText({ attempts, solved }: { attempts: number; solved?: boolean 
     const long = attempts <= 0
         ? "Not attempted yet"
         : solved
-            ?  `Solved in ${attempts} attempts`
+            ?  `Solved in ${attempts} attempt${attempts === 1 ? "" : "s"}`
             : `${attempts} attempt${attempts === 1 ? "" : "s"} made`;
 
     const short = attempts <= 0
