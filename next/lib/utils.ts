@@ -12,9 +12,12 @@ export const isUrlValid = (str: string) => {
 };
 
 // merge tailwind classes
-export const cn = (...classes: (string | undefined | false)[]) => {
-  return classes.filter(Boolean).join(" ");
-}
+export const cn = (...classes: ((string | undefined | false | null) | (string | undefined | false | null)[])[]) => {
+  return classes
+    .flatMap((c) => (Array.isArray(c) ? c : [c]))
+    .filter((c): c is string => typeof c === "string" && c.length > 0)
+    .join(" ");
+};
 
 export const MENTOR_HEAD_TITLE = "Mentor Head";
 export const PROJECTS_HEAD_TITLE = "Projects Head";
