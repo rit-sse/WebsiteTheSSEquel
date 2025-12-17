@@ -23,58 +23,64 @@ export function HistoricalButton({ challengeName, problemState } : ButtonProps) 
      * have a gradient background, while other buttons have a white background
      */
     function getIconFromState(problemState: string) {
-        let color = "white";
+        let color = "text-white dark:text-black";
         
         switch (problemState) {
             case "solved":
                 if (!isSelected) {
-                    color = "#0ed76c"
+                    color = "text-[#0ed76c]"
                 }
-                return <CircleCheckBig color={color}/>
+                return <CircleCheckBig className={color}/>
             case "attempted":
                 if (!isSelected) {
-                    color = "#e6c24b"
+                    color = "text-[#e6c24b]"
                 }
-                return <CircleDot  color={color}/>
+                return <CircleDot className={color}/>
             case "revealed":
                 if (!isSelected) {
-                    color = "#df3a11"
+                    color = "text-[#df3a11]"
                 }
-                return <CircleX color={color}/>
+                return <CircleX className={color}/>
             default:
                 if (!isSelected) {
-                    color = "#6d6d6d"
+                    color = "text-[#6d6d6d]"
                 }
-                return <CircleSlash color={color}/>
+                return <CircleSlash className={color}/>
         }
     }
 
     /**
-     * This becomes the bg-gradient-to-r element of the wrapper button element
+     * This function gives a gentler gradient that is the background of the
+     * button when it is not selected
      */
     function getLightGradientFromState() {
         switch (problemState) {
             case "solved":
-                return "from-[#ffffff] to-[#00D564]"
+                return `from-[#ffffff] to-[#00D564] dark: ${getFullGradientFromState()}`
             case "attempted":
-                return "from-[#ffffff] to-[#e7c756]"
+                return `from-[#ffffff] to-[#e7c756] dark: ${getFullGradientFromState()}`
             case "revealed":
-                return "from-[#ffffff] to-[#df3a11]"
+                return `from-[#ffffff] to-[#df3a11] dark: ${getFullGradientFromState()}`
             default:
-                return "from-[#ffffff] to-[#7a7a7a]"
+                return `from-[#ffffff] to-[#7a7a7a] dark: ${getFullGradientFromState()}`
         }
     }
 
+
+    /**
+     * This becomes the background of the button itself if selected, and makes up
+     * the border of the button when it is not selected
+     */
     function getFullGradientFromState() {
         switch (problemState) {
             case "solved":
-                return "from-[#82EAB3] to-[#00D564]"
+                return "from-[#82eab3] to-[#00d564]"
             case "attempted":
-                return "from-[#F5DA89] to-[#e7c756]"
+                return "from-[#f5da89] to-[#e7c756]"
             case "revealed":
-                return "from-[#E77C61] to-[#df3a11]"
+                return "from-[#e77c61] to-[#df3a11]"
             default:
-                return "from-[#B8B8B8] to-[#7a7a7a]"
+                return "from-[#b8b8b8] to-[#7a7a7a]"
         }
     }
 
@@ -83,7 +89,7 @@ export function HistoricalButton({ challengeName, problemState } : ButtonProps) 
      * we want the outer gradient to display on the background as well
      */
     function getBackgroundFromState() {
-        return isSelected ? `bg-gradient-to-r ${getFullGradientFromState()}` : "bg-white/[0.95]";
+        return (isSelected ? `bg-gradient-to-r ${getFullGradientFromState()}` : "bg-white/[0.95]") + " dark:bg-black";
     }
 
     const gradientClass = `flex rounded-2xl w-full 
@@ -98,7 +104,7 @@ export function HistoricalButton({ challengeName, problemState } : ButtonProps) 
         // "flex rounded-xl mx-auto bg-gradient-to-tr from-red-400 via-orange-400 to-rose-400 p-[2px] shadow-lg"
         <button className={gradientClass} onClick={() => setSelected(!isSelected)}>
             <div className={backgroundClass}>
-                <span className={`flex-1 text-left overflow-hidden whitespace-nowrap text-ellipsis pl-4 pr-2 ${isSelected ? "text-white" : "text-black"}`}>{challengeName}</span>
+                <span className={`flex-1 text-left overflow-hidden whitespace-nowrap text-ellipsis pl-4 pr-2 ${isSelected ? "text-white dark:text-black" : "text-black dark:text-white"}`}>{challengeName}</span>
                 <span className="flex pr-3">{getIconFromState(problemState)}</span>
             </div>
         </button>
