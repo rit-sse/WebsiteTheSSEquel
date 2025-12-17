@@ -10,11 +10,14 @@ export default function Sidebar() {
     const [query, setQuery] = useState("");
 
     return (
-        <aside className="w-80 flex-shrink-0 hidden md:flex flex-col rounded-t-2xl bg-white/[0.65] dark:bg-black/[0.65]">
-            <div className="text-2xl p-6 pb-3 text-center font-bold text-primary">
+        <aside className={cn(
+            "w-80 flex-shrink-0 hidden md:flex flex-col rounded-t-2xl bg-white/[0.65] dark:bg-base-300/20",
+            "ring-inset dark:ring-base-300/10 dark:ring-4"
+        )}>
+            <div className="text-2xl p-6 pb-3 text-center font-bold text-base-content">
                 Weekly Coding
                 <br />
-                Challenges
+                Challenges @SSE
             </div>
 
             <div className="flex flex-col">
@@ -30,7 +33,7 @@ export default function Sidebar() {
 
                     {/* current challenge goes here */}
                 </div>
-                
+
                 <div className="flex flex-col px-6">
                     <div className="flex flex-col py-3">
                         <span className={cn(
@@ -44,7 +47,7 @@ export default function Sidebar() {
 
                     <div className="flex flex-col gap-3">
                         <Searchbar value={query} onChange={setQuery} />
-                        
+
                         <div className="flex flex-col gap-24">
                             <MonthGroup month="January" year={2024}>
                                 {/* challenges go here */}

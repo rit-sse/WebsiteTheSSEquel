@@ -16,8 +16,8 @@ export function MonthGroup({
     return (
         <div className="flex flex-col gap-1.5">
             <div className="flex flex-row gap-1 justify-start items-center">
-                <Calendar className="h-3.5 w-3.5 text-muted-light dark:text-muted-dark -translate-y-[1px]" aria-hidden="true" />
-                <span className="text-muted-light dark:text-muted-dark text-xs font-normal">{month} {year}</span>
+                <Calendar className="h-3.5 w-3.5 text-neutral-400 dark:text-neutral-500 dark:text-muted-dark -translate-y-[1px]" aria-hidden="true" />
+                <span className="text-neutral-400 dark:text-neutral-500 text-xs font-normal">{month} {year}</span>
             </div>
             <div className="flex flex-col gap-2">
                 { children }

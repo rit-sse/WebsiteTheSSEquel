@@ -107,11 +107,7 @@ const config: Config = {
         'emerald-750': '#047857',
         'slate-750': '#293548',
         'slate-850': '#172033',
-        'slate-1000': '#000004',
-        'muted': {
-          'dark': '#77797d',
-          'light': '#828990',
-        },
+        'slate-1000': '#000004'
       },
       boxShadow: {
         'radial-sm': '0 0 5px 1px rgba(0, 0, 0, 0.2)',

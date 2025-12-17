@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { Search } from "lucide-react";
 
 interface SearchbarProps {
@@ -23,16 +24,15 @@ export function Searchbar({
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={placeholder}
                 aria-label={placeholder}
-                className="
-                    w-full
-                    px-3 py-2
-                    bg-white/30 dark:bg-white/10
-                    border-2 border-inset border-white dark:border-neutral-800
-                    rounded-xl
-                    text-base-content text-xs
-                    placeholder:text-muted-light dark:placeholder:text-muted-dark
-                    focus:outline-none focus:ring-2 focus:ring-primary/50
-                "
+                className={cn(
+                    "w-full px-3 py-2.5",
+                    "bg-white/30 dark:bg-neutral-800/40",
+                    "ring-2 ring-inset ring-white dark:ring-neutral-800",
+                    "rounded-xl",
+                    "text-base-content text-xs leading-none",
+                    "placeholder:text-neutral-400 dark:placeholder:text-neutral-500",
+                    "border-none focus:outline-none focus:ring-2 focus:ring-inset focus:ring-neutral-300 dark:focus:ring-neutral-700"
+                )}
             />
         </div>
     );
