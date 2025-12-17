@@ -325,6 +325,8 @@
 
 @layer utilities {
   .sse-scrollbar {
+    scrollbar-gutter: stable;
+
     &::-webkit-scrollbar {
       width: 8px;
       height: 8px;
