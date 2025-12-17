@@ -52,16 +52,29 @@ export function HistoricalButton({ challengeName, problemState } : ButtonProps) 
     /**
      * This becomes the bg-gradient-to-r element of the wrapper button element
      */
-    function getGradientFromState(problemState: string) {
+    function getLightGradientFromState() {
         switch (problemState) {
             case "solved":
-                return "from-[#e5f9eb] to-[#00d564]"
+                return "from-[#ffffff] to-[#00D564]"
             case "attempted":
-                return "from-[#fcf7e5] to-[#e7c756]"
+                return "from-[#ffffff] to-[#e7c756]"
             case "revealed":
-                return "from-[#fde3e3] to-[#df3a11]"
+                return "from-[#ffffff] to-[#df3a11]"
             default:
-                return "from-[#ececec] to-[#7a7a7a]"
+                return "from-[#ffffff] to-[#7a7a7a]"
+        }
+    }
+
+    function getFullGradientFromState() {
+        switch (problemState) {
+            case "solved":
+                return "from-[#82EAB3] to-[#00D564]"
+            case "attempted":
+                return "from-[#F5DA89] to-[#e7c756]"
+            case "revealed":
+                return "from-[#E77C61] to-[#df3a11]"
+            default:
+                return "from-[#B8B8B8] to-[#7a7a7a]"
         }
     }
 
@@ -70,22 +83,22 @@ export function HistoricalButton({ challengeName, problemState } : ButtonProps) 
      * we want the outer gradient to display on the background as well
      */
     function getBackgroundFromState() {
-        return isSelected ? "" : "bg-white";
+        return isSelected ? `bg-gradient-to-r ${getFullGradientFromState()}` : "bg-white/[0.95]";
     }
 
-    const gradientClass = `flex rounded-full w-full 
-                    bg-gradient-to-r ${getGradientFromState(problemState)}
+    const gradientClass = `flex rounded-2xl w-full 
+                    bg-gradient-to-r ${isSelected ? getLightGradientFromState() : getFullGradientFromState()}
                     shadow-lg p-[2px]`
 
-    const backgroundClass = `${getBackgroundFromState()} transition-shadow shadow-md hover:shadow-lg 
-                            rounded-full flex flex-row justify-between 
+    const backgroundClass = `${getBackgroundFromState()} transition-shadow
+                            rounded-[14px] flex flex-row justify-between 
                             h-10 w-full items-center`
 
     return (
         // "flex rounded-xl mx-auto bg-gradient-to-tr from-red-400 via-orange-400 to-rose-400 p-[2px] shadow-lg"
         <button className={gradientClass} onClick={() => setSelected(!isSelected)}>
                 <div className={backgroundClass}>
-                <span className="flex-1 text-left overflow-hidden whitespace-nowrap text-ellipsis pl-4 pr-2">{challengeName}</span>
+                <span className={`flex-1 text-left overflow-hidden whitespace-nowrap text-ellipsis pl-4 pr-2 ${isSelected ? "text-white" : "text-black"}`}>{challengeName}</span>
                 <span className="flex pr-3">{getIconFromState(problemState)}</span>
             </div>
         </button>

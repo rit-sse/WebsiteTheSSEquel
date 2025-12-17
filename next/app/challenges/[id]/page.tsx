@@ -20,6 +20,8 @@ export type Challenge = {
 };
 
 async function fetchChallengeData(id: string): Promise<Challenge | null> {
+    if (isNaN(Number(id)) || Number(id) < 0) return null;
+
     return { // get from database 
         id: id,
         title: "Two Sum",
@@ -56,8 +58,11 @@ export default async function ChallengePage({ params }: { params: Promise<{ id: 
 
     return (
         <>
+            <style>
+                {`footer { display: none !important; }`}
+            </style>
             <div className={cn(
-                "relative self-stretch flex flex-row h-0 grow gap-6 px-6",
+                "self-stretch flex flex-row h-0 grow gap-6 px-6 overflow-hidden",
                 "-mx-2 md:-mx-4 lg:-mx-6 xl:-mx-8",
                 "-mb-2 md:-mb-4 lg:-mb-6 xl:-mb-8",
             )}>
@@ -65,12 +70,19 @@ export default async function ChallengePage({ params }: { params: Promise<{ id: 
 
                 {
                     challenge ? (
-                        <div className="flex grow flex-col min-w-0 gap-6 sse-scrollbar overflow-y-auto">
-                            <ChallengeDescription id={challenge.id} title={challenge.title}>
-                                <Markdown content={challenge.description} />
-                            </ChallengeDescription>
-                            <span>your attempts</span>
-                            <span>solutions</span>
+                        <div className="relative flex grow flex-col min-w-0">
+                            <div className="flex grow flex-col gap-6 sse-scrollbar overflow-y-auto"
+                                style={{
+                                    maskImage: 'linear-gradient(to bottom, black calc(100% - 6rem), transparent 100%)',
+                                    WebkitMaskImage: 'linear-gradient(to bottom, black calc(100% - 6rem), transparent 100%)'
+                                }}
+                            >
+                                <ChallengeDescription id={challenge.id} title={challenge.title}>
+                                    <Markdown content={challenge.description} />
+                                </ChallengeDescription>
+                                <span>your attempts</span>
+                                <span>solutions</span>
+                            </div>
                         </div>
                     ) : (
                         <div className="flex flex-row grow items-center justify-center">
@@ -78,8 +90,6 @@ export default async function ChallengePage({ params }: { params: Promise<{ id: 
                         </div>
                     )
                 }
-
-                <div className="hidden md:block absolute bottom-0 left-6 w-80 origin-bottom h-14 scale-y-[-1] -translate-y-[0.1px] bg-white/[0.65] dark:bg-black/[0.65]" />
             </div>
         </>
     );

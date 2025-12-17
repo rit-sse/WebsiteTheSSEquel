@@ -26,7 +26,7 @@ export function ChallengeDescription({ id, title, children }: ChallengeDescripti
                 )}
             </button>
             <div 
-                className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                className={`overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out ${
                     expanded ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0"
                 }`}
             >
