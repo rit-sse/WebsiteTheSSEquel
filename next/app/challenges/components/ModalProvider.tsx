@@ -111,14 +111,16 @@ export function ModalProvider({ children }: PropsWithChildren) {
                         >
                             <X />
                         </button>
-                        
+
                         {options.title}
                         {options.description}
 
                         <div className="modal-action">
-                            <button type="button" className="btn" onClick={() => closeModal({ submitted: false })}>
-                                {cancelText}
-                            </button>
+                            {(options?.input || options?.cancelBtnText) &&
+                                <button type="button" className="btn" onClick={() => closeModal({ submitted: false })}>
+                                    {cancelText}
+                                </button>
+                            }
                             <button
                                 type="button"
                                 className="btn btn-primary"
