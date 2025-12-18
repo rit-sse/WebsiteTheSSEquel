@@ -23,7 +23,7 @@ export function HistoricalButton({ challengeName, problemState } : ButtonProps) 
      * have a gradient background, while other buttons have a white background
      */
     function getIconFromState(problemState: string) {
-        let color = "text-white dark:text-black";
+        let color = "text-white dark:text-neutral-50";
         
         switch (problemState) {
             case "solved":
@@ -56,13 +56,13 @@ export function HistoricalButton({ challengeName, problemState } : ButtonProps) 
     function getLightGradientFromState() {
         switch (problemState) {
             case "solved":
-                return `from-[#ffffff] to-[#00D564] dark: ${getFullGradientFromState()}`
+                return `from-[#ffffff] to-[#00D564] dark:from-[#007a36] dark:to-[#00d564]`
             case "attempted":
-                return `from-[#ffffff] to-[#e7c756] dark: ${getFullGradientFromState()}`
+                return `from-[#ffffff] to-[#e7c756] dark:from-[#a67c1a] dark:to-[#e7c756]`
             case "revealed":
-                return `from-[#ffffff] to-[#df3a11] dark: ${getFullGradientFromState()}`
+                return `from-[#ffffff] to-[#df3a11] dark:from-[#a83211] dark:to-[#df3a11]`
             default:
-                return `from-[#ffffff] to-[#7a7a7a] dark: ${getFullGradientFromState()}`
+                return `from-[#ffffff] to-[#7a7a7a] dark:from-[#4a4a4a] dark:to-[#7a7a7a]`
         }
     }
 
@@ -74,13 +74,13 @@ export function HistoricalButton({ challengeName, problemState } : ButtonProps) 
     function getFullGradientFromState() {
         switch (problemState) {
             case "solved":
-                return "from-[#82eab3] to-[#00d564]"
+                return `from-[#82eab3] to-[#00d564] dark:from-[#68bb8f] dark:to-[#00aa50]`
             case "attempted":
-                return "from-[#f5da89] to-[#e7c756]"
+                return `from-[#f5da89] to-[#e7c756] dark:from-[#d9b84a] dark:to-[#c9a93c]`
             case "revealed":
-                return "from-[#e77c61] to-[#df3a11]"
+                return `from-[#e77c61] to-[#df3a11] dark:from-[#b9634e] dark:to-[#b22e0e]`
             default:
-                return "from-[#b8b8b8] to-[#7a7a7a]"
+                return `from-[#b8b8b8] to-[#7a7a7a] dark:from-[#939393] dark:to-[#626262]`
         }
     }
 
@@ -89,10 +89,10 @@ export function HistoricalButton({ challengeName, problemState } : ButtonProps) 
      * we want the outer gradient to display on the background as well
      */
     function getBackgroundFromState() {
-        return (isSelected ? `bg-gradient-to-r ${getFullGradientFromState()}` : "bg-white/[0.95]") + " dark:bg-black";
+        return (isSelected ? `bg-gradient-to-r ${getFullGradientFromState()}` : "bg-white/[0.95] dark:bg-black/[0.90]");
     }
 
-    const gradientClass = `flex rounded-2xl w-full 
+    const gradientClass = `flex rounded-2xl w-full focus:outline-none
                     bg-gradient-to-r ${isSelected ? getLightGradientFromState() : getFullGradientFromState()}
                     shadow-md hover:shadow-lg p-[2px]`
 
@@ -104,7 +104,7 @@ export function HistoricalButton({ challengeName, problemState } : ButtonProps) 
         // "flex rounded-xl mx-auto bg-gradient-to-tr from-red-400 via-orange-400 to-rose-400 p-[2px] shadow-lg"
         <button className={gradientClass} onClick={() => setSelected(!isSelected)}>
             <div className={backgroundClass}>
-                <span className={`flex-1 text-left overflow-hidden whitespace-nowrap text-ellipsis pl-4 pr-2 ${isSelected ? "text-white dark:text-black" : "text-black dark:text-white"}`}>{challengeName}</span>
+                <span className={`flex-1 text-left overflow-hidden whitespace-nowrap text-ellipsis pl-4 pr-2 ${isSelected ? "text-white dark:text-neutral-50" : "text-black dark:text-neutral-50"}`}>{challengeName}</span>
                 <span className="flex pr-3">{getIconFromState(problemState)}</span>
             </div>
         </button>
