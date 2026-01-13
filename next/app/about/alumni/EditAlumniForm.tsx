@@ -155,7 +155,7 @@ export default function EditAlumniForm({ open, alumniMember, getAlumni, closeMod
                 <label>Previous Roles</label>
                 <input name="previous_roles" placeholder="Alumni's previous role(s)..." value={formData.previous_roles} onChange={handleChange}/>
             </div>
-            <button type="submit" className="p-2 bg-secondary text-base-content hover:bg-primary rounded">Submit</button>
+            <button type="submit" className="p-2 bg-secondary text-foreground hover:bg-primary rounded">Submit</button>
             <label className="text-error text-center text-sm">{error}</label>
         </form>
     )

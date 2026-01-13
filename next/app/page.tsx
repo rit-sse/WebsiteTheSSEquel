@@ -41,7 +41,6 @@ export default async function Home() {
         events = events.filter((value => compareDateStrings(currentDate.toISOString(), value.date) < 0))
                         .sort((a, b) => compareDateStrings(a.date, b.date))
                         .slice(0, 3);
-        console.log(events);
     }
 
     return (

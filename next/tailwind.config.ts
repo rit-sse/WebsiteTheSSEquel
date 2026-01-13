@@ -2,132 +2,141 @@ import type { Config } from 'tailwindcss'
 const defaultTheme = require('tailwindcss/defaultTheme');
 
 const config: Config = {
-  daisyui: {
-    themes: [
-      {
-        'dark': {
-          "primary": "#A4C7F4",
-          "secondary": "#6196D6",
-          "accent": "#3B6497",
-          "neutral": "#2F3F4C",
-          "base-100": "#161F27",
-          "base-content": "#F0F4F9",
-          "info": "#38bdf8",
-          "success": "#4ade80",
-          "warning": "#fbbf24",
-          "error": "#ef4444",
-          "info-content" : "#172630",
-        },
-        'light': {
-          "primary": "#5f88ab",
-          "secondary": "#8eabc4",
-          "accent": "#4C6D89",
-          "neutral": "#3E4A56",
-          "base-100": "#F0F4F9",
-          "base-content": "#161F27",
-          "info": "#38bdf8",
-          "success": "#4ade80",
-          "warning": "#fbbf24",
-          "error": "#ef4444",
-          "info-content": "#ffffff",
-        },
-      },
+    darkMode: 'class',
+    content: [
+        './pages/**/*.{js,ts,jsx,tsx,mdx}',
+        './components/**/*.{js,ts,jsx,tsx,mdx}',
+        './app/**/*.{js,ts,jsx,tsx,mdx}',
     ],
-  },
-  content: [
-    './pages/**/*.{js,ts,jsx,tsx,mdx}',
-    './components/**/*.{js,ts,jsx,tsx,mdx}',
-    './app/**/*.{js,ts,jsx,tsx,mdx}',
-  ],
-  variants: {
-    extend: {
-      animation: ['group-hover', 'group-focus'],
+    variants: {
+        extend: {
+            animation: ['group-hover', 'group-focus'],
+        },
     },
-  },
-  theme: {
-    extend: {
-      fontFamily: {
-        sans: ['var(--font-inter)', ...defaultTheme.fontFamily.sans],
-      },
-      transitionProperty: {
-        'height': 'height',
-      },
-      keyframes: {
-        wiggle: {
-          '0%': { transform: 'rotate(0deg)' },
-          '25%': { transform: 'rotate(-3deg)' },
-          '75%': { transform: 'rotate(3deg)' },
-          '100%': { transform: 'rotate(0deg)' },
-        },
-        shake: {
-          '0%': {
-            transform: 'translateX(0)',
-          },
-          '6.5%': {
-            transform: 'translateX(-6px) rotateY(-9deg)',
-          },
-          '18.5%': {
-            transform: 'translateX(5px) rotateY(7deg)',
-          },
-          '31.5%': {
-            transform: 'translateX(-3px) rotateY(-5deg)',
-          },
-          '43.5%': {
-            transform: 'translateX(2px) rotateY(3deg)',
-          },
-          '50%': {
-            transform: 'translateX(0)',
-          },
-        },
-        heartBeat: {
-          '0%': {
-            transform: 'scale(1)',
-          },
-          '14%': {
-            transform: 'scale(1.2)',
-          },
-          '28%': {
-            transform: 'scale(1)',
-          },
-          '42%': {
-            transform: 'scale(1.2)',
-          },
-          '70%': {
-            transform: 'scale(1)',
-          },
-        },
-      },
-      animation: {
-        wiggle: 'wiggle 1s linear infinite',
-        shake: 'shake 1s ease-in-out infinite',
-        heartBeat: 'heartBeat 1s ease-in-out infinite',
-      },
-      colors: {
-        'emerald-750': '#047857',
-        'slate-750': '#293548',
-        'slate-850': '#172033',
-        'slate-1000': '#000004',
-      },
-      boxShadow: {
-        'radial-sm': '0 0 5px 1px rgba(0, 0, 0, 0.2)',
-        'radial-md': '0 0 10px 2px rgba(0, 0, 0, 0.2)',
-        'radial-lg': '0 0 15px 3px rgba(0, 0, 0, 0.2)',
-        'radial-xl': '0 0 20px 5px rgba(0, 0, 0, 0.2)',
-        'radial-2xl': '0 0 25px 5px rgba(0, 0, 0, 0.2)',
-        'radial-3xl': '0 0 30px 5px rgba(0, 0, 0, 0.2)',
-      },
-      backgroundImage: {
-        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-        'gradient-conic':
-          'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
-      },
+    theme: {
+        extend: {
+            fontFamily: {
+                sans: [
+                    'var(--font-inter)',
+                    ...defaultTheme.fontFamily.sans
+                ]
+            },
+            transitionProperty: {
+                height: 'height'
+            },
+            keyframes: {
+                wiggle: {
+                    '0%': { transform: 'rotate(0deg)' },
+                    '25%': { transform: 'rotate(-3deg)' },
+                    '75%': { transform: 'rotate(3deg)' },
+                    '100%': { transform: 'rotate(0deg)' }
+                },
+                shake: {
+                    '0%': { transform: 'translateX(0)' },
+                    '6.5%': { transform: 'translateX(-6px) rotateY(-9deg)' },
+                    '18.5%': { transform: 'translateX(5px) rotateY(7deg)' },
+                    '31.5%': { transform: 'translateX(-3px) rotateY(-5deg)' },
+                    '43.5%': { transform: 'translateX(2px) rotateY(3deg)' },
+                    '50%': { transform: 'translateX(0)' }
+                },
+                heartBeat: {
+                    '0%': { transform: 'scale(1)' },
+                    '14%': { transform: 'scale(1.2)' },
+                    '28%': { transform: 'scale(1)' },
+                    '42%': { transform: 'scale(1.2)' },
+                    '70%': { transform: 'scale(1)' }
+                }
+            },
+            animation: {
+                wiggle: 'wiggle 1s linear infinite',
+                shake: 'shake 1s ease-in-out infinite',
+                heartBeat: 'heartBeat 1s ease-in-out infinite'
+            },
+            colors: {
+                // Custom colors
+                'emerald-750': '#047857',
+                'slate-750': '#293548',
+                'slate-850': '#172033',
+                'slate-1000': '#000004',
+                
+                // shadcn/ui colors using CSS variables
+                background: 'hsl(var(--background))',
+                foreground: 'hsl(var(--foreground))',
+                card: {
+                    DEFAULT: 'hsl(var(--card))',
+                    foreground: 'hsl(var(--card-foreground))'
+                },
+                popover: {
+                    DEFAULT: 'hsl(var(--popover))',
+                    foreground: 'hsl(var(--popover-foreground))'
+                },
+                primary: {
+                    DEFAULT: 'hsl(var(--primary))',
+                    foreground: 'hsl(var(--primary-foreground))'
+                },
+                secondary: {
+                    DEFAULT: 'hsl(var(--secondary))',
+                    foreground: 'hsl(var(--secondary-foreground))'
+                },
+                muted: {
+                    DEFAULT: 'hsl(var(--muted))',
+                    foreground: 'hsl(var(--muted-foreground))'
+                },
+                accent: {
+                    DEFAULT: 'hsl(var(--accent))',
+                    foreground: 'hsl(var(--accent-foreground))'
+                },
+                destructive: {
+                    DEFAULT: 'hsl(var(--destructive))',
+                    foreground: 'hsl(var(--destructive-foreground))'
+                },
+                border: 'hsl(var(--border))',
+                input: 'hsl(var(--input))',
+                ring: 'hsl(var(--ring))',
+                chart: {
+                    '1': 'hsl(var(--chart-1))',
+                    '2': 'hsl(var(--chart-2))',
+                    '3': 'hsl(var(--chart-3))',
+                    '4': 'hsl(var(--chart-4))',
+                    '5': 'hsl(var(--chart-5))'
+                },
+                
+                // Semantic colors (replacing DaisyUI)
+                info: 'hsl(var(--info))',
+                success: 'hsl(var(--success))',
+                warning: 'hsl(var(--warning))',
+                error: 'hsl(var(--error))',
+                
+                // Base colors (replacing DaisyUI base-100, base-200, etc.)
+                'base-100': 'hsl(var(--background))',
+                'base-200': 'hsl(var(--muted))',
+                'base-300': 'hsl(var(--accent))',
+                'base-content': 'hsl(var(--foreground))',
+            },
+            boxShadow: {
+                'radial-sm': '0 0 5px 1px rgba(0, 0, 0, 0.2)',
+                'radial-md': '0 0 10px 2px rgba(0, 0, 0, 0.2)',
+                'radial-lg': '0 0 15px 3px rgba(0, 0, 0, 0.2)',
+                'radial-xl': '0 0 20px 5px rgba(0, 0, 0, 0.2)',
+                'radial-2xl': '0 0 25px 5px rgba(0, 0, 0, 0.2)',
+                'radial-3xl': '0 0 30px 5px rgba(0, 0, 0, 0.2)'
+            },
+            backgroundImage: {
+                'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+                'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))'
+            },
+            borderRadius: {
+                lg: 'var(--radius)',
+                md: 'calc(var(--radius) - 2px)',
+                sm: 'calc(var(--radius) - 4px)'
+            }
+        }
     },
-  },
-  plugins: [
-    require('@tailwindcss/typography'), // https://tailwindcss.com/docs/typography-plugin
-    require('@tailwindcss/forms'), // https://github.com/tailwindlabs/tailwindcss-forms
-    require('@tailwindcss/aspect-ratio'), // https://github.com/tailwindlabs/tailwindcss-aspect-ratio
-    require('daisyui'), // tailwindcss components and theming: https://daisyui.com/
-  ],
+    plugins: [
+        require('@tailwindcss/typography'),
+        require('@tailwindcss/forms'),
+        require('@tailwindcss/aspect-ratio'),
+        require("tailwindcss-animate")
+    ],
 }
 export default config

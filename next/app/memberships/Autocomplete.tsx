@@ -124,7 +124,7 @@ export function UserAutocomplete({
         role="listbox"
         className="
         absolute top-full left-0 right-0 mt-1
-        bg-base-100 border border-base-300 rounded-box shadow-lg
+        bg-background border border-border rounded-box shadow-lg
         max-h-64 z-[90]
         overflow-y-auto overflow-x-hidden
         flex-nowrap overscroll-contain

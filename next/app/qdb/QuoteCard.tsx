@@ -3,6 +3,7 @@
 import { QuoteDelete, QuoteEdit } from "@/components/common/Icons";
 import { Quote } from "./Quotes";
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export const QuoteCard = (quote: Quote) => {
 
@@ -38,7 +39,6 @@ export const QuoteCard = (quote: Quote) => {
     const breakUpQuoteString = (quoteString: String) => {
         let parts = quoteString.split(/[\n\[\]]/);
         parts = parts.filter(item => item !== "");
-        console.log(parts);
         const quotesArray: { quote: string, author: string }[] = [];
 
         for (let i = 0; i < parts.length; i += 2) {
@@ -64,7 +64,7 @@ export const QuoteCard = (quote: Quote) => {
 
         let hasEmptyFields = editableQuotes.some(q => !q.quote.trim());
         if (hasEmptyFields) {
-            alert("All quote fields must be filled out.");
+            toast.error("All quote fields must be filled out.");
             return;
         }
 
@@ -107,7 +107,7 @@ export const QuoteCard = (quote: Quote) => {
             window.location.reload();
         } catch (error) {
             console.error(error);
-            alert("Error updating quote");
+            toast.error("Error updating quote");
         }
     };
 
@@ -127,7 +127,7 @@ export const QuoteCard = (quote: Quote) => {
             window.location.reload();
         } catch (error) {
             console.error(error);
-            alert("Error deleting quote");
+            toast.error("Error deleting quote");
         }
     };
 
@@ -173,7 +173,7 @@ export const QuoteCard = (quote: Quote) => {
 
     if (isOfficer) {
         return (
-            <div className="border-l-8 border-blue-500 rounded-lg bg-base-100 w-11/12 py-5 px-12 mx-auto items-center content-center gap-10 my-4">
+            <div className="border-l-8 border-primary rounded-lg bg-background w-11/12 py-5 px-12 mx-auto items-center content-center gap-10 my-4">
                 {formatQuote(quote.quote).map((line, index) => (
                     <p className="" key={index}>{line}</p>
                 ))}
@@ -181,7 +181,11 @@ export const QuoteCard = (quote: Quote) => {
                 <p>{quote.tags}</p>
 
                 {/* Button and dialog box for editing a quote */}
-                <button onClick={() => openEditModal(quote)}>
+                <button 
+                    onClick={() => openEditModal(quote)}
+                    aria-label="Edit quote"
+                    className="hover:opacity-80 transition-opacity"
+                >
                     <QuoteEdit />
                 </button>
                 <dialog id={`edit-quote-${quote.id}`} className="modal">
@@ -252,14 +256,18 @@ export const QuoteCard = (quote: Quote) => {
                 </dialog>
 
                 {/* Button and dialog box for deleting a quote */}
-                <button onClick={(func) => {
-                    func.preventDefault();
-                    if (document) {
-                        (
-                            document.getElementById(`delete-quote-${quote.id}`) as HTMLFormElement
-                        )?.showModal();
-                    }
-                }}>
+                <button 
+                    onClick={(func) => {
+                        func.preventDefault();
+                        if (document) {
+                            (
+                                document.getElementById(`delete-quote-${quote.id}`) as HTMLFormElement
+                            )?.showModal();
+                        }
+                    }}
+                    aria-label="Delete quote"
+                    className="hover:opacity-80 transition-opacity"
+                >
                     <QuoteDelete />
                 </button>
                 <dialog id={`delete-quote-${quote.id}`} className="modal">
@@ -286,7 +294,7 @@ export const QuoteCard = (quote: Quote) => {
         );
     } else {
         return (
-            <div className="border-l-8 border-blue-500 rounded-lg bg-base-100 w-11/12 py-5 px-12 mx-auto items-center content-center gap-10 my-4">
+            <div className="border-l-8 border-primary rounded-lg bg-background w-11/12 py-5 px-12 mx-auto items-center content-center gap-10 my-4">
                 {formatQuote(quote.quote).map((line, index) => (
                     <p key={index}>{line}</p>
                 ))}

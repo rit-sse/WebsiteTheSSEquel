@@ -5,6 +5,7 @@
 import { Event } from "../event";
 import { useEffect, useState } from "react"
 import { formatDate } from "./utils";
+import Image from "next/image";
 
 /**
  * onClose - Function prop that closes the modal
@@ -46,7 +47,7 @@ export default function EventForm ({ onClose, isOpen, event, openEditModal, even
             body: JSON.stringify({
                 id: idString
             })
-        }).then(async (res) => { console.log(await res.text()) })
+        })
 
         // Find and remove the deleted event, then update state
         const updatedEvents = events.filter((e : Event) => {
@@ -87,12 +88,24 @@ export default function EventForm ({ onClose, isOpen, event, openEditModal, even
                     <button onClick={ openEditModal } className="text-sm bg-secondary mr-2 w-full rounded-lg border border-solid border-black">Edit</button>
                 </div>
             </div>
-            {
-                event.image ?
-                <img className="w-64 h-64 mr-1 mt-1" src={ event.image } />
-                :
-                <img className="w-64 h-64 mr-1 mt-1" src="..\..\icon.png"/>
-            }
+            <div className="relative w-64 h-64 mr-1 mt-1">
+                {event.image ? (
+                    <Image 
+                        src={event.image} 
+                        alt={event.title}
+                        fill
+                        className="object-cover"
+                        unoptimized
+                    />
+                ) : (
+                    <Image 
+                        src="/icon.png" 
+                        alt="SSE Logo"
+                        fill
+                        className="object-cover"
+                    />
+                )}
+            </div>
         </div>
     )
 }

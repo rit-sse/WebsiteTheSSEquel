@@ -64,7 +64,13 @@ const ProjectCard = ({project, propKey, isOfficer}: {project: Project, propKey: 
                       lg:w-[240px]
                       " onClick={openModal} style={{opacity: cardOpacity, transform: translationLoad}}>
         {/* Image Background */}
-        <img src={projectBackground} className="h-[100%] w-full object-cover"/>
+        <Image 
+          src={projectBackground} 
+          alt={project.title}
+          fill
+          className="object-cover"
+          unoptimized
+        />
         {/* Project Title Container */}
         <div className="absolute bottom-[0px] w-[100%] minh-[48px] max-h-[80px] bg-black/25 backdrop-blur-[15px]
                         p-[12px]

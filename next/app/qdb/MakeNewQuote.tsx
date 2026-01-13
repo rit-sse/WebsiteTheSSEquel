@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export const MakeNewQuote = () => {
 
@@ -42,7 +43,7 @@ export const MakeNewQuote = () => {
     let hasEmptyFields = quotes.some(q => !q.quote.trim());
 
     if (hasEmptyFields) {
-      alert("All quote fields must be filled out.");
+      toast.error("All quote fields must be filled out.");
       return;
     }
 
@@ -88,7 +89,7 @@ export const MakeNewQuote = () => {
 
       const result = await response.json();
     } catch (error) {
-      alert("Error creating quote");
+      toast.error("Error creating quote");
     }
     window.location.reload();
   };
@@ -105,7 +106,7 @@ export const MakeNewQuote = () => {
               ).showModal();
             }
           }}
-          className="p-4 h-full bg-base-100 rounded-md shadow-md justify-items-center hover:shadow-lg transition-shadow border-2 border-base-content hover:border-info text-xl"
+          className="p-4 h-full bg-background rounded-md shadow-md justify-items-center hover:shadow-lg transition-shadow border-2 border-border hover:border-primary text-xl"
         >
           Add A Quote
         </button>

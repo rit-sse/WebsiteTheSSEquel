@@ -7,6 +7,26 @@ import { Team, TeamMember } from "./team";
 import ModifyOfficers from "./ModifyOfficers";
 import ReplaceOfficerForm from "./ReplaceOfficerForm";
 import EditOfficerForm from "./EditOfficerForm";
+import { Skeleton } from "@/components/ui/skeleton";
+
+// Skeleton component for officer cards
+function OfficerCardSkeleton() {
+	return (
+		<div className="mt-4 w-full flex justify-center">
+			<div className="mt-2 flex flex-col items-center w-full max-w-xs sm:max-w-sm px-4">
+				<Skeleton className="h-24 w-24 rounded-full" />
+				<Skeleton className="h-5 w-32 mt-2" />
+				<Skeleton className="h-4 w-24 mt-1" />
+				<Skeleton className="h-16 w-full mt-2" />
+				<div className="flex gap-2 mt-2">
+					<Skeleton className="h-5 w-5" />
+					<Skeleton className="h-5 w-5" />
+					<Skeleton className="h-5 w-5" />
+				</div>
+			</div>
+		</div>
+	);
+}
 
 export default function Leadership() {
 	// States to manage opening/closing of modals
@@ -16,6 +36,8 @@ export default function Leadership() {
 	const [selectedOfficer, setSelectedOfficer] = useState<TeamMember>();
 	// State list of all active officers
 	const [teamData, setTeamData] = useState<Team>({ primary_officers: [], committee_heads: [] });
+	// Loading state
+	const [isLoading, setIsLoading] = useState(true);
 
 	// Get all active officers when page opens
 	useEffect(() => {
@@ -23,6 +45,7 @@ export default function Leadership() {
 	}, []);
 
 	const getOfficers = async () => {
+		setIsLoading(true);
 		var team: Team = { primary_officers: [], committee_heads: [] };
 		try {
 			const response = await fetch('/api/officer/active');
@@ -30,7 +53,6 @@ export default function Leadership() {
 				throw new Error('Failed to fetch officers');
 			}
 			const data = await response.json();
-			console.log(data.user)
 
 			// Map primary officers to TeamMember
 			team.primary_officers = data
@@ -73,6 +95,7 @@ export default function Leadership() {
 			return 1;
 		});
 		setTeamData(team);
+		setIsLoading(false);
 	};
 
 	return (
@@ -107,13 +130,22 @@ export default function Leadership() {
 					</h2>
 					<div className="">
 						<div className="w-full flex flex-row justify-center gap-5">
-							{teamData.primary_officers.map((member, idx) => (
-								<div key={idx}>
-									<OfficerCard teamMember={member} />
-									{/* Edit and Remove buttons, only officers can see */}
-									<ModifyOfficers teamMember={member} openReplaceModal={() => setReplaceOpen(true)} openEditModal={() => setEditOpen(true)} setSelectedOfficer={setSelectedOfficer} />
-								</div>
-							))}
+							{isLoading ? (
+								<>
+									<OfficerCardSkeleton />
+									<OfficerCardSkeleton />
+									<OfficerCardSkeleton />
+									<OfficerCardSkeleton />
+								</>
+							) : (
+								teamData.primary_officers.map((member, idx) => (
+									<div key={idx}>
+										<OfficerCard teamMember={member} />
+										{/* Edit and Remove buttons, only officers can see */}
+										<ModifyOfficers teamMember={member} openReplaceModal={() => setReplaceOpen(true)} openEditModal={() => setEditOpen(true)} setSelectedOfficer={setSelectedOfficer} />
+									</div>
+								))
+							)}
 						</div>
 					</div>
 					{/* Committee Heads */}
@@ -122,13 +154,24 @@ export default function Leadership() {
 							Committee Heads
 						</h2>
 						<div className="w-full flex-wrap flex flex-row justify-center">
-								{teamData.committee_heads.map((member, idx) => (
+							{isLoading ? (
+								<>
+									<OfficerCardSkeleton />
+									<OfficerCardSkeleton />
+									<OfficerCardSkeleton />
+									<OfficerCardSkeleton />
+									<OfficerCardSkeleton />
+									<OfficerCardSkeleton />
+								</>
+							) : (
+								teamData.committee_heads.map((member, idx) => (
 									<div key={idx}>
 										<OfficerCard teamMember={member} />
 										{/* Edit and Remove buttons, only officers can see */}
 										<ModifyOfficers teamMember={member} openReplaceModal={() => setReplaceOpen(true)} openEditModal={() => setEditOpen(true)} setSelectedOfficer={setSelectedOfficer} />
 									</div>
-								))}
+								))
+							)}
 						</div>
 					</div>
 				</div>

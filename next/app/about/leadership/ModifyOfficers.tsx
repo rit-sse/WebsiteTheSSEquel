@@ -36,10 +36,10 @@ export default function ModifyOfficers({ teamMember, openReplaceModal, openEditM
     if(isOfficer){
         return (
             <div className="flex flex-row justify-center gap-4">
-                <button className="text-sm bg-secondary hover:bg-primary rounded-md active:bg-neutral text-base-100 p-1" onClick={() => {setSelectedOfficer(teamMember); openEditModal()}}>
+                <button className="text-sm bg-secondary hover:bg-primary rounded-md active:bg-muted text-primary-foreground p-1" onClick={() => {setSelectedOfficer(teamMember); openEditModal()}}>
                     Edit
                 </button>
-                <button className="text-sm bg-secondary hover:bg-primary rounded-md active:bg-neutral text-base-100 p-1" onClick={() => {setSelectedOfficer(teamMember); openReplaceModal()}}>
+                <button className="text-sm bg-secondary hover:bg-primary rounded-md active:bg-muted text-primary-foreground p-1" onClick={() => {setSelectedOfficer(teamMember); openReplaceModal()}}>
                     Replace
                 </button>
             </div>

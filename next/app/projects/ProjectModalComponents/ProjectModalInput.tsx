@@ -43,9 +43,9 @@ const ProjectModalInput = (
             {/* The actual input. If isRichText, the top one is used, otherwise, the bottom will be used */}
             {   
                 isRichText ?
-                <textarea className="w-full bg-base-200" value={presetValue} onChange={changeValue_rich}/>
+                <textarea className="w-full bg-muted" value={presetValue} onChange={changeValue_rich}/>
                 :
-                <input className="w-full bg-base-200" value={presetValue} onChange={changeValue_input}/>
+                <input className="w-full bg-muted" value={presetValue} onChange={changeValue_input}/>
             }
         </div>
     )

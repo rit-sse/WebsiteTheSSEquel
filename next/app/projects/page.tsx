@@ -73,7 +73,7 @@ const Projects = () => {
 
       {/* Officer-only Add Project Modal Button */}
       { isOfficer ? 
-        <button className="bg-primary text-base-100 px-[25px] py-[10px] rounded-lg" onClick={enableModal}>Add Project</button>
+        <button className="bg-primary text-primary-foreground px-[25px] py-[10px] rounded-lg" onClick={enableModal}>Add Project</button>
         : undefined}
       
       {/* Exhibit */}

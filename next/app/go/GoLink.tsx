@@ -79,22 +79,20 @@ const GoLink: React.FC<GoLinkProps> = ({
 
   return (
     <>
-      {console.log(url)}
-
       <a
         href={"/go/" + goUrl}
         target="_blank"
         className="
                 flex 
                 p-4
-                bg-base-100
+                bg-background
                 rounded-md
                 shadow-md
                 hover:shadow-lg
                 transition-shadow
                 border-2
-                border-base-content
-                hover:border-info
+                border-border
+                hover:border-primary
             "
       >
         <div
@@ -136,7 +134,7 @@ const GoLink: React.FC<GoLinkProps> = ({
             Go Link Title:
             <input
               type="text"
-              className="grow text-gray-900"
+              className="grow text-foreground"
               placeholder="The SSE Website"
               value={newTitle}
               onChange={(e) => setTitle(e.target.value)}
@@ -147,7 +145,7 @@ const GoLink: React.FC<GoLinkProps> = ({
             Go Link URL:
             <input
               type="text"
-              className="grow text-gray-900"
+              className="grow text-foreground"
               placeholder="localhost:3000"
               value={newUrl}
               onChange={(e) => setUrl(e.target.value)}

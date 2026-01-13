@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import ProjectModalInput from "./ProjectModalComponents/ProjectModalInput";
 import ProjectModalDropdown from "./ProjectModalComponents/ProjectModalDropdown";
 import ProjectModalCheckbox from "./ProjectModalComponents/ProjectModalCheckbox";
+import { toast } from "sonner";
 
 /**
  * Creates the AddProjectModal. This is where Officers or other authorized users can create projects
@@ -59,12 +60,9 @@ const AddProjectModal = ({
         if(progress.trim() == "")
             invalidFields.push("progress");
 
-        // If invalidFields captured any cases, then we know something went wrong, alert the user, and join the missing fields into a string.
+        // If invalidFields captured any cases, then we know something went wrong, notify the user
         if(invalidFields.length > 0) {
-            // Ok this looks REALLY weird but what it does is combined 3 strings together.
-            // First substring and the last substring are modified so that when we join invalidFields, it'll show up as a proper list.
-            // a.k.a Each field will be split with a "- (invalid field)" without it going on the same line as the first and last substrings.
-            alert("The required fields: \n\- " + invalidFields.join("\n\- ") + " \nare empty!")
+            toast.error(`Required fields are empty: ${invalidFields.join(", ")}`);
             return;
         }
 
@@ -109,7 +107,7 @@ const AddProjectModal = ({
                     <div className="absolute top-0 left-0 w-[100%] h-[100%] backdrop-blur-[15px] bg-black/25" onClick={exit}></div>
 
                     {/* Actual Modal Container */}
-                    <div className="relative w-[900px] h-[800px] z-[50] bg-base-100 rounded-lg overflow-hidden
+                    <div className="relative w-[900px] h-[800px] z-[50] bg-background rounded-lg overflow-hidden
                                     flex justify-center items-center">
                         {/* This is the top accent bar. */}
                         <div className="absolute top-0 left-o w-[100%] h-[15px] bg-accent rounded-t-lg">
@@ -125,8 +123,13 @@ const AddProjectModal = ({
                                 {/* Exit Button Container */}
                                 <div className="flex justify-center h-full items-center">
                                     {/* Exit Button */}
-                                    <svg width="30px" height="30px" viewBox="-0.5 0 25 25" className="fill-primary cursor-pointer" onClick={exit} xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M3 21.32L21 3.32001" className="stroke-primary" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M3 3.32001L21 21.32" className="stroke-primary" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
-
+                                    <button 
+                                        onClick={exit}
+                                        aria-label="Close modal"
+                                        className="hover:opacity-80 transition-opacity"
+                                    >
+                                        <svg width="30px" height="30px" viewBox="-0.5 0 25 25" className="fill-primary cursor-pointer" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" strokeWidth="0"></g><g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M3 21.32L21 3.32001" className="stroke-primary" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"></path> <path d="M3 3.32001L21 21.32" className="stroke-primary" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"></path> </g></svg>
+                                    </button>
                                 </div>
                             </div>
                             {/* Actual content of the Modal */}
@@ -150,7 +153,7 @@ const AddProjectModal = ({
                                         {/* Add button */}
                                         <button className="bg-success text-black p-[12px] px-[25px] rounded-lg" onClick={upload}>Add</button>
                                         {/* Cancel button */}
-                                        <button className="bg-base-200 p-[10px] px-[25px] rounded-lg ml-[15px]" onClick={exit}>Cancel</button>
+                                        <button className="bg-muted p-[10px] px-[25px] rounded-lg ml-[15px]" onClick={exit}>Cancel</button>
                                     </div>
                                 </div>
                             </div>

@@ -29,7 +29,7 @@ const ProjectModalDropdown = ({text = "", setState, options, select = ""}: Proje
             {/* The Label */}
             <p>{text}</p>
             {/* Create the dropdown, map the options to their own option and value */}
-            <select onChange={changeValue} className="bg-base-200">
+            <select onChange={changeValue} className="bg-muted">
                 {options.map((element, key) => {
                     // Again, if you are not using this *specifically* to designate users, modify this!
                     // This compares an element in options that has a value "name" with the select, and if they match, we know this specific option is selected.

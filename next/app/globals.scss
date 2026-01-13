@@ -2,350 +2,178 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  .text-page-structure {
-    @apply mx-auto;
-    @apply max-w-screen-xl;
-    @apply px-4;
-    @apply py-16;
-    @apply lg:flex;
-    @apply flex;
-    @apply flex-1;
-    @apply flex-col;
-    @apply items-center;
-    @apply w-11/12;
-    @apply pt-2;
-  }
-  .text-page-structure > h1 {
-    @apply bg-gradient-to-br;
-    @apply from-primary;
-    @apply to-primary;
-    @apply bg-clip-text;
-    @apply text-4xl/[3rem];
-    @apply font-extrabold;
-    @apply text-transparent;
-    @apply sm:text-5xl/[4rem];
-    @apply text-center;
-  }
+/* ===== CSS Variables for theming (shadcn) ===== */
 
-  .subtitle-structure {
-    @apply w-full;
-    @apply md:w-5/6;
-    @apply space-y-24; 
-    @apply pb-8;
-  }
-
-  .subtitle-structure p {
-    @apply text-center; 
-    @apply mx-auto; 
-    @apply mt-4; 
-    @apply text-xl/relaxed;
-  }
-
-  .general-classes{
-    @apply text-left;
-    @apply pt-4;
-    @apply pb-32;
-    @apply md:py-16;
-  }
-
-  .name-classes{
-    @apply bg-clip-text;
-    @apply font-bold;
-    @apply text-3xl/[3rem];
-  }
-
-  .description-classes{
-    @apply mt-4;
-    @apply pb-4;
-    @apply text-xl/relaxed;
-  }
-
-  .upcoming-collapse{
-    @apply w-full;
-    @apply my-2;
-  }
-
-  .collapse-content{
-    @apply flex; 
-    @apply flex-row; 
-    @apply flex-wrap; 
-    @apply justify-center;
-    @apply p-0;
-    @apply w-full;
-  }
-  
-  .upcoming-collapse > .collapse-child{
-    @apply bg-base-100;
-    @apply rounded-md;
-    @apply shadow-md;
-    @apply hover:shadow-lg;
-    @apply transition-shadow;
-    @apply border-2;
-    @apply border-base-content;
-    @apply hover:border-info;
-  }
-
-  .event-card{
-    /* @apply m-3;
-    @apply min-w-min;
-    @apply relative;
-    @apply w-1/3;
-    @apply flex; 
-    @apply flex-col; 
-    @apply shadow-md; 
-    @apply rounded-3xl; 
-    @apply overflow-hidden; 
-    @apply bg-base-200;
-    @apply rounded-md;
-    @apply shadow-md;
-    @apply transition-shadow;
-    @apply border-2;
-    @apply border-base-content; */
-  }
-
-
-  
-  h1 {
-    @apply bg-gradient-to-br;
-    @apply from-primary;
-    @apply to-primary;
-    @apply bg-clip-text;
-    @apply text-4xl/[3rem];
-    @apply font-extrabold;
-    @apply text-transparent;
-    @apply sm:text-5xl/[4rem];
-    @apply text-center;
-  }
-
-  h2 {
-    @apply font-bold;
-    @apply text-left;
-    @apply text-primary;
-    @apply sm:text-3xl/[4rem];
-  }
-
-  h3 {
-    @apply text-secondary;
-    @apply font-semibold;
-    @apply text-left;
-    @apply sm:text-2xl/[3rem];
-  }
-
-  h4 {
-    @apply text-accent;
-    @apply font-semibold;
-    @apply text-left;
-    @apply sm:text-2xl/[3rem];
-  }
-
-  h5 {
-    @apply text-base-content;
-    @apply font-semibold;
-    @apply text-left;
-    @apply sm:text-xl/[3rem];
-  }
-
-  p {
-    @apply text-base-content;
-    @apply text-left;
-    @apply sm:text-xl/relaxed;
-
-    // apply a bottom margin if the next element is a heading
-    &+h2 {
-      @apply mt-6;
-    }
-
-    &+h3 {
-      @apply mt-3;
-    }
-
-    &+h4,
-    &+h5 {
-      @apply mt-2;
-    }
-  }
-
-  ul {
-    @apply list-disc;
-    @apply text-base-content;
-    @apply ml-12;
-
-    // apply a bottom margin if the next element is a heading
-    &+h2 {
-      @apply mt-6;
-    }
-
-    &+h3 {
-      @apply mt-3;
-    }
-
-    &+h4,
-    &+h5 {
-      @apply mt-2;
-    }
-  }
-
-  ol {
-    @apply list-decimal;
-    @apply text-base-content;
-    @apply sm:text-xl/relaxed;
-    @apply ml-12;
-
-    // apply a bottom margin if the next element is a heading
-    &+h2 {
-      @apply mt-6;
-    }
-
-    &+h3 {
-      @apply mt-3;
-    }
-
-    &+h4,
-    &+h5 {
-      @apply mt-2;
-    }
-  }
-
-  // table formatting
-  table {
-    @apply w-full;
-    @apply whitespace-nowrap;
-    @apply divide-y divide-base-content;
-    @apply my-4;
-    @apply table-fixed;
-  }
-
-  th {
-    @apply px-6 py-3 text-left text-xs font-medium uppercase tracking-wider;
-    @apply overflow-auto;
-  }
-
-  td {
-    @apply px-6 py-4 whitespace-nowrap;
-    @apply overflow-auto;
-  }
-
-  tr {
-    @apply bg-base-100;
-  }
-
-  tbody tr:nth-child(odd) {
-    @apply bg-base-200;
-  }
-
-  .z-card-container {
-    padding-top: 1rem;
-  
-    > div {
-      margin-bottom: 2rem;
-    }
-  }
-  
-  
-  .z-card {
-    display: flex;
-    flex-direction: column; 
-    margin: 1rem 0; 
-    padding: 20px;
-    border-radius: 8px;
-  
-    @media (min-width: 768px) { 
-      flex-direction: row; 
-    }
-  
-    .w-full {
-      border-radius: 8px;
-    }
-  
-    .gap-24 {
-      gap: 24px;
-    }
-  }
+:root,
+[data-theme="light"] {
+  --background: 213 56% 96%;
+  --foreground: 213 26% 12%;
+  --card: 213 50% 94%;
+  --card-foreground: 213 26% 12%;
+  --popover: 213 56% 96%;
+  --popover-foreground: 213 26% 12%;
+  --primary: 210 29% 52%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 210 32% 66%;
+  --secondary-foreground: 213 26% 12%;
+  --muted: 210 20% 90%;
+  --muted-foreground: 210 20% 40%;
+  --accent: 210 29% 42%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 210 20% 85%;
+  --input: 210 20% 85%;
+  --ring: 210 29% 52%;
+  --radius: 0.5rem;
+  --info: 199 89% 48%;
+  --success: 142 71% 45%;
+  --warning: 43 96% 56%;
+  --error: 0 84% 60%;
+  color-scheme: light;
 }
 
-@layer components {
-  .text-page-structure {
-    @apply mx-auto;
-    @apply max-w-screen-xl;
-    @apply px-4;
-    @apply py-16;
-    @apply lg:flex;
-    @apply flex;
-    @apply flex-1;
-    @apply flex-col;
-    @apply items-center;
-    @apply w-11/12;
-  }
-  .text-page-structure > h1 {
-    @apply bg-gradient-to-br;
-    @apply from-primary;
-    @apply to-primary;
-    @apply bg-clip-text;
-    @apply text-4xl/[3rem];
-    @apply font-extrabold;
-    @apply text-transparent;
-    @apply sm:text-5xl/[4rem];
-    @apply text-center;
-  }
-
-  .subtitle-structure {
-    @apply w-full;
-    @apply md:w-5/6;
-    @apply space-y-24; 
-    @apply pb-8;
-  }
-
-  .subtitle-structure p {
-    @apply text-center; 
-    @apply mx-auto; 
-    @apply mt-4; 
-    @apply text-xl/relaxed;
-  }
-
-  .general-classes{
-    @apply text-left;
-    @apply pt-4;
-    @apply pb-32;
-    @apply md:py-16;
-  }
-
-  .name-classes{
-    @apply bg-clip-text;
-    @apply font-bold;
-    @apply text-3xl/[3rem];
-  }
-
-  .description-classes{
-    @apply mt-4;
-    @apply pb-4;
-    @apply text-xl/relaxed;
-  }
-}
-
-::selection {
-  background-color: theme('colors.primary');
-  color: theme('colors.base-100');
-}
-
-:root {
+[data-theme="dark"] {
+  --background: 213 26% 12%;
+  --foreground: 213 56% 96%;
+  --card: 213 26% 15%;
+  --card-foreground: 213 56% 96%;
+  --popover: 213 26% 14%;
+  --popover-foreground: 213 56% 96%;
+  --primary: 213 76% 80%;
+  --primary-foreground: 213 26% 12%;
+  --secondary: 213 55% 61%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 213 26% 20%;
+  --muted-foreground: 213 30% 60%;
+  --accent: 213 44% 41%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 213 26% 25%;
+  --input: 213 26% 20%;
+  --ring: 213 76% 80%;
+  --info: 199 89% 48%;
+  --success: 142 71% 45%;
+  --warning: 43 96% 56%;
+  --error: 0 84% 60%;
   color-scheme: dark;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
 }
 
-.bold-pseudo::before {
-  display: block;
-  content: attr(data-label);
-  content: attr(data-label) / "";
-  height: 0;
-  visibility: hidden;
-  overflow: hidden;
-  user-select: none;
-  pointer-events: none;
-  font-weight: 600;
+/* ===== Base layer ===== */
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+}
+
+/* ===== Page layout utilities ===== */
+.text-page-structure {
+  @apply mx-auto max-w-screen-xl px-4 py-16 lg:flex flex flex-1 flex-col items-center w-11/12 pt-2;
+}
+
+.text-page-structure > h1 {
+  @apply bg-gradient-to-br from-primary to-secondary bg-clip-text text-4xl/[3rem] font-extrabold text-transparent sm:text-5xl/[4rem] text-center;
+}
+
+.subtitle-structure {
+  @apply w-full md:w-5/6 space-y-24 pb-8;
+}
+
+.subtitle-structure p {
+  @apply text-center mx-auto mt-4 text-xl/relaxed;
+}
+
+.general-classes {
+  @apply text-left pt-4 pb-32 md:py-16;
+}
+
+.name-classes {
+  @apply bg-clip-text font-bold text-3xl/[3rem];
+}
+
+.description-classes {
+  @apply mt-4 pb-4 text-xl/relaxed;
+}
+
+.hero-content {
+  @apply flex flex-col lg:flex-row items-center gap-8 p-4;
+}
+
+/* Selection */
+::selection {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
+/* ===== Legacy compatibility (migrate to shadcn components) ===== */
+@layer components {
+  /* Matches shadcn Input */
+  .input {
+    @apply flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm;
+    @apply placeholder:text-muted-foreground;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring;
+    @apply disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .input-bordered {
+    @apply border-border;
+  }
+
+  /* Matches shadcn Button */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring;
+    @apply disabled:pointer-events-none disabled:opacity-50;
+    @apply h-10 px-4 py-2 bg-secondary text-secondary-foreground hover:bg-secondary/80;
+  }
+
+  .btn-primary {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90;
+  }
+
+  .btn-secondary {
+    @apply bg-secondary text-secondary-foreground hover:bg-secondary/80;
+  }
+
+  .btn-accent {
+    @apply bg-accent text-accent-foreground hover:bg-accent/80;
+  }
+
+  .btn-error {
+    @apply bg-destructive text-destructive-foreground hover:bg-destructive/90;
+  }
+
+  .btn-success {
+    @apply bg-green-600 text-white hover:bg-green-700;
+  }
+
+  .btn-outline {
+    @apply border border-input bg-background hover:bg-accent hover:text-accent-foreground;
+  }
+
+  .btn-ghost {
+    @apply bg-transparent hover:bg-accent hover:text-accent-foreground;
+  }
+
+  .btn-sm {
+    @apply h-8 px-3 text-xs;
+  }
+
+  .btn-lg {
+    @apply h-11 px-8;
+  }
+
+  .btn-circle {
+    @apply rounded-full p-0 h-8 w-8;
+  }
+
+  /* Matches shadcn Dialog styling */
+  .modal-box {
+    @apply bg-card text-card-foreground rounded-lg shadow-lg p-6 max-w-md w-full mx-4;
+  }
 }

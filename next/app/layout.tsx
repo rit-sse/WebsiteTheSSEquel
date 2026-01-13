@@ -9,6 +9,7 @@ import { Providers } from "./Providers";
 import { getServerSession } from "next-auth";
 import { authOptions } from '@/lib/authOptions';
 import ScrollToTopButton from "@/components/nav/ScrollToTopButton";
+import { Toaster } from "@/components/ui/sonner";
 
 
 const inter = Inter({
@@ -34,7 +35,7 @@ export default async function RootLayout({
     // Also: https://www.reddit.com/r/nextjs/comments/138smpm/how_to_fix_extra_attributes_from_the_server_error/
     <html lang="en" data-theme="dark" className={`${inter.className}`} suppressHydrationWarning>
       <body
-        className={`min-h-screen flex flex-col bg-gradient-to-b from-base-100 to-base-300`}
+        className={`min-h-screen flex flex-col bg-gradient-to-b from-background to-muted`}
       >
         <Providers session={session}>
           <Navbar />
@@ -43,6 +44,7 @@ export default async function RootLayout({
           </main>
           <ScrollToTopButton/>
           <Footer />
+          <Toaster richColors position="bottom-right" />
         </Providers>
       </body>
     </html>

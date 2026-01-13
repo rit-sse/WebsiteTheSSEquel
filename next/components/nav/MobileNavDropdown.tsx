@@ -10,7 +10,7 @@ const MobileNavDropdown: React.FC<{ navItems: NavItemProps[] } & OnClickProps> =
   };
 
   return (
-    <ul className="mt-4 menu dropdown-content text-xl rounded-md w-64 shadow-lg shadow-base-300 bg-base-100">
+    <ul className="mt-4 menu dropdown-content text-xl rounded-md w-64 shadow-lg shadow-base-300 bg-background">
       {navItems.map((navItem, index) => (
         navItem.title === "Login" ? (
                                 <li className="" key={index}>

@@ -119,24 +119,24 @@ export default function EditEventForm ({ isOpen, onClose, setModalEvent, event, 
     return (
         <form className="flex flex-col gap-2">
             <label className="-mb-2">Event Name</label>
-            <input className="bg-base-100" placeholder="Event Name" value={eventName} onChange={(e) => setEventName(e.target.value)}/>
+            <input className="bg-background" placeholder="Event Name" value={eventName} onChange={(e) => setEventName(e.target.value)}/>
 
             <label className="-mb-2">Location</label>
-            <input className="bg-base-100" placeholder="Location" value={location} onChange={(e) => setLocation(e.target.value)}/>
+            <input className="bg-background" placeholder="Location" value={location} onChange={(e) => setLocation(e.target.value)}/>
 
             <label className="-mb-2">Date & Time</label>
-            <input type="datetime-local" className="bg-base-100" placeholder="MM/DD/YYYY" value={datetime} onChange={(e) => setDatetime(e.target.value)}/>
+            <input type="datetime-local" className="bg-background" placeholder="MM/DD/YYYY" value={datetime} onChange={(e) => setDatetime(e.target.value)}/>
 
             <label className="-mb-2">Description</label>
-            <textarea className="bg-base-100" placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)}/>
+            <textarea className="bg-background" placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)}/>
 
             <label className="-mb-2">Event Image</label>
-            <input className="bg-base-100" placeholder="Google Drive Share Link" value={image} onChange={(e) => setImage(e.target.value)}/>
+            <input className="bg-background" placeholder="Google Drive Share Link" value={image} onChange={(e) => setImage(e.target.value)}/>
 
             { loading ?
-                <p className="border border-solid border-gray-700 bg-secondary text-base-content text-center text-base">Loading...</p>
+                <p className="border border-solid border-gray-700 bg-secondary text-foreground text-center text-base">Loading...</p>
                 :
-                <button onClick={ onSave } className="border border-solid border-gray-700 bg-secondary text-base-content hover:bg-primary">Save Changes</button>
+                <button onClick={ onSave } className="border border-solid border-gray-700 bg-secondary text-foreground hover:bg-primary">Save Changes</button>
             }
         </form>
     )

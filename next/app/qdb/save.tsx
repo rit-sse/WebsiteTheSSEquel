@@ -81,7 +81,7 @@ export const MakeNewQuote = () => {
           event.preventDefault();
           (document.getElementById("create-quote") as HTMLFormElement).showModal();
         }}
-        className="p-4 h-full bg-base-100 rounded-md shadow-md justify-items-center hover:shadow-lg transition-shadow border-2 border-base-content hover:border-info text-xl"
+        className="p-4 h-full bg-background rounded-md shadow-md justify-items-center hover:shadow-lg transition-shadow border-2 border-border hover:border-primary text-xl"
       >
         Create Quote
       </button>

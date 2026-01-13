@@ -131,15 +131,15 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
           className="
                 p-4
                 h-full
-                bg-base-100
+                bg-background
                 rounded-md
                 shadow-md
                 justify-items-center
                 hover:shadow-lg
                 transition-shadow
                 border-2
-                border-base-content
-                hover:border-info
+                border-border
+                hover:border-primary
                 text-xl"
         >
           Create Alumni

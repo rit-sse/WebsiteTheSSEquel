@@ -5,6 +5,20 @@ import GoLink, { GoLinkProps } from "./GoLink";
 import { GoLinksContainerProps } from "@/app/go/page";
 import { filterGoLinks } from "@/lib/filter";
 import { GoLinkButton } from "@/app/go/MakeNewGoLink";
+import { Skeleton } from "@/components/ui/skeleton";
+
+// Skeleton component for GoLink cards
+function GoLinkSkeleton() {
+  return (
+    <div className="flex p-4 bg-background rounded-md shadow-md border-2 border-border">
+      <div className="flex-grow space-y-2">
+        <Skeleton className="h-6 w-3/4" />
+        <Skeleton className="h-4 w-full" />
+      </div>
+      <Skeleton className="h-6 w-6 ml-3" />
+    </div>
+  );
+}
 
 const GoLinksContainer: React.FC<GoLinksContainerProps> = ({
   goLinkData,
@@ -77,7 +91,14 @@ const GoLinksContainer: React.FC<GoLinksContainerProps> = ({
         //if the first one has an id of -1
         //  set by default in ./page.tsx to represent "haven't fetched data yet"
         goLinkData[0].id === -1 ?
-        <div className="text-center my-10">Loading...</div> //must be loading
+        <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 md:p-4">
+          <GoLinkSkeleton />
+          <GoLinkSkeleton />
+          <GoLinkSkeleton />
+          <GoLinkSkeleton />
+          <GoLinkSkeleton />
+          <GoLinkSkeleton />
+        </div>
         : //else: this must be the recieved list
         <div
           className="
