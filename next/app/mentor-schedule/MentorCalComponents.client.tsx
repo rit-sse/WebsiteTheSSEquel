@@ -3,6 +3,7 @@
 import { useRef, useState } from "react"
 import type { ScheduleType } from "./MentorCal.types"
 import { format24hHour, mentorColors } from "./MentorCal.client"
+import { AddIcon, ExitIcon, Hamburger } from "@/components/common/Icons"
 
 // Client Components
 
@@ -299,60 +300,5 @@ export function MentorButton({
 				</form>
 			</dialog>
 		</>
-	)
-}
-
-// Icons
-
-export const AddIcon = () => (
-	<svg
-		xmlns="http://www.w3.org/2000/svg"
-		fill="none"
-		viewBox="0 0 24 24"
-		strokeWidth="1.5"
-		className="w-5 h-5 stroke-current"
-	>
-		<path
-			strokeLinecap="round"
-			strokeLinejoin="round"
-			d="M12 4.5v15m7.5-7.5h-15"
-		/>
-	</svg>
-)
-
-export const ExitIcon = () => (
-	<svg
-		xmlns="http://www.w3.org/2000/svg"
-		fill="none"
-		viewBox="0 0 24 24"
-		strokeWidth="1.5"
-		stroke="currentColor"
-		className="w-10 h-10"
-	>
-		<path
-			strokeLinecap="round"
-			strokeLinejoin="round"
-			d="M6 18 18 6M6 6l12 12"
-		/>
-	</svg>
-)
-
-const Hamburger: React.FC = () => {
-	return (
-		<svg
-			xmlns="http://www.w3.org/2000/svg"
-			className="h-6 w-6"
-			fill="none"
-			viewBox="0 0 24 24"
-			stroke="currentColor"
-		>
-			<title>Menu</title>
-			<path
-				strokeLinecap="round"
-				strokeLinejoin="round"
-				strokeWidth="2"
-				d="M4 6h16M4 12h16m-7 6h7"
-			/>
-		</svg>
 	)
 }

@@ -267,3 +267,56 @@ export const TwitchIcon = ({ className }: IconProps) => (
         <path d="M 5.3632812 2 L 2 6.6367188 L 2 20 L 7 20 L 7 23 L 10 23 L 13 20 L 17 20 L 22 15 L 22 2 L 5.3632812 2 z M 6 4 L 20 4 L 20 13 L 17 16 L 12 16 L 9 19 L 9 16 L 6 16 L 6 4 z M 11 7 L 11 12 L 13 12 L 13 7 L 11 7 z M 16 7 L 16 12 L 18 12 L 18 7 L 16 7 z"></path>
     </svg>
 );
+
+export const AddIcon = () => (
+	<svg
+		xmlns="http://www.w3.org/2000/svg"
+		fill="none"
+		viewBox="0 0 24 24"
+		strokeWidth="1.5"
+		className="w-5 h-5 stroke-current"
+	>
+		<path
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			d="M12 4.5v15m7.5-7.5h-15"
+		/>
+	</svg>
+);
+
+export const ExitIcon = () => (
+	<svg
+		xmlns="http://www.w3.org/2000/svg"
+		fill="none"
+		viewBox="0 0 24 24"
+		strokeWidth="1.5"
+		stroke="currentColor"
+		className="w-10 h-10"
+	>
+		<path
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			d="M6 18 18 6M6 6l12 12"
+		/>
+	</svg>
+);
+
+export const Hamburger: React.FC = () => {
+	return (
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			className="h-6 w-6"
+			fill="none"
+			viewBox="0 0 24 24"
+			stroke="currentColor"
+		>
+			<title>Menu</title>
+			<path
+				strokeLinecap="round"
+				strokeLinejoin="round"
+				strokeWidth="2"
+				d="M4 6h16M4 12h16m-7 6h7"
+			/>
+		</svg>
+	)
+}
