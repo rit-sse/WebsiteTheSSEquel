@@ -1,10 +1,11 @@
 'use client'
 import { Event } from "./event";
 import Image from "next/image";
+import { Card } from "@/components/ui/card";
 
 export const EventCard: React.FC<Event> = (event: Event) => {
     return (
-        <div className={`mx-2 mb-2 shadow-lg rounded overflow-hidden bg-muted`}>
+        <Card depth={2} className="overflow-hidden">
             <div className="relative w-full aspect-video">
               {event.image ? (
                 <Image 
@@ -23,12 +24,12 @@ export const EventCard: React.FC<Event> = (event: Event) => {
                 />
               )}
             </div>
-          <div className={`px-4 pb-4`}>
-            <h4 className="text-lg font-bold">{event.title}</h4>
-            <p className="text-sm font-bold">{event.date}</p>
-            <p className="text-sm">{event.location}</p>
-            <p className="text-sm">{event.description}</p>
+          <div className="px-4 py-4">
+            <h3 className="text-lg font-display">{event.title}</h3>
+            <p className="text-sm font-bold text-primary">{event.date}</p>
+            <p className="text-sm text-muted-foreground">{event.location}</p>
+            <p className="text-sm mt-2">{event.description}</p>
           </div>
-        </div>
+        </Card>
       );
 }

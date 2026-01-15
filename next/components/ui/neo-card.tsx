@@ -1,10 +1,11 @@
-import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
+"use client";
 
-import { cn } from "@/lib/utils"
+import * as React from "react";
+import { cva, type VariantProps } from "class-variance-authority";
+import { cn } from "@/lib/utils";
 
-const cardVariants = cva(
-  "rounded-xl border-2 border-black text-card-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]",
+const neoCardVariants = cva(
+  "rounded-xl border-2 border-black text-card-foreground shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]",
   {
     variants: {
       depth: {
@@ -17,24 +18,24 @@ const cardVariants = cva(
       depth: 1,
     },
   }
-)
+);
 
-export interface CardProps
+export interface NeoCardProps
   extends React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof cardVariants> {}
+    VariantProps<typeof neoCardVariants> {}
 
-const Card = React.forwardRef<HTMLDivElement, CardProps>(
+const NeoCard = React.forwardRef<HTMLDivElement, NeoCardProps>(
   ({ className, depth, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn(cardVariants({ depth }), className)}
+      className={cn(neoCardVariants({ depth }), className)}
       {...props}
     />
   )
-)
-Card.displayName = "Card"
+);
+NeoCard.displayName = "NeoCard";
 
-const CardHeader = React.forwardRef<
+const NeoCardHeader = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
@@ -43,22 +44,22 @@ const CardHeader = React.forwardRef<
     className={cn("flex flex-col space-y-1.5 p-6", className)}
     {...props}
   />
-))
-CardHeader.displayName = "CardHeader"
+));
+NeoCardHeader.displayName = "NeoCardHeader";
 
-const CardTitle = React.forwardRef<
+const NeoCardTitle = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("font-display text-xl leading-none tracking-tight", className)}
+    className={cn("font-display text-2xl leading-none tracking-tight", className)}
     {...props}
   />
-))
-CardTitle.displayName = "CardTitle"
+));
+NeoCardTitle.displayName = "NeoCardTitle";
 
-const CardDescription = React.forwardRef<
+const NeoCardDescription = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
@@ -67,18 +68,18 @@ const CardDescription = React.forwardRef<
     className={cn("text-sm text-muted-foreground", className)}
     {...props}
   />
-))
-CardDescription.displayName = "CardDescription"
+));
+NeoCardDescription.displayName = "NeoCardDescription";
 
-const CardContent = React.forwardRef<
+const NeoCardContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
   <div ref={ref} className={cn("p-6 pt-0", className)} {...props} />
-))
-CardContent.displayName = "CardContent"
+));
+NeoCardContent.displayName = "NeoCardContent";
 
-const CardFooter = React.forwardRef<
+const NeoCardFooter = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
@@ -87,7 +88,7 @@ const CardFooter = React.forwardRef<
     className={cn("flex items-center p-6 pt-0", className)}
     {...props}
   />
-))
-CardFooter.displayName = "CardFooter"
+));
+NeoCardFooter.displayName = "NeoCardFooter";
 
-export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent }
+export { NeoCard, NeoCardHeader, NeoCardFooter, NeoCardTitle, NeoCardDescription, NeoCardContent };

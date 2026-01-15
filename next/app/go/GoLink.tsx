@@ -1,7 +1,7 @@
-import { GoLinkIcon } from "@/components/common/Icons";
-import { GoLinkStar } from "@/components/common/Icons";
-import { GoLinkEdit } from "@/components/common/Icons";
-import { GoLinkDelete } from "@/components/common/Icons";
+import ExternalLinkIcon from "@/components/external-link-icon";
+import StarIcon from "@/components/star-icon";
+import SettingsIcon from "@/components/settings-icon";
+import TrashIcon from "@/components/trash-icon";
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useState } from "react";
 
@@ -103,8 +103,8 @@ const GoLink: React.FC<GoLinkProps> = ({
                 w-96
             "
         >
-          <div className="flex items-center">
-            {pinned && <GoLinkStar />}
+          <div className="flex items-center gap-2">
+            {pinned && <StarIcon size={22} isHovered className="text-yellow-500 fill-yellow-500 flex-shrink-0" />}
             <p className="font-bold text-xl lg:text-2xl">{goUrl}</p>
           </div>
           <p className="text-base">{description}</p>
@@ -122,7 +122,7 @@ const GoLink: React.FC<GoLinkProps> = ({
             />
           </span>
           <span className="float-right">
-            <GoLinkIcon />
+            <ExternalLinkIcon size={24} isHovered />
           </span>
         </div>
       </a>
@@ -313,9 +313,10 @@ const EditAndDelete: React.FC<GoLinkProps> = ({
                   ).showModal();
                 }
               }}
-              className="rounded-md hover:scale-150"
+              className="rounded-md hover:scale-110 transition-transform"
+              aria-label="Edit go link"
             >
-              <GoLinkEdit />
+              <SettingsIcon size={24} isHovered duration={2} />
             </button>
           </div>
           <div className="pr-1">
@@ -330,9 +331,10 @@ const EditAndDelete: React.FC<GoLinkProps> = ({
                   ).showModal();
                 }
               }}
-              className="rounded-md hover:scale-150"
+              className="rounded-md hover:scale-110 transition-transform text-destructive"
+              aria-label="Delete go link"
             >
-              <GoLinkDelete />
+              <TrashIcon size={24} isHovered />
             </button>
           </div>
         </div>

@@ -69,9 +69,7 @@ export default function Leadership() {
 					<div className="content-center">
 						{/* Meet our team */}
 						<div className="max-w-xl mx-auto">
-							<h1
-								className="bg-gradient-to-t from-primary to-secondary bg-clip-text text-4xl font-extrabold text-transparent md:text-5xl"
-							>
+							<h1 className="text-primary">
 								Meet our Alumni
 							</h1>
 							<p className="mt-3 text-xl leading-8 text-center">

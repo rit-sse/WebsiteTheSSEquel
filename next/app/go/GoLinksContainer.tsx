@@ -63,10 +63,7 @@ const GoLinksContainer: React.FC<GoLinksContainerProps> = ({
   return (
     <div className="w-9/12">
       <div className="text-center flex flex-col items-center w-full">
-        <h1
-          className="bg-gradient-to-t from-primary to-secondary bg-clip-text
-                              text-4xl/[3rem] font-extrabold text-transparent md:text-5xl/[4rem]"
-        >
+        <h1 className="text-primary">
           Go Links
         </h1>
 

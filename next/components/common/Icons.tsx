@@ -1,9 +1,23 @@
+// Re-export animated icons from Chamaac for convenient imports
+export { default as AnimatedSearchIcon } from "@/components/search-icon";
+export { default as AnimatedExternalLinkIcon } from "@/components/external-link-icon";
+export { default as AnimatedTrashIcon } from "@/components/trash-icon";
+export { default as AnimatedSettingsIcon } from "@/components/settings-icon";
+export { default as AnimatedStarIcon } from "@/components/star-icon";
+export { default as AnimatedCloseIcon } from "@/components/close-icon";
+export { default as AnimatedCalendarIcon } from "@/components/calendar-icon";
+export { default as AnimatedSparkleIcon } from "@/components/sparkle-icon";
+export { default as AnimatedRocketIcon } from "@/components/rocket-icon";
+export { default as AnimatedSendIcon } from "@/components/send-icon";
+export { default as AnimatedZapIcon } from "@/components/zap-icon";
+
 interface IconProps {
     className?: string;
 }
 
 /**
  * Use stroke-* classes to change the color of the icon.
+ * @deprecated Use AnimatedSearchIcon from "@/components/search-icon" instead
  */
 export const SearchIcon = ({ className }: IconProps) => (
     <svg
@@ -22,6 +36,7 @@ export const SearchIcon = ({ className }: IconProps) => (
 
 /**
  * Use stroke-* classes to change the color of the icon.
+ * @deprecated Use AnimatedCloseIcon from "@/components/close-icon" instead
  */
 export const ClearIcon = ({ className }: IconProps) => (
     <svg
@@ -62,6 +77,7 @@ export const DiceIcon = ({ className }: IconProps) => (
 
 /**
  * Use stroke-* classes to change the color of the icon.
+ * @deprecated Use AnimatedExternalLinkIcon from "@/components/external-link-icon" instead
  */
 export const ExternalLinkIcon = ({ className }: IconProps) => (
     <svg

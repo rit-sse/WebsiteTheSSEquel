@@ -1,6 +1,7 @@
 'use client';
 
-import { QuoteDelete, QuoteEdit } from "@/components/common/Icons";
+import SettingsIcon from "@/components/settings-icon";
+import TrashIcon from "@/components/trash-icon";
 import { Quote } from "./Quotes";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -184,9 +185,9 @@ export const QuoteCard = (quote: Quote) => {
                 <button 
                     onClick={() => openEditModal(quote)}
                     aria-label="Edit quote"
-                    className="hover:opacity-80 transition-opacity"
+                    className="hover:scale-110 transition-transform inline-flex"
                 >
-                    <QuoteEdit />
+                    <SettingsIcon size={24} isHovered duration={2} />
                 </button>
                 <dialog id={`edit-quote-${quote.id}`} className="modal">
                     <div className="modal-box">
@@ -266,9 +267,9 @@ export const QuoteCard = (quote: Quote) => {
                         }
                     }}
                     aria-label="Delete quote"
-                    className="hover:opacity-80 transition-opacity"
+                    className="hover:scale-110 transition-transform text-destructive inline-flex ml-2"
                 >
-                    <QuoteDelete />
+                    <TrashIcon size={24} isHovered />
                 </button>
                 <dialog id={`delete-quote-${quote.id}`} className="modal">
                     <div className="modal-box">

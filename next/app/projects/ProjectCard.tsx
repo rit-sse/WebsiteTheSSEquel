@@ -2,11 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Project } from "./projects";
 import Image from "next/image";
 import ProjectModal from "./ProjectModal";
-
-// This is used to create the structure of the Project Card arguments.
-interface ProjectCardArguments {
-  project: Project
-}
+import { Card } from "@/components/ui/card";
 
 const ProjectCard = ({project, propKey, isOfficer}: {project: Project, propKey: number, isOfficer: boolean}) => {
   // If the project.logo is empty, we are replacing it with the placeholder image
@@ -44,25 +40,15 @@ const ProjectCard = ({project, propKey, isOfficer}: {project: Project, propKey: 
   }, [])
   
   return(
-    // Card Container. Uses inline-block to make sure all cards line up correctly.
-    //  TODO: Lets do a grid on this instead.
-    <div className="inline-block transition-transform duration-300 ease-in-out
-     
-                    w-full
-                    lg:w-auto">
-      {/* Card Contents */}
-      <div className="relative w h-[320px] bg-black rounded-lg
-                       me-4 my-3 overflow-hidden
-                      
-                      transition-all
-                      duration-300 ease-in-out
-                      hover:-translate-y-2
-                      hover:shadow-xl
-                      hover:cursor-pointer
-
-
-                      lg:w-[240px]
-                      " onClick={openModal} style={{opacity: cardOpacity, transform: translationLoad}}>
+    <div className="w-full">
+      <Card 
+        depth={2}
+        className="relative h-[320px] overflow-hidden cursor-pointer
+                   transition-all duration-300 ease-in-out
+                   hover:-translate-y-1 hover:translate-x-[2px] hover:shadow-none"
+        onClick={openModal} 
+        style={{opacity: cardOpacity, transform: translationLoad}}
+      >
         {/* Image Background */}
         <Image 
           src={projectBackground} 
@@ -72,20 +58,15 @@ const ProjectCard = ({project, propKey, isOfficer}: {project: Project, propKey: 
           unoptimized
         />
         {/* Project Title Container */}
-        <div className="absolute bottom-[0px] w-[100%] minh-[48px] max-h-[80px] bg-black/25 backdrop-blur-[15px]
-                        p-[12px]
-                        flex items-center justify-left
-                        ">
-          {/* Project Title */}
-          <p className="text-white text-base font-bold line-clamp-3" >{project.title}</p>
+        <div className="absolute bottom-0 w-full min-h-[48px] max-h-[80px] bg-black/40 backdrop-blur-md
+                        p-3 flex items-center">
+          <p className="text-white text-base font-bold font-display line-clamp-2">{project.title}</p>
         </div>
-        
-      </div>
+      </Card>
       {/* Project Modal associated with the card */}
       <ProjectModal enabled={modalEnabled} setEnabled={setModalEnabled} project={project} isOfficer={isOfficer}/> 
     </div>
   )
 };
-
 
 export default ProjectCard;

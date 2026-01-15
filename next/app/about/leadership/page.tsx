@@ -112,10 +112,7 @@ export default function Leadership() {
 					<div className="content-center">
 						{/* Meet our team */}
 						<div className="max-w-xl mx-auto">
-							<h1
-								className="bg-gradient-to-t from-primary to-secondary 
-              bg-clip-text text-4xl font-extrabold text-transparent md:text-5xl"
-							>
+							<h1 className="text-primary">
 								Meet our Team
 							</h1>
 							<p className="mt-3 text-xl leading-8">
@@ -125,7 +122,7 @@ export default function Leadership() {
 					</div>
 
 					{/* Primary Officers */}
-					<h2 className="text-xl text-center font-extrabold text-primary-focus sm:text-3xl my-12">
+					<h2 className="text-center text-primary my-12">
 						Primary Officers
 					</h2>
 					<div className="">
@@ -150,7 +147,7 @@ export default function Leadership() {
 					</div>
 					{/* Committee Heads */}
 					<div className="w-full">
-						<h2 className="text-xl text-center font-extrabold text-primary-focus sm:text-3xl my-12">
+						<h2 className="text-center text-primary my-12">
 							Committee Heads
 						</h2>
 						<div className="w-full flex-wrap flex flex-row justify-center">

@@ -19,7 +19,11 @@ const config: Config = {
                 sans: [
                     'var(--font-inter)',
                     ...defaultTheme.fontFamily.sans
-                ]
+                ],
+                display: [
+                    'var(--font-display)',
+                    ...defaultTheme.fontFamily.sans
+                ],
             },
             transitionProperty: {
                 height: 'height'
@@ -112,6 +116,14 @@ const config: Config = {
                 'base-200': 'hsl(var(--muted))',
                 'base-300': 'hsl(var(--accent))',
                 'base-content': 'hsl(var(--foreground))',
+                
+                // Surface/Depth system
+                surface: {
+                    '0': 'hsl(var(--surface-0))',
+                    '1': 'hsl(var(--surface-1))',
+                    '2': 'hsl(var(--surface-2))',
+                    '3': 'hsl(var(--surface-3))',
+                },
             },
             boxShadow: {
                 'radial-sm': '0 0 5px 1px rgba(0, 0, 0, 0.2)',
