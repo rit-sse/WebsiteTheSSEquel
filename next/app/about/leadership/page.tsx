@@ -9,22 +9,22 @@ import ReplaceOfficerForm from "./ReplaceOfficerForm";
 import EditOfficerForm from "./EditOfficerForm";
 import { Skeleton } from "@/components/ui/skeleton";
 
+import { Card } from "@/components/ui/card";
+
 // Skeleton component for officer cards
 function OfficerCardSkeleton() {
 	return (
-		<div className="mt-4 w-full flex justify-center">
-			<div className="mt-2 flex flex-col items-center w-full max-w-xs sm:max-w-sm px-4">
-				<Skeleton className="h-24 w-24 rounded-full" />
-				<Skeleton className="h-5 w-32 mt-2" />
-				<Skeleton className="h-4 w-24 mt-1" />
-				<Skeleton className="h-16 w-full mt-2" />
-				<div className="flex gap-2 mt-2">
-					<Skeleton className="h-5 w-5" />
-					<Skeleton className="h-5 w-5" />
-					<Skeleton className="h-5 w-5" />
-				</div>
+		<Card depth={2} className="w-full max-w-[280px] p-5 flex flex-col items-center">
+			<Skeleton className="h-24 w-24 rounded-full mb-3" />
+			<Skeleton className="h-5 w-32 mb-1" />
+			<Skeleton className="h-4 w-24 mb-2" />
+			<Skeleton className="h-12 w-full mb-3" />
+			<div className="flex gap-3 pt-3 border-t border-border w-full justify-center">
+				<Skeleton className="h-5 w-5" />
+				<Skeleton className="h-5 w-5" />
+				<Skeleton className="h-5 w-5" />
 			</div>
-		</div>
+		</Card>
 	);
 }
 
@@ -122,54 +122,57 @@ export default function Leadership() {
 					</div>
 
 					{/* Primary Officers */}
-					<h2 className="text-center text-primary my-12">
+					<h2 className="text-center text-primary my-8">
 						Primary Officers
 					</h2>
-					<div className="">
-						<div className="w-full flex flex-row justify-center gap-5">
-							{isLoading ? (
-								<>
-									<OfficerCardSkeleton />
-									<OfficerCardSkeleton />
-									<OfficerCardSkeleton />
-									<OfficerCardSkeleton />
-								</>
-							) : (
-								teamData.primary_officers.map((member, idx) => (
-									<div key={idx}>
-										<OfficerCard teamMember={member} />
-										{/* Edit and Remove buttons, only officers can see */}
-										<ModifyOfficers teamMember={member} openReplaceModal={() => setReplaceOpen(true)} openEditModal={() => setEditOpen(true)} setSelectedOfficer={setSelectedOfficer} />
-									</div>
-								))
-							)}
-						</div>
+					<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 justify-items-center">
+						{isLoading ? (
+							<>
+								<OfficerCardSkeleton />
+								<OfficerCardSkeleton />
+								<OfficerCardSkeleton />
+								<OfficerCardSkeleton />
+							</>
+						) : (
+							teamData.primary_officers.map((member, idx) => (
+								<OfficerCard key={idx} teamMember={member}>
+									<ModifyOfficers 
+										teamMember={member} 
+										openReplaceModal={() => setReplaceOpen(true)} 
+										openEditModal={() => setEditOpen(true)} 
+										setSelectedOfficer={setSelectedOfficer} 
+									/>
+								</OfficerCard>
+							))
+						)}
 					</div>
+
 					{/* Committee Heads */}
-					<div className="w-full">
-						<h2 className="text-center text-primary my-12">
-							Committee Heads
-						</h2>
-						<div className="w-full flex-wrap flex flex-row justify-center">
-							{isLoading ? (
-								<>
-									<OfficerCardSkeleton />
-									<OfficerCardSkeleton />
-									<OfficerCardSkeleton />
-									<OfficerCardSkeleton />
-									<OfficerCardSkeleton />
-									<OfficerCardSkeleton />
-								</>
-							) : (
-								teamData.committee_heads.map((member, idx) => (
-									<div key={idx}>
-										<OfficerCard teamMember={member} />
-										{/* Edit and Remove buttons, only officers can see */}
-										<ModifyOfficers teamMember={member} openReplaceModal={() => setReplaceOpen(true)} openEditModal={() => setEditOpen(true)} setSelectedOfficer={setSelectedOfficer} />
-									</div>
-								))
-							)}
-						</div>
+					<h2 className="text-center text-primary my-8 mt-12">
+						Committee Heads
+					</h2>
+					<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 justify-items-center">
+						{isLoading ? (
+							<>
+								<OfficerCardSkeleton />
+								<OfficerCardSkeleton />
+								<OfficerCardSkeleton />
+								<OfficerCardSkeleton />
+								<OfficerCardSkeleton />
+								<OfficerCardSkeleton />
+							</>
+						) : (
+							teamData.committee_heads.map((member, idx) => (
+								<OfficerCard key={idx} teamMember={member}>
+									<ModifyOfficers 
+										teamMember={member} 
+										openReplaceModal={() => setReplaceOpen(true)} 
+										openEditModal={() => setEditOpen(true)} 
+										setSelectedOfficer={setSelectedOfficer} 
+									/>
+								</OfficerCard>
+							))
+						)}
 					</div>
 				</div>
 			</section>

@@ -1,6 +1,8 @@
 // TO-DO: Edit this page for making a new Alumni (It is NOT close to working)
 
 import { useEffect, useState } from "react";
+import { Card } from "@/components/ui/card";
+import { Plus } from "lucide-react";
 
 interface CreateAlumniProps {
   fetchData: () => Promise<void>;
@@ -128,21 +130,10 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
               ).showModal();
             }
           }}
-          className="
-                p-4
-                h-full
-                bg-background
-                rounded-md
-                shadow-md
-                justify-items-center
-                hover:shadow-lg
-                transition-shadow
-                border-2
-                border-border
-                hover:border-primary
-                text-xl"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors"
         >
-          Create Alumni
+          <Plus size={18} />
+          Add Alumni
         </button>
 
         <dialog id="create-alumni" className="modal overflow-scroll">

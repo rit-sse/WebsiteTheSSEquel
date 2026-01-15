@@ -22,7 +22,7 @@
   --accent-foreground: 0 0% 100%;
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
-  --border: 210 20% 85%;
+  --border: 0 0% 0%;
   --input: 210 20% 85%;
   --ring: 210 29% 52%;
   --radius: 0.5rem;
@@ -36,6 +36,11 @@
   --surface-1: 213 50% 98%;  /* Primary cards - lighter than bg */
   --surface-2: 213 45% 95%;  /* Nested cards */
   --surface-3: 213 40% 92%;  /* Deeply nested */
+  
+  /* Neobrutalism variables */
+  --main: 213 50% 98%;
+  --main-foreground: 213 26% 12%;
+  --radius-base: 0.75rem;
   
   color-scheme: light;
 }
@@ -57,7 +62,7 @@
   --accent-foreground: 0 0% 100%;
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
-  --border: 213 26% 25%;
+  --border: 0 0% 0%;
   --input: 213 26% 20%;
   --ring: 213 76% 80%;
   --info: 199 89% 48%;
@@ -70,6 +75,11 @@
   --surface-1: 213 26% 16%;  /* Primary cards */
   --surface-2: 213 26% 20%;  /* Nested cards */
   --surface-3: 213 26% 24%;  /* Deeply nested */
+  
+  /* Neobrutalism variables */
+  --main: 213 26% 16%;
+  --main-foreground: 213 56% 96%;
+  --radius-base: 0.75rem;
   
   color-scheme: dark;
 }
@@ -85,19 +95,19 @@
   }
 
   h1 {
-    @apply font-display text-4xl sm:text-5xl font-normal tracking-tight;
+    @apply font-display text-4xl sm:text-5xl font-bold tracking-tight;
   }
 
   h2 {
-    @apply font-display text-2xl sm:text-3xl font-normal tracking-tight;
+    @apply font-display text-2xl sm:text-3xl font-bold tracking-tight;
   }
 
   h3 {
-    @apply font-display text-xl sm:text-2xl font-normal;
+    @apply font-display text-xl sm:text-2xl font-bold;
   }
 
   h4 {
-    @apply font-display text-lg sm:text-xl font-normal;
+    @apply font-display text-lg sm:text-xl font-bold;
   }
 }
 
@@ -123,11 +133,11 @@
 }
 
 .name-classes {
-  @apply font-display font-normal text-3xl/[3rem];
+  @apply font-display font-bold text-3xl/[3rem];
 }
 
 .title-classes {
-  @apply font-display font-normal text-2xl sm:text-3xl text-primary;
+  @apply font-display font-bold text-2xl sm:text-3xl text-primary;
 }
 
 .description-classes {

@@ -69,7 +69,7 @@ export default async function Home() {
             
             {/* Upcoming Events */}
             <Card className="w-full max-w-[94vw] xl:max-w-[1400px] p-6 md:p-10 mx-auto">
-              <h1 className='mb-6'>Upcoming Events</h1>
+              <h2 className='mb-6 text-3xl font-bold font-display'>Upcoming Events</h2>
               <div className='flex flex-row justify-center items-center'>
                 {events && events.length > 0 ? (
                 <div className='grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-full'>
@@ -88,7 +88,7 @@ export default async function Home() {
 
             {/* Sponsors */}
             <Card className="w-full max-w-[94vw] xl:max-w-[1400px] p-6 md:p-10 mx-auto">
-                <h2 className='mb-6'>Sponsors</h2>
+                <h2 className='mb-6 text-3xl font-bold font-display'>Sponsors</h2>
                 <div className='flex flex-wrap justify-center items-stretch gap-6'>
                     {sponsors.map(sponsor => (
                         <Sponsor

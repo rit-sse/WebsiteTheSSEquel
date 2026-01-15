@@ -1,7 +1,7 @@
 import { useSession } from "next-auth/react";
-import { use, useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { CreateGoLinkProps } from "./page";
-import { deepEqual, equal, notDeepEqual } from "assert";
+import { Card } from "@/components/ui/card";
 
 export const GoLinkButton: React.FC<CreateGoLinkProps> = ({ fetchData }) => {
   const { data: session }: any = useSession();
@@ -78,21 +78,16 @@ export const GoLinkButton: React.FC<CreateGoLinkProps> = ({ fetchData }) => {
               ).showModal();
             }
           }}
-          className="
-                p-4
-                h-full
-                bg-background
-                rounded-md
-                shadow-md
-                justify-items-center
-                hover:shadow-lg
-                transition-shadow
-                border-2
-                border-border
-                hover:border-primary
-                text-xl"
         >
-          Create Go Link
+          <Card 
+            depth={2}
+            className="p-4 h-full flex items-center justify-center
+                       transition-all duration-150 ease-out
+                       hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none
+                       border-dashed"
+          >
+            <span className="text-lg font-display font-bold text-muted-foreground">+ Create Go Link</span>
+          </Card>
         </button>
 
         <dialog id="create-golink" className="modal">

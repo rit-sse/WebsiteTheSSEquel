@@ -75,25 +75,24 @@ export default function Leadership() {
 							<p className="mt-3 text-xl leading-8 text-center">
 								A dedicated page for alumni of the SSE
 							</p>
-							<div // Create Alumni Button
-								className="gap-4 md:p-4">
+							<div className="mt-4">
 								<CreateAlumniButton fetchData={getAlumni} />
 							</div>
 						</div>
 					</div>
 					
-
 					{/* Alumni */}
-					<div className="">
-						<div className="w-full flex flex-row flex-wrap justify-center gap-5">
-							{teamData.alumni_member.map((member, idx) => (
-								<div key={idx}>
-									<AlumniCard alumniMember={member} />
-									{/* Edit and Remove buttons, only officers can see */}
-									<ModifyAlumni alumniMember={member} openDeleteModal={() => setDeleteOpen(true)} openEditModal={() => setEditOpen(true)} setSelectedAlumni={setSelectedAlumni} />
-								</div>
-							))}
-						</div>
+					<div className="mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 justify-items-center">
+						{teamData.alumni_member.map((member, idx) => (
+							<AlumniCard key={idx} alumniMember={member}>
+								<ModifyAlumni 
+									alumniMember={member} 
+									openDeleteModal={() => setDeleteOpen(true)} 
+									openEditModal={() => setEditOpen(true)} 
+									setSelectedAlumni={setSelectedAlumni} 
+								/>
+							</AlumniCard>
+						))}
 					</div>
 				</div>
 			</section>

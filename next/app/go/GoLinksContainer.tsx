@@ -6,17 +6,20 @@ import { GoLinksContainerProps } from "@/app/go/page";
 import { filterGoLinks } from "@/lib/filter";
 import { GoLinkButton } from "@/app/go/MakeNewGoLink";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import SearchIcon from "@/components/search-icon";
 
 // Skeleton component for GoLink cards
 function GoLinkSkeleton() {
   return (
-    <div className="flex p-4 bg-background rounded-md shadow-md border-2 border-border">
+    <Card depth={2} className="flex p-4">
       <div className="flex-grow space-y-2">
         <Skeleton className="h-6 w-3/4" />
         <Skeleton className="h-4 w-full" />
       </div>
       <Skeleton className="h-6 w-6 ml-3" />
-    </div>
+    </Card>
   );
 }
 
@@ -61,61 +64,47 @@ const GoLinksContainer: React.FC<GoLinksContainerProps> = ({
   };
 
   return (
-    <div className="w-9/12">
-      <div className="text-center flex flex-col items-center w-full">
+    <Card className="w-full max-w-[94vw] xl:max-w-[1400px] p-6 md:p-10 mx-auto mt-8">
+      <div className="text-left mb-6">
         <h1 className="text-primary">
           Go Links
         </h1>
-
-        <p className="text-center mx-auto mt-4 text-xl/relaxed">
-          GoLinks are a type of URL shortcut that allow you to access the
-          SSE&apos;s frequently used external websites or resources. Important
-          and/or relevant golinks are marked with a gold star.
+        <p className="mt-4 text-lg text-muted-foreground max-w-3xl">
+          GoLinks are URL shortcuts to access SSE&apos;s frequently used external websites or resources. 
+          Important golinks are marked with a gold star.
         </p>
       </div>
-      <div className="w-full mt-4">
-        <input
+      
+      <div className="relative w-full max-w-md mb-6">
+        <SearchIcon size={18} isHovered={false} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+        <Input
           type="text"
-          placeholder="Search golinks, etc..."
-          className="input input-bordered w-full my-5"
+          placeholder="Search golinks..."
+          className="pl-10 h-11 border-2 border-black rounded-lg"
           onChange={(event) => handleFilterChange(event)}
         />
       </div>
-      {
-        //if there is any GoLink data
-        goLinkData.length > 0 ?
 
-        //if the first one has an id of -1
-        //  set by default in ./page.tsx to represent "haven't fetched data yet"
-        goLinkData[0].id === -1 ?
-        <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 md:p-4">
-          <GoLinkSkeleton />
-          <GoLinkSkeleton />
-          <GoLinkSkeleton />
-          <GoLinkSkeleton />
-          <GoLinkSkeleton />
-          <GoLinkSkeleton />
-        </div>
-        : //else: this must be the recieved list
-        <div
-          className="
-                    grid
-                    grid-cols-1
-                    sm:grid-cols-1
-                    md:grid-cols-2
-                    lg:grid-cols-2
-                    gap-4
-                    md:p-4
-                "
-        >
-          <GoLinkButton fetchData={fetchData} />
-          {goLinkList}
-        </div>
-        : //else: must be no GoLinks (only way goLinkData is ever an empty list)
-        <div className="text-center my-10">No GoLinks available</div>
-      }
-      
-    </div>
+      {goLinkData.length > 0 ? (
+        goLinkData[0].id === -1 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <GoLinkSkeleton />
+            <GoLinkSkeleton />
+            <GoLinkSkeleton />
+            <GoLinkSkeleton />
+            <GoLinkSkeleton />
+            <GoLinkSkeleton />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <GoLinkButton fetchData={fetchData} />
+            {goLinkList}
+          </div>
+        )
+      ) : (
+        <div className="text-center py-10 text-muted-foreground">No GoLinks available</div>
+      )}
+    </Card>
   );
 };
 

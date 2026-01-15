@@ -4,6 +4,7 @@ import SettingsIcon from "@/components/settings-icon";
 import TrashIcon from "@/components/trash-icon";
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useState } from "react";
+import { Card } from "@/components/ui/card";
 
 export interface GoLinkProps {
   id: number;
@@ -82,35 +83,20 @@ const GoLink: React.FC<GoLinkProps> = ({
       <a
         href={"/go/" + goUrl}
         target="_blank"
-        className="
-                flex 
-                p-4
-                bg-background
-                rounded-md
-                shadow-md
-                hover:shadow-lg
-                transition-shadow
-                border-2
-                border-border
-                hover:border-primary
-            "
       >
-        <div
-          className="
-                flex-grow 
-                overflow-auto
-                whitespace-normal
-                w-96
-            "
+        <Card 
+          depth={2}
+          className="flex p-4 h-full transition-all duration-150 ease-out
+                     hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
         >
-          <div className="flex items-center gap-2">
-            {pinned && <StarIcon size={22} isHovered className="text-yellow-500 fill-yellow-500 flex-shrink-0" />}
-            <p className="font-bold text-xl lg:text-2xl">{goUrl}</p>
+          <div className="flex-grow overflow-hidden">
+            <div className="flex items-center gap-2">
+              {pinned && <StarIcon size={20} isHovered className="text-yellow-500 fill-yellow-500 flex-shrink-0" />}
+              <p className="font-bold font-display text-lg truncate">{goUrl}</p>
+            </div>
+            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{description}</p>
           </div>
-          <p className="text-base">{description}</p>
-        </div>
-        <div className="flex ml-3">
-          <span className="float-right">
+          <div className="flex items-start ml-3 gap-1">
             <EditAndDelete
               id={id}
               goUrl={goUrl}
@@ -120,11 +106,9 @@ const GoLink: React.FC<GoLinkProps> = ({
               officer={officer}
               fetchData={fetchData}
             />
-          </span>
-          <span className="float-right">
-            <ExternalLinkIcon size={24} isHovered />
-          </span>
-        </div>
+            <ExternalLinkIcon size={20} isHovered className="text-primary" />
+          </div>
+        </Card>
       </a>
       <dialog id={editModalId} className="modal">
         <div className="modal-box">

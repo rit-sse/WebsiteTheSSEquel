@@ -89,15 +89,9 @@ const Navbar: React.FC = () => {
                 </Link>
 
                 {/* Desktop Navigation */}
-                <div className="hidden md:flex">
+                <div className="hidden lg:flex">
                     <NavigationMenu>
                         <NavigationMenuList>
-                            <NavigationMenuItem>
-                                <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-                                    <Link href="/">Home</Link>
-                                </NavigationMenuLink>
-                            </NavigationMenuItem>
-
                             <NavigationMenuItem>
                                 <NavigationMenuTrigger>About</NavigationMenuTrigger>
                                 <NavigationMenuContent>
@@ -143,7 +137,7 @@ const Navbar: React.FC = () => {
                 </div>
 
                 {/* Mobile Navigation */}
-                <div className="md:hidden">
+                <div className="lg:hidden">
                     <Sheet open={open} onOpenChange={setOpen}>
                         <SheetTrigger asChild>
                             <button className="p-2 hover:bg-accent rounded-md" aria-label="Open menu">
@@ -155,10 +149,6 @@ const Navbar: React.FC = () => {
                                 <SheetTitle className="text-left">Menu</SheetTitle>
                             </SheetHeader>
                             <nav className="flex flex-col gap-2 mt-6">
-                                <MobileNavLink href="/" onClick={() => setOpen(false)}>
-                                    Home
-                                </MobileNavLink>
-
                                 <MobileNavCollapsible title="About">
                                     {aboutItems.map((item) => (
                                         <MobileNavLink
@@ -265,12 +255,14 @@ function ListItem({
                 <Link
                     href={href}
                     className={cn(
-                        "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+                        "block select-none space-y-1 rounded-base p-3 leading-none no-underline outline-none transition-all duration-100",
+                        "hover:bg-black/10 dark:hover:bg-white/10",
+                        "focus:bg-black/10 dark:focus:bg-white/10",
                         className
                     )}
                 >
-                    <div className="text-sm font-medium leading-none">{title}</div>
-                    <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                    <div className="text-sm font-bold font-heading leading-none">{title}</div>
+                    <p className="line-clamp-2 text-sm leading-snug text-main-foreground/70 mt-1">
                         {children}
                     </p>
                 </Link>

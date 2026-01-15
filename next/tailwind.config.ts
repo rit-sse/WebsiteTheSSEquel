@@ -24,6 +24,10 @@ const config: Config = {
                     'var(--font-display)',
                     ...defaultTheme.fontFamily.sans
                 ],
+                heading: [
+                    'var(--font-display)',
+                    ...defaultTheme.fontFamily.sans
+                ],
             },
             transitionProperty: {
                 height: 'height'
@@ -124,6 +128,12 @@ const config: Config = {
                     '2': 'hsl(var(--surface-2))',
                     '3': 'hsl(var(--surface-3))',
                 },
+                
+                // Neobrutalism colors
+                main: {
+                    DEFAULT: 'hsl(var(--main))',
+                    foreground: 'hsl(var(--main-foreground))',
+                },
             },
             boxShadow: {
                 'radial-sm': '0 0 5px 1px rgba(0, 0, 0, 0.2)',
@@ -140,7 +150,8 @@ const config: Config = {
             borderRadius: {
                 lg: 'var(--radius)',
                 md: 'calc(var(--radius) - 2px)',
-                sm: 'calc(var(--radius) - 4px)'
+                sm: 'calc(var(--radius) - 4px)',
+                base: 'var(--radius-base)',
             }
         }
     },
