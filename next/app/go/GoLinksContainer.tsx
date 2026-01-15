@@ -8,7 +8,7 @@ import { GoLinkButton } from "@/app/go/MakeNewGoLink";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import SearchIcon from "@/components/search-icon";
+import { Search } from "lucide-react";
 
 // Skeleton component for GoLink cards
 function GoLinkSkeleton() {
@@ -76,7 +76,7 @@ const GoLinksContainer: React.FC<GoLinksContainerProps> = ({
       </div>
       
       <div className="relative w-full max-w-md mb-6">
-        <SearchIcon size={18} isHovered={false} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+        <Search className="h-[18px] w-[18px] absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
         <Input
           type="text"
           placeholder="Search golinks..."

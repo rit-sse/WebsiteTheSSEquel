@@ -1,8 +1,7 @@
 "use client";
 
 import NeoBrutalistButton from "@/components/neo-brutalist-button";
-import CalendarIcon from "@/components/calendar-icon";
-import SendIcon from "@/components/send-icon";
+import { Calendar, Send } from "lucide-react";
 
 export const GetInvolvedCTAs = () => {
     return (
@@ -16,7 +15,7 @@ export const GetInvolvedCTAs = () => {
                         href="/events/calendar" 
                         text="Events"
                         variant="green"
-                        icon={<CalendarIcon size={18} isHovered />}
+                        icon={<Calendar className="h-[18px] w-[18px]" />}
                     />
                 </div>
             </section>
@@ -29,7 +28,7 @@ export const GetInvolvedCTAs = () => {
                         href="https://www.discord.gg/rNC6wj82kq" 
                         text="Join our Discord"
                         variant="blue"
-                        icon={<SendIcon size={18} isHovered />}
+                        icon={<Send className="h-[18px] w-[18px]" />}
                     />
                 </div>
             </section>

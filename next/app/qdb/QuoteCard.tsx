@@ -1,7 +1,6 @@
 'use client';
 
-import SettingsIcon from "@/components/settings-icon";
-import TrashIcon from "@/components/trash-icon";
+import { Settings, Trash2 } from "lucide-react";
 import { Quote } from "./Quotes";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -176,7 +175,7 @@ export const QuoteCard = (quote: Quote) => {
                         aria-label="Edit quote"
                         className="hover:scale-110 transition-transform inline-flex"
                     >
-                        <SettingsIcon size={24} isHovered duration={2} />
+                        <Settings className="h-6 w-6" />
                     </button>
 
                     <button 
@@ -184,7 +183,7 @@ export const QuoteCard = (quote: Quote) => {
                         aria-label="Delete quote"
                         className="hover:scale-110 transition-transform text-destructive inline-flex ml-2"
                     >
-                        <TrashIcon size={24} isHovered />
+                        <Trash2 className="h-6 w-6" />
                     </button>
                 </div>
 

@@ -1,57 +1,6 @@
-// Re-export animated icons from Chamaac for convenient imports
-export { default as AnimatedSearchIcon } from "@/components/search-icon";
-export { default as AnimatedExternalLinkIcon } from "@/components/external-link-icon";
-export { default as AnimatedTrashIcon } from "@/components/trash-icon";
-export { default as AnimatedSettingsIcon } from "@/components/settings-icon";
-export { default as AnimatedStarIcon } from "@/components/star-icon";
-export { default as AnimatedCloseIcon } from "@/components/close-icon";
-export { default as AnimatedCalendarIcon } from "@/components/calendar-icon";
-export { default as AnimatedSparkleIcon } from "@/components/sparkle-icon";
-export { default as AnimatedRocketIcon } from "@/components/rocket-icon";
-export { default as AnimatedSendIcon } from "@/components/send-icon";
-export { default as AnimatedZapIcon } from "@/components/zap-icon";
-
 interface IconProps {
     className?: string;
 }
-
-/**
- * Use stroke-* classes to change the color of the icon.
- * @deprecated Use AnimatedSearchIcon from "@/components/search-icon" instead
- */
-export const SearchIcon = ({ className }: IconProps) => (
-    <svg
-        className={`stroke-base-content ${className || 'w-5 h-5'}`}
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        fill="none"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-    >
-        <circle cx="11" cy="11" r="8" />
-        <path d="m21 21-4.3-4.3" />
-    </svg>
-);
-
-/**
- * Use stroke-* classes to change the color of the icon.
- * @deprecated Use AnimatedCloseIcon from "@/components/close-icon" instead
- */
-export const ClearIcon = ({ className }: IconProps) => (
-    <svg
-        className={`stroke-base-content ${className || 'w-5 h-5'}`}
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        fill="none"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-    >
-        <path d="M18 6 6 18" />
-        <path d="m6 6 12 12" />
-    </svg>
-);
 
 /**
  * Use stroke-* classes to change the color of the icon.
@@ -72,44 +21,6 @@ export const DiceIcon = ({ className }: IconProps) => (
         <path d="M10 14h.01" />
         <path d="M15 6h.01" />
         <path d="M18 9h.01" />
-    </svg>
-);
-
-/**
- * Use stroke-* classes to change the color of the icon.
- * @deprecated Use AnimatedExternalLinkIcon from "@/components/external-link-icon" instead
- */
-export const ExternalLinkIcon = ({ className }: IconProps) => (
-    <svg
-        className={`stroke-base-content ${className || 'w-5 h-5'}`}
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        fill="none"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-    >
-        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-        <polyline points="15 3 21 3 21 9" />
-        <line x1="10" x2="21" y1="14" y2="3" />
-    </svg>
-);
-
-
-/**
- * Use stroke-* classes to change the border color of the icon.
- * Use fill-* classes to change the fill color of the icon.
- */
-export const StarIcon = ({ className }: IconProps) => (
-    <svg
-        className={`absolute left-[-0.625rem] top-[-0.625rem] text-content stroke-base-100 fill-base-content ${className || 'w-5 h-5'}`}
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-    >
-        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
     </svg>
 );
 

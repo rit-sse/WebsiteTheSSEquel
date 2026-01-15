@@ -1,9 +1,6 @@
 "use client"
 
-import ExternalLinkIcon from "@/components/external-link-icon";
-import StarIcon from "@/components/star-icon";
-import SettingsIcon from "@/components/settings-icon";
-import TrashIcon from "@/components/trash-icon";
+import { ExternalLink, Star, Settings, Trash2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
@@ -98,7 +95,7 @@ const GoLink: React.FC<GoLinkProps> = ({
         >
           <div className="flex-grow overflow-hidden">
             <div className="flex items-center gap-2">
-              {pinned && <StarIcon size={20} isHovered className="text-yellow-500 fill-yellow-500 flex-shrink-0" />}
+              {pinned && <Star className="h-5 w-5 text-yellow-500 fill-yellow-500 flex-shrink-0" />}
               <p className="font-bold font-display text-lg truncate">{goUrl}</p>
             </div>
             <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{description}</p>
@@ -115,7 +112,7 @@ const GoLink: React.FC<GoLinkProps> = ({
               onEditClick={() => setEditOpen(true)}
               onDeleteClick={() => setDeleteOpen(true)}
             />
-            <ExternalLinkIcon size={20} isHovered className="text-primary" />
+            <ExternalLink className="h-5 w-5 text-primary" />
           </div>
         </Card>
       </a>
@@ -223,7 +220,7 @@ const EditAndDelete: React.FC<EditAndDeleteProps> = ({
           className="rounded-md hover:scale-110 transition-transform"
           aria-label="Edit go link"
         >
-          <SettingsIcon size={24} isHovered duration={2} />
+          <Settings className="h-6 w-6" />
         </button>
       </div>
       <div className="pr-1">
@@ -235,7 +232,7 @@ const EditAndDelete: React.FC<EditAndDeleteProps> = ({
           className="rounded-md hover:scale-110 transition-transform text-destructive"
           aria-label="Delete go link"
         >
-          <TrashIcon size={24} isHovered />
+          <Trash2 className="h-6 w-6" />
         </button>
       </div>
     </div>

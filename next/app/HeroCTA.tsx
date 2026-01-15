@@ -2,9 +2,7 @@
 
 import DancingLetters from "@/components/dancing-letters";
 import NeoBrutalistButton from "@/components/neo-brutalist-button";
-import SendIcon from "@/components/send-icon";
-import RocketIcon from "@/components/rocket-icon";
-import CalendarIcon from "@/components/calendar-icon";
+import { Send, Rocket, Calendar } from "lucide-react";
 import { NeoCard } from "@/components/ui/neo-card";
 
 interface HeroCTAProps {
@@ -30,7 +28,7 @@ export const HeroCTA = ({ description, weeklyMeetingCallout, discordLink }: Hero
                 {description}
             </p>
             <NeoCard depth={2} className="mt-2 inline-flex items-center gap-2 px-3 py-2">
-                <CalendarIcon size={18} isHovered={false} className="text-primary flex-shrink-0" />
+                <Calendar className="h-[18px] w-[18px] text-primary flex-shrink-0" />
                 <span className="font-bold text-foreground text-sm">
                     {weeklyMeetingCallout}
                 </span>
@@ -40,13 +38,13 @@ export const HeroCTA = ({ description, weeklyMeetingCallout, discordLink }: Hero
                     href={discordLink} 
                     text="Join Discord" 
                     variant="blue"
-                    icon={<SendIcon size={18} isHovered={false} />}
+                    icon={<Send className="h-[18px] w-[18px]" />}
                 />
                 <NeoBrutalistButton 
                     href="/about/get-involved" 
                     text="Get Involved" 
                     variant="orange"
-                    icon={<RocketIcon size={18} isHovered={false} />}
+                    icon={<Rocket className="h-[18px] w-[18px]" />}
                 />
             </div>
         </div>

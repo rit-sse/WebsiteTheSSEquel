@@ -2,10 +2,9 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Menu } from "lucide-react";
 import SSELogoFull from "../common/SSELogoFull";
 import AuthButton from "./AuthButton";
-import MenuIcon from "@/components/menu-icon";
 import {
     NavigationMenu,
     NavigationMenuContent,
@@ -141,7 +140,7 @@ const Navbar: React.FC = () => {
                     <Sheet open={open} onOpenChange={setOpen}>
                         <SheetTrigger asChild>
                             <button className="p-2 hover:bg-accent rounded-md" aria-label="Open menu">
-                                <MenuIcon size={24} isHovered duration={1} />
+                                <Menu className="h-6 w-6" />
                             </button>
                         </SheetTrigger>
                         <SheetContent side="right" className="w-[300px] overflow-y-auto">
