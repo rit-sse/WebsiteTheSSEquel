@@ -16,10 +16,10 @@ import Image from "next/image";
  * setEvents - Set the Events state when CRUD is performed
  */
 interface FormProps {
-    onClose: () => {},
+    onClose: () => void,
     isOpen: boolean
     event: Event,
-    openEditModal: () => {},
+    openEditModal: () => void,
     events: any[],
     setEvents: (event: any) => void,
 }

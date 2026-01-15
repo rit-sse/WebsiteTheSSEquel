@@ -14,7 +14,7 @@ import { compareDateStrings } from "./utils";
  */
 interface FormProps {
     isOpen: boolean,
-    onClose: () => {},
+    onClose: () => void,
     events: Event[],
     setEvents: (event: Event[]) => void,
 }

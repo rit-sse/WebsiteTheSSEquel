@@ -1,7 +1,7 @@
 "use client"
 import Calendar from "./Calendar";
 import { Event } from "../event";
-import EventFormModal from "./EventFormModal";
+import { Modal } from "@/components/ui/modal";
 import { useEffect, useState } from "react";
 import AddEventForm from "./AddEventForm";
 import EventForm from "./EventForm";
@@ -55,20 +55,20 @@ export default function EventsCalendar() {
                 </div>
             </Card>
 
-            {/* Modals that contain the form for adding a new event */}
-            <EventFormModal isOpen={ modalAdd } onClose={ async () => setModalAdd(false) } >
-                <AddEventForm isOpen={ modalAdd } onClose={ async () => setModalAdd(false) } events={ events } setEvents={ setEvents }/>
-            </EventFormModal>
+            {/* Modal for adding a new event */}
+            <Modal open={modalAdd} onOpenChange={setModalAdd} title="Add Event">
+                <AddEventForm isOpen={modalAdd} onClose={() => setModalAdd(false)} events={events} setEvents={setEvents}/>
+            </Modal>
 
-            {/* Modals that contain the form for viewing / deleting an event */}
-            <EventFormModal isOpen={ modalEvent } onClose={ async () => setModalEvent(false)}>
-                <EventForm isOpen={ modalEvent } onClose={ async () => setModalEvent(false)} event={ selectedEvent } openEditModal={ async () => setModalEdit(true) } events={ events } setEvents={ setEvents }/>
-            </EventFormModal>
+            {/* Modal for viewing / deleting an event */}
+            <Modal open={modalEvent} onOpenChange={setModalEvent} title="Event Details">
+                <EventForm isOpen={modalEvent} onClose={() => setModalEvent(false)} event={selectedEvent} openEditModal={() => setModalEdit(true)} events={events} setEvents={setEvents}/>
+            </Modal>
 
-            {/* Modals that contain the form for editing an event */}
-            <EventFormModal isOpen={ modalEdit } onClose={ async () => setModalEdit(false)}>
-                <EditEventForm isOpen={ modalEdit } onClose={ async () => setModalEdit(false)} setModalEvent={ setModalEvent } event={ selectedEvent } setSelectedEvent={ setSelectedEvent } events={ events } setEvents={ setEvents }/>
-            </EventFormModal>
+            {/* Modal for editing an event */}
+            <Modal open={modalEdit} onOpenChange={setModalEdit} title="Edit Event">
+                <EditEventForm isOpen={modalEdit} onClose={() => setModalEdit(false)} setModalEvent={setModalEvent} event={selectedEvent} setSelectedEvent={setSelectedEvent} events={events} setEvents={setEvents}/>
+            </Modal>
         </>
     );
 }

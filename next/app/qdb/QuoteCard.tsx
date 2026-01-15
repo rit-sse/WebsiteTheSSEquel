@@ -5,11 +5,25 @@ import TrashIcon from "@/components/trash-icon";
 import { Quote } from "./Quotes";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Modal, ModalFooter } from "@/components/ui/modal";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 
 export const QuoteCard = (quote: Quote) => {
-
-    const [editableQuote, setEditableQuote] = useState<Quote | null>(null);
+    const [editOpen, setEditOpen] = useState(false);
+    const [deleteOpen, setDeleteOpen] = useState(false);
     const [editableQuotes, setEditableQuotes] = useState<{ quote: string, author: string }[]>([]);
+    const [isOfficer, setIsOfficer] = useState(false);
+
+    const fetchData = useCallback(async () => {
+        const data = await fetch("/api/authLevel").then((r) => r.json());
+        setIsOfficer(data.isOfficer);
+    }, []);
+
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
 
     const updateEditableQuoteField = (
         index: number,
@@ -32,38 +46,31 @@ export const QuoteCard = (quote: Quote) => {
         setEditableQuotes([...editableQuotes, { quote: "", author: "" }]);
     };
 
-
-    const handleCancel = () => {
-        setEditableQuote(null);
-    };
-
-    const breakUpQuoteString = (quoteString: String) => {
-        let parts = quoteString.split(/[\n\[\]]/);
+    const breakUpQuoteString = (quoteString: string) => {
+        let parts = quoteString.split(/[\n[\]]/);
         parts = parts.filter(item => item !== "");
         const quotesArray: { quote: string, author: string }[] = [];
 
         for (let i = 0; i < parts.length; i += 2) {
-            let quote = parts[i + 1].trim() || "Author";
-            if (quote.length > 0 && quote.charAt(0) === '"') {
-                quote = quote.substring(1);
+            let quoteText = parts[i + 1]?.trim() || "Author";
+            if (quoteText.length > 0 && quoteText.charAt(0) === '"') {
+                quoteText = quoteText.substring(1);
             }
-            if (quote.length > 0 && quote.charAt(quote.length - 1) === '"') {
-                quote = quote.substring(0, quote.length - 1);
+            if (quoteText.length > 0 && quoteText.charAt(quoteText.length - 1) === '"') {
+                quoteText = quoteText.substring(0, quoteText.length - 1);
             }
             const author = parts[i]?.trim() || "";
 
-            if (quote) {
-                quotesArray.push({ quote, author });
+            if (quoteText) {
+                quotesArray.push({ quote: quoteText, author });
             }
         }
 
         setEditableQuotes(quotesArray);
-    }
+    };
 
     const handleSave = async () => {
-        if (!editableQuote) return;
-
-        let hasEmptyFields = editableQuotes.some(q => !q.quote.trim());
+        const hasEmptyFields = editableQuotes.some(q => !q.quote.trim());
         if (hasEmptyFields) {
             toast.error("All quote fields must be filled out.");
             return;
@@ -79,17 +86,17 @@ export const QuoteCard = (quote: Quote) => {
             .map(q => `[${q.author}] "${q.quote}"`)
             .join("\n");
 
-        let authorSet: string[] = [];
+        const authorSet: string[] = [];
         editableQuotes.forEach(q => {
             if (q.author.trim() && !authorSet.includes(q.author.trim())) {
                 authorSet.push(q.author.trim());
             }
         });
 
-        let authorString = authorSet.length > 0 ? authorSet.join(", ") : "Anonymous";
+        const authorString = authorSet.length > 0 ? authorSet.join(", ") : "Anonymous";
 
         const updatedQuote = {
-            id: editableQuote.id,
+            id: quote.id,
             quote: combinedQuote,
             author: authorString,
         };
@@ -105,13 +112,13 @@ export const QuoteCard = (quote: Quote) => {
                 throw new Error("Failed to update quote");
             }
 
+            setEditOpen(false);
             window.location.reload();
         } catch (error) {
             console.error(error);
             toast.error("Error updating quote");
         }
     };
-
 
     const handleDelete = async () => {
         try {
@@ -125,6 +132,7 @@ export const QuoteCard = (quote: Quote) => {
                 throw new Error("Failed to delete quote");
             }
 
+            setDeleteOpen(false);
             window.location.reload();
         } catch (error) {
             console.error(error);
@@ -132,28 +140,9 @@ export const QuoteCard = (quote: Quote) => {
         }
     };
 
-    const [isOfficer, setIsOfficer] = useState(false);
-    const fetchData = useCallback(async () => {
-        
-        const data = await fetch("/api/authLevel").then((response) => 
-            response.json()
-        );
-        setIsOfficer(data.isOfficer);
-    }, []);
-
-    useEffect(() => {
-        fetchData();
-    }, [fetchData]);
-
-    const openEditModal = (quoteObj: Quote) => {
-        setEditableQuote(quoteObj);
-        breakUpQuoteString(quoteObj.quote);
-
-        setTimeout(() => {
-            (
-                document.getElementById(`edit-quote-${quoteObj.id}`) as HTMLFormElement
-            )?.showModal();
-        }, 0);
+    const openEditModal = () => {
+        breakUpQuoteString(quote.quote);
+        setEditOpen(true);
     };
 
     const formatQuote = (input: string) => {
@@ -165,8 +154,8 @@ export const QuoteCard = (quote: Quote) => {
                 const end = line.indexOf("]");
                 if (start !== -1 && end !== -1 && end > start) {
                     const author = line.substring(start + 1, end).trim();
-                    const quote = line.substring(end + 1).trim();
-                    return `${author}: ${quote}`;
+                    const quoteText = line.substring(end + 1).trim();
+                    return `${author}: ${quoteText}`;
                 }
                 return line.trim();
             });
@@ -174,132 +163,94 @@ export const QuoteCard = (quote: Quote) => {
 
     if (isOfficer) {
         return (
-            <div className="border-l-8 border-primary rounded-lg bg-background w-11/12 py-5 px-12 mx-auto items-center content-center gap-10 my-4">
-                {formatQuote(quote.quote).map((line, index) => (
-                    <p className="" key={index}>{line}</p>
-                ))}
-                <br></br>
-                <p>{quote.tags}</p>
+            <>
+                <div className="border-l-8 border-primary rounded-lg bg-background w-11/12 py-5 px-12 mx-auto items-center content-center gap-10 my-4">
+                    {formatQuote(quote.quote).map((line, index) => (
+                        <p className="" key={index}>{line}</p>
+                    ))}
+                    <br />
+                    <p>{quote.tags}</p>
 
-                {/* Button and dialog box for editing a quote */}
-                <button 
-                    onClick={() => openEditModal(quote)}
-                    aria-label="Edit quote"
-                    className="hover:scale-110 transition-transform inline-flex"
-                >
-                    <SettingsIcon size={24} isHovered duration={2} />
-                </button>
-                <dialog id={`edit-quote-${quote.id}`} className="modal">
-                    <div className="modal-box">
-                        <p>Edit</p>
-                        <h1 className="text-lg font-bold mb-4">Edit Quote</h1>
+                    <button 
+                        onClick={openEditModal}
+                        aria-label="Edit quote"
+                        className="hover:scale-110 transition-transform inline-flex"
+                    >
+                        <SettingsIcon size={24} isHovered duration={2} />
+                    </button>
 
+                    <button 
+                        onClick={() => setDeleteOpen(true)}
+                        aria-label="Delete quote"
+                        className="hover:scale-110 transition-transform text-destructive inline-flex ml-2"
+                    >
+                        <TrashIcon size={24} isHovered />
+                    </button>
+                </div>
+
+                {/* Edit Modal */}
+                <Modal open={editOpen} onOpenChange={setEditOpen} title="Edit Quote" className="max-w-xl">
+                    <div className="space-y-4 max-h-[60vh] overflow-y-auto">
                         {editableQuotes.map((entry, index) => (
-                            <div key={index} className="mb-4">
-                                <input
-                                    type="text"
-                                    id={`quote-input-${quote.id}-${index}`}
-                                    placeholder="Enter quote"
-                                    value={entry.quote}
-                                    onChange={(e) => updateEditableQuoteField(index, "quote", e.target.value)}
-                                    className="input input-bordered w-full mb-2"
-                                />
-                                <input
-                                    type="text"
-                                    id={`author-input-${quote.id}-${index}`}
-                                    placeholder="Enter author (optional)"
-                                    value={entry.author}
-                                    onChange={(e) => updateEditableQuoteField(index, "author", e.target.value)}
-                                    className="input input-bordered w-full"
-                                />
+                            <div key={index} className="space-y-2 p-3 border border-border rounded-base">
+                                <div className="space-y-1">
+                                    <Label htmlFor={`edit-quote-${quote.id}-${index}`}>Quote</Label>
+                                    <Input
+                                        id={`edit-quote-${quote.id}-${index}`}
+                                        placeholder="Enter quote"
+                                        value={entry.quote}
+                                        onChange={(e) => updateEditableQuoteField(index, "quote", e.target.value)}
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <Label htmlFor={`edit-author-${quote.id}-${index}`}>Author</Label>
+                                    <Input
+                                        id={`edit-author-${quote.id}-${index}`}
+                                        placeholder="Enter author (optional)"
+                                        value={entry.author}
+                                        onChange={(e) => updateEditableQuoteField(index, "author", e.target.value)}
+                                    />
+                                </div>
                                 {editableQuotes.length > 1 && (
-                                    <button
-                                        className="btn btn-sm btn-error mt-2"
+                                    <Button
+                                        variant="neutral"
+                                        size="sm"
                                         onClick={() => removeQuoteField(index)}
                                     >
                                         Remove
-                                    </button>
+                                    </Button>
                                 )}
                             </div>
                         ))}
 
-                        <button className="btn btn-outline btn-accent mb-4" onClick={addQuoteField}>
+                        <Button variant="neutral" onClick={addQuoteField}>
                             + Add another section
-                        </button>
-
-
-
-                        <div className="flex gap-4 mt-4">
-                            <button
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    handleSave();
-                                    handleCancel();
-                                    (document.getElementById(`edit-quote-${quote.id}`) as HTMLFormElement).close();
-                                }}
-                                className="btn btn-primary"
-                            >
-                                Save
-                            </button>
-                            <button
-                                className="btn"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    handleCancel();
-                                    (document.getElementById(`edit-quote-${quote.id}`) as HTMLFormElement).close();
-                                }}
-                            >
-                                Cancel
-                            </button>
-                        </div>
-
+                        </Button>
                     </div>
-                </dialog>
 
-                {/* Button and dialog box for deleting a quote */}
-                <button 
-                    onClick={(func) => {
-                        func.preventDefault();
-                        if (document) {
-                            (
-                                document.getElementById(`delete-quote-${quote.id}`) as HTMLFormElement
-                            )?.showModal();
-                        }
-                    }}
-                    aria-label="Delete quote"
-                    className="hover:scale-110 transition-transform text-destructive inline-flex ml-2"
-                >
-                    <TrashIcon size={24} isHovered />
-                </button>
-                <dialog id={`delete-quote-${quote.id}`} className="modal">
-                    <div className="modal-box">
-                        <h3>Are you sure you want to delete the quote?</h3>
-                        <div className="flex gap-4 mt-4">
-                            <button className="btn btn-primary" onClick={(func) => {
-                                func.preventDefault();
-                                (
-                                    document.getElementById(`delete-quote-${quote.id}`) as HTMLFormElement
-                                ).close();
-                            }}>
-                                No
-                            </button>
-                            <button className="btn btn-primary" onClick={handleDelete}>
-                                Yes
-                            </button>
-                        </div>
-                    </div>
-                </dialog>
+                    <ModalFooter>
+                        <Button variant="neutral" onClick={() => setEditOpen(false)}>Cancel</Button>
+                        <Button onClick={handleSave}>Save</Button>
+                    </ModalFooter>
+                </Modal>
 
-
-            </div>
-        );
-    } else {
-        return (
-            <div className="border-l-8 border-primary rounded-lg bg-background w-11/12 py-5 px-12 mx-auto items-center content-center gap-10 my-4">
-                {formatQuote(quote.quote).map((line, index) => (
-                    <p key={index}>{line}</p>
-                ))}
-            </div>
+                {/* Delete Confirmation Modal */}
+                <Modal open={deleteOpen} onOpenChange={setDeleteOpen} title="Delete Quote">
+                    <p className="text-foreground">Are you sure you want to delete this quote?</p>
+                    <ModalFooter>
+                        <Button variant="neutral" onClick={() => setDeleteOpen(false)}>No</Button>
+                        <Button onClick={handleDelete}>Yes</Button>
+                    </ModalFooter>
+                </Modal>
+            </>
         );
     }
+
+    return (
+        <div className="border-l-8 border-primary rounded-lg bg-background w-11/12 py-5 px-12 mx-auto items-center content-center gap-10 my-4">
+            {formatQuote(quote.quote).map((line, index) => (
+                <p key={index}>{line}</p>
+            ))}
+        </div>
+    );
 };

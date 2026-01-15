@@ -134,6 +134,8 @@ const config: Config = {
                     DEFAULT: 'hsl(var(--main))',
                     foreground: 'hsl(var(--main-foreground))',
                 },
+                'secondary-background': 'hsl(var(--secondary-background))',
+                overlay: 'hsl(var(--overlay))',
             },
             boxShadow: {
                 'radial-sm': '0 0 5px 1px rgba(0, 0, 0, 0.2)',
@@ -141,7 +143,8 @@ const config: Config = {
                 'radial-lg': '0 0 15px 3px rgba(0, 0, 0, 0.2)',
                 'radial-xl': '0 0 20px 5px rgba(0, 0, 0, 0.2)',
                 'radial-2xl': '0 0 25px 5px rgba(0, 0, 0, 0.2)',
-                'radial-3xl': '0 0 30px 5px rgba(0, 0, 0, 0.2)'
+                'radial-3xl': '0 0 30px 5px rgba(0, 0, 0, 0.2)',
+                'shadow': 'var(--shadow)',
             },
             backgroundImage: {
                 'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
@@ -152,6 +155,15 @@ const config: Config = {
                 md: 'calc(var(--radius) - 2px)',
                 sm: 'calc(var(--radius) - 4px)',
                 base: 'var(--radius-base)',
+            },
+            boxShadowColor: {
+                shadow: 'var(--shadow)',
+            },
+            translate: {
+                boxShadowX: 'var(--box-shadow-x)',
+                boxShadowY: 'var(--box-shadow-y)',
+                reverseBoxShadowX: 'var(--reverse-box-shadow-x)',
+                reverseBoxShadowY: 'var(--reverse-box-shadow-y)',
             }
         }
     },

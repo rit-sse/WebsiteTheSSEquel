@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import OfficerCard from "./OfficerCard";
-import OfficerFormModal from "./OfficerFormModal";
+import { Modal } from "@/components/ui/modal";
 import { Team, TeamMember } from "./team";
 import ModifyOfficers from "./ModifyOfficers";
 import ReplaceOfficerForm from "./ReplaceOfficerForm";
@@ -101,13 +101,13 @@ export default function Leadership() {
 	return (
 		<>
 			<section className="mt-16">
-				{/* Modals for editing and replacing officer forms */}
-				<OfficerFormModal isOpen={replaceOpen} onClose={async () => setReplaceOpen(false)}>
+				{/* Modals for editing and replacing officers */}
+				<Modal open={replaceOpen} onOpenChange={setReplaceOpen} title="Replace Officer">
 					<ReplaceOfficerForm open={replaceOpen} teamMember={selectedOfficer} getOfficers={getOfficers} closeModel={() => setReplaceOpen(false)} />
-				</OfficerFormModal>
-				<OfficerFormModal isOpen={editOpen} onClose={async () => setEditOpen(false)}>
+				</Modal>
+				<Modal open={editOpen} onOpenChange={setEditOpen} title="Edit Officer">
 					<EditOfficerForm open={editOpen} teamMember={selectedOfficer} getOfficers={getOfficers} closeModal={() => setEditOpen(false)} />
-				</OfficerFormModal>
+				</Modal>
 				<div className="max-w-screen-xl mx-auto px-4 text-center md:px-8">
 					<div className="content-center">
 						{/* Meet our team */}

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import AlumniCard from "./AlumniCard";
-import AlumniFormModal from "./AlumniFormModal";
+import { Modal } from "@/components/ui/modal";
 import { Team, AlumniMember } from "./alumni";
 import ModifyAlumni from "./ModifyAlumni";
 import EditAlumniForm from "./EditAlumniForm";
@@ -58,13 +58,13 @@ export default function Leadership() {
 	return (
 		<>
 			<section className="mt-16">
-				{/* Modals for editing and replacing alumni forms */}
-				<AlumniFormModal isOpen={deleteOpen} onClose={async () => setDeleteOpen(false)}>
-					<DeleteAlumniButton open={editOpen} alumniMember={selectedAlumni} fetchData={getAlumni} closeModal={() => setEditOpen(false)}/>
-				</AlumniFormModal>
-				<AlumniFormModal isOpen={editOpen} onClose={async () => setEditOpen(false)}>
+				{/* Modals for editing and deleting alumni */}
+				<Modal open={deleteOpen} onOpenChange={setDeleteOpen} title="Delete Alumni">
+					<DeleteAlumniButton open={editOpen} alumniMember={selectedAlumni} fetchData={getAlumni} closeModal={() => setDeleteOpen(false)}/>
+				</Modal>
+				<Modal open={editOpen} onOpenChange={setEditOpen} title="Edit Alumni">
 					<EditAlumniForm open={editOpen} alumniMember={selectedAlumni} getAlumni={getAlumni} closeModal={() => setEditOpen(false)} />
-				</AlumniFormModal>
+				</Modal>
 				<div className="max-w-screen-xl mx-auto px-4 text-center md:px-8">
 					<div className="content-center">
 						{/* Meet our team */}

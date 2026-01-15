@@ -14,7 +14,7 @@ export default function AlumniCard({ alumniMember, children }: AlumniCardProps) 
     <Card depth={2} className="w-full max-w-[280px] p-5 flex flex-col items-center text-center h-full">
       {/* Avatar */}
       <div className="mb-3">
-        {alumniMember.image != "https://source.boringavatars.com/beam/" ? (
+        {alumniMember.image && alumniMember.image !== "https://source.boringavatars.com/beam/" ? (
           <Image 
             src={alumniMember.image} 
             alt={`Photo of ${alumniMember.name}`}

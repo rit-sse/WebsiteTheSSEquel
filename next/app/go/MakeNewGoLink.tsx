@@ -1,28 +1,35 @@
-import { useSession } from "next-auth/react";
+"use client"
+
 import { useEffect, useState } from "react";
 import { CreateGoLinkProps } from "./page";
 import { Card } from "@/components/ui/card";
+import { Modal, ModalFooter } from "@/components/ui/modal";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 
 export const GoLinkButton: React.FC<CreateGoLinkProps> = ({ fetchData }) => {
-  const { data: session }: any = useSession();
+  const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [url, setUrl] = useState("");
   const [description, setDescription] = useState("");
   const [pinned, setPinned] = useState(false);
   const [officer, setOfficer] = useState(false);
+  const [isOfficer, setIsOfficer] = useState(false);
 
   const handleSetTitle = (givenTitle: string) => {
-    const title = givenTitle.toLowerCase().split(" ").join("-");
-    const special_chars_regexp = new RegExp("[\\<\\>~`!@#$%^&*()|_=+\\[\\]{}:;,./\\\\?0-9]+", "g"); // check for special characters and numbersin the title
-    let matches = title.match(special_chars_regexp);
-    let prev_title = title;
+    const formatted = givenTitle.toLowerCase().split(" ").join("-");
+    const special_chars_regexp = /[<>~`!@#$%^&*()|_=+[\]{}:;,./\\?0-9]+/g;
+    const matches = formatted.match(special_chars_regexp);
 
     if (matches != null) {
-      alert("Special Characters ex: ('.', '&', '@', etc.) and Numbers are invalid for names and Do Not Work."); // Send an alert of invaid characters
-      prev_title = title.substring(0, (prev_title.length-1))
+      alert("Special Characters and Numbers are invalid for names.");
+      setTitle(formatted.substring(0, formatted.length - 1));
+    } else {
+      setTitle(formatted);
     }
-
-      setTitle(prev_title);
   };
 
   const handleCancel = () => {
@@ -31,6 +38,7 @@ export const GoLinkButton: React.FC<CreateGoLinkProps> = ({ fetchData }) => {
     setDescription("");
     setPinned(false);
     setOfficer(false);
+    setOpen(false);
   };
 
   const handleCreate = async () => {
@@ -42,155 +50,100 @@ export const GoLinkButton: React.FC<CreateGoLinkProps> = ({ fetchData }) => {
           url: url,
           description: description,
           isPinned: pinned,
-          isPublic: !officer, // If it is officer, it is not public
+          isPublic: !officer,
         }),
       });
 
       if (response.ok) {
         handleCancel();
-        (document.getElementById("create-golink") as HTMLDialogElement).close();
         fetchData();
       }
-    } catch (error) {}
+    } catch (error) {
+      console.error("Failed to create golink:", error);
+    }
   };
-
-  const [isOfficer, setIsOfficer] = useState(false);
 
   useEffect(() => {
     (async () => {
-      const data = await fetch("/api/authLevel").then((response) =>
-        response.json()
-      );
-      console.log(data);
+      const data = await fetch("/api/authLevel").then((r) => r.json());
       setIsOfficer(data.isOfficer);
     })();
   }, []);
 
-  if (isOfficer) {
-    return (
-      <>
-        <button
-          onClick={(func) => {
-            func.preventDefault();
-            if (document) {
-              (
-                document.getElementById("create-golink") as HTMLFormElement
-              ).showModal();
-            }
-          }}
+  if (!isOfficer) return null;
+
+  return (
+    <>
+      <button onClick={() => setOpen(true)}>
+        <Card 
+          depth={2}
+          className="p-4 h-full flex items-center justify-center
+                     transition-all duration-150 ease-out
+                     hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none
+                     border-dashed"
         >
-          <Card 
-            depth={2}
-            className="p-4 h-full flex items-center justify-center
-                       transition-all duration-150 ease-out
-                       hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none
-                       border-dashed"
-          >
-            <span className="text-lg font-display font-bold text-muted-foreground">+ Create Go Link</span>
-          </Card>
-        </button>
+          <span className="text-lg font-display font-bold text-muted-foreground">+ Create Go Link</span>
+        </Card>
+      </button>
 
-        <dialog id="create-golink" className="modal">
-          <div className="modal-box">
-            <h3 className="font-bold py-4 text-xlg">Create GoLink</h3>
+      <Modal open={open} onOpenChange={setOpen} title="Create GoLink">
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="golink-title">Go Link Title</Label>
+            <Input
+              id="golink-title"
+              placeholder="The SSE Website"
+              value={title}
+              onChange={(e) => handleSetTitle(e.target.value)}
+            />
+          </div>
 
-            <label className="my-2 input input-bordered flex items-center gap-2">
-              Go Link Title:
-              <input
-                type="text"
-                className="grow text-gray-900"
-                placeholder="The SSE Website"
-                value={title}
-                onChange={((e) => handleSetTitle(e.target.value))}
-              />
-            </label>
+          <div className="space-y-2">
+            <Label htmlFor="golink-url">Go Link URL</Label>
+            <Input
+              id="golink-url"
+              placeholder="sse.rit.edu"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+            />
+          </div>
 
-            <label className="my-2 input input-bordered flex items-center gap-2">
-              Go Link URL:
-              <input
-                type="text"
-                className="grow text-gray-900"
-                placeholder="sse.rit.edu"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-              />
-            </label>
-
-            <textarea
-              className="textarea textarea-bordered w-full"
+          <div className="space-y-2">
+            <Label htmlFor="golink-desc">Description</Label>
+            <Textarea
+              id="golink-desc"
               placeholder="Description (keep it short please)"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-            ></textarea>
-
-            <div className="form-control">
-              <label className="label cursor-pointer">
-                <span className="label-text">Pinned</span>
-                <input
-                  type="checkbox"
-                  className="checkbox"
-                  checked={pinned}
-                  onChange={(e) => setPinned(e.target.checked)}
-                />
-              </label>
-            </div>
-
-            <div className="form-control">
-              <label className="label cursor-pointer">
-                <span className="label-text">
-                  Officer (Won&apos;t be publicly shown)
-                </span>
-                <input
-                  type="checkbox"
-                  className="checkbox"
-                  checked={officer}
-                  onChange={(e) => setOfficer(e.target.checked)}
-                />
-              </label>
-            </div>
-
-            <div className="flex">
-              <span className="flex-grow"></span>
-
-              <div className="modal-action">
-                <form method="dialog">
-                  <button
-                    className="btn"
-                    onClick={() => {
-                      handleCreate();
-                      // In handleCreate, if it goes well it will close the Modal.
-                    }}
-                  >
-                    Create
-                  </button>
-                </form>
-              </div>
-
-              <span className="w-2"></span>
-
-              <div className="modal-action">
-                <form method="dialog">
-                  <button
-                    className="btn"
-                    onClick={() => {
-                      handleCancel();
-                      (
-                        document.getElementById(
-                          "create-golink"
-                        ) as HTMLDialogElement
-                      ).close();
-                    }}
-                  >
-                    Cancel
-                  </button>
-                </form>
-              </div>
-            </div>
+            />
           </div>
-        </dialog>
-      </>
-    );
-  }
+
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="golink-pinned"
+              checked={pinned}
+              onCheckedChange={(checked) => setPinned(checked === true)}
+            />
+            <Label htmlFor="golink-pinned" className="cursor-pointer">Pinned</Label>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="golink-officer"
+              checked={officer}
+              onCheckedChange={(checked) => setOfficer(checked === true)}
+            />
+            <Label htmlFor="golink-officer" className="cursor-pointer">Officer (Won&apos;t be publicly shown)</Label>
+          </div>
+        </div>
+
+        <ModalFooter>
+          <Button variant="neutral" onClick={handleCancel}>Cancel</Button>
+          <Button onClick={handleCreate}>Create</Button>
+        </ModalFooter>
+      </Modal>
+    </>
+  );
 };
 
 export default GoLinkButton;

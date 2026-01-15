@@ -1,10 +1,18 @@
+"use client"
+
 import ExternalLinkIcon from "@/components/external-link-icon";
 import StarIcon from "@/components/star-icon";
 import SettingsIcon from "@/components/settings-icon";
 import TrashIcon from "@/components/trash-icon";
 import { useSession } from "next-auth/react";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
+import { Modal, ModalFooter } from "@/components/ui/modal";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 
 export interface GoLinkProps {
   id: number;
@@ -25,6 +33,8 @@ const GoLink: React.FC<GoLinkProps> = ({
   officer,
   fetchData,
 }) => {
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const [newTitle, setTitle] = useState(goUrl);
   const [newUrl, setUrl] = useState(url);
   const [newDescription, setDescription] = useState(description);
@@ -38,9 +48,6 @@ const GoLink: React.FC<GoLinkProps> = ({
     setPinned(pinned);
     setOfficer(officer);
   };
-
-  const editModalId = `edit-golink-${id}`;
-  const deleteModalId = `delete-golink-${id}`;
 
   const handleEdit = async () => {
     try {
@@ -57,10 +64,12 @@ const GoLink: React.FC<GoLinkProps> = ({
       });
 
       if (response.ok) {
-        (document.getElementById(editModalId) as HTMLDialogElement).close();
+        setEditOpen(false);
         fetchData();
       }
-    } catch (error) {}
+    } catch (error) {
+      console.error("Failed to edit golink:", error);
+    }
   };
 
   const handleDelete = async () => {
@@ -71,19 +80,17 @@ const GoLink: React.FC<GoLinkProps> = ({
       });
 
       if (response.ok) {
-        handleCancel();
-        (document.getElementById(deleteModalId) as HTMLDialogElement).close();
+        setDeleteOpen(false);
         fetchData();
       }
-    } catch (error) {}
+    } catch (error) {
+      console.error("Failed to delete golink:", error);
+    }
   };
 
   return (
     <>
-      <a
-        href={"/go/" + goUrl}
-        target="_blank"
-      >
+      <a href={"/go/" + goUrl} target="_blank">
         <Card 
           depth={2}
           className="flex p-4 h-full transition-all duration-150 ease-out
@@ -105,226 +112,134 @@ const GoLink: React.FC<GoLinkProps> = ({
               pinned={pinned}
               officer={officer}
               fetchData={fetchData}
+              onEditClick={() => setEditOpen(true)}
+              onDeleteClick={() => setDeleteOpen(true)}
             />
             <ExternalLinkIcon size={20} isHovered className="text-primary" />
           </div>
         </Card>
       </a>
-      <dialog id={editModalId} className="modal">
-        <div className="modal-box">
-          <h3 className="font-bold py-4 text-xlg">Create GoLink</h3>
 
-          <label className="my-2 input input-bordered flex items-center gap-2">
-            Go Link Title:
-            <input
-              type="text"
-              className="grow text-foreground"
+      {/* Edit Modal */}
+      <Modal open={editOpen} onOpenChange={setEditOpen} title="Edit GoLink">
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor={`edit-title-${id}`}>Go Link Title</Label>
+            <Input
+              id={`edit-title-${id}`}
               placeholder="The SSE Website"
               value={newTitle}
               onChange={(e) => setTitle(e.target.value)}
             />
-          </label>
+          </div>
 
-          <label className="my-2 input input-bordered flex items-center gap-2">
-            Go Link URL:
-            <input
-              type="text"
-              className="grow text-foreground"
+          <div className="space-y-2">
+            <Label htmlFor={`edit-url-${id}`}>Go Link URL</Label>
+            <Input
+              id={`edit-url-${id}`}
               placeholder="localhost:3000"
               value={newUrl}
               onChange={(e) => setUrl(e.target.value)}
             />
-          </label>
-
-          <textarea
-            className="textarea textarea-bordered w-full"
-            placeholder="Description (keep it short please)"
-            value={newDescription}
-            onChange={(e) => setDescription(e.target.value)}
-          ></textarea>
-
-          <div className="form-control">
-            <label className="label cursor-pointer">
-              <span className="label-text">Pinned</span>
-              <input
-                type="checkbox"
-                className="checkbox"
-                checked={newPinned}
-                onChange={(e) => setPinned(e.target.checked)}
-              />
-            </label>
           </div>
 
-          <div className="form-control">
-            <label className="label cursor-pointer">
-              <span className="label-text">
-                Officer (Won&apos;t be publicly shown)
-              </span>
-              <input
-                type="checkbox"
-                className="checkbox"
-                checked={newOfficer}
-                onChange={(e) => setOfficer(e.target.checked)}
-              />
-            </label>
+          <div className="space-y-2">
+            <Label htmlFor={`edit-desc-${id}`}>Description</Label>
+            <Textarea
+              id={`edit-desc-${id}`}
+              placeholder="Description (keep it short please)"
+              value={newDescription}
+              onChange={(e) => setDescription(e.target.value)}
+            />
           </div>
 
-          <div className="flex">
-            <span className="flex-grow"></span>
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id={`edit-pinned-${id}`}
+              checked={newPinned}
+              onCheckedChange={(checked) => setPinned(checked === true)}
+            />
+            <Label htmlFor={`edit-pinned-${id}`} className="cursor-pointer">Pinned</Label>
+          </div>
 
-            <div className="modal-action">
-              <form method="dialog">
-                <button
-                  className="btn"
-                  onClick={() => {
-                    handleEdit();
-                  }}
-                >
-                  Edit
-                </button>
-              </form>
-            </div>
-
-            <span className="w-2"></span>
-
-            <div className="modal-action">
-              <form method="dialog">
-                <button
-                  className="btn"
-                  onClick={() => {
-                    handleCancel();
-                    (
-                      document.getElementById(editModalId) as HTMLDialogElement
-                    ).close();
-                  }}
-                >
-                  Cancel
-                </button>
-              </form>
-            </div>
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id={`edit-officer-${id}`}
+              checked={newOfficer}
+              onCheckedChange={(checked) => setOfficer(checked === true)}
+            />
+            <Label htmlFor={`edit-officer-${id}`} className="cursor-pointer">Officer (Won&apos;t be publicly shown)</Label>
           </div>
         </div>
-      </dialog>
-      <dialog id={deleteModalId} className="modal">
-        <div className="modal-box">
-          <form method="dialog">
-            <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
-              ✕
-            </button>
-          </form>
-          <p className="font-bold py-4 text-lg">
-            Are you sure you want to delete this GoLink?
-          </p>
-          <div className="flex">
-            <span className="flex-grow"></span>
 
-            <div className="modal-action">
-              <form method="dialog">
-                <button
-                  className="btn"
-                  onClick={() => {
-                    handleDelete();
-                    (
-                      document.getElementById(
-                        deleteModalId
-                      ) as HTMLDialogElement
-                    ).close();
-                  }}
-                >
-                  Delete
-                </button>
-              </form>
-            </div>
+        <ModalFooter>
+          <Button variant="neutral" onClick={() => { handleCancel(); setEditOpen(false); }}>Cancel</Button>
+          <Button onClick={handleEdit}>Edit</Button>
+        </ModalFooter>
+      </Modal>
 
-            <span className="w-2"></span>
-
-            <div className="modal-action">
-              <form method="dialog">
-                <button
-                  className="btn"
-                  onClick={() => {
-                    handleCancel();
-                    (
-                      document.getElementById(
-                        deleteModalId
-                      ) as HTMLDialogElement
-                    ).close();
-                  }}
-                >
-                  Cancel
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
-      </dialog>
+      {/* Delete Confirmation Modal */}
+      <Modal open={deleteOpen} onOpenChange={setDeleteOpen} title="Delete GoLink">
+        <p className="text-foreground">Are you sure you want to delete this GoLink?</p>
+        <ModalFooter>
+          <Button variant="neutral" onClick={() => setDeleteOpen(false)}>Cancel</Button>
+          <Button onClick={handleDelete}>Delete</Button>
+        </ModalFooter>
+      </Modal>
     </>
   );
 };
 
-const EditAndDelete: React.FC<GoLinkProps> = ({
+interface EditAndDeleteProps extends GoLinkProps {
+  onEditClick: () => void;
+  onDeleteClick: () => void;
+}
+
+const EditAndDelete: React.FC<EditAndDeleteProps> = ({
   id,
-  goUrl,
-  url,
-  description,
-  pinned,
+  onEditClick,
+  onDeleteClick,
 }) => {
   const { data: session } = useSession();
   const [isOfficer, setIsOfficer] = useState(false);
 
   useEffect(() => {
     (async () => {
-      const data = await fetch("/api/authLevel").then((response) =>
-        response.json()
-      );
+      const data = await fetch("/api/authLevel").then((r) => r.json());
       setIsOfficer(data.isOfficer);
     })();
   }, []);
 
-  if (isOfficer) {
-    return (
-      <form>
-        <div className="flex flex-row">
-          <div className="pr-1">
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                if (document) {
-                  (
-                    document.getElementById(
-                      `edit-golink-${id}`
-                    ) as HTMLFormElement
-                  ).showModal();
-                }
-              }}
-              className="rounded-md hover:scale-110 transition-transform"
-              aria-label="Edit go link"
-            >
-              <SettingsIcon size={24} isHovered duration={2} />
-            </button>
-          </div>
-          <div className="pr-1">
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                if (document) {
-                  (
-                    document.getElementById(
-                      `delete-golink-${id}`
-                    ) as HTMLFormElement
-                  ).showModal();
-                }
-              }}
-              className="rounded-md hover:scale-110 transition-transform text-destructive"
-              aria-label="Delete go link"
-            >
-              <TrashIcon size={24} isHovered />
-            </button>
-          </div>
-        </div>
-      </form>
-    );
-  }
+  if (!isOfficer) return null;
+
+  return (
+    <div className="flex flex-row">
+      <div className="pr-1">
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            onEditClick();
+          }}
+          className="rounded-md hover:scale-110 transition-transform"
+          aria-label="Edit go link"
+        >
+          <SettingsIcon size={24} isHovered duration={2} />
+        </button>
+      </div>
+      <div className="pr-1">
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            onDeleteClick();
+          }}
+          className="rounded-md hover:scale-110 transition-transform text-destructive"
+          aria-label="Delete go link"
+        >
+          <TrashIcon size={24} isHovered />
+        </button>
+      </div>
+    </div>
+  );
 };
 
 export default GoLink;

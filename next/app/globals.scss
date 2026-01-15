@@ -6,24 +6,24 @@
 
 :root,
 [data-theme="light"] {
-  --background: 213 56% 96%;
+  --background: 213 62% 89%;
   --foreground: 213 26% 12%;
-  --card: 213 50% 94%;
+  --card: 213 58% 87%;
   --card-foreground: 213 26% 12%;
-  --popover: 213 56% 96%;
+  --popover: 213 60% 91%;
   --popover-foreground: 213 26% 12%;
   --primary: 210 29% 52%;
   --primary-foreground: 0 0% 100%;
   --secondary: 210 32% 66%;
   --secondary-foreground: 213 26% 12%;
-  --muted: 210 20% 90%;
+  --muted: 210 25% 82%;
   --muted-foreground: 210 20% 40%;
   --accent: 210 29% 42%;
   --accent-foreground: 0 0% 100%;
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
   --border: 0 0% 0%;
-  --input: 210 20% 85%;
+  --input: 210 25% 78%;
   --ring: 210 29% 52%;
   --radius: 0.5rem;
   --info: 199 89% 48%;
@@ -32,15 +32,22 @@
   --error: 0 84% 60%;
   
   /* Depth/Surface system - light mode gets slightly darker with depth */
-  --surface-0: 213 56% 96%;  /* Page background */
-  --surface-1: 213 50% 98%;  /* Primary cards - lighter than bg */
-  --surface-2: 213 45% 95%;  /* Nested cards */
-  --surface-3: 213 40% 92%;  /* Deeply nested */
+  --surface-0: 213 62% 89%;  /* Page background */
+  --surface-1: 213 58% 91%;  /* Primary cards - lighter than bg */
+  --surface-2: 213 54% 87%;  /* Nested cards */
+  --surface-3: 213 50% 84%;  /* Deeply nested */
   
   /* Neobrutalism variables */
-  --main: 213 50% 98%;
+  --main: 213 58% 91%;
   --main-foreground: 213 26% 12%;
-  --radius-base: 0.75rem;
+  --secondary-background: 213 60% 91%;
+  --overlay: 0 0% 0% / 0.5;
+  --radius-base: 0.5rem;
+  --shadow: 4px 4px 0px 0px hsl(0 0% 0%);
+  --box-shadow-x: 4px;
+  --box-shadow-y: 4px;
+  --reverse-box-shadow-x: -4px;
+  --reverse-box-shadow-y: -4px;
   
   color-scheme: light;
 }
@@ -79,7 +86,14 @@
   /* Neobrutalism variables */
   --main: 213 26% 16%;
   --main-foreground: 213 56% 96%;
-  --radius-base: 0.75rem;
+  --secondary-background: 213 26% 18%;
+  --overlay: 0 0% 0% / 0.7;
+  --radius-base: 0.5rem;
+  --shadow: 4px 4px 0px 0px hsl(0 0% 0%);
+  --box-shadow-x: 4px;
+  --box-shadow-y: 4px;
+  --reverse-box-shadow-x: -4px;
+  --reverse-box-shadow-y: -4px;
   
   color-scheme: dark;
 }
