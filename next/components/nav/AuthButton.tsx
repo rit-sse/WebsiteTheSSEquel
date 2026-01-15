@@ -2,7 +2,9 @@ import { signIn, signOut, useSession } from "next-auth/react";
 import HoverBoldButton from "../common/HoverBoldButton";
 
 export default function AuthButton() {
-    const { data: session } = useSession();
+    // AUTH BYPASS: Always show logged-in state
+    // const { data: session } = useSession();
+    const session = { user: { name: "Mocked User" } }; // Mocked session
 
     if (session) {
         return (

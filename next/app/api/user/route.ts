@@ -1,28 +1,32 @@
-import { PrismaClient } from "@prisma/client";
+import prisma from "@/lib/prisma";
 
 export const dynamic = 'force-dynamic'
 
-const prisma = new PrismaClient();
-
 /**
  * HTTP GET request to /api/user/
- * @returns list of user objects
+ * @returns list of user objects with all relevant fields
  */
 export async function GET() {
-  const allDepts = await prisma.user.findMany({
+  const users = await prisma.user.findMany({
     select: {
       id: true,
       name: true,
       email: true,
+      isMember: true,
+      linkedIn: true,
+      gitHub: true,
+      description: true,
+      image: true,
     },
+    orderBy: { name: 'asc' }
   });
-  return Response.json(allDepts);
+  return Response.json(users);
 }
 
 /**
  * Create a new user
  * HTTP POST request to /api/user/
- * @param request { name: string, email: string }
+ * @param request { name: string, email: string, isMember?: boolean, linkedIn?: string, gitHub?: string, description?: string }
  * @return user object that was created
  */
 export async function POST(request: Request) {
@@ -39,11 +43,8 @@ export async function POST(request: Request) {
       status: 422,
     });
   }
-  const name = body.name;
-  const email = body.email;
-  const linkedIn = body.linkedIn;
-  const gitHub = body.gitHub;
-  const description = body.description;
+
+  const { name, email, linkedIn, gitHub, description, isMember } = body;
 
   try {
     const user = await prisma.user.create({
@@ -52,7 +53,8 @@ export async function POST(request: Request) {
         email,
         linkedIn,
         gitHub,
-        description
+        description,
+        isMember: isMember ?? false
       },
     });
     return Response.json(user, { status: 201 });
@@ -113,7 +115,7 @@ export async function DELETE(request: Request) {
 /**
  * Update an existing user
  * HTTP PUT request to /api/user
- * @param request { id: number, name?: string, email?: string, linkedIn?: string, gitHub?: string, description?: string }
+ * @param request { id: number, name?: string, email?: string, linkedIn?: string, gitHub?: string, description?: string, isMember?: boolean }
  * @returns updated user object
  */
 export async function PUT(request: Request) {
@@ -131,7 +133,7 @@ export async function PUT(request: Request) {
   const id = body.id;
 
   // only update fields the caller wants to update
-  const data: { name?: string; email?: string; description?: string; linkedIn?: string; gitHub?: string } = {};
+  const data: { name?: string; email?: string; description?: string; linkedIn?: string; gitHub?: string; isMember?: boolean } = {};
   if ("name" in body) {
     data.name = body.name;
   }
@@ -146,6 +148,9 @@ export async function PUT(request: Request) {
   }
   if ("gitHub" in body) {
     data.gitHub = body.gitHub;
+  }
+  if ("isMember" in body) {
+    data.isMember = body.isMember;
   }
 
   try {

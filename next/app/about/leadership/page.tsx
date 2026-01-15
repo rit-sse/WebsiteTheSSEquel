@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from "react";
 import OfficerCard from "./OfficerCard";
-import { Modal } from "@/components/ui/modal";
-import { Team, TeamMember } from "./team";
-import ModifyOfficers from "./ModifyOfficers";
-import ReplaceOfficerForm from "./ReplaceOfficerForm";
-import EditOfficerForm from "./EditOfficerForm";
+import EmptyOfficerCard from "./EmptyOfficerCard";
+import { Team, TeamMember, OfficerPosition, PositionWithOfficer } from "./team";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Settings } from "lucide-react";
+import Link from "next/link";
 
 import { Card } from "@/components/ui/card";
 
@@ -28,36 +28,67 @@ function OfficerCardSkeleton() {
 	);
 }
 
+// Component to show manage link for officers
+function ManageLink() {
+	const [isOfficer, setIsOfficer] = useState(false);
+
+	useEffect(() => {
+		(async () => {
+			try {
+				const response = await fetch("/api/authLevel");
+				const data = await response.json();
+				setIsOfficer(data.isOfficer);
+			} catch {
+				setIsOfficer(false);
+			}
+		})();
+	}, []);
+
+	if (!isOfficer) return null;
+
+	return (
+		<Link href="/dashboard">
+			<Button variant="neutral" size="sm">
+				<Settings className="h-4 w-4 mr-2" />
+				Manage Officers
+			</Button>
+		</Link>
+	);
+}
+
 export default function Leadership() {
-	// States to manage opening/closing of modals
-	const [replaceOpen, setReplaceOpen] = useState(false);
-	const [editOpen, setEditOpen] = useState(false);
-	// State of the current selected officer (being edited / replaced)
-	const [selectedOfficer, setSelectedOfficer] = useState<TeamMember>();
-	// State list of all active officers
+	// State list of all positions with their officers
 	const [teamData, setTeamData] = useState<Team>({ primary_officers: [], committee_heads: [] });
 	// Loading state
 	const [isLoading, setIsLoading] = useState(true);
 
-	// Get all active officers when page opens
+	// Get all positions and officers when page opens
 	useEffect(() => {
 		getOfficers();
 	}, []);
 
 	const getOfficers = async () => {
 		setIsLoading(true);
-		var team: Team = { primary_officers: [], committee_heads: [] };
+		const team: Team = { primary_officers: [], committee_heads: [] };
+		
 		try {
-			const response = await fetch('/api/officer/active');
-			if (!response.ok) {
-				throw new Error('Failed to fetch officers');
+			// Fetch all positions and active officers in parallel
+			const [positionsResponse, officersResponse] = await Promise.all([
+				fetch('/api/officer-positions'),
+				fetch('/api/officer/active')
+			]);
+
+			if (!positionsResponse.ok || !officersResponse.ok) {
+				throw new Error('Failed to fetch data');
 			}
-			const data = await response.json();
 
-			// Map primary officers to TeamMember
-			team.primary_officers = data
-				.filter((officer: any) => officer.position.is_primary)
-				.map((officer: any) => ({
+			const positions: OfficerPosition[] = await positionsResponse.json();
+			const officers = await officersResponse.json();
+
+			// Create a map of position title to active officer
+			const officerByPosition = new Map<string, TeamMember>();
+			officers.forEach((officer: any) => {
+				const teamMember: TeamMember = {
 					officer_id: officer.id,
 					user_id: officer.user.id,
 					name: officer.user.name,
@@ -67,33 +98,31 @@ export default function Leadership() {
 					desc: officer.user.description,
 					linkedin: officer.user.linkedIn,
 					github: officer.user.gitHub
-				}));
+				};
+				officerByPosition.set(officer.position.title, teamMember);
+			});
 
-			// Map committee officers to TeamMember
-			team.committee_heads = data
-				.filter((officer: any) => !officer.position.is_primary)
-				.map((officer: any) => ({
-					officer_id: officer.id,
-					user_id: officer.user.id,
-					name: officer.user.name,
-					image: officer.user.image,
-					title: officer.position.title,
-					email: officer.user.email,
-					desc: officer.user.description,
-					linkedin: officer.user.linkedIn,
-					github: officer.user.gitHub
-				}));
+			// Map positions to PositionWithOfficer
+			positions.forEach((position) => {
+				const positionWithOfficer: PositionWithOfficer = {
+					position,
+					officer: officerByPosition.get(position.title) || null
+				};
+
+				if (position.is_primary) {
+					team.primary_officers.push(positionWithOfficer);
+				} else {
+					team.committee_heads.push(positionWithOfficer);
+				}
+			});
+
+			// Sort committee heads by title
+			team.committee_heads.sort((a, b) => a.position.title.localeCompare(b.position.title));
 
 		} catch (error) {
 			console.error('Error:', error);
 		}
-		// Sort officers by title
-		team.committee_heads.sort((a, b) => {
-			if (a.title < b.title) {
-				return -1;
-			}
-			return 1;
-		});
+
 		setTeamData(team);
 		setIsLoading(false);
 	};
@@ -101,13 +130,6 @@ export default function Leadership() {
 	return (
 		<>
 			<section className="mt-16">
-				{/* Modals for editing and replacing officers */}
-				<Modal open={replaceOpen} onOpenChange={setReplaceOpen} title="Replace Officer">
-					<ReplaceOfficerForm open={replaceOpen} teamMember={selectedOfficer} getOfficers={getOfficers} closeModel={() => setReplaceOpen(false)} />
-				</Modal>
-				<Modal open={editOpen} onOpenChange={setEditOpen} title="Edit Officer">
-					<EditOfficerForm open={editOpen} teamMember={selectedOfficer} getOfficers={getOfficers} closeModal={() => setEditOpen(false)} />
-				</Modal>
 				<div className="max-w-screen-xl mx-auto px-4 text-center md:px-8">
 					<div className="content-center">
 						{/* Meet our team */}
@@ -118,6 +140,9 @@ export default function Leadership() {
 							<p className="mt-3 text-xl leading-8">
 								Have questions? Feel free to reach out to any of our officers!
 							</p>
+							<div className="mt-4">
+								<ManageLink />
+							</div>
 						</div>
 					</div>
 
@@ -134,15 +159,12 @@ export default function Leadership() {
 								<OfficerCardSkeleton />
 							</>
 						) : (
-							teamData.primary_officers.map((member, idx) => (
-								<OfficerCard key={idx} teamMember={member}>
-									<ModifyOfficers 
-										teamMember={member} 
-										openReplaceModal={() => setReplaceOpen(true)} 
-										openEditModal={() => setEditOpen(true)} 
-										setSelectedOfficer={setSelectedOfficer} 
-									/>
-								</OfficerCard>
+							teamData.primary_officers.map((item, idx) => (
+								item.officer ? (
+									<OfficerCard key={idx} teamMember={item.officer} />
+								) : (
+									<EmptyOfficerCard key={idx} position={item.position} />
+								)
 							))
 						)}
 					</div>
@@ -162,15 +184,12 @@ export default function Leadership() {
 								<OfficerCardSkeleton />
 							</>
 						) : (
-							teamData.committee_heads.map((member, idx) => (
-								<OfficerCard key={idx} teamMember={member}>
-									<ModifyOfficers 
-										teamMember={member} 
-										openReplaceModal={() => setReplaceOpen(true)} 
-										openEditModal={() => setEditOpen(true)} 
-										setSelectedOfficer={setSelectedOfficer} 
-									/>
-								</OfficerCard>
+							teamData.committee_heads.map((item, idx) => (
+								item.officer ? (
+									<OfficerCard key={idx} teamMember={item.officer} />
+								) : (
+									<EmptyOfficerCard key={idx} position={item.position} />
+								)
 							))
 						)}
 					</div>

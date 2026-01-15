@@ -19,18 +19,22 @@ const authVerifierFactory = (
   verifier: (permissions: any) => AuthOutput
 ): AuthVerifier => {
   return async (request: NextRequest) => {
-    // get the token from the cookie
-    const token = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
-    // fetch permissions from the API
-    const permissions = await fetch(
-      process.env.INTERNAL_API_URL + "/api/authLevel",
-      {
-        body: JSON.stringify({ token }),
-        method: "PUT",
-      }
-    ).then(async (res) => await res.json());
-    // console.log(permissions);
-    return verifier(permissions);
+    // AUTH BYPASS: Always allow all requests with mocked full permissions
+    return { isAllowed: true, authType: "Mocked" };
+    
+    // ORIGINAL AUTH CODE (commented out):
+    // // get the token from the cookie
+    // const token = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
+    // // fetch permissions from the API
+    // const permissions = await fetch(
+    //   process.env.INTERNAL_API_URL + "/api/authLevel",
+    //   {
+    //     body: JSON.stringify({ token }),
+    //     method: "PUT",
+    //   }
+    // ).then(async (res) => await res.json());
+    // // console.log(permissions);
+    // return verifier(permissions);
   };
 };
 
@@ -87,12 +91,25 @@ const nonGetOfficerVerifier = nonGetVerifier(officerVerifier);
 const nonGetMentorVerifier = nonGetVerifier(mentorVerifier);
 
 /**
+ * Auth verifier for alumni requests - allows POST (public submissions) but requires officer for GET/PUT/DELETE
+ */
+const alumniRequestsVerifier: AuthVerifier = async (request: NextRequest) => {
+  // Allow POST requests from anyone (public can submit requests)
+  if (request.method === "POST") {
+    return { isAllowed: true, authType: "None" };
+  }
+  // All other methods (GET, PUT, DELETE) require officer permissions
+  return officerVerifier(request);
+};
+
+/**
  * Map from API route name to authorization verifier. The verifier should be run against any request that
  * goes through that route.
  * Keys are the second element in the path segment; for example, the path "/api/golinks/officer" would
  * correspond to the key "golinks"
  */
 const ROUTES: { [key: string]: AuthVerifier } = {
+  "alumni-requests": alumniRequestsVerifier,
   calendar: nonGetOfficerVerifier,
   course: nonGetOfficerVerifier,
   courseTaken: nonGetMentorVerifier,

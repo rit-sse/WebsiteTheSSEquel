@@ -2,7 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { TeamMember } from "./team";
-
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { ModalFooter } from "@/components/ui/modal";
 
 interface OfficerFormProps {
     open: boolean, // open - State of edit form modal
@@ -45,7 +49,7 @@ export default function EditOfficerForm({ open, teamMember, getOfficers, closeMo
         });
     }
 
-    const handleChange = (e: any) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setFormData((prevData) => ({
           ...prevData,
@@ -53,13 +57,13 @@ export default function EditOfficerForm({ open, teamMember, getOfficers, closeMo
         }));
     };
 
-    const handleSubmit = async (e: any) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError("");
         try {
 
             if (!teamMember?.user_id) {
-                setError("Misisng user_id for this officer.");
+                setError("Missing user_id for this officer.");
                 return;
             }
 
@@ -119,33 +123,73 @@ export default function EditOfficerForm({ open, teamMember, getOfficers, closeMo
     };
 
     return (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <div className="flex flex-col">
-                <label>Officer Email</label>
-                <input type="email" name="user_email" placeholder="RIT Email" value={formData.user_email} onChange={handleChange}/>
+        <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+                <Label htmlFor="user_email">Officer Email</Label>
+                <Input 
+                    id="user_email"
+                    type="email" 
+                    name="user_email" 
+                    placeholder="RIT Email" 
+                    value={formData.user_email} 
+                    onChange={handleChange}
+                />
             </div>
-            <div className="flex flex-col">
-                <label>LinkedIn</label>
-                <input name="linkedIn" placeholder="LinkedIn Profile Link" value={formData.linkedIn} onChange={handleChange}/>
+            <div className="space-y-2">
+                <Label htmlFor="linkedIn">LinkedIn</Label>
+                <Input 
+                    id="linkedIn"
+                    name="linkedIn" 
+                    placeholder="LinkedIn Profile Link" 
+                    value={formData.linkedIn} 
+                    onChange={handleChange}
+                />
             </div>
-            <div className="flex flex-col">
-                <label>GitHub</label>
-                <input name="gitHub" placeholder="GitHub Link" value={formData.gitHub} onChange={handleChange}/>
+            <div className="space-y-2">
+                <Label htmlFor="gitHub">GitHub</Label>
+                <Input 
+                    id="gitHub"
+                    name="gitHub" 
+                    placeholder="GitHub Link" 
+                    value={formData.gitHub} 
+                    onChange={handleChange}
+                />
             </div>
-            <div className="flex flex-col">
-                <label>Description</label>
-                <input name="description" placeholder="Description about officer..." value={formData.description} onChange={handleChange}/>
+            <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea 
+                    id="description"
+                    name="description" 
+                    placeholder="Description about officer..." 
+                    value={formData.description} 
+                    onChange={handleChange}
+                />
             </div>
-            <div className="flex flex-col">
-                <label>Start Date</label>
-                <input type="date" name="start_date" value={formData.start_date} onChange={handleChange}/>
+            <div className="space-y-2">
+                <Label htmlFor="start_date">Start Date</Label>
+                <Input 
+                    id="start_date"
+                    type="date" 
+                    name="start_date" 
+                    value={formData.start_date} 
+                    onChange={handleChange}
+                />
             </div>
-            <div className="flex flex-col">
-                <label>End Date</label>
-                <input type="date" name="end_date" value={formData.end_date} onChange={handleChange}/>
+            <div className="space-y-2">
+                <Label htmlFor="end_date">End Date</Label>
+                <Input 
+                    id="end_date"
+                    type="date" 
+                    name="end_date" 
+                    value={formData.end_date} 
+                    onChange={handleChange}
+                />
             </div>
-            <button type="submit" className="p-2 bg-secondary text-foreground hover:bg-primary rounded">Submit</button>
-            <label className="text-error text-center text-sm">{error}</label>
+            <ModalFooter>
+                <Button type="button" variant="neutral" onClick={closeModal}>Cancel</Button>
+                <Button type="submit">Save Changes</Button>
+            </ModalFooter>
+            {error && <p className="text-destructive text-center text-sm">{error}</p>}
         </form>
     )
 }

@@ -8,8 +8,9 @@ import ModifyAlumni from "./ModifyAlumni";
 import EditAlumniForm from "./EditAlumniForm";
 import CreateAlumniButton from "./MakeNewAlumni";
 import DeleteAlumniButton from "./DeleteAlumni";
+import RequestAlumniForm from "./RequestAlumniForm";
 
-export default function Leadership() {
+export default function Alumni() {
 	// States to manage opening/closing of modals
 	const [deleteOpen, setDeleteOpen] = useState(false);
 	const [editOpen, setEditOpen] = useState(false);
@@ -24,16 +25,15 @@ export default function Leadership() {
 	}, []);
 
 	const getAlumni = async () => {
-		var team: Team = { alumni_member: []};
+		const team: Team = { alumni_member: []};
 		try {
 			const response = await fetch('/api/alumni/active');
 			if (!response.ok) {
 				throw new Error('Failed to fetch alumni');
 			}
 			const data = await response.json();
-			console.log(data.user)
 
-			// Map alumni to AlimniMember
+			// Map alumni to AlumniMember
 			team.alumni_member = data
 				.map((alumni: any) => ({
 					alumni_id: alumni.id,
@@ -59,15 +59,15 @@ export default function Leadership() {
 		<>
 			<section className="mt-16">
 				{/* Modals for editing and deleting alumni */}
-				<Modal open={deleteOpen} onOpenChange={setDeleteOpen} title="Delete Alumni">
-					<DeleteAlumniButton open={editOpen} alumniMember={selectedAlumni} fetchData={getAlumni} closeModal={() => setDeleteOpen(false)}/>
+				<Modal open={deleteOpen} onOpenChange={setDeleteOpen} title="Remove Alumni">
+					<DeleteAlumniButton open={deleteOpen} alumniMember={selectedAlumni} fetchData={getAlumni} closeModal={() => setDeleteOpen(false)}/>
 				</Modal>
 				<Modal open={editOpen} onOpenChange={setEditOpen} title="Edit Alumni">
 					<EditAlumniForm open={editOpen} alumniMember={selectedAlumni} getAlumni={getAlumni} closeModal={() => setEditOpen(false)} />
 				</Modal>
 				<div className="max-w-screen-xl mx-auto px-4 text-center md:px-8">
 					<div className="content-center">
-						{/* Meet our team */}
+						{/* Header */}
 						<div className="max-w-xl mx-auto">
 							<h1 className="text-primary">
 								Meet our Alumni
@@ -75,13 +75,17 @@ export default function Leadership() {
 							<p className="mt-3 text-xl leading-8 text-center">
 								A dedicated page for alumni of the SSE
 							</p>
-							<div className="mt-4">
+							{/* Action buttons */}
+							<div className="mt-4 flex flex-wrap gap-3 justify-center">
+								{/* Public request form - visible to everyone */}
+								<RequestAlumniForm />
+								{/* Direct add - officer only (handled inside component) */}
 								<CreateAlumniButton fetchData={getAlumni} />
 							</div>
 						</div>
 					</div>
 					
-					{/* Alumni */}
+					{/* Alumni Grid */}
 					<div className="mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 justify-items-center">
 						{teamData.alumni_member.map((member, idx) => (
 							<AlumniCard key={idx} alumniMember={member}>

@@ -71,6 +71,38 @@ model Alumni {
     previous_roles String @default("")
 }
 
+model AlumniRequest {
+    //Store an automatically generated unique int for id
+    id Int @id @default(autoincrement())
+
+    //Store first and last name as Strings
+    name String
+
+    //Store email as a String
+    email String
+
+    linkedIn String?
+    gitHub String?
+    description String?
+
+    //Image will be saved
+    image String @default("https://source.boringavatars.com/beam/")
+
+    //Store startDate and endDate as a String
+    start_date String
+    end_date   String
+    
+    //Store Quote and Previous Roles
+    quote String @default("")
+    previous_roles String @default("")
+
+    //Status of the request: pending, approved, rejected
+    status String @default("pending")
+
+    //Timestamp when request was created
+    created_at DateTime @default(now())
+}
+
 model Quote {
     //Store an automatically generated unique int for id
     id Int @id @default(autoincrement())
