@@ -1,189 +1,264 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react";
-import AlumniRequestCard, { AlumniRequest } from "./AlumniRequestCard";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Card } from "@/components/ui/card";
+import { useState, useEffect, useCallback } from "react"
+import { DataTable, Column } from "@/components/ui/data-table"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Check, X, Trash2 } from "lucide-react"
+import Avatar from 'boring-avatars'
+import Image from "next/image"
 
-type FilterStatus = 'all' | 'pending' | 'approved' | 'rejected';
+export interface AlumniRequest {
+  id: number
+  name: string
+  email: string
+  linkedIn?: string
+  gitHub?: string
+  description?: string
+  image: string
+  start_date: string
+  end_date: string
+  quote: string
+  previous_roles: string
+  status: string
+  created_at: string
+}
+
+type FilterStatus = 'pending' | 'approved' | 'rejected'
 
 export default function AlumniRequestsSection() {
-  const [requests, setRequests] = useState<AlumniRequest[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [processingId, setProcessingId] = useState<number | null>(null);
-  const [filter, setFilter] = useState<FilterStatus>('pending');
-  const [error, setError] = useState("");
+  const [requests, setRequests] = useState<AlumniRequest[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [processingId, setProcessingId] = useState<number | null>(null)
+  const [filter, setFilter] = useState<FilterStatus>('pending')
+  const [error, setError] = useState("")
 
   const fetchRequests = useCallback(async () => {
-    setIsLoading(true);
-    setError("");
+    setIsLoading(true)
+    setError("")
     try {
-      const statusParam = filter === 'all' ? '' : `?status=${filter}`;
-      const response = await fetch(`/api/alumni-requests${statusParam}`);
+      const response = await fetch(`/api/alumni-requests?status=${filter}`)
       if (!response.ok) {
-        throw new Error('Failed to fetch requests');
+        throw new Error('Failed to fetch requests')
       }
-      const data = await response.json();
-      setRequests(data);
+      const data = await response.json()
+      setRequests(data)
     } catch (err) {
-      console.error('Error fetching requests:', err);
-      setError("Failed to load alumni requests");
+      console.error('Error fetching requests:', err)
+      setError("Failed to load alumni requests")
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  }, [filter]);
+  }, [filter])
 
   useEffect(() => {
-    fetchRequests();
-  }, [fetchRequests]);
+    fetchRequests()
+  }, [fetchRequests])
 
   const handleApprove = async (id: number) => {
-    setProcessingId(id);
+    setProcessingId(id)
     try {
       const response = await fetch('/api/alumni-requests', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, status: 'approved' })
-      });
+      })
 
       if (response.ok) {
-        await fetchRequests();
+        await fetchRequests()
       } else {
-        const errorText = await response.text();
-        setError(errorText || "Failed to approve request");
+        const errorText = await response.text()
+        setError(errorText || "Failed to approve request")
       }
     } catch (err) {
-      console.error('Error approving request:', err);
-      setError("An error occurred while approving the request");
+      console.error('Error approving request:', err)
+      setError("An error occurred")
     } finally {
-      setProcessingId(null);
+      setProcessingId(null)
     }
-  };
+  }
 
   const handleReject = async (id: number) => {
-    setProcessingId(id);
+    setProcessingId(id)
     try {
       const response = await fetch('/api/alumni-requests', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, status: 'rejected' })
-      });
+      })
 
       if (response.ok) {
-        await fetchRequests();
+        await fetchRequests()
       } else {
-        const errorText = await response.text();
-        setError(errorText || "Failed to reject request");
+        const errorText = await response.text()
+        setError(errorText || "Failed to reject request")
       }
     } catch (err) {
-      console.error('Error rejecting request:', err);
-      setError("An error occurred while rejecting the request");
+      console.error('Error rejecting request:', err)
+      setError("An error occurred")
     } finally {
-      setProcessingId(null);
+      setProcessingId(null)
     }
-  };
+  }
 
   const handleDelete = async (id: number) => {
-    setProcessingId(id);
+    setProcessingId(id)
     try {
       const response = await fetch('/api/alumni-requests', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id })
-      });
+      })
 
       if (response.ok) {
-        await fetchRequests();
+        await fetchRequests()
       } else {
-        const errorText = await response.text();
-        setError(errorText || "Failed to delete request");
+        const errorText = await response.text()
+        setError(errorText || "Failed to delete request")
       }
     } catch (err) {
-      console.error('Error deleting request:', err);
-      setError("An error occurred while deleting the request");
+      console.error('Error deleting request:', err)
+      setError("An error occurred")
     } finally {
-      setProcessingId(null);
+      setProcessingId(null)
     }
-  };
+  }
 
-  const pendingCount = requests.filter(r => r.status === 'pending').length;
+  const columns: Column<AlumniRequest>[] = [
+    {
+      key: "name",
+      header: "Name",
+      sortable: true,
+      render: (request) => (
+        <div className="flex items-center gap-2">
+          {request.image && request.image !== "https://source.boringavatars.com/beam/" ? (
+            <Image 
+              src={request.image} 
+              alt={`Photo of ${request.name}`} 
+              width={32} 
+              height={32} 
+              className="rounded-full object-cover w-8 h-8 flex-shrink-0"
+              unoptimized
+            /> 
+          ) : (
+            <Avatar size={32} name={request.name || "default"} colors={["#426E8C", "#5289AF", "#86ACC7"]} variant="beam"/>
+          )}
+          <div className="min-w-0">
+            <span className="font-medium text-sm block truncate">{request.name}</span>
+            <span className="text-xs text-muted-foreground block sm:hidden truncate">{request.email}</span>
+          </div>
+        </div>
+      )
+    },
+    {
+      key: "email",
+      header: "Email",
+      className: "hidden sm:table-cell",
+      render: (request) => (
+        <span className="text-muted-foreground text-xs truncate">{request.email}</span>
+      )
+    },
+    {
+      key: "previous_roles",
+      header: "Previous Roles",
+      className: "hidden md:table-cell",
+      render: (request) => (
+        <span className="text-muted-foreground text-xs truncate max-w-[150px] block">{request.previous_roles || "-"}</span>
+      )
+    },
+    {
+      key: "dates",
+      header: "Dates",
+      className: "hidden lg:table-cell",
+      render: (request) => (
+        <span className="text-muted-foreground text-xs">{request.start_date} - {request.end_date}</span>
+      )
+    },
+    {
+      key: "actions",
+      header: "",
+      render: (request) => {
+        const isProcessing = processingId === request.id
+        
+        if (request.status === 'pending') {
+          return (
+            <div className="flex gap-1">
+              <Button 
+                size="xs" 
+                variant="ghost"
+                onClick={() => handleReject(request.id)}
+                disabled={isProcessing}
+                title="Reject"
+              >
+                <X className="h-3 w-3" />
+              </Button>
+              <Button 
+                size="xs"
+                variant="outline"
+                onClick={() => handleApprove(request.id)}
+                disabled={isProcessing}
+                title="Approve"
+              >
+                <Check className="h-3 w-3" />
+              </Button>
+            </div>
+          )
+        }
+        
+        return (
+          <Button 
+            size="xs" 
+            variant="destructiveGhost"
+            onClick={() => handleDelete(request.id)}
+            disabled={isProcessing}
+            title="Delete"
+          >
+            <Trash2 className="h-3 w-3" />
+          </Button>
+        )
+      }
+    }
+  ]
+
+  // Filter tabs component
+  const FilterTabs = () => (
+    <div className="flex gap-1 mb-4">
+      {(['pending', 'approved', 'rejected'] as FilterStatus[]).map((status) => (
+        <button
+          key={status}
+          onClick={() => setFilter(status)}
+          className={`px-3 py-1.5 text-xs rounded-md transition-colors capitalize font-medium ${
+            filter === status 
+              ? 'bg-accent text-accent-foreground' 
+              : 'bg-surface-3 text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          {status}
+        </button>
+      ))}
+    </div>
+  )
 
   return (
     <div>
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
-        <div>
-          <h2 className="text-lg sm:text-xl font-semibold text-foreground">Alumni Requests</h2>
-          <p className="text-xs sm:text-sm text-muted-foreground">
-            Review and manage alumni submission requests
-          </p>
-        </div>
-        
-        {/* Filter tabs */}
-        <div className="flex gap-0.5 sm:gap-1 bg-surface-2 rounded-lg p-0.5 sm:p-1 overflow-x-auto">
-          {(['pending', 'approved', 'rejected', 'all'] as FilterStatus[]).map((status) => (
-            <button
-              key={status}
-              onClick={() => setFilter(status)}
-              className={`px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm rounded-md transition-colors capitalize whitespace-nowrap ${
-                filter === status 
-                  ? 'bg-background text-foreground shadow-sm' 
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              {status}
-              {status === 'pending' && pendingCount > 0 && filter !== 'pending' && (
-                <span className="ml-1 sm:ml-1.5 bg-primary text-primary-foreground text-xs px-1 sm:px-1.5 py-0.5 rounded-full">
-                  {pendingCount}
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
-      </div>
-
       {error && (
-        <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-destructive/10 text-destructive rounded-lg text-xs sm:text-sm">
+        <div className="mb-3 p-2 bg-destructive/10 text-destructive rounded-lg text-xs">
           {error}
         </div>
       )}
-
-      {isLoading ? (
-        <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <Card key={i} depth={2} className="p-4">
-              <div className="flex gap-4">
-                <Skeleton className="h-16 w-16 rounded-full" />
-                <div className="flex-grow space-y-2">
-                  <Skeleton className="h-5 w-32" />
-                  <Skeleton className="h-4 w-48" />
-                  <Skeleton className="h-4 w-full" />
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
-      ) : requests.length === 0 ? (
-        <Card depth={2} className="p-8 text-center">
-          <p className="text-muted-foreground">
-            {filter === 'all' 
-              ? 'No alumni requests yet' 
-              : `No ${filter} requests`}
-          </p>
-        </Card>
-      ) : (
-        <div className="space-y-4">
-          {requests.map((request) => (
-            <AlumniRequestCard
-              key={request.id}
-              request={request}
-              onApprove={handleApprove}
-              onReject={handleReject}
-              onDelete={handleDelete}
-              isProcessing={processingId === request.id}
-            />
-          ))}
-        </div>
-      )}
+      
+      <FilterTabs />
+      
+      <DataTable
+        data={requests}
+        columns={columns}
+        keyField="id"
+        title={`Alumni Requests (${requests.length} ${filter})`}
+        searchPlaceholder="Search requests..."
+        searchFields={["name", "email", "previous_roles"]}
+        isLoading={isLoading}
+        emptyMessage={`No ${filter} requests`}
+      />
     </div>
-  );
+  )
 }

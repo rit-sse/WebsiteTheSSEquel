@@ -238,7 +238,7 @@ export default function OfficerModal({ open, onOpenChange, officer, onSuccess }:
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
-                Note: Assigning will deactivate any current officer in this position
+                Note: Assigning will replace any current officer in this position
               </p>
             </div>
           </>
@@ -271,11 +271,11 @@ export default function OfficerModal({ open, onOpenChange, officer, onSuccess }:
         {error && <p className="text-destructive text-sm">{error}</p>}
 
         <ModalFooter>
-          <Button type="button" variant="neutral" onClick={() => onOpenChange(false)}>
+          <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Saving..." : isEditMode ? "Save Changes" : "Assign Officer"}
+          <Button type="submit" variant="outline" disabled={isSubmitting}>
+            {isSubmitting ? "Saving..." : isEditMode ? "Save" : "Assign"}
           </Button>
         </ModalFooter>
       </form>

@@ -6,44 +6,48 @@
 
 :root,
 [data-theme="light"] {
-  --background: 213 62% 89%;
-  --foreground: 213 26% 12%;
-  --card: 213 58% 87%;
-  --card-foreground: 213 26% 12%;
-  --popover: 213 60% 91%;
-  --popover-foreground: 213 26% 12%;
-  --primary: 210 29% 52%;
+  --background: 220 30% 85%;
+  --foreground: 220 30% 15%;
+  --card: 220 35% 80%;
+  --card-foreground: 220 30% 15%;
+  --popover: 220 30% 82%;
+  --popover-foreground: 220 30% 15%;
+  --primary: 220 60% 45%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 210 32% 66%;
-  --secondary-foreground: 213 26% 12%;
-  --muted: 210 25% 82%;
-  --muted-foreground: 210 20% 40%;
-  --accent: 210 29% 42%;
-  --accent-foreground: 0 0% 100%;
-  --destructive: 0 84% 60%;
+  --secondary: 270 40% 70%;
+  --secondary-foreground: 270 30% 20%;
+  --muted: 220 25% 75%;
+  --muted-foreground: 220 20% 35%;
+  --accent: 35 75% 60%;
+  --accent-foreground: 35 80% 15%;
+  --destructive: 0 70% 55%;
   --destructive-foreground: 0 0% 100%;
-  --border: 0 0% 0%;
-  --input: 210 25% 78%;
-  --ring: 210 29% 52%;
+  --border: 220 20% 20%;
+  --input: 220 30% 78%;
+  --ring: 220 60% 45%;
   --radius: 0.5rem;
-  --info: 199 89% 48%;
-  --success: 142 71% 45%;
-  --warning: 43 96% 56%;
-  --error: 0 84% 60%;
+  --info: 200 70% 50%;
+  --success: 150 60% 45%;
+  --warning: 40 80% 55%;
+  --error: 0 70% 55%;
   
-  /* Depth/Surface system - light mode gets slightly darker with depth */
-  --surface-0: 213 62% 89%;  /* Page background */
-  --surface-1: 213 58% 91%;  /* Primary cards - lighter than bg */
-  --surface-2: 213 54% 87%;  /* Nested cards */
-  --surface-3: 213 50% 84%;  /* Deeply nested */
+  /* Depth/Surface system - blue tones with clear distinction */
+  --surface-0: 220 25% 82%;  /* Page background - muted blue-gray */
+  --surface-1: 225 40% 90%;  /* Level 1 - light periwinkle */
+  --surface-2: 220 45% 85%;  /* Level 2 - soft blue */
+  --surface-3: 215 50% 78%;  /* Level 3 - medium blue */
+  --surface-4: 210 55% 72%;  /* Level 4 - deeper blue */
+  
+  /* Dropdown/popover specific */
+  --dropdown: 225 45% 92%;  /* Light blue for dropdowns */
   
   /* Neobrutalism variables */
-  --main: 213 58% 91%;
-  --main-foreground: 213 26% 12%;
-  --secondary-background: 213 60% 91%;
+  --main: 220 35% 82%;
+  --main-foreground: 220 30% 15%;
+  --secondary-background: 225 40% 80%;
   --overlay: 0 0% 0% / 0.5;
   --radius-base: 0.5rem;
-  --shadow: 4px 4px 0px 0px hsl(0 0% 0%);
+  --shadow: 4px 4px 0px 0px hsl(220 20% 20%);
   --box-shadow-x: 4px;
   --box-shadow-y: 4px;
   --reverse-box-shadow-x: -4px;
@@ -53,43 +57,47 @@
 }
 
 [data-theme="dark"] {
-  --background: 213 26% 12%;
-  --foreground: 213 56% 96%;
-  --card: 213 26% 20%;
-  --card-foreground: 213 56% 96%;
-  --popover: 213 26% 14%;
-  --popover-foreground: 213 56% 96%;
-  --primary: 213 76% 80%;
-  --primary-foreground: 213 26% 12%;
-  --secondary: 213 55% 61%;
+  --background: 225 40% 8%;
+  --foreground: 220 20% 92%;
+  --card: 225 45% 14%;
+  --card-foreground: 220 20% 92%;
+  --popover: 225 40% 10%;
+  --popover-foreground: 220 20% 92%;
+  --primary: 210 70% 55%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 280 50% 55%;
   --secondary-foreground: 0 0% 100%;
-  --muted: 213 26% 20%;
-  --muted-foreground: 213 30% 60%;
-  --accent: 213 44% 41%;
+  --muted: 225 35% 18%;
+  --muted-foreground: 220 20% 65%;
+  --accent: 25 85% 50%;
   --accent-foreground: 0 0% 100%;
-  --destructive: 0 84% 60%;
+  --destructive: 0 70% 50%;
   --destructive-foreground: 0 0% 100%;
-  --border: 0 0% 0%;
-  --input: 213 26% 20%;
-  --ring: 213 76% 80%;
-  --info: 199 89% 48%;
-  --success: 142 71% 45%;
-  --warning: 43 96% 56%;
-  --error: 0 84% 60%;
+  --border: 225 30% 5%;
+  --input: 225 40% 16%;
+  --ring: 210 70% 55%;
+  --info: 200 80% 55%;
+  --success: 160 70% 40%;
+  --warning: 35 90% 50%;
+  --error: 0 70% 50%;
   
-  /* Depth/Surface system - dark mode gets lighter with elevation */
-  --surface-0: 213 26% 12%;  /* Page background */
-  --surface-1: 213 26% 16%;  /* Primary cards */
-  --surface-2: 213 26% 20%;  /* Nested cards */
-  --surface-3: 213 26% 24%;  /* Deeply nested */
+  /* Depth/Surface system - deep rich blues with color accents */
+  --surface-0: 225 40% 8%;   /* Page background - deep navy */
+  --surface-1: 220 50% 14%;  /* Level 1 - rich blue */
+  --surface-2: 215 55% 20%;  /* Level 2 - brighter blue */
+  --surface-3: 210 60% 26%;  /* Level 3 - vibrant blue */
+  --surface-4: 200 65% 32%;  /* Level 4 - teal-blue */
+  
+  /* Dropdown/popover specific */
+  --dropdown: 215 55% 22%;  /* Deep blue for dropdowns */
   
   /* Neobrutalism variables */
-  --main: 213 26% 16%;
-  --main-foreground: 213 56% 96%;
-  --secondary-background: 213 26% 18%;
+  --main: 225 45% 14%;
+  --main-foreground: 220 20% 92%;
+  --secondary-background: 220 50% 16%;
   --overlay: 0 0% 0% / 0.7;
   --radius-base: 0.5rem;
-  --shadow: 4px 4px 0px 0px hsl(0 0% 0%);
+  --shadow: 4px 4px 0px 0px hsl(225 30% 5%);
   --box-shadow-x: 4px;
   --box-shadow-y: 4px;
   --reverse-box-shadow-x: -4px;

@@ -111,24 +111,22 @@ export default function UsersSection() {
     },
     {
       key: "actions",
-      header: "Actions",
+      header: "",
       render: (user) => (
-        <div className="flex gap-1 sm:gap-2">
+        <div className="flex gap-1">
           <Button
-            size="sm"
-            variant="neutral"
+            size="xs"
+            variant="ghost"
             onClick={() => handleEdit(user)}
-            className="h-8 w-8 p-0"
           >
-            <Pencil className="h-3 w-3 sm:h-4 sm:w-4" />
+            <Pencil className="h-3 w-3" />
           </Button>
           <Button
-            size="sm"
-            variant="destructive"
+            size="xs"
+            variant="destructiveGhost"
             onClick={() => handleDeleteClick(user)}
-            className="h-8 w-8 p-0"
           >
-            <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
+            <Trash2 className="h-3 w-3" />
           </Button>
         </div>
       )
@@ -141,6 +139,7 @@ export default function UsersSection() {
         data={users}
         columns={columns}
         keyField="id"
+        title="Users"
         searchPlaceholder="Search users by name or email..."
         searchFields={["name", "email"]}
         onAdd={handleAdd}
@@ -171,15 +170,15 @@ export default function UsersSection() {
           This action cannot be undone.
         </p>
         <ModalFooter>
-          <Button variant="neutral" onClick={() => setDeleteModalOpen(false)}>
+          <Button variant="ghost" onClick={() => setDeleteModalOpen(false)}>
             Cancel
           </Button>
           <Button
-            variant="destructive"
+            variant="destructiveGhost"
             onClick={handleDeleteConfirm}
             disabled={isDeleting}
           >
-            {isDeleting ? "Deleting..." : "Delete User"}
+            {isDeleting ? "Deleting..." : "Delete"}
           </Button>
         </ModalFooter>
       </Modal>

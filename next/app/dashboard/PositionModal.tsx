@@ -5,7 +5,7 @@ import { Modal, ModalFooter } from "@/components/ui/modal"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
+import { Badge } from "@/components/ui/badge"
 
 export interface Position {
   id: number
@@ -19,16 +19,15 @@ export interface Position {
 interface PositionModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  position?: Position | null  // null = create mode, Position = edit mode
+  position?: Position | null
+  defaultIsPrimary?: boolean
   onSuccess: () => void
 }
 
-export default function PositionModal({ open, onOpenChange, position, onSuccess }: PositionModalProps) {
-  const [formData, setFormData] = useState({
-    title: "",
-    email: "",
-    is_primary: false
-  })
+export default function PositionModal({ open, onOpenChange, position, defaultIsPrimary = false, onSuccess }: PositionModalProps) {
+  const [title, setTitle] = useState("")
+  const [email, setEmail] = useState("")
+  const [isPrimary, setIsPrimary] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState("")
 
@@ -37,57 +36,64 @@ export default function PositionModal({ open, onOpenChange, position, onSuccess 
   useEffect(() => {
     if (open) {
       if (position) {
-        setFormData({
-          title: position.title || "",
-          email: position.email || "",
-          is_primary: position.is_primary || false
-        })
+        setTitle(position.title || "")
+        setEmail(position.email || "")
+        setIsPrimary(position.is_primary || false)
       } else {
-        setFormData({
-          title: "",
-          email: "",
-          is_primary: false
-        })
+        setTitle("")
+        setEmail("")
+        setIsPrimary(defaultIsPrimary)
       }
       setError("")
     }
-  }, [open, position])
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
-  }
+  }, [open, position, defaultIsPrimary])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
     setIsSubmitting(true)
 
-    if (!formData.title.trim() || !formData.email.trim()) {
-      setError("Title and email are required")
+    if (!email.trim()) {
+      setError("Email is required")
+      setIsSubmitting(false)
+      return
+    }
+
+    if (!isEditMode && !title.trim()) {
+      setError("Title is required")
       setIsSubmitting(false)
       return
     }
 
     try {
-      const url = "/api/officer-positions"
-      const method = isEditMode ? "PUT" : "POST"
-      const body = isEditMode 
-        ? { id: position!.id, ...formData }
-        : formData
+      if (isEditMode) {
+        const response = await fetch("/api/officer-positions", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: position.id, email })
+        })
 
-      const response = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
-      })
-
-      if (response.ok) {
-        onSuccess()
-        onOpenChange(false)
+        if (response.ok) {
+          onSuccess()
+          onOpenChange(false)
+        } else {
+          const errorText = await response.text()
+          setError(errorText || "Failed to update position")
+        }
       } else {
-        const errorText = await response.text()
-        setError(errorText || `Failed to ${isEditMode ? "update" : "create"} position`)
+        const response = await fetch("/api/officer-positions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title, email, is_primary: isPrimary })
+        })
+
+        if (response.ok) {
+          onSuccess()
+          onOpenChange(false)
+        } else {
+          const errorText = await response.text()
+          setError(errorText || "Failed to create position")
+        }
       }
     } catch (err) {
       console.error("Error saving position:", err)
@@ -97,66 +103,59 @@ export default function PositionModal({ open, onOpenChange, position, onSuccess 
     }
   }
 
+  const modalTitle = isEditMode 
+    ? "Edit Position" 
+    : isPrimary ? "Add Primary Officer" : "Add Committee Head"
+
   return (
     <Modal
       open={open}
       onOpenChange={onOpenChange}
-      title={isEditMode ? "Edit Position" : "Create Position"}
-      className="max-w-lg"
+      title={modalTitle}
+      className="max-w-md"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="title">Position Title *</Label>
-          <Input
-            id="title"
-            name="title"
-            value={formData.title}
-            onChange={handleChange}
-            placeholder="e.g., President, Tech Head"
-            required
-          />
-        </div>
+        {isEditMode ? (
+          <div className="flex items-center gap-2">
+            <span className="font-semibold">{position?.title}</span>
+            <Badge variant={position?.is_primary ? "default" : "outline"} className="text-xs">
+              {position?.is_primary ? "Primary" : "Committee"}
+            </Badge>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <Label htmlFor="title">Position Title</Label>
+            <Input
+              id="title"
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder={isPrimary ? "e.g., Vice President" : "e.g., Hide and Seek Head"}
+              required
+            />
+          </div>
+        )}
 
         <div className="space-y-2">
-          <Label htmlFor="email">Position Email *</Label>
+          <Label htmlFor="email">Position Email</Label>
           <Input
             id="email"
-            name="email"
             type="email"
-            value={formData.email}
-            onChange={handleChange}
-            placeholder="e.g., sse-president@rit.edu"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="e.g., sse-events@rit.edu"
             required
           />
-          <p className="text-xs text-muted-foreground">
-            The official email for this position
-          </p>
         </div>
-
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="is_primary"
-            checked={formData.is_primary}
-            onCheckedChange={(checked) => 
-              setFormData(prev => ({ ...prev, is_primary: checked === true }))
-            }
-          />
-          <Label htmlFor="is_primary" className="cursor-pointer">
-            Primary Officer Position
-          </Label>
-        </div>
-        <p className="text-xs text-muted-foreground ml-6">
-          Primary officers are shown in the top section (President, VP, etc.)
-        </p>
 
         {error && <p className="text-destructive text-sm">{error}</p>}
 
         <ModalFooter>
-          <Button type="button" variant="neutral" onClick={() => onOpenChange(false)}>
+          <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Saving..." : isEditMode ? "Save Changes" : "Create Position"}
+          <Button type="submit" variant="outline" disabled={isSubmitting}>
+            {isSubmitting ? "Saving..." : isEditMode ? "Save" : "Create"}
           </Button>
         </ModalFooter>
       </form>

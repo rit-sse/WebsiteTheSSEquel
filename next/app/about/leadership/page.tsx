@@ -14,7 +14,7 @@ import { Card } from "@/components/ui/card";
 // Skeleton component for officer cards
 function OfficerCardSkeleton() {
 	return (
-		<Card depth={2} className="w-full max-w-[280px] p-5 flex flex-col items-center">
+		<Card depth={3} className="w-full max-w-[280px] p-5 flex flex-col items-center">
 			<Skeleton className="h-24 w-24 rounded-full mb-3" />
 			<Skeleton className="h-5 w-32 mb-1" />
 			<Skeleton className="h-4 w-24 mb-2" />
@@ -128,73 +128,76 @@ export default function Leadership() {
 	};
 
 	return (
-		<>
-			<section className="mt-16">
-				<div className="max-w-screen-xl mx-auto px-4 text-center md:px-8">
-					<div className="content-center">
-						{/* Meet our team */}
-						<div className="max-w-xl mx-auto">
-							<h1 className="text-primary">
-								Meet our Team
-							</h1>
-							<p className="mt-3 text-xl leading-8">
-								Have questions? Feel free to reach out to any of our officers!
-							</p>
-							<div className="mt-4">
-								<ManageLink />
-							</div>
+		<section className="mt-16 pb-16">
+			<div className="max-w-screen-xl mx-auto px-4 md:px-8">
+				{/* Outer wrapper card */}
+				<Card depth={1} className="p-6 md:p-8">
+					{/* Header section */}
+					<div className="text-center mb-8">
+						<h1 className="text-primary">
+							Meet our Team
+						</h1>
+						<p className="mt-3 text-xl leading-8">
+							Have questions? Feel free to reach out to any of our officers!
+						</p>
+						<div className="mt-4">
+							<ManageLink />
 						</div>
 					</div>
 
-					{/* Primary Officers */}
-					<h2 className="text-center text-primary my-8">
-						Primary Officers
-					</h2>
-					<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 justify-items-center">
-						{isLoading ? (
-							<>
-								<OfficerCardSkeleton />
-								<OfficerCardSkeleton />
-								<OfficerCardSkeleton />
-								<OfficerCardSkeleton />
-							</>
-						) : (
-							teamData.primary_officers.map((item, idx) => (
-								item.officer ? (
-									<OfficerCard key={idx} teamMember={item.officer} />
-								) : (
-									<EmptyOfficerCard key={idx} position={item.position} />
-								)
-							))
-						)}
-					</div>
+					{/* Primary Officers Card */}
+					<Card depth={2} className="p-6 mb-8">
+						<h2 className="text-center text-primary mb-6">
+							Primary Officers
+						</h2>
+						<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 justify-items-center">
+							{isLoading ? (
+								<>
+									<OfficerCardSkeleton />
+									<OfficerCardSkeleton />
+									<OfficerCardSkeleton />
+									<OfficerCardSkeleton />
+								</>
+							) : (
+								teamData.primary_officers.map((item, idx) => (
+									item.officer ? (
+										<OfficerCard key={idx} teamMember={item.officer} />
+									) : (
+										<EmptyOfficerCard key={idx} position={item.position} />
+									)
+								))
+							)}
+						</div>
+					</Card>
 
-					{/* Committee Heads */}
-					<h2 className="text-center text-primary my-8 mt-12">
-						Committee Heads
-					</h2>
-					<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 justify-items-center">
-						{isLoading ? (
-							<>
-								<OfficerCardSkeleton />
-								<OfficerCardSkeleton />
-								<OfficerCardSkeleton />
-								<OfficerCardSkeleton />
-								<OfficerCardSkeleton />
-								<OfficerCardSkeleton />
-							</>
-						) : (
-							teamData.committee_heads.map((item, idx) => (
-								item.officer ? (
-									<OfficerCard key={idx} teamMember={item.officer} />
-								) : (
-									<EmptyOfficerCard key={idx} position={item.position} />
-								)
-							))
-						)}
-					</div>
-				</div>
-			</section>
-		</>
+					{/* Committee Heads Card */}
+					<Card depth={2} className="p-6">
+						<h2 className="text-center text-primary mb-6">
+							Committee Heads
+						</h2>
+						<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 justify-items-center">
+							{isLoading ? (
+								<>
+									<OfficerCardSkeleton />
+									<OfficerCardSkeleton />
+									<OfficerCardSkeleton />
+									<OfficerCardSkeleton />
+									<OfficerCardSkeleton />
+									<OfficerCardSkeleton />
+								</>
+							) : (
+								teamData.committee_heads.map((item, idx) => (
+									item.officer ? (
+										<OfficerCard key={idx} teamMember={item.officer} />
+									) : (
+										<EmptyOfficerCard key={idx} position={item.position} />
+									)
+								))
+							)}
+						</div>
+					</Card>
+				</Card>
+			</div>
+		</section>
 	);
 }

@@ -11,6 +11,7 @@ const cardVariants = cva(
         1: "bg-surface-1",
         2: "bg-surface-2",
         3: "bg-surface-3",
+        4: "bg-surface-4",
       },
     },
     defaultVariants: {

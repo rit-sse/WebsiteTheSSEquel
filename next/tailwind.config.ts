@@ -127,7 +127,11 @@ const config: Config = {
                     '1': 'hsl(var(--surface-1))',
                     '2': 'hsl(var(--surface-2))',
                     '3': 'hsl(var(--surface-3))',
+                    '4': 'hsl(var(--surface-4))',
                 },
+                
+                // Dropdown color
+                dropdown: 'hsl(var(--dropdown))',
                 
                 // Neobrutalism colors
                 main: {

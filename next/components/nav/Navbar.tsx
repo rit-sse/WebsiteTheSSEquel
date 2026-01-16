@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { ChevronDown, Menu } from "lucide-react";
+// import { useSession } from "next-auth/react"; // AUTH BYPASS: Not needed while mocking auth
 import SSELogoFull from "../common/SSELogoFull";
 import AuthButton from "./AuthButton";
 import {
@@ -66,8 +67,40 @@ const aboutItems = [
     },
 ];
 
+const dashboardItems = [
+    {
+        title: "Overview",
+        href: "/dashboard",
+        description: "Dashboard overview with status cards.",
+    },
+    {
+        title: "Officers",
+        href: "/dashboard/officers",
+        description: "Manage officer assignments.",
+    },
+    {
+        title: "Positions",
+        href: "/dashboard/positions",
+        description: "View and edit officer positions.",
+    },
+    {
+        title: "Users",
+        href: "/dashboard/users",
+        description: "Manage user accounts.",
+    },
+    {
+        title: "Alumni Requests",
+        href: "/dashboard/alumni",
+        description: "Review alumni submission requests.",
+    },
+];
+
 const Navbar: React.FC = () => {
     const [open, setOpen] = React.useState(false);
+    
+    // AUTH BYPASS: Always show dashboard for now
+    // TODO: When real auth is enabled, use useSession() to check authentication
+    const showDashboard = true;
 
     return (
         <nav
@@ -92,19 +125,6 @@ const Navbar: React.FC = () => {
                     <NavigationMenu>
                         <NavigationMenuList>
                             <NavigationMenuItem>
-                                <NavigationMenuTrigger>About</NavigationMenuTrigger>
-                                <NavigationMenuContent>
-                                    <ul className="grid gap-3 p-4 md:w-[400px] lg:w-[500px] lg:grid-cols-2">
-                                        {aboutItems.map((item) => (
-                                            <ListItem key={item.title} title={item.title} href={item.href}>
-                                                {item.description}
-                                            </ListItem>
-                                        ))}
-                                    </ul>
-                                </NavigationMenuContent>
-                            </NavigationMenuItem>
-
-                            <NavigationMenuItem>
                                 <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
                                     <Link href="/events/calendar">Events</Link>
                                 </NavigationMenuLink>
@@ -127,6 +147,34 @@ const Navbar: React.FC = () => {
                                     <Link href="/go">Go Links</Link>
                                 </NavigationMenuLink>
                             </NavigationMenuItem>
+
+                            <NavigationMenuItem>
+                                <NavigationMenuTrigger>About</NavigationMenuTrigger>
+                                <NavigationMenuContent>
+                                    <ul className="grid gap-3 p-4 md:w-[400px] lg:w-[500px] lg:grid-cols-2">
+                                        {aboutItems.map((item) => (
+                                            <ListItem key={item.title} title={item.title} href={item.href}>
+                                                {item.description}
+                                            </ListItem>
+                                        ))}
+                                    </ul>
+                                </NavigationMenuContent>
+                            </NavigationMenuItem>
+
+                            {showDashboard && (
+                                <NavigationMenuItem>
+                                    <NavigationMenuTrigger>Dashboard</NavigationMenuTrigger>
+                                    <NavigationMenuContent>
+                                        <ul className="grid gap-3 p-4 w-[300px]">
+                                            {dashboardItems.map((item) => (
+                                                <ListItem key={item.title} title={item.title} href={item.href}>
+                                                    {item.description}
+                                                </ListItem>
+                                            ))}
+                                        </ul>
+                                    </NavigationMenuContent>
+                                </NavigationMenuItem>
+                            )}
 
                             <NavigationMenuItem>
                                 <AuthButton />
@@ -176,6 +224,21 @@ const Navbar: React.FC = () => {
                                 <MobileNavLink href="/go" onClick={() => setOpen(false)}>
                                     Go Links
                                 </MobileNavLink>
+
+                                {showDashboard && (
+                                    <MobileNavCollapsible title="Dashboard">
+                                        {dashboardItems.map((item) => (
+                                            <MobileNavLink
+                                                key={item.title}
+                                                href={item.href}
+                                                onClick={() => setOpen(false)}
+                                                className="pl-4"
+                                            >
+                                                {item.title}
+                                            </MobileNavLink>
+                                        ))}
+                                    </MobileNavCollapsible>
+                                )}
 
                                 <div className="pt-4 border-t border-border mt-2">
                                     <AuthButton />
@@ -254,14 +317,15 @@ function ListItem({
                 <Link
                     href={href}
                     className={cn(
-                        "block select-none space-y-1 rounded-base p-3 leading-none no-underline outline-none transition-all duration-100",
-                        "hover:bg-black/10 dark:hover:bg-white/10",
-                        "focus:bg-black/10 dark:focus:bg-white/10",
+                        "block select-none space-y-1 rounded-lg p-3 leading-none no-underline outline-none",
+                        "bg-surface-1 border border-border/30",
+                        "hover:bg-surface-2 hover:border-border/50 hover:shadow-md",
+                        "focus:bg-surface-2 focus:border-border/50",
                         className
                     )}
                 >
-                    <div className="text-sm font-bold font-heading leading-none">{title}</div>
-                    <p className="line-clamp-2 text-sm leading-snug text-main-foreground/70 mt-1">
+                    <div className="text-sm font-bold font-heading leading-none text-foreground">{title}</div>
+                    <p className="line-clamp-2 text-sm leading-snug text-muted-foreground mt-1">
                         {children}
                     </p>
                 </Link>

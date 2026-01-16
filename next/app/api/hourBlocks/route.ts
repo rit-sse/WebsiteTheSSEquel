@@ -1,10 +1,8 @@
 import { MENTOR_HEAD_TITLE } from "@/lib/utils";
-import { PrismaClient } from "@prisma/client";
+import prisma from "@/lib/prisma";
 import { NextRequest } from "next/server";
 
 export const dynamic = "force-dynamic";
-
-const prisma = new PrismaClient();
 
 /**
  * HTTP GET request to /api/hourBlocks

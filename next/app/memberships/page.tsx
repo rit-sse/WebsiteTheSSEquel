@@ -18,8 +18,10 @@ export default function Leaderboard() {
 
     async function load() {
         const res = await fetch("/api/memberships");
-        const data = await res.json();
-        setItems(data);
+        if (res.ok) {
+            const data = await res.json();
+            setItems(data);
+        }
     }
 
     useEffect(() => {
@@ -28,19 +30,18 @@ export default function Leaderboard() {
     }, [])
 
     return (
-        <div className="p-6 w-full max-w-6xl mx-auto">
-            <LeaderboardTable 
-                items={items} 
-                title="Memberships Leaderboard"
-                action={isOfficer ? (
-                    <button className="btn bg-background" onClick={() => setOpen(true)}>
-                        Add Membership
-                    </button>
-                ) : undefined}
-            />
-            {isOfficer && (
-                <AddMembershipModal open={open} onOpenChange={setOpen} onCreated={load} />
-            )}
-        </div>
+        <section className="py-8 px-4 md:px-8">
+            <div className="max-w-7xl mx-auto">
+                <LeaderboardTable 
+                    items={items} 
+                    title="Memberships Leaderboard"
+                    onAdd={isOfficer ? () => setOpen(true) : undefined}
+                    addLabel="Add Membership"
+                />
+                {isOfficer && (
+                    <AddMembershipModal open={open} onOpenChange={setOpen} onCreated={load} />
+                )}
+            </div>
+        </section>
     )
 }

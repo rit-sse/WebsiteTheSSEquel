@@ -3,20 +3,18 @@
 import { useState, useEffect, useCallback } from "react"
 import { DataTable, Column } from "@/components/ui/data-table"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { Modal, ModalFooter } from "@/components/ui/modal"
 import { Pencil, Trash2, CheckCircle, XCircle } from "lucide-react"
 import PositionModal, { Position } from "./PositionModal"
-import { Modal, ModalFooter } from "@/components/ui/modal"
 
 export default function PositionsSection() {
   const [positions, setPositions] = useState<Position[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [modalOpen, setModalOpen] = useState(false)
   const [editPosition, setEditPosition] = useState<Position | null>(null)
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
-  const [positionToDelete, setPositionToDelete] = useState<Position | null>(null)
+  const [newPositionIsPrimary, setNewPositionIsPrimary] = useState(false)
+  const [deletePosition, setDeletePosition] = useState<Position | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
-  const [deleteError, setDeleteError] = useState("")
 
   const fetchPositions = useCallback(async () => {
     setIsLoading(true)
@@ -37,8 +35,15 @@ export default function PositionsSection() {
     fetchPositions()
   }, [fetchPositions])
 
-  const handleAdd = () => {
+  const handleAddPrimary = () => {
     setEditPosition(null)
+    setNewPositionIsPrimary(true)
+    setModalOpen(true)
+  }
+
+  const handleAddCommittee = () => {
+    setEditPosition(null)
+    setNewPositionIsPrimary(false)
     setModalOpen(true)
   }
 
@@ -47,142 +52,108 @@ export default function PositionsSection() {
     setModalOpen(true)
   }
 
-  const handleDeleteClick = (position: Position) => {
-    setPositionToDelete(position)
-    setDeleteError("")
-    setDeleteModalOpen(true)
-  }
-
   const handleDeleteConfirm = async () => {
-    if (!positionToDelete) return
-    
+    if (!deletePosition) return
     setIsDeleting(true)
-    setDeleteError("")
     try {
       const response = await fetch("/api/officer-positions", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: positionToDelete.id })
+        body: JSON.stringify({ id: deletePosition.id })
       })
-
       if (response.ok) {
-        await fetchPositions()
-        setDeleteModalOpen(false)
-        setPositionToDelete(null)
+        fetchPositions()
+        setDeletePosition(null)
       } else {
         const errorText = await response.text()
-        setDeleteError(errorText || "Failed to delete position")
+        alert(errorText || "Failed to delete position")
       }
     } catch (error) {
-      console.error("Error deleting position:", error)
-      setDeleteError("An error occurred while deleting the position")
+      console.error("Failed to delete position:", error)
+      alert("An error occurred while deleting")
     } finally {
       setIsDeleting(false)
     }
   }
 
+  // Separate primary officers and committee heads
+  const primaryOfficers = positions.filter(p => p.is_primary)
+  const committeeHeads = positions.filter(p => !p.is_primary)
+
   const columns: Column<Position>[] = [
     {
       key: "title",
-      header: "Title",
+      header: "Position",
       sortable: true,
       render: (position) => (
-        <div>
-          <span className="font-medium">{position.title}</span>
-          <div className="sm:hidden flex items-center gap-1 mt-1">
-            <Badge variant={position.is_primary ? "default" : "outline"} className="text-xs">
-              {position.is_primary ? "Primary" : "Committee"}
-            </Badge>
-            {position.isFilled ? (
-              <CheckCircle className="h-3 w-3 text-green-600" />
-            ) : (
-              <XCircle className="h-3 w-3 text-yellow-600" />
-            )}
-          </div>
+        <div className="flex items-center gap-2">
+          <span className="font-medium text-sm">{position.title}</span>
+          {position.isFilled ? (
+            <CheckCircle className="h-4 w-4 text-green-600 shrink-0" />
+          ) : (
+            <XCircle className="h-4 w-4 text-yellow-600 shrink-0" />
+          )}
         </div>
       )
     },
     {
       key: "email",
       header: "Email",
-      sortable: true,
-      className: "hidden md:table-cell",
+      className: "hidden sm:table-cell",
       render: (position) => (
         <span className="text-muted-foreground text-xs">{position.email}</span>
       )
     },
     {
-      key: "is_primary",
-      header: "Type",
-      sortable: true,
-      className: "hidden sm:table-cell",
-      render: (position) => (
-        <Badge variant={position.is_primary ? "default" : "outline"} className="text-xs">
-          {position.is_primary ? "Primary" : "Committee"}
-        </Badge>
-      )
-    },
-    {
-      key: "isFilled",
-      header: "Status",
-      sortable: true,
-      className: "hidden sm:table-cell",
+      key: "actions",
+      header: "",
       render: (position) => (
         <div className="flex items-center gap-1">
-          {position.isFilled ? (
-            <>
-              <CheckCircle className="h-4 w-4 text-green-600" />
-              <span className="text-green-600 text-xs">Filled</span>
-            </>
-          ) : (
-            <>
-              <XCircle className="h-4 w-4 text-yellow-600" />
-              <span className="text-yellow-600 text-xs">Open</span>
-            </>
-          )}
-        </div>
-      )
-    },
-    {
-      key: "actions",
-      header: "Actions",
-      render: (position) => (
-        <div className="flex gap-1 sm:gap-2">
-          <Button
-            size="sm"
-            variant="neutral"
-            onClick={() => handleEdit(position)}
-            className="h-8 w-8 p-0"
-          >
-            <Pencil className="h-3 w-3 sm:h-4 sm:w-4" />
+          <Button size="xs" variant="ghost" onClick={() => handleEdit(position)}>
+            <Pencil className="h-3 w-3" />
           </Button>
-          <Button
-            size="sm"
-            variant="destructive"
-            onClick={() => handleDeleteClick(position)}
+          <Button 
+            size="xs" 
+            variant="destructiveGhost" 
+            onClick={() => setDeletePosition(position)}
             disabled={position.isFilled}
-            title={position.isFilled ? "Remove officer first" : "Delete position"}
-            className="h-8 w-8 p-0"
+            title={position.isFilled ? "Cannot delete position with assigned officer" : "Delete position"}
           >
-            <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
+            <Trash2 className="h-3 w-3" />
           </Button>
         </div>
       )
     }
   ]
 
+  if (isLoading) {
+    return <div className="text-muted-foreground text-sm py-8 text-center">Loading positions...</div>
+  }
+
   return (
-    <div>
+    <div className="space-y-6">
+      {/* Primary Officers */}
       <DataTable
-        data={positions}
+        data={primaryOfficers}
         columns={columns}
         keyField="id"
-        searchPlaceholder="Search positions..."
-        searchFields={["title", "email"]}
-        onAdd={handleAdd}
-        addLabel="Add Position"
-        isLoading={isLoading}
-        emptyMessage="No positions found"
+        title={`Primary Officers (${primaryOfficers.filter(p => p.isFilled).length}/${primaryOfficers.length} filled)`}
+        searchPlaceholder="Search primary officers..."
+        onAdd={handleAddPrimary}
+        addLabel="Add Primary Officer"
+        emptyMessage="No primary officer positions defined"
+      />
+
+      {/* Committee Heads */}
+      <DataTable
+        data={committeeHeads}
+        columns={columns}
+        keyField="id"
+        title={`Committee Heads (${committeeHeads.filter(p => p.isFilled).length}/${committeeHeads.length} filled)`}
+        searchPlaceholder="Search committee heads..."
+        onAdd={handleAddCommittee}
+        addLabel="Add Committee Head"
+        emptyMessage="No committee head positions defined"
       />
 
       {/* Create/Edit Modal */}
@@ -190,36 +161,30 @@ export default function PositionsSection() {
         open={modalOpen}
         onOpenChange={setModalOpen}
         position={editPosition}
+        defaultIsPrimary={newPositionIsPrimary}
         onSuccess={fetchPositions}
       />
 
       {/* Delete Confirmation Modal */}
       <Modal
-        open={deleteModalOpen}
-        onOpenChange={setDeleteModalOpen}
+        open={!!deletePosition}
+        onOpenChange={(open) => !open && setDeletePosition(null)}
         title="Delete Position"
+        className="max-w-md"
       >
-        <p className="text-foreground">
-          Are you sure you want to delete the <strong>{positionToDelete?.title}</strong> position?
+        <p className="text-sm text-muted-foreground">
+          Are you sure you want to delete <strong>{deletePosition?.title}</strong>? This action cannot be undone.
         </p>
-        {positionToDelete?.isFilled && (
-          <p className="text-sm text-destructive mt-2">
-            This position has an active officer. Remove them first before deleting.
-          </p>
-        )}
-        {deleteError && (
-          <p className="text-sm text-destructive mt-2">{deleteError}</p>
-        )}
         <ModalFooter>
-          <Button variant="neutral" onClick={() => setDeleteModalOpen(false)}>
+          <Button variant="ghost" onClick={() => setDeletePosition(null)}>
             Cancel
           </Button>
-          <Button
-            variant="destructive"
+          <Button 
+            variant="destructive" 
             onClick={handleDeleteConfirm}
-            disabled={isDeleting || positionToDelete?.isFilled}
+            disabled={isDeleting}
           >
-            {isDeleting ? "Deleting..." : "Delete Position"}
+            {isDeleting ? "Deleting..." : "Delete"}
           </Button>
         </ModalFooter>
       </Modal>

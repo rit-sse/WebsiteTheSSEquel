@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from "react"
 import { Card } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
-import { Button } from "@/components/ui/button"
 import { Users, ExternalLink } from "lucide-react"
 import Link from "next/link"
 
@@ -86,11 +84,9 @@ export default function LeadershipStatusCard() {
             <p className="text-xs sm:text-sm text-muted-foreground">Officer positions filled</p>
           </div>
         </div>
-        <Link href="/about/leadership" className="w-full sm:w-auto">
-          <Button variant="neutral" size="sm" className="w-full sm:w-auto text-xs sm:text-sm">
-            View Page
-            <ExternalLink className="h-3 w-3 sm:h-4 sm:w-4 ml-2" />
-          </Button>
+        <Link href="/about/leadership" className="text-xs sm:text-sm text-muted-foreground hover:text-foreground flex items-center gap-1">
+          View
+          <ExternalLink className="h-3 w-3 sm:h-4 sm:w-4" />
         </Link>
       </div>
 

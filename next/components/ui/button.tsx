@@ -11,20 +11,27 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "text-primary-foreground bg-primary border-2 border-border shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none",
-        noShadow: "text-primary-foreground bg-primary border-2 border-border",
+          "text-primary-foreground bg-primary border-2 border-border shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none hover:bg-primary/90",
+        noShadow: "text-primary-foreground bg-primary border-2 border-border hover:bg-primary/90",
         neutral:
           "bg-secondary-background text-foreground border-2 border-border shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none",
         reverse:
-          "text-primary-foreground bg-primary border-2 border-border hover:translate-x-reverseBoxShadowX hover:translate-y-reverseBoxShadowY hover:shadow-shadow",
+          "text-primary-foreground bg-primary border-2 border-border hover:translate-x-reverseBoxShadowX hover:translate-y-reverseBoxShadowY hover:shadow-shadow hover:bg-primary/90",
         destructive:
           "bg-destructive text-destructive-foreground border-2 border-border shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none",
+        // Clean variants for dashboard/admin pages
+        ghost: "hover:bg-accent/20",
+        outline: "border border-border/50 bg-surface-2 hover:bg-accent/15 hover:border-accent/40",
+        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        link: "hover:underline",
+        destructiveGhost: "hover:bg-destructive/20",
       },
       size: {
         default: "h-10 px-4 py-2",
         sm: "h-9 px-3",
         lg: "h-11 px-8",
         icon: "size-10",
+        xs: "h-7 px-2 text-xs",
       },
     },
     defaultVariants: {

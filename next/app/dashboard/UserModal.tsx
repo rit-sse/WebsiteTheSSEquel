@@ -190,11 +190,11 @@ export default function UserModal({ open, onOpenChange, user, onSuccess }: UserM
         {error && <p className="text-destructive text-sm">{error}</p>}
 
         <ModalFooter>
-          <Button type="button" variant="neutral" onClick={() => onOpenChange(false)}>
+          <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Saving..." : isEditMode ? "Save Changes" : "Create User"}
+          <Button type="submit" variant="outline" disabled={isSubmitting}>
+            {isSubmitting ? "Saving..." : isEditMode ? "Save" : "Create"}
           </Button>
         </ModalFooter>
       </form>

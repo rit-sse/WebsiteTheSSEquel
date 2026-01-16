@@ -26,6 +26,7 @@ interface DataTableProps<T> {
   data: T[]
   columns: Column<T>[]
   keyField: keyof T
+  title?: string
   searchPlaceholder?: string
   searchFields?: (keyof T)[]
   onAdd?: () => void
@@ -38,6 +39,7 @@ export function DataTable<T extends Record<string, any>>({
   data,
   columns,
   keyField,
+  title,
   searchPlaceholder = "Search...",
   searchFields,
   onAdd,
@@ -98,85 +100,95 @@ export function DataTable<T extends Record<string, any>>({
   }
 
   return (
-    <Card depth={1} className="p-3 sm:p-4 w-full max-w-full overflow-hidden">
-      {/* Header with search and add button */}
-      <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-4">
-        <div className="relative flex-grow">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder={searchPlaceholder}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 text-sm"
-          />
+    <Card depth={2} className="w-full max-w-full overflow-hidden">
+      {/* Title bar with accent background */}
+      {title && (
+        <div className="bg-accent/20 border-l-4 border-accent px-4 py-3">
+          <h3 className="text-lg font-semibold">{title}</h3>
         </div>
-        {onAdd && (
-          <Button onClick={onAdd} className="w-full sm:w-auto text-sm">
-            <Plus className="h-4 w-4 mr-2" />
-            {addLabel}
-          </Button>
-        )}
-      </div>
+      )}
+      
+      {/* Content area */}
+      <div className="p-3 sm:p-4">
+        {/* Header with search and add button */}
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-4">
+          <div className="relative flex-grow">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder={searchPlaceholder}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 text-sm"
+            />
+          </div>
+          {onAdd && (
+            <Button onClick={onAdd} className="w-full sm:w-auto text-sm bg-accent text-accent-foreground hover:bg-accent/90">
+              <Plus className="h-4 w-4 mr-2" />
+              {addLabel}
+            </Button>
+          )}
+        </div>
 
-      {/* Table - scrollable on mobile */}
-      <div className="rounded-md border border-border overflow-x-auto w-full">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-surface-2">
-              {columns.map((column) => (
-                <TableHead
-                  key={column.key}
-                  className={`text-xs sm:text-sm ${column.sortable ? "cursor-pointer select-none" : ""} ${column.className || ""}`}
-                  onClick={() => column.sortable && handleSort(column.key)}
-                >
-                  <div className="flex items-center gap-1 whitespace-nowrap">
-                    {column.header}
-                    {column.sortable && sortKey === column.key && (
-                      sortDirection === "asc" ? (
-                        <ChevronUp className="h-3 w-3 sm:h-4 sm:w-4" />
-                      ) : (
-                        <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4" />
-                      )
-                    )}
-                  </div>
-                </TableHead>
-              ))}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={columns.length} className="text-center py-8">
-                  <div className="text-muted-foreground text-sm">Loading...</div>
-                </TableCell>
+        {/* Table - scrollable on mobile */}
+        <div className="rounded-md border border-border overflow-x-auto w-full bg-surface-3">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-accent/15 border-b-2 border-accent/30">
+                {columns.map((column) => (
+                  <TableHead
+                    key={column.key}
+                    className={`text-xs sm:text-sm font-semibold ${column.sortable ? "cursor-pointer select-none" : ""} ${column.className || ""}`}
+                    onClick={() => column.sortable && handleSort(column.key)}
+                  >
+                    <div className="flex items-center gap-1 whitespace-nowrap">
+                      {column.header}
+                      {column.sortable && sortKey === column.key && (
+                        sortDirection === "asc" ? (
+                          <ChevronUp className="h-3 w-3 sm:h-4 sm:w-4" />
+                        ) : (
+                          <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4" />
+                        )
+                      )}
+                    </div>
+                  </TableHead>
+                ))}
               </TableRow>
-            ) : sortedData.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={columns.length} className="text-center py-8">
-                  <div className="text-muted-foreground text-sm">{emptyMessage}</div>
-                </TableCell>
-              </TableRow>
-            ) : (
-              sortedData.map((item) => (
-                <TableRow key={String(item[keyField])}>
-                  {columns.map((column) => (
-                    <TableCell key={column.key} className={`text-xs sm:text-sm ${column.className || ""}`}>
-                      {column.render
-                        ? column.render(item)
-                        : String(item[column.key] ?? "")}
-                    </TableCell>
-                  ))}
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={columns.length} className="text-center py-8">
+                    <div className="text-muted-foreground text-sm">Loading...</div>
+                  </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+              ) : sortedData.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={columns.length} className="text-center py-8">
+                    <div className="text-muted-foreground text-sm">{emptyMessage}</div>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                sortedData.map((item) => (
+                  <TableRow key={String(item[keyField])}>
+                    {columns.map((column) => (
+                      <TableCell key={column.key} className={`text-xs sm:text-sm ${column.className || ""}`}>
+                        {column.render
+                          ? column.render(item)
+                          : String(item[column.key] ?? "")}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
 
-      {/* Footer with count */}
-      <div className="mt-3 text-xs sm:text-sm text-muted-foreground">
-        {sortedData.length} of {data.length} items
-        {searchQuery && ` (filtered)`}
+        {/* Footer with count */}
+        <div className="mt-3 text-xs sm:text-sm text-muted-foreground">
+          {sortedData.length} of {data.length} items
+          {searchQuery && ` (filtered)`}
+        </div>
       </div>
     </Card>
   )

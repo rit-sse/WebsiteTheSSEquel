@@ -64,77 +64,82 @@ async function seedQuote() {
 }
 
 async function seedOfficerPosition() {
-	const president = await prisma.officerPosition.upsert({
-		where: { id: 1 },
-		update: {},
-		create: {
-			title: "President",
-			is_primary: true,
-			email: "sse-president@rit.edu",
-		},
-	});
-	const vicePresident = await prisma.officerPosition.upsert({
-		where: { id: 2 },
-		update: {},
-		create: {
-			title: "Vice President",
-			is_primary: true,
-			email: "sse-vicepresident@rit.edu",
-		},
+	// Canonical list of all officer positions
+	const positions = [
+		// Primary Officers (4)
+		{ title: "President", is_primary: true, email: "sse-president@rit.edu" },
+		{ title: "Vice President", is_primary: true, email: "sse-vicepresident@rit.edu" },
+		{ title: "Treasurer", is_primary: true, email: "sse-treasurer@rit.edu" },
+		{ title: "Secretary", is_primary: true, email: "sse-secretary@rit.edu" },
+		// Committee Heads (11)
+		{ title: "Mentoring Head", is_primary: false, email: "sse-mentoring@rit.edu" },
+		{ title: "Public Relations Head", is_primary: false, email: "sse-pr@rit.edu" },
+		{ title: "Student Outreach Head", is_primary: false, email: "sse-outreach@rit.edu" },
+		{ title: "Technology Head", is_primary: false, email: "sse-tech@rit.edu" },
+		{ title: "Events Head", is_primary: false, email: "sse-events@rit.edu" },
+		{ title: "Winter Ball Head", is_primary: false, email: "sse-winterball@rit.edu" },
+		{ title: "Lab Ops Head", is_primary: false, email: "sse-labops@rit.edu" },
+		{ title: "Projects Head", is_primary: false, email: "sse-projects@rit.edu" },
+		{ title: "Talks Head", is_primary: false, email: "sse-talks@rit.edu" },
+		{ title: "Career Development Head", is_primary: false, email: "sse-careers@rit.edu" },
+		{ title: "Marketing Head", is_primary: false, email: "sse-marketing@rit.edu" },
+	];
+
+	// First, clean up any old positions that don't match our canonical list
+	const canonicalTitles = positions.map(p => p.title);
+	await prisma.officerPosition.deleteMany({
+		where: {
+			title: { notIn: canonicalTitles },
+			officers: { none: {} } // Only delete if no officers assigned
+		}
 	});
 
-	const techHead = await prisma.officerPosition.upsert({
-		where: { id: 3 },
-		update: {},
-		create: {
-			title: "Tech Head",
-			is_primary: false,
-			email: "sse-tech@rit.edu",
-		},
-	});
-	console.log({ president, vicePresident, techHead });
+	// Now upsert each position
+	for (const pos of positions) {
+		// Check if position with this email exists (might have different title)
+		const existingByEmail = await prisma.officerPosition.findFirst({
+			where: { email: pos.email, title: { not: pos.title } }
+		});
+		
+		if (existingByEmail) {
+			// Update the existing position to have the correct title
+			await prisma.officerPosition.update({
+				where: { id: existingByEmail.id },
+				data: { title: pos.title, is_primary: pos.is_primary }
+			});
+		} else {
+			// Normal upsert by title
+			await prisma.officerPosition.upsert({
+				where: { title: pos.title },
+				update: { is_primary: pos.is_primary, email: pos.email },
+				create: pos,
+			});
+		}
+	}
+
+	console.log(`Seeded ${positions.length} officer positions`);
 }
 
 async function seedOfficer() {
-	const officer1 = await prisma.officer.upsert({
-		where: { id: 1 },
-		update: {},
-		create: {
-			id: 1,
-			position_id: 1,
-			user_id: 1,
-			is_active: true,
-			start_date: new Date("2023-11-1 12:00:00"),
-			end_date: new Date("2023-11-1 12:00:00"),
-		},
+	// Seed a test officer (President) for development
+	const presidentPosition = await prisma.officerPosition.findFirst({
+		where: { title: "President" }
 	});
-
-	const officer2 = await prisma.officer.upsert({
-		where: { id: 2 },
-		update: {},
-		create: {
-			id: 2,
-			position_id: 2,
-			user_id: 2,
-			is_active: true,
-			start_date: new Date("2023-11-1 12:00:00"),
-			end_date: new Date("2023-11-1 12:00:00"),
-		},
-	});
-
-	const officer3 = await prisma.officer.upsert({
-		where: { id: 3 },
-		update: {},
-		create: {
-			id: 3,
-			position_id: 3,
-			user_id: 1,
-			is_active: false,
-			start_date: new Date("2023-11-1 12:00:00"),
-			end_date: new Date("2023-11-1 12:00:00"),
-		},
-	});
-	console.log({ officer1, officer2, officer3 });
+	
+	if (presidentPosition) {
+		const officer = await prisma.officer.upsert({
+			where: { id: 1 },
+			update: {},
+			create: {
+				position_id: presidentPosition.id,
+				user_id: 1,
+				is_active: true,
+				start_date: new Date("2025-08-01"),
+				end_date: new Date("2026-05-31"),
+			},
+		});
+		console.log("Seeded test officer:", officer);
+	}
 }
 
 async function seedMentor() {

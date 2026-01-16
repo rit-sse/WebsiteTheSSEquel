@@ -3,6 +3,7 @@ import { Metadata } from "next";
 import slotData from "./AboutUsSlotContent";
 import ZCardContainer from "@/components/ZCardContainer";
 import {AboutUsSlot} from "@/app/about/AboutUsSlot";
+import { Card } from "@/components/ui/card";
 
 export const metadata: Metadata = {
   title: "About Us",
@@ -12,12 +13,12 @@ export const metadata: Metadata = {
 
 const About = () => {
   return (
-    <>
-      <section>
-        <div className="text-page-structure">
-          <h1>About Us</h1>
-          <div className="subtitle-structure">
-            <p>
+    <section className="py-8 px-4 md:px-8">
+      <div className="max-w-screen-xl mx-auto">
+        <Card depth={1} className="p-6 md:p-8">
+          <div className="text-center mb-8">
+            <h1 className="text-primary">About Us</h1>
+            <p className="mt-4 text-lg max-w-3xl mx-auto">
               The Society of Software Engineers at RIT fosters a vibrant community
               of tech enthusiasts, bridging academia with industry partnerships
               from giants like Microsoft to Apple, ensuring our members thrive in
@@ -30,9 +31,9 @@ const About = () => {
                 slot.imageSrc, slot.name, slot.description, slot.alt
             ))
           } />
-        </div>
-      </section>
-    </>
+        </Card>
+      </div>
+    </section>
   );
 };
 

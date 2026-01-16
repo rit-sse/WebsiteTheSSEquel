@@ -64,47 +64,51 @@ const GoLinksContainer: React.FC<GoLinksContainerProps> = ({
   };
 
   return (
-    <Card className="w-full max-w-[94vw] xl:max-w-[1400px] p-6 md:p-10 mx-auto mt-8">
-      <div className="text-left mb-6">
-        <h1 className="text-primary">
-          Go Links
-        </h1>
-        <p className="mt-4 text-lg text-muted-foreground max-w-3xl">
-          GoLinks are URL shortcuts to access SSE&apos;s frequently used external websites or resources. 
-          Important golinks are marked with a gold star.
-        </p>
-      </div>
-      
-      <div className="relative w-full max-w-md mb-6">
-        <Search className="h-[18px] w-[18px] absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          type="text"
-          placeholder="Search golinks..."
-          className="pl-10 h-11 border-2 border-black rounded-lg"
-          onChange={(event) => handleFilterChange(event)}
-        />
-      </div>
+    <section className="py-8 px-4 md:px-8">
+      <div className="max-w-screen-xl mx-auto">
+        <Card depth={1} className="p-6 md:p-8">
+          <div className="text-center mb-8">
+            <h1 className="text-primary">
+              Go Links
+            </h1>
+            <p className="mt-4 text-lg text-muted-foreground max-w-3xl mx-auto">
+              GoLinks are URL shortcuts to access SSE&apos;s frequently used external websites or resources. 
+              Important golinks are marked with a gold star.
+            </p>
+          </div>
+          
+          <div className="relative w-full max-w-md mx-auto mb-6">
+            <Search className="h-[18px] w-[18px] absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Search golinks..."
+              className="pl-10 h-11 border-2 border-black rounded-lg"
+              onChange={(event) => handleFilterChange(event)}
+            />
+          </div>
 
-      {goLinkData.length > 0 ? (
-        goLinkData[0].id === -1 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <GoLinkSkeleton />
-            <GoLinkSkeleton />
-            <GoLinkSkeleton />
-            <GoLinkSkeleton />
-            <GoLinkSkeleton />
-            <GoLinkSkeleton />
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <GoLinkButton fetchData={fetchData} />
-            {goLinkList}
-          </div>
-        )
-      ) : (
-        <div className="text-center py-10 text-muted-foreground">No GoLinks available</div>
-      )}
-    </Card>
+          {goLinkData.length > 0 ? (
+            goLinkData[0].id === -1 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <GoLinkSkeleton />
+                <GoLinkSkeleton />
+                <GoLinkSkeleton />
+                <GoLinkSkeleton />
+                <GoLinkSkeleton />
+                <GoLinkSkeleton />
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <GoLinkButton fetchData={fetchData} />
+                {goLinkList}
+              </div>
+            )
+          ) : (
+            <div className="text-center py-10 text-muted-foreground">No GoLinks available</div>
+          )}
+        </Card>
+      </div>
+    </section>
   );
 };
 
