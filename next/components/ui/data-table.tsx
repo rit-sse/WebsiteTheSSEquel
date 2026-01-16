@@ -27,6 +27,7 @@ interface DataTableProps<T> {
   columns: Column<T>[]
   keyField: keyof T
   title?: string
+  titleExtra?: React.ReactNode
   searchPlaceholder?: string
   searchFields?: (keyof T)[]
   onAdd?: () => void
@@ -40,6 +41,7 @@ export function DataTable<T extends Record<string, any>>({
   columns,
   keyField,
   title,
+  titleExtra,
   searchPlaceholder = "Search...",
   searchFields,
   onAdd,
@@ -101,10 +103,11 @@ export function DataTable<T extends Record<string, any>>({
 
   return (
     <Card depth={2} className="w-full max-w-full overflow-hidden">
-      {/* Title bar with accent background */}
+      {/* Title bar */}
       {title && (
-        <div className="bg-accent/20 border-l-4 border-accent px-4 py-3">
+        <div className="px-4 py-3 flex flex-wrap items-center justify-between gap-2 border-b border-border">
           <h3 className="text-lg font-semibold">{title}</h3>
+          {titleExtra}
         </div>
       )}
       
@@ -122,7 +125,7 @@ export function DataTable<T extends Record<string, any>>({
             />
           </div>
           {onAdd && (
-            <Button onClick={onAdd} className="w-full sm:w-auto text-sm bg-accent text-accent-foreground hover:bg-accent/90">
+            <Button variant="accent" onClick={onAdd} className="w-full sm:w-auto text-sm">
               <Plus className="h-4 w-4 mr-2" />
               {addLabel}
             </Button>
@@ -133,7 +136,7 @@ export function DataTable<T extends Record<string, any>>({
         <div className="rounded-md border border-border overflow-x-auto w-full bg-surface-3">
           <Table>
             <TableHeader>
-              <TableRow className="bg-accent/15 border-b-2 border-accent/30">
+              <TableRow className="border-b border-border">
                 {columns.map((column) => (
                   <TableHead
                     key={column.key}

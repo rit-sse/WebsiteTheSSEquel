@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from "react"
 import { DataTable, Column } from "@/components/ui/data-table"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Check, X, Trash2 } from "lucide-react"
 import Avatar from 'boring-avatars'
 import Image from "next/image"
@@ -194,7 +193,7 @@ export default function AlumniRequestsSection() {
               </Button>
               <Button 
                 size="xs"
-                variant="outline"
+                variant="accent"
                 onClick={() => handleApprove(request.id)}
                 disabled={isProcessing}
                 title="Approve"
@@ -220,9 +219,9 @@ export default function AlumniRequestsSection() {
     }
   ]
 
-  // Filter tabs component
-  const FilterTabs = () => (
-    <div className="flex gap-1 mb-4">
+  // Filter tabs - rendered above the DataTable title
+  const filterTabs = (
+    <div className="flex gap-1">
       {(['pending', 'approved', 'rejected'] as FilterStatus[]).map((status) => (
         <button
           key={status}
@@ -247,13 +246,12 @@ export default function AlumniRequestsSection() {
         </div>
       )}
       
-      <FilterTabs />
-      
       <DataTable
         data={requests}
         columns={columns}
         keyField="id"
-        title={`Alumni Requests (${requests.length} ${filter})`}
+        title="Alumni Requests"
+        titleExtra={filterTabs}
         searchPlaceholder="Search requests..."
         searchFields={["name", "email", "previous_roles"]}
         isLoading={isLoading}

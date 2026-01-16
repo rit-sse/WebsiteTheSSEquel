@@ -54,8 +54,8 @@ const Projects = () => {
   }
 
   return (
-    <section className="py-8 px-4 md:px-8">
-      <div className="max-w-screen-xl mx-auto">
+    <section className="w-full py-8 px-4 md:px-8 lg:px-12">
+      <div className="w-full">
         <Card depth={1} className="p-6 md:p-8">
           {/* Intro */}
           <div className="text-center mb-8">

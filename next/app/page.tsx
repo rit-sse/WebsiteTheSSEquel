@@ -50,25 +50,21 @@ export default async function Home() {
     }
 
     return (
-        <div className='space-y-24'>
+        <div className='space-y-8 w-full max-w-[94vw] xl:max-w-[1400px] mx-auto px-4'>
             {/* Hero Component */}
-            <div className="hero h-auto my-auto flex flex-col items-center md:justify-evenly mt-0 md:mt-4 lg:mt-12 w-full px-4 pb-4">
-                <NeoCard className="w-full max-w-[94vw] xl:max-w-[1400px] p-6 md:p-10">
-                    <div className="flex flex-col lg:flex-row items-start gap-8 lg:gap-10">
-                        <HeroCTA 
-                            description={HomepageContent.description}
-                            weeklyMeetingCallout={HomepageContent.weeklyMeetingCallout}
-                            discordLink={HomepageContent.discordLink}
-                        />
-                        <HeroImage />
-                    </div>
-                </NeoCard>
-            </div>
-
-            <br/>
+            <NeoCard className="w-full p-6 md:p-10">
+                <div className="flex flex-col lg:flex-row items-start gap-8 lg:gap-10">
+                    <HeroCTA 
+                        description={HomepageContent.description}
+                        weeklyMeetingCallout={HomepageContent.weeklyMeetingCallout}
+                        discordLink={HomepageContent.discordLink}
+                    />
+                    <HeroImage />
+                </div>
+            </NeoCard>
             
             {/* Upcoming Events */}
-            <Card className="w-full max-w-[94vw] xl:max-w-[1400px] p-6 md:p-10 mx-auto">
+            <Card className="w-full p-6 md:p-10">
               <h2 className='mb-6 text-3xl font-bold font-display'>Upcoming Events</h2>
               <div className='flex flex-row justify-center items-center'>
                 {events && events.length > 0 ? (
@@ -87,7 +83,7 @@ export default async function Home() {
             </Card>
 
             {/* Sponsors */}
-            <Card className="w-full max-w-[94vw] xl:max-w-[1400px] p-6 md:p-10 mx-auto">
+            <Card className="w-full p-6 md:p-10">
                 <h2 className='mb-6 text-3xl font-bold font-display'>Sponsors</h2>
                 <div className='flex flex-wrap justify-center items-stretch gap-6'>
                     {sponsors.map(sponsor => (
