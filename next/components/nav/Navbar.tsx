@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { ChevronDown, Menu } from "lucide-react";
-// import { useSession } from "next-auth/react"; // AUTH BYPASS: Not needed while mocking auth
+import { useSession } from "next-auth/react";
 import SSELogoFull from "../common/SSELogoFull";
 import AuthButton from "./AuthButton";
 import {
@@ -97,10 +97,10 @@ const dashboardItems = [
 
 const Navbar: React.FC = () => {
     const [open, setOpen] = React.useState(false);
+    const { data: session } = useSession();
     
-    // AUTH BYPASS: Always show dashboard for now
-    // TODO: When real auth is enabled, use useSession() to check authentication
-    const showDashboard = true;
+    // Only show dashboard when user is authenticated
+    const showDashboard = !!session;
 
     return (
         <nav

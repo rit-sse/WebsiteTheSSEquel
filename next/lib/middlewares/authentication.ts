@@ -19,22 +19,18 @@ const authVerifierFactory = (
   verifier: (permissions: any) => AuthOutput
 ): AuthVerifier => {
   return async (request: NextRequest) => {
-    // AUTH BYPASS: Always allow all requests with mocked full permissions
-    return { isAllowed: true, authType: "Mocked" };
-    
-    // ORIGINAL AUTH CODE (commented out):
-    // // get the token from the cookie
-    // const token = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
-    // // fetch permissions from the API
-    // const permissions = await fetch(
-    //   process.env.INTERNAL_API_URL + "/api/authLevel",
-    //   {
-    //     body: JSON.stringify({ token }),
-    //     method: "PUT",
-    //   }
-    // ).then(async (res) => await res.json());
-    // // console.log(permissions);
-    // return verifier(permissions);
+    // get the token from the cookie
+    const token = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
+    // fetch permissions from the API
+    const permissions = await fetch(
+      process.env.INTERNAL_API_URL + "/api/authLevel",
+      {
+        body: JSON.stringify({ token }),
+        method: "PUT",
+      }
+    ).then(async (res) => await res.json());
+    // console.log(permissions);
+    return verifier(permissions);
   };
 };
 

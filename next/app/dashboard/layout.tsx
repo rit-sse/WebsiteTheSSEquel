@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Card } from "@/components/ui/card"
+import { useRouter } from "next/navigation"
 
 export default function DashboardLayout({
   children,
@@ -9,10 +9,18 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const [isOfficer, setIsOfficer] = useState<boolean | null>(null)
+  const router = useRouter()
 
   useEffect(() => {
     checkAuth()
   }, [])
+
+  useEffect(() => {
+    // Redirect to homepage if not authorized
+    if (isOfficer === false) {
+      router.push("/")
+    }
+  }, [isOfficer, router])
 
   const checkAuth = async () => {
     try {
@@ -25,25 +33,11 @@ export default function DashboardLayout({
     }
   }
 
-  // Loading state
-  if (isOfficer === null) {
+  // Loading state or redirecting
+  if (isOfficer === null || isOfficer === false) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-muted-foreground">Loading...</div>
-      </div>
-    )
-  }
-
-  // Not authorized
-  if (!isOfficer) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Card depth={2} className="p-8 text-center max-w-md">
-          <h1 className="text-2xl font-bold text-foreground mb-2">Access Denied</h1>
-          <p className="text-muted-foreground">
-            You must be an officer to access the dashboard.
-          </p>
-        </Card>
       </div>
     )
   }
