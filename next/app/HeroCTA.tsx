@@ -2,16 +2,17 @@
 
 import DancingLetters from "@/components/dancing-letters";
 import NeoBrutalistButton from "@/components/neo-brutalist-button";
-import { Send, Rocket, Calendar } from "lucide-react";
+import { Send, Rocket, Calendar, Clock } from "lucide-react";
 import { NeoCard } from "@/components/ui/neo-card";
 
 interface HeroCTAProps {
     description: string;
+    labHoursCallout: string;
     weeklyMeetingCallout: string;
     discordLink: string;
 }
 
-export const HeroCTA = ({ description, weeklyMeetingCallout, discordLink }: HeroCTAProps) => {
+export const HeroCTA = ({ description, labHoursCallout, weeklyMeetingCallout, discordLink }: HeroCTAProps) => {
     return (
         <div className="text-center lg:text-left w-full lg:w-[45%] lg:flex-shrink-0">
             <div className="flex flex-col items-center lg:items-start gap-1 py-2">
@@ -27,12 +28,20 @@ export const HeroCTA = ({ description, weeklyMeetingCallout, discordLink }: Hero
             <p className="py-4 text-muted-foreground text-lg">
                 {description}
             </p>
-            <NeoCard depth={2} className="mt-2 inline-flex items-center gap-2 px-3 py-2">
-                <Calendar className="h-[18px] w-[18px] text-primary flex-shrink-0" />
-                <span className="font-bold text-foreground text-sm">
-                    {weeklyMeetingCallout}
-                </span>
-            </NeoCard>
+            <div className="flex flex-col sm:flex-row gap-2 mt-2">
+                <NeoCard depth={2} className="inline-flex items-center gap-2 px-3 py-2">
+                    <Clock className="h-[18px] w-[18px] text-primary flex-shrink-0" />
+                    <span className="font-bold text-foreground text-sm">
+                        {labHoursCallout}
+                    </span>
+                </NeoCard>
+                <NeoCard depth={2} className="inline-flex items-center gap-2 px-3 py-2">
+                    <Calendar className="h-[18px] w-[18px] text-primary flex-shrink-0" />
+                    <span className="font-bold text-foreground text-sm">
+                        {weeklyMeetingCallout}
+                    </span>
+                </NeoCard>
+            </div>
             <div className="mt-6 flex flex-wrap gap-4 justify-center lg:justify-start pb-2">
                 <NeoBrutalistButton 
                     href={discordLink} 
