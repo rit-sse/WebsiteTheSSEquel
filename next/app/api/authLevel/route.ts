@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
     isMentor: false,
     isOfficer: false,
   };
-  // console.log("AuthToken:", authToken);
+
   if (authToken == null) {
     return Response.json(authLevel);
   }
@@ -111,7 +111,6 @@ export async function GET(request: NextRequest) {
     },
   });
 
-  // console.log("User found by Prisma:", user);
   if (user != null) {
     authLevel.userId = user.id;
     authLevel.isUser = true;

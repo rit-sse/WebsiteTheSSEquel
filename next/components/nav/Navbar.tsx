@@ -69,11 +69,6 @@ const aboutItems = [
 
 const dashboardItems = [
     {
-        title: "Overview",
-        href: "/dashboard",
-        description: "Dashboard overview with status cards.",
-    },
-    {
         title: "Officers",
         href: "/dashboard/officers",
         description: "Manage officer assignments.",
@@ -89,6 +84,11 @@ const dashboardItems = [
         description: "Manage user accounts.",
     },
     {
+        title: "Sponsors",
+        href: "/dashboard/sponsors",
+        description: "Manage sponsor information.",
+    },
+    {
         title: "Alumni Requests",
         href: "/dashboard/alumni",
         description: "Review alumni submission requests.",
@@ -99,8 +99,56 @@ const Navbar: React.FC = () => {
     const [open, setOpen] = React.useState(false);
     const { data: session } = useSession();
     
-    // Only show dashboard when user is authenticated
-    const showDashboard = !!session;
+    // Only show dashboard when user is an officer or mentor
+    const [showDashboard, setShowDashboard] = React.useState(false);
+
+    // Fetch auth level to determine if user can see dashboard
+    React.useEffect(() => {
+        if (!session) {
+            setShowDashboard(false);
+            return;
+        }
+        
+        (async () => {
+            try {
+                const response = await fetch("/api/authLevel");
+                const data = await response.json();
+                setShowDashboard(data.isOfficer || data.isMentor);
+            } catch (error) {
+                console.error("Error checking auth level:", error);
+                setShowDashboard(false);
+            }
+        })();
+    }, [session]);
+
+    // Controlled state for navigation menu - click to activate, then hover works
+    const [menuValue, setMenuValue] = React.useState<string>("");
+    const [isMenuActive, setIsMenuActive] = React.useState(false);
+
+    // Handle menu value changes - only allow if menu is active (clicked)
+    const handleValueChange = (value: string) => {
+        if (isMenuActive || value === "") {
+            setMenuValue(value);
+            // If closing the menu, deactivate hover mode
+            if (value === "") {
+                setIsMenuActive(false);
+            }
+        }
+    };
+
+    // Handle click on a menu trigger - toggle menu, activate hover mode if opening
+    const handleTriggerClick = (value: string) => (e: React.MouseEvent) => {
+        e.preventDefault();
+        if (menuValue === value) {
+            // Clicking the same trigger closes the menu
+            setMenuValue("");
+            setIsMenuActive(false);
+        } else {
+            // Opening a menu activates hover mode
+            setIsMenuActive(true);
+            setMenuValue(value);
+        }
+    };
 
     return (
         <nav
@@ -122,7 +170,11 @@ const Navbar: React.FC = () => {
 
                 {/* Desktop Navigation */}
                 <div className="hidden lg:flex">
-                    <NavigationMenu>
+                    <NavigationMenu
+                        value={menuValue}
+                        onValueChange={handleValueChange}
+                        delayDuration={isMenuActive ? 100 : 1000000}
+                    >
                         <NavigationMenuList>
                             <NavigationMenuItem>
                                 <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
@@ -148,8 +200,10 @@ const Navbar: React.FC = () => {
                                 </NavigationMenuLink>
                             </NavigationMenuItem>
 
-                            <NavigationMenuItem>
-                                <NavigationMenuTrigger>About</NavigationMenuTrigger>
+                            <NavigationMenuItem value="about">
+                                <NavigationMenuTrigger onClick={handleTriggerClick("about")}>
+                                    About
+                                </NavigationMenuTrigger>
                                 <NavigationMenuContent>
                                     <ul className="grid gap-3 p-4 md:w-[400px] lg:w-[500px] lg:grid-cols-2">
                                         {aboutItems.map((item) => (
@@ -162,8 +216,10 @@ const Navbar: React.FC = () => {
                             </NavigationMenuItem>
 
                             {showDashboard && (
-                                <NavigationMenuItem>
-                                    <NavigationMenuTrigger>Dashboard</NavigationMenuTrigger>
+                                <NavigationMenuItem value="dashboard">
+                                    <NavigationMenuTrigger onClick={handleTriggerClick("dashboard")}>
+                                        Dashboard
+                                    </NavigationMenuTrigger>
                                     <NavigationMenuContent>
                                         <ul className="grid gap-3 p-4 w-[300px]">
                                             {dashboardItems.map((item) => (
@@ -321,6 +377,7 @@ function ListItem({
                         "bg-surface-1 border border-border/30",
                         "hover:bg-surface-2 hover:border-border/50 hover:shadow-md",
                         "focus:bg-surface-2 focus:border-border/50",
+                        "transition-colors",
                         className
                     )}
                 >

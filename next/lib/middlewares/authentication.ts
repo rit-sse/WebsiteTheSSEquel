@@ -29,7 +29,6 @@ const authVerifierFactory = (
         method: "PUT",
       }
     ).then(async (res) => await res.json());
-    // console.log(permissions);
     return verifier(permissions);
   };
 };
@@ -120,6 +119,7 @@ const ROUTES: { [key: string]: AuthVerifier } = {
   quotes: nonGetOfficerVerifier,
   schedule: nonGetMentorVerifier,
   skills: nonGetOfficerVerifier,
+  sponsor: nonGetOfficerVerifier,
   user: nonGetOfficerVerifier,
   userProject: nonGetOfficerVerifier,
 };

@@ -38,8 +38,10 @@ const ImageCard = ({
         "shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]",
         !disableHover && [
           "transition-all duration-150",
-          "hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none",
-          "group-hover:translate-x-[2px] group-hover:translate-y-[2px] group-hover:shadow-none",
+          "neo:hover:translate-x-[2px] neo:hover:translate-y-[2px] neo:hover:shadow-none",
+          "neo:group-hover:translate-x-[2px] neo:group-hover:translate-y-[2px] neo:group-hover:shadow-none",
+          "clean:hover:shadow-lg clean:hover:scale-[1.01]",
+          "clean:group-hover:shadow-lg clean:group-hover:scale-[1.01]",
         ],
         className
       )}

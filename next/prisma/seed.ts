@@ -786,6 +786,49 @@ async function seedMemberships() {
 
 }
 
+async function seedSponsors() {
+	const sponsor1 = await prisma.sponsor.upsert({
+		where: { id: 1 },
+		update: {},
+		create: {
+			id: 1,
+			name: "Golisano College",
+			description: "RIT's College of Computing and Information Sciences, home to SSE.",
+			logoUrl: "/images/sponsors/gcis.png",
+			websiteUrl: "https://www.rit.edu/computing/",
+			isActive: true,
+		},
+	});
+
+	const sponsor2 = await prisma.sponsor.upsert({
+		where: { id: 2 },
+		update: {},
+		create: {
+			id: 2,
+			name: "M&T Bank",
+			description: "A regional bank providing financial services across the Northeast.",
+			logoUrl: "/images/sponsors/M_and_T.png",
+			websiteUrl: "https://www.mtb.com/",
+			isActive: true,
+		},
+	});
+
+	const sponsor3 = await prisma.sponsor.upsert({
+		where: { id: 3 },
+		update: {},
+		create: {
+			id: 3,
+			name: "Mindex",
+			description: "A Rochester-based technology company specializing in IT solutions.",
+			logoUrl: "/images/sponsors/mindex.png",
+			websiteUrl: "https://www.mindex.com/",
+			isActive: true,
+		},
+	});
+
+	console.log({ sponsor1, sponsor2, sponsor3 });
+}
+
 async function main() {
   try {
     await seedUser();
@@ -809,6 +852,7 @@ async function main() {
 	await seedProjectContributor();
     await seedEvents();
 	await seedMemberships();
+	await seedSponsors();
   } catch (e) {
     console.error(e);
   }

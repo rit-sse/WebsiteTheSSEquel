@@ -106,6 +106,52 @@
   color-scheme: dark;
 }
 
+/* ===== Font Mode Variables ===== */
+/* Switch display font based on user preference */
+
+:root,
+[data-font="rethink"] {
+  --font-display: var(--font-rethink);
+}
+
+[data-font="pt-serif"] {
+  --font-display: var(--font-pt-serif);
+}
+
+/* ===== Style Mode Variables ===== */
+/* These override the base neobrutalism variables based on style preference */
+
+/* Neo mode (default) - bold brutalist styling */
+[data-style="neo"],
+:root {
+  --border-width: 2px;
+  --card-shadow: 4px 4px 0px 0px hsl(var(--border));
+  --card-border-color: 0 0% 0%;
+  --button-translate-x: 4px;
+  --button-translate-y: 4px;
+  --hover-transform: translate(var(--button-translate-x), var(--button-translate-y));
+}
+
+/* Clean mode - softer, modern shadcn styling */
+[data-style="clean"] {
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --box-shadow-x: 0px;
+  --box-shadow-y: 0px;
+  --reverse-box-shadow-x: 0px;
+  --reverse-box-shadow-y: 0px;
+  --border-width: 1px;
+  --card-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --card-border-color: var(--border);
+  --button-translate-x: 0px;
+  --button-translate-y: 0px;
+}
+
+/* Dark mode overrides for clean style */
+[data-theme="dark"][data-style="clean"] {
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.3), 0 1px 2px -1px rgb(0 0 0 / 0.3);
+  --card-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.2), 0 2px 4px -2px rgb(0 0 0 / 0.2);
+}
+
 /* ===== Base layer ===== */
 @layer base {
   * {

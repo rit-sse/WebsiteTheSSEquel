@@ -79,7 +79,8 @@ export const GoLinkButton: React.FC<CreateGoLinkProps> = ({ fetchData }) => {
           depth={2}
           className="p-4 h-full flex items-center justify-center
                      transition-all duration-150 ease-out
-                     hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none
+                     neo:hover:translate-x-[2px] neo:hover:translate-y-[2px] neo:hover:shadow-none
+                     clean:hover:shadow-lg clean:hover:scale-[1.01]
                      border-dashed"
         >
           <span className="text-lg font-display font-bold text-muted-foreground">+ Create Go Link</span>

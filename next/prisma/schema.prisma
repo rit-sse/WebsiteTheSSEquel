@@ -419,3 +419,29 @@ model Memberships {
     user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
 }
+
+model Sponsor {
+    // Store an automatically generated unique int for id
+    id Int @id @default(autoincrement())
+
+    // Store sponsor name
+    name String
+
+    // Store sponsor description
+    description String
+
+    // Store URL to sponsor logo image
+    logoUrl String
+
+    // Store URL to sponsor website
+    websiteUrl String
+
+    // Store active status (for showing/hiding sponsors)
+    isActive Boolean @default(true)
+
+    // Timestamp when sponsor was created
+    createdAt DateTime @default(now())
+
+    // Timestamp when sponsor was last updated
+    updatedAt DateTime @updatedAt
+}

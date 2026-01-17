@@ -11,32 +11,32 @@ import { HeroCTA } from './HeroCTA';
 import { HeroImage } from './HeroImage';
 import { NeoCard } from "@/components/ui/neo-card";
 import { Card } from "@/components/ui/card";
+import prisma from '@/lib/prisma';
 
 export default async function Home() {
 
     let events = await getEvents() as Event[] | null;
 
-    // creates sponsor dictionary to hold url and image of each sponsor
-    const sponsors = [
-        {
-            image: "/images/sponsors/gcis.png",
-            url: "https://www.rit.edu/computing/",
-            name: "Golisano College",
-            description: "RIT's College of Computing and Information Sciences, home to SSE."
-        }, 
-        {
-            image: "/images/sponsors/M_and_T.png",
-            url: "https://www.mtb.com/",
-            name: "M&T Bank",
-            description: "A regional bank providing financial services across the Northeast."
-        },
-        {
-            image: "/images/sponsors/mindex.png",
-            url: "https://www.mindex.com/",
-            name: "Mindex",
-            description: "A Rochester-based technology company specializing in IT solutions."
-        }
-    ]
+    // Fetch active sponsors from the database
+    // Wrapped in try-catch to handle case where table doesn't exist yet
+    let sponsors: { image: string; url: string; name: string; description: string }[] = [];
+    try {
+        const sponsorsData = await prisma.sponsor.findMany({
+            where: { isActive: true },
+            orderBy: { createdAt: 'desc' },
+        });
+
+        // Transform to match the Sponsor component props
+        sponsors = sponsorsData.map(sponsor => ({
+            image: sponsor.logoUrl,
+            url: sponsor.websiteUrl,
+            name: sponsor.name,
+            description: sponsor.description,
+        }));
+    } catch (error) {
+        // Table might not exist yet - fail gracefully
+        console.error("Failed to fetch sponsors:", error);
+    }
     
     // Allowing developers to not have to set up the DB
     if(events != null){
@@ -83,20 +83,22 @@ export default async function Home() {
             </Card>
 
             {/* Sponsors */}
-            <Card className="w-full p-6 md:p-10">
-                <h2 className='mb-6 text-3xl font-bold font-display'>Sponsors</h2>
-                <div className='flex flex-wrap justify-center items-stretch gap-6'>
-                    {sponsors.map(sponsor => (
-                        <Sponsor
-                            key={sponsor.url}
-                            url={sponsor.url}
-                            imageLink={sponsor.image}
-                            name={sponsor.name}
-                            description={sponsor.description}
-                        />
-                    ))}
-                </div>
-            </Card>
+            {sponsors.length > 0 && (
+                <Card className="w-full p-6 md:p-10">
+                    <h2 className='mb-6 text-3xl font-bold font-display'>Sponsors</h2>
+                    <div className='flex flex-wrap justify-center items-stretch gap-6'>
+                        {sponsors.map(sponsor => (
+                            <Sponsor
+                                key={sponsor.url}
+                                url={sponsor.url}
+                                imageLink={sponsor.image}
+                                name={sponsor.name}
+                                description={sponsor.description}
+                            />
+                        ))}
+                    </div>
+                </Card>
+            )}
         </div>
     );
 }

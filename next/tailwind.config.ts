@@ -1,4 +1,5 @@
 import type { Config } from 'tailwindcss'
+import plugin from 'tailwindcss/plugin'
 const defaultTheme = require('tailwindcss/defaultTheme');
 
 const config: Config = {
@@ -149,6 +150,7 @@ const config: Config = {
                 'radial-2xl': '0 0 25px 5px rgba(0, 0, 0, 0.2)',
                 'radial-3xl': '0 0 30px 5px rgba(0, 0, 0, 0.2)',
                 'shadow': 'var(--shadow)',
+                'card': 'var(--card-shadow)',
             },
             backgroundImage: {
                 'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
@@ -168,14 +170,22 @@ const config: Config = {
                 boxShadowY: 'var(--box-shadow-y)',
                 reverseBoxShadowX: 'var(--reverse-box-shadow-x)',
                 reverseBoxShadowY: 'var(--reverse-box-shadow-y)',
-            }
+            },
+            borderWidth: {
+                'style': 'var(--border-width)',
+            },
         }
     },
     plugins: [
         require('@tailwindcss/typography'),
         require('@tailwindcss/forms'),
         require('@tailwindcss/aspect-ratio'),
-        require("tailwindcss-animate")
+        require("tailwindcss-animate"),
+        // Custom style mode variants for neo/clean toggle
+        plugin(function({ addVariant }) {
+            addVariant('neo', '[data-style="neo"] &')
+            addVariant('clean', '[data-style="clean"] &')
+        }),
     ],
 }
 export default config
