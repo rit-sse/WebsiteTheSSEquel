@@ -28,22 +28,33 @@ function OfficerCardSkeleton() {
 	);
 }
 
-// Component to show manage link for officers
-function ManageLink() {
-	const [isOfficer, setIsOfficer] = useState(false);
+// Hook to check user auth level
+function useAuthLevel() {
+	const [authLevel, setAuthLevel] = useState<{
+		isOfficer: boolean;
+		isMentor: boolean;
+	}>({ isOfficer: false, isMentor: false });
 
 	useEffect(() => {
 		(async () => {
 			try {
 				const response = await fetch("/api/authLevel");
 				const data = await response.json();
-				setIsOfficer(data.isOfficer);
+				setAuthLevel({
+					isOfficer: data.isOfficer ?? false,
+					isMentor: data.isMentor ?? false
+				});
 			} catch {
-				setIsOfficer(false);
+				setAuthLevel({ isOfficer: false, isMentor: false });
 			}
 		})();
 	}, []);
 
+	return authLevel;
+}
+
+// Component to show manage link for officers
+function ManageLink({ isOfficer }: { isOfficer: boolean }) {
 	if (!isOfficer) return null;
 
 	return (
@@ -61,6 +72,10 @@ export default function Leadership() {
 	const [teamData, setTeamData] = useState<Team>({ primary_officers: [], committee_heads: [] });
 	// Loading state
 	const [isLoading, setIsLoading] = useState(true);
+	// Auth level to determine if unfilled positions should be shown
+	const { isOfficer, isMentor } = useAuthLevel();
+	// Only mentors and officers can see unfilled positions
+	const canSeeUnfilledPositions = isOfficer || isMentor;
 
 	// Get all positions and officers when page opens
 	useEffect(() => {
@@ -141,7 +156,7 @@ export default function Leadership() {
 							Have questions? Feel free to reach out to any of our officers!
 						</p>
 						<div className="mt-4">
-							<ManageLink />
+							<ManageLink isOfficer={isOfficer} />
 						</div>
 					</div>
 
@@ -162,9 +177,9 @@ export default function Leadership() {
 								teamData.primary_officers.map((item, idx) => (
 									item.officer ? (
 										<OfficerCard key={idx} teamMember={item.officer} />
-									) : (
+									) : canSeeUnfilledPositions ? (
 										<EmptyOfficerCard key={idx} position={item.position} />
-									)
+									) : null
 								))
 							)}
 						</div>
@@ -189,9 +204,9 @@ export default function Leadership() {
 								teamData.committee_heads.map((item, idx) => (
 									item.officer ? (
 										<OfficerCard key={idx} teamMember={item.officer} />
-									) : (
+									) : canSeeUnfilledPositions ? (
 										<EmptyOfficerCard key={idx} position={item.position} />
-									)
+									) : null
 								))
 							)}
 						</div>
