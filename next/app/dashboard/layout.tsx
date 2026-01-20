@@ -14,14 +14,14 @@ export default function DashboardLayout({
   const { data: session, status } = useSession()
 
   const checkAuth = useCallback(async () => {
-    // If not logged in, not authorized
-    if (status === "unauthenticated" || !session) {
-      setIsAuthorized(false)
+    // If still loading session, wait
+    if (status === "loading") {
       return
     }
 
-    // If still loading session, wait
-    if (status === "loading") {
+    // If not logged in, not authorized
+    if (status === "unauthenticated" || !session) {
+      setIsAuthorized(false)
       return
     }
 

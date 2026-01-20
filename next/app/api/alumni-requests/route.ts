@@ -115,6 +115,9 @@ export async function PUT(request: Request) {
 
     // If approving, create the Alumni record
     if (status === 'approved' && alumniRequest.status !== 'approved') {
+      // Reset the Alumni sequence if it's out of sync with existing data
+      await prisma.$executeRawUnsafe(`SELECT setval('"Alumni_id_seq"', GREATEST((SELECT MAX(id) FROM "Alumni"), 1))`);
+
       await prisma.alumni.create({
         data: {
           name: alumniRequest.name,
