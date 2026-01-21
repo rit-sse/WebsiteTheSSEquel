@@ -43,6 +43,7 @@ model User {
     projects             Project[]
 
     Memberships Memberships[]
+    purchaseRequests PurchaseRequest[]
 }
 
 model Alumni {
@@ -444,4 +445,51 @@ model Sponsor {
 
     // Timestamp when sponsor was last updated
     updatedAt DateTime @updatedAt
+}
+
+model PurchaseRequest {
+    // Store an automatically generated unique int for id
+    id Int @id @default(autoincrement())
+
+    // References userId of person who submitted the request
+    userId Int
+
+    // Name of the person making the request
+    name String
+
+    // Committee the purchase is for
+    committee String
+
+    // Description of what is being purchased and why
+    description String
+
+    // Estimated cost of the purchase
+    estimatedCost Decimal @db.Decimal(10, 2)
+
+    // Actual cost after purchase (filled in step 2)
+    actualCost Decimal? @db.Decimal(10, 2)
+
+    // Planned date of purchase
+    plannedDate DateTime
+
+    // Status: pending, checked_out, returned
+    status String @default("pending")
+
+    // Email to notify for checkout request
+    notifyEmail String
+
+    // Receipt fields (filled in step 2)
+    receiptImage String? @db.Text // Base64 encoded image
+    receiptEmail String? // Email to send receipt to
+    eventName String?
+    eventDate DateTime?
+    attendanceData String? @db.Text // JSON string of attendees
+    attendanceImage String? @db.Text // Base64 encoded sign-in sheet image
+
+    // Timestamps
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    // Relational fields
+    user User @relation(fields: [userId], references: [id])
 }

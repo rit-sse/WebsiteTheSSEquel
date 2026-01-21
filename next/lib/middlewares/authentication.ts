@@ -116,6 +116,7 @@ const ROUTES: { [key: string]: AuthVerifier } = {
   officer: nonGetOfficerVerifier,
   project: nonGetOfficerVerifier,
   projectContributor: nonGetOfficerVerifier,
+  purchasing: officerVerifier, // All purchasing routes require officer auth
   quotes: nonGetOfficerVerifier,
   schedule: nonGetMentorVerifier,
   skills: nonGetOfficerVerifier,

@@ -69,6 +69,11 @@ const aboutItems = [
 
 const dashboardItems = [
     {
+        title: "Purchasing",
+        href: "/purchasing",
+        description: "Request PCard checkout and submit receipts.",
+    },
+    {
         title: "Officers",
         href: "/dashboard/officers",
         description: "Manage officer assignments.",
