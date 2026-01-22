@@ -1,16 +1,16 @@
 // This file renders the home page route (/) of the website.
 // We know that this is the homepage because this file resides in the root of the `app` directory.
 
-import { CTAButton } from '@/components/common/CTAButton';
 import HomepageContent from './HomepageContent';
 import { EventCard } from './events/EventCard';
-import Image from 'next/image';
 import { Event } from "./events/event";
 import { compareDateStrings, formatDate } from './events/calendar/utils';
 import { getEvents } from './api/event/eventService';
-import path from 'path';
-import fs from "fs";
 import { Sponsor } from '@/components/common/Sponsor';
+import { HeroCTA } from './HeroCTA';
+import { HeroImage } from './HeroImage';
+import { NeoCard } from "@/components/ui/neo-card";
+import { Card } from "@/components/ui/card";
 
 export default async function Home() {
 
@@ -19,16 +19,22 @@ export default async function Home() {
     // creates sponsor dictionary to hold url and image of each sponsor
     const sponsors = [
         {
-            "image": "/images/sponsors/gcis.png",
-            "url": "https://www.rit.edu/computing/" 
+            image: "/images/sponsors/gcis.png",
+            url: "https://www.rit.edu/computing/",
+            name: "Golisano College",
+            description: "RIT's College of Computing and Information Sciences, home to SSE."
         }, 
         {
-            "image": "/images/sponsors/M_and_T.png",
-            "url": "https://www.mtb.com/"
+            image: "/images/sponsors/M_and_T.png",
+            url: "https://www.mtb.com/",
+            name: "M&T Bank",
+            description: "A regional bank providing financial services across the Northeast."
         },
         {
-            "image": "/images/sponsors/mindex.png",
-            "url": "https://www.mindex.com/"
+            image: "/images/sponsors/mindex.png",
+            url: "https://www.mindex.com/",
+            name: "Mindex",
+            description: "A Rochester-based technology company specializing in IT solutions."
         }
     ]
     
@@ -41,44 +47,32 @@ export default async function Home() {
         events = events.filter((value => compareDateStrings(currentDate.toISOString(), value.date) < 0))
                         .sort((a, b) => compareDateStrings(a.date, b.date))
                         .slice(0, 3);
-        console.log(events);
     }
 
     return (
         <div className='space-y-24'>
             {/* Hero Component */}
-            <div className="hero h-auto my-auto flex flex-col items-center md:justify-evenly mt-0 md:mt-4 lg:mt-24">
-                <div className="hero-content flex-col lg:flex-row">
-                    <div className="text-center lg:text-left">
-                        <h1 className="text-4xl md:text-5xl font-bold leading-relaxed  md:leading-normal text-center lg:text-left">
-                        Society of 
-                            <span className="block lg:inline"> Software Engineers </span>
-                        </h1>
-                        <p className="py-6">
-                            {HomepageContent.description}
-                        </p>
-                        <p className="mt-4 font-bold">
-                            {HomepageContent.weeklyMeetingCallout}
-                        </p>
-                        <div className="mt-8 flex flex-wrap gap-4 justify-center lg:justify-start">
-                            <CTAButton href={HomepageContent.discordLink} text="Join Discord" />
-                            <CTAButton href="/about/get-involved" text="Get Involved" />
-                        </div>
+            <div className="hero h-auto my-auto flex flex-col items-center md:justify-evenly mt-0 md:mt-4 lg:mt-12 w-full px-4 pb-4">
+                <NeoCard className="w-full max-w-[94vw] xl:max-w-[1400px] p-6 md:p-10">
+                    <div className="flex flex-col lg:flex-row items-start gap-8 lg:gap-10">
+                        <HeroCTA 
+                            description={HomepageContent.description}
+                            weeklyMeetingCallout={HomepageContent.weeklyMeetingCallout}
+                            discordLink={HomepageContent.discordLink}
+                        />
+                        <HeroImage />
                     </div>
-                    <div className="flex mt-12 md:mt-0 w-11/12 md:w-[70%] lg:w-full justify-center">
-                        <Image src="/images/group.jpg" alt="Tech committee meeting" className="rounded-[60px]" width={1000} height={1000} priority />
-                    </div>
-                </div>
+                </NeoCard>
             </div>
 
             <br/>
             
             {/* Upcoming Events */}
-            <div>
-              <h1 className='mt-5'>Upcoming Events</h1>
+            <Card className="w-full max-w-[94vw] xl:max-w-[1400px] p-6 md:p-10 mx-auto">
+              <h2 className='mb-6 text-3xl font-bold font-display'>Upcoming Events</h2>
               <div className='flex flex-row justify-center items-center'>
                 {events && events.length > 0 ? (
-                <div className='mt-8 grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-11/12 sm:w-10/12'>
+                <div className='grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-full'>
                     {events.map((event, index) => {
                         event.date = formatDate(event.date);
                         return (
@@ -90,19 +84,23 @@ export default async function Home() {
                     <p className="text-gray-500">No events available.</p>
                 )}
               </div>
-            </div>
+            </Card>
 
             {/* Sponsors */}
-            <div>
-                <h2 className='mt-5'>Sponsors</h2>
-                <div className=''>
-                    {sponsors.map(sponsorName => {
-                        return(
-                            <Sponsor key={sponsorName.url} url={sponsorName.url} imageLink={sponsorName.image}/>
-                        )
-                    })}
+            <Card className="w-full max-w-[94vw] xl:max-w-[1400px] p-6 md:p-10 mx-auto">
+                <h2 className='mb-6 text-3xl font-bold font-display'>Sponsors</h2>
+                <div className='flex flex-wrap justify-center items-stretch gap-6'>
+                    {sponsors.map(sponsor => (
+                        <Sponsor
+                            key={sponsor.url}
+                            url={sponsor.url}
+                            imageLink={sponsor.image}
+                            name={sponsor.name}
+                            description={sponsor.description}
+                        />
+                    ))}
                 </div>
-            </div>
+            </Card>
         </div>
     );
 }

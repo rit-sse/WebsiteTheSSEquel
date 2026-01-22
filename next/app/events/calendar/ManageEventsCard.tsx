@@ -48,16 +48,16 @@ const ManageEventCard = ({ modalAdd, modalEvent, setSelectedEvent, events }: Pro
 
     if(isOfficer){
         return(
-            <div className="max-md:w-full w-1/5 flex flex-col items-center z-1 border border-solid border-gray-700 drop-shadow-xl bg-base-100 rounded-lg">
+            <div className="max-md:w-full w-1/5 flex flex-col items-center z-1 border border-solid border-gray-700 drop-shadow-xl bg-background rounded-lg">
                 <div className="mt-2">
                     <h3 className="text-center">Modify Events</h3>
                 </div>
-                <button className="bg-secondary rounded-full text-center w-10 h-10 flex items-center justify-center text-2xl font-bold hover:bg-primary shadow-md active:bg-neutral text-base-100" onClick={ modalAdd }>+</button>
+                <button className="bg-secondary rounded-full text-center w-10 h-10 flex items-center justify-center text-2xl font-bold hover:bg-primary shadow-md active:bg-muted text-primary-foreground" onClick={ modalAdd }>+</button>
                 <div className="py-5 flex flex-col gap-2 w-full px-2 overflow-y-auto max-h-96">
 
                     {Object.entries(events).map(([key, event]) => (
                     // Display all stored events
-                    <button key={ key } onClick={ openEventModal } value={ (event as Event).id } className="text-sm bg-secondary hover:bg-primary rounded-md flex justify-center items-center min-h-12 active:bg-neutral truncate text-base-100">
+                    <button key={ key } onClick={ openEventModal } value={ (event as Event).id } className="text-sm bg-secondary hover:bg-primary rounded-md flex justify-center items-center min-h-12 active:bg-muted truncate text-primary-foreground">
                         { (event as Event).title }
                     </button>
                     ))}

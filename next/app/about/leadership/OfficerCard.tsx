@@ -2,41 +2,76 @@ import { GitHubIcon, LinkedInIcon, EmailIcon } from "../../../components/common/
 import { TeamMember } from "./team";
 import Avatar from 'boring-avatars';
 import Image from "next/image";
+import { Card } from "@/components/ui/card";
 
 interface OfficerCardProps {
   teamMember: TeamMember;
+  children?: React.ReactNode;
 }
 
-export default function OfficerCard({ teamMember }: OfficerCardProps) {
+export default function OfficerCard({ teamMember, children }: OfficerCardProps) {
   return (
-    <div className="mt-4 w-full flex justify-center">
-      <div className="mt-2 flex flex-col items-center w-full max-w-xs sm:max-w-sm px-4">
+    <Card depth={2} className="w-full max-w-[280px] p-5 flex flex-col items-center text-center h-full">
+      {/* Avatar */}
+      <div className="mb-3">
         {teamMember.image != "https://source.boringavatars.com/beam/" ? (
-          <Image src={teamMember.image} alt="Photo of team member" width={96} height={96} className="rounded-full object-cover"/> 
+          <Image 
+            src={teamMember.image} 
+            alt={`Photo of ${teamMember.name}`} 
+            width={96} 
+            height={96} 
+            className="rounded-full object-cover w-24 h-24"
+          /> 
         ) : (
           <Avatar size={96} name={teamMember.name || "default"} colors={["#426E8C", "#5289AF", "#86ACC7"]} variant="beam"/>
         )}
-        <h4 className="font-bold sm:text-lg text-primary-focus">{teamMember.name}</h4>
-        <p className="font-semibold">{teamMember.title}</p>
-        <p className="mt-2 px-2 text-center">{teamMember.desc}</p>
-        <div className="w-full flex flex-row gap-4 justify-center items-center">
-          {teamMember.linkedin && (
-            <a href={teamMember.linkedin} target="_blank" rel="noopener noreferrer">
-              <LinkedInIcon />
-            </a>
-          )}
-          {teamMember.github && (
-            <a href={teamMember.github} target="_blank" rel="noopener noreferrer">
-              <GitHubIcon />
-            </a>
-          )}
-          {teamMember.email && (
-            <a href={`mailto:${teamMember.email}`}>
-              <EmailIcon />
-            </a>
-          )}
-        </div>
       </div>
-    </div>
+
+      {/* Name & Title */}
+      <h4 className="font-bold text-lg text-foreground">{teamMember.name}</h4>
+      <p className="text-sm font-semibold text-primary mb-2">{teamMember.title}</p>
+      
+      {/* Description */}
+      <p className="text-sm text-muted-foreground flex-grow line-clamp-3">{teamMember.desc}</p>
+      
+      {/* Contact Icons */}
+      <div className="flex gap-3 mt-4 pt-3 border-t border-border w-full justify-center">
+        {teamMember.linkedin && (
+          <a 
+            href={teamMember.linkedin} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-muted-foreground hover:text-primary transition-colors"
+          >
+            <LinkedInIcon />
+          </a>
+        )}
+        {teamMember.github && (
+          <a 
+            href={teamMember.github} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-muted-foreground hover:text-primary transition-colors"
+          >
+            <GitHubIcon />
+          </a>
+        )}
+        {teamMember.email && (
+          <a 
+            href={`mailto:${teamMember.email}`}
+            className="text-muted-foreground hover:text-primary transition-colors"
+          >
+            <EmailIcon />
+          </a>
+        )}
+      </div>
+
+      {/* Edit/Replace buttons slot */}
+      {children && (
+        <div className="mt-3 pt-3 border-t border-border w-full">
+          {children}
+        </div>
+      )}
+    </Card>
   );
 }

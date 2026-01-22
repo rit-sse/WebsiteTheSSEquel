@@ -1,8 +1,8 @@
 import ZCardContainer from '@/components/ZCardContainer';
-import { CTAButton } from '@/components/common/CTAButton';
 import Image from 'next/image'
 import InvolvementSlotData from './InvolvementSlotData';
 import { InvolvementSlot } from './InvolvementSlot'
+import { GetInvolvedCTAs } from './GetInvolvedCTAs'
 
 export default function GetInvolved() {
     // The default height and width for the placeholder dummy photo
@@ -39,20 +39,7 @@ export default function GetInvolved() {
                         )
                     }/>
 
-                      <section className="pt-6">
-                          <div className="text-left space-x-5 mt-3 flex">
-                              <h2 className="bg-gradient-to-t from-primary to-secondary bg-clip-text
-                          text-3xl/[3rem] font-extrabold text-transparent sm:text-3xl/[3rem]">COME TO OUR EVENTS!</h2>
-                              <CTAButton href="/events/calendar" text="Events" />
-                          </div>
-                      </section>
-                      <section className="pt-6">
-                          <div className="text-left space-x-5 mt-3 flex">
-                              <h2 className="bg-gradient-to-t from-primary to-secondary bg-clip-text
-                          text-3xl/[3rem] font-extrabold text-transparent sm:text-3xl/[3rem]">TALK TO US!</h2>
-                              <CTAButton href="https://www.discord.gg/rNC6wj82kq" text="Join our Discord" />
-                          </div>
-                      </section>
+                      <GetInvolvedCTAs />
                    </div>
             </section>
         </>

@@ -1,25 +1,27 @@
 'use client';
 
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
+import { Modal, ModalFooter } from "@/components/ui/modal";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 
 export const MakeNewQuote = () => {
-
+  const [open, setOpen] = useState(false);
   const [quotes, setQuotes] = useState([{ quote: "", author: "" }]);
   const [userId, setUserID] = useState(0);
   const [isOfficer, setIsOfficer] = useState(false);
 
   const fetchData = useCallback(async () => {
-    const data = await fetch("/api/authLevel").then((response) => 
-      response.json()
-    )
+    const data = await fetch("/api/authLevel").then((r) => r.json());
     setIsOfficer(data.isOfficer);
     setUserID(data.userId);
   }, []);
 
   useEffect(() => {
     fetchData();
-}, [fetchData]);
-  
+  }, [fetchData]);
 
   const handleQuoteChange = (index: number, field: "quote" | "author", value: string) => {
     const updated = [...quotes];
@@ -39,33 +41,29 @@ export const MakeNewQuote = () => {
   };
 
   const createQuote = async () => {
-    let hasEmptyFields = quotes.some(q => !q.quote.trim());
+    const hasEmptyFields = quotes.some(q => !q.quote.trim());
 
     if (hasEmptyFields) {
-      alert("All quote fields must be filled out.");
+      toast.error("All quote fields must be filled out.");
       return;
     }
 
-    quotes.map(quote => {
-      if (quote.author === "") {
-        quote.author = "Anonymous";
+    quotes.forEach(q => {
+      if (q.author === "") {
+        q.author = "Anonymous";
       }
-    })
+    });
 
-    let combinedQuote = quotes.map(q => `[${q.author}] "${q.quote}"`).join("\n");
+    const combinedQuote = quotes.map(q => `[${q.author}] "${q.quote}"`).join("\n");
 
-    let authorSet: string[] = [];
+    const authorSet: string[] = [];
     quotes.forEach(q => {
       if (q.author.trim() && !authorSet.includes(q.author.trim())) {
         authorSet.push(q.author.trim());
       }
     });
 
-    let authorString = "Anonymous";
-
-    if (authorSet.length > 0) {
-      authorString = authorSet.join(", ");
-    }
+    const authorString = authorSet.length > 0 ? authorSet.join(", ") : "Anonymous";
 
     const newQuote = {
       dateAdded: new Date().toISOString(),
@@ -73,7 +71,6 @@ export const MakeNewQuote = () => {
       userId: userId,
       author: authorString,
     };
-
 
     try {
       const response = await fetch("/api/quotes", {
@@ -86,86 +83,71 @@ export const MakeNewQuote = () => {
         throw new Error("Failed to create quote");
       }
 
-      const result = await response.json();
+      setOpen(false);
+      setQuotes([{ quote: "", author: "" }]);
+      window.location.reload();
     } catch (error) {
-      alert("Error creating quote");
+      toast.error("Error creating quote");
     }
-    window.location.reload();
   };
 
-  if (isOfficer) {
-    return (
-      <div>
-        <button
-          onClick={(event) => {
-            event.preventDefault();
-            if (document) {
-              (
-                document.getElementById("create-quote") as HTMLFormElement
-              ).showModal();
-            }
-          }}
-          className="p-4 h-full bg-base-100 rounded-md shadow-md justify-items-center hover:shadow-lg transition-shadow border-2 border-base-content hover:border-info text-xl"
-        >
-          Add A Quote
-        </button>
-        <dialog id="create-quote" className="modal">
-          <div className="modal-box">
-            <h1 className="text-lg font-bold mb-4">Add a Quote</h1>
+  if (!isOfficer) return null;
 
-            {quotes.map((entry, index) => (
-              <div key={index} className="mb-4">
-                <input
-                  type="text"
+  return (
+    <>
+      <button
+        onClick={() => setOpen(true)}
+        className="p-4 h-full bg-background rounded-md shadow-md justify-items-center hover:shadow-lg transition-shadow border-2 border-border hover:border-primary text-xl"
+      >
+        Add A Quote
+      </button>
+
+      <Modal open={open} onOpenChange={setOpen} title="Add a Quote" className="max-w-xl">
+        <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+          {quotes.map((entry, index) => (
+            <div key={index} className="space-y-2 p-3 border border-border rounded-base">
+              <div className="space-y-1">
+                <Label htmlFor={`quote-${index}`}>Quote</Label>
+                <Input
                   id={`quote-${index}`}
                   placeholder="Enter quote"
                   value={entry.quote}
                   onChange={(e) => handleQuoteChange(index, "quote", e.target.value)}
-                  className="input input-bordered w-full mb-2"
                 />
-                <input
-                  type="text"
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor={`author-${index}`}>Author</Label>
+                <Input
                   id={`author-${index}`}
                   placeholder="Enter author (optional)"
                   value={entry.author}
                   onChange={(e) => handleQuoteChange(index, "author", e.target.value)}
-                  className="input input-bordered w-full"
                 />
-                {quotes.length > 1 && (
-                  <button
-                    className="btn btn-sm btn-error mt-2"
-                    onClick={() => removeQuoteField(index)}
-                  >
-                    Remove
-                  </button>
-                )}
               </div>
-            ))}
-
-            <button className="btn btn-outline btn-accent mb-4" onClick={addQuoteField}>
-              + Add another section
-            </button>
-
-            <div className="flex gap-4">
-              <button onClick={createQuote} className="btn btn-primary">
-                Submit Quotes
-              </button>
-              <button
-                className="btn"
-                onClick={(e) => {
-                  e.preventDefault();
-                  (document.getElementById("create-quote") as HTMLFormElement).close();
-                }}
-              >
-                Cancel
-              </button>
+              {quotes.length > 1 && (
+                <Button
+                  variant="neutral"
+                  size="sm"
+                  onClick={() => removeQuoteField(index)}
+                >
+                  Remove
+                </Button>
+              )}
             </div>
-          </div>
-        </dialog>
-      </div>
-    );
-  }
+          ))}
 
-}
+          <Button variant="neutral" onClick={addQuoteField}>
+            + Add another section
+          </Button>
+        </div>
+
+        <ModalFooter>
+          <Button variant="neutral" onClick={() => setOpen(false)}>Cancel</Button>
+          <Button onClick={createQuote}>Submit Quotes</Button>
+        </ModalFooter>
+      </Modal>
+    </>
+  );
+};
 
 export default MakeNewQuote;

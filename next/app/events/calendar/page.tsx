@@ -1,13 +1,14 @@
 "use client"
 import Calendar from "./Calendar";
 import { Event } from "../event";
-import EventFormModal from "./EventFormModal";
+import { Modal } from "@/components/ui/modal";
 import { useEffect, useState } from "react";
 import AddEventForm from "./AddEventForm";
 import EventForm from "./EventForm";
 import EditEventForm from "./EditEventForm";
 import ManageEventsCard from "./ManageEventsCard";
 import { compareDateStrings } from "./utils";
+import { Card } from "@/components/ui/card";
 
 export default function EventsCalendar() {
     const [modalAdd, setModalAdd] = useState(false); // Modal for adding new events
@@ -25,48 +26,49 @@ export default function EventsCalendar() {
     /**
      * Get all events from Google Calendar
      */
-    const fetchEvents = async () =>{
-        const resp = await fetch('/api/event');
-        let res: Event[] = await resp.json();
-        res = res.sort((event1, event2) => compareDateStrings(event1.date, event2.date))
-        setEvents(res);
+    const fetchEvents = async () => {
+        try {
+            const resp = await fetch('/api/event');
+            const res = await resp.json();
+            if (Array.isArray(res)) {
+                const sorted = res.sort((event1, event2) => compareDateStrings(event1.date, event2.date));
+                setEvents(sorted);
+            }
+        } catch (error) {
+            console.error("Failed to fetch events:", error);
+        }
     }
 
     return (
         <>
-            <div className="flex flex-col items-center w-full h-screen max-w-screen-xl">            
-                <div className="mx-auto px-4 sm: py-16 md:pb-8 max-w-2xl">
-                    <div className="text-center flex flex-col items-center w-full">
-                        <h1
-                        className="bg-gradient-to-t from-primary to-secondary bg-clip-text
-                                    text-4xl/[3rem] font-extrabold text-transparent md:text-5xl/[4rem]"
-                        >
-                        Events Calendar
-                        </h1>
+            <Card className="flex flex-col w-full max-w-[94vw] xl:max-w-[1400px] p-6 md:p-10 mx-auto mt-8">            
+                <h1 className="text-primary text-left mb-6">
+                    Events Calendar
+                </h1>
+                <div className="flex flex-col lg:flex-row w-full gap-6">
+                    <div className="flex-1 min-w-0 overflow-x-auto">
+                        <Calendar events={ events }/>
                     </div>
-                </div>
-                <div className="flex flex-row max-md:flex-col max-md:items-center w-full h-screen max-w-screen-xl gap-1 ">
-                    <Calendar events={ events }/>
 
                     {/* Card that only officers can see, props are functions to open the modals */}
                     <ManageEventsCard modalAdd={ () => setModalAdd(true) } modalEvent={ () => setModalEvent(true) } setSelectedEvent={ setSelectedEvent } events={ events }/>
                 </div>
+            </Card>
 
-                {/* Modals that contain the form for adding a new event */}
-                <EventFormModal isOpen={ modalAdd } onClose={ async () => setModalAdd(false) } >
-                    <AddEventForm isOpen={ modalAdd } onClose={ async () => setModalAdd(false) } events={ events } setEvents={ setEvents }/>
-                </EventFormModal>
+            {/* Modal for adding a new event */}
+            <Modal open={modalAdd} onOpenChange={setModalAdd} title="Add Event">
+                <AddEventForm isOpen={modalAdd} onClose={() => setModalAdd(false)} events={events} setEvents={setEvents}/>
+            </Modal>
 
-                {/* Modals that contain the form for viewing / deleting an event */}
-                <EventFormModal isOpen={ modalEvent } onClose={ async () => setModalEvent(false)}>
-                    <EventForm isOpen={ modalEvent } onClose={ async () => setModalEvent(false)} event={ selectedEvent } openEditModal={ async () => setModalEdit(true) } events={ events } setEvents={ setEvents }/>
-                </EventFormModal>
+            {/* Modal for viewing / deleting an event */}
+            <Modal open={modalEvent} onOpenChange={setModalEvent} title="Event Details">
+                <EventForm isOpen={modalEvent} onClose={() => setModalEvent(false)} event={selectedEvent} openEditModal={() => setModalEdit(true)} events={events} setEvents={setEvents}/>
+            </Modal>
 
-                {/* Modals that contain the form for editing an event */}
-                <EventFormModal isOpen={ modalEdit } onClose={ async () => setModalEdit(false)}>
-                    <EditEventForm isOpen={ modalEdit } onClose={ async () => setModalEdit(false)} setModalEvent={ setModalEvent } event={ selectedEvent } setSelectedEvent={ setSelectedEvent } events={ events } setEvents={ setEvents }/>
-                </EventFormModal>
-            </div>
+            {/* Modal for editing an event */}
+            <Modal open={modalEdit} onOpenChange={setModalEdit} title="Edit Event">
+                <EditEventForm isOpen={modalEdit} onClose={() => setModalEdit(false)} setModalEvent={setModalEvent} event={selectedEvent} setSelectedEvent={setSelectedEvent} events={events} setEvents={setEvents}/>
+            </Modal>
         </>
     );
 }

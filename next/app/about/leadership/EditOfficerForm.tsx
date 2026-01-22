@@ -144,7 +144,7 @@ export default function EditOfficerForm({ open, teamMember, getOfficers, closeMo
                 <label>End Date</label>
                 <input type="date" name="end_date" value={formData.end_date} onChange={handleChange}/>
             </div>
-            <button type="submit" className="p-2 bg-secondary text-base-content hover:bg-primary rounded">Submit</button>
+            <button type="submit" className="p-2 bg-secondary text-foreground hover:bg-primary rounded">Submit</button>
             <label className="text-error text-center text-sm">{error}</label>
         </form>
     )

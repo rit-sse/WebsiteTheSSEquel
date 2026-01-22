@@ -4,6 +4,7 @@ import ProjectCard from "./ProjectCard";
 import { Project } from "./projects";
 import { useState } from "react";
 import AddProjectModal from "./AddProjectModal";
+import { Card } from "@/components/ui/card";
 
 const Projects = () => {
   // projects has an array of Project[]
@@ -54,58 +55,54 @@ const Projects = () => {
 
   return (
     <>
-      {/* Intro */}
-      <section className="intro mt-16 mb-5 max-w-2xl mx-auto">
-        <h1
-          className="bg-gradient-to-t from-primary to-secondary 
-              bg-clip-text text-4xl font-extrabold text-transparent md:text-5xl"
-        >
-          Projects
-        </h1>
-        <div className="mt-3 text-xl text-center">
-          <div className="leading-8">Our mission is simple.</div>
-          <div className="leading-8">Want to build? We&apos;ll make it happen.</div>
-          <div className="text-xl text-primary opacity-70 mt-1">
-            Write to <span className="hover:underline hover:font-bold"><a href="mailto:projects@sse.rit.edu">projects@sse.rit.edu</a></span> for more info.
+      <Card className="w-full max-w-[94vw] xl:max-w-[1400px] p-6 md:p-10 mx-auto mt-8">
+        {/* Intro */}
+        <section className="intro mb-8 max-w-2xl mx-auto">
+          <h1 className="text-primary text-center">
+            Projects
+          </h1>
+          <div className="mt-3 text-xl text-center">
+            <div className="leading-8">Our mission is simple.</div>
+            <div className="leading-8">Want to build? We&apos;ll make it happen.</div>
+            <div className="text-xl text-primary opacity-70 mt-1">
+              Write to <span className="hover:underline hover:font-bold"><a href="mailto:projects@sse.rit.edu">projects@sse.rit.edu</a></span> for more info.
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Officer-only Add Project Modal Button */}
-      { isOfficer ? 
-        <button className="bg-primary text-base-100 px-[25px] py-[10px] rounded-lg" onClick={enableModal}>Add Project</button>
-        : undefined}
-      
-      {/* Exhibit */}
-      {/* Load the projects that are currently in the works first. */}
-      <section className="exhibit w-4/5 min-h-[400px]">
-        <h1
-          className="bg-gradient-to-t from-primary to-secondary 
-              bg-clip-text text-4xl font-extrabold text-transparent md:text-2xl
-              text-center
-              
-              lg:text-left">
-          Current Projects
-        </h1>
-        {inProgress.map((project, key) => (
-          <ProjectCard key={key} project={project} propKey={key} isOfficer={isOfficer} />
-        ))}
-      </section>
-      {/* Load past projects that are done. */}
-      <section className="exhibit w-4/5 min-h-[400px]">
-        <h1
-          className="bg-gradient-to-t from-primary to-secondary 
-              bg-clip-text text-4xl font-extrabold text-transparent md:text-2xl
-              text-center
-              
-              lg:text-left">
-          Past Projects
-        </h1>
-        {done.map((project, key) => (
-          <ProjectCard key={key} project={project} propKey={key} isOfficer={isOfficer}/>
-        ))}
+        {/* Officer-only Add Project Modal Button */}
+        { isOfficer ? 
+          <div className="flex justify-center mb-8">
+            <button className="bg-primary text-primary-foreground px-[25px] py-[10px] rounded-lg" onClick={enableModal}>Add Project</button>
+          </div>
+          : undefined}
         
-      </section>
+        {/* Exhibit */}
+        {/* Load the projects that are currently in the works first. */}
+        <section className="exhibit mb-8">
+          <h2 className="text-primary text-center lg:text-left mb-4">
+            Current Projects
+          </h2>
+          <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            {inProgress.map((project, key) => (
+              <ProjectCard key={key} project={project} propKey={key} isOfficer={isOfficer} />
+            ))}
+          </div>
+        </section>
+
+        {/* Load past projects that are done. */}
+        <section className="exhibit">
+          <h2 className="text-primary text-center lg:text-left mb-4">
+            Past Projects
+          </h2>
+          <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            {done.map((project, key) => (
+              <ProjectCard key={key} project={project} propKey={key} isOfficer={isOfficer}/>
+            ))}
+          </div>
+        </section>
+      </Card>
+      
       <AddProjectModal enabled={addProjectModalEnabled} setEnabled={setAddProjectModalEnabled}/>
     </>
   );

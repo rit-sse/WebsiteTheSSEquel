@@ -42,7 +42,7 @@ const Calendar = ({ events }: Props) => {
     <iframe
         key={key}
         src={calendarLink}
-        className="border border-solid border-gray-700 w-full h-full rounded-lg"
+        className="border border-solid border-gray-700 w-full h-[calc(100vh-280px)] min-h-[400px] rounded-lg"
         frameBorder="0"
         scrolling="no"
     />

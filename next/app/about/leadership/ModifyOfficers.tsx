@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { TeamMember } from "./team";
-import Image from 'next/image';
+import { Pencil, RefreshCw } from "lucide-react";
 
 /**
  * teamMember - An officer
@@ -35,19 +35,25 @@ export default function ModifyOfficers({ teamMember, openReplaceModal, openEditM
 
     if(isOfficer){
         return (
-            <div className="flex flex-row justify-center gap-4">
-                <button className="text-sm bg-secondary hover:bg-primary rounded-md active:bg-neutral text-base-100 p-1" onClick={() => {setSelectedOfficer(teamMember); openEditModal()}}>
+            <div className="flex gap-2 justify-center">
+                <button 
+                    className="flex items-center gap-1.5 text-xs bg-surface-2 hover:bg-surface-3 rounded-md px-2.5 py-1.5 text-foreground transition-colors" 
+                    onClick={() => {setSelectedOfficer(teamMember); openEditModal()}}
+                >
+                    <Pencil size={12} />
                     Edit
                 </button>
-                <button className="text-sm bg-secondary hover:bg-primary rounded-md active:bg-neutral text-base-100 p-1" onClick={() => {setSelectedOfficer(teamMember); openReplaceModal()}}>
+                <button 
+                    className="flex items-center gap-1.5 text-xs bg-surface-2 hover:bg-surface-3 rounded-md px-2.5 py-1.5 text-foreground transition-colors" 
+                    onClick={() => {setSelectedOfficer(teamMember); openReplaceModal()}}
+                >
+                    <RefreshCw size={12} />
                     Replace
                 </button>
             </div>
         )
     }
     else{
-        return (
-            <span></span>
-        )
+        return null;
     }
 }

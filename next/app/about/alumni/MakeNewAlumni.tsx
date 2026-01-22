@@ -1,15 +1,19 @@
-// TO-DO: Edit this page for making a new Alumni (It is NOT close to working)
+"use client"
 
 import { useEffect, useState } from "react";
+import { Plus } from "lucide-react";
+import { Modal, ModalFooter } from "@/components/ui/modal";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 
 interface CreateAlumniProps {
   fetchData: () => Promise<void>;
 }
 
 export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) => {
-  // const { data: session }: any = useSession();
-  // const [alumni_id, setAlumniID] = useState("");
-  // const [user_id, setUserID] = useState("");
+  const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [quote, setQuote] = useState("");
   const [previous_roles, setPreviousRoles] = useState("");
@@ -20,48 +24,14 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
   const [start_date, setStartDate] = useState("");
   const [end_date, setEndDate] = useState("");
   const [image, setImage] = useState("");
-  
+  const [isOfficer, setIsOfficer] = useState(false);
 
-  // Handle setting the variables
-  const handleSetName = (givenName: string) => {    
-      setName(givenName);
-  };
-
-  const handleSetQuote = (givenQuote: string) => {    
-      setQuote(givenQuote);
-  };
-
-  const handleSetPreviousRoles = (givenPreviousRoles: string) => {    
-      setPreviousRoles(givenPreviousRoles);
-  };
-
-  const handleSetDescription = (givenDescription: string) => {    
-      setDescription(givenDescription);
-  };
-
-  const handleSetLinkedin = (givenLinkedin: string) => {    
-      setLinkedin(givenLinkedin);
-  };
-
-  const handleSetGithub = (givenGithub: string) => {    
-      setGithub(givenGithub);
-  };
-
-  const handleSetEmail = (givenEmail: string) => {    
-      setEmail(givenEmail);
-  };
-
-  const handleSetStartDate = (givenStartDate: string) => {    
-      setStartDate(givenStartDate);
-  };
-
-  const handleSetEndDate = (givenEndDate: string) => {    
-      setEndDate(givenEndDate);
-  };
-
-  const handleSetImage = (givenImage: string) => {
-      setImage(givenImage);
-  }
+  useEffect(() => {
+    (async () => {
+      const data = await fetch("/api/authLevel").then((r) => r.json());
+      setIsOfficer(data.isOfficer);
+    })();
+  }, []);
 
   const handleCancel = () => {
     setName("");
@@ -73,226 +43,166 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
     setEmail("");
     setStartDate("");
     setEndDate("");
+    setImage("");
+    setOpen(false);
   };
 
   const handleCreate = async () => {
     try {
-
       const response = await fetch("/api/alumni", {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            name: name,
-            email: email,
-            linkedIn: linkedin,
-            gitHub: github,
-            description: description,
-            quote: quote,
-            previous_roles: previous_roles,
-            start_date: start_date,
-            end_date: end_date,
-            image: image
+          name,
+          email,
+          linkedIn: linkedin,
+          gitHub: github,
+          description,
+          quote,
+          previous_roles,
+          start_date,
+          end_date,
+          image
         })
       });
 
       if (response.ok) {
         handleCancel();
-        (document.getElementById("create-alumni") as HTMLDialogElement).close();
         fetchData();
       }
-    } catch (error) {}
+    } catch (error) {
+      console.error("Failed to create alumni:", error);
+    }
   };
 
-  // Input Form shown if the current user is an Officer
-  const [isOfficer, setIsOfficer] = useState(false);
+  if (!isOfficer) return null;
 
-  useEffect(() => {
-    (async () => {
-      const data = await fetch("/api/authLevel").then((response) =>
-        response.json()
-      );
-      console.log(data);
-      setIsOfficer(data.isOfficer);
-    })();
-  }, []);
+  return (
+    <>
+      <button
+        onClick={() => setOpen(true)}
+        className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors"
+      >
+        <Plus size={18} />
+        Add Alumni
+      </button>
 
-  if (isOfficer) {
-    return (
-      <>
-        <button
-          onClick={(func) => {
-            func.preventDefault();
-            if (document) {
-              (
-                document.getElementById("create-alumni") as HTMLFormElement
-              ).showModal();
-            }
-          }}
-          className="
-                p-4
-                h-full
-                bg-base-100
-                rounded-md
-                shadow-md
-                justify-items-center
-                hover:shadow-lg
-                transition-shadow
-                border-2
-                border-base-content
-                hover:border-info
-                text-xl"
-        >
-          Create Alumni
-        </button>
+      <Modal open={open} onOpenChange={setOpen} title="Create Alumni" className="max-w-xl max-h-[90vh]">
+        <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+          <div className="space-y-2">
+            <Label htmlFor="alumni-name">Name *</Label>
+            <Input
+              id="alumni-name"
+              placeholder="Name (required)"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </div>
 
-        <dialog id="create-alumni" className="modal overflow-scroll">
-          <form onSubmit={handleCreate} className="modal-box">
-            <h3 className="font-bold py-4 text-xlg">Create Alumni</h3>
+          <div className="space-y-2">
+            <Label htmlFor="alumni-email">Email *</Label>
+            <Input
+              id="alumni-email"
+              type="email"
+              placeholder="Email (required)"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
 
-            <label className="my-2 input input-bordered flex items-center gap-2">
-              Alumni Name:
-              <input
-                type="text"
-                className="w-full text-gray-900"
-                placeholder="Name (required)..."
-                value={name}
-                onChange={((e) => handleSetName(e.target.value))}
-                required
-              />
-            </label>
-            <label className="my-2 input input-bordered flex items-center gap-2">
-              Email:
-              <input
-                type="email"
-                className="w-full text-gray-900"
-                placeholder="Email (required)..."
-                value={email}
-                onChange={((e) => handleSetEmail(e.target.value))}
-                required
-              />
-            </label>
-            <label className="my-2 input input-bordered flex items-center gap-2">
-              Start Date:
-              <input
-                type="text"
-                className="w-full text-gray-900"
-                placeholder="(required) (ex: Fall 2023)..."
-                value={start_date}
-                onChange={((e) => handleSetStartDate(e.target.value))}
-                required
-              />
-            </label>
-            <label className="my-2 input input-bordered flex items-center gap-2">
-              Graduation Date:
-              <input
-                type="text"
-                className="w-full text-gray-900"
-                placeholder="(required) (ex: Spring 2024)..."
-                value={end_date}
-                onChange={((e) => handleSetEndDate(e.target.value))}
-                required
-              />
-            </label>
-            <label className="my-2 input input-bordered flex items-center gap-2">
-              Image:
-              <input
-                type="text"
-                className="w-full text-gray-900"
-                placeholder="Image link (send entire web link)..."
-                value={image}
-                onChange={((e) => handleSetImage(e.target.value))}
-                required
-              />
-            </label>
-            <label className="my-2 input input-bordered flex items-center gap-2">
-              Quote:
-              <input
-                type="text"
-                className="w-full text-gray-900"
-                placeholder="Quote..."
-                value={quote}
-                onChange={((e) => handleSetQuote(e.target.value))}
-              />
-            </label>
-            <label className="my-2 input input-bordered flex items-center gap-2">
-              Previous Roles:
-              <input
-                type="text"
-                className="w-full text-gray-900"
-                placeholder="Previous Roles..."
-                value={previous_roles}
-                onChange={((e) => handleSetPreviousRoles(e.target.value))}
-              />
-            </label>
-            <label className="my-2 input input-bordered flex items-center gap-2">
-              LinkedIn:
-              <input
-                type="text"
-                className="w-full text-gray-900"
-                placeholder="LinkedIn..."
-                value={linkedin}
-                onChange={((e) => handleSetLinkedin(e.target.value))}
-              />
-            </label>
-            <label className="my-2 input input-bordered flex items-center gap-2">
-              GitHub:
-              <input
-                type="text"
-                className="w-full text-gray-900"
-                placeholder="GitHub..."
-                value={github}
-                onChange={((e) => handleSetGithub(e.target.value))}
-              />
-            </label>
-            <textarea
-              className="textarea textarea-bordered w-full"
-              placeholder="Description (keep it short please)..."
+          <div className="space-y-2">
+            <Label htmlFor="alumni-start">Start Date *</Label>
+            <Input
+              id="alumni-start"
+              placeholder="(required) e.g., Fall 2023"
+              value={start_date}
+              onChange={(e) => setStartDate(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="alumni-end">Graduation Date *</Label>
+            <Input
+              id="alumni-end"
+              placeholder="(required) e.g., Spring 2024"
+              value={end_date}
+              onChange={(e) => setEndDate(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="alumni-image">Image URL *</Label>
+            <Input
+              id="alumni-image"
+              placeholder="Image link (full web URL)"
+              value={image}
+              onChange={(e) => setImage(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="alumni-quote">Quote</Label>
+            <Input
+              id="alumni-quote"
+              placeholder="Quote..."
+              value={quote}
+              onChange={(e) => setQuote(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="alumni-roles">Previous Roles</Label>
+            <Input
+              id="alumni-roles"
+              placeholder="Previous Roles..."
+              value={previous_roles}
+              onChange={(e) => setPreviousRoles(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="alumni-linkedin">LinkedIn</Label>
+            <Input
+              id="alumni-linkedin"
+              placeholder="LinkedIn..."
+              value={linkedin}
+              onChange={(e) => setLinkedin(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="alumni-github">GitHub</Label>
+            <Input
+              id="alumni-github"
+              placeholder="GitHub..."
+              value={github}
+              onChange={(e) => setGithub(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="alumni-desc">Description</Label>
+            <Textarea
+              id="alumni-desc"
+              placeholder="Description (keep it short please)"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-            ></textarea>
+            />
+          </div>
+        </div>
 
-            <div className="flex">
-              <span className="flex-grow"></span>
-
-              <div className="modal-action">
-                <form method="dialog">
-                  <button
-                    className="btn"
-                    onClick={() => {
-                      handleCreate();
-                      // In handleCreate, if it goes well it will close the Modal.
-                    }}
-                  >
-                    Create
-                  </button>
-                </form>
-              </div>
-
-              <span className="w-2"></span>
-
-              <div className="modal-action">
-                <form method="dialog">
-                  <button
-                    className="btn"
-                    onClick={() => {
-                      handleCancel();
-                      (
-                        document.getElementById(
-                          "create-alumni"
-                        ) as HTMLDialogElement
-                      ).close();
-                    }}
-                  >
-                    Cancel
-                  </button>
-                </form>
-              </div>
-            </div>
-          </form>
-        </dialog>
-      </>
-    );
-  }
+        <ModalFooter>
+          <Button variant="neutral" onClick={handleCancel}>Cancel</Button>
+          <Button onClick={handleCreate}>Create</Button>
+        </ModalFooter>
+      </Modal>
+    </>
+  );
 };
 
 export default CreateAlumniButton;

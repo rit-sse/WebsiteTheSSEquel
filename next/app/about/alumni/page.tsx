@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import AlumniCard from "./AlumniCard";
-import AlumniFormModal from "./AlumniFormModal";
+import { Modal } from "@/components/ui/modal";
 import { Team, AlumniMember } from "./alumni";
 import ModifyAlumni from "./ModifyAlumni";
 import EditAlumniForm from "./EditAlumniForm";
@@ -58,44 +58,41 @@ export default function Leadership() {
 	return (
 		<>
 			<section className="mt-16">
-				{/* Modals for editing and replacing alumni forms */}
-				<AlumniFormModal isOpen={deleteOpen} onClose={async () => setDeleteOpen(false)}>
-					<DeleteAlumniButton open={editOpen} alumniMember={selectedAlumni} fetchData={getAlumni} closeModal={() => setEditOpen(false)}/>
-				</AlumniFormModal>
-				<AlumniFormModal isOpen={editOpen} onClose={async () => setEditOpen(false)}>
+				{/* Modals for editing and deleting alumni */}
+				<Modal open={deleteOpen} onOpenChange={setDeleteOpen} title="Delete Alumni">
+					<DeleteAlumniButton open={editOpen} alumniMember={selectedAlumni} fetchData={getAlumni} closeModal={() => setDeleteOpen(false)}/>
+				</Modal>
+				<Modal open={editOpen} onOpenChange={setEditOpen} title="Edit Alumni">
 					<EditAlumniForm open={editOpen} alumniMember={selectedAlumni} getAlumni={getAlumni} closeModal={() => setEditOpen(false)} />
-				</AlumniFormModal>
+				</Modal>
 				<div className="max-w-screen-xl mx-auto px-4 text-center md:px-8">
 					<div className="content-center">
 						{/* Meet our team */}
 						<div className="max-w-xl mx-auto">
-							<h1
-								className="bg-gradient-to-t from-primary to-secondary bg-clip-text text-4xl font-extrabold text-transparent md:text-5xl"
-							>
+							<h1 className="text-primary">
 								Meet our Alumni
 							</h1>
 							<p className="mt-3 text-xl leading-8 text-center">
 								A dedicated page for alumni of the SSE
 							</p>
-							<div // Create Alumni Button
-								className="gap-4 md:p-4">
+							<div className="mt-4">
 								<CreateAlumniButton fetchData={getAlumni} />
 							</div>
 						</div>
 					</div>
 					
-
 					{/* Alumni */}
-					<div className="">
-						<div className="w-full flex flex-row flex-wrap justify-center gap-5">
-							{teamData.alumni_member.map((member, idx) => (
-								<div key={idx}>
-									<AlumniCard alumniMember={member} />
-									{/* Edit and Remove buttons, only officers can see */}
-									<ModifyAlumni alumniMember={member} openDeleteModal={() => setDeleteOpen(true)} openEditModal={() => setEditOpen(true)} setSelectedAlumni={setSelectedAlumni} />
-								</div>
-							))}
-						</div>
+					<div className="mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 justify-items-center">
+						{teamData.alumni_member.map((member, idx) => (
+							<AlumniCard key={idx} alumniMember={member}>
+								<ModifyAlumni 
+									alumniMember={member} 
+									openDeleteModal={() => setDeleteOpen(true)} 
+									openEditModal={() => setEditOpen(true)} 
+									setSelectedAlumni={setSelectedAlumni} 
+								/>
+							</AlumniCard>
+						))}
 					</div>
 				</div>
 			</section>

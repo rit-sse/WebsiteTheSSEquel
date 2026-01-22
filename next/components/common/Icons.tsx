@@ -5,42 +5,6 @@ interface IconProps {
 /**
  * Use stroke-* classes to change the color of the icon.
  */
-export const SearchIcon = ({ className }: IconProps) => (
-    <svg
-        className={`stroke-base-content ${className || 'w-5 h-5'}`}
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        fill="none"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-    >
-        <circle cx="11" cy="11" r="8" />
-        <path d="m21 21-4.3-4.3" />
-    </svg>
-);
-
-/**
- * Use stroke-* classes to change the color of the icon.
- */
-export const ClearIcon = ({ className }: IconProps) => (
-    <svg
-        className={`stroke-base-content ${className || 'w-5 h-5'}`}
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        fill="none"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-    >
-        <path d="M18 6 6 18" />
-        <path d="m6 6 12 12" />
-    </svg>
-);
-
-/**
- * Use stroke-* classes to change the color of the icon.
- */
 export const DiceIcon = ({ className }: IconProps) => (
     <svg
         className={`stroke-base-content ${className || 'w-5 h-5'}`}
@@ -57,43 +21,6 @@ export const DiceIcon = ({ className }: IconProps) => (
         <path d="M10 14h.01" />
         <path d="M15 6h.01" />
         <path d="M18 9h.01" />
-    </svg>
-);
-
-/**
- * Use stroke-* classes to change the color of the icon.
- */
-export const ExternalLinkIcon = ({ className }: IconProps) => (
-    <svg
-        className={`stroke-base-content ${className || 'w-5 h-5'}`}
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        fill="none"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-    >
-        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-        <polyline points="15 3 21 3 21 9" />
-        <line x1="10" x2="21" y1="14" y2="3" />
-    </svg>
-);
-
-
-/**
- * Use stroke-* classes to change the border color of the icon.
- * Use fill-* classes to change the fill color of the icon.
- */
-export const StarIcon = ({ className }: IconProps) => (
-    <svg
-        className={`absolute left-[-0.625rem] top-[-0.625rem] text-content stroke-base-100 fill-base-content ${className || 'w-5 h-5'}`}
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-    >
-        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
     </svg>
 );
 
@@ -187,7 +114,7 @@ export const GoLinkEdit = () => (
         fill="none"
         stroke="currentColor"
         className="w-6 h-6">
-        <path d="M14 6L8 12V16H12L18 10M14 6L17 3L21 7L18 10M14 6L18 10M10 4L4 4L4 20L20 20V14" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M14 6L8 12V16H12L18 10M14 6L17 3L21 7L18 10M14 6L18 10M10 4L4 4L4 20L20 20V14" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
 )
 
@@ -199,11 +126,11 @@ export const GoLinkDelete = () => (
         stroke="currentColor"
         strokeWidth={1.5}
         className="w-6 h-6">
-        <path d="M4 6H20L18.4199 20.2209C18.3074 21.2337 17.4512 22 16.4321 22H7.56786C6.54876 22 5.69264 21.2337 5.5801 20.2209L4 6Z" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M7.34491 3.14716C7.67506 2.44685 8.37973 2 9.15396 2H14.846C15.6203 2 16.3249 2.44685 16.6551 3.14716L18 6H6L7.34491 3.14716Z" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M2 6H22" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M10 11V16" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M14 11V16" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M4 6H20L18.4199 20.2209C18.3074 21.2337 17.4512 22 16.4321 22H7.56786C6.54876 22 5.69264 21.2337 5.5801 20.2209L4 6Z" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M7.34491 3.14716C7.67506 2.44685 8.37973 2 9.15396 2H14.846C15.6203 2 16.3249 2.44685 16.6551 3.14716L18 6H6L7.34491 3.14716Z" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M2 6H22" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M10 11V16" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M14 11V16" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
 )
 

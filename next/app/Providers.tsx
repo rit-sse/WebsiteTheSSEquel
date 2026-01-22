@@ -12,7 +12,14 @@ interface ProvidersProps {
 export function Providers({ children, session }: ProvidersProps): JSX.Element {
     return (
         <SessionProvider session={session}>
-            <ThemeProvider enableSystem={false}>{children}</ThemeProvider>
+            <ThemeProvider 
+                attribute="data-theme"
+                defaultTheme="dark"
+                enableSystem={false}
+                disableTransitionOnChange
+            >
+                {children}
+            </ThemeProvider>
         </SessionProvider>
     )
 }
