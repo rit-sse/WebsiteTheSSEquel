@@ -15,7 +15,7 @@ export function Providers({ children, session }: ProvidersProps): JSX.Element {
     return (
         <SessionProvider session={session}>
             <StyleModeProvider defaultMode="neo">
-                <FontModeProvider defaultMode="rethink">
+                <FontModeProvider defaultMode="pt-serif">
                     <ThemeProvider 
                         attribute="data-theme"
                         defaultTheme="dark"

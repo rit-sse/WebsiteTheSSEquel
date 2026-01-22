@@ -110,12 +110,12 @@
 /* Switch display font based on user preference */
 
 :root,
-[data-font="rethink"] {
-  --font-display: var(--font-rethink);
-}
-
 [data-font="pt-serif"] {
   --font-display: var(--font-pt-serif);
+}
+
+[data-font="rethink"] {
+  --font-display: var(--font-rethink);
 }
 
 /* ===== Style Mode Variables ===== */
