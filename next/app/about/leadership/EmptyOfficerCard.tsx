@@ -29,7 +29,7 @@ export default function EmptyOfficerCard({ position, children }: EmptyOfficerCar
       {/* Contact placeholder */}
       <div className="flex gap-3 mt-4 pt-3 border-t border-border w-full justify-center">
         <span className="text-xs text-muted-foreground">
-          Contact: {position.email}
+          Interested? Contact a current officer!
         </span>
       </div>
 

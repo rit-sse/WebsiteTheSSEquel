@@ -110,6 +110,7 @@ const ROUTES: { [key: string]: AuthVerifier } = {
   courseTaken: nonGetMentorVerifier,
   departments: nonGetOfficerVerifier,
   golinks: goLinkVerifier,
+  handover: officerVerifier, // All handover document routes require officer auth
   hourBlocks: nonGetOfficerVerifier,
   mentor: nonGetOfficerVerifier,
   mentorSkill: nonGetMentorVerifier,

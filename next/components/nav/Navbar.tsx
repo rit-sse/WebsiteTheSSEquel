@@ -74,14 +74,9 @@ const dashboardItems = [
         description: "Request PCard checkout and submit receipts.",
     },
     {
-        title: "Officers",
-        href: "/dashboard/officers",
-        description: "Manage officer assignments.",
-    },
-    {
-        title: "Positions",
+        title: "Positions & Officers",
         href: "/dashboard/positions",
-        description: "View and edit officer positions.",
+        description: "Manage officer positions and assignments.",
     },
     {
         title: "Users",

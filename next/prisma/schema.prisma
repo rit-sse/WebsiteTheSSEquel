@@ -44,6 +44,7 @@ model User {
 
     Memberships Memberships[]
     purchaseRequests PurchaseRequest[]
+    invitationsSent Invitation[]
 }
 
 model Alumni {
@@ -135,11 +136,30 @@ model OfficerPosition {
     //States primary as a boolean
     is_primary Boolean @default(false)
 
-    //Store email as a unique String
+    //Store position alias email (e.g., sse-president@rit.edu)
     email String @unique
 
     //Relational fields
     officers Officer[]
+    handoverDocument HandoverDocument?
+    invitations Invitation[]
+}
+
+model HandoverDocument {
+    //Store an automatically generated unique int for id
+    id Int @id @default(autoincrement())
+
+    //References positionId - one document per position
+    positionId Int @unique
+
+    //Store the markdown content
+    content String @db.Text
+
+    //Track when the document was last updated
+    updatedAt DateTime @updatedAt
+
+    //Relational field
+    position OfficerPosition @relation(fields: [positionId], references: [id], onDelete: Cascade)
 }
 
 model Officer {
@@ -335,6 +355,9 @@ model Account {
     scope             String?
     id_token          String? @db.Text
     session_state     String?
+    
+    // Google OAuth returns this when requesting offline access (for Gmail API)
+    refresh_token_expires_in Int?
 
     //user is a relational field that references the User model
     user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -492,4 +515,36 @@ model PurchaseRequest {
 
     // Relational fields
     user User @relation(fields: [userId], references: [id])
+}
+
+model Invitation {
+    // Store an automatically generated unique int for id
+    id Int @id @default(autoincrement())
+    
+    // Email address invited (must be @g.rit.edu)
+    invitedEmail String
+    
+    // Type of invitation: "officer" or "user"
+    type String
+    
+    // Optional: Position for officer invitations
+    positionId Int?
+    
+    // Optional: Term dates for officer invitations
+    startDate DateTime?
+    endDate DateTime?
+    
+    // Officer who sent the invitation
+    invitedBy Int
+    
+    // Tracking
+    createdAt DateTime @default(now())
+    expiresAt DateTime // 30 days from creation
+    
+    // Relations
+    position OfficerPosition? @relation(fields: [positionId], references: [id], onDelete: Cascade)
+    inviter User @relation(fields: [invitedBy], references: [id])
+    
+    // Unique constraint: one pending invitation per email per type
+    @@unique([invitedEmail, type])
 }

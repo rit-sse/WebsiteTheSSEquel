@@ -10,10 +10,16 @@ import { Badge } from "@/components/ui/badge"
 export interface Position {
   id: number
   title: string
-  email: string
   is_primary: boolean
   isFilled: boolean
-  activeOfficerCount: number
+  currentOfficer: {
+    id: number
+    userId: number
+    name: string
+    email: string
+    start_date: string
+    end_date: string
+  } | null
 }
 
 interface PositionModalProps {
@@ -26,7 +32,6 @@ interface PositionModalProps {
 
 export default function PositionModal({ open, onOpenChange, position, defaultIsPrimary = false, onSuccess }: PositionModalProps) {
   const [title, setTitle] = useState("")
-  const [email, setEmail] = useState("")
   const [isPrimary, setIsPrimary] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState("")
@@ -37,11 +42,9 @@ export default function PositionModal({ open, onOpenChange, position, defaultIsP
     if (open) {
       if (position) {
         setTitle(position.title || "")
-        setEmail(position.email || "")
         setIsPrimary(position.is_primary || false)
       } else {
         setTitle("")
-        setEmail("")
         setIsPrimary(defaultIsPrimary)
       }
       setError("")
@@ -53,13 +56,7 @@ export default function PositionModal({ open, onOpenChange, position, defaultIsP
     setError("")
     setIsSubmitting(true)
 
-    if (!email.trim()) {
-      setError("Email is required")
-      setIsSubmitting(false)
-      return
-    }
-
-    if (!isEditMode && !title.trim()) {
+    if (!title.trim()) {
       setError("Title is required")
       setIsSubmitting(false)
       return
@@ -70,7 +67,7 @@ export default function PositionModal({ open, onOpenChange, position, defaultIsP
         const response = await fetch("/api/officer-positions", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: position.id, email })
+          body: JSON.stringify({ id: position.id, title })
         })
 
         if (response.ok) {
@@ -84,7 +81,7 @@ export default function PositionModal({ open, onOpenChange, position, defaultIsP
         const response = await fetch("/api/officer-positions", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ title, email, is_primary: isPrimary })
+          body: JSON.stringify({ title, is_primary: isPrimary })
         })
 
         if (response.ok) {
@@ -136,17 +133,19 @@ export default function PositionModal({ open, onOpenChange, position, defaultIsP
           </div>
         )}
 
-        <div className="space-y-2">
-          <Label htmlFor="email">Position Email</Label>
-          <Input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="e.g., sse-events@rit.edu"
-            required
-          />
-        </div>
+        {isEditMode && (
+          <div className="space-y-2">
+            <Label htmlFor="title">Position Title</Label>
+            <Input
+              id="title"
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Position title"
+              required
+            />
+          </div>
+        )}
 
         {error && <p className="text-destructive text-sm">{error}</p>}
 

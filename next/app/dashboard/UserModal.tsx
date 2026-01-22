@@ -22,10 +22,16 @@ export interface User {
 interface UserModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  user?: User | null  // null = create mode, User = edit mode
+  user: User | null  // Must have a user to edit - use UserInviteModal to invite new users
   onSuccess: () => void
 }
 
+/**
+ * UserModal - Edit an existing user's details
+ * 
+ * NOTE: User creation is disabled. Use UserInviteModal to invite new users.
+ * New users are created automatically when they sign in via OAuth.
+ */
 export default function UserModal({ open, onOpenChange, user, onSuccess }: UserModalProps) {
   const [formData, setFormData] = useState({
     name: "",
@@ -37,8 +43,6 @@ export default function UserModal({ open, onOpenChange, user, onSuccess }: UserM
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState("")
-
-  const isEditMode = !!user
 
   useEffect(() => {
     if (open) {
@@ -73,6 +77,12 @@ export default function UserModal({ open, onOpenChange, user, onSuccess }: UserM
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
+
+    if (!user) {
+      setError("No user to edit")
+      return
+    }
+
     setIsSubmitting(true)
 
     if (!formData.name.trim() || !formData.email.trim()) {
@@ -82,16 +92,10 @@ export default function UserModal({ open, onOpenChange, user, onSuccess }: UserM
     }
 
     try {
-      const url = "/api/user"
-      const method = isEditMode ? "PUT" : "POST"
-      const body = isEditMode 
-        ? { id: user!.id, ...formData }
-        : formData
-
-      const response = await fetch(url, {
-        method,
+      const response = await fetch("/api/user", {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
+        body: JSON.stringify({ id: user.id, ...formData })
       })
 
       if (response.ok) {
@@ -99,7 +103,7 @@ export default function UserModal({ open, onOpenChange, user, onSuccess }: UserM
         onOpenChange(false)
       } else {
         const errorText = await response.text()
-        setError(errorText || `Failed to ${isEditMode ? "update" : "create"} user`)
+        setError(errorText || "Failed to update user")
       }
     } catch (err) {
       console.error("Error saving user:", err)
@@ -109,11 +113,14 @@ export default function UserModal({ open, onOpenChange, user, onSuccess }: UserM
     }
   }
 
+  // Don't render if no user to edit
+  if (!user) return null
+
   return (
     <Modal
       open={open}
       onOpenChange={onOpenChange}
-      title={isEditMode ? "Edit User" : "Create User"}
+      title="Edit User"
       className="max-w-lg"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -194,7 +201,7 @@ export default function UserModal({ open, onOpenChange, user, onSuccess }: UserM
             Cancel
           </Button>
           <Button type="submit" variant="outline" disabled={isSubmitting}>
-            {isSubmitting ? "Saving..." : isEditMode ? "Save" : "Create"}
+            {isSubmitting ? "Saving..." : "Save Changes"}
           </Button>
         </ModalFooter>
       </form>

@@ -5,8 +5,8 @@ export const dynamic = "force-dynamic";
 /**
  * HTTP GET request to /api/officer-positions
  * Gets all officer positions (both primary and committee head positions)
- * Includes count of active officers for each position
- * @returns [{id: number, title: string, is_primary: boolean, email: string, _count: {officers: number}}]
+ * Includes current officer details (name, email, term) when position is filled
+ * @returns [{id, title, is_primary, isFilled, currentOfficer?: {id, userId, name, email, start_date, end_date}}]
  */
 export async function GET() {
   const positions = await prisma.officerPosition.findMany({
@@ -17,7 +17,20 @@ export async function GET() {
       email: true,
       officers: {
         where: { is_active: true },
-        select: { id: true }
+        select: {
+          id: true,
+          user_id: true,
+          start_date: true,
+          end_date: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true
+            }
+          }
+        },
+        take: 1 // Only get the first active officer (should only be one)
       }
     },
     orderBy: [
@@ -26,15 +39,26 @@ export async function GET() {
     ]
   });
   
-  // Transform to include filled status
-  const positionsWithStatus = positions.map(pos => ({
-    id: pos.id,
-    title: pos.title,
-    is_primary: pos.is_primary,
-    email: pos.email,
-    isFilled: pos.officers.length > 0,
-    activeOfficerCount: pos.officers.length
-  }));
+  // Transform to include filled status and current officer details
+  // Note: currentOfficer.email is the user's email, pos.email is the position alias
+  const positionsWithStatus = positions.map(pos => {
+    const activeOfficer = pos.officers[0];
+    return {
+      id: pos.id,
+      title: pos.title,
+      is_primary: pos.is_primary,
+      email: pos.email, // Position alias email (e.g., sse-president@rit.edu)
+      isFilled: pos.officers.length > 0,
+      currentOfficer: activeOfficer ? {
+        id: activeOfficer.id,
+        userId: activeOfficer.user.id,
+        name: activeOfficer.user.name,
+        email: activeOfficer.user.email, // User's actual email
+        start_date: activeOfficer.start_date,
+        end_date: activeOfficer.end_date
+      } : null
+    };
+  });
   
   return Response.json(positionsWithStatus);
 }
@@ -53,7 +77,7 @@ export async function POST(request: Request) {
     return new Response("Invalid JSON", { status: 400 });
   }
 
-  if (!("title" in body && "email" in body)) {
+  if (!("title" in body) || !("email" in body)) {
     return new Response('"title" and "email" are required', { status: 400 });
   }
 

@@ -29,7 +29,7 @@ export interface Officer {
 interface Position {
   id: number
   title: string
-  email: string
+  email?: string
   is_primary: boolean
 }
 
@@ -43,10 +43,11 @@ interface OfficerModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   officer?: Officer | null  // null = create mode (assign new officer)
+  preselectedPosition?: Position  // When assigning from position context
   onSuccess: () => void
 }
 
-export default function OfficerModal({ open, onOpenChange, officer, onSuccess }: OfficerModalProps) {
+export default function OfficerModal({ open, onOpenChange, officer, preselectedPosition, onSuccess }: OfficerModalProps) {
   const [formData, setFormData] = useState({
     user_email: "",
     position: "",
@@ -59,6 +60,7 @@ export default function OfficerModal({ open, onOpenChange, officer, onSuccess }:
   const [error, setError] = useState("")
 
   const isEditMode = !!officer
+  const hasPreselectedPosition = !!preselectedPosition
 
   useEffect(() => {
     if (open) {
@@ -73,6 +75,14 @@ export default function OfficerModal({ open, onOpenChange, officer, onSuccess }:
           start_date: formatDateForInput(officer.start_date),
           end_date: formatDateForInput(officer.end_date)
         })
+      } else if (preselectedPosition) {
+        // Assign mode from position context - position is preselected
+        setFormData({
+          user_email: "",
+          position: preselectedPosition.title,
+          start_date: "",
+          end_date: ""
+        })
       } else {
         setFormData({
           user_email: "",
@@ -83,7 +93,7 @@ export default function OfficerModal({ open, onOpenChange, officer, onSuccess }:
       }
       setError("")
     }
-  }, [open, officer])
+  }, [open, officer, preselectedPosition])
 
   const formatDateForInput = (dateStr: string) => {
     try {
@@ -220,27 +230,40 @@ export default function OfficerModal({ open, onOpenChange, officer, onSuccess }:
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label>Position *</Label>
-              <Select
-                value={formData.position}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, position: value }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a position" />
-                </SelectTrigger>
-                <SelectContent>
-                  {positions.map((pos) => (
-                    <SelectItem key={pos.id} value={pos.title}>
-                      {pos.title} {pos.is_primary ? "(Primary)" : ""}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-muted-foreground">
-                Note: Assigning will replace any current officer in this position
-              </p>
-            </div>
+            {hasPreselectedPosition ? (
+              // Position is preselected from positions table context
+              <div className="space-y-2">
+                <Label>Position</Label>
+                <div className="p-3 bg-surface-2 rounded-lg">
+                  <p className="font-medium">{preselectedPosition?.title}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {preselectedPosition?.is_primary ? "Primary Officer" : "Committee Head"}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Label>Position *</Label>
+                <Select
+                  value={formData.position}
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, position: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a position" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {positions.map((pos) => (
+                      <SelectItem key={pos.id} value={pos.title}>
+                        {pos.title} {pos.is_primary ? "(Primary)" : ""}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            <p className="text-xs text-muted-foreground">
+              Note: Assigning will replace any current officer in this position
+            </p>
           </>
         )}
 

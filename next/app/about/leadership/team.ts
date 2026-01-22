@@ -14,7 +14,6 @@ export interface OfficerPosition {
   id: number;
   title: string;
   is_primary: boolean;
-  email: string;
 }
 
 export interface PositionWithOfficer {

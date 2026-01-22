@@ -24,43 +24,19 @@ export async function GET() {
 }
 
 /**
- * Create a new user
- * HTTP POST request to /api/user/
- * @param request { name: string, email: string, isMember?: boolean, linkedIn?: string, gitHub?: string, description?: string }
- * @return user object that was created
+ * User creation is disabled - use the invitation system instead.
+ * 
+ * Users must be invited via /api/invitations, which sends them an email
+ * to sign in with OAuth. This ensures proper Account and Session records
+ * are created by NextAuth, avoiding authentication errors.
+ * 
+ * @see /api/invitations for creating user invitations
  */
-export async function POST(request: Request) {
-  let body;
-  try {
-    body = await request.json();
-  } catch {
-    return new Response("Invalid JSON", { status: 422 });
-  }
-
-  // make sure the name and email properties are included
-  if (!("name" in body && "email" in body)) {
-    return new Response('"name" and "email" must be included in request body', {
-      status: 422,
-    });
-  }
-
-  const { name, email, linkedIn, gitHub, description, isMember } = body;
-
-  try {
-    const user = await prisma.user.create({
-      data: {
-        name,
-        email,
-        linkedIn,
-        gitHub,
-        description,
-        isMember: isMember ?? false
-      },
-    });
-    return Response.json(user, { status: 201 });
-  } catch (e) {
-    return new Response(`Failed to create user: ${e}`, { status: 500 });
-  }
+export async function POST() {
+  return new Response(
+    "User creation is disabled. Use the invitation system at /api/invitations instead.",
+    { status: 410 } // 410 Gone
+  );
 }
 
 /**

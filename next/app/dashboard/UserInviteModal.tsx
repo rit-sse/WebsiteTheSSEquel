@@ -1,0 +1,135 @@
+"use client";
+
+import { useState } from "react";
+import { Modal, ModalFooter } from "@/components/ui/modal";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
+
+interface UserInviteModalProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSuccess: () => void;
+}
+
+export default function UserInviteModal({
+  open,
+  onOpenChange,
+  onSuccess,
+}: UserInviteModalProps) {
+  const [email, setEmail] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen) {
+      setEmail("");
+      setError(null);
+    }
+    onOpenChange(newOpen);
+  };
+
+  const validateEmail = (email: string): boolean => {
+    if (!email) {
+      setError("Email is required");
+      return false;
+    }
+    if (!email.endsWith("@g.rit.edu")) {
+      setError("Email must be an @g.rit.edu address");
+      return false;
+    }
+    return true;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    if (!validateEmail(email)) return;
+
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch("/api/invitations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          type: "user",
+        }),
+      });
+
+      if (response.ok) {
+        toast.success(`Invitation sent to ${email}`);
+        onSuccess();
+        handleOpenChange(false);
+      } else {
+        const errorText = await response.text();
+        setError(errorText || "Failed to send invitation");
+      }
+    } catch (err) {
+      console.error("Error sending invitation:", err);
+      setError("An error occurred while sending the invitation");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <Modal
+      open={open}
+      onOpenChange={handleOpenChange}
+      title="Invite New Member"
+      className="max-w-md"
+    >
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="inviteEmail">Email Address</Label>
+          <Input
+            id="inviteEmail"
+            type="email"
+            placeholder="username@g.rit.edu"
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              setError(null);
+            }}
+            disabled={isSubmitting}
+          />
+          <p className="text-xs text-muted-foreground">
+            Must be an @g.rit.edu email address
+          </p>
+        </div>
+
+        {error && (
+          <p className="text-sm text-destructive">{error}</p>
+        )}
+
+        <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-md">
+          <p className="font-medium mb-1">What happens next?</p>
+          <ul className="list-disc list-inside space-y-1 text-xs">
+            <li>An invitation email will be sent to the provided address</li>
+            <li>The recipient will sign in with their RIT Google account</li>
+            <li>They will be added as an SSE member</li>
+            <li>The invitation expires after 30 days</li>
+          </ul>
+        </div>
+
+        <ModalFooter>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => handleOpenChange(false)}
+            disabled={isSubmitting}
+          >
+            Cancel
+          </Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Sending..." : "Send Invitation"}
+          </Button>
+        </ModalFooter>
+      </form>
+    </Modal>
+  );
+}

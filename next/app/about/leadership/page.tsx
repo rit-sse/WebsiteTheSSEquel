@@ -58,7 +58,7 @@ function ManageLink({ isOfficer }: { isOfficer: boolean }) {
 	if (!isOfficer) return null;
 
 	return (
-		<Link href="/dashboard/officers">
+		<Link href="/dashboard/positions">
 			<Button variant="neutral" size="sm">
 				<Settings className="h-4 w-4 mr-2" />
 				Manage Officers

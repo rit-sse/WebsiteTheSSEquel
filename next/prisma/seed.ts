@@ -1,6 +1,21 @@
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
+/**
+ * IMPORTANT: User Creation Strategy
+ * 
+ * In production, users are ONLY created through OAuth sign-in via NextAuth.
+ * The invitation system sends emails to prospective users/officers who then
+ * sign in with their RIT Google account, which creates their User, Account,
+ * and Session records automatically.
+ * 
+ * The test users below are for development/testing purposes only and allow
+ * seeding of related data (quotes, mentors, officers, etc.). In production,
+ * these users would be created via the invitation flow instead.
+ * 
+ * DO NOT manually create Account or Session records - these are managed by NextAuth.
+ */
+
 async function seedUser() {
 	const johndoe = await prisma.user.upsert({
 		where: { email: "johndoe@rit.edu" },
@@ -94,27 +109,13 @@ async function seedOfficerPosition() {
 		}
 	});
 
-	// Now upsert each position
+	// Upsert each position
 	for (const pos of positions) {
-		// Check if position with this email exists (might have different title)
-		const existingByEmail = await prisma.officerPosition.findFirst({
-			where: { email: pos.email, title: { not: pos.title } }
+		await prisma.officerPosition.upsert({
+			where: { title: pos.title },
+			update: { is_primary: pos.is_primary, email: pos.email },
+			create: pos,
 		});
-		
-		if (existingByEmail) {
-			// Update the existing position to have the correct title
-			await prisma.officerPosition.update({
-				where: { id: existingByEmail.id },
-				data: { title: pos.title, is_primary: pos.is_primary }
-			});
-		} else {
-			// Normal upsert by title
-			await prisma.officerPosition.upsert({
-				where: { title: pos.title },
-				update: { is_primary: pos.is_primary, email: pos.email },
-				create: pos,
-			});
-		}
 	}
 
 	console.log(`Seeded ${positions.length} officer positions`);
@@ -472,132 +473,36 @@ async function seedGoLinks() {
 	console.log({ goLink1, goLink2, goLink3 });
 }
 
-async function seedAccount() {
-	const account1 = await prisma.account.upsert({
-		where: { id: 1 },
-		update: {},
-		create: {
-			id: 1,
-			userId: 1,
-			type: "oauth",
-			provider: "google",
-			providerAccountId: "789",
-			refresh_token: "123",
-			access_token: "123",
-			expires_at: 1,
-			token_type: "123",
-			scope: "123",
-			id_token: "123",
-			session_state: "123",
-		},
-	});
-	const account2 = await prisma.account.upsert({
-		where: { id: 2 },
-		update: {},
-		create: {
-			id: 2,
-			userId: 2,
-			type: "oauth",
-			provider: "google",
-			providerAccountId: "123",
-			refresh_token: "123",
-			access_token: "123",
-			expires_at: 2,
-			token_type: "123",
-			scope: "123",
-			id_token: "123",
-			session_state: "123",
-		},
-	});
-	const account3 = await prisma.account.upsert({
-		where: { id: 3 },
-		update: {},
-		create: {
-			id: 3,
-			userId: 3,
-			type: "oauth",
-			provider: "google",
-			providerAccountId: "456",
-			refresh_token: "123",
-			access_token: "123",
-			expires_at: 3,
-			token_type: "123",
-			scope: "123",
-			id_token: "123",
-			session_state: "123",
-		},
-	});
-	console.log({ account1, account2, account3 });
-}
+/**
+ * DEPRECATED: Do not seed Account records
+ * 
+ * Account records are created automatically by NextAuth when users sign in
+ * with OAuth (Google). Manually creating these records causes authentication
+ * errors when users try to sign in.
+ * 
+ * Use the invitation system instead:
+ * 1. Officer invites user via dashboard
+ * 2. User receives email with sign-in link
+ * 3. User signs in with Google OAuth
+ * 4. NextAuth creates User + Account + Session automatically
+ * 5. User accepts invitation to become officer/member
+ */
+// async function seedAccount() { ... }
 
-async function seedSession() {
-	const session1 = await prisma.session.upsert({
-		where: { id: "1" },
-		update: {},
-		create: {
-			id: "1",
-			expires: new Date("2023-11-1 12:00:00"),
-			sessionToken: "123",
-			userId: 1,
-		},
-	});
-	const session2 = await prisma.session.upsert({
-		where: { id: "2" },
-		update: {},
-		create: {
-			id: "2",
-			expires: new Date("2023-11-1 12:00:00"),
-			sessionToken: "124",
-			userId: 2,
-		},
-	});
+/**
+ * DEPRECATED: Do not seed Session records
+ * 
+ * Session records are created automatically by NextAuth when users sign in.
+ * These are managed entirely by NextAuth and should never be manually created.
+ */
+// async function seedSession() { ... }
 
-	const session3 = await prisma.session.upsert({
-		where: { id: "3" },
-		update: {},
-		create: {
-			id: "3",
-			expires: new Date("2023-11-1 12:00:00"),
-			sessionToken: "125",
-			userId: 3,
-		},
-	});
-	console.log({ session1, session2, session3 });
-}
-
-async function seedVerificationToken() {
-	const verificationToken1 = await prisma.verificationToken.upsert({
-		where: { id: 1 },
-		update: {},
-		create: {
-			id: 1,
-			identifier: "sadsad",
-			token: "123",
-			expires: new Date("2023-11-1 12:00:00"),
-		},
-	});
-	const verificationToken2 = await prisma.verificationToken.upsert({
-		where: { id: 2 },
-		update: {},
-		create: {
-			id: 2,
-			identifier: "qwewqr",
-			token: "124",
-			expires: new Date("2023-11-1 12:00:00"),
-		},
-	});
-	const verificationToken3 = await prisma.verificationToken.upsert({
-		where: { id: 3 },
-		update: {},
-		create: {
-			id: 3,
-			identifier: "wsx",
-			token: "125",
-			expires: new Date("2023-11-1 12:00:00"),
-		},
-	});
-	console.log({ verificationToken1, verificationToken2, verificationToken3 });
-}
+/**
+ * DEPRECATED: Do not seed VerificationToken records
+ * 
+ * These are managed by NextAuth for email verification flows.
+ */
+// async function seedVerificationToken() { ... }
 
 async function seedProject() {
 	const project1 = await prisma.project.upsert({
@@ -831,10 +736,11 @@ async function seedSponsors() {
 
 async function main() {
   try {
-    await seedUser();
+    // Core data seeding
+    await seedUser(); // Test users for development only
     await seedQuote();
-    await seedOfficerPosition();
-    await seedOfficer();
+    await seedOfficerPosition(); // Officer positions (can exist without officers)
+    await seedOfficer(); // Test officer assignment for development
     await seedMentor();
 	await seedAlumni();
     await seedSkill();
@@ -845,9 +751,11 @@ async function main() {
     await seedHourBlock();
     await seedSchedule();
     await seedGoLinks();
-    // await seedAccount();
-    // await seedSession();
-    // await seedVerificationToken();
+    
+    // REMOVED: seedAccount, seedSession, seedVerificationToken
+    // These are now managed exclusively by NextAuth OAuth flow
+    // Users sign in via invitation emails → OAuth creates these automatically
+    
 	await seedProject();
 	await seedProjectContributor();
     await seedEvents();
