@@ -207,6 +207,7 @@ export default function PositionsSection() {
       key: "title",
       header: "Position",
       sortable: true,
+      className: "w-[180px]",
       render: (position) => (
         <span className="font-medium text-sm">{position.title}</span>
       )
@@ -214,7 +215,7 @@ export default function PositionsSection() {
     {
       key: "officer",
       header: "Assigned Officer",
-      className: "min-w-[280px]",
+      className: "w-[420px]",
       render: (position) => {
         const pendingInv = getPendingInvitation(position.id)
         return (
@@ -231,7 +232,7 @@ export default function PositionsSection() {
     {
       key: "handover",
       header: "Handover",
-      className: "hidden lg:table-cell",
+      className: "hidden lg:table-cell w-[100px]",
       render: (position) => (
         <Button 
           size="xs" 
@@ -246,6 +247,7 @@ export default function PositionsSection() {
     {
       key: "actions",
       header: "",
+      className: "w-[80px]",
       render: (position) => (
         <div className="flex items-center gap-1">
           <Button size="xs" variant="ghost" onClick={() => handleEdit(position)} title="Edit position">

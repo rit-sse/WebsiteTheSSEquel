@@ -218,7 +218,7 @@ export default function HandoverDocPage() {
               />
             </>
           ) : (
-            <div className="prose prose-sm dark:prose-invert max-w-none p-4">
+            <div className="prose prose-sm max-w-none p-4">
               <ReactMarkdown>{content}</ReactMarkdown>
             </div>
           )}

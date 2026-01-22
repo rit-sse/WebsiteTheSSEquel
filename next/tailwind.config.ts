@@ -16,6 +16,82 @@ const config: Config = {
     },
     theme: {
         extend: {
+            typography: (theme: any) => ({
+                DEFAULT: {
+                    css: {
+                        '--tw-prose-body': 'hsl(var(--foreground))',
+                        '--tw-prose-headings': 'hsl(var(--foreground))',
+                        '--tw-prose-lead': 'hsl(var(--muted-foreground))',
+                        '--tw-prose-links': 'hsl(var(--primary))',
+                        '--tw-prose-bold': 'hsl(var(--foreground))',
+                        '--tw-prose-counters': 'hsl(var(--muted-foreground))',
+                        '--tw-prose-bullets': 'hsl(var(--muted-foreground))',
+                        '--tw-prose-hr': 'hsl(var(--border))',
+                        '--tw-prose-quotes': 'hsl(var(--foreground))',
+                        '--tw-prose-quote-borders': 'hsl(var(--border))',
+                        '--tw-prose-captions': 'hsl(var(--muted-foreground))',
+                        '--tw-prose-code': 'hsl(var(--foreground))',
+                        '--tw-prose-pre-code': 'hsl(var(--foreground))',
+                        '--tw-prose-pre-bg': 'hsl(var(--muted))',
+                        '--tw-prose-th-borders': 'hsl(var(--border))',
+                        '--tw-prose-td-borders': 'hsl(var(--border))',
+                        color: 'hsl(var(--foreground))',
+                        a: {
+                            color: 'hsl(var(--primary))',
+                            textDecoration: 'underline',
+                            '&:hover': {
+                                color: 'hsl(var(--primary) / 0.8)',
+                            },
+                        },
+                        strong: {
+                            color: 'hsl(var(--foreground))',
+                            fontWeight: '700',
+                        },
+                        code: {
+                            color: 'hsl(var(--foreground))',
+                            backgroundColor: 'hsl(var(--muted))',
+                            padding: '0.2em 0.4em',
+                            borderRadius: '0.25rem',
+                            fontWeight: '600',
+                        },
+                        'code::before': {
+                            content: '""',
+                        },
+                        'code::after': {
+                            content: '""',
+                        },
+                        pre: {
+                            backgroundColor: 'hsl(var(--muted))',
+                            color: 'hsl(var(--foreground))',
+                        },
+                        hr: {
+                            borderColor: 'hsl(var(--border))',
+                        },
+                        blockquote: {
+                            color: 'hsl(var(--foreground))',
+                            borderLeftColor: 'hsl(var(--border))',
+                        },
+                        h1: {
+                            color: 'hsl(var(--foreground))',
+                        },
+                        h2: {
+                            color: 'hsl(var(--foreground))',
+                        },
+                        h3: {
+                            color: 'hsl(var(--foreground))',
+                        },
+                        h4: {
+                            color: 'hsl(var(--foreground))',
+                        },
+                        'ul > li::marker': {
+                            color: 'hsl(var(--muted-foreground))',
+                        },
+                        'ol > li::marker': {
+                            color: 'hsl(var(--muted-foreground))',
+                        },
+                    },
+                },
+            }),
             fontFamily: {
                 sans: [
                     'var(--font-inter)',
