@@ -4,13 +4,20 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const cardVariants = cva(
-  "rounded-xl border-2 border-black text-card-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]",
+  [
+    "text-card-foreground",
+    // Neo mode: hard shadow, thick border, sharp corners
+    "neo:rounded-xl neo:border-2 neo:border-black neo:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]",
+    // Clean mode: soft shadow, thin border, rounded corners
+    "clean:rounded-lg clean:border clean:border-border/30 clean:shadow-md",
+  ].join(" "),
   {
     variants: {
       depth: {
         1: "bg-surface-1",
         2: "bg-surface-2",
         3: "bg-surface-3",
+        4: "bg-surface-4",
       },
     },
     defaultVariants: {

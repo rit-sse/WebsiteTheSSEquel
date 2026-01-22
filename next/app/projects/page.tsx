@@ -54,57 +54,58 @@ const Projects = () => {
   }
 
   return (
-    <>
-      <Card className="w-full max-w-[94vw] xl:max-w-[1400px] p-6 md:p-10 mx-auto mt-8">
-        {/* Intro */}
-        <section className="intro mb-8 max-w-2xl mx-auto">
-          <h1 className="text-primary text-center">
-            Projects
-          </h1>
-          <div className="mt-3 text-xl text-center">
-            <div className="leading-8">Our mission is simple.</div>
-            <div className="leading-8">Want to build? We&apos;ll make it happen.</div>
-            <div className="text-xl text-primary opacity-70 mt-1">
-              Write to <span className="hover:underline hover:font-bold"><a href="mailto:projects@sse.rit.edu">projects@sse.rit.edu</a></span> for more info.
+    <section className="w-full py-8 px-4 md:px-8 lg:px-12">
+      <div className="w-full">
+        <Card depth={1} className="p-6 md:p-8">
+          {/* Intro */}
+          <div className="text-center mb-8">
+            <h1 className="text-primary">
+              Projects
+            </h1>
+            <div className="mt-3 text-xl">
+              <div className="leading-8">Our mission is simple.</div>
+              <div className="leading-8">Want to build? We&apos;ll make it happen.</div>
+              <div className="text-xl text-primary opacity-70 mt-1">
+                Write to <span className="hover:underline hover:font-bold"><a href="mailto:projects@sse.rit.edu">projects@sse.rit.edu</a></span> for more info.
+              </div>
+            </div>
+            
+            {/* Officer-only Add Project Modal Button */}
+            { isOfficer ? 
+              <div className="flex justify-center mt-6">
+                <button className="bg-primary text-primary-foreground px-[25px] py-[10px] rounded-lg" onClick={enableModal}>Add Project</button>
+              </div>
+              : undefined}
+          </div>
+          
+          {/* Current Projects */}
+          <div className="mb-8">
+            <h2 className="text-primary text-center lg:text-left mb-4">
+              Current Projects
+            </h2>
+            <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+              {inProgress.map((project, key) => (
+                <ProjectCard key={key} project={project} propKey={key} isOfficer={isOfficer} />
+              ))}
             </div>
           </div>
-        </section>
 
-        {/* Officer-only Add Project Modal Button */}
-        { isOfficer ? 
-          <div className="flex justify-center mb-8">
-            <button className="bg-primary text-primary-foreground px-[25px] py-[10px] rounded-lg" onClick={enableModal}>Add Project</button>
+          {/* Past Projects */}
+          <div>
+            <h2 className="text-primary text-center lg:text-left mb-4">
+              Past Projects
+            </h2>
+            <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+              {done.map((project, key) => (
+                <ProjectCard key={key} project={project} propKey={key} isOfficer={isOfficer}/>
+              ))}
+            </div>
           </div>
-          : undefined}
-        
-        {/* Exhibit */}
-        {/* Load the projects that are currently in the works first. */}
-        <section className="exhibit mb-8">
-          <h2 className="text-primary text-center lg:text-left mb-4">
-            Current Projects
-          </h2>
-          <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-            {inProgress.map((project, key) => (
-              <ProjectCard key={key} project={project} propKey={key} isOfficer={isOfficer} />
-            ))}
-          </div>
-        </section>
-
-        {/* Load past projects that are done. */}
-        <section className="exhibit">
-          <h2 className="text-primary text-center lg:text-left mb-4">
-            Past Projects
-          </h2>
-          <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-            {done.map((project, key) => (
-              <ProjectCard key={key} project={project} propKey={key} isOfficer={isOfficer}/>
-            ))}
-          </div>
-        </section>
-      </Card>
+        </Card>
+      </div>
       
       <AddProjectModal enabled={addProjectModalEnabled} setEnabled={setAddProjectModalEnabled}/>
-    </>
+    </section>
   );
 };
 

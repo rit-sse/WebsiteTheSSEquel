@@ -1,4 +1,5 @@
 import type { Config } from 'tailwindcss'
+import plugin from 'tailwindcss/plugin'
 const defaultTheme = require('tailwindcss/defaultTheme');
 
 const config: Config = {
@@ -15,6 +16,82 @@ const config: Config = {
     },
     theme: {
         extend: {
+            typography: (theme: any) => ({
+                DEFAULT: {
+                    css: {
+                        '--tw-prose-body': 'hsl(var(--foreground))',
+                        '--tw-prose-headings': 'hsl(var(--foreground))',
+                        '--tw-prose-lead': 'hsl(var(--muted-foreground))',
+                        '--tw-prose-links': 'hsl(var(--primary))',
+                        '--tw-prose-bold': 'hsl(var(--foreground))',
+                        '--tw-prose-counters': 'hsl(var(--muted-foreground))',
+                        '--tw-prose-bullets': 'hsl(var(--muted-foreground))',
+                        '--tw-prose-hr': 'hsl(var(--border))',
+                        '--tw-prose-quotes': 'hsl(var(--foreground))',
+                        '--tw-prose-quote-borders': 'hsl(var(--border))',
+                        '--tw-prose-captions': 'hsl(var(--muted-foreground))',
+                        '--tw-prose-code': 'hsl(var(--foreground))',
+                        '--tw-prose-pre-code': 'hsl(var(--foreground))',
+                        '--tw-prose-pre-bg': 'hsl(var(--muted))',
+                        '--tw-prose-th-borders': 'hsl(var(--border))',
+                        '--tw-prose-td-borders': 'hsl(var(--border))',
+                        color: 'hsl(var(--foreground))',
+                        a: {
+                            color: 'hsl(var(--primary))',
+                            textDecoration: 'underline',
+                            '&:hover': {
+                                color: 'hsl(var(--primary) / 0.8)',
+                            },
+                        },
+                        strong: {
+                            color: 'hsl(var(--foreground))',
+                            fontWeight: '700',
+                        },
+                        code: {
+                            color: 'hsl(var(--foreground))',
+                            backgroundColor: 'hsl(var(--muted))',
+                            padding: '0.2em 0.4em',
+                            borderRadius: '0.25rem',
+                            fontWeight: '600',
+                        },
+                        'code::before': {
+                            content: '""',
+                        },
+                        'code::after': {
+                            content: '""',
+                        },
+                        pre: {
+                            backgroundColor: 'hsl(var(--muted))',
+                            color: 'hsl(var(--foreground))',
+                        },
+                        hr: {
+                            borderColor: 'hsl(var(--border))',
+                        },
+                        blockquote: {
+                            color: 'hsl(var(--foreground))',
+                            borderLeftColor: 'hsl(var(--border))',
+                        },
+                        h1: {
+                            color: 'hsl(var(--foreground))',
+                        },
+                        h2: {
+                            color: 'hsl(var(--foreground))',
+                        },
+                        h3: {
+                            color: 'hsl(var(--foreground))',
+                        },
+                        h4: {
+                            color: 'hsl(var(--foreground))',
+                        },
+                        'ul > li::marker': {
+                            color: 'hsl(var(--muted-foreground))',
+                        },
+                        'ol > li::marker': {
+                            color: 'hsl(var(--muted-foreground))',
+                        },
+                    },
+                },
+            }),
             fontFamily: {
                 sans: [
                     'var(--font-inter)',
@@ -127,7 +204,11 @@ const config: Config = {
                     '1': 'hsl(var(--surface-1))',
                     '2': 'hsl(var(--surface-2))',
                     '3': 'hsl(var(--surface-3))',
+                    '4': 'hsl(var(--surface-4))',
                 },
+                
+                // Dropdown color
+                dropdown: 'hsl(var(--dropdown))',
                 
                 // Neobrutalism colors
                 main: {
@@ -145,6 +226,7 @@ const config: Config = {
                 'radial-2xl': '0 0 25px 5px rgba(0, 0, 0, 0.2)',
                 'radial-3xl': '0 0 30px 5px rgba(0, 0, 0, 0.2)',
                 'shadow': 'var(--shadow)',
+                'card': 'var(--card-shadow)',
             },
             backgroundImage: {
                 'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
@@ -164,14 +246,22 @@ const config: Config = {
                 boxShadowY: 'var(--box-shadow-y)',
                 reverseBoxShadowX: 'var(--reverse-box-shadow-x)',
                 reverseBoxShadowY: 'var(--reverse-box-shadow-y)',
-            }
+            },
+            borderWidth: {
+                'style': 'var(--border-width)',
+            },
         }
     },
     plugins: [
         require('@tailwindcss/typography'),
         require('@tailwindcss/forms'),
         require('@tailwindcss/aspect-ratio'),
-        require("tailwindcss-animate")
+        require("tailwindcss-animate"),
+        // Custom style mode variants for neo/clean toggle
+        plugin(function({ addVariant }) {
+            addVariant('neo', '[data-style="neo"] &')
+            addVariant('clean', '[data-style="clean"] &')
+        }),
     ],
 }
 export default config

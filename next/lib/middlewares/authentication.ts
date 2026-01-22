@@ -29,7 +29,6 @@ const authVerifierFactory = (
         method: "PUT",
       }
     ).then(async (res) => await res.json());
-    // console.log(permissions);
     return verifier(permissions);
   };
 };
@@ -87,26 +86,42 @@ const nonGetOfficerVerifier = nonGetVerifier(officerVerifier);
 const nonGetMentorVerifier = nonGetVerifier(mentorVerifier);
 
 /**
+ * Auth verifier for alumni requests - allows POST (public submissions) but requires officer for GET/PUT/DELETE
+ */
+const alumniRequestsVerifier: AuthVerifier = async (request: NextRequest) => {
+  // Allow POST requests from anyone (public can submit requests)
+  if (request.method === "POST") {
+    return { isAllowed: true, authType: "None" };
+  }
+  // All other methods (GET, PUT, DELETE) require officer permissions
+  return officerVerifier(request);
+};
+
+/**
  * Map from API route name to authorization verifier. The verifier should be run against any request that
  * goes through that route.
  * Keys are the second element in the path segment; for example, the path "/api/golinks/officer" would
  * correspond to the key "golinks"
  */
 const ROUTES: { [key: string]: AuthVerifier } = {
+  "alumni-requests": alumniRequestsVerifier,
   calendar: nonGetOfficerVerifier,
   course: nonGetOfficerVerifier,
   courseTaken: nonGetMentorVerifier,
   departments: nonGetOfficerVerifier,
   golinks: goLinkVerifier,
+  handover: officerVerifier, // All handover document routes require officer auth
   hourBlocks: nonGetOfficerVerifier,
   mentor: nonGetOfficerVerifier,
   mentorSkill: nonGetMentorVerifier,
   officer: nonGetOfficerVerifier,
   project: nonGetOfficerVerifier,
   projectContributor: nonGetOfficerVerifier,
+  purchasing: officerVerifier, // All purchasing routes require officer auth
   quotes: nonGetOfficerVerifier,
   schedule: nonGetMentorVerifier,
   skills: nonGetOfficerVerifier,
+  sponsor: nonGetOfficerVerifier,
   user: nonGetOfficerVerifier,
   userProject: nonGetOfficerVerifier,
 };

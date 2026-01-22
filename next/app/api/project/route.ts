@@ -1,8 +1,6 @@
 import { PROJECTS_HEAD_TITLE } from "@/lib/utils";
-import { PrismaClient } from "@prisma/client";
+import prisma from "@/lib/prisma";
 import { NextRequest } from "next/server";
-
-const prisma = new PrismaClient();
 
 async function isProjectsHead(sessionToken: string) {
   const officerPosition = await prisma.user.findFirst({

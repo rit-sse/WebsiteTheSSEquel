@@ -11,7 +11,7 @@ const ZCardContainer: React.FC<{
         <div className='pt-4'>
             {contentSlots.map((slot, index) => (
                 <RevealOnScroll key={index}>
-                    <Card className="mb-8 px-6 py-4 md:px-8 md:py-5">
+                    <Card depth={2} className="mb-8 px-6 py-4 md:px-8 md:py-5">
                         <ZCard imageSide={index % 2 == 0 ? 'left' : 'right'}>
                             <Image
                                 src={slot.getImageSrc()}

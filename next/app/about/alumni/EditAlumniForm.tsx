@@ -2,7 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { AlumniMember } from "./alumni";
-
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { ModalFooter } from "@/components/ui/modal";
 
 interface AlumniFormProps {
     open: boolean, // open - State of edit form modal
@@ -26,8 +30,7 @@ export default function EditAlumniForm({ open, alumniMember, getAlumni, closeMod
     });
     const [error, setError] = useState("")
 
-    // Fill form with current 
-    //  data
+    // Fill form with current alumni data
     useEffect(() => {
         fillForm();
     }, [alumniMember])
@@ -54,7 +57,7 @@ export default function EditAlumniForm({ open, alumniMember, getAlumni, closeMod
         });
     }
 
-    const handleChange = (e: any) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setFormData((prevData) => ({
           ...prevData, 
@@ -62,7 +65,7 @@ export default function EditAlumniForm({ open, alumniMember, getAlumni, closeMod
         }));
     };
 
-    const handleSubmit = async (e: any) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError("");
         try {
@@ -77,7 +80,7 @@ export default function EditAlumniForm({ open, alumniMember, getAlumni, closeMod
                 gitHubValue = "https://" + gitHubValue;
             }
 
-            // Call to user route to update alumni's alumni data if the start and end dates are modified
+            // Call to alumni route to update alumni's data
             const alumniResponse = await fetch('/api/alumni', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
@@ -118,45 +121,103 @@ export default function EditAlumniForm({ open, alumniMember, getAlumni, closeMod
     };
 
     return (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-1">
-            <div className="flex flex-col">
-                <label>Alumni Email</label>
-                <input type="email" name="email" placeholder="RIT Email" value={formData.email} onChange={handleChange}/>
+        <form onSubmit={handleSubmit} className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+            <div className="space-y-2">
+                <Label htmlFor="email">Alumni Email</Label>
+                <Input 
+                    id="email"
+                    type="email" 
+                    name="email" 
+                    placeholder="Email" 
+                    value={formData.email} 
+                    onChange={handleChange}
+                />
             </div>
-            <div className="flex flex-col">
-                <label>LinkedIn</label>
-                <input name="linkedIn" placeholder="LinkedIn Profile Link" value={formData.linkedIn} onChange={handleChange}/>
+            <div className="space-y-2">
+                <Label htmlFor="linkedIn">LinkedIn</Label>
+                <Input 
+                    id="linkedIn"
+                    name="linkedIn" 
+                    placeholder="LinkedIn Profile Link" 
+                    value={formData.linkedIn} 
+                    onChange={handleChange}
+                />
             </div>
-            <div className="flex flex-col">
-                <label>GitHub</label>
-                <input name="gitHub" placeholder="GitHub Link" value={formData.gitHub} onChange={handleChange}/>
+            <div className="space-y-2">
+                <Label htmlFor="gitHub">GitHub</Label>
+                <Input 
+                    id="gitHub"
+                    name="gitHub" 
+                    placeholder="GitHub Link" 
+                    value={formData.gitHub} 
+                    onChange={handleChange}
+                />
             </div>
-            <div className="flex flex-col">
-                <label>Description</label>
-                <input name="description" placeholder="Description about alumni..." value={formData.description} onChange={handleChange}/>
+            <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea 
+                    id="description"
+                    name="description" 
+                    placeholder="Description about alumni..." 
+                    value={formData.description} 
+                    onChange={handleChange}
+                />
             </div>
-            <div className="flex flex-col">
-                <label>Image</label>
-                <input name="image" placeholder="Alumni Image..." value={formData.image} onChange={handleChange}/>
+            <div className="space-y-2">
+                <Label htmlFor="image">Image URL</Label>
+                <Input 
+                    id="image"
+                    name="image" 
+                    placeholder="Image URL" 
+                    value={formData.image} 
+                    onChange={handleChange}
+                />
             </div>
-            <div className="flex flex-col">
-                <label>Start Date</label>
-                <input name="start_date" placeholder="(ex: Fall 2023)" value={formData.start_date} onChange={handleChange}/>
+            <div className="space-y-2">
+                <Label htmlFor="start_date">Start Date</Label>
+                <Input 
+                    id="start_date"
+                    name="start_date" 
+                    placeholder="e.g., Fall 2023" 
+                    value={formData.start_date} 
+                    onChange={handleChange}
+                />
             </div>
-            <div className="flex flex-col">
-                <label>End Date</label>
-                <input name="end_date" placeholder="(ex: Spring 2024)" value={formData.end_date} onChange={handleChange}/>
+            <div className="space-y-2">
+                <Label htmlFor="end_date">End Date</Label>
+                <Input 
+                    id="end_date"
+                    name="end_date" 
+                    placeholder="e.g., Spring 2024" 
+                    value={formData.end_date} 
+                    onChange={handleChange}
+                />
             </div>
-            <div className="flex flex-col">
-                <label>Quote</label>
-                <input name="quote" placeholder="Alumni quote..." value={formData.quote} onChange={handleChange}/>
+            <div className="space-y-2">
+                <Label htmlFor="quote">Quote</Label>
+                <Input 
+                    id="quote"
+                    name="quote" 
+                    placeholder="Alumni quote..." 
+                    value={formData.quote} 
+                    onChange={handleChange}
+                />
             </div>
-            <div className="flex flex-col">
-                <label>Previous Roles</label>
-                <input name="previous_roles" placeholder="Alumni's previous role(s)..." value={formData.previous_roles} onChange={handleChange}/>
+            <div className="space-y-2">
+                <Label htmlFor="previous_roles">Previous Roles</Label>
+                <Input 
+                    id="previous_roles"
+                    name="previous_roles" 
+                    placeholder="Alumni's previous role(s)..." 
+                    value={formData.previous_roles} 
+                    onChange={handleChange}
+                />
             </div>
-            <button type="submit" className="p-2 bg-secondary text-foreground hover:bg-primary rounded">Submit</button>
-            <label className="text-error text-center text-sm">{error}</label>
+            <ModalFooter>
+                <Button type="button" variant="neutral" onClick={closeModal}>Cancel</Button>
+                <Button type="submit">Save Changes</Button>
+            </ModalFooter>
+            {error && <p className="text-destructive text-center text-sm">{error}</p>}
         </form>
     )
 }

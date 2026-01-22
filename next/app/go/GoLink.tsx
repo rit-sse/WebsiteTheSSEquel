@@ -91,7 +91,8 @@ const GoLink: React.FC<GoLinkProps> = ({
         <Card 
           depth={2}
           className="flex p-4 h-full transition-all duration-150 ease-out
-                     hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
+                     neo:hover:translate-x-[2px] neo:hover:translate-y-[2px] neo:hover:shadow-none
+                     clean:hover:shadow-lg clean:hover:scale-[1.01]"
         >
           <div className="flex-grow overflow-hidden">
             <div className="flex items-center gap-2">

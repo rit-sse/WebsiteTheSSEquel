@@ -3,13 +3,13 @@
 import Link from "next/link";
 import HomepageContent from "@/app/HomepageContent";
 import { DiscordIcon, InstagramIcon, SlackIcon, TikTokIcon, TwitchIcon } from "./common/Icons";
-import DarkModeToggle from "./common/DarkModeToggle";
+import ThemeControlsToggle from "./common/ThemeControlsToggle";
 
 const Footer: React.FC = () => {
     return (
         <footer className="flex items-center justify-between w-full h-auto p-3">
-            <div className="flex items-center justify-start fixed left-3 bottom-3">
-                <DarkModeToggle />
+            <div className="flex items-center justify-start gap-1 fixed left-3 bottom-3">
+                <ThemeControlsToggle />
             </div>
             <div className="flex flex-row items-center justify-end gap-2 flex-grow">
                 <Link href={HomepageContent.discordLink} className='group rounded-md' aria-label="Link to Discord" target='_blank' rel='noopener noreferrer'>

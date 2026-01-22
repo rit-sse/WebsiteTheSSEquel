@@ -1,64 +1,42 @@
-import { PrismaClient } from "@prisma/client";
+import prisma from "@/lib/prisma";
 
 export const dynamic = 'force-dynamic'
 
-const prisma = new PrismaClient();
-
 /**
  * HTTP GET request to /api/user/
- * @returns list of user objects
+ * @returns list of user objects with all relevant fields
  */
 export async function GET() {
-  const allDepts = await prisma.user.findMany({
+  const users = await prisma.user.findMany({
     select: {
       id: true,
       name: true,
       email: true,
+      isMember: true,
+      linkedIn: true,
+      gitHub: true,
+      description: true,
+      image: true,
     },
+    orderBy: { name: 'asc' }
   });
-  return Response.json(allDepts);
+  return Response.json(users);
 }
 
 /**
- * Create a new user
- * HTTP POST request to /api/user/
- * @param request { name: string, email: string }
- * @return user object that was created
+ * User creation is disabled - use the invitation system instead.
+ * 
+ * Users must be invited via /api/invitations, which sends them an email
+ * to sign in with OAuth. This ensures proper Account and Session records
+ * are created by NextAuth, avoiding authentication errors.
+ * 
+ * @see /api/invitations for creating user invitations
  */
-export async function POST(request: Request) {
-  let body;
-  try {
-    body = await request.json();
-  } catch {
-    return new Response("Invalid JSON", { status: 422 });
-  }
-
-  // make sure the name and email properties are included
-  if (!("name" in body && "email" in body)) {
-    return new Response('"name" and "email" must be included in request body', {
-      status: 422,
-    });
-  }
-  const name = body.name;
-  const email = body.email;
-  const linkedIn = body.linkedIn;
-  const gitHub = body.gitHub;
-  const description = body.description;
-
-  try {
-    const user = await prisma.user.create({
-      data: {
-        name,
-        email,
-        linkedIn,
-        gitHub,
-        description
-      },
-    });
-    return Response.json(user, { status: 201 });
-  } catch (e) {
-    return new Response(`Failed to create user: ${e}`, { status: 500 });
-  }
+export async function POST() {
+  return new Response(
+    "User creation is disabled. Use the invitation system at /api/invitations instead.",
+    { status: 410 } // 410 Gone
+  );
 }
 
 /**
@@ -113,7 +91,7 @@ export async function DELETE(request: Request) {
 /**
  * Update an existing user
  * HTTP PUT request to /api/user
- * @param request { id: number, name?: string, email?: string, linkedIn?: string, gitHub?: string, description?: string }
+ * @param request { id: number, name?: string, email?: string, linkedIn?: string, gitHub?: string, description?: string, isMember?: boolean }
  * @returns updated user object
  */
 export async function PUT(request: Request) {
@@ -131,7 +109,7 @@ export async function PUT(request: Request) {
   const id = body.id;
 
   // only update fields the caller wants to update
-  const data: { name?: string; email?: string; description?: string; linkedIn?: string; gitHub?: string } = {};
+  const data: { name?: string; email?: string; description?: string; linkedIn?: string; gitHub?: string; isMember?: boolean } = {};
   if ("name" in body) {
     data.name = body.name;
   }
@@ -146,6 +124,9 @@ export async function PUT(request: Request) {
   }
   if ("gitHub" in body) {
     data.gitHub = body.gitHub;
+  }
+  if ("isMember" in body) {
+    data.isMember = body.isMember;
   }
 
   try {

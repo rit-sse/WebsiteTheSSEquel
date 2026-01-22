@@ -5,7 +5,13 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const neoCardVariants = cva(
-  "rounded-xl border-2 border-black text-card-foreground shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]",
+  [
+    "text-card-foreground",
+    // Neo mode: hard shadow, thick border
+    "neo:rounded-xl neo:border-2 neo:border-black neo:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]",
+    // Clean mode: soft shadow, thin border
+    "clean:rounded-lg clean:border clean:border-border/30 clean:shadow-lg",
+  ].join(" "),
   {
     variants: {
       depth: {

@@ -10,7 +10,18 @@ export interface TeamMember {
   email: string;
 }
 
+export interface OfficerPosition {
+  id: number;
+  title: string;
+  is_primary: boolean;
+}
+
+export interface PositionWithOfficer {
+  position: OfficerPosition;
+  officer: TeamMember | null;
+}
+
 export interface Team {
-  primary_officers: TeamMember[];
-  committee_heads: TeamMember[];
+  primary_officers: PositionWithOfficer[];
+  committee_heads: PositionWithOfficer[];
 }

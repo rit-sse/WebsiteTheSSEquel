@@ -1,103 +1,73 @@
 "use client"
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { AlumniMember } from "./alumni";
+import { Button } from "@/components/ui/button";
+import { ModalFooter } from "@/components/ui/modal";
 
 interface DeleteAlumniProps {
     open: boolean; // open - State of delete form modal
-    alumniMember?: AlumniMember; // alumniMember - Currently selected alumni to be edited
-    fetchData: () => Promise<void>; // getAlumni - Function to get active alumni, used to update the list
+    alumniMember?: AlumniMember; // alumniMember - Currently selected alumni to be deleted
+    fetchData: () => Promise<void>; // fetchData - Function to refresh alumni list
     closeModal: () => void // closeModal - Function to close the form's modal
 }
 
-export const DeleteAlumniButton: React.FC<DeleteAlumniProps> = ({ open, alumniMember, fetchData, closeModal  }) => {
-    // const [alumni_id, setAlumniID] = useState("");
+export const DeleteAlumniButton: React.FC<DeleteAlumniProps> = ({ alumniMember, fetchData, closeModal }) => {
+    const [error, setError] = useState("")
+    const [isDeleting, setIsDeleting] = useState(false)
 
-    const [formData, setFormData] = useState({
-        alumni_id: ''
-	});
-	const [error, setError] = useState("")
-
-    // Fill form with current 
-    //  data
-    useEffect(() => {
-        fillForm();
-    }, [alumniMember])
-
-    // Fill form with current alumni data when it is closed to undo any unsubmitted changes
-    useEffect(() => {
-        if(!open){
-            fillForm();
-        }
-    }, [open])
-
-    const fillForm = () => {
-        setFormData({
-            alumni_id: alumniMember?.alumni_id ?? '',
-        });
-    }
-
-	const handleCancel = () => { // set data to "" when canceled
-    //     setName("");
-    //     setTitle("");
-    //     setQuote("");
-    //     setPreviousRoles("");
-    //     setDescription("");
-    //     setLinkedin("");
-    //     setGithub("");
-    //     setEmail("");
-    //     setStartDate("");
-    //     setEndDate("");
-	};
-
-	const handleDelete = async () => {
+    const handleDelete = async () => {
         setError("");
-		try {
-
+        setIsDeleting(true);
+        try {
             if (!alumniMember?.alumni_id) {
-                    setError("Misisng alumni_id for this alumni.");
-                    return;
+                setError("Missing alumni_id for this alumni.");
+                setIsDeleting(false);
+                return;
             }
 
             // Call to alumni route to delete alumni's user data
             const response = await fetch("/api/alumni", {
                 method: "DELETE",
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id: alumniMember.alumni_id }),
             });
 
             if (response.ok) {
-                handleCancel();
-                (document.getElementById("delete-alumni") as HTMLDialogElement).close();
-                fetchData();
+                await fetchData();
+                closeModal();
+            } else {
+                const errorText = await response.text();
+                setError(errorText || "Failed to delete alumni");
             }
-		} catch (error) {}
-	};
+        } catch (error) {
+            console.error('Error deleting alumni:', error);
+            setError("An error occurred while deleting");
+        } finally {
+            setIsDeleting(false);
+        }
+    };
 
     return (
-        <form onSubmit={closeModal} className="flex flex-col gap-4">
-            <p className="font-bold py-4 text-lg">
-                 Are you sure you want to remove this Alumni?
-             </p>
-            <div className="modal-action">
-                <button
-                className="btn"
-                onClick={() => {
-                    handleDelete();
-                }}
+        <div className="space-y-4">
+            <p className="text-foreground">
+                Are you sure you want to remove <strong>{alumniMember?.name}</strong> from the alumni list? This action cannot be undone.
+            </p>
+            {error && <p className="text-destructive text-sm">{error}</p>}
+            <ModalFooter>
+                <Button type="button" variant="neutral" onClick={closeModal}>
+                    Cancel
+                </Button>
+                <Button 
+                    type="button" 
+                    variant="destructive" 
+                    onClick={handleDelete}
+                    disabled={isDeleting}
                 >
-                Remove
-                </button>
-
-                <button
-                className="btn"
-                onClick={() => {
-                    handleCancel();
-                }}
-                >
-                Cancel
-                </button>
-            </div>
-        </form>
+                    {isDeleting ? "Removing..." : "Remove Alumni"}
+                </Button>
+            </ModalFooter>
+        </div>
     )
 };
 

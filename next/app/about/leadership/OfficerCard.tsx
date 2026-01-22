@@ -11,7 +11,7 @@ interface OfficerCardProps {
 
 export default function OfficerCard({ teamMember, children }: OfficerCardProps) {
   return (
-    <Card depth={2} className="w-full max-w-[280px] p-5 flex flex-col items-center text-center h-full">
+    <Card depth={3} className="w-full max-w-[280px] p-5 flex flex-col items-center text-center h-full">
       {/* Avatar */}
       <div className="mb-3">
         {teamMember.image != "https://source.boringavatars.com/beam/" ? (
