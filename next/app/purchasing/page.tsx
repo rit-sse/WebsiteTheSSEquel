@@ -10,7 +10,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
-import { Plus, Clock, CheckCircle, ArrowRight, ChevronDown } from "lucide-react"
+import { Plus, Clock, CheckCircle, ArrowRight, ChevronDown, CreditCard } from "lucide-react"
 import { cn } from "@/lib/utils"
 import CheckoutForm from "./CheckoutForm"
 import ReceiptForm from "./ReceiptForm"
