@@ -1,41 +1,8 @@
 -- AlterTable
 ALTER TABLE "Account" ADD COLUMN     "refresh_token_expires_in" INTEGER;
 
--- CreateTable
-CREATE TABLE "Alumni" (
-    "id" SERIAL NOT NULL,
-    "name" TEXT NOT NULL,
-    "email" TEXT NOT NULL,
-    "linkedIn" TEXT,
-    "gitHub" TEXT,
-    "description" TEXT,
-    "image" TEXT NOT NULL DEFAULT 'https://source.boringavatars.com/beam/',
-    "start_date" TEXT NOT NULL,
-    "end_date" TEXT NOT NULL,
-    "quote" TEXT NOT NULL DEFAULT '',
-    "previous_roles" TEXT NOT NULL DEFAULT '',
-
-    CONSTRAINT "Alumni_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "AlumniRequest" (
-    "id" SERIAL NOT NULL,
-    "name" TEXT NOT NULL,
-    "email" TEXT NOT NULL,
-    "linkedIn" TEXT,
-    "gitHub" TEXT,
-    "description" TEXT,
-    "image" TEXT NOT NULL DEFAULT 'https://source.boringavatars.com/beam/',
-    "start_date" TEXT NOT NULL,
-    "end_date" TEXT NOT NULL,
-    "quote" TEXT NOT NULL DEFAULT '',
-    "previous_roles" TEXT NOT NULL DEFAULT '',
-    "status" TEXT NOT NULL DEFAULT 'pending',
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "AlumniRequest_pkey" PRIMARY KEY ("id")
-);
+-- Alumni table created in 20260113020722_init
+-- AlumniRequest table created in 20260115065828_add_alumni_request_model
 
 -- CreateTable
 CREATE TABLE "HandoverDocument" (
