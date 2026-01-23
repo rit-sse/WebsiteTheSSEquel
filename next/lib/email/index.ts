@@ -50,6 +50,17 @@ export async function sendEmail(options: SendEmailOptions): Promise<void> {
 }
 
 /**
+ * Check if SMTP is properly configured
+ */
+export function isSmtpConfigured(): boolean {
+  return !!(
+    process.env.SMTP_HOST &&
+    process.env.SMTP_USER &&
+    process.env.SMTP_PASS
+  );
+}
+
+/**
  * Check if the email service is properly configured
  */
 export function isEmailConfigured(): boolean {
@@ -61,9 +72,5 @@ export function isEmailConfigured(): boolean {
   }
 
   // SMTP requires host and credentials
-  return !!(
-    process.env.SMTP_HOST &&
-    process.env.SMTP_USER &&
-    process.env.SMTP_PASS
-  );
+  return isSmtpConfigured();
 }

@@ -3,11 +3,11 @@
 import { useState } from "react";
 import { Modal, ModalFooter } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import GmailAuthModal from "@/components/GmailAuthModal";
 import { useGmailAuth } from "@/lib/hooks/useGmailAuth";
+import { EmailAutocomplete } from "@/components/EmailAutocomplete";
 
 interface UserInviteModalProps {
   open: boolean;
@@ -104,19 +104,18 @@ export default function UserInviteModal({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="inviteEmail">Email Address</Label>
-            <Input
-              id="inviteEmail"
-              type="email"
-              placeholder="username@g.rit.edu"
+            <EmailAutocomplete
               value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
+              onChange={(newEmail) => {
+                setEmail(newEmail);
                 setError(null);
               }}
+              placeholder="Search users or enter email..."
               disabled={isSubmitting}
+              emailDomain="@g.rit.edu"
             />
             <p className="text-xs text-muted-foreground">
-              Must be an @g.rit.edu email address
+              Search for existing users or enter a new @g.rit.edu email
             </p>
           </div>
 

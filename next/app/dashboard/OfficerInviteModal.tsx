@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import GmailAuthModal from "@/components/GmailAuthModal";
 import { useGmailAuth } from "@/lib/hooks/useGmailAuth";
+import { EmailAutocomplete } from "@/components/EmailAutocomplete";
 
 interface Position {
   id: number;
@@ -149,19 +150,18 @@ export default function OfficerInviteModal({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email Address</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="username@g.rit.edu"
+            <EmailAutocomplete
               value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
+              onChange={(newEmail) => {
+                setEmail(newEmail);
                 setError(null);
               }}
+              placeholder="Search users or enter email..."
               disabled={isSubmitting}
+              emailDomain="@g.rit.edu"
             />
             <p className="text-xs text-muted-foreground">
-              Must be an @g.rit.edu email address
+              Search for existing users or enter a new @g.rit.edu email
             </p>
           </div>
 

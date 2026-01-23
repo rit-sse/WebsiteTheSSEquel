@@ -1,6 +1,6 @@
 import prisma from "@/lib/prisma";
 import { NextRequest } from "next/server";
-import { sendEmail } from "@/lib/email";
+import { sendEmail, isSmtpConfigured } from "@/lib/email";
 import { getValidAccessTokenWithDetails } from "@/lib/email/getAccessToken";
 
 export const dynamic = 'force-dynamic'
@@ -126,24 +126,32 @@ export async function POST(
       if (tokenResult.success) {
         accessToken = tokenResult.accessToken;
       } else if (tokenResult.error === "no_scope") {
-        // User hasn't granted gmail.send scope - return error so frontend can prompt for authorization
-        return Response.json(
-          { 
-            error: "Gmail authorization required",
-            needsGmailAuth: true,
-            message: "You need to grant Gmail send permissions to send emails."
-          },
-          { status: 403 }
-        );
+        // User hasn't granted gmail.send scope
+        // If SMTP is configured, fall back to it; otherwise return error for frontend to prompt authorization
+        if (!isSmtpConfigured()) {
+          return Response.json(
+            { 
+              error: "Gmail authorization required",
+              needsGmailAuth: true,
+              message: "You need to grant Gmail send permissions to send emails."
+            },
+            { status: 403 }
+          );
+        }
+        // SMTP is configured, will fall back to it
+        console.log("Gmail auth not available, falling back to SMTP");
       } else {
         console.warn(`Gmail mode enabled but could not get valid access token: ${tokenResult.error}`);
-        return Response.json(
-          { 
-            error: "Gmail authorization error",
-            message: "Could not get a valid Gmail access token. Please try logging out and back in."
-          },
-          { status: 400 }
-        );
+        // Will fall back to SMTP if configured
+        if (!isSmtpConfigured()) {
+          return Response.json(
+            { 
+              error: "Gmail authorization error",
+              message: "Could not get a valid Gmail access token. Please try logging out and back in."
+            },
+            { status: 400 }
+          );
+        }
       }
     }
     
