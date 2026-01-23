@@ -16,4 +16,4 @@ jobs:
     - uses: actions/checkout@v4
     - name: Build the Docker image
       working-directory: ./next
-      run: docker build . --file Dockerfile --tag sse-web:$(date +%s)
+      run: docker build . --file Dockerfile --build-arg COMMIT_HASH=$(git rev-parse --short HEAD) --tag sse-web:$(date +%s)
