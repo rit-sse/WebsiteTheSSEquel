@@ -1,6 +1,6 @@
 import prisma from "@/lib/prisma";
 import { sendEmail, isEmailConfigured } from "@/lib/email";
-import { getValidAccessToken } from "@/lib/email/getAccessToken";
+import { getValidAccessTokenWithDetails } from "@/lib/email/getAccessToken";
 import { NextRequest } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -194,11 +194,22 @@ export async function POST(request: NextRequest) {
     // Get a valid access token (refreshes if expired)
     let accessToken: string | undefined;
     if (process.env.EMAIL_PROVIDER === "gmail") {
-      const token = await getValidAccessToken(loggedInUser.id);
-      if (token) {
-        accessToken = token;
+      const tokenResult = await getValidAccessTokenWithDetails(loggedInUser.id);
+      if (tokenResult.success) {
+        accessToken = tokenResult.accessToken;
+      } else if (tokenResult.error === "no_scope") {
+        // User hasn't granted gmail.send scope - return error so frontend can prompt for authorization
+        return Response.json(
+          { 
+            error: "Gmail authorization required",
+            needsGmailAuth: true,
+            invitation, // Return the created invitation so frontend knows it was created
+            message: "You need to grant Gmail send permissions to send invitation emails. The invitation was created but no email was sent."
+          },
+          { status: 403 }
+        );
       } else {
-        console.warn("Gmail mode enabled but could not get valid access token. User may need to re-login with consent.");
+        console.warn(`Gmail mode enabled but could not get valid access token: ${tokenResult.error}`);
       }
     }
 

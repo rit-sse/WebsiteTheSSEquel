@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import GmailAuthModal from "@/components/GmailAuthModal";
+import { useGmailAuth } from "@/lib/hooks/useGmailAuth";
 
 interface UserInviteModalProps {
   open: boolean;
@@ -21,6 +23,7 @@ export default function UserInviteModal({
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const gmailAuth = useGmailAuth();
 
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen) {
@@ -64,6 +67,20 @@ export default function UserInviteModal({
         toast.success(`Invitation sent to ${email}`);
         onSuccess();
         handleOpenChange(false);
+      } else if (response.status === 403) {
+        // Check if Gmail authorization is needed
+        const data = await response.json();
+        if (data.needsGmailAuth) {
+          gmailAuth.setNeedsGmailAuth(window.location.pathname, data.message);
+          // Invitation was created but email wasn't sent
+          if (data.invitation) {
+            toast.warning("Invitation created but email not sent - Gmail authorization required");
+            onSuccess();
+            handleOpenChange(false);
+          }
+        } else {
+          setError(data.error || "Access denied");
+        }
       } else {
         const errorText = await response.text();
         setError(errorText || "Failed to send invitation");
@@ -77,59 +94,69 @@ export default function UserInviteModal({
   };
 
   return (
-    <Modal
-      open={open}
-      onOpenChange={handleOpenChange}
-      title="Invite New Member"
-      className="max-w-md"
-    >
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="inviteEmail">Email Address</Label>
-          <Input
-            id="inviteEmail"
-            type="email"
-            placeholder="username@g.rit.edu"
-            value={email}
-            onChange={(e) => {
-              setEmail(e.target.value);
-              setError(null);
-            }}
-            disabled={isSubmitting}
-          />
-          <p className="text-xs text-muted-foreground">
-            Must be an @g.rit.edu email address
-          </p>
-        </div>
+    <>
+      <Modal
+        open={open}
+        onOpenChange={handleOpenChange}
+        title="Invite New Member"
+        className="max-w-md"
+      >
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="inviteEmail">Email Address</Label>
+            <Input
+              id="inviteEmail"
+              type="email"
+              placeholder="username@g.rit.edu"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setError(null);
+              }}
+              disabled={isSubmitting}
+            />
+            <p className="text-xs text-muted-foreground">
+              Must be an @g.rit.edu email address
+            </p>
+          </div>
 
-        {error && (
-          <p className="text-sm text-destructive">{error}</p>
-        )}
+          {error && (
+            <p className="text-sm text-destructive">{error}</p>
+          )}
 
-        <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-md">
-          <p className="font-medium mb-1">What happens next?</p>
-          <ul className="list-disc list-inside space-y-1 text-xs">
-            <li>An invitation email will be sent to the provided address</li>
-            <li>The recipient will sign in with their RIT Google account</li>
-            <li>They will be added as an SSE member</li>
-            <li>The invitation expires after 30 days</li>
-          </ul>
-        </div>
+          <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-md">
+            <p className="font-medium mb-1">What happens next?</p>
+            <ul className="list-disc list-inside space-y-1 text-xs">
+              <li>An invitation email will be sent to the provided address</li>
+              <li>The recipient will sign in with their RIT Google account</li>
+              <li>They will be added as an SSE member</li>
+              <li>The invitation expires after 30 days</li>
+            </ul>
+          </div>
 
-        <ModalFooter>
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={() => handleOpenChange(false)}
-            disabled={isSubmitting}
-          >
-            Cancel
-          </Button>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Sending..." : "Send Invitation"}
-          </Button>
-        </ModalFooter>
-      </form>
-    </Modal>
+          <ModalFooter>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => handleOpenChange(false)}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Sending..." : "Send Invitation"}
+            </Button>
+          </ModalFooter>
+        </form>
+      </Modal>
+
+      <GmailAuthModal
+        open={gmailAuth.needsAuth}
+        onOpenChange={(open) => !open && gmailAuth.clearAuthState()}
+        onAuthorize={gmailAuth.startGmailAuth}
+        isLoading={gmailAuth.isLoading}
+        message={gmailAuth.message}
+      />
+    </>
   );
 }
