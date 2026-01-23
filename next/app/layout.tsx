@@ -1,4 +1,4 @@
-// This file defines a plane layout for all pages in the application, meant to be extended by children layouts.
+// This file defines a plain layout for all pages in the application, meant to be extended by children layouts.
 
 import "./globals.scss";
 import type { Metadata } from "next";
