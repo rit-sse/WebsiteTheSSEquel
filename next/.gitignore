@@ -13,8 +13,6 @@
 /.next/
 /out/
 
-# prisma
-/next/prisma/migrations
 
 # production
 /build
@@ -33,8 +31,6 @@ yarn-error.log*
 .env*.local
 .env
 
-#Prisma migration
-prisma/migrations
 
 # vercel
 .vercel
