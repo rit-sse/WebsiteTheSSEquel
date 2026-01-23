@@ -22,6 +22,9 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# Capture git commit hash for version display (short 7-char hash)
+RUN git rev-parse --short HEAD > /tmp/commit_hash 2>/dev/null || echo "unknown" > /tmp/commit_hash
+
 RUN npx prisma generate
 
 # Next.js collects completely anonymous telemetry data about general usage.
@@ -29,10 +32,11 @@ RUN npx prisma generate
 # Uncomment the following line in case you want to disable telemetry during the build.
 ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN \
-  if [ -f yarn.lock ]; then yarn run build; \
-  elif [ -f package-lock.json ]; then npm run build; \
-  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm run build; \
+# Set the commit hash as a build-time env var for Next.js
+RUN export NEXT_PUBLIC_COMMIT_HASH=$(cat /tmp/commit_hash) && \
+  if [ -f yarn.lock ]; then NEXT_PUBLIC_COMMIT_HASH=$NEXT_PUBLIC_COMMIT_HASH yarn run build; \
+  elif [ -f package-lock.json ]; then NEXT_PUBLIC_COMMIT_HASH=$NEXT_PUBLIC_COMMIT_HASH npm run build; \
+  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && NEXT_PUBLIC_COMMIT_HASH=$NEXT_PUBLIC_COMMIT_HASH pnpm run build; \
   else echo "Lockfile not found." && exit 1; \
   fi
 

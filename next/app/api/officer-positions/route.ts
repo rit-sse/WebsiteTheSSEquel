@@ -66,7 +66,7 @@ export async function GET() {
 /**
  * HTTP POST request to /api/officer-positions
  * Create a new officer position
- * @param request { title: string, email: string, is_primary?: boolean }
+ * @param request { title: string, email?: string, is_primary?: boolean }
  * @returns created position object
  */
 export async function POST(request: Request) {
@@ -77,11 +77,14 @@ export async function POST(request: Request) {
     return new Response("Invalid JSON", { status: 400 });
   }
 
-  if (!("title" in body) || !("email" in body)) {
-    return new Response('"title" and "email" are required', { status: 400 });
+  if (!("title" in body)) {
+    return new Response('"title" is required', { status: 400 });
   }
 
-  const { title, email, is_primary } = body;
+  const { title, is_primary } = body;
+  
+  // Auto-generate email from title if not provided (e.g., "Vice President" -> "sse-vice-president@rit.edu")
+  const email = body.email || `sse-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}@rit.edu`;
 
   try {
     const position = await prisma.officerPosition.create({
