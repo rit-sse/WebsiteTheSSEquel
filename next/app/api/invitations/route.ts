@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { sendEmail, isEmailConfigured } from "@/lib/email";
+import { getValidAccessToken } from "@/lib/email/getAccessToken";
 import { NextRequest } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -189,11 +190,16 @@ export async function POST(request: NextRequest) {
   if (isEmailConfigured()) {
     const baseUrl = process.env.NEXTAUTH_URL || process.env.VERCEL_URL || "http://localhost:3000";
     const acceptUrl = `${baseUrl}/accept-invitation`;
-    const accessToken = loggedInUser.account[0]?.access_token || undefined;
-
-    // Check if Gmail mode requires access token
-    if (process.env.EMAIL_PROVIDER === "gmail" && !accessToken) {
-      console.warn("Gmail mode enabled but no access token found. User may need to re-login.");
+    
+    // Get a valid access token (refreshes if expired)
+    let accessToken: string | undefined;
+    if (process.env.EMAIL_PROVIDER === "gmail") {
+      const token = await getValidAccessToken(loggedInUser.id);
+      if (token) {
+        accessToken = token;
+      } else {
+        console.warn("Gmail mode enabled but could not get valid access token. User may need to re-login with consent.");
+      }
     }
 
     try {
