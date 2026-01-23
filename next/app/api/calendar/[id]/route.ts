@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { getToken } from "../../../../lib/calendar";
+import { getToken } from "@/lib/calendar";
 
 /**
  * HTTP GET to /api/calendar/[id]

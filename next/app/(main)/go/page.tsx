@@ -1,6 +1,6 @@
 "use client";
 
-import GoLinksContainer from "@/app/go/GoLinksContainer";
+import GoLinksContainer from "@/app/(main)/go/GoLinksContainer";
 import { GoLinkProps } from "./GoLink";
 import { useCallback, useEffect, useState } from "react";
 

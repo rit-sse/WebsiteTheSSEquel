@@ -1,14 +1,14 @@
 // This file renders the home page route (/) of the website.
 // We know that this is the homepage because this file resides in the root of the `app` directory.
 
-import HomepageContent from './HomepageContent';
+import HomepageContent from '../HomepageContent';
 import { EventCard } from './events/EventCard';
 import { Event } from "./events/event";
 import { compareDateStrings, formatDate } from './events/calendar/utils';
-import { getEvents } from './api/event/eventService';
+import { getEvents } from '../api/event/eventService';
 import { Sponsor } from '@/components/common/Sponsor';
-import { HeroCTA } from './HeroCTA';
-import { HeroImage } from './HeroImage';
+import { HeroCTA } from '../HeroCTA';
+import { HeroImage } from '../HeroImage';
 import { NeoCard } from "@/components/ui/neo-card";
 import { Card } from "@/components/ui/card";
 import prisma from '@/lib/prisma';

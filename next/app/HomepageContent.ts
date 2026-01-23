@@ -1,4 +1,4 @@
-import { Event } from "./events/event";
+import { Event } from "./(main)/events/event";
 
 const defaultDescription = `This is a description of the event. Lorem ipsum dolor sit amet,
                             consectetur adipiscing elit. Integer ullamcorper.`
