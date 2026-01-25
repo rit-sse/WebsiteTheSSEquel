@@ -46,12 +46,6 @@ next-env.d.ts
 # jetbrains
 .idea
 
-# jetbrains
-.idea
-
-# jetbrains
-.idea
-
 # Nix
 flake.nix
 flake.lock
