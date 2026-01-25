@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
-import { sendEmail, isEmailConfigured } from "@/lib/email";
+import { sendEmail, isEmailConfigured, isSmtpConfigured } from "@/lib/email";
+import { getValidAccessTokenWithDetails } from "@/lib/email/getAccessToken";
 import { NextRequest } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -189,11 +190,35 @@ export async function POST(request: NextRequest) {
   if (isEmailConfigured()) {
     const baseUrl = process.env.NEXTAUTH_URL || process.env.VERCEL_URL || "http://localhost:3000";
     const acceptUrl = `${baseUrl}/accept-invitation`;
-    const accessToken = loggedInUser.account[0]?.access_token || undefined;
-
-    // Check if Gmail mode requires access token
-    if (process.env.EMAIL_PROVIDER === "gmail" && !accessToken) {
-      console.warn("Gmail mode enabled but no access token found. User may need to re-login.");
+    
+    // Get a valid access token (refreshes if expired)
+    let accessToken: string | undefined;
+    let gmailAuthNeeded = false;
+    if (process.env.EMAIL_PROVIDER === "gmail") {
+      const tokenResult = await getValidAccessTokenWithDetails(loggedInUser.id);
+      if (tokenResult.success) {
+        accessToken = tokenResult.accessToken;
+      } else if (tokenResult.error === "no_scope") {
+        // User hasn't granted gmail.send scope
+        // If SMTP is configured, fall back to it; otherwise return error for frontend to prompt authorization
+        if (!isSmtpConfigured()) {
+          return Response.json(
+            { 
+              error: "Gmail authorization required",
+              needsGmailAuth: true,
+              invitation, // Return the created invitation so frontend knows it was created
+              message: "You need to grant Gmail send permissions to send invitation emails. The invitation was created but no email was sent."
+            },
+            { status: 403 }
+          );
+        }
+        // SMTP is configured, will fall back to it
+        console.log("Gmail auth not available, falling back to SMTP");
+        gmailAuthNeeded = true;
+      } else {
+        console.warn(`Gmail mode enabled but could not get valid access token: ${tokenResult.error}`);
+        // Will fall back to SMTP if configured
+      }
     }
 
     try {

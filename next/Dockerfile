@@ -19,8 +19,17 @@ RUN \
 # Rebuild the source code only when needed
 FROM base AS builder
 WORKDIR /app
+
+# Install git to fetch commit hash from remote
+RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+
+# Get commit hash from GitHub remote (works without local .git folder)
+RUN COMMIT_HASH=$(git ls-remote https://github.com/rit-sse/WebsiteTheSSEquel.git main | head -c 7) && \
+    echo "COMMIT_HASH=$COMMIT_HASH" && \
+    echo "$COMMIT_HASH" > /tmp/commit_hash
 
 RUN npx prisma generate
 
@@ -29,10 +38,11 @@ RUN npx prisma generate
 # Uncomment the following line in case you want to disable telemetry during the build.
 ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN \
-  if [ -f yarn.lock ]; then yarn run build; \
-  elif [ -f package-lock.json ]; then npm run build; \
-  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm run build; \
+# Set the commit hash as a build-time env var for Next.js
+RUN COMMIT_HASH=$(cat /tmp/commit_hash) && \
+  if [ -f yarn.lock ]; then NEXT_PUBLIC_COMMIT_HASH=$COMMIT_HASH yarn run build; \
+  elif [ -f package-lock.json ]; then NEXT_PUBLIC_COMMIT_HASH=$COMMIT_HASH npm run build; \
+  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && NEXT_PUBLIC_COMMIT_HASH=$COMMIT_HASH pnpm run build; \
   else echo "Lockfile not found." && exit 1; \
   fi
 

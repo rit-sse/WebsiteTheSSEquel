@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
-import { sendEmail, isEmailConfigured } from "@/lib/email";
+import { sendEmail, isEmailConfigured, isSmtpConfigured } from "@/lib/email";
+import { getValidAccessTokenWithDetails } from "@/lib/email/getAccessToken";
 import { NextRequest } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -126,13 +127,35 @@ export async function POST(request: NextRequest) {
   if (isEmailConfigured() && loggedInUser) {
     const baseUrl = process.env.NEXTAUTH_URL || process.env.VERCEL_URL || 'http://localhost:3000';
     const handoverUrl = `${baseUrl}/dashboard/positions/${positionRecord.id}/handover`;
-    const accessToken = loggedInUser.account[0]?.access_token || undefined;
     
-    // Check if Gmail mode requires access token
-    if (process.env.EMAIL_PROVIDER === "gmail" && !accessToken) {
-      console.warn("Gmail mode enabled but no access token found. User may need to re-login.");
-      // Still create the officer, just skip the email
-    } else {
+    // Get a valid access token (refreshes if expired)
+    let accessToken: string | undefined;
+    if (process.env.EMAIL_PROVIDER === "gmail") {
+      const tokenResult = await getValidAccessTokenWithDetails(loggedInUser.id);
+      if (tokenResult.success) {
+        accessToken = tokenResult.accessToken;
+      } else if (tokenResult.error === "no_scope") {
+        // User hasn't granted gmail.send scope
+        // If SMTP is configured, fall back to it; otherwise return error for frontend to prompt authorization
+        if (!isSmtpConfigured()) {
+          return Response.json(
+            { 
+              error: "Gmail authorization required",
+              needsGmailAuth: true,
+              message: "You need to grant Gmail send permissions to send notification emails. The officer was created but no email was sent."
+            },
+            { status: 403 }
+          );
+        }
+        // SMTP is configured, will fall back to it
+        console.log("Gmail auth not available for officer notification, falling back to SMTP");
+      } else {
+        console.warn(`Gmail mode enabled but could not get valid access token: ${tokenResult.error}`);
+      }
+    }
+    
+    // Send if we have Gmail access token, or if SMTP is configured as fallback
+    if (accessToken || process.env.EMAIL_PROVIDER !== "gmail" || isSmtpConfigured()) {
       try {
         await sendEmail({
           to: user.email,
