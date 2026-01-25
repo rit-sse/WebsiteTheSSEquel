@@ -2,7 +2,7 @@
 import { Metadata } from "next";
 import slotData from "./AboutUsSlotContent";
 import ZCardContainer from "@/components/ZCardContainer";
-import {AboutUsSlot} from "@/app/about/AboutUsSlot";
+import {AboutUsSlot} from "@/app/(main)/about/AboutUsSlot";
 import { Card } from "@/components/ui/card";
 
 export const metadata: Metadata = {

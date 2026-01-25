@@ -1,4 +1,4 @@
-import { GitHubIcon, LinkedInIcon, EmailIcon } from "../../../components/common/Icons";
+import { GitHubIcon, LinkedInIcon, EmailIcon } from "@/components/common/Icons";
 import { TeamMember } from "./team";
 import Avatar from 'boring-avatars';
 import Image from "next/image";

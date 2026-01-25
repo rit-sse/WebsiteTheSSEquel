@@ -2,9 +2,9 @@
 
 import React, { useEffect, useState } from "react";
 import GoLink, { GoLinkProps } from "./GoLink";
-import { GoLinksContainerProps } from "@/app/go/page";
+import { GoLinksContainerProps } from "@/app/(main)/go/page";
 import { filterGoLinks } from "@/lib/filter";
-import { GoLinkButton } from "@/app/go/MakeNewGoLink";
+import { GoLinkButton } from "@/app/(main)/go/MakeNewGoLink";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";

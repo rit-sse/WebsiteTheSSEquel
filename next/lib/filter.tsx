@@ -1,4 +1,4 @@
-import { GoLinkProps } from "@/app/go/GoLink";
+import { GoLinkProps } from "@/app/(main)/go/GoLink";
 
 /**
  * stub
