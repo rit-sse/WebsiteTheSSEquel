@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/authOptions"
 import { PrismaClient } from "@prisma/client";
+import { isMentor } from "@/lib/MentorCal.server"
 
 const prisma = new PrismaClient();
 
@@ -13,16 +14,9 @@ export async function POST(request: NextRequest) {
 	    return NextResponse.json({ error: "Unauthorized User" }, { status: 401 })
 	}
 
-	const isMentor = await prisma.mentor.count({
-	    where: {
-		isActive: true,
-		user: {
-		    email: session.user.email,
-		}
-	    }
-	})
+	const mentorStatus = await isMentor()
 
-	if (!isMentor) {
+	if (!mentorStatus) {
 	    return NextResponse.json({ error: "Only mentors can assign blocks"}, { status: 403 })
 	}
 
