@@ -1,10 +1,6 @@
-"use server"
-
 import { AddMentorButton, MentorButton } from "./MentorCalComponents.client"
 import { dayLabels, hourLabels } from "./MentorCal.client"
 import { ScheduleType } from "./MentorCal.types"
-import { prisma } from "@/lib/prisma" 
-import { isMentor } from "./MentorCal.server" 
 
 export const Header = ({
 	title,

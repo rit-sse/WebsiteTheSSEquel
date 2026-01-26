@@ -1,23 +1,25 @@
-import { getMentorNames, getMentorSchedule, isMentor } from "./MentorCal.server"
+import { getMentorNames, getMentorSchedule, isMentor } from "@/lib/MentorCal.server"
 import { MentorCalendar, Header, MentorDataList } from "./MentorCalComponents.server"
 
 export default async function Page() {
-	const mentorStatus = await isMentor()
-	const mentorBlocks = await getMentorSchedule()
-	const mentorList = mentorStatus ? await getMentorNames() : []
+    const [mentorStatus, mentorBlocks, mentorList] = await Promise.all([
+	isMentor(),
+	getMentorSchedule(),
+	getMentorNames(),
+    ])
 
-	return (
-		<main className="w-full max-w-7xl px-8 md:px-0 py-6 space-y-10">
-			<Header title="Student Mentor Schedule">
-				Need help with homework, assignments, or upcoming tests? Come into the
-				<strong> SSE</strong> and get help from our student mentors!
-			</Header>
-			<MentorCalendar 
-			    isMentor={mentorStatus} 
-			    mentorBlocks={mentorBlocks}
-			    mentorList={mentorList}
-			/>
-			<MentorDataList data={mentorList} />
-		</main>
-	)
+    return (
+	<main className="w-full max-w-7xl px-8 md:px-0 py-6 space-y-10">
+	    <Header title="Student Mentor Schedule">
+		Need help with homework, assignments, or upcoming tests? Come into the
+	    	<strong> SSE</strong> and get help from our student mentors!
+	    </Header>
+	    <MentorCalendar
+		isMentor = { mentorStatus }
+	    	mentorBlocks={ mentorBlocks }
+	    	mentorList={ mentorList }
+	    />
+	    <MentorDataList data={ mentorList } />
+	</main>
+    )
 }
