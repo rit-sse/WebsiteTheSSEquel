@@ -6,6 +6,11 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Modal, ModalFooter } from "@/components/ui/modal"
 import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
+import {
   Users,
   Download,
   Calendar,
@@ -16,9 +21,12 @@ import {
   Loader2,
   Link as LinkIcon,
   Plus,
+  ChevronDown,
+  Repeat,
 } from "lucide-react"
 import AddEventForm from "@/app/(main)/events/calendar/AddEventForm"
 import { Event } from "@/app/(main)/events/event"
+import { groupBySemester } from "@/lib/semester"
 
 interface Attendee {
   id: number
@@ -192,74 +200,17 @@ export default function AttendancePage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {events.map((event) => (
-                <Card key={event.id} depth={2} className="p-4">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-lg font-semibold truncate">{event.title}</h3>
-                        {event.grantsMembership && (
-                          <Badge variant="default" className="gap-1 shrink-0">
-                            <Award className="h-3 w-3" />
-                            Grants Membership
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Calendar className="h-4 w-4" />
-                          {formatDate(event.date)}
-                        </span>
-                        {event.location && (
-                          <span className="flex items-center gap-1">
-                            <MapPin className="h-4 w-4" />
-                            {event.location}
-                          </span>
-                        )}
-                        <span className="flex items-center gap-1">
-                          <Users className="h-4 w-4" />
-                          {event.attendeeCount} attendee{event.attendeeCount !== 1 ? "s" : ""}
-                        </span>
-                        {event.linkedPurchaseRequests.length > 0 && (
-                          <span className="flex items-center gap-1">
-                            <LinkIcon className="h-4 w-4" />
-                            {event.linkedPurchaseRequests.length} purchase request{event.linkedPurchaseRequests.length !== 1 ? "s" : ""}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <div className="flex flex-wrap gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => viewAttendees(event)}
-                        className="gap-1"
-                      >
-                        <Users className="h-4 w-4" />
-                        View Attendees
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => downloadFlyer(event.id)}
-                        className="gap-1"
-                      >
-                        <Download className="h-4 w-4" />
-                        Download Flyer
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openAttendancePage(event.id)}
-                        className="gap-1"
-                      >
-                        <ExternalLink className="h-4 w-4" />
-                        Check-in Page
-                      </Button>
-                    </div>
-                  </div>
-                </Card>
+              {groupBySemester(events, (e) => e.date).map((group, index) => (
+                <SemesterAccordion
+                  key={group.label}
+                  label={group.label}
+                  events={group.items}
+                  defaultOpen={index === 0}
+                  formatDate={formatDate}
+                  onViewAttendees={viewAttendees}
+                  onDownloadFlyer={downloadFlyer}
+                  onOpenAttendancePage={openAttendancePage}
+                />
               ))}
             </div>
           )}
@@ -346,5 +297,287 @@ export default function AttendancePage() {
         />
       </Modal>
     </div>
+  )
+}
+
+// Group events into recurring series and single events
+interface EventGroup {
+  type: "recurring" | "single"
+  title: string
+  events: EventWithAttendance[]
+  totalAttendees: number
+}
+
+function groupEventsForDisplay(events: EventWithAttendance[]): EventGroup[] {
+  // Group by title to find recurring series
+  const byTitle = new Map<string, EventWithAttendance[]>()
+  for (const event of events) {
+    const existing = byTitle.get(event.title) || []
+    existing.push(event)
+    byTitle.set(event.title, existing)
+  }
+
+  const groups: EventGroup[] = []
+  const processedTitles = new Set<string>()
+
+  // Sort events by date to maintain order
+  const sortedEvents = [...events].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  )
+
+  for (const event of sortedEvents) {
+    if (processedTitles.has(event.title)) continue
+    processedTitles.add(event.title)
+
+    const seriesEvents = byTitle.get(event.title) || []
+    // Sort series events by date (earliest first)
+    seriesEvents.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+
+    if (seriesEvents.length > 1) {
+      groups.push({
+        type: "recurring",
+        title: event.title,
+        events: seriesEvents,
+        totalAttendees: seriesEvents.reduce((sum, e) => sum + e.attendeeCount, 0),
+      })
+    } else {
+      groups.push({
+        type: "single",
+        title: event.title,
+        events: seriesEvents,
+        totalAttendees: event.attendeeCount,
+      })
+    }
+  }
+
+  return groups
+}
+
+// Semester accordion component for grouping events
+function SemesterAccordion({
+  label,
+  events,
+  defaultOpen,
+  formatDate,
+  onViewAttendees,
+  onDownloadFlyer,
+  onOpenAttendancePage,
+}: {
+  label: string
+  events: EventWithAttendance[]
+  defaultOpen: boolean
+  formatDate: (date: string) => string
+  onViewAttendees: (event: EventWithAttendance) => void
+  onDownloadFlyer: (eventId: string) => void
+  onOpenAttendancePage: (eventId: string) => void
+}) {
+  const [isOpen, setIsOpen] = useState(defaultOpen)
+
+  // Group events
+  const eventGroups = groupEventsForDisplay(events)
+
+  // Count totals
+  const totalAttendees = events.reduce((sum, e) => sum + e.attendeeCount, 0)
+  const recurringSeriesCount = eventGroups.filter((g) => g.type === "recurring").length
+
+  return (
+    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+      <CollapsibleTrigger className="flex items-center justify-between w-full p-3 bg-muted/50 hover:bg-muted rounded-lg transition-colors">
+        <div className="flex items-center gap-3">
+          <ChevronDown
+            className={`h-5 w-5 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+          />
+          <span className="font-semibold">{label}</span>
+          <Badge variant="secondary" className="text-xs">
+            {events.length} event{events.length !== 1 ? "s" : ""}
+          </Badge>
+          <Badge variant="outline" className="text-xs gap-1">
+            <Users className="h-3 w-3" />
+            {totalAttendees} total attendees
+          </Badge>
+          {recurringSeriesCount > 0 && (
+            <Badge variant="outline" className="text-xs gap-1">
+              <Repeat className="h-3 w-3" />
+              {recurringSeriesCount} series
+            </Badge>
+          )}
+        </div>
+      </CollapsibleTrigger>
+      <CollapsibleContent className="pt-2 space-y-2 pl-2">
+        {eventGroups.map((group) =>
+          group.type === "recurring" ? (
+            <RecurringSeriesAccordion
+              key={group.title}
+              title={group.title}
+              events={group.events}
+              totalAttendees={group.totalAttendees}
+              formatDate={formatDate}
+              onViewAttendees={onViewAttendees}
+              onDownloadFlyer={onDownloadFlyer}
+              onOpenAttendancePage={onOpenAttendancePage}
+            />
+          ) : (
+            <EventCard
+              key={group.events[0].id}
+              event={group.events[0]}
+              formatDate={formatDate}
+              onViewAttendees={onViewAttendees}
+              onDownloadFlyer={onDownloadFlyer}
+              onOpenAttendancePage={onOpenAttendancePage}
+              showTitle
+            />
+          )
+        )}
+      </CollapsibleContent>
+    </Collapsible>
+  )
+}
+
+// Recurring series accordion
+function RecurringSeriesAccordion({
+  title,
+  events,
+  totalAttendees,
+  formatDate,
+  onViewAttendees,
+  onDownloadFlyer,
+  onOpenAttendancePage,
+}: {
+  title: string
+  events: EventWithAttendance[]
+  totalAttendees: number
+  formatDate: (date: string) => string
+  onViewAttendees: (event: EventWithAttendance) => void
+  onDownloadFlyer: (eventId: string) => void
+  onOpenAttendancePage: (eventId: string) => void
+}) {
+  const [isOpen, setIsOpen] = useState(false)
+
+  return (
+    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+      <CollapsibleTrigger className="flex items-center justify-between w-full p-3 bg-muted/30 hover:bg-muted/50 rounded-lg transition-colors">
+        <div className="flex items-center gap-3">
+          <ChevronDown
+            className={`h-4 w-4 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+          />
+          <Repeat className="h-4 w-4 text-muted-foreground" />
+          <span className="font-medium">{title}</span>
+          <Badge variant="secondary" className="text-xs">
+            {events.length} occurrences
+          </Badge>
+          <Badge variant="outline" className="text-xs gap-1">
+            <Users className="h-3 w-3" />
+            {totalAttendees} attendees
+          </Badge>
+        </div>
+      </CollapsibleTrigger>
+      <CollapsibleContent className="pt-2 space-y-2 pl-4">
+        {events.map((event) => (
+          <EventCard
+            key={event.id}
+            event={event}
+            formatDate={formatDate}
+            onViewAttendees={onViewAttendees}
+            onDownloadFlyer={onDownloadFlyer}
+            onOpenAttendancePage={onOpenAttendancePage}
+            showTitle={false}
+          />
+        ))}
+      </CollapsibleContent>
+    </Collapsible>
+  )
+}
+
+// Single event card
+function EventCard({
+  event,
+  formatDate,
+  onViewAttendees,
+  onDownloadFlyer,
+  onOpenAttendancePage,
+  showTitle,
+}: {
+  event: EventWithAttendance
+  formatDate: (date: string) => string
+  onViewAttendees: (event: EventWithAttendance) => void
+  onDownloadFlyer: (eventId: string) => void
+  onOpenAttendancePage: (eventId: string) => void
+  showTitle: boolean
+}) {
+  return (
+    <Card depth={2} className="p-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1">
+            {showTitle ? (
+              <h3 className="text-lg font-semibold truncate">{event.title}</h3>
+            ) : (
+              <span className="font-medium">{formatDate(event.date)}</span>
+            )}
+            {event.grantsMembership && (
+              <Badge variant="default" className="gap-1 shrink-0">
+                <Award className="h-3 w-3" />
+                Grants Membership
+              </Badge>
+            )}
+          </div>
+          <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+            {showTitle && (
+              <span className="flex items-center gap-1">
+                <Calendar className="h-4 w-4" />
+                {formatDate(event.date)}
+              </span>
+            )}
+            {event.location && (
+              <span className="flex items-center gap-1">
+                <MapPin className="h-4 w-4" />
+                {event.location}
+              </span>
+            )}
+            <span className="flex items-center gap-1">
+              <Users className="h-4 w-4" />
+              {event.attendeeCount} attendee{event.attendeeCount !== 1 ? "s" : ""}
+            </span>
+            {event.linkedPurchaseRequests.length > 0 && (
+              <span className="flex items-center gap-1">
+                <LinkIcon className="h-4 w-4" />
+                {event.linkedPurchaseRequests.length} purchase request
+                {event.linkedPurchaseRequests.length !== 1 ? "s" : ""}
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onViewAttendees(event)}
+            className="gap-1"
+          >
+            <Users className="h-4 w-4" />
+            View
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onDownloadFlyer(event.id)}
+            className="gap-1"
+          >
+            <Download className="h-4 w-4" />
+            Flyer
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onOpenAttendancePage(event.id)}
+            className="gap-1"
+          >
+            <ExternalLink className="h-4 w-4" />
+            Check-in
+          </Button>
+        </div>
+      </div>
+    </Card>
   )
 }

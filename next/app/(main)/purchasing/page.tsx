@@ -46,45 +46,11 @@ interface PurchaseRequest {
   } | null
 }
 
-interface SemesterGroup {
-  label: string
-  sortKey: string
-  requests: PurchaseRequest[]
-}
+import { groupBySemester, SemesterGroup } from "@/lib/semester"
 
-// Get semester label from date
-function getSemester(dateString: string): { label: string; sortKey: string } {
-  const date = new Date(dateString)
-  const month = date.getMonth() + 1 // 1-12
-  const year = date.getFullYear()
-  
-  if (month >= 8 && month <= 12) {
-    // August - December = Fall
-    return { label: `Fall ${year}`, sortKey: `${year}-2` }
-  } else if (month >= 1 && month <= 5) {
-    // January - May = Spring
-    return { label: `Spring ${year}`, sortKey: `${year}-1` }
-  } else {
-    // June - July = Summer
-    return { label: `Summer ${year}`, sortKey: `${year}-0` }
-  }
-}
-
-// Group requests by semester
-function groupBySemester(requests: PurchaseRequest[]): SemesterGroup[] {
-  const groups: { [key: string]: SemesterGroup } = {}
-  
-  for (const request of requests) {
-    const { label, sortKey } = getSemester(request.createdAt)
-    
-    if (!groups[label]) {
-      groups[label] = { label, sortKey, requests: [] }
-    }
-    groups[label].requests.push(request)
-  }
-  
-  // Sort groups by sortKey descending (most recent first)
-  return Object.values(groups).sort((a, b) => b.sortKey.localeCompare(a.sortKey))
+// Helper to group purchase requests by semester
+function groupRequestsBySemester(requests: PurchaseRequest[]): SemesterGroup<PurchaseRequest>[] {
+  return groupBySemester(requests, (r) => r.createdAt)
 }
 
 export default function PurchasingPage() {
@@ -250,11 +216,11 @@ export default function PurchasingPage() {
               </p>
             ) : (
               <div className="space-y-4">
-                {groupBySemester(requests).map((group, index) => (
+                {groupRequestsBySemester(requests).map((group, index) => (
                   <SemesterAccordion
                     key={group.label}
                     label={group.label}
-                    requests={group.requests}
+                    requests={group.items}
                     defaultOpen={index === 0}
                     getStatusBadge={getStatusBadge}
                     onSubmitReceipt={setSelectedRequest}
