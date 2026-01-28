@@ -1,129 +1,476 @@
 "use client"
 
-// Event modal to add a new event
-
 import { useEffect, useState } from "react"
-import { Event } from "../event";
-import { compareDateStrings } from "./utils";
+import { Event } from "../event"
+import { compareDateStrings } from "./utils"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Loader2, Calendar, MapPin, Image as ImageIcon, Users, Repeat, CreditCard } from "lucide-react"
 
-/**
- * isOpen - Modal is open or not, T/F
- * onClose - Function prop that closes the modal
- * events - Events state from page
- * setEvents - Set the Events state when CRUD is performed
- */
 interface FormProps {
-    isOpen: boolean,
-    onClose: () => void,
-    events: Event[],
-    setEvents: (event: Event[]) => void,
+  isOpen: boolean
+  onClose: () => void
+  events: Event[]
+  setEvents: (event: Event[]) => void
 }
 
-export default function AddEventForm ({ isOpen, onClose, events, setEvents }: FormProps)  {
-    const [loading, setLoading] =  useState(false); // Toggled while waiting for API to respond
+type RecurrenceType = "none" | "weekly" | "biweekly"
 
-    // States for holding form data
-    const [eventName, setEventName] = useState("");
-    const [location, setLocation] = useState("");
-    const [datetime, setDatetime] = useState("");
-    const [description, setDescription] = useState("");
-    const [image, setImage] = useState("");
+const COMMITTEES = [
+  "Mentoring",
+  "Lab Ops",
+  "Tech Committee",
+  "Events",
+  "Talks",
+  "Projects",
+  "Misc/Presidential",
+]
 
-    // Clear form on close
-    useEffect(() =>{
-        if(!isOpen){
-            clearForm();
-        }
-    }, [isOpen]);
+// Get the end date for the current semester
+function getSemesterEndDate(startDate: Date): Date {
+  const month = startDate.getMonth() + 1 // 1-12
+  const year = startDate.getFullYear()
+  
+  if (month >= 8 && month <= 12) {
+    // Fall semester: August - December
+    return new Date(year, 11, 31) // December 31
+  } else if (month >= 1 && month <= 5) {
+    // Spring semester: January - May
+    return new Date(year, 4, 31) // May 31
+  } else {
+    // Summer: June - July (no recurrence, just single event)
+    return startDate
+  }
+}
 
-    /**
-     * Build and send body of POST request to api/event/calendar route from form data
-     */
-    const onSubmit = async (event: any) =>{
-        event.preventDefault();
-        setLoading(true);
+// Generate recurring dates within the semester
+function generateRecurringDates(startDate: Date, recurrence: RecurrenceType): Date[] {
+  if (recurrence === "none") return [startDate]
+  
+  const dates: Date[] = []
+  const endDate = getSemesterEndDate(startDate)
+  const intervalDays = recurrence === "weekly" ? 7 : 14
+  
+  let currentDate = new Date(startDate)
+  while (currentDate <= endDate) {
+    dates.push(new Date(currentDate))
+    currentDate.setDate(currentDate.getDate() + intervalDays)
+  }
+  
+  return dates
+}
 
-        // Reformat googledrive image link so that <img> can display it
-        const googleImageMatch = image.match(RegExp("d/([^/]+)/view"));
-        var googleImageLink = googleImageMatch ? `https://drive.google.com/thumbnail?id=${googleImageMatch[1]}` : "";
+export default function AddEventForm({ isOpen, onClose, events, setEvents }: FormProps) {
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-        // Post to Google Calendar 
-        try {
-            const gCalEvent = await fetch('/api/calendar', { 
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    summary: eventName,
-                    location: location,
-                    description: description,
-                    start: new Date(datetime).toISOString(),
-                    end: new Date(new Date(datetime).getTime() + 60 * 60 * 1000).toISOString()
-                })
-            }).then((res) => res.json());
-            console.log(gCalEvent);
-            const gCalID = gCalEvent.id;
+  // Form state
+  const [eventName, setEventName] = useState("")
+  const [location, setLocation] = useState("")
+  const [datetime, setDatetime] = useState("")
+  const [description, setDescription] = useState("")
+  const [image, setImage] = useState("")
+  const [attendanceEnabled, setAttendanceEnabled] = useState(false)
+  const [grantsMembership, setGrantsMembership] = useState(false)
+  const [recurrence, setRecurrence] = useState<RecurrenceType>("none")
 
-            // Post to Prisma
-            const newEvent = await fetch('/api/event', { 
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    id: gCalID,
-                    title: eventName,
-                    location: location,
-                    description: description,
-                    date: new Date(datetime).toISOString(),
-                    image: googleImageLink
-                })
-            }).then((res) => res.json());
-        
-            // Append new event to the current events array
-            let updatedEvents: Event[] = [...events, newEvent];
-            // Sort events in chronological order and update the state
-            updatedEvents.sort((event1, event2) => compareDateStrings(event1.date, event2.date));
-            setEvents(updatedEvents);
-        } catch (error) {
-            console.log(error);
-        }
-        setLoading(false);
-        onClose();
-        clearForm();
+  // PCard request state
+  const [createPurchaseRequest, setCreatePurchaseRequest] = useState(false)
+  const [purchaseCommittee, setPurchaseCommittee] = useState("")
+  const [purchaseEstimatedCost, setPurchaseEstimatedCost] = useState("")
+  const [purchaseDescription, setPurchaseDescription] = useState("")
+  const [purchaseNotifyEmail, setPurchaseNotifyEmail] = useState("")
+
+  // Clear form on close
+  useEffect(() => {
+    if (!isOpen) {
+      clearForm()
+    }
+  }, [isOpen])
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError(null)
+    setLoading(true)
+
+    if (!eventName || !datetime) {
+      setError("Event name and date/time are required")
+      setLoading(false)
+      return
     }
 
-    /**
-     * Clears all values in the form, called when form is closed or submitted
-     */
-    const clearForm = () => {
-        setEventName("");
-        setLocation("");
-        setDatetime("");
-        setDescription("");
-        setImage("");
+    // Validate purchase request fields if enabled
+    if (createPurchaseRequest) {
+      if (!purchaseCommittee || !purchaseEstimatedCost || !purchaseNotifyEmail) {
+        setError("Please fill in all required PCard request fields")
+        setLoading(false)
+        return
+      }
     }
 
-    return (
-        <form className="flex flex-col gap-2" onSubmit={(event) => onSubmit(event)}>
-            <label className="-mb-2">Event Name</label>
-            <input className="bg-background" placeholder="Event Name" value={eventName} onChange={(e) => setEventName(e.target.value)}/>
+    // Reformat googledrive image link so that <img> can display it
+    const googleImageMatch = image.match(RegExp("d/([^/]+)/view"))
+    const googleImageLink = googleImageMatch
+      ? `https://drive.google.com/thumbnail?id=${googleImageMatch[1]}`
+      : ""
 
-            <label className="-mb-2">Location</label>
-            <input className="bg-background" placeholder="Location" value={location} onChange={(e) => setLocation(e.target.value)}/>
+    try {
+      const startDate = new Date(datetime)
+      const recurringDates = generateRecurringDates(startDate, recurrence)
+      const newEvents: Event[] = []
 
-            <label className="-mb-2">Date & Time</label>
-            <input type="datetime-local" className="bg-background" placeholder="MM/DD/YYYY" value={datetime} onChange={(e) => setDatetime(e.target.value)}/>
+      for (let i = 0; i < recurringDates.length; i++) {
+        const eventDate = recurringDates[i]
+        const eventTitle = recurringDates.length > 1 
+          ? `${eventName}` 
+          : eventName
 
-            <label className="-mb-2">Description</label>
-            <textarea className="bg-background" placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)}/>
+        // Post to Google Calendar
+        const gCalResponse = await fetch("/api/calendar", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            summary: eventTitle,
+            location: location,
+            description: description,
+            start: eventDate.toISOString(),
+            end: new Date(eventDate.getTime() + 60 * 60 * 1000).toISOString(),
+          }),
+        })
 
-            <label className="-mb-2">Event Image</label>
-            <input className="bg-background" placeholder="Google Drive Share Link" value={image} onChange={(e) => setImage(e.target.value)}/>
+        if (!gCalResponse.ok) {
+          // If Google Calendar fails, create without it
+          console.warn("Google Calendar sync failed, creating event locally only")
+        }
 
-            { loading ? // Submit button changes to Loading... while waiting for API to respond
-                <p className="border border-solid border-gray-700 bg-secondary text-foreground text-center text-base">Loading...</p>
-                :
-                <input type="submit" className="border border-solid border-gray-700 bg-secondary text-foreground hover:bg-primary"/>
+        const gCalEvent = gCalResponse.ok ? await gCalResponse.json() : { id: `local-${Date.now()}-${i}` }
+        const gCalID = gCalEvent.id
+
+        // Post to Prisma
+        const prismaResponse = await fetch("/api/event", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: gCalID,
+            title: eventTitle,
+            location: location,
+            description: description,
+            date: eventDate.toISOString(),
+            image: googleImageLink,
+            attendanceEnabled: attendanceEnabled,
+            grantsMembership: grantsMembership,
+          }),
+        })
+
+        if (prismaResponse.ok) {
+          const newEvent = await prismaResponse.json()
+          newEvents.push(newEvent)
+
+          // Create linked purchase request if enabled (only for first event in recurring series)
+          if (createPurchaseRequest && i === 0) {
+            try {
+              await fetch("/api/purchasing", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  name: eventName,
+                  committee: purchaseCommittee,
+                  description: purchaseDescription || `Purchase for event: ${eventName}`,
+                  estimatedCost: parseFloat(purchaseEstimatedCost),
+                  plannedDate: eventDate.toISOString(),
+                  notifyEmail: purchaseNotifyEmail,
+                  eventId: newEvent.id,
+                }),
+              })
+            } catch (purchaseError) {
+              console.warn("Failed to create purchase request:", purchaseError)
+              // Don't fail the whole operation if purchase request fails
             }
-        </form>
-    )
-}
+          }
+        }
+      }
 
+      // Append new events and sort chronologically
+      const updatedEvents = [...events, ...newEvents]
+      updatedEvents.sort((event1, event2) => compareDateStrings(event1.date, event2.date))
+      setEvents(updatedEvents)
+      
+      onClose()
+      clearForm()
+    } catch (err) {
+      console.error(err)
+      setError("Failed to create event. Please try again.")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const clearForm = () => {
+    setEventName("")
+    setLocation("")
+    setDatetime("")
+    setDescription("")
+    setImage("")
+    setAttendanceEnabled(false)
+    setGrantsMembership(false)
+    setRecurrence("none")
+    setCreatePurchaseRequest(false)
+    setPurchaseCommittee("")
+    setPurchaseEstimatedCost("")
+    setPurchaseDescription("")
+    setPurchaseNotifyEmail("")
+    setError(null)
+  }
+
+  // Calculate how many events will be created
+  const getRecurrencePreview = () => {
+    if (!datetime || recurrence === "none") return null
+    const dates = generateRecurringDates(new Date(datetime), recurrence)
+    if (dates.length <= 1) return null
+    return `This will create ${dates.length} events through the end of the semester`
+  }
+
+  return (
+    <form className="space-y-4" onSubmit={onSubmit}>
+      {error && (
+        <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md text-destructive text-sm">
+          {error}
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Left Column - Event Details */}
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="eventName" className="flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              Event Name *
+            </Label>
+            <Input
+              id="eventName"
+              placeholder="Enter event name"
+              value={eventName}
+              onChange={(e) => setEventName(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="location" className="flex items-center gap-2">
+              <MapPin className="h-4 w-4" />
+              Location
+            </Label>
+            <Input
+              id="location"
+              placeholder="Enter location"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="datetime">Date & Time *</Label>
+            <Input
+              id="datetime"
+              type="datetime-local"
+              value={datetime}
+              onChange={(e) => setDatetime(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="recurrence" className="flex items-center gap-2">
+              <Repeat className="h-4 w-4" />
+              Recurrence
+            </Label>
+            <Select value={recurrence} onValueChange={(val) => setRecurrence(val as RecurrenceType)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select recurrence" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">No recurrence (single event)</SelectItem>
+                <SelectItem value="weekly">Weekly (until end of semester)</SelectItem>
+                <SelectItem value="biweekly">Bi-weekly (until end of semester)</SelectItem>
+              </SelectContent>
+            </Select>
+            {getRecurrencePreview() && (
+              <p className="text-xs text-muted-foreground">{getRecurrencePreview()}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              placeholder="Enter event description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="image" className="flex items-center gap-2">
+              <ImageIcon className="h-4 w-4" />
+              Event Image
+            </Label>
+            <Input
+              id="image"
+              placeholder="Google Drive share link"
+              value={image}
+              onChange={(e) => setImage(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">
+              Paste a Google Drive share link for the event image
+            </p>
+          </div>
+        </div>
+
+        {/* Right Column - Options */}
+        <div className="space-y-4">
+          {/* Attendance Options */}
+          <div className="space-y-3 p-4 bg-surface-2 rounded-lg border">
+            <Label className="flex items-center gap-2 font-medium">
+              <Users className="h-4 w-4" />
+              Attendance Options
+            </Label>
+
+            <div className="flex items-center gap-3">
+              <Checkbox
+                id="attendanceEnabled"
+                checked={attendanceEnabled}
+                onCheckedChange={(checked) => {
+                  setAttendanceEnabled(checked === true)
+                  if (!checked) {
+                    setGrantsMembership(false)
+                  }
+                }}
+              />
+              <Label htmlFor="attendanceEnabled" className="text-sm font-normal cursor-pointer">
+                Enable attendance tracking
+              </Label>
+            </div>
+
+            {attendanceEnabled && (
+              <div className="flex items-center gap-3 ml-6">
+                <Checkbox
+                  id="grantsMembership"
+                  checked={grantsMembership}
+                  onCheckedChange={(checked) => setGrantsMembership(checked === true)}
+                />
+                <Label htmlFor="grantsMembership" className="text-sm font-normal cursor-pointer">
+                  Grant membership to attendees
+                </Label>
+              </div>
+            )}
+          </div>
+
+          {/* PCard Request Options */}
+          <div className="space-y-3 p-4 bg-surface-2 rounded-lg border">
+            <Label className="flex items-center gap-2 font-medium">
+              <CreditCard className="h-4 w-4" />
+              PCard Request
+            </Label>
+
+            <div className="flex items-center gap-3">
+              <Checkbox
+                id="createPurchaseRequest"
+                checked={createPurchaseRequest}
+                onCheckedChange={(checked) => setCreatePurchaseRequest(checked === true)}
+              />
+              <Label htmlFor="createPurchaseRequest" className="text-sm font-normal cursor-pointer">
+                Create a PCard request for this event
+              </Label>
+            </div>
+
+            {createPurchaseRequest && (
+              <div className="space-y-3 pt-2 border-t mt-2">
+                <div className="space-y-2">
+                  <Label htmlFor="purchaseCommittee" className="text-sm">Committee *</Label>
+                  <Select value={purchaseCommittee} onValueChange={setPurchaseCommittee}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a committee" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {COMMITTEES.map((c) => (
+                        <SelectItem key={c} value={c}>
+                          {c}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="purchaseEstimatedCost" className="text-sm">Estimated Cost *</Label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                    <Input
+                      id="purchaseEstimatedCost"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={purchaseEstimatedCost}
+                      onChange={(e) => setPurchaseEstimatedCost(e.target.value)}
+                      placeholder="0.00"
+                      className="pl-7"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="purchaseDescription" className="text-sm">What are you purchasing?</Label>
+                  <Textarea
+                    id="purchaseDescription"
+                    value={purchaseDescription}
+                    onChange={(e) => setPurchaseDescription(e.target.value)}
+                    placeholder="Describe what you're purchasing..."
+                    rows={2}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="purchaseNotifyEmail" className="text-sm">Send notification to *</Label>
+                  <Input
+                    id="purchaseNotifyEmail"
+                    type="email"
+                    value={purchaseNotifyEmail}
+                    onChange={(e) => setPurchaseNotifyEmail(e.target.value)}
+                    placeholder="treasurer@sse.rit.edu"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="flex gap-3 pt-2">
+        <Button type="button" variant="outline" onClick={onClose} className="flex-1">
+          Cancel
+        </Button>
+        <Button type="submit" disabled={loading} className="flex-1">
+          {loading ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Creating...
+            </>
+          ) : (
+            "Create Event"
+          )}
+        </Button>
+      </div>
+    </form>
+  )
+}

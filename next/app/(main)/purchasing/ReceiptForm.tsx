@@ -1,14 +1,22 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { ArrowLeft, Send, Loader2, Upload, Trash2, AlertTriangle } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { ArrowLeft, Send, Loader2, Upload, Trash2, AlertTriangle, Calendar, Users, Link2 } from "lucide-react"
 import AttendanceInput, { Attendee } from "./AttendanceInput"
 import GmailAuthModal from "@/components/GmailAuthModal"
 import { useGmailAuth } from "@/lib/hooks/useGmailAuth"
+
+interface LinkedEvent {
+  id: string
+  title: string
+  date: string
+  attendanceEnabled: boolean
+}
 
 interface PurchaseRequest {
   id: number
@@ -19,6 +27,8 @@ interface PurchaseRequest {
   plannedDate: string
   status: string
   notifyEmail: string
+  eventId?: string | null
+  event?: LinkedEvent | null
 }
 
 interface ReceiptFormProps {
@@ -40,6 +50,44 @@ export default function ReceiptForm({ request, onClose, onSuccess }: ReceiptForm
   const [receiptEmail, setReceiptEmail] = useState("")
   const [attendees, setAttendees] = useState<Attendee[]>([])
   const [attendanceImage, setAttendanceImage] = useState<string | null>(null)
+  
+  // Linked event state
+  const [linkedEventAttendees, setLinkedEventAttendees] = useState<Attendee[]>([])
+  const [loadingEventAttendance, setLoadingEventAttendance] = useState(false)
+  
+  // Check if this purchase is linked to an event with attendance
+  const hasLinkedEvent = request.event && request.event.attendanceEnabled
+  
+  // Fetch event attendance if linked to an event
+  useEffect(() => {
+    if (hasLinkedEvent && request.eventId) {
+      setLoadingEventAttendance(true)
+      fetch(`/api/event/${request.eventId}/attendance`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.attendees && data.attendees.length > 0) {
+            const eventAttendees: Attendee[] = data.attendees.map((a: { name: string; email: string }) => {
+              const [firstName, ...lastNameParts] = (a.name || "").split(" ")
+              return {
+                firstName: firstName || "",
+                lastName: lastNameParts.join(" ") || "",
+                email: a.email || "",
+              }
+            })
+            setLinkedEventAttendees(eventAttendees)
+            setAttendees(eventAttendees) // Auto-fill the attendees
+          }
+          // Auto-fill event name and date from linked event
+          if (request.event) {
+            setEventName(request.event.title)
+            const date = new Date(request.event.date)
+            setEventDate(date.toISOString().split("T")[0])
+          }
+        })
+        .catch((err) => console.error("Error fetching event attendance:", err))
+        .finally(() => setLoadingEventAttendance(false))
+    }
+  }, [hasLinkedEvent, request.eventId, request.event])
 
   // Receipt image upload handler
   const handleReceiptUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -247,36 +295,122 @@ export default function ReceiptForm({ request, onClose, onSuccess }: ReceiptForm
                 </div>
               </div>
 
-              {/* Event Info */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="eventName">Event Name</Label>
-                  <Input
-                    id="eventName"
-                    value={eventName}
-                    onChange={(e) => setEventName(e.target.value)}
-                    placeholder="e.g., Board Game Night"
-                  />
-                </div>
+              {/* Linked Event Info */}
+              {hasLinkedEvent && request.event ? (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 p-4 bg-primary/5 border border-primary/20 rounded-lg">
+                    <Link2 className="h-5 w-5 text-primary" />
+                    <div className="flex-1">
+                      <p className="font-medium text-primary">Linked to Event</p>
+                      <p className="text-sm text-muted-foreground">
+                        Attendance will be pulled from the event check-in list
+                      </p>
+                    </div>
+                    <Badge variant="secondary" className="gap-1">
+                      <Calendar className="h-3 w-3" />
+                      {request.event.title}
+                    </Badge>
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="eventDate">Event Date</Label>
-                  <Input
-                    id="eventDate"
-                    type="date"
-                    value={eventDate}
-                    onChange={(e) => setEventDate(e.target.value)}
-                  />
-                </div>
-              </div>
+                  {/* Event details (read-only) */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Event Name</Label>
+                      <Input value={eventName} disabled className="bg-muted" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Event Date</Label>
+                      <Input value={eventDate} disabled className="bg-muted" />
+                    </div>
+                  </div>
 
-              {/* Attendance Input */}
-              <AttendanceInput
-                attendees={attendees}
-                onAttendeesChange={setAttendees}
-                attendanceImage={attendanceImage}
-                onAttendanceImageChange={setAttendanceImage}
-              />
+                  {/* Event Attendance List */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label className="flex items-center gap-2">
+                        <Users className="h-4 w-4" />
+                        Attendance from Event
+                      </Label>
+                      <Badge variant="outline">
+                        {loadingEventAttendance ? "Loading..." : `${linkedEventAttendees.length} attendees`}
+                      </Badge>
+                    </div>
+                    
+                    {loadingEventAttendance ? (
+                      <div className="flex items-center justify-center p-8 border rounded-lg bg-muted/30">
+                        <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                        Loading attendance from event...
+                      </div>
+                    ) : linkedEventAttendees.length > 0 ? (
+                      <div className="border rounded-lg overflow-hidden">
+                        <div className="max-h-48 overflow-y-auto">
+                          <table className="w-full text-sm">
+                            <thead className="bg-muted/50 sticky top-0">
+                              <tr>
+                                <th className="text-left py-2 px-3 font-medium">Name</th>
+                                <th className="text-left py-2 px-3 font-medium">Email</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {linkedEventAttendees.map((attendee, index) => (
+                                <tr key={index} className="border-t">
+                                  <td className="py-2 px-3">
+                                    {attendee.firstName} {attendee.lastName}
+                                  </td>
+                                  <td className="py-2 px-3 text-muted-foreground">
+                                    {attendee.email}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center p-8 border rounded-lg bg-muted/30 text-center">
+                        <Users className="h-8 w-8 text-muted-foreground mb-2" />
+                        <p className="text-muted-foreground">No attendees have checked in yet</p>
+                        <p className="text-sm text-muted-foreground">
+                          Share the event check-in page to collect attendance
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {/* Event Info (manual entry) */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="eventName">Event Name</Label>
+                      <Input
+                        id="eventName"
+                        value={eventName}
+                        onChange={(e) => setEventName(e.target.value)}
+                        placeholder="e.g., Board Game Night"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="eventDate">Event Date</Label>
+                      <Input
+                        id="eventDate"
+                        type="date"
+                        value={eventDate}
+                        onChange={(e) => setEventDate(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Attendance Input (manual entry) */}
+                  <AttendanceInput
+                    attendees={attendees}
+                    onAttendeesChange={setAttendees}
+                    attendanceImage={attendanceImage}
+                    onAttendanceImageChange={setAttendanceImage}
+                  />
+                </>
+              )}
 
               {/* Receipt Email */}
               <div className="space-y-2">

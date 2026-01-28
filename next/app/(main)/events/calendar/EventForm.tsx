@@ -1,112 +1,301 @@
 "use client"
 
-// Event modal that allows officers to view, delete, and open the edit modal
+import { Event } from "../event"
+import { useEffect, useState, useCallback } from "react"
+import { formatDate } from "./utils"
+import Image from "next/image"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Card } from "@/components/ui/card"
+import {
+  Download,
+  Users,
+  ExternalLink,
+  Trash2,
+  Edit,
+  Calendar,
+  MapPin,
+  Award,
+  Loader2,
+} from "lucide-react"
 
-import { Event } from "../event";
-import { useEffect, useState } from "react"
-import { formatDate } from "./utils";
-import Image from "next/image";
+interface Attendee {
+  id: number
+  userId: number
+  name: string
+  email: string
+  attendedAt: string
+}
 
-/**
- * onClose - Function prop that closes the modal
- * isOpen - Modal is open or not, T/F
- * event - Current selected event
- * openEditModal - Opens the editing modal for current selected event
- * events - Events state from page
- * setEvents - Set the Events state when CRUD is performed
- */
 interface FormProps {
-    onClose: () => void,
-    isOpen: boolean
-    event: Event,
-    openEditModal: () => void,
-    events: any[],
-    setEvents: (event: any) => void,
+  onClose: () => void
+  isOpen: boolean
+  event: Event
+  openEditModal: () => void
+  events: Event[]
+  setEvents: (event: Event[]) => void
 }
 
-export default function EventForm ({ onClose, isOpen, event, openEditModal, events, setEvents }: FormProps)  {
-    const [confirming, setConfirming] = useState(false);
+export default function EventForm({
+  onClose,
+  isOpen,
+  event,
+  openEditModal,
+  events,
+  setEvents,
+}: FormProps) {
+  const [confirming, setConfirming] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [attendees, setAttendees] = useState<Attendee[]>([])
+  const [attendanceCount, setAttendanceCount] = useState(0)
+  const [showAttendees, setShowAttendees] = useState(false)
+  const [loadingAttendees, setLoadingAttendees] = useState(false)
 
-    const handleDelete = async () => {
-        setConfirming(false);
-       
-        // Delete from Prisma
-        await fetch('/api/event', { 
-            method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                id: event.id
-            })
-        })
+  const fetchAttendance = useCallback(async () => {
+    if (!event.id || !event.attendanceEnabled) return
 
-        const idString = event.id ?? ""; 
-        // Delete from Google Calendar
-        await fetch('/api/calendar', { 
-            method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                id: idString
-            })
-        })
-
-        // Find and remove the deleted event, then update state
-        const updatedEvents = events.filter((e : Event) => {
-            return e.id != event.id;
-        })
-        setEvents(updatedEvents);
-        onClose();
+    setLoadingAttendees(true)
+    try {
+      const response = await fetch(`/api/event/${event.id}/attendance`)
+      if (response.ok) {
+        const data = await response.json()
+        setAttendees(data.attendees || [])
+        setAttendanceCount(data.count || 0)
+      }
+    } catch (error) {
+      console.error("Error fetching attendance:", error)
+    } finally {
+      setLoadingAttendees(false)
     }
+  }, [event.id, event.attendanceEnabled])
 
-    // If user closes the modal, close the confirming screen if it's open
-    useEffect(() => {
-        if(!isOpen){
-            setConfirming(false);
-        };
-    }, [isOpen])
+  useEffect(() => {
+    if (isOpen && event.attendanceEnabled) {
+      fetchAttendance()
+    }
+  }, [isOpen, event.attendanceEnabled, fetchAttendance])
 
-    return (
-        <div className="flex flex-row w-lg">
-            { confirming ? // Confirmation prompt to make sure delete is intentional
-                <div className="flex flex-col fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary rounded-md p-4">
-                    <p className="py-2 px-4 text-md">Are you sure?</p>
-                    <div className="flex flex-row justify-around">
-                        <button onClick={ () => setConfirming(false) } className="bg-secondary m-2 rounded-lg px-2 py-1 text-sm">Cancel</button>
-                        <button onClick={ handleDelete } className="bg-error m-2 rounded-lg px-2 py-1 text-sm">Delete</button>
-                    </div>
-                </div>
-                :
-                <></>
-            }
-            <div className="flex flex-col">
-                <h3 className="px-2 truncate w-80 text-center">{event.title}</h3>
-                <p className="text-sm w-80 truncate">When: {formatDate(event.date)}</p>
-                <p className="text-sm w-80 truncate">Where: {event.location}</p>
-                <p className="text-sm w-80 truncate">Description:</p>
-                <p className="text-sm w-80 text-wrap pr-2 grow">{event.description}</p>
-                <div className="flex flex-row justify-self-end gap-1">
-                    <button onClick={ () => setConfirming(true) } className="text-sm bg-secondary w-full rounded-lg border border-solid border-black">Delete</button>
-                    <button onClick={ openEditModal } className="text-sm bg-secondary mr-2 w-full rounded-lg border border-solid border-black">Edit</button>
-                </div>
+  const downloadFlyer = () => {
+    if (!event.id) return
+    window.open(`/api/event/${event.id}/flyer`, "_blank")
+  }
+
+  const openAttendancePage = () => {
+    if (!event.id) return
+    window.open(`/events/${event.id}/attend`, "_blank")
+  }
+
+  const handleDelete = async () => {
+    setDeleting(true)
+
+    try {
+      // Delete from Prisma
+      await fetch("/api/event", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: event.id }),
+      })
+
+      // Delete from Google Calendar
+      await fetch("/api/calendar", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: event.id ?? "" }),
+      }).catch(console.warn) // Don't fail if GCal delete fails
+
+      // Find and remove the deleted event, then update state
+      const updatedEvents = events.filter((e: Event) => e.id !== event.id)
+      setEvents(updatedEvents)
+      onClose()
+    } catch (error) {
+      console.error("Error deleting event:", error)
+    } finally {
+      setDeleting(false)
+      setConfirming(false)
+    }
+  }
+
+  // Reset state when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setConfirming(false)
+      setShowAttendees(false)
+    }
+  }, [isOpen])
+
+  return (
+    <div className="space-y-4">
+      {/* Delete Confirmation */}
+      {confirming && (
+        <Card className="p-4 border-destructive bg-destructive/5">
+          <p className="text-sm font-medium mb-3">
+            Are you sure you want to delete this event?
+          </p>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setConfirming(false)}
+              disabled={deleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleDelete}
+              disabled={deleting}
+            >
+              {deleting ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="h-4 w-4" />
+                  Delete
+                </>
+              )}
+            </Button>
+          </div>
+        </Card>
+      )}
+
+      {/* Event Header */}
+      <div className="flex gap-4">
+        <div className="flex-1 space-y-3">
+          <h3 className="text-lg font-semibold">{event.title}</h3>
+
+          <div className="space-y-2 text-sm">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Calendar className="h-4 w-4" />
+              <span>{formatDate(event.date)}</span>
             </div>
-            <div className="relative w-64 h-64 mr-1 mt-1">
-                {event.image ? (
-                    <Image 
-                        src={event.image} 
-                        alt={event.title}
-                        fill
-                        className="object-cover"
-                        unoptimized
-                    />
-                ) : (
-                    <Image 
-                        src="/icon.png" 
-                        alt="SSE Logo"
-                        fill
-                        className="object-cover"
-                    />
-                )}
+
+            {event.location && (
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <MapPin className="h-4 w-4" />
+                <span>{event.location}</span>
+              </div>
+            )}
+          </div>
+
+          {event.description && (
+            <div className="pt-2">
+              <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                {event.description}
+              </p>
             </div>
+          )}
         </div>
-    )
-}
 
+        {/* Event Image */}
+        <div className="relative w-32 h-32 shrink-0 rounded-lg overflow-hidden border">
+          {event.image ? (
+            <Image
+              src={event.image}
+              alt={event.title}
+              fill
+              className="object-cover"
+              unoptimized
+            />
+          ) : (
+            <Image
+              src="/icon.png"
+              alt="SSE Logo"
+              fill
+              className="object-contain p-2"
+            />
+          )}
+        </div>
+      </div>
+
+      {/* Attendance Section */}
+      {event.attendanceEnabled && (
+        <Card depth={2} className="p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              <span className="font-medium">Attendance</span>
+              <Badge variant="secondary">{attendanceCount}</Badge>
+            </div>
+            {event.grantsMembership && (
+              <Badge className="gap-1">
+                <Award className="h-3 w-3" />
+                Grants Membership
+              </Badge>
+            )}
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" onClick={downloadFlyer}>
+              <Download className="h-4 w-4" />
+              Download Flyer
+            </Button>
+            <Button variant="outline" size="sm" onClick={openAttendancePage}>
+              <ExternalLink className="h-4 w-4" />
+              Check-in Page
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowAttendees(!showAttendees)}
+            >
+              <Users className="h-4 w-4" />
+              {showAttendees ? "Hide" : "View"} Attendees
+            </Button>
+          </div>
+
+          {showAttendees && (
+            <div className="border-t pt-3 max-h-40 overflow-y-auto">
+              {loadingAttendees ? (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Loading attendees...
+                </div>
+              ) : attendees.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No attendees yet</p>
+              ) : (
+                <ul className="space-y-1 text-sm">
+                  {attendees.map((attendee, index) => (
+                    <li
+                      key={attendee.id}
+                      className="flex justify-between items-center py-1"
+                    >
+                      <span>
+                        <span className="text-muted-foreground mr-2">
+                          {index + 1}.
+                        </span>
+                        {attendee.name}
+                      </span>
+                      <span className="text-muted-foreground text-xs">
+                        {attendee.email}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+        </Card>
+      )}
+
+      {/* Action Buttons */}
+      <div className="flex gap-2 pt-2">
+        <Button
+          variant="destructiveGhost"
+          onClick={() => setConfirming(true)}
+          disabled={confirming}
+        >
+          <Trash2 className="h-4 w-4" />
+          Delete
+        </Button>
+        <Button variant="outline" onClick={openEditModal} className="flex-1">
+          <Edit className="h-4 w-4" />
+          Edit Event
+        </Button>
+      </div>
+    </div>
+  )
+}

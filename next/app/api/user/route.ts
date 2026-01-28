@@ -12,15 +12,31 @@ export async function GET() {
       id: true,
       name: true,
       email: true,
-      isMember: true,
       linkedIn: true,
       gitHub: true,
       description: true,
       image: true,
+      _count: {
+        select: { Memberships: true },
+      },
     },
     orderBy: { name: 'asc' }
   });
-  return Response.json(users);
+  
+  // Transform to include membershipCount and isMember (computed) for backward compatibility
+  const usersWithMembershipCount = users.map(user => ({
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    linkedIn: user.linkedIn,
+    gitHub: user.gitHub,
+    description: user.description,
+    image: user.image,
+    membershipCount: user._count.Memberships,
+    isMember: user._count.Memberships >= 1, // Computed for backward compatibility
+  }));
+  
+  return Response.json(usersWithMembershipCount);
 }
 
 /**
@@ -91,8 +107,11 @@ export async function DELETE(request: Request) {
 /**
  * Update an existing user
  * HTTP PUT request to /api/user
- * @param request { id: number, name?: string, email?: string, linkedIn?: string, gitHub?: string, description?: string, isMember?: boolean }
+ * @param request { id: number, name?: string, email?: string, linkedIn?: string, gitHub?: string, description?: string }
  * @returns updated user object
+ * 
+ * NOTE: Membership is no longer controlled via isMember boolean.
+ * Use the Memberships table and /api/memberships endpoints instead.
  */
 export async function PUT(request: Request) {
   let body;
@@ -109,7 +128,7 @@ export async function PUT(request: Request) {
   const id = body.id;
 
   // only update fields the caller wants to update
-  const data: { name?: string; email?: string; description?: string; linkedIn?: string; gitHub?: string; isMember?: boolean } = {};
+  const data: { name?: string; email?: string; description?: string; linkedIn?: string; gitHub?: string } = {};
   if ("name" in body) {
     data.name = body.name;
   }
@@ -125,16 +144,24 @@ export async function PUT(request: Request) {
   if ("gitHub" in body) {
     data.gitHub = body.gitHub;
   }
-  if ("isMember" in body) {
-    data.isMember = body.isMember;
-  }
 
   try {
     const user = await prisma.user.update({
       where: { id },
       data,
+      include: {
+        _count: {
+          select: { Memberships: true },
+        },
+      },
     });
-    return Response.json(user);
+    
+    // Return with membershipCount
+    return Response.json({
+      ...user,
+      membershipCount: user._count.Memberships,
+      isMember: user._count.Memberships >= 1,
+    });
   } catch (e) {
     // make sure the selected user exists
     return new Response(`Failed to update user: ${e}`, { status: 500 });

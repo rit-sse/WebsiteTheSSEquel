@@ -27,7 +27,6 @@ export async function POST(request: NextRequest) {
         id: true,
         email: true,
         name: true,
-        isMember: true,
       },
     });
   }
@@ -121,11 +120,22 @@ export async function POST(request: NextRequest) {
         officer,
       });
     } else if (invitation.type === "user") {
-      // Update user to be a member
-      const updatedUser = await prisma.user.update({
-        where: { id: loggedInUser.id },
+      // Create a membership record for the user
+      const membership = await prisma.memberships.create({
         data: {
-          isMember: true,
+          userId: loggedInUser.id,
+          reason: "Accepted membership invitation",
+          dateGiven: new Date(),
+        },
+      });
+
+      // Get updated user with membership count
+      const updatedUser = await prisma.user.findUnique({
+        where: { id: loggedInUser.id },
+        include: {
+          _count: {
+            select: { Memberships: true },
+          },
         },
       });
 
@@ -140,6 +150,7 @@ export async function POST(request: NextRequest) {
         success: true,
         message: "Welcome to SSE!",
         user: updatedUser,
+        membership,
       });
     } else {
       return new Response("Invalid invitation type", { status: 400 });

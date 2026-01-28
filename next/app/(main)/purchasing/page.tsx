@@ -10,7 +10,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
-import { Plus, Clock, CheckCircle, ArrowRight, ChevronDown, CreditCard } from "lucide-react"
+import { Plus, Clock, CheckCircle, ArrowRight, ChevronDown, CreditCard, Link2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import CheckoutForm from "./CheckoutForm"
 import ReceiptForm from "./ReceiptForm"
@@ -37,6 +37,13 @@ interface PurchaseRequest {
     name: string
     email: string
   }
+  eventId?: string | null
+  event?: {
+    id: string
+    title: string
+    date: string
+    attendanceEnabled: boolean
+  } | null
 }
 
 interface SemesterGroup {
@@ -320,8 +327,16 @@ function SemesterAccordion({
                     {request.user.name}
                   </td>
                   <td className="py-3 px-3">
-                    <span className="font-medium">{request.description.substring(0, 40)}</span>
-                    {request.description.length > 40 && "..."}
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{request.description.substring(0, 40)}</span>
+                      {request.description.length > 40 && "..."}
+                      {request.event && (
+                        <Badge variant="outline" className="gap-1 text-xs">
+                          <Link2 className="h-3 w-3" />
+                          {request.event.title.substring(0, 15)}{request.event.title.length > 15 ? "..." : ""}
+                        </Badge>
+                      )}
+                    </div>
                   </td>
                   <td className="py-3 px-3 text-sm">{request.committee}</td>
                   <td className="py-3 px-3 text-sm">

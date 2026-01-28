@@ -37,6 +37,14 @@ export async function GET(request: NextRequest) {
         user: {
           select: { name: true, email: true },
         },
+        event: {
+          select: {
+            id: true,
+            title: true,
+            date: true,
+            attendanceEnabled: true,
+          },
+        },
       },
     });
     return Response.json(requests);
@@ -124,6 +132,7 @@ export async function POST(request: NextRequest) {
         plannedDate: new Date(body.plannedDate),
         notifyEmail: body.notifyEmail,
         status: "pending",
+        eventId: body.eventId || null,
       },
     });
     return Response.json(purchaseRequest, { status: 201 });

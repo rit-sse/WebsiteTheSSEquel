@@ -13,23 +13,26 @@ export async function GET(
   // make sure the provided ID is a valid integer
   try {
     const id = params.id;
-    const dept = await prisma.event.findUnique({
+    const event = await prisma.event.findUnique({
       where: {
         id,
       },
       select: {
+        id: true,
         title: true,
         description: true,
         image: true,
         date: true,
         location: true,
+        attendanceEnabled: true,
+        grantsMembership: true,
       },
     });
     // make sure the selected event exists
-    if (dept == null) {
+    if (event == null) {
       return new Response(`Didn't find Event ID ${id}`, { status: 404 });
     }
-    return Response.json(dept);
+    return Response.json(event);
   } catch {
     return new Response("Invalid Event ID", { status: 422 });
   }

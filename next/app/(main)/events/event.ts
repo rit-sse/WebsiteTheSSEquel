@@ -4,5 +4,7 @@ export interface Event {
     date: string,
     location: string,
     image: string,
-    description: string
+    description: string,
+    attendanceEnabled?: boolean,
+    grantsMembership?: boolean
 }
