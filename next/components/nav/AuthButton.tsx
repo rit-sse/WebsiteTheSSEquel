@@ -7,6 +7,8 @@ import { useTheme } from "next-themes";
 import { useState } from "react";
 // import { bttntxt } from "react"
 
+//Make it work for mobile
+
 export default function AuthButton() {
     const { theme, setTheme } = useTheme();
     const [text, setText] = useState('Light Mode');
