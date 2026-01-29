@@ -76,7 +76,7 @@ export async function POST(request: Request) {
     console.error("Full Error Object:", JSON.stringify(error, null, 2));
     console.error("Stack Trace:", error.stack);
 
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    if (error instanceof Prisma.Pris) {
       if (error.code === 'P2002' && error.meta?.target) {
            const targetField = Array.isArray(error.meta.target) ? error.meta.target[0] : error.meta.target;
            const failedValue = body[targetField] ?? '[unknown value]';
@@ -121,7 +121,7 @@ export async function DELETE(request: Request) {
     console.error("Full Error Object:", JSON.stringify(error, null, 2));
     console.error("Stack Trace:", error.stack);
 
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    if (error instanceof prisma.PrismaClientKnownRequestError) {
       if (error.code === 'P2025') {
         return new Response(`GoLink with ID ${id} not found.`, { status: 404 });
       }
