@@ -10,7 +10,8 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
-import { Plus, Clock, CheckCircle, ArrowRight, ChevronDown, CreditCard, Link2 } from "lucide-react"
+import { Modal, ModalFooter } from "@/components/ui/modal"
+import { Plus, Clock, CheckCircle, ArrowRight, ChevronDown, CreditCard, Link2, Trash2, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import CheckoutForm from "./CheckoutForm"
 import ReceiptForm from "./ReceiptForm"
@@ -59,6 +60,9 @@ export default function PurchasingPage() {
   const [loading, setLoading] = useState(true)
   const [showCheckoutForm, setShowCheckoutForm] = useState(false)
   const [selectedRequest, setSelectedRequest] = useState<PurchaseRequest | null>(null)
+  const [isOfficer, setIsOfficer] = useState(false)
+  const [deleteModalRequest, setDeleteModalRequest] = useState<PurchaseRequest | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   const fetchRequests = async () => {
     try {
@@ -74,8 +78,37 @@ export default function PurchasingPage() {
     }
   }
 
+  const checkAuthLevel = async () => {
+    try {
+      const response = await fetch("/api/authLevel")
+      const data = await response.json()
+      setIsOfficer(data.isOfficer)
+    } catch (error) {
+      console.error("Error checking auth level:", error)
+    }
+  }
+
+  const handleDeleteRequest = async () => {
+    if (!deleteModalRequest) return
+    setDeleting(true)
+    try {
+      const response = await fetch(`/api/purchasing/${deleteModalRequest.id}`, {
+        method: "DELETE",
+      })
+      if (response.ok) {
+        setRequests(requests.filter(r => r.id !== deleteModalRequest.id))
+        setDeleteModalRequest(null)
+      }
+    } catch (error) {
+      console.error("Error deleting request:", error)
+    } finally {
+      setDeleting(false)
+    }
+  }
+
   useEffect(() => {
     fetchRequests()
+    checkAuthLevel()
   }, [])
 
   const getStatusBadge = (status: string) => {
@@ -224,6 +257,8 @@ export default function PurchasingPage() {
                     defaultOpen={index === 0}
                     getStatusBadge={getStatusBadge}
                     onSubmitReceipt={setSelectedRequest}
+                    isOfficer={isOfficer}
+                    onDelete={setDeleteModalRequest}
                   />
                 ))}
               </div>
@@ -231,6 +266,44 @@ export default function PurchasingPage() {
           </div>
         </div>
       </Card>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        open={!!deleteModalRequest}
+        onOpenChange={(open) => !open && setDeleteModalRequest(null)}
+        title="Delete Purchase Request"
+        description={deleteModalRequest ? `Are you sure you want to delete the purchase request "${deleteModalRequest.description.substring(0, 50)}${deleteModalRequest.description.length > 50 ? '...' : ''}"?` : ''}
+      >
+        <p className="text-sm text-muted-foreground">
+          This action cannot be undone.
+        </p>
+        <ModalFooter>
+          <Button
+            variant="outline"
+            onClick={() => setDeleteModalRequest(null)}
+            disabled={deleting}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={handleDeleteRequest}
+            disabled={deleting}
+          >
+            {deleting ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Deleting...
+              </>
+            ) : (
+              <>
+                <Trash2 className="h-4 w-4" />
+                Delete
+              </>
+            )}
+          </Button>
+        </ModalFooter>
+      </Modal>
     </div>
   )
 }
@@ -241,12 +314,16 @@ function SemesterAccordion({
   defaultOpen,
   getStatusBadge,
   onSubmitReceipt,
+  isOfficer,
+  onDelete,
 }: {
   label: string
   requests: PurchaseRequest[]
   defaultOpen: boolean
   getStatusBadge: (status: string) => React.ReactNode
   onSubmitReceipt: (request: PurchaseRequest) => void
+  isOfficer: boolean
+  onDelete: (request: PurchaseRequest) => void
 }) {
   const [isOpen, setIsOpen] = useState(defaultOpen)
   const pendingCount = requests.filter(r => r.status !== "returned").length
@@ -310,15 +387,27 @@ function SemesterAccordion({
                   </td>
                   <td className="py-3 px-3">{getStatusBadge(request.status)}</td>
                   <td className="py-3 px-3">
-                    {request.status !== "returned" && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => onSubmitReceipt(request)}
-                      >
-                        Submit Receipt
-                      </Button>
-                    )}
+                    <div className="flex gap-2">
+                      {request.status !== "returned" && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => onSubmitReceipt(request)}
+                        >
+                          Submit Receipt
+                        </Button>
+                      )}
+                      {isOfficer && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => onDelete(request)}
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}

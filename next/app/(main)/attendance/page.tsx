@@ -23,6 +23,7 @@ import {
   Plus,
   ChevronDown,
   Repeat,
+  Trash2,
 } from "lucide-react"
 import AddEventForm from "@/app/(main)/events/calendar/AddEventForm"
 import { Event } from "@/app/(main)/events/event"
@@ -66,6 +67,9 @@ export default function AttendancePage() {
   const [attendanceData, setAttendanceData] = useState<AttendanceData | null>(null)
   const [loadingAttendance, setLoadingAttendance] = useState(false)
   const [showAddEventModal, setShowAddEventModal] = useState(false)
+  const [deletingAttendeeId, setDeletingAttendeeId] = useState<number | null>(null)
+  const [deleteEventModal, setDeleteEventModal] = useState<EventWithAttendance | null>(null)
+  const [deletingEvent, setDeletingEvent] = useState(false)
 
   const fetchEvents = useCallback(async () => {
     try {
@@ -141,6 +145,66 @@ export default function AttendancePage() {
     setAttendanceData(null)
   }
 
+  const deleteAttendee = async (eventId: string, userId: number) => {
+    setDeletingAttendeeId(userId)
+    try {
+      const response = await fetch(`/api/event/${eventId}/attendance`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      })
+      if (response.ok && attendanceData) {
+        // Remove attendee from local state
+        setAttendanceData({
+          ...attendanceData,
+          attendees: attendanceData.attendees.filter(a => a.userId !== userId),
+          count: attendanceData.count - 1,
+        })
+        // Update the event's attendee count in the events list
+        setEvents(events.map(e => 
+          e.id === eventId 
+            ? { ...e, attendeeCount: e.attendeeCount - 1 }
+            : e
+        ))
+      }
+    } catch (error) {
+      console.error("Error deleting attendee:", error)
+    } finally {
+      setDeletingAttendeeId(null)
+    }
+  }
+
+  const deleteEvent = async () => {
+    if (!deleteEventModal) return
+    setDeletingEvent(true)
+    try {
+      // Delete from Prisma
+      const response = await fetch("/api/event", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: deleteEventModal.id }),
+      })
+      
+      if (response.ok) {
+        // Also try to delete from Google Calendar (don't fail if this fails)
+        await fetch("/api/calendar", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: deleteEventModal.id }),
+        }).catch(console.warn)
+        
+        // Remove from local state
+        setEvents(events.filter(e => e.id !== deleteEventModal.id))
+        setAllEvents(allEvents.filter(e => e.id !== deleteEventModal.id))
+        setDeleteEventModal(null)
+      }
+    } catch (error) {
+      console.error("Error deleting event:", error)
+    } finally {
+      setDeletingEvent(false)
+    }
+  }
+
   const downloadFlyer = (eventId: string) => {
     window.open(`/api/event/${eventId}/flyer`, "_blank")
   }
@@ -210,6 +274,7 @@ export default function AttendancePage() {
                   onViewAttendees={viewAttendees}
                   onDownloadFlyer={downloadFlyer}
                   onOpenAttendancePage={openAttendancePage}
+                  onDeleteEvent={setDeleteEventModal}
                 />
               ))}
             </div>
@@ -249,13 +314,30 @@ export default function AttendancePage() {
             ) : (
               <div className="border rounded-lg divide-y max-h-96 overflow-y-auto">
                 {attendanceData.attendees.map((attendee, index) => (
-                  <div key={attendee.id} className="flex items-center justify-between p-3">
+                  <div key={attendee.id} className="flex items-center justify-between p-3 group">
                     <div>
                       <span className="text-sm text-muted-foreground mr-2">{index + 1}.</span>
                       <span className="font-medium">{attendee.name}</span>
                     </div>
-                    <div className="text-sm text-muted-foreground">
-                      {attendee.email}
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">
+                        {attendee.email}
+                      </span>
+                      {selectedEvent && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => deleteAttendee(selectedEvent.id, attendee.userId)}
+                          disabled={deletingAttendeeId === attendee.userId}
+                          className="opacity-0 group-hover:opacity-100 text-destructive hover:text-destructive hover:bg-destructive/10 h-7 w-7 p-0"
+                        >
+                          {deletingAttendeeId === attendee.userId ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-4 w-4" />
+                          )}
+                        </Button>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -295,6 +377,44 @@ export default function AttendancePage() {
           events={allEvents}
           setEvents={handleEventsUpdate}
         />
+      </Modal>
+
+      {/* Delete Event Confirmation Modal */}
+      <Modal
+        open={!!deleteEventModal}
+        onOpenChange={(open) => !open && setDeleteEventModal(null)}
+        title="Delete Event"
+        description={deleteEventModal ? `Are you sure you want to delete "${deleteEventModal.title}"?` : ''}
+      >
+        <p className="text-sm text-muted-foreground">
+          This will also delete all attendance records for this event. This action cannot be undone.
+        </p>
+        <ModalFooter>
+          <Button
+            variant="outline"
+            onClick={() => setDeleteEventModal(null)}
+            disabled={deletingEvent}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={deleteEvent}
+            disabled={deletingEvent}
+          >
+            {deletingEvent ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Deleting...
+              </>
+            ) : (
+              <>
+                <Trash2 className="h-4 w-4" />
+                Delete Event
+              </>
+            )}
+          </Button>
+        </ModalFooter>
       </Modal>
     </div>
   )
@@ -362,6 +482,7 @@ function SemesterAccordion({
   onViewAttendees,
   onDownloadFlyer,
   onOpenAttendancePage,
+  onDeleteEvent,
 }: {
   label: string
   events: EventWithAttendance[]
@@ -370,6 +491,7 @@ function SemesterAccordion({
   onViewAttendees: (event: EventWithAttendance) => void
   onDownloadFlyer: (eventId: string) => void
   onOpenAttendancePage: (eventId: string) => void
+  onDeleteEvent: (event: EventWithAttendance) => void
 }) {
   const [isOpen, setIsOpen] = useState(defaultOpen)
 
@@ -415,6 +537,7 @@ function SemesterAccordion({
               onViewAttendees={onViewAttendees}
               onDownloadFlyer={onDownloadFlyer}
               onOpenAttendancePage={onOpenAttendancePage}
+              onDeleteEvent={onDeleteEvent}
             />
           ) : (
             <EventCard
@@ -424,6 +547,7 @@ function SemesterAccordion({
               onViewAttendees={onViewAttendees}
               onDownloadFlyer={onDownloadFlyer}
               onOpenAttendancePage={onOpenAttendancePage}
+              onDeleteEvent={onDeleteEvent}
               showTitle
             />
           )
@@ -442,6 +566,7 @@ function RecurringSeriesAccordion({
   onViewAttendees,
   onDownloadFlyer,
   onOpenAttendancePage,
+  onDeleteEvent,
 }: {
   title: string
   events: EventWithAttendance[]
@@ -450,6 +575,7 @@ function RecurringSeriesAccordion({
   onViewAttendees: (event: EventWithAttendance) => void
   onDownloadFlyer: (eventId: string) => void
   onOpenAttendancePage: (eventId: string) => void
+  onDeleteEvent: (event: EventWithAttendance) => void
 }) {
   const [isOpen, setIsOpen] = useState(false)
 
@@ -480,6 +606,7 @@ function RecurringSeriesAccordion({
             onViewAttendees={onViewAttendees}
             onDownloadFlyer={onDownloadFlyer}
             onOpenAttendancePage={onOpenAttendancePage}
+            onDeleteEvent={onDeleteEvent}
             showTitle={false}
           />
         ))}
@@ -495,6 +622,7 @@ function EventCard({
   onViewAttendees,
   onDownloadFlyer,
   onOpenAttendancePage,
+  onDeleteEvent,
   showTitle,
 }: {
   event: EventWithAttendance
@@ -502,6 +630,7 @@ function EventCard({
   onViewAttendees: (event: EventWithAttendance) => void
   onDownloadFlyer: (eventId: string) => void
   onOpenAttendancePage: (eventId: string) => void
+  onDeleteEvent: (event: EventWithAttendance) => void
   showTitle: boolean
 }) {
   return (
@@ -575,6 +704,14 @@ function EventCard({
           >
             <ExternalLink className="h-4 w-4" />
             Check-in
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onDeleteEvent(event)}
+            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+          >
+            <Trash2 className="h-4 w-4" />
           </Button>
         </div>
       </div>
