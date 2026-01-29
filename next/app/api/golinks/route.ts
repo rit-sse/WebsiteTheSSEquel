@@ -1,10 +1,10 @@
-import { Prisma } from "@prisma/client";
+import {Prisma, PrismaClient} from "@prisma/client";
 import prisma from "@/lib/prisma";
-import { NextRequest, NextResponse } from "next/server";
+import {NextResponse } from "next/server";
 export const dynamic = 'force-dynamic';
 
 function validateGoLink(goLink: string): boolean {
-  return /^[a-z\-]+$/.test(goLink);
+  return /^[a-z-]+$/.test(goLink);
 }
 
 /**
@@ -76,7 +76,7 @@ export async function POST(request: Request) {
     console.error("Full Error Object:", JSON.stringify(error, null, 2));
     console.error("Stack Trace:", error.stack);
 
-    if (error instanceof Prisma.Pris) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === 'P2002' && error.meta?.target) {
            const targetField = Array.isArray(error.meta.target) ? error.meta.target[0] : error.meta.target;
            const failedValue = body[targetField] ?? '[unknown value]';
@@ -121,7 +121,7 @@ export async function DELETE(request: Request) {
     console.error("Full Error Object:", JSON.stringify(error, null, 2));
     console.error("Stack Trace:", error.stack);
 
-    if (error instanceof prisma.PrismaClientKnownRequestError) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === 'P2025') {
         return new Response(`GoLink with ID ${id} not found.`, { status: 404 });
       }
@@ -154,7 +154,7 @@ export async function PUT(request: Request) {
   }
   const id = body.id;
 
-  const data: Prisma.GoLinksUpdateInput = {};
+  const data: Prisma.Args<PrismaClient["goLinks"], "update">["data"] = {};
   let hasUpdates = false;
 
   if ("url" in body && typeof body.url === 'string') {

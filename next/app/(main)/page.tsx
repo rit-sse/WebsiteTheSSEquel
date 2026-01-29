@@ -14,10 +14,14 @@ import { Card } from "@/components/ui/card";
 import prisma from '@/lib/prisma';
 
 interface SponsorData {
-    image: string;
-    url: string;
-    name: string;
+    id: number;
     description: string;
+    name: string;
+    logoUrl: string;
+    websiteUrl: string;
+    isActive: boolean;
+    createdAt: Date;
+    updatedAt: Date;
 }
 
 export default async function Home() {
@@ -35,8 +39,8 @@ export default async function Home() {
 
         // Transform to match the Sponsor component props
         sponsors = sponsorsData.map((sponsor: SponsorData) => ({
-            image: sponsor.image,
-            url: sponsor.url,
+            image: sponsor.logoUrl,
+            url: sponsor.websiteUrl,
             name: sponsor.name,
             description: sponsor.description,
         }));
