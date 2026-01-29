@@ -50,6 +50,7 @@ export default function EventForm({
   const [attendanceCount, setAttendanceCount] = useState(0)
   const [showAttendees, setShowAttendees] = useState(false)
   const [loadingAttendees, setLoadingAttendees] = useState(false)
+  const [deletingAttendeeId, setDeletingAttendeeId] = useState<number | null>(null)
 
   const fetchAttendance = useCallback(async () => {
     if (!event.id || !event.attendanceEnabled) return
@@ -83,6 +84,26 @@ export default function EventForm({
   const openAttendancePage = () => {
     if (!event.id) return
     window.open(`/events/${event.id}/attend`, "_blank")
+  }
+
+  const deleteAttendee = async (userId: number) => {
+    if (!event.id) return
+    setDeletingAttendeeId(userId)
+    try {
+      const response = await fetch(`/api/event/${event.id}/attendance`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      })
+      if (response.ok) {
+        setAttendees(attendees.filter(a => a.userId !== userId))
+        setAttendanceCount(attendanceCount - 1)
+      }
+    } catch (error) {
+      console.error("Error deleting attendee:", error)
+    } finally {
+      setDeletingAttendeeId(null)
+    }
   }
 
   const handleDelete = async () => {
@@ -261,7 +282,7 @@ export default function EventForm({
                   {attendees.map((attendee, index) => (
                     <li
                       key={attendee.id}
-                      className="flex justify-between items-center py-1"
+                      className="flex justify-between items-center py-1 group"
                     >
                       <span>
                         <span className="text-muted-foreground mr-2">
@@ -269,9 +290,24 @@ export default function EventForm({
                         </span>
                         {attendee.name}
                       </span>
-                      <span className="text-muted-foreground text-xs">
-                        {attendee.email}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground text-xs">
+                          {attendee.email}
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => deleteAttendee(attendee.userId)}
+                          disabled={deletingAttendeeId === attendee.userId}
+                          className="opacity-0 group-hover:opacity-100 text-destructive hover:text-destructive hover:bg-destructive/10 h-6 w-6 p-0"
+                        >
+                          {deletingAttendeeId === attendee.userId ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-3 w-3" />
+                          )}
+                        </Button>
+                      </div>
                     </li>
                   ))}
                 </ul>
