@@ -164,12 +164,12 @@ export default function UsersSection() {
       )
     },
     {
-      key: "isMember",
-      header: "Member",
+      key: "membershipCount",
+      header: "Memberships",
       sortable: true,
       render: (user) => (
-        <Badge variant={user.isMember ? "default" : "outline"} className="text-xs">
-          {user.isMember ? "Yes" : "No"}
+        <Badge variant={user.membershipCount >= 1 ? "default" : "outline"} className="text-xs">
+          {user.membershipCount}
         </Badge>
       )
     },

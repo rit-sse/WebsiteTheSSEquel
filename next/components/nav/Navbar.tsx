@@ -74,6 +74,11 @@ const dashboardItems = [
         description: "Request PCard checkout and submit receipts.",
     },
     {
+        title: "Attendance",
+        href: "/attendance",
+        description: "View event attendance lists and QR flyers.",
+    },
+    {
         title: "Positions & Officers",
         href: "/dashboard/positions",
         description: "Manage officer positions and assignments.",

@@ -154,9 +154,14 @@ export async function POST(request: NextRequest) {
   if (type === "user") {
     const existingUser = await prisma.user.findUnique({
       where: { email },
+      include: {
+        _count: {
+          select: { Memberships: true },
+        },
+      },
     });
 
-    if (existingUser && existingUser.isMember) {
+    if (existingUser && existingUser._count.Memberships >= 1) {
       return new Response("This user is already a member", { status: 409 });
     }
   }

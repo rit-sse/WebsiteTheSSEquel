@@ -18,12 +18,14 @@ export async function PUT(request: Request) {
     userId: number | null;
     isUser: boolean;
     isMember: boolean;
+    membershipCount: number;
     isMentor: boolean;
     isOfficer: boolean;
   } = {
     userId: null,
     isUser: false,
     isMember: false,
+    membershipCount: 0,
     isMentor: false,
     isOfficer: false,
   };
@@ -50,14 +52,18 @@ export async function PUT(request: Request) {
         where: { is_active: true },
         select: { id: true },
       },
-      isMember: true,
+      _count: {
+        select: { Memberships: true },
+      },
     },
   });
 
   if (user != null) {
+    const membershipCount = user._count.Memberships;
     authLevel.userId = user.id;
     authLevel.isUser = true;
-    authLevel.isMember = user.isMember;
+    authLevel.membershipCount = membershipCount;
+    authLevel.isMember = membershipCount >= 1;
     authLevel.isMentor = user.mentor.length > 0;
     authLevel.isOfficer = user.officers.length > 0;
   }
@@ -75,12 +81,14 @@ export async function GET(request: NextRequest) {
     userId: number | null;
     isUser: boolean;
     isMember: boolean;
+    membershipCount: number;
     isMentor: boolean;
     isOfficer: boolean;
   } = {
     userId: null,
     isUser: false,
     isMember: false,
+    membershipCount: 0,
     isMentor: false,
     isOfficer: false,
   };
@@ -107,14 +115,18 @@ export async function GET(request: NextRequest) {
         where: { is_active: true },
         select: { id: true },
       },
-      isMember: true,
+      _count: {
+        select: { Memberships: true },
+      },
     },
   });
 
   if (user != null) {
+    const membershipCount = user._count.Memberships;
     authLevel.userId = user.id;
     authLevel.isUser = true;
-    authLevel.isMember = user.isMember;
+    authLevel.membershipCount = membershipCount;
+    authLevel.isMember = membershipCount >= 1;
     authLevel.isMentor = user.mentor.length > 0;
     authLevel.isOfficer = user.officers.length > 0;
   }

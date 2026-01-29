@@ -6,13 +6,13 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { Checkbox } from "@/components/ui/checkbox"
 
 export interface User {
   id: number
   name: string
   email: string
-  isMember: boolean
+  membershipCount: number
+  isMember: boolean // Computed from membershipCount >= 1
   linkedIn?: string
   gitHub?: string
   description?: string
@@ -36,7 +36,6 @@ export default function UserModal({ open, onOpenChange, user, onSuccess }: UserM
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    isMember: false,
     linkedIn: "",
     gitHub: "",
     description: ""
@@ -50,7 +49,6 @@ export default function UserModal({ open, onOpenChange, user, onSuccess }: UserM
         setFormData({
           name: user.name || "",
           email: user.email || "",
-          isMember: user.isMember || false,
           linkedIn: user.linkedIn || "",
           gitHub: user.gitHub || "",
           description: user.description || ""
@@ -59,7 +57,6 @@ export default function UserModal({ open, onOpenChange, user, onSuccess }: UserM
         setFormData({
           name: "",
           email: "",
-          isMember: false,
           linkedIn: "",
           gitHub: "",
           description: ""
@@ -149,16 +146,16 @@ export default function UserModal({ open, onOpenChange, user, onSuccess }: UserM
           />
         </div>
 
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="isMember"
-            checked={formData.isMember}
-            onCheckedChange={(checked) => 
-              setFormData(prev => ({ ...prev, isMember: checked === true }))
-            }
-          />
-          <Label htmlFor="isMember" className="cursor-pointer">Is SSE Member</Label>
-        </div>
+        {/* Note: Membership is now controlled via the Memberships table, not a checkbox */}
+        {user && (
+          <div className="p-3 bg-surface-2 rounded-lg text-sm">
+            <span className="text-muted-foreground">Membership Count: </span>
+            <span className="font-medium">{user.membershipCount}</span>
+            {user.membershipCount >= 1 && (
+              <span className="ml-2 text-xs text-primary">(Active Member)</span>
+            )}
+          </div>
+        )}
 
         <div className="space-y-2">
           <Label htmlFor="linkedIn">LinkedIn URL</Label>

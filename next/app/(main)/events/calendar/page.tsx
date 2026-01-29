@@ -50,13 +50,13 @@ export default function EventsCalendar() {
                         <Calendar events={ events }/>
                     </div>
 
-                    {/* Card that only officers can see, props are functions to open the modals */}
-                    <ManageEventsCard modalAdd={ () => setModalAdd(true) } modalEvent={ () => setModalEvent(true) } setSelectedEvent={ setSelectedEvent } events={ events }/>
+                    {/* Card that only officers can see */}
+                    <ManageEventsCard modalAdd={() => setModalAdd(true)} />
                 </div>
             </Card>
 
             {/* Modal for adding a new event */}
-            <Modal open={modalAdd} onOpenChange={setModalAdd} title="Add Event">
+            <Modal open={modalAdd} onOpenChange={setModalAdd} title="Add Event" className="!max-w-4xl">
                 <AddEventForm isOpen={modalAdd} onClose={() => setModalAdd(false)} events={events} setEvents={setEvents}/>
             </Modal>
 

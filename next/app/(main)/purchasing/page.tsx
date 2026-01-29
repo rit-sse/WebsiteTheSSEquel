@@ -10,7 +10,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
-import { Plus, Clock, CheckCircle, ArrowRight, ChevronDown, CreditCard } from "lucide-react"
+import { Plus, Clock, CheckCircle, ArrowRight, ChevronDown, CreditCard, Link2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import CheckoutForm from "./CheckoutForm"
 import ReceiptForm from "./ReceiptForm"
@@ -37,47 +37,20 @@ interface PurchaseRequest {
     name: string
     email: string
   }
+  eventId?: string | null
+  event?: {
+    id: string
+    title: string
+    date: string
+    attendanceEnabled: boolean
+  } | null
 }
 
-interface SemesterGroup {
-  label: string
-  sortKey: string
-  requests: PurchaseRequest[]
-}
+import { groupBySemester, SemesterGroup } from "@/lib/semester"
 
-// Get semester label from date
-function getSemester(dateString: string): { label: string; sortKey: string } {
-  const date = new Date(dateString)
-  const month = date.getMonth() + 1 // 1-12
-  const year = date.getFullYear()
-  
-  if (month >= 8 && month <= 12) {
-    // August - December = Fall
-    return { label: `Fall ${year}`, sortKey: `${year}-2` }
-  } else if (month >= 1 && month <= 5) {
-    // January - May = Spring
-    return { label: `Spring ${year}`, sortKey: `${year}-1` }
-  } else {
-    // June - July = Summer
-    return { label: `Summer ${year}`, sortKey: `${year}-0` }
-  }
-}
-
-// Group requests by semester
-function groupBySemester(requests: PurchaseRequest[]): SemesterGroup[] {
-  const groups: { [key: string]: SemesterGroup } = {}
-  
-  for (const request of requests) {
-    const { label, sortKey } = getSemester(request.createdAt)
-    
-    if (!groups[label]) {
-      groups[label] = { label, sortKey, requests: [] }
-    }
-    groups[label].requests.push(request)
-  }
-  
-  // Sort groups by sortKey descending (most recent first)
-  return Object.values(groups).sort((a, b) => b.sortKey.localeCompare(a.sortKey))
+// Helper to group purchase requests by semester
+function groupRequestsBySemester(requests: PurchaseRequest[]): SemesterGroup<PurchaseRequest>[] {
+  return groupBySemester(requests, (r) => r.createdAt)
 }
 
 export default function PurchasingPage() {
@@ -243,11 +216,11 @@ export default function PurchasingPage() {
               </p>
             ) : (
               <div className="space-y-4">
-                {groupBySemester(requests).map((group, index) => (
+                {groupRequestsBySemester(requests).map((group, index) => (
                   <SemesterAccordion
                     key={group.label}
                     label={group.label}
-                    requests={group.requests}
+                    requests={group.items}
                     defaultOpen={index === 0}
                     getStatusBadge={getStatusBadge}
                     onSubmitReceipt={setSelectedRequest}
@@ -320,8 +293,16 @@ function SemesterAccordion({
                     {request.user.name}
                   </td>
                   <td className="py-3 px-3">
-                    <span className="font-medium">{request.description.substring(0, 40)}</span>
-                    {request.description.length > 40 && "..."}
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{request.description.substring(0, 40)}</span>
+                      {request.description.length > 40 && "..."}
+                      {request.event && (
+                        <Badge variant="outline" className="gap-1 text-xs">
+                          <Link2 className="h-3 w-3" />
+                          {request.event.title.substring(0, 15)}{request.event.title.length > 15 ? "..." : ""}
+                        </Badge>
+                      )}
+                    </div>
                   </td>
                   <td className="py-3 px-3 text-sm">{request.committee}</td>
                   <td className="py-3 px-3 text-sm">

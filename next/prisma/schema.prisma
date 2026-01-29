@@ -2,329 +2,326 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
-    //Store an automatically generated unique int for id
-    id Int @id @default(autoincrement())
+  //Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
 
-    //Store first and last name as Strings
-    name String
+  //Store first and last name as Strings
+  name String
 
-    //Store email as a unique String
-    email String @unique
+  //Store email as a unique String
+  email String @unique
 
-    linkedIn String?
-    gitHub String?
-    description String?
- 
-    //Store a boolean value to determine if a user is a member or not
-    //Defaults to false if not specified
-    isMember Boolean @default(false)
+  linkedIn    String?
+  gitHub      String?
+  description String?
 
-    //Image will be saved
-    image String @default("https://source.boringavatars.com/beam/")
+  //Image will be saved
+  image String @default("https://source.boringavatars.com/beam/")
 
-    emailVerified DateTime?
+  emailVerified DateTime?
 
-    // relational fields
-    mentor               Mentor[]
-    quotes               Quote[]
-    officers             Officer[]
-    account              Account[]
-    session              Session[]
-    projectContributions ProjectContributor[]
-    projects             Project[]
+  // relational fields
+  mentor               Mentor[]
+  quotes               Quote[]
+  officers             Officer[]
+  account              Account[]
+  session              Session[]
+  projectContributions ProjectContributor[]
+  projects             Project[]
 
-    Memberships Memberships[]
-    purchaseRequests PurchaseRequest[]
-    invitationsSent Invitation[]
+  Memberships      Memberships[]
+  purchaseRequests PurchaseRequest[]
+  invitationsSent  Invitation[]
+  eventAttendances EventAttendance[]
 }
 
 model Alumni {
-    //Store an automatically generated unique int for id
-    id Int @id @default(autoincrement())
+  //Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
 
-    //Store first and last name as Strings
-    name String
+  //Store first and last name as Strings
+  name String
 
-    //Store email as a unique String
-    email String
+  //Store email as a unique String
+  email String
 
-    linkedIn String?
-    gitHub String?
-    description String?
+  linkedIn    String?
+  gitHub      String?
+  description String?
 
-    //Image will be saved
-    image String @default("https://source.boringavatars.com/beam/")
+  //Image will be saved
+  image String @default("https://source.boringavatars.com/beam/")
 
-    //Store startDate and endDate as a String
-    start_date String
-    end_date   String
-    
-    //Store Quote and Previous Roles
-    quote String            @default("")
-    previous_roles String @default("")
+  //Store startDate and endDate as a String
+  start_date String
+  end_date   String
+
+  //Store Quote and Previous Roles
+  quote          String @default("")
+  previous_roles String @default("")
 }
 
 model AlumniRequest {
-    //Store an automatically generated unique int for id
-    id Int @id @default(autoincrement())
+  //Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
 
-    //Store first and last name as Strings
-    name String
+  //Store first and last name as Strings
+  name String
 
-    //Store email as a String
-    email String
+  //Store email as a String
+  email String
 
-    linkedIn String?
-    gitHub String?
-    description String?
+  linkedIn    String?
+  gitHub      String?
+  description String?
 
-    //Image will be saved
-    image String @default("https://source.boringavatars.com/beam/")
+  //Image will be saved
+  image String @default("https://source.boringavatars.com/beam/")
 
-    //Store startDate and endDate as a String
-    start_date String
-    end_date   String
-    
-    //Store Quote and Previous Roles
-    quote String @default("")
-    previous_roles String @default("")
+  //Store startDate and endDate as a String
+  start_date String
+  end_date   String
 
-    //Status of the request: pending, approved, rejected
-    status String @default("pending")
+  //Store Quote and Previous Roles
+  quote          String @default("")
+  previous_roles String @default("")
 
-    //Timestamp when request was created
-    created_at DateTime @default(now())
+  //Status of the request: pending, approved, rejected
+  status String @default("pending")
+
+  //Timestamp when request was created
+  created_at DateTime @default(now())
 }
 
 model Quote {
-    //Store an automatically generated unique int for id
-    id Int @id @default(autoincrement())
+  //Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
 
-    //Store the timestamp quote was added
-    date_added DateTime
+  //Store the timestamp quote was added
+  date_added DateTime
 
-    //Store quote as a String
-    quote String @db.VarChar(255)
+  //Store quote as a String
+  quote String @db.VarChar(255)
 
-    //References userId of person who submitted the quote
-    user_id Int
+  //References userId of person who submitted the quote
+  user_id Int
 
-    //Store author, person who said the qoute, as a String, default to anonymous
-    author String @default("Anonymous")
+  //Store author, person who said the qoute, as a String, default to anonymous
+  author String @default("Anonymous")
 
-    //Relational fields
-    //Refrences user_id
-    user User @relation(fields: [user_id], references: [id])
+  //Relational fields
+  //Refrences user_id
+  user User @relation(fields: [user_id], references: [id])
 }
 
 model OfficerPosition {
-    //Store an automatically generated unique int for id
-    id Int @id @default(autoincrement())
+  //Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
 
-    //Store position title as a String
-    title String @unique
+  //Store position title as a String
+  title String @unique
 
-    //States primary as a boolean
-    is_primary Boolean @default(false)
+  //States primary as a boolean
+  is_primary Boolean @default(false)
 
-    //Store position alias email (e.g., sse-president@rit.edu)
-    email String @unique
+  //Store position alias email (e.g., sse-president@rit.edu)
+  email String @unique
 
-    //Relational fields
-    officers Officer[]
-    handoverDocument HandoverDocument?
-    invitations Invitation[]
+  //Relational fields
+  officers         Officer[]
+  handoverDocument HandoverDocument?
+  invitations      Invitation[]
 }
 
 model HandoverDocument {
-    //Store an automatically generated unique int for id
-    id Int @id @default(autoincrement())
+  //Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
 
-    //References positionId - one document per position
-    positionId Int @unique
+  //References positionId - one document per position
+  positionId Int @unique
 
-    //Store the markdown content
-    content String @db.Text
+  //Store the markdown content
+  content String @db.Text
 
-    //Track when the document was last updated
-    updatedAt DateTime @updatedAt
+  //Track when the document was last updated
+  updatedAt DateTime @updatedAt
 
-    //Relational field
-    position OfficerPosition @relation(fields: [positionId], references: [id], onDelete: Cascade)
+  //Relational field
+  position OfficerPosition @relation(fields: [positionId], references: [id], onDelete: Cascade)
 }
 
 model Officer {
-    //Store an automatically generated unique int for id
-    id Int @id @default(autoincrement())
+  //Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
 
-    //Refrences positionId
-    position_id Int
+  //Refrences positionId
+  position_id Int
 
-    //Refrences userId
-    user_id Int
+  //Refrences userId
+  user_id Int
 
-    //Store active status as a boolean
-    is_active Boolean @default(true)
+  //Store active status as a boolean
+  is_active Boolean @default(true)
 
-    //Store startDate and endDate as a DateTime
-    start_date DateTime
-    end_date   DateTime
+  //Store startDate and endDate as a DateTime
+  start_date DateTime
+  end_date   DateTime
 
-    //Relational fields
-    user     User            @relation(fields: [user_id], references: [id])
-    position OfficerPosition @relation(fields: [position_id], references: [id])
+  //Relational fields
+  user     User            @relation(fields: [user_id], references: [id])
+  position OfficerPosition @relation(fields: [position_id], references: [id])
 }
 
 model Mentor {
-    //Store an automatically generated unique int for id
-    id Int @id @default(autoincrement())
+  //Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
 
-    //Refrences userId
-    user_Id Int
+  //Refrences userId
+  user_Id Int
 
-    //Store expirationDate as a DateTime
-    expirationDate DateTime
+  //Store expirationDate as a DateTime
+  expirationDate DateTime
 
-    //Stores active status as a Boolean
-    isActive Boolean
+  //Stores active status as a Boolean
+  isActive Boolean
 
-    //Relatinal fields
-    mentorSkill MentorSkill[]
-    courseTaken CourseTaken[]
-    schedule    Schedule[]
-    user        User          @relation(fields: [user_Id], references: [id])
+  //Relatinal fields
+  mentorSkill MentorSkill[]
+  courseTaken CourseTaken[]
+  schedule    Schedule[]
+  user        User          @relation(fields: [user_Id], references: [id])
 }
 
 model Skill {
-    //Store an automatically generated unique int for id
-    id Int @id @default(autoincrement())
+  //Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
 
-    //Store skill as a unique String
-    skill String @unique
+  //Store skill as a unique String
+  skill String @unique
 
-    //Relational field
-    mentorSkill MentorSkill[]
+  //Relational field
+  mentorSkill MentorSkill[]
 }
 
 model MentorSkill {
-    //Store an automatically generated unique int for id
-    id Int @id @default(autoincrement())
+  //Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
 
-    //Refrences mentorId
-    mentor_Id Int
+  //Refrences mentorId
+  mentor_Id Int
 
-    //Refrences skillId
-    skill_Id Int
+  //Refrences skillId
+  skill_Id Int
 
-    //Referential Fields
-    mentor Mentor @relation(fields: [mentor_Id], references: [id])
-    skill  Skill  @relation(fields: [skill_Id], references: [id])
+  //Referential Fields
+  mentor Mentor @relation(fields: [mentor_Id], references: [id])
+  skill  Skill  @relation(fields: [skill_Id], references: [id])
 }
 
 model Department {
-    //Store an automatically generated unique int for id
-    id Int @id @default(autoincrement())
+  //Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
 
-    //Store title as a String
-    title String
+  //Store title as a String
+  title String
 
-    //Store short title as a String
-    shortTitle String @default("GCIS")
+  //Store short title as a String
+  shortTitle String @default("GCIS")
 
-    //Relatinal field
-    course Course[]
+  //Relatinal field
+  course Course[]
 }
 
 model Course {
-    //Store an automatically generated unique int for id
-    id Int @id @default(autoincrement())
+  //Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
 
-    //Store title as a String
-    title String @db.VarChar(40)
+  //Store title as a String
+  title String @db.VarChar(40)
 
-    //Refrence departmentId
-    departmentId Int
+  //Refrence departmentId
+  departmentId Int
 
-    //Stores code as an Integer
-    code Int
+  //Stores code as an Integer
+  code Int
 
-    //Relational field
-    courseTaken CourseTaken[]
+  //Relational field
+  courseTaken CourseTaken[]
 
-    //Refrence field
-    department Department @relation(fields: [departmentId], references: [id])
+  //Refrence field
+  department Department @relation(fields: [departmentId], references: [id])
 }
 
 model CourseTaken {
-    //Store an automatically generated unique int for id
-    id       Int @id @default(autoincrement())
-    mentorId Int // References Mentor.id
-    courseId Int // References Course.id
+  //Store an automatically generated unique int for id
+  id       Int @id @default(autoincrement())
+  mentorId Int // References Mentor.id
+  courseId Int // References Course.id
 
-    //Relation fields
-    mentor Mentor @relation(fields: [mentorId], references: [id])
-    course Course @relation(fields: [courseId], references: [id])
+  //Relation fields
+  mentor Mentor @relation(fields: [mentorId], references: [id])
+  course Course @relation(fields: [courseId], references: [id])
 }
 
 model HourBlock {
-    //Store an automatically generated unique int for id
-    id Int @id @default(autoincrement())
+  //Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
 
-    //Stores day of the week as a String
-    weekday String
+  //Stores day of the week as a String
+  weekday String
 
-    //Stores time block startTime as a DateTime
-    startTime DateTime @db.Time()
+  //Stores time block startTime as a DateTime
+  startTime DateTime @db.Time()
 
-    //Referenced relation field
-    schedule Schedule[]
+  //Referenced relation field
+  schedule Schedule[]
 }
 
 model Schedule {
-    //Store an automatically generated unique int for id
-    id Int @id @default(autoincrement())
+  //Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
 
-    mentorId    Int // References Mentor.id
-    hourBlockId Int // References HourBlock.id
+  mentorId    Int // References Mentor.id
+  hourBlockId Int // References HourBlock.id
 
-    //Relational fields
-    hourBlock HourBlock @relation(fields: [hourBlockId], references: [id])
-    mentor    Mentor    @relation(fields: [mentorId], references: [id])
+  //Relational fields
+  hourBlock HourBlock @relation(fields: [hourBlockId], references: [id])
+  mentor    Mentor    @relation(fields: [mentorId], references: [id])
 }
 
 model GoLinks {
-    //Store an automatically generated unique int for id
-    id Int @id @default(autoincrement())
+  //Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
 
-    //Store short link as a String
-    golink String
+  //Store short link as a String
+  golink String
 
-    //Store url as a String
-    url String
+  //Store url as a String
+  url String
 
-    //Description as a String
-    description String?
+  //Description as a String
+  description String?
 
-    //createdAt stored as a DateTime default to the timestamp it was created at
-    createdAt DateTime @default(now())
+  //createdAt stored as a DateTime default to the timestamp it was created at
+  createdAt DateTime @default(now())
 
-    //updatedAt stores the time the link was last updated
-    updatedAt DateTime
+  //updatedAt stores the time the link was last updated
+  updatedAt DateTime
 
-    //Determines if a link is public or not
-    isPublic Boolean @default(false)
+  //Determines if a link is public or not
+  isPublic Boolean @default(false)
 
-    //isPinned is a boolean value to determine if a user is pinned or not
-    isPinned Boolean @default(false)
+  //isPinned is a boolean value to determine if a user is pinned or not
+  isPinned Boolean @default(false)
 }
 
 model Event {
@@ -335,216 +332,241 @@ model Event {
   location    String?
   image       String?
   description String
+
+  // Attendance tracking fields
+  attendanceEnabled Boolean @default(false)
+  grantsMembership  Boolean @default(false)
+
+  // Relational fields
+  attendees        EventAttendance[]
+  purchaseRequests PurchaseRequest[]
+}
+
+model EventAttendance {
+  id        Int      @id @default(autoincrement())
+  eventId   String
+  userId    Int
+  createdAt DateTime @default(now())
+
+  // Relational fields
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Unique constraint: one attendance record per user per event
+  @@unique([eventId, userId])
 }
 
 //Account model represents an account in the system.
 //It contains information about the user, the type of account, and the authentication provider.
 model Account {
-    //Store an automatically generated unique int for id
-    id Int @id @default(autoincrement())
+  //Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
 
-    //userId is a foreign key that references the id field of the User model
-    userId            Int
-    type              String
-    provider          String
-    providerAccountId String
-    refresh_token     String? @db.Text
-    access_token      String? @db.Text
-    expires_at        Int?
-    token_type        String?
-    scope             String?
-    id_token          String? @db.Text
-    session_state     String?
-    
-    // Google OAuth returns this when requesting offline access (for Gmail API)
-    refresh_token_expires_in Int?
+  //userId is a foreign key that references the id field of the User model
+  userId            Int
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
 
-    //user is a relational field that references the User model
-    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Google OAuth returns this when requesting offline access (for Gmail API)
+  refresh_token_expires_in Int?
 
-    @@unique([provider, providerAccountId])
+  //user is a relational field that references the User model
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
 }
 
 model Session {
-    id           String   @id @default(cuid())
-    sessionToken String   @unique
-    userId       Int
-    expires      DateTime
-    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       Int
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model VerificationToken {
-    id Int @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-    //identifier is a string that is unique and is used to identify the token
-    identifier String @unique
+  //identifier is a string that is unique and is used to identify the token
+  identifier String @unique
 
-    //token is a string that is unique and is used to verify the token
-    token String @unique
+  //token is a string that is unique and is used to verify the token
+  token String @unique
 
-    //expires is a DateTime that represents the expiration date of the token
-    expires DateTime
+  //expires is a DateTime that represents the expiration date of the token
+  expires DateTime
 }
 
 model Project {
-    id Int @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-    // The title of the project
-    title String
+  // The title of the project
+  title String
 
-    // A short description of the project
-    description String
+  // A short description of the project
+  description String
 
-    // leader of the project
-    leadid Int
+  // leader of the project
+  leadid Int
 
-    // details on the progress of the project
-    progress String?
+  // details on the progress of the project
+  progress String?
 
-    // The link to the repo hosting the project
-    repoLink String?
+  // The link to the repo hosting the project
+  repoLink String?
 
-    // The api route pointing to the markdown file for the content of the page.
-    contentURL String?
+  // The api route pointing to the markdown file for the content of the page.
+  contentURL String?
 
-    // A link to an image representing the project
-    projectImage String?
-    
-    // Determines if the project has been completed or not
-    completed Boolean @default(false)
+  // A link to an image representing the project
+  projectImage String?
 
-    // Relational Fields
-    lead         User                 @relation(fields: [leadid], references: [id])
-    contributors ProjectContributor[]
+  // Determines if the project has been completed or not
+  completed Boolean @default(false)
+
+  // Relational Fields
+  lead         User                 @relation(fields: [leadid], references: [id])
+  contributors ProjectContributor[]
 }
 
 model ProjectContributor {
-    id Int @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-    // Foreign Keys
-    userId    Int
-    projectId Int
+  // Foreign Keys
+  userId    Int
+  projectId Int
 
-    // Relational Fields
-    user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-    project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  // Relational Fields
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
 
 model Memberships {
-    id Int @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-    // UserID referenced as foreign key
-    userId Int
+  // UserID referenced as foreign key
+  userId Int
 
-    reason String
-    dateGiven DateTime
+  reason    String
+  dateGiven DateTime
 
-    // Relational Fields
-    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+  // Relational Fields
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Sponsor {
-    // Store an automatically generated unique int for id
-    id Int @id @default(autoincrement())
+  // Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
 
-    // Store sponsor name
-    name String
+  // Store sponsor name
+  name String
 
-    // Store sponsor description
-    description String
+  // Store sponsor description
+  description String
 
-    // Store URL to sponsor logo image
-    logoUrl String
+  // Store URL to sponsor logo image
+  logoUrl String
 
-    // Store URL to sponsor website
-    websiteUrl String
+  // Store URL to sponsor website
+  websiteUrl String
 
-    // Store active status (for showing/hiding sponsors)
-    isActive Boolean @default(true)
+  // Store active status (for showing/hiding sponsors)
+  isActive Boolean @default(true)
 
-    // Timestamp when sponsor was created
-    createdAt DateTime @default(now())
+  // Timestamp when sponsor was created
+  createdAt DateTime @default(now())
 
-    // Timestamp when sponsor was last updated
-    updatedAt DateTime @updatedAt
+  // Timestamp when sponsor was last updated
+  updatedAt DateTime @updatedAt
 }
 
 model PurchaseRequest {
-    // Store an automatically generated unique int for id
-    id Int @id @default(autoincrement())
+  // Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
 
-    // References userId of person who submitted the request
-    userId Int
+  // References userId of person who submitted the request
+  userId Int
 
-    // Name of the person making the request
-    name String
+  // Optional: References eventId for linked events
+  eventId String?
 
-    // Committee the purchase is for
-    committee String
+  // Name of the person making the request
+  name String
 
-    // Description of what is being purchased and why
-    description String
+  // Committee the purchase is for
+  committee String
 
-    // Estimated cost of the purchase
-    estimatedCost Decimal @db.Decimal(10, 2)
+  // Description of what is being purchased and why
+  description String
 
-    // Actual cost after purchase (filled in step 2)
-    actualCost Decimal? @db.Decimal(10, 2)
+  // Estimated cost of the purchase
+  estimatedCost Decimal @db.Decimal(10, 2)
 
-    // Planned date of purchase
-    plannedDate DateTime
+  // Actual cost after purchase (filled in step 2)
+  actualCost Decimal? @db.Decimal(10, 2)
 
-    // Status: pending, checked_out, returned
-    status String @default("pending")
+  // Planned date of purchase
+  plannedDate DateTime
 
-    // Email to notify for checkout request
-    notifyEmail String
+  // Status: pending, checked_out, returned
+  status String @default("pending")
 
-    // Receipt fields (filled in step 2)
-    receiptImage String? @db.Text // Base64 encoded image
-    receiptEmail String? // Email to send receipt to
-    eventName String?
-    eventDate DateTime?
-    attendanceData String? @db.Text // JSON string of attendees
-    attendanceImage String? @db.Text // Base64 encoded sign-in sheet image
+  // Email to notify for checkout request
+  notifyEmail String
 
-    // Timestamps
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  // Receipt fields (filled in step 2)
+  receiptImage    String?   @db.Text // Base64 encoded image
+  receiptEmail    String? // Email to send receipt to
+  eventName       String?
+  eventDate       DateTime?
+  attendanceData  String?   @db.Text // JSON string of attendees
+  attendanceImage String?   @db.Text // Base64 encoded sign-in sheet image
 
-    // Relational fields
-    user User @relation(fields: [userId], references: [id])
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relational fields
+  user  User   @relation(fields: [userId], references: [id])
+  event Event? @relation(fields: [eventId], references: [id], onDelete: SetNull)
 }
 
 model Invitation {
-    // Store an automatically generated unique int for id
-    id Int @id @default(autoincrement())
-    
-    // Email address invited (must be @g.rit.edu)
-    invitedEmail String
-    
-    // Type of invitation: "officer" or "user"
-    type String
-    
-    // Optional: Position for officer invitations
-    positionId Int?
-    
-    // Optional: Term dates for officer invitations
-    startDate DateTime?
-    endDate DateTime?
-    
-    // Officer who sent the invitation
-    invitedBy Int
-    
-    // Tracking
-    createdAt DateTime @default(now())
-    expiresAt DateTime // 30 days from creation
-    
-    // Relations
-    position OfficerPosition? @relation(fields: [positionId], references: [id], onDelete: Cascade)
-    inviter User @relation(fields: [invitedBy], references: [id])
-    
-    // Unique constraint: one pending invitation per email per type
-    @@unique([invitedEmail, type])
+  // Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
+
+  // Email address invited (must be @g.rit.edu)
+  invitedEmail String
+
+  // Type of invitation: "officer" or "user"
+  type String
+
+  // Optional: Position for officer invitations
+  positionId Int?
+
+  // Optional: Term dates for officer invitations
+  startDate DateTime?
+  endDate   DateTime?
+
+  // Officer who sent the invitation
+  invitedBy Int
+
+  // Tracking
+  createdAt DateTime @default(now())
+  expiresAt DateTime // 30 days from creation
+
+  // Relations
+  position OfficerPosition? @relation(fields: [positionId], references: [id], onDelete: Cascade)
+  inviter  User             @relation(fields: [invitedBy], references: [id])
+
+  // Unique constraint: one pending invitation per email per type
+  @@unique([invitedEmail, type])
 }

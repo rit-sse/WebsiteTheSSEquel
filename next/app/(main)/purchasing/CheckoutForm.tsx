@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { ArrowLeft, Send, Loader2 } from "lucide-react"
+import { ArrowLeft, Send, Loader2, Calendar } from "lucide-react"
 import GmailAuthModal from "@/components/GmailAuthModal"
 import { useGmailAuth } from "@/lib/hooks/useGmailAuth"
 
@@ -26,6 +26,13 @@ const COMMITTEES = [
   "Projects",
   "Misc/Presidential",
 ]
+
+interface EventOption {
+  id: string
+  title: string
+  date: string
+  attendanceEnabled: boolean
+}
 
 interface CheckoutFormProps {
   userName: string
@@ -45,6 +52,33 @@ export default function CheckoutForm({ userName, onClose, onSuccess }: CheckoutF
   const [estimatedCost, setEstimatedCost] = useState("")
   const [plannedDate, setPlannedDate] = useState("")
   const [notifyEmail, setNotifyEmail] = useState("")
+  const [selectedEventId, setSelectedEventId] = useState<string>("")
+  const [events, setEvents] = useState<EventOption[]>([])
+  const [loadingEvents, setLoadingEvents] = useState(true)
+
+  // Fetch events with attendance enabled
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await fetch("/api/event")
+        if (response.ok) {
+          const allEvents = await response.json()
+          // Filter to events with attendance enabled
+          const eventsWithAttendance = allEvents.filter((e: EventOption) => e.attendanceEnabled)
+          // Sort by date descending
+          eventsWithAttendance.sort((a: EventOption, b: EventOption) => 
+            new Date(b.date).getTime() - new Date(a.date).getTime()
+          )
+          setEvents(eventsWithAttendance)
+        }
+      } catch (error) {
+        console.error("Error fetching events:", error)
+      } finally {
+        setLoadingEvents(false)
+      }
+    }
+    fetchEvents()
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -70,6 +104,7 @@ export default function CheckoutForm({ userName, onClose, onSuccess }: CheckoutF
           estimatedCost: parseFloat(estimatedCost),
           plannedDate: new Date(plannedDate).toISOString(),
           notifyEmail,
+          eventId: selectedEventId || null,
         }),
       })
 
@@ -163,6 +198,33 @@ export default function CheckoutForm({ userName, onClose, onSuccess }: CheckoutF
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+
+              {/* Link to Event (Optional) */}
+              <div className="space-y-2">
+                <Label htmlFor="event">Link to Event (Optional)</Label>
+                <Select value={selectedEventId || "none"} onValueChange={(val) => setSelectedEventId(val === "none" ? "" : val)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={loadingEvents ? "Loading events..." : "Select an event to link"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No event linked</SelectItem>
+                    {events.map((event) => (
+                      <SelectItem key={event.id} value={event.id}>
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4" />
+                          <span>{event.title}</span>
+                          <span className="text-muted-foreground text-xs">
+                            ({new Date(event.date).toLocaleDateString()})
+                          </span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Link this purchase to an event to automatically sync attendance data
+                </p>
               </div>
 
               <div className="space-y-2">

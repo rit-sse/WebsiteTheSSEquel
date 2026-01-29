@@ -14,6 +14,8 @@ export async function GET() {
         date: true,
         image: true,
         location: true,
+        attendanceEnabled: true,
+        grantsMembership: true,
       },
     });
     return Response.json(allEvents);
@@ -76,6 +78,8 @@ export async function POST(request: Request) {
         date,
         location: body.location,
         image: body.image,
+        attendanceEnabled: body.attendanceEnabled ?? false,
+        grantsMembership: body.grantsMembership ?? false,
       },
     });
     return Response.json(event, { status: 201 });
@@ -142,6 +146,8 @@ export async function PUT(request: Request) {
     image?: string;
     date?: string;
     location?: string;
+    attendanceEnabled?: boolean;
+    grantsMembership?: boolean;
   } = {};
   if ("title" in body) {
     data.title = body.title;
@@ -157,6 +163,12 @@ export async function PUT(request: Request) {
   }
   if ("location" in body) {
     data.location = body.location;
+  }
+  if ("attendanceEnabled" in body) {
+    data.attendanceEnabled = body.attendanceEnabled;
+  }
+  if ("grantsMembership" in body) {
+    data.grantsMembership = body.grantsMembership;
   }
 
   try {
