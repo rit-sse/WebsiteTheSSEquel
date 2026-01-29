@@ -15,7 +15,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Loader2, Calendar, MapPin, Image as ImageIcon, Users, Repeat, CreditCard } from "lucide-react"
+import { Loader2, Calendar, MapPin, Image as ImageIcon, Users, Repeat, CreditCard, Lock } from "lucide-react"
+
+// Required email recipient that is always included for purchase requests
+const REQUIRED_RECIPIENT = "softwareengineering@rit.edu";
 
 interface FormProps {
   isOpen: boolean
@@ -109,9 +112,9 @@ export default function AddEventForm({ isOpen, onClose, events, setEvents }: For
       return
     }
 
-    // Validate purchase request fields if enabled
+    // Validate purchase request fields if enabled (notifyEmail is optional since REQUIRED_RECIPIENT is always included)
     if (createPurchaseRequest) {
-      if (!purchaseCommittee || !purchaseEstimatedCost || !purchaseNotifyEmail) {
+      if (!purchaseCommittee || !purchaseEstimatedCost) {
         setError("Please fill in all required PCard request fields")
         setLoading(false)
         return
@@ -179,7 +182,7 @@ export default function AddEventForm({ isOpen, onClose, events, setEvents }: For
           // Create linked purchase request if enabled (only for first event in recurring series)
           if (createPurchaseRequest && i === 0) {
             try {
-              await fetch("/api/purchasing", {
+              const purchaseResponse = await fetch("/api/purchasing", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -192,6 +195,21 @@ export default function AddEventForm({ isOpen, onClose, events, setEvents }: For
                   eventId: newEvent.id,
                 }),
               })
+
+              // Send notification email for the purchase request
+              if (purchaseResponse.ok) {
+                const newPurchaseRequest = await purchaseResponse.json()
+                try {
+                  await fetch(`/api/purchasing/${newPurchaseRequest.id}/email`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ type: "checkout" }),
+                  })
+                } catch (emailError) {
+                  console.warn("Failed to send purchase request email:", emailError)
+                  // Don't fail the whole operation if email fails
+                }
+              }
             } catch (purchaseError) {
               console.warn("Failed to create purchase request:", purchaseError)
               // Don't fail the whole operation if purchase request fails
@@ -441,14 +459,23 @@ export default function AddEventForm({ isOpen, onClose, events, setEvents }: For
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="purchaseNotifyEmail" className="text-sm">Send notification to *</Label>
-                  <Input
-                    id="purchaseNotifyEmail"
-                    type="email"
-                    value={purchaseNotifyEmail}
-                    onChange={(e) => setPurchaseNotifyEmail(e.target.value)}
-                    placeholder="treasurer@sse.rit.edu"
-                  />
+                  <Label className="text-sm">Send notification to</Label>
+                  <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-md border">
+                    <Lock className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">{REQUIRED_RECIPIENT}</span>
+                    <span className="text-xs text-muted-foreground">(always included)</span>
+                  </div>
+                  <div className="mt-2">
+                    <Label htmlFor="purchaseNotifyEmail" className="text-xs">Additional notification emails (optional)</Label>
+                    <Input
+                      id="purchaseNotifyEmail"
+                      type="email"
+                      value={purchaseNotifyEmail}
+                      onChange={(e) => setPurchaseNotifyEmail(e.target.value)}
+                      placeholder="treasurer@sse.rit.edu"
+                      className="mt-1"
+                    />
+                  </div>
                 </div>
               </div>
             )}

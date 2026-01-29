@@ -5,6 +5,9 @@ import { getValidAccessTokenWithDetails } from "@/lib/email/getAccessToken";
 
 export const dynamic = 'force-dynamic'
 
+// Required email recipient that is always included and cannot be removed
+const REQUIRED_RECIPIENT = "softwareengineering@rit.edu";
+
 /**
  * POST /api/purchasing/[id]/email - Send email with purchase request details
  */
@@ -83,10 +86,17 @@ export async function POST(
   }
 
   try {
-    // Determine recipient email based on type
-    const toEmail = body.type === "checkout" 
+    // Determine recipient emails (always include required recipient)
+    const userEmail = body.type === "checkout" 
       ? purchaseRequest.notifyEmail 
       : purchaseRequest.receiptEmail || purchaseRequest.notifyEmail;
+
+    // Combine required recipient with user-specified email(s), avoiding duplicates
+    const allRecipients = new Set([REQUIRED_RECIPIENT]);
+    if (userEmail) {
+      userEmail.split(",").forEach((email: string) => allRecipients.add(email.trim()));
+    }
+    const toEmail = Array.from(allRecipients).join(", ");
 
     // Build email content based on type
     let subject: string;

@@ -6,7 +6,10 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Send, Loader2, Upload, Trash2, AlertTriangle, Calendar, Users, Link2 } from "lucide-react"
+import { ArrowLeft, Send, Loader2, Upload, Trash2, AlertTriangle, Calendar, Users, Link2, Lock } from "lucide-react"
+
+// Required email recipient that is always included
+const REQUIRED_RECIPIENT = "softwareengineering@rit.edu";
 import AttendanceInput, { Attendee } from "./AttendanceInput"
 import GmailAuthModal from "@/components/GmailAuthModal"
 import { useGmailAuth } from "@/lib/hooks/useGmailAuth"
@@ -131,11 +134,6 @@ export default function ReceiptForm({ request, onClose, onSuccess }: ReceiptForm
       return
     }
 
-    if (!receiptEmail) {
-      setError("Please enter the email to send the receipt to")
-      setLoading(false)
-      return
-    }
 
     try {
       // Update the purchase request with receipt data
@@ -414,17 +412,25 @@ export default function ReceiptForm({ request, onClose, onSuccess }: ReceiptForm
 
               {/* Receipt Email */}
               <div className="space-y-2">
-                <Label htmlFor="receiptEmail">Send receipt to (email) *</Label>
-                <Input
-                  id="receiptEmail"
-                  type="email"
-                  value={receiptEmail}
-                  onChange={(e) => setReceiptEmail(e.target.value)}
-                  placeholder="se@rit.edu"
-                  required
-                />
+                <Label>Send receipt to</Label>
+                <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-md border">
+                  <Lock className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm">{REQUIRED_RECIPIENT}</span>
+                  <span className="text-xs text-muted-foreground">(always included)</span>
+                </div>
+                <div className="mt-2">
+                  <Label htmlFor="receiptEmail" className="text-sm">Additional recipient emails (optional)</Label>
+                  <Input
+                    id="receiptEmail"
+                    type="email"
+                    value={receiptEmail}
+                    onChange={(e) => setReceiptEmail(e.target.value)}
+                    placeholder="treasurer@sse.rit.edu"
+                    className="mt-1"
+                  />
+                </div>
                 <p className="text-xs text-muted-foreground">
-                  The receipt and attendance will be emailed to this address
+                  The receipt and attendance will be emailed to these addresses
                 </p>
               </div>
 

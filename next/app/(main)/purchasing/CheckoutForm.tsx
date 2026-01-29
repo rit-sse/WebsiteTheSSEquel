@@ -13,7 +13,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { ArrowLeft, Send, Loader2, Calendar } from "lucide-react"
+import { ArrowLeft, Send, Loader2, Calendar, Lock } from "lucide-react"
+
+// Required email recipient that is always included
+const REQUIRED_RECIPIENT = "softwareengineering@rit.edu";
 import GmailAuthModal from "@/components/GmailAuthModal"
 import { useGmailAuth } from "@/lib/hooks/useGmailAuth"
 
@@ -85,8 +88,8 @@ export default function CheckoutForm({ userName, onClose, onSuccess }: CheckoutF
     setError(null)
     setLoading(true)
 
-    // Validate required fields
-    if (!name || !committee || !description || !estimatedCost || !plannedDate || !notifyEmail) {
+    // Validate required fields (notifyEmail is optional since REQUIRED_RECIPIENT is always included)
+    if (!name || !committee || !description || !estimatedCost || !plannedDate) {
       setError("Please fill in all required fields")
       setLoading(false)
       return
@@ -271,17 +274,25 @@ export default function CheckoutForm({ userName, onClose, onSuccess }: CheckoutF
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="notifyEmail">Send notification to (email) *</Label>
-                <Input
-                  id="notifyEmail"
-                  type="email"
-                  value={notifyEmail}
-                  onChange={(e) => setNotifyEmail(e.target.value)}
-                  placeholder="treasurer@sse.rit.edu"
-                  required
-                />
+                <Label>Send notification to</Label>
+                <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-md border">
+                  <Lock className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm">{REQUIRED_RECIPIENT}</span>
+                  <span className="text-xs text-muted-foreground">(always included)</span>
+                </div>
+                <div className="mt-2">
+                  <Label htmlFor="notifyEmail" className="text-sm">Additional notification emails (optional)</Label>
+                  <Input
+                    id="notifyEmail"
+                    type="email"
+                    value={notifyEmail}
+                    onChange={(e) => setNotifyEmail(e.target.value)}
+                    placeholder="treasurer@sse.rit.edu"
+                    className="mt-1"
+                  />
+                </div>
                 <p className="text-xs text-muted-foreground">
-                  This email will receive a notification about your checkout request
+                  These emails will receive a notification about your checkout request
                 </p>
               </div>
 
