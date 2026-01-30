@@ -56,6 +56,7 @@ export default async function Home() {
                 <div className="flex flex-col lg:flex-row items-start gap-8 lg:gap-10">
                     <HeroCTA 
                         description={HomepageContent.description}
+                        labHoursCallout={HomepageContent.labHoursCallout}
                         weeklyMeetingCallout={HomepageContent.weeklyMeetingCallout}
                         discordLink={HomepageContent.discordLink}
                     />

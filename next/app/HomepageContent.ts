@@ -5,6 +5,7 @@ const defaultDescription = `This is a description of the event. Lorem ipsum dolo
 
 interface HomepageContent {
     description: string;
+    labHoursCallout: string;
     weeklyMeetingCallout: string;
     discordLink: string;
     instagramLink: string;
@@ -14,6 +15,7 @@ interface HomepageContent {
 
 export default {
     description: "An academic organization at the Rochester Institute of Technology providing mentoring and community to students in Golisano College.",
+    labHoursCallout: "Mentoring hours: Monday-Friday from 10:00 AM - 6:00 PM",
     weeklyMeetingCallout: "Come to our weekly meetings on Wednesday at 3:00 PM in GOL-1670!",
     discordLink: "https://www.discord.gg/rNC6wj82kq",
     instagramLink: "https://www.instagram.com/rit_sse/",
