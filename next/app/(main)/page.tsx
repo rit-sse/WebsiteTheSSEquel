@@ -24,6 +24,10 @@ interface SponsorData {
     updatedAt: Date;
 }
 
+// Tell next.js to run only during run-time execution
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function Home() {
 
     let events = await getEvents() as Event[] | null;
