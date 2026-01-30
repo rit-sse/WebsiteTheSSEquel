@@ -82,7 +82,7 @@ export async function GET(
       eventId,
       eventTitle: event.title,
       attendanceEnabled: event.attendanceEnabled,
-      attendees: attendances.map((a) => ({
+      attendees: attendances.map((a: { id: any; user: { id: any; name: any; email: any; }; createdAt: any; }) => ({
         id: a.id,
         userId: a.user.id,
         name: a.user.name,

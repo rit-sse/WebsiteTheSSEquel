@@ -1,10 +1,10 @@
-import { Prisma } from "@prisma/client";
+import {Prisma, PrismaClient} from "@prisma/client";
 import prisma from "@/lib/prisma";
-import { NextRequest, NextResponse } from "next/server";
+import {NextResponse } from "next/server";
 export const dynamic = 'force-dynamic';
 
 function validateGoLink(goLink: string): boolean {
-  return /^[a-z\-]+$/.test(goLink);
+  return /^[a-z-]+$/.test(goLink);
 }
 
 /**
@@ -154,7 +154,7 @@ export async function PUT(request: Request) {
   }
   const id = body.id;
 
-  const data: Prisma.GoLinksUpdateInput = {};
+  const data: Prisma.Args<PrismaClient["goLinks"], "update">["data"] = {};
   let hasUpdates = false;
 
   if ("url" in body && typeof body.url === 'string') {

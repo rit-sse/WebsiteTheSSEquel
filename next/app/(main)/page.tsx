@@ -13,6 +13,21 @@ import { NeoCard } from "@/components/ui/neo-card";
 import { Card } from "@/components/ui/card";
 import prisma from '@/lib/prisma';
 
+interface SponsorData {
+    id: number;
+    description: string;
+    name: string;
+    logoUrl: string;
+    websiteUrl: string;
+    isActive: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+// Tell next.js to run only during run-time execution
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function Home() {
 
     let events = await getEvents() as Event[] | null;
@@ -27,7 +42,7 @@ export default async function Home() {
         });
 
         // Transform to match the Sponsor component props
-        sponsors = sponsorsData.map(sponsor => ({
+        sponsors = sponsorsData.map((sponsor: SponsorData) => ({
             image: sponsor.logoUrl,
             url: sponsor.websiteUrl,
             name: sponsor.name,
@@ -70,10 +85,10 @@ export default async function Home() {
               <div className='flex flex-row justify-center items-center'>
                 {events && events.length > 0 ? (
                 <div className='grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-full'>
-                    {events.map((event, index) => {
+                    {events.map((event) => {
                         event.date = formatDate(event.date);
                         return (
-                            <EventCard key={index} {...event} />
+                            <EventCard key={event.id} {...event} />
                         )
                     })}
                 </div>
