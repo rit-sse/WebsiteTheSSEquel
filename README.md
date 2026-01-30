@@ -12,14 +12,12 @@ This repo contains the source code for the Society of Software Engineers' websit
 Follow our [environment setup guide](documentation/EnvironmentSetup.md) to get started with the project.
 
 ## Required VSCode Extensions
-
-- Tailwind CSS IntelliSense: bradlc.vscode-tailwindcss (Tailwind CSS IntelliSense)
-- PostCSS Language Support: csstools.postcss (required for Tailwind CSS IntelliSense)
-- Prisma: Prisma.prisma (Prisma file syntax highlighting, formatting, completions, and linting)
+- [Tailwind CSS IntelliSense](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss): bradlc.vscode-tailwindcss (Tailwind CSS IntelliSense)
+- [PostCSS Language Support](https://marketplace.visualstudio.com/items?itemName=csstools.postcss): csstools.postcss (required for Tailwind CSS IntelliSense)
+- [Prisma](https://marketplace.visualstudio.com/items?itemName=Prisma.prisma): Prisma.prisma (Prisma file syntax highlighting, formatting, completions, and linting)
 
 Recommended VSCode Extensions:
-
-- GitLens: eamodio.gitlens (GOATed extension for git)
+- [GitLens](https://marketplace.visualstudio.com/items?itemName=eamodio.gitlens): eamodio.gitlens (GOATed extension for git)
 
 ## Contributing
 
