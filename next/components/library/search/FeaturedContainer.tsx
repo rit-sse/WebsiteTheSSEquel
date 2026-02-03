@@ -15,7 +15,7 @@ export async function FeaturedContainer({ props }: { props: { books: Book[], hea
     }
 
     return (
-        <div className="w-full max-w-7xl flex flex-col items-center mt-[15px] px-2 py-4 md:px-4 md:py-6 lg:px-6 lg:py-8">
+        <div className="w-full flex flex-col items-center mt-[15px] px-2 py-4 md:px-4 md:py-6 lg:px-6 lg:py-8">
             <h2 className="w-full text-3xl font-normal font-sans mb-6">{props.header}</h2>
             <div className="flex flex-row items-top  w-[100%] overflow-x-scroll justify-start scrollbar-hide ">
                 {props.books.map((book) => (

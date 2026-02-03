@@ -1,10 +1,10 @@
+import LibraryQuickLink from "@/components/library/LibraryQuickButton";
 import { FeaturedContainer } from "@/components/library/search/FeaturedContainer";
 
 export default async function LibraryHome() {
     return (
         <div className="w-[80%] relative flex items-center flex-col bg-white">
-            <div className="h-[200px]" />
-            <input className="z-[2]  relative w-[100%] text-[25px] border-none py-[22px] px-[20px] rounded-lg shadow-2xl" placeholder="Search our collection (Course-Code, ISBN, Name, etc...)" />
+            <input className="z-[2] top-[-40px] relative w-[100%] text-[25px] border-none py-[22px] px-[20px] rounded-lg shadow-2xl" placeholder="Search our collection (Course-Code, ISBN, Name, etc...)" />
             <FeaturedContainer props={{
                 books: [
                     {
@@ -137,9 +137,11 @@ export default async function LibraryHome() {
                 ],
                 header: "Computer Science"
             }} />
-            <div className="w-[50%] grid grid-cols-2 text-center gap-6">
-                <a>Check out entire library</a>
-                <a>Register for an SSE Library Card</a>
+            <div className="w-[100%] md:w-[60%] grid grid-cols-2 text-center gap-6">
+                <LibraryQuickLink props={{label: "Advanced Search", link: "#"}} />
+                <LibraryQuickLink props={{label: "Browse All Books", link: "#"}} />
+                <LibraryQuickLink props={{label: "View Books by Keywords", link: "#"}} />
+                <LibraryQuickLink props={{label: "Textbook Donations", link: "/library/donations"}} />
             </div>
         </div>
     );

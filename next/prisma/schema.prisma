@@ -37,6 +37,7 @@ model User {
   session              Session[]
   projectContributions ProjectContributor[]
   projects             Project[]
+  textbooks            Textbooks[]
 
   Memberships      Memberships[]
   purchaseRequests PurchaseRequest[]
@@ -587,11 +588,13 @@ model Textbooks {
 
   bookName        String  // Book title
   bookAuthors     String  // Author(s) separated by commas
+  bookImage       String  // Book Image
   bookPublisher   String  // Publisher
+  edition         String  // Edition
   ISBN            String  // ISBN-13 of the textbook
   keyWords        String  // Any keywords that could be of interest
   classInterest   String  // Each course separated by commas (i.e SWEN-256, SWEN-261, SWEN-262, CSCI-331, etc.)
-  yearPublished   Int     // Publishing date
+  yearPublished   String  // Publishing date
 
   // No checkout feature as of yet, but here just in case.
   checkedOut      Boolean
