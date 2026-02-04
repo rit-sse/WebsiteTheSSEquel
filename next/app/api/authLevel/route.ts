@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
+import { MENTOR_HEAD_TITLE } from "@/lib/utils";
 
 export const dynamic = 'force-dynamic'
 
@@ -21,6 +22,8 @@ export async function PUT(request: Request) {
     membershipCount: number;
     isMentor: boolean;
     isOfficer: boolean;
+    isMentoringHead: boolean;
+    isPrimary: boolean;
   } = {
     userId: null,
     isUser: false,
@@ -28,6 +31,8 @@ export async function PUT(request: Request) {
     membershipCount: 0,
     isMentor: false,
     isOfficer: false,
+    isMentoringHead: false,
+    isPrimary: false,
   };
 
   if (body.token == null) {
@@ -50,7 +55,15 @@ export async function PUT(request: Request) {
       },
       officers: {
         where: { is_active: true },
-        select: { id: true },
+        select: {
+          id: true,
+          position: {
+            select: {
+              title: true,
+              is_primary: true,
+            },
+          },
+        },
       },
       _count: {
         select: { Memberships: true },
@@ -66,6 +79,12 @@ export async function PUT(request: Request) {
     authLevel.isMember = membershipCount >= 1;
     authLevel.isMentor = user.mentor.length > 0;
     authLevel.isOfficer = user.officers.length > 0;
+    authLevel.isMentoringHead = user.officers.some(
+      (officer) => officer.position.title === MENTOR_HEAD_TITLE
+    );
+    authLevel.isPrimary = user.officers.some(
+      (officer) => officer.position.is_primary
+    );
   }
 
   return Response.json(authLevel);
@@ -84,6 +103,8 @@ export async function GET(request: NextRequest) {
     membershipCount: number;
     isMentor: boolean;
     isOfficer: boolean;
+    isMentoringHead: boolean;
+    isPrimary: boolean;
   } = {
     userId: null,
     isUser: false,
@@ -91,6 +112,8 @@ export async function GET(request: NextRequest) {
     membershipCount: 0,
     isMentor: false,
     isOfficer: false,
+    isMentoringHead: false,
+    isPrimary: false,
   };
 
   if (authToken == null) {
@@ -113,7 +136,15 @@ export async function GET(request: NextRequest) {
       },
       officers: {
         where: { is_active: true },
-        select: { id: true },
+        select: {
+          id: true,
+          position: {
+            select: {
+              title: true,
+              is_primary: true,
+            },
+          },
+        },
       },
       _count: {
         select: { Memberships: true },
@@ -129,6 +160,12 @@ export async function GET(request: NextRequest) {
     authLevel.isMember = membershipCount >= 1;
     authLevel.isMentor = user.mentor.length > 0;
     authLevel.isOfficer = user.officers.length > 0;
+    authLevel.isMentoringHead = user.officers.some(
+      (officer) => officer.position.title === MENTOR_HEAD_TITLE
+    );
+    authLevel.isPrimary = user.officers.some(
+      (officer) => officer.position.is_primary
+    );
   }
 
   return Response.json(authLevel);

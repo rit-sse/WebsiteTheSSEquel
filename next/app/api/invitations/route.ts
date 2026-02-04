@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
     return new Response('"email" and "type" are required', { status: 400 });
   }
 
-  const { email, type, positionId, startDate, endDate } = body;
+  const { email, type, positionId, startDate, endDate, applicationId } = body;
 
   // Validate email domain
   if (!email.endsWith("@g.rit.edu")) {
@@ -95,8 +95,8 @@ export async function POST(request: NextRequest) {
   }
 
   // Validate type
-  if (type !== "officer" && type !== "user") {
-    return new Response('Type must be "officer" or "user"', { status: 400 });
+  if (type !== "officer" && type !== "user" && type !== "mentor") {
+    return new Response('Type must be "officer", "user", or "mentor"', { status: 400 });
   }
 
   // For officer invitations, validate required fields
@@ -130,6 +130,23 @@ export async function POST(request: NextRequest) {
         "This position already has an active officer. Remove them first or wait for their term to end.",
         { status: 409 }
       );
+    }
+  }
+
+  // For mentor invitations, validate and check if already a mentor
+  if (type === "mentor") {
+    // Check if user with this email is already an active mentor
+    const existingUser = await prisma.user.findUnique({
+      where: { email },
+      include: {
+        mentor: {
+          where: { isActive: true },
+        },
+      },
+    });
+
+    if (existingUser && existingUser.mentor.length > 0) {
+      return new Response("This user is already an active mentor", { status: 409 });
     }
   }
 
@@ -170,13 +187,23 @@ export async function POST(request: NextRequest) {
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + 30); // 30 days from now
 
+  // For mentor invitations, set default endDate to 1 year from now if not provided
+  let mentorExpirationDate = null;
+  if (type === "mentor") {
+    mentorExpirationDate = endDate ? new Date(endDate) : new Date();
+    if (!endDate) {
+      mentorExpirationDate.setFullYear(mentorExpirationDate.getFullYear() + 1);
+    }
+  }
+
   const invitation = await prisma.invitation.create({
     data: {
       invitedEmail: email,
       type,
       positionId: type === "officer" ? positionId : null,
+      applicationId: type === "mentor" && applicationId ? applicationId : null,
       startDate: type === "officer" ? new Date(startDate) : null,
-      endDate: type === "officer" ? new Date(endDate) : null,
+      endDate: type === "officer" ? new Date(endDate) : (type === "mentor" ? mentorExpirationDate : null),
       invitedBy: loggedInUser.id,
       expiresAt,
     },
@@ -190,6 +217,19 @@ export async function POST(request: NextRequest) {
       },
     },
   });
+
+  // If this is a mentor invitation linked to an application, update the application status
+  if (type === "mentor" && applicationId) {
+    try {
+      await prisma.mentorApplication.update({
+        where: { id: applicationId },
+        data: { status: "invited" },
+      });
+    } catch (error) {
+      console.error("Failed to update application status:", error);
+      // Don't fail the request, the invitation is created
+    }
+  }
 
   // Send invitation email
   if (isEmailConfigured()) {
@@ -251,6 +291,42 @@ export async function POST(request: NextRequest) {
             </div>
           `,
           text: `You've been invited to join SSE as ${invitation.position.title}!\n\nYour term: ${new Date(invitation.startDate!).toLocaleDateString()} to ${new Date(invitation.endDate!).toLocaleDateString()}\n\nAccept your invitation at: ${acceptUrl}\n\nThis invitation expires in 30 days.\n\nQuestions? Contact ${invitation.inviter.name} at ${invitation.inviter.email}`,
+          fromEmail: loggedInUser.email,
+          fromName: loggedInUser.name,
+          accessToken,
+        });
+      } else if (type === "mentor") {
+        // Mentor invitation email
+        const expirationDate = invitation.endDate ? new Date(invitation.endDate).toLocaleDateString() : "1 year from acceptance";
+        await sendEmail({
+          to: email,
+          subject: "You've been invited to become an SSE Mentor!",
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h1 style="color: #333;">You've been invited to become an SSE Mentor!</h1>
+              <p>Hi! You've been invited to join the Society of Software Engineers as a <strong>Mentor</strong>.</p>
+              <p>As a mentor, you'll help fellow students with homework, assignments, and test preparation in the SSE lab.</p>
+              <p>Your mentorship expires: <strong>${expirationDate}</strong></p>
+              <p>To accept this invitation, click the button below to sign in with your RIT Google account:</p>
+              <div style="margin: 30px 0;">
+                <a href="${acceptUrl}" style="background-color: #0066cc; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+                  Sign In to Accept
+                </a>
+              </div>
+              <p><strong>Mentor Responsibilities:</strong></p>
+              <ul>
+                <li>Help students with coursework during scheduled hours</li>
+                <li>Maintain a welcoming and supportive environment</li>
+                <li>Participate in mentor meetings and review sessions</li>
+              </ul>
+              <p><em>This invitation expires in 30 days.</em></p>
+              <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;" />
+              <p style="color: #666; font-size: 12px;">
+                Questions? Contact ${invitation.inviter.name} at ${invitation.inviter.email}
+              </p>
+            </div>
+          `,
+          text: `You've been invited to become an SSE Mentor!\n\nAs a mentor, you'll help fellow students with homework, assignments, and test preparation.\n\nMentorship expires: ${expirationDate}\n\nAccept your invitation at: ${acceptUrl}\n\nThis invitation expires in 30 days.\n\nQuestions? Contact ${invitation.inviter.name} at ${invitation.inviter.email}`,
           fromEmail: loggedInUser.email,
           fromName: loggedInUser.name,
           accessToken,

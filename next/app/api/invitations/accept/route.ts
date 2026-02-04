@@ -119,6 +119,44 @@ export async function POST(request: NextRequest) {
         message: `You are now ${invitation.position?.title}!`,
         officer,
       });
+    } else if (invitation.type === "mentor") {
+      // Create mentor record
+      // Use endDate from invitation as expiration, or default to 1 year from now
+      const expirationDate = invitation.endDate || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+
+      // Check if user already has an active mentor record
+      const existingMentor = await prisma.mentor.findFirst({
+        where: {
+          user_Id: loggedInUser.id,
+          isActive: true,
+        },
+      });
+
+      if (existingMentor) {
+        return new Response("You are already an active mentor", { status: 409 });
+      }
+
+      // Create the mentor record
+      const mentor = await prisma.mentor.create({
+        data: {
+          user_Id: loggedInUser.id,
+          expirationDate: expirationDate,
+          isActive: true,
+        },
+      });
+
+      // Delete the invitation
+      await prisma.invitation.delete({
+        where: { id: invitationId },
+      });
+
+      console.log(`User ${loggedInUser.email} accepted mentor invitation`);
+
+      return Response.json({
+        success: true,
+        message: "Welcome to the SSE Mentoring team!",
+        mentor,
+      });
     } else if (invitation.type === "user") {
       // Create a membership record for the user
       const membership = await prisma.memberships.create({

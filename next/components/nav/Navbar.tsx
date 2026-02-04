@@ -41,6 +41,11 @@ const aboutItems = [
         description: "Discover ways to participate and contribute to SSE.",
     },
     {
+        title: "Become a Mentor",
+        href: "/mentoring/apply",
+        description: "Apply to help fellow students in the SSE lab.",
+    },
+    {
         title: "Leadership",
         href: "/about/leadership",
         description: "Meet the team leading SSE this year.",
@@ -77,6 +82,11 @@ const dashboardItems = [
         title: "Attendance",
         href: "/attendance",
         description: "View event attendance lists and QR flyers.",
+    },
+    {
+        title: "Mentoring",
+        href: "/dashboard/mentoring",
+        description: "Manage mentor schedules and roster.",
     },
     {
         title: "Positions & Officers",
@@ -226,7 +236,7 @@ const Navbar: React.FC = () => {
                                         Dashboard
                                     </NavigationMenuTrigger>
                                     <NavigationMenuContent>
-                                        <ul className="grid gap-3 p-4 w-[300px]">
+                                        <ul className="grid gap-3 p-4 md:w-[400px] lg:w-[500px] lg:grid-cols-2">
                                             {dashboardItems.map((item) => (
                                                 <ListItem key={item.title} title={item.title} href={item.href}>
                                                     {item.description}

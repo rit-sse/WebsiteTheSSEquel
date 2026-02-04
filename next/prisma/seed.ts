@@ -428,6 +428,60 @@ async function seedSchedule() {
 	console.log({ schedule1, schedule2, schedule3 });
 }
 
+// New mentor schedule system
+async function seedMentorSchedule() {
+	const mentorSchedule1 = await prisma.mentorSchedule.upsert({
+		where: { id: 1 },
+		update: {},
+		create: {
+			id: 1,
+			name: "Spring 2026",
+			isActive: true,
+		},
+	});
+	const mentorSchedule2 = await prisma.mentorSchedule.upsert({
+		where: { id: 2 },
+		update: {},
+		create: {
+			id: 2,
+			name: "Fall 2025",
+			isActive: false,
+		},
+	});
+	console.log({ mentorSchedule1, mentorSchedule2 });
+}
+
+async function seedScheduleBlock() {
+	// Sample schedule blocks for Spring 2026
+	const blocks = [
+		// Mentor 1 - Monday and Wednesday at 10am
+		{ weekday: 1, startHour: 10, mentorId: 1, scheduleId: 1 },
+		{ weekday: 3, startHour: 10, mentorId: 1, scheduleId: 1 },
+		// Mentor 2 - Tuesday and Thursday at 12pm
+		{ weekday: 2, startHour: 12, mentorId: 2, scheduleId: 1 },
+		{ weekday: 4, startHour: 12, mentorId: 2, scheduleId: 1 },
+		// Mentor 3 - Monday and Friday at 2pm
+		{ weekday: 1, startHour: 14, mentorId: 3, scheduleId: 1 },
+		{ weekday: 5, startHour: 14, mentorId: 3, scheduleId: 1 },
+		// Double coverage on Wednesday at 2pm
+		{ weekday: 3, startHour: 14, mentorId: 1, scheduleId: 1 },
+		{ weekday: 3, startHour: 14, mentorId: 2, scheduleId: 1 },
+	];
+
+	for (let i = 0; i < blocks.length; i++) {
+		const block = blocks[i];
+		await prisma.scheduleBlock.upsert({
+			where: { id: i + 1 },
+			update: {},
+			create: {
+				id: i + 1,
+				...block,
+			},
+		});
+	}
+	console.log(`Seeded ${blocks.length} schedule blocks`);
+}
+
 async function seedGoLinks() {
 	const goLink1 = await prisma.goLinks.upsert({
 		where: { id: 1 },
@@ -750,6 +804,9 @@ async function main() {
     await seedCourseTaken();
     await seedHourBlock();
     await seedSchedule();
+    // New mentor schedule system
+    await seedMentorSchedule();
+    await seedScheduleBlock();
     await seedGoLinks();
     
     // REMOVED: seedAccount, seedSession, seedVerificationToken

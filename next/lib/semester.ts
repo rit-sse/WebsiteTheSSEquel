@@ -30,6 +30,14 @@ export function getSemester(dateString: string): SemesterInfo {
   }
 }
 
+/**
+ * Get the current semester based on today's date
+ * Useful for auto-detecting which semester to use for recruitment, etc.
+ */
+export function getCurrentSemester(): SemesterInfo {
+  return getSemester(new Date().toISOString())
+}
+
 export interface SemesterGroup<T> {
   label: string
   sortKey: string
