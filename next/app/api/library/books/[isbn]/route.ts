@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
+import { NextRequest } from "next/server";
 
-export async function GET(request: Request, { params }: { params: { isbn?: string } }) {
+export async function GET(request: NextRequest, { params }: { params: { isbn?: string } }) {
     console.log("GET /api/library/books/[isbn]");
 
     if(params.isbn == undefined || params.isbn.trim() === "") {

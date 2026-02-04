@@ -737,6 +737,8 @@ async function seedSponsors() {
 async function seedTextbooks() {
 
 	await prisma.textbooks.deleteMany({}); // Clear existing textbooks
+	// Truncate the ID sequence to start from 1 again
+
 
 	const textbook1 = await prisma.textbooks.upsert({
 		where: { id: 1 },
@@ -814,12 +816,41 @@ async function seedTextbooks() {
 	console.log({ textbook1, textbook2, textbook3, textbook4 });
 }
 
+async function seedCategories() {
+	
+	await prisma.bookCategory.deleteMany({}); // Clear existing categories
+
+	const categories = [
+		"Software Engineering",
+		"Computer Science",
+	];
+
+	let count = 1;
+
+	for (const category of categories) {
+		await prisma.bookCategory.upsert({
+			where: { categoryName: category, id: count},
+			update: {},
+			create: { categoryName: category, id: count },
+		});
+		count++;
+	}
+
+	await prisma.bookCategory.update({
+		where: { categoryName: "Software Engineering", id: 1 },
+		data: {
+			books: [1,2]
+		},
+	});
+}
+
 async function main() {
 	try {
 		// Core data seeding
 		await seedUser(); // Test users for development only
 
 		await seedTextbooks();
+		await seedCategories();
 
 		await seedQuote();
 		await seedOfficerPosition(); // Officer positions (can exist without officers)

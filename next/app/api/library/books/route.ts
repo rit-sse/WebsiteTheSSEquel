@@ -1,7 +1,83 @@
 import prisma from "@/lib/prisma";
+import { NextRequest } from "next/server";
 
-export async function GET(request: Request ) {
+export async function GET(request: NextRequest) {
     console.log("GET /api/library/[isbn]");
+
+    let isbn = request.nextUrl.searchParams.get("isbn") || "";
+    let id = request.nextUrl.searchParams.get("id") || "";
+    let getCount = request.nextUrl.searchParams.get("count") === "true";
+
+    if (isbn || isbn.trim() !== "") {
+        const book = await prisma.textbooks.findFirst({
+            where: {
+                ISBN: isbn,
+            },
+            select: {
+                ISBN: true,
+                name: true,
+                authors: true,
+                image: true,
+                description: true,
+                publisher: true,
+                edition: true,
+                keyWords: true,
+                classInterest: true,
+                yearPublished: true,
+            }
+        });
+
+        if( getCount ) {
+            const stockNumber = await prisma.textbooks.count({
+                where: {
+                    ISBN: isbn,
+                    checkedOut: false,
+                }
+            });
+
+            const response = {
+                ...book,
+                stockNumber: stockNumber
+            };
+
+            return new Response(JSON.stringify(response), { status: 200 });
+        }
+
+        if (!book) {
+            return new Response(JSON.stringify({ error: "Not found" }), { status: 404 });
+        }
+
+        return new Response(JSON.stringify(book), { status: 200 });
+    }
+
+    if( id || id.trim() !== "") {
+        console.log(id)
+        const book = await prisma.textbooks.findFirst({
+            where: {
+                id: parseInt(id),
+            },
+            select: {
+                ISBN: true,
+                name: true,
+                authors: true,
+                image: true,
+                description: true,
+                publisher: true,
+                edition: true,
+                keyWords: true,
+                classInterest: true,
+                yearPublished: true,
+            }
+        });
+
+        console.log(book)
+
+        if (!book) {
+            return new Response(JSON.stringify({ error: "Not found" }), { status: 404 });
+        }
+
+        return new Response(JSON.stringify(book), { status: 200 });
+    }
 
 
     const book = await prisma.textbooks.findMany({
@@ -24,4 +100,5 @@ export async function GET(request: Request ) {
     }
 
     return new Response(JSON.stringify(book), { status: 200 });
+
 }

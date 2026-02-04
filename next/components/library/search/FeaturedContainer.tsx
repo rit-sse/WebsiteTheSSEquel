@@ -1,13 +1,21 @@
 "use client"
+
 type Book = {
-    image: string;
-    bookName: string;
-    authorName: string;
+    id: number;
     ISBN: string;
+    name: string;
+    authors: string;
+    image: string;
+    description: string;
+    publisher: string;
+    edition: string;
+    keyWords: string;
+    classInterest: string;
+    yearPublished: string;
     stockNumber: number;
 };
 
-export async function FeaturedContainer({ props }: { props: { books: Book[], header: string } }) {
+export function FeaturedContainer({ props }: { props: { books: Book[], header: string } }) {
 
     function onClickBook(book: Book) {
         // Placeholder for future functionality when a book is clicked
@@ -26,11 +34,11 @@ export async function FeaturedContainer({ props }: { props: { books: Book[], hea
                     >
                         <img
                             src={book.image}
-                            alt={book.bookName}
+                            alt={book.name}
                             className="w-full h-[220px] object-cover rounded-md shadow-sm"
                         />
-                        <h3 className="mt-2 text-lg font-medium">{book.bookName}</h3>
-                        <p className="text-sm text-gray-600">{book.authorName}</p>
+                        <h3 className="mt-2 text-lg font-medium">{book.name}</h3>
+                        <p className="text-sm text-gray-600">{book.authors}</p>
                         <p className="text-sm text-gray-500">ISBN: {book.ISBN}</p>
                         <p className={`mt-1 text-sm font-semibold ${book.stockNumber > 0 ? 'text-green-600' : 'text-red-600'}`}>
                             {book.stockNumber > 0 ? `(${book.stockNumber}) on shelf` : 'Out of stock'}

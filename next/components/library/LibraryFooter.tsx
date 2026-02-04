@@ -1,3 +1,4 @@
+
 import SSELogoFullWhite from "./SSELogoFullWhite";
 
 export default function LibraryFooter() {
