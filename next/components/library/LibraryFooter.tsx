@@ -6,8 +6,8 @@ export default function LibraryFooter() {
             <div className="w-[80%] pt-[15px] flex flex-col items-center justify-between h-fit md:flex-row">
                 <SSELogoFullWhite />
                 <div className="text-white font-rethink font-normal text-lg flex flex-col gap-2 text-center mt-[15px] md:text-right md:mt-0">
-                    <a href="#" className="hover:text-gray-300 transition-colors duration-200">Home</a>
-                    <a href="#" className="hover:text-gray-300 transition-colors duration-200">Leadership</a>
+                    <a href="/library" className="hover:text-gray-300 transition-colors duration-200">Home</a>
+                    <a href="/about/leadership" className="hover:text-gray-300 transition-colors duration-200">Leadership</a>
                 </div>
             </div>
         </div>

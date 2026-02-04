@@ -1,3 +1,4 @@
+"use client"
 import LibraryFooter from "@/components/library/LibraryFooter";
 import TopGradient from "@/components/library/TopGradient";
 import { Inter, Rethink_Sans, PT_Serif } from 'next/font/google';

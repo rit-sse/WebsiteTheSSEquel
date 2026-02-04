@@ -126,7 +126,7 @@ async function seedOfficer() {
 	const presidentPosition = await prisma.officerPosition.findFirst({
 		where: { title: "President" }
 	});
-	
+
 	if (presidentPosition) {
 		const officer = await prisma.officer.upsert({
 			where: { id: 1 },
@@ -579,71 +579,71 @@ async function seedProjectContributor() {
 }
 
 async function seedEvents() {
-  const event1 = await prisma.event.create({
-    data: {
-	  id: "1" ,
-      title: "Keeping it Silly",
-      date: new Date("2023-11-1 12:00:00"),
-      description: "we keep it silly :3",
-    },
-  });
+	const event1 = await prisma.event.create({
+		data: {
+			id: "1",
+			title: "Keeping it Silly",
+			date: new Date("2023-11-1 12:00:00"),
+			description: "we keep it silly :3",
+		},
+	});
 
-  const event2 = await prisma.event.create({
-    data: {
-	  id: "2",
-      title: "Catan Tournament",
-      date: new Date("2023-11-1 12:00:00"),
-      description: "Elyza will win again.",
-	  image: "/images/codfather.jpg",
-	  location: "none",
-    },
-  });
+	const event2 = await prisma.event.create({
+		data: {
+			id: "2",
+			title: "Catan Tournament",
+			date: new Date("2023-11-1 12:00:00"),
+			description: "Elyza will win again.",
+			image: "/images/codfather.jpg",
+			location: "none",
+		},
+	});
 
-  const event3 = await prisma.event.create({
-    data: {
-	  id: "3",
-      title: "AAA",
-      date: new Date("2023-11-1 12:00:00"),
-      description: "ooops",
-	  image: "/images/codfather.jpg",
-	  location: "none",
-    },
-  });
+	const event3 = await prisma.event.create({
+		data: {
+			id: "3",
+			title: "AAA",
+			date: new Date("2023-11-1 12:00:00"),
+			description: "ooops",
+			image: "/images/codfather.jpg",
+			location: "none",
+		},
+	});
 
-  const event4 = await prisma.event.create({
-    data: {
-	  id: "4",
-      title: "Bing bing",
-      date: new Date("2023-11-1 12:00:00"),
-      description: "bing bing bing",
-	  image: "/images/codfather.jpg",
-	  location: "none",
-    },
-  });
+	const event4 = await prisma.event.create({
+		data: {
+			id: "4",
+			title: "Bing bing",
+			date: new Date("2023-11-1 12:00:00"),
+			description: "bing bing bing",
+			image: "/images/codfather.jpg",
+			location: "none",
+		},
+	});
 
 	const event5 = await prisma.event.create({
 		data: {
-		  id: "5",
-		  title: "Farihaaaa",
-		  date: new Date("2023-11-1 12:00:00"),
-		  description: "poop poop poop",
-		  image: "/images/codfather.jpg",
-		  location: "none",
+			id: "5",
+			title: "Farihaaaa",
+			date: new Date("2023-11-1 12:00:00"),
+			description: "poop poop poop",
+			image: "/images/codfather.jpg",
+			location: "none",
 		},
-  });
+	});
 
-  const event6 = await prisma.event.create({
-	data: {
-	  id: "6",
-	  title: "Spring Fling",
-	  date: new Date("2023-11-1 12:00:00"),
-	  description: "Spring thing",
-	  image: "/images/spring-fling-2.png",
-	  location: "none",
-	},
-  });
+	const event6 = await prisma.event.create({
+		data: {
+			id: "6",
+			title: "Spring Fling",
+			date: new Date("2023-11-1 12:00:00"),
+			description: "Spring thing",
+			image: "/images/spring-fling-2.png",
+			location: "none",
+		},
+	});
 
-  console.log({ event1, event2, event3, event4, event5, event6 });
+	console.log({ event1, event2, event3, event4, event5, event6 });
 }
 
 async function seedMemberships() {
@@ -687,7 +687,7 @@ async function seedMemberships() {
 		}
 	});
 
-	console.log({membership1, membership2, membership3, membership4, membership5});
+	console.log({ membership1, membership2, membership3, membership4, membership5 });
 
 }
 
@@ -734,36 +734,119 @@ async function seedSponsors() {
 	console.log({ sponsor1, sponsor2, sponsor3 });
 }
 
+async function seedTextbooks() {
+
+	await prisma.textbooks.deleteMany({}); // Clear existing textbooks
+
+	const textbook1 = await prisma.textbooks.upsert({
+		where: { id: 1 },
+		update: {},
+		create: {
+			name: "Rapid Development: Taming Wild Software Schedules",
+			description: "In Rapid Development, software industry guru Steve McConnell offers field-tested techniques to help you dramatically accelerate your development schedule--without sacrificing quality. Drawing on a rich trove of case studies and examples from his own consulting practice, McConnell identifies the most effective strategies for streamlining every phase of the development process.",
+			authors: "Steve McConnell",
+			image: "/library-assets/9781556159006.jpg",
+			ISBN: "9781556159006",
+			edition: "",
+			publisher: "Pearson Education",
+			yearPublished: "1996",
+			keyWords: "software development, project management, software engineering",
+			classInterest: "SWEN-256",
+			checkedOut: false
+		},
+	});
+
+	const textbook2 = await prisma.textbooks.upsert({
+		where: { id: 2 },
+		update: {},
+		create: {
+			name: "Design Patterns: Elements of Reusable Object-Oriented Software",
+			description: "Capturing a wealth of experience about the design of object-oriented software, four top-notch designers present a catalog of simple and succinct solutions to commonly occurring design problems. Previously undocumented, these 23 patterns allow designers to create more flexible, elegant, and ultimately reusable designs without having to rediscover the design solutions themselves.",
+			authors: "Erich Gamma; Richard Helm; Ralph Johnson; John Vlissides",
+			image: "/library-assets/9780201633610.jpg",
+			ISBN: "9780201633610",
+			edition: "1",
+			publisher: "Addison-Wesley Professional",
+			yearPublished: "1994",
+			keyWords: "software design, software engineering, object-oriented programming",
+			classInterest: "SWEN-262",
+			checkedOut: false
+		},
+	});
+
+	const textbook3 = await prisma.textbooks.upsert({
+		where: { id: 3 },
+		update: {},
+		create: {
+			name: "C Programming Language, 2nd Edition",
+			description: "Learn how to program in C from the developers of C, Brian Kernighan and Dennis Ritchie. Intended for those with at least some experience with one other language (even if you are a novice), this book contains a tutorial introduction to get new users started as soon as possible and separate chapters on each major feature.",
+			authors: "Brian W. Kernighan; Dennis M. Ritchie",
+			image: "/library-assets/9780131103627.jpg",
+			ISBN: "9780131103627",
+			edition: "2",
+			publisher: "Pearson",
+			yearPublished: "1988",
+			keyWords: "C programming, software development, programming languages",
+			classInterest: "SWEN-250, SWEN-340",
+			checkedOut: false
+		},
+	});
+
+	const textbook4 = await prisma.textbooks.upsert({
+		where: { id: 4 },
+		update: {},
+		create: {
+			name: "Probability and Statistics for Engineering and the Sciences",
+			description: "Put statistical theories into practice with PROBABILITY AND STATISTICS FOR ENGINEERING AND THE SCIENCES, 9th Edition. Always a favorite with statistics students, this calculus-based text offers a comprehensive introduction to probability and statistics while demonstrating how professionals apply concepts, models, and methodologies in today's engineering and scientific careers. Jay Devore, an award-winning professor and internationally recognized author and statistician, emphasizes authentic problem scenarios in a multitude of examples and exercises, many of which involve real data, to show how statistics makes sense of the world. Mathematical development and derivations are kept to a minimum. The book also includes output, graphics, and screen shots from various statistical software packages to give you a solid perspective of statistics in action. A Student Solutions Manual, which includes worked-out solutions to almost all the odd-numbered exercises in the book, is available.",
+			authors: "Jay L. Devore",
+			image: "/library-assets/9781305251809.jpg",
+			ISBN: "9781305251809",
+			edition: "9",
+			publisher: "Cengage Learning",
+			yearPublished: "2015",
+			keyWords: "probability, statistics, engineering",
+			classInterest: "MATH-251",
+			checkedOut: false
+		},
+	});
+
+
+	console.log({ textbook1, textbook2, textbook3, textbook4 });
+}
+
 async function main() {
-  try {
-    // Core data seeding
-    await seedUser(); // Test users for development only
-    await seedQuote();
-    await seedOfficerPosition(); // Officer positions (can exist without officers)
-    await seedOfficer(); // Test officer assignment for development
-    await seedMentor();
-	await seedAlumni();
-    await seedSkill();
-    await seedMentorSkill();
-    await seedDepartment();
-    await seedCourse();
-    await seedCourseTaken();
-    await seedHourBlock();
-    await seedSchedule();
-    await seedGoLinks();
-    
-    // REMOVED: seedAccount, seedSession, seedVerificationToken
-    // These are now managed exclusively by NextAuth OAuth flow
-    // Users sign in via invitation emails → OAuth creates these automatically
-    
-	await seedProject();
-	await seedProjectContributor();
-    await seedEvents();
-	await seedMemberships();
-	await seedSponsors();
-  } catch (e) {
-    console.error(e);
-  }
+	try {
+		// Core data seeding
+		await seedUser(); // Test users for development only
+
+		await seedTextbooks();
+
+		await seedQuote();
+		await seedOfficerPosition(); // Officer positions (can exist without officers)
+		await seedOfficer(); // Test officer assignment for development
+		await seedMentor();
+		await seedAlumni();
+		await seedSkill();
+		await seedMentorSkill();
+		await seedDepartment();
+		await seedCourse();
+		await seedCourseTaken();
+		await seedHourBlock();
+		await seedSchedule();
+		await seedGoLinks();
+
+		// REMOVED: seedAccount, seedSession, seedVerificationToken
+		// These are now managed exclusively by NextAuth OAuth flow
+		// Users sign in via invitation emails → OAuth creates these automatically
+
+		await seedProject();
+		await seedProjectContributor();
+		await seedEvents();
+		await seedMemberships();
+		await seedSponsors();
+	} catch (e) {
+		console.error(e);
+	}
 }
 
 main()

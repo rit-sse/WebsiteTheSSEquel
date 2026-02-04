@@ -586,10 +586,11 @@ model Textbooks {
   // Textbook id for our internal reasons. This is NOT the ISBN!
   id              Int @id @default(autoincrement())
 
-  bookName        String  // Book title
-  bookAuthors     String  // Author(s) separated by commas
-  bookImage       String  // Book Image
-  bookPublisher   String  // Publisher
+  name        String  // Book title
+  authors     String  // Author(s) separated by commas
+  image       String  // Book Image
+  description String  // Book description
+  publisher   String  // Publisher
   edition         String  // Edition
   ISBN            String  // ISBN-13 of the textbook
   keyWords        String  // Any keywords that could be of interest
@@ -598,8 +599,8 @@ model Textbooks {
 
   // No checkout feature as of yet, but here just in case.
   checkedOut      Boolean
-  user_id         Int
+  user_id         Int?
 
   // Relations
-  user User @relation(fields: [user_id], references: [id])
+  user User? @relation(fields: [user_id], references: [id])
 }

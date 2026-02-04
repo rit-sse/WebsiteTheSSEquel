@@ -1,7 +1,8 @@
+
 import LibraryQuickLink from "@/components/library/LibraryQuickButton";
 import { FeaturedContainer } from "@/components/library/search/FeaturedContainer";
 
-export default async function LibraryHome() {
+export default function LibraryHome() {
     return (
         <div className="w-[80%] relative flex items-center flex-col bg-white">
             <input className="z-[2] top-[-40px] relative w-[100%] text-[25px] border-none py-[22px] px-[20px] rounded-lg shadow-2xl" placeholder="Search our collection (Course-Code, ISBN, Name, etc...)" />
