@@ -6,7 +6,7 @@ export async function GET(request: NextRequest) {
 
     let isbn = request.nextUrl.searchParams.get("isbn") || "";
     let id = request.nextUrl.searchParams.get("id") || "";
-    let getCount = request.nextUrl.searchParams.get("count") === "true";
+    let simple = request.nextUrl.searchParams.get("simple") === "true";
 
     if (isbn || isbn.trim() !== "") {
         const book = await prisma.textbooks.findMany({
@@ -14,16 +14,17 @@ export async function GET(request: NextRequest) {
                 ISBN: isbn,
             },
             select: {
-                ISBN: true,
-                name: true,
-                authors: true,
-                image: true,
-                description: true,
-                publisher: true,
-                edition: true,
-                keyWords: true,
-                classInterest: true,
-                yearPublished: true,
+                ISBN: !simple,
+                id: simple,
+                name: !simple,
+                authors: !simple,
+                image: !simple,
+                description: !simple,
+                publisher: !simple,
+                edition: !simple,
+                keyWords: !simple,
+                classInterest: !simple,
+                yearPublished: !simple,
                 checkedOut: true
             }
         });

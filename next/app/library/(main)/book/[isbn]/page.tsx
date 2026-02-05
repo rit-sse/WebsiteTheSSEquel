@@ -30,10 +30,14 @@ export default function BookPage({ params }: { params: { isbn: string } }) {
         stockNumber: 0,
     });
     const [loaded, setLoaded] = useState(false);
+    const [simpleData, setSimpleData] = useState<{ id: number, checkedOut: boolean }[]>([]);
     useEffect(() => {
         fetch((process.env.INTERNAL_API_URL ? process.env.INTERNAL_API_URL : "") + "/api/library/book?count=true&isbn=" + params.isbn).then(resp => resp.json()).then(data => {
             setBookData(data);
             setLoaded(true);
+        });
+        fetch((process.env.INTERNAL_API_URL ? process.env.INTERNAL_API_URL : "") + "/api/library/books?simple=true&isbn=" + params.isbn).then(resp => resp.json()).then(data => {
+            setSimpleData(data);
         });
     }, []);
 
@@ -53,7 +57,7 @@ export default function BookPage({ params }: { params: { isbn: string } }) {
                     }
                     <button
                         type="button"
-                        className="mt-3 w-full py-2.5 px-3 rounded-md border border-gray-200 bg-white text-left flex items-center gap-2.5 cursor-pointer"
+                        className="mt-3 w-full py-2.5 px-3 rounded-md border border-gray-200 bg-white text-left flex items-center gap-2.5 cursor-pointer hover:bg-gray-300 duration-200"
                         aria-label="ISBN Lookup"
                         onClick={() => { window.location.href = "https://isbnsearch.org/isbn/" + params.isbn; }}
                     >
@@ -96,10 +100,21 @@ export default function BookPage({ params }: { params: { isbn: string } }) {
                                     <div className="mt-1">
                                         <strong>Keywords:</strong> <span className="ml-1">{bookData.keyWords ?? "None"}</span>
                                     </div>
-                                    <div className="mt-1">
-                                        <strong>On shelf:</strong> <span className="ml-1">{bookData.stockNumber}</span>
-                                    </div>
                                 </div>
+                                <table className="w-full border-collapse border border-black mt-[5px] [&_td]:px-[5px] [&_td]:py-[3px] ">
+                                    <tr className="mt-6 text-lg font-semibold ">
+                                        <td className="bg-gray-200 border-x border-black">Book Id</td>
+                                        <td className="bg-gray-200 border-x border-black text-right">Checked Out Status</td>
+                                    </tr>
+                                    {
+                                        simpleData.map((copy) => (
+                                            <tr key={copy.id} className="text-base">
+                                                <td className="border-x border-y border-black">{copy.id}</td>
+                                                <td className={"border-x border-y border-black text-right" + (copy.checkedOut ? " text-red-600" : " text-green-800 font-bold")}>{copy.checkedOut ? "Checked Out" : "Available"}</td>
+                                            </tr>
+                                        ))
+                                    }
+                                </table>
                             </>
                         ) : (
                             <div className="w-full">
