@@ -6,13 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { NeoCard, NeoCardContent, NeoCardHeader, NeoCardTitle, NeoCardDescription } from "@/components/ui/neo-card"
 import { toast } from "sonner"
 import { Calendar, Copy, Users, Pencil, Check, X } from "lucide-react"
 import { getCurrentSemester } from "@/lib/semester"
@@ -175,29 +169,57 @@ export default function SemesterManager() {
 
   return (
     <div className="space-y-4">
+      {/* Stats row */}
+      {semester && (
+        <div className="grid gap-3 grid-cols-2">
+          <NeoCard>
+            <NeoCardContent className="p-4 flex items-center gap-3">
+              <div className="h-9 w-9 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
+                <Users className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground">Applications</div>
+                <div className="text-xl font-semibold tabular-nums">{applicationCount}</div>
+              </div>
+            </NeoCardContent>
+          </NeoCard>
+          <NeoCard>
+            <NeoCardContent className="p-4 flex items-center gap-3">
+              <div className="h-9 w-9 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0">
+                <Calendar className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground">With Availability</div>
+                <div className="text-xl font-semibold tabular-nums">{availabilityCount}</div>
+              </div>
+            </NeoCardContent>
+          </NeoCard>
+        </div>
+      )}
+
       {/* Main Recruitment Card */}
-      <Card>
-        <CardHeader className="pb-3">
+      <NeoCard>
+        <NeoCardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-xl">
+              <NeoCardTitle className="text-xl">
                 {semester?.name || currentSemesterName} Recruitment
-              </CardTitle>
-              <CardDescription>
+              </NeoCardTitle>
+              <NeoCardDescription>
                 Manage mentor applications for this semester
-              </CardDescription>
+              </NeoCardDescription>
             </div>
             <Badge
               variant={isOpen ? "default" : "secondary"}
-              className={isOpen ? "bg-green-500/20 text-green-700 dark:text-green-400" : ""}
+              className={isOpen ? "bg-green-500/20 text-green-700 dark:text-green-400 border-green-500/30" : ""}
             >
               {isOpen ? "Applications Open" : "Applications Closed"}
             </Badge>
           </div>
-        </CardHeader>
-        <CardContent className="space-y-6">
+        </NeoCardHeader>
+        <NeoCardContent className="space-y-6">
           {/* Toggle Applications */}
-          <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+          <div className="flex items-center justify-between p-4 bg-muted/40 rounded-lg border border-border/40">
             <div className="space-y-0.5">
               <Label className="text-base">Accept Applications</Label>
               <p className="text-sm text-muted-foreground">
@@ -284,43 +306,27 @@ export default function SemesterManager() {
               )}
             </div>
           )}
-
-          {/* Stats */}
-          {semester && (
-            <div className="flex items-center gap-6 text-sm">
-              <div className="flex items-center gap-2">
-                <Users className="h-4 w-4 text-muted-foreground" />
-                <span>
-                  <strong>{applicationCount}</strong> application{applicationCount !== 1 ? "s" : ""}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span>
-                  <strong>{availabilityCount}</strong> with availability
-                </span>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+        </NeoCardContent>
+      </NeoCard>
 
       {/* Application URL */}
-      <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-        <div className="flex items-center gap-2">
-          <Calendar className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm text-muted-foreground">
-            Application form:
-          </span>
-          <code className="text-xs bg-background px-2 py-1 rounded border">
-            /mentoring/apply
-          </code>
-        </div>
-        <Button size="sm" variant="outline" onClick={copyApplyUrl}>
-          <Copy className="h-4 w-4 mr-1" />
-          Copy
-        </Button>
-      </div>
+      <NeoCard>
+        <NeoCardContent className="p-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">
+              Application form:
+            </span>
+            <code className="text-xs bg-muted/60 px-2 py-1 rounded border border-border/40 font-mono">
+              /mentoring/apply
+            </code>
+          </div>
+          <Button size="sm" variant="outline" onClick={copyApplyUrl}>
+            <Copy className="h-4 w-4 mr-1" />
+            Copy
+          </Button>
+        </NeoCardContent>
+      </NeoCard>
     </div>
   )
 }

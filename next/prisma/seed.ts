@@ -270,6 +270,42 @@ async function seedMentorRosterAndApplications() {
 		)
 	`;
 
+	// Assign random skills and courses to each mentor
+	const allSkills = await prisma.skill.findMany();
+	const allCourses = await prisma.course.findMany();
+
+	for (const mentor of mentors) {
+		// Give each mentor 1-3 random skills
+		const skillCount = 1 + Math.floor(Math.random() * Math.min(3, allSkills.length));
+		const shuffledSkills = [...allSkills].sort(() => Math.random() - 0.5).slice(0, skillCount);
+		for (const skill of shuffledSkills) {
+			const existing = await prisma.mentorSkill.findFirst({
+				where: { mentor_Id: mentor.id, skill_Id: skill.id },
+			});
+			if (!existing) {
+				await prisma.mentorSkill.create({
+					data: { mentor_Id: mentor.id, skill_Id: skill.id },
+				});
+			}
+		}
+
+		// Give each mentor 1-2 random courses
+		const courseCount = 1 + Math.floor(Math.random() * Math.min(2, allCourses.length));
+		const shuffledCourses = [...allCourses].sort(() => Math.random() - 0.5).slice(0, courseCount);
+		for (const course of shuffledCourses) {
+			const existing = await prisma.courseTaken.findFirst({
+				where: { mentorId: mentor.id, courseId: course.id },
+			});
+			if (!existing) {
+				await prisma.courseTaken.create({
+					data: { mentorId: mentor.id, courseId: course.id },
+				});
+			}
+		}
+	}
+
+	console.log(`Assigned skills and courses to ${mentors.length} mentors`);
+
 	const randomSlots = (count: number) => {
 		const slotKeys = new Set<string>();
 		while (slotKeys.size < count) {
@@ -401,7 +437,7 @@ async function seedMentorHeadcountData() {
 		const dateBase = new Date(now);
 		dateBase.setDate(now.getDate() - dayOffset);
 
-		const hours = [11, 15];
+		const hours = [10, 11, 12, 13, 14, 15, 16, 17];
 		for (const hour of hours) {
 			const mentorEntry = await prisma.mentorHeadcountEntry.create({
 				data: {

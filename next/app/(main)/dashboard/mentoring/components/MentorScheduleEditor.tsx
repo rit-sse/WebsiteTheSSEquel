@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect, useCallback, useMemo, type ReactNode } from "react"
+import { useState, useEffect, useCallback, useMemo, useRef, type ReactNode } from "react"
+import Papa from "papaparse"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Modal, ModalFooter } from "@/components/ui/modal"
@@ -10,7 +11,7 @@ import { Progress } from "@/components/ui/progress"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { NeoCard, NeoCardContent, NeoCardHeader, NeoCardTitle } from "@/components/ui/neo-card"
 import { toast } from "sonner"
-import { Plus, X, User, Clock, Calendar, Users, Check, Printer } from "lucide-react"
+import { Plus, X, User, Clock, Calendar, Users, Printer, Activity } from "lucide-react"
 import {
   Select,
   SelectContent,
@@ -18,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { DndContext, DragEndEvent, useDraggable, useDroppable } from "@dnd-kit/core"
+import { DndContext, DragEndEvent, PointerSensor, useDraggable, useDroppable, useSensor, useSensors } from "@dnd-kit/core"
 import { cn } from "@/lib/utils"
 import { AvailabilitySlot, aggregateAvailability, getSlotAvailability } from "./AvailabilityGrid"
 
@@ -107,6 +108,10 @@ function getMentorColor(mentorId: number): string {
 }
 
 export default function MentorScheduleEditor() {
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+  )
+
   const [activeSchedule, setActiveSchedule] = useState<MentorSchedule | null>(null)
   const [activeSemester, setActiveSemester] = useState<MentorSemester | null>(null)
   const [blocks, setBlocks] = useState<ScheduleBlock[]>([])
@@ -133,6 +138,7 @@ export default function MentorScheduleEditor() {
   // Availability overlay state
   const [availabilityData, setAvailabilityData] = useState<AvailabilityData[]>([])
   const [showAvailability, setShowAvailability] = useState(false)
+  const [showTraffic, setShowTraffic] = useState(true)
 
   // Traffic indicator state
   const [trafficData, setTrafficData] = useState<TrafficDatum[]>([])
@@ -148,6 +154,19 @@ export default function MentorScheduleEditor() {
     unassignedMentors: string[]
   } | null>(null)
   const [isAutoFilling, setIsAutoFilling] = useState(false)
+
+  // Headcount import state
+  const [importModalOpen, setImportModalOpen] = useState(false)
+  const [importType, setImportType] = useState<"mentor" | "mentee">("mentor")
+  const [importHeaders, setImportHeaders] = useState<string[]>([])
+  const [importRows, setImportRows] = useState<Record<string, string>[]>([])
+  const [importMapping, setImportMapping] = useState<Record<string, string>>({})
+  const [importResult, setImportResult] = useState<{
+    created: number
+    skipped: number
+    errors: string[]
+  } | null>(null)
+  const [isImporting, setIsImporting] = useState(false)
 
   // Fetch the canonical schedule
   const fetchSchedule = useCallback(async () => {
@@ -265,6 +284,7 @@ export default function MentorScheduleEditor() {
     }
   }, [activeSemester])
 
+
   // Initial load
   useEffect(() => {
     const loadData = async () => {
@@ -306,9 +326,17 @@ export default function MentorScheduleEditor() {
   }
 
   const getTrafficLevel = (averagePeopleInLab: number) => {
-    if (averagePeopleInLab <= 3) return { label: "Quiet", value: 25 }
-    if (averagePeopleInLab <= 8) return { label: "Steady", value: 55 }
-    return { label: "Busy", value: 85 }
+    if (averagePeopleInLab < 10) return { label: "Quiet", value: 20, color: "bg-gray-400", cellTint: "bg-gray-400/15" }
+    if (averagePeopleInLab < 12) return { label: "Steady", value: 45, color: "bg-blue-500", cellTint: "bg-blue-500/20" }
+    if (averagePeopleInLab < 16) return { label: "Packed", value: 70, color: "bg-yellow-400", cellTint: "bg-yellow-400/25" }
+    return { label: "Peak", value: 95, color: "bg-red-500", cellTint: "bg-red-500/30" }
+  }
+
+  const getTrafficCellClass = (weekday: number, hour: number) => {
+    if (!showTraffic) return ""
+    const traffic = getTrafficForSlot(weekday, hour)
+    if (!traffic) return ""
+    return getTrafficLevel(traffic.averagePeopleInLab).cellTint
   }
 
   // Handle opening assign modal
@@ -437,8 +465,11 @@ export default function MentorScheduleEditor() {
   }
 
   const handleDragEnd = async (event: DragEndEvent) => {
-    const { active, over } = event
+    const { active, over, delta } = event
     if (!over) return
+
+    // Ignore zero-distance drags (clicks)
+    if (Math.abs(delta.x) < 5 && Math.abs(delta.y) < 5) return
 
     const targetId = over.id.toString()
     if (!targetId.startsWith("slot-")) return
@@ -453,6 +484,14 @@ export default function MentorScheduleEditor() {
     const blockId = active.data.current?.blockId as number | undefined
 
     if (!mentorId) return
+
+    // If moving an existing block, check it actually changed slots
+    if (blockId) {
+      const existingBlock = blocks.find((b) => b.id === blockId)
+      if (existingBlock && existingBlock.weekday === weekday && existingBlock.startHour === hour) {
+        return // Same slot, no move needed
+      }
+    }
 
     try {
       if (blockId) {
@@ -627,6 +666,119 @@ export default function MentorScheduleEditor() {
     return getAvailableMentorsForSlot(weekday, hour)
   }
 
+  const guessHeader = (headers: string[], keywords: string[]) => {
+    const lowerHeaders = headers.map((header) => header.toLowerCase())
+    return (
+      headers[
+        lowerHeaders.findIndex((header) =>
+          keywords.some((keyword) => header.includes(keyword))
+        )
+      ] || ""
+    )
+  }
+
+  const handleImportFile = (file: File) => {
+    Papa.parse<Record<string, string>>(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: (results) => {
+        const headers = results.meta.fields || []
+        setImportHeaders(headers)
+        setImportRows(results.data.filter((row) => Object.keys(row).length > 0))
+        setImportMapping({
+          createdAt: guessHeader(headers, ["timestamp", "time", "date"]),
+          mentors: guessHeader(headers, ["mentor", "mentors", "on duty"]),
+          peopleInLab: guessHeader(headers, ["people", "lab", "headcount"]),
+          feeling: guessHeader(headers, ["feeling", "mood"]),
+          studentsMentoredCount: guessHeader(headers, ["students", "mentee", "mentored"]),
+          testsCheckedOutCount: guessHeader(headers, ["test", "checked out"]),
+          classes: guessHeader(headers, ["class", "course", "courses"]),
+          otherClassText: guessHeader(headers, ["other"]),
+        })
+        setImportResult(null)
+      },
+    })
+  }
+
+  const parseListField = (value: string) =>
+    value
+      .split(/[;,]/)
+      .map((item) => item.trim())
+      .filter(Boolean)
+
+  const buildImportPayload = () => {
+    return importRows.map((row) => {
+      const getValue = (key: string) => row[importMapping[key] || ""] || ""
+      const createdAt = getValue("createdAt")
+      const mentors = parseListField(getValue("mentors"))
+      if (importType === "mentor") {
+        return {
+          createdAt,
+          mentors,
+          peopleInLab: parseInt(getValue("peopleInLab"), 10),
+          feeling: getValue("feeling"),
+        }
+      }
+      return {
+        createdAt,
+        mentors,
+        studentsMentoredCount: parseInt(getValue("studentsMentoredCount"), 10),
+        testsCheckedOutCount: parseInt(getValue("testsCheckedOutCount"), 10),
+        classes: parseListField(getValue("classes")),
+        otherClassText: getValue("otherClassText") || null,
+      }
+    })
+  }
+
+  const handleRunImport = async () => {
+    if (!importRows.length) {
+      toast.error("No CSV rows to import")
+      return
+    }
+
+    const requiredFields =
+      importType === "mentor"
+        ? ["createdAt", "mentors", "peopleInLab", "feeling"]
+        : ["createdAt", "mentors", "studentsMentoredCount", "testsCheckedOutCount"]
+
+    const missing = requiredFields.filter((field) => !importMapping[field])
+    if (missing.length > 0) {
+      toast.error("Please map all required fields before importing")
+      return
+    }
+
+    setIsImporting(true)
+    try {
+      const response = await fetch("/api/headcount-import", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: importType,
+          semesterId: activeSemester?.id,
+          rows: buildImportPayload(),
+        }),
+      })
+
+      const data = await response.json()
+      if (response.ok) {
+        setImportResult({
+          created: data.created,
+          skipped: data.skipped,
+          errors: data.errors || [],
+        })
+        toast.success("Headcount import completed")
+        fetchTraffic()
+      } else {
+        toast.error(data.error || "Failed to import headcount data")
+      }
+    } catch (error) {
+      console.error("Failed to import headcount data:", error)
+      toast.error("An error occurred during import")
+    } finally {
+      setIsImporting(false)
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="text-muted-foreground text-sm py-8 text-center">
@@ -637,57 +789,57 @@ export default function MentorScheduleEditor() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex flex-wrap items-center gap-3">
+      {/* Header bar */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
           <div>
-            <h2 className="text-lg font-semibold">Mentor Schedule</h2>
-            <p className="text-sm text-muted-foreground">
-              {activeSemester ? `Active semester: ${activeSemester.name}` : "No active semester set"}
-            </p>
+            <h2 className="text-lg font-semibold leading-tight">Mentor Schedule</h2>
+            {activeSemester && (
+              <p className="text-xs text-muted-foreground">{activeSemester.name}</p>
+            )}
           </div>
-          {activeSchedule && (
-            <Button size="sm" variant="outline" onClick={() => setClearModalOpen(true)}>
-              Clear Schedule
-            </Button>
-          )}
         </div>
         {activeSchedule && (
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setClearModalOpen(true)}
+              className="text-muted-foreground hover:text-destructive hover:border-destructive"
+            >
+              <X className="h-3.5 w-3.5" />
+              Clear
+            </Button>
+            {availabilityData.length > 0 && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setShowAvailability(!showAvailability)}
+                className={showAvailability ? "bg-green-600 hover:bg-green-700 text-white border-green-600" : ""}
+              >
+                <Users className="h-3.5 w-3.5" />
+                Availability
+              </Button>
+            )}
+            {trafficData.length > 0 && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setShowTraffic(!showTraffic)}
+              >
+                <Activity className="h-3.5 w-3.5" />
+                Traffic
+              </Button>
+            )}
             <Button size="sm" variant="outline" onClick={() => setAutoFillOpen(true)}>
-              Auto-fill Schedule
+              Auto-fill
             </Button>
             <Button size="sm" variant="outline" onClick={handlePrint}>
-              <Printer className="h-4 w-4" />
-              Print
+              <Printer className="h-3.5 w-3.5" />
             </Button>
           </div>
         )}
       </div>
-
-      {/* Availability overlay toggle */}
-      {availabilityData.length > 0 && (
-        <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border">
-          <div className="flex items-center gap-3">
-            <Users className="h-4 w-4 text-muted-foreground" />
-            <div>
-              <p className="text-sm font-medium">
-                Mentor Availability
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {availabilityData.length} people have submitted their availability
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="text-sm">Show on grid</span>
-            <Switch
-              id="show-availability"
-              checked={showAvailability}
-              onCheckedChange={setShowAvailability}
-            />
-          </div>
-        </div>
-      )}
 
       {!activeSchedule ? (
         <div className="text-center py-12 border rounded-lg bg-surface-1">
@@ -699,108 +851,143 @@ export default function MentorScheduleEditor() {
         </div>
       ) : (
         <>
-          <DndContext onDragEnd={handleDragEnd}>
-            <div className="grid gap-4 xl:grid-cols-[1fr_280px]">
-              <div className="overflow-x-auto border rounded-lg">
-                <table className="w-full min-w-[800px] table-fixed">
-                  <thead>
-                    <tr className="border-b bg-muted/50">
-                      <th className="w-24 p-2 text-left text-sm font-medium text-muted-foreground">
-                        <Clock className="h-4 w-4 inline mr-1" />
-                        Time
-                      </th>
-                      {DAYS.map((day) => (
-                        <th
-                          key={day}
-                          className="p-2 text-center text-sm font-medium text-muted-foreground"
-                        >
-                          {day}
+          <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+            {/* Main grid: calendar + sidebar, sidebar constrained to calendar height */}
+            <div className="grid gap-4 xl:grid-cols-[1fr_280px]" style={{ alignItems: "start" }}>
+              <div className="flex flex-col gap-3">
+                <div className="overflow-auto border rounded-lg" style={{ maxHeight: "calc(100vh - 16rem)" }}>
+                  <table className="w-full min-w-[800px] table-fixed">
+                    <thead className="sticky top-0 z-10">
+                      <tr className="border-b bg-muted">
+                        <th className="w-24 p-2 text-left text-sm font-medium text-muted-foreground">
+                          <Clock className="h-4 w-4 inline mr-1" />
+                          Time
                         </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {HOURS.map(({ hour, label }) => (
-                      <tr key={hour} className="border-b last:border-b-0">
-                        <td className="p-2 text-sm text-muted-foreground font-medium bg-muted/30">
-                          {label}
-                        </td>
-                        {DAYS.map((_, dayIndex) => {
-                          const weekday = dayIndex + 1
-                          const slotBlocks = getBlocksForSlot(weekday, hour)
-                          const availableNames = getWhen2MeetAvailability(weekday, hour)
-                          const mappedAvailable = getMappedAvailableMentors(weekday, hour)
+                        {DAYS.map((day) => (
+                          <th
+                            key={day}
+                            className="p-2 text-center text-sm font-medium text-muted-foreground"
+                          >
+                            {day}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {HOURS.map(({ hour, label }) => (
+                        <tr key={hour} className="border-b last:border-b-0">
+                          <td className="p-2 text-sm text-muted-foreground font-medium bg-muted/30 whitespace-nowrap">
+                            {label}
+                          </td>
+                          {DAYS.map((_, dayIndex) => {
+                            const weekday = dayIndex + 1
+                            const slotBlocks = getBlocksForSlot(weekday, hour)
+                            const availableNames = getWhen2MeetAvailability(weekday, hour)
+                            const mappedAvailable = getMappedAvailableMentors(weekday, hour)
 
-                          return (
-                            <ScheduleSlotCell
-                              key={dayIndex}
-                              id={`slot-${weekday}-${hour}`}
-                              className={cn(
-                                "p-1 h-16 align-top",
-                                showAvailability && availableNames.length > 0 && "bg-green-500/10"
-                              )}
-                            >
-                              <div className="flex flex-col gap-1 min-h-[3.5rem] min-w-0">
-                                <div className="flex flex-wrap gap-1">
-                                  {slotBlocks.map((block) => (
-                                    <DraggableMentorChip
-                                      key={block.id}
-                                      id={`block-${block.id}`}
-                                      mentorId={block.mentor.id}
-                                      blockId={block.id}
-                                      colorClass={getMentorColor(block.mentor.id)}
-                                      label={block.mentor.name.split(" ")[0]}
-                                      onClick={() => handleOpenDetail(weekday, hour)}
-                                      title={`${block.mentor.name} - Click for details`}
-                                    />
-                                  ))}
-                                  {slotBlocks.length < 2 && (
+                            return (
+                              <ScheduleSlotCell
+                                key={dayIndex}
+                                id={`slot-${weekday}-${hour}`}
+                                className={cn(
+                                  "p-1 h-16 align-top",
+                                  getTrafficCellClass(weekday, hour),
+                                  showAvailability && availableNames.length > 0 && "bg-green-500/10"
+                                )}
+                              >
+                                <div className="flex flex-col gap-1 min-h-[3.5rem] min-w-0">
+                                  <div className="flex flex-wrap gap-1">
+                                    {slotBlocks.map((block) => (
+                                      <DraggableMentorChip
+                                        key={block.id}
+                                        id={`block-${block.id}`}
+                                        mentorId={block.mentor.id}
+                                        blockId={block.id}
+                                        colorClass={getMentorColor(block.mentor.id)}
+                                        label={block.mentor.name.split(" ")[0]}
+                                        onClick={() => handleOpenDetail(weekday, hour)}
+                                        title={`${block.mentor.name} - Click for details`}
+                                      />
+                                    ))}
+                                    {slotBlocks.length < 2 && (
                                     <button
                                       onClick={() => handleOpenAssignModal(weekday, hour)}
-                                      className="text-muted-foreground hover:text-foreground hover:bg-muted/50 text-xs px-2 py-1 rounded-md border border-dashed border-border transition-colors flex items-center gap-1"
+                                      className="text-muted-foreground hover:text-foreground hover:bg-muted/50 text-sm px-3 py-1.5 rounded-md border border-dashed border-border transition-colors flex items-center gap-1"
                                     >
-                                      <Plus className="h-3 w-3" />
+                                      <Plus className="h-3.5 w-3.5" />
                                       Add
                                     </button>
-                                  )}
-                                </div>
-                                {showAvailability && availableNames.length > 0 && (
-                                  <div
-                                    className="text-[10px] text-green-700 dark:text-green-400 truncate max-w-full overflow-hidden"
-                                    title={`Available: ${availableNames.join(", ")}`}
-                                  >
-                                    {mappedAvailable.length > 0 ? (
-                                      <span className="flex items-center gap-1 min-w-0 truncate">
-                                        <Users className="h-3 w-3 shrink-0" />
-                                        <span className="min-w-0 truncate">
-                                          {mappedAvailable
-                                            .map((m) => m.user.name.split(" ")[0])
-                                            .join(", ")}
-                                        </span>
-                                      </span>
-                                    ) : (
-                                      <span className="opacity-60">
-                                        {availableNames.length} available
-                                      </span>
                                     )}
                                   </div>
-                                )}
-                              </div>
-                            </ScheduleSlotCell>
-                          )
-                        })}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                                  {showAvailability && availableNames.length > 0 && (
+                                    <div
+                                      className="text-[10px] text-green-700 dark:text-green-400 truncate max-w-full overflow-hidden"
+                                      title={`Available: ${availableNames.join(", ")}`}
+                                    >
+                                      {mappedAvailable.length > 0 ? (
+                                        <span className="flex items-center gap-1 min-w-0 truncate">
+                                          <Users className="h-3 w-3 shrink-0" />
+                                          <span className="min-w-0 truncate">
+                                            {mappedAvailable
+                                              .map((m) => m.user.name.split(" ")[0])
+                                              .join(", ")}
+                                          </span>
+                                        </span>
+                                      ) : (
+                                        <span className="opacity-60">
+                                          {availableNames.length} available
+                                        </span>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              </ScheduleSlotCell>
+                            )
+                          })}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Traffic legend + assigned mentors below the calendar */}
+                <div className="flex flex-wrap items-center justify-between gap-2 px-1">
+                  {showTraffic && trafficData.length > 0 && (
+                    <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+                      <span className="font-medium">Traffic:</span>
+                      <span className="flex items-center gap-1"><span className="h-2.5 w-5 rounded-sm bg-gray-400/15 border border-gray-400/30" /> &lt;10 Quiet</span>
+                      <span className="flex items-center gap-1"><span className="h-2.5 w-5 rounded-sm bg-blue-500/20 border border-blue-500/30" /> 10-12 Steady</span>
+                      <span className="flex items-center gap-1"><span className="h-2.5 w-5 rounded-sm bg-yellow-400/25 border border-yellow-400/40" /> 12-16 Packed</span>
+                      <span className="flex items-center gap-1"><span className="h-2.5 w-5 rounded-sm bg-red-500/30 border border-red-500/40" /> 16+ Peak</span>
+                    </div>
+                  )}
+                  {blocks.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+                      <span className="font-medium mr-1">On schedule:</span>
+                      {Array.from(new Set(blocks.map((b) => b.mentor.id))).map((mentorId) => {
+                        const mentor = blocks.find((b) => b.mentor.id === mentorId)?.mentor
+                        if (!mentor) return null
+                        return (
+                          <span
+                            key={mentorId}
+                            className={`${getMentorColor(mentorId)} text-white px-1.5 py-0.5 rounded text-[11px]`}
+                          >
+                            {mentor.name}
+                          </span>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
 
-              <div className="space-y-4">
+              {/* Sidebar — scrollable, height-matched to the calendar */}
+              <div className="flex flex-col gap-3 overflow-y-auto" style={{ maxHeight: "calc(100vh - 16rem)" }}>
                 <NeoCard>
-                  <NeoCardHeader>
-                    <NeoCardTitle>Mentor Pool</NeoCardTitle>
+                  <NeoCardHeader className="pb-3">
+                    <NeoCardTitle className="text-lg">Mentor Pool</NeoCardTitle>
                   </NeoCardHeader>
-                  <NeoCardContent className="flex flex-wrap gap-2">
+                  <NeoCardContent className="flex flex-wrap gap-1.5">
                     {mentors.map((mentor) => (
                       <DraggableMentorChip
                         key={mentor.id}
@@ -814,41 +1001,37 @@ export default function MentorScheduleEditor() {
                   </NeoCardContent>
                 </NeoCard>
                 <NeoCard>
-                  <NeoCardHeader>
-                    <NeoCardTitle>Headcount Forms</NeoCardTitle>
+                  <NeoCardHeader className="pb-3">
+                    <NeoCardTitle className="text-lg">Headcount Forms</NeoCardTitle>
                   </NeoCardHeader>
                   <NeoCardContent className="space-y-2">
-                    <Button asChild variant="outline" className="w-full">
+                    <Button asChild variant="outline" size="sm" className="w-full justify-start gap-2">
                       <a href="/mentoring/headcount/mentors" target="_blank" rel="noreferrer">
+                        <Clock className="h-3.5 w-3.5" />
                         30-min Mentor Headcount
                       </a>
                     </Button>
-                    <Button asChild variant="outline" className="w-full">
+                    <Button asChild variant="outline" size="sm" className="w-full justify-start gap-2">
                       <a href="/mentoring/headcount/mentees" target="_blank" rel="noreferrer">
+                        <Users className="h-3.5 w-3.5" />
                         55-min Mentee Headcount
                       </a>
                     </Button>
+                    <div className="pt-1 border-t border-border/40">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="w-full text-xs text-muted-foreground"
+                        onClick={() => setImportModalOpen(true)}
+                      >
+                        Import historical CSV
+                      </Button>
+                    </div>
                   </NeoCardContent>
                 </NeoCard>
               </div>
             </div>
           </DndContext>
-
-          <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-            <span>Assigned mentors:</span>
-            {Array.from(new Set(blocks.map((b) => b.mentor.id))).map((mentorId) => {
-              const mentor = blocks.find((b) => b.mentor.id === mentorId)?.mentor
-              if (!mentor) return null
-              return (
-                <span
-                  key={mentorId}
-                  className={`${getMentorColor(mentorId)} text-white px-2 py-0.5 rounded`}
-                >
-                  {mentor.name}
-                </span>
-              )
-            })}
-          </div>
         </>
       )}
 
@@ -1016,6 +1199,290 @@ export default function MentorScheduleEditor() {
         </ModalFooter>
       </Modal>
 
+      {/* Headcount Import Modal */}
+      <Modal
+        open={importModalOpen}
+        onOpenChange={(open) => {
+          setImportModalOpen(open)
+          if (!open) {
+            setImportResult(null)
+          }
+        }}
+        title="Import Headcount CSV"
+        className="max-w-2xl"
+      >
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Import type</label>
+            <Select
+              value={importType}
+              onValueChange={(value) => setImportType(value as "mentor" | "mentee")}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="mentor">30-min Mentor Headcount</SelectItem>
+                <SelectItem value="mentee">55-min Mentee Headcount</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">CSV file</label>
+            <input
+              type="file"
+              accept=".csv"
+              onChange={(event) => {
+                const file = event.target.files?.[0]
+                if (file) {
+                  handleImportFile(file)
+                }
+              }}
+              className="w-full text-sm"
+            />
+          </div>
+
+          {importHeaders.length > 0 && (
+            <div className="grid gap-3 sm:grid-cols-2">
+              {importType === "mentor" ? (
+                <>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium">Timestamp</label>
+                    <Select
+                      value={importMapping.createdAt || ""}
+                      onValueChange={(value) =>
+                        setImportMapping((prev) => ({ ...prev, createdAt: value }))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select column" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {importHeaders.map((header) => (
+                          <SelectItem key={header} value={header}>
+                            {header}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium">People in lab</label>
+                    <Select
+                      value={importMapping.peopleInLab || ""}
+                      onValueChange={(value) =>
+                        setImportMapping((prev) => ({ ...prev, peopleInLab: value }))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select column" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {importHeaders.map((header) => (
+                          <SelectItem key={header} value={header}>
+                            {header}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium">Feeling</label>
+                    <Select
+                      value={importMapping.feeling || ""}
+                      onValueChange={(value) =>
+                        setImportMapping((prev) => ({ ...prev, feeling: value }))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select column" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {importHeaders.map((header) => (
+                          <SelectItem key={header} value={header}>
+                            {header}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium">Mentors on duty</label>
+                    <Select
+                      value={importMapping.mentors || ""}
+                      onValueChange={(value) =>
+                        setImportMapping((prev) => ({ ...prev, mentors: value }))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select column" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {importHeaders.map((header) => (
+                          <SelectItem key={header} value={header}>
+                            {header}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium">Timestamp</label>
+                    <Select
+                      value={importMapping.createdAt || ""}
+                      onValueChange={(value) =>
+                        setImportMapping((prev) => ({ ...prev, createdAt: value }))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select column" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {importHeaders.map((header) => (
+                          <SelectItem key={header} value={header}>
+                            {header}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium">Students mentored</label>
+                    <Select
+                      value={importMapping.studentsMentoredCount || ""}
+                      onValueChange={(value) =>
+                        setImportMapping((prev) => ({
+                          ...prev,
+                          studentsMentoredCount: value,
+                        }))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select column" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {importHeaders.map((header) => (
+                          <SelectItem key={header} value={header}>
+                            {header}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium">Tests checked out</label>
+                    <Select
+                      value={importMapping.testsCheckedOutCount || ""}
+                      onValueChange={(value) =>
+                        setImportMapping((prev) => ({
+                          ...prev,
+                          testsCheckedOutCount: value,
+                        }))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select column" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {importHeaders.map((header) => (
+                          <SelectItem key={header} value={header}>
+                            {header}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium">Mentors on duty</label>
+                    <Select
+                      value={importMapping.mentors || ""}
+                      onValueChange={(value) =>
+                        setImportMapping((prev) => ({ ...prev, mentors: value }))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select column" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {importHeaders.map((header) => (
+                          <SelectItem key={header} value={header}>
+                            {header}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium">Classes helped</label>
+                    <Select
+                      value={importMapping.classes || ""}
+                      onValueChange={(value) =>
+                        setImportMapping((prev) => ({ ...prev, classes: value }))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select column" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {importHeaders.map((header) => (
+                          <SelectItem key={header} value={header}>
+                            {header}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium">Other class (optional)</label>
+                    <Select
+                      value={importMapping.otherClassText || ""}
+                      onValueChange={(value) =>
+                        setImportMapping((prev) => ({ ...prev, otherClassText: value }))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select column" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {importHeaders.map((header) => (
+                          <SelectItem key={header} value={header}>
+                            {header}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {importResult && (
+            <div className="rounded-md border bg-muted/40 p-3 text-sm">
+              <div>Created: {importResult.created}</div>
+              <div>Skipped: {importResult.skipped}</div>
+              {importResult.errors.length > 0 && (
+                <div className="text-xs text-muted-foreground">
+                  {importResult.errors.join(" • ")}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+        <ModalFooter>
+          <Button variant="ghost" onClick={() => setImportModalOpen(false)}>
+            Close
+          </Button>
+          <Button onClick={handleRunImport} disabled={isImporting || importRows.length === 0}>
+            {isImporting ? "Importing..." : "Run Import"}
+          </Button>
+        </ModalFooter>
+      </Modal>
+
       {/* Assign Mentor Modal */}
       <Modal
         open={assignModalOpen}
@@ -1153,9 +1620,26 @@ function DraggableMentorChip({
     data: { mentorId, blockId },
   })
 
+  const wasDragging = useRef(false)
+
+  useEffect(() => {
+    if (isDragging) {
+      wasDragging.current = true
+    }
+  }, [isDragging])
+
   const style = transform
     ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` }
     : undefined
+
+  const handleClick = (e: React.MouseEvent) => {
+    // If we just finished dragging, suppress the click
+    if (wasDragging.current) {
+      wasDragging.current = false
+      return
+    }
+    onClick?.()
+  }
 
   return (
     <button
@@ -1165,7 +1649,7 @@ function DraggableMentorChip({
         `${colorClass} text-white text-xs px-2 py-1 rounded-md transition-opacity truncate max-w-[100px]`,
         isDragging && "opacity-60"
       )}
-      onClick={onClick}
+      onClick={handleClick}
       title={title}
       {...attributes}
       {...listeners}

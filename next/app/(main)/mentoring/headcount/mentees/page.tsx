@@ -35,6 +35,29 @@ interface Course {
   };
 }
 
+const DEFAULT_COURSES = [
+  { code: "CSCI-141", label: "CSCI 141" },
+  { code: "CSCI-142", label: "CSCI 142" },
+  { code: "CSCI-140", label: "CSCI 140" },
+  { code: "GCIS-123", label: "GCIS 123" },
+  { code: "GCIS-124", label: "GCIS 124" },
+  { code: "SWEN-250", label: "SWEN 250" },
+  { code: "SWEN-251", label: "SWEN 251" },
+  { code: "SWEN-261-WC", label: "SWEN 261 (Web Checkers)" },
+  { code: "SWEN-261-ES", label: "SWEN 261 (E-Store)" },
+  { code: "SWEN-261-UF", label: "SWEN 261 (UFund)" },
+  { code: "SWEN-262", label: "SWEN 262" },
+  { code: "SWEN-331", label: "SWEN 331" },
+  { code: "SWEN-340-MP", label: "SWEN 340 (Music Player)" },
+  { code: "SWEN-340-NMP", label: "SWEN 340 (Not Music Player)" },
+  { code: "SWEN-344", label: "SWEN 344" },
+  { code: "SWEN-440", label: "SWEN 440" },
+  { code: "SWEN-444", label: "SWEN 444" },
+  { code: "CSCI-243", label: "CSCI 243" },
+  { code: "CSCI-261", label: "CSCI 261" },
+  { code: "CSCI-262", label: "CSCI 262" },
+];
+
 export default function MenteeHeadcountPage() {
   const { data: session, status } = useSession();
   const [mentors, setMentors] = useState<Mentor[]>([]);
@@ -42,6 +65,7 @@ export default function MenteeHeadcountPage() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedMentors, setSelectedMentors] = useState<number[]>([]);
   const [selectedCourses, setSelectedCourses] = useState<number[]>([]);
+  const [selectedCourseCodes, setSelectedCourseCodes] = useState<string[]>([]);
   const [studentsMentoredCount, setStudentsMentoredCount] = useState("");
   const [testsCheckedOutCount, setTestsCheckedOutCount] = useState("");
   const [otherClassText, setOtherClassText] = useState("");
@@ -53,13 +77,22 @@ export default function MenteeHeadcountPage() {
     return mentors.filter((mentor) => mentor.isActive && new Date(mentor.expirationDate) >= now);
   }, [mentors]);
 
-  const sortedCourses = useMemo(() => {
-    return [...courses].sort((a, b) => {
-      const aCode = `${a.department.shortTitle}-${a.code}`;
-      const bCode = `${b.department.shortTitle}-${b.code}`;
-      return aCode.localeCompare(bCode);
+  const courseCodeMap = useMemo(() => {
+    const map = new Map<string, number>();
+    courses.forEach((course) => {
+      map.set(`${course.department.shortTitle}-${course.code}`.toUpperCase(), course.id);
     });
+    return map;
   }, [courses]);
+
+  const sortedCourses = useMemo(() => {
+    const combined = DEFAULT_COURSES.map((course) => ({
+      code: course.code,
+      label: course.label,
+    }));
+    combined.sort((a, b) => a.code.localeCompare(b.code));
+    return combined;
+  }, []);
 
   useEffect(() => {
     if (status !== "authenticated") return;
@@ -100,9 +133,11 @@ export default function MenteeHeadcountPage() {
     );
   };
 
-  const toggleCourse = (courseId: number) => {
-    setSelectedCourses((prev) =>
-      prev.includes(courseId) ? prev.filter((id) => id !== courseId) : [...prev, courseId]
+  const toggleCourse = (courseCode: string) => {
+    setSelectedCourseCodes((prev) =>
+      prev.includes(courseCode)
+        ? prev.filter((code) => code !== courseCode)
+        : [...prev, courseCode]
     );
   };
 
@@ -110,6 +145,7 @@ export default function MenteeHeadcountPage() {
     setNoClassHelp(checked);
     if (checked) {
       setSelectedCourses([]);
+      setSelectedCourseCodes([]);
       setOtherClassText("");
     }
   };
@@ -137,7 +173,17 @@ export default function MenteeHeadcountPage() {
 
     setIsSubmitting(true);
 
-    const otherText = noClassHelp ? "N/A" : otherClassText.trim();
+    const mappedCourseIds = selectedCourseCodes
+      .map((code) => courseCodeMap.get(code.toUpperCase()))
+      .filter((id): id is number => !!id);
+    setSelectedCourses(mappedCourseIds);
+
+    const unmappedCourses = selectedCourseCodes.filter(
+      (code) => !courseCodeMap.has(code.toUpperCase())
+    );
+    const otherText = noClassHelp
+      ? "N/A"
+      : [otherClassText.trim(), ...unmappedCourses].filter(Boolean).join(", ");
 
     try {
       const response = await fetch("/api/mentee-headcount", {
@@ -147,7 +193,7 @@ export default function MenteeHeadcountPage() {
           mentorIds: selectedMentors,
           studentsMentoredCount: studentCount,
           testsCheckedOutCount: testCount,
-          courseIds: selectedCourses,
+          courseIds: mappedCourseIds,
           otherClassText: otherText || null,
           semesterId: semester?.id,
         }),
@@ -157,6 +203,7 @@ export default function MenteeHeadcountPage() {
         toast.success("Headcount submitted. Thank you!");
         setSelectedMentors([]);
         setSelectedCourses([]);
+        setSelectedCourseCodes([]);
         setStudentsMentoredCount("");
         setTestsCheckedOutCount("");
         setOtherClassText("");
@@ -256,19 +303,16 @@ export default function MenteeHeadcountPage() {
           </NeoCardHeader>
           <NeoCardContent className="space-y-4">
             <div className="grid sm:grid-cols-2 gap-3">
-              {sortedCourses.map((course) => {
-                const code = `${course.department.shortTitle} ${course.code}`;
-                return (
-                  <label key={course.id} className="flex items-center gap-2">
-                    <Checkbox
-                      checked={selectedCourses.includes(course.id)}
-                      onCheckedChange={() => toggleCourse(course.id)}
-                      disabled={noClassHelp}
-                    />
-                    <span>{code}</span>
-                  </label>
-                );
-              })}
+              {sortedCourses.map((course) => (
+                <label key={course.code} className="flex items-center gap-2">
+                  <Checkbox
+                    checked={selectedCourseCodes.includes(course.code)}
+                    onCheckedChange={() => toggleCourse(course.code)}
+                    disabled={noClassHelp}
+                  />
+                  <span>{course.label}</span>
+                </label>
+              ))}
             </div>
 
             <label className="flex items-center gap-2">
