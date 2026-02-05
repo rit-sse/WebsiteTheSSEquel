@@ -89,6 +89,8 @@ export default function MentorRosterManager() {
 
   const [cancelInvitation, setCancelInvitation] = useState<PendingInvitation | null>(null)
   const [isCancellingInvitation, setIsCancellingInvitation] = useState(false)
+  const [isSendingSwipe, setIsSendingSwipe] = useState(false)
+  const [swipeModalOpen, setSwipeModalOpen] = useState(false)
 
   // Fetch mentors with details
   const fetchMentors = useCallback(async () => {
@@ -216,6 +218,49 @@ export default function MentorRosterManager() {
     } catch (error) {
       console.error("Failed to toggle mentor:", error)
       toast.error("An error occurred")
+    }
+  }
+
+  const handleSendSwipeAccess = async () => {
+    const people = activeMentors.map((mentor) => ({
+      name: mentor.user.name,
+      email: mentor.user.email,
+    }))
+
+    if (people.length === 0) {
+      toast.error("No active mentors to include in swipe request")
+      return
+    }
+
+    setIsSendingSwipe(true)
+    try {
+      const response = await fetch("/api/swipe-access", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          context: "Mentor Roster",
+          people,
+        }),
+      })
+
+      const data = await response.json()
+      if (response.ok) {
+        toast.success("Swipe access request sent")
+      } else {
+        if (data.needsGmailAuth) {
+          toast.warning(
+            data.message ||
+              "Swipe request created but Gmail authorization is required to send"
+          )
+        } else {
+          toast.error(data.error || "Failed to send swipe access request")
+        }
+      }
+    } catch (error) {
+      console.error("Failed to send swipe access request:", error)
+      toast.error("An error occurred while sending swipe request")
+    } finally {
+      setIsSendingSwipe(false)
     }
   }
 
@@ -452,6 +497,17 @@ export default function MentorRosterManager() {
         columns={columns}
         keyField="id"
         title={`Active Mentors (${activeMentors.length})`}
+        titleExtra={
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setSwipeModalOpen(true)}
+            disabled={isSendingSwipe}
+          >
+            <Mail className="h-4 w-4 mr-2" />
+            Request Swipe Access
+          </Button>
+        }
         searchPlaceholder="Search mentors..."
         onAdd={() => setInviteModalOpen(true)}
         addLabel="Invite Mentor"
@@ -563,6 +619,31 @@ export default function MentorRosterManager() {
             disabled={isCancellingInvitation}
           >
             {isCancellingInvitation ? "Cancelling..." : "Cancel Invitation"}
+          </Button>
+        </ModalFooter>
+      </Modal>
+
+      <Modal
+        open={swipeModalOpen}
+        onOpenChange={setSwipeModalOpen}
+        title="Request Swipe Access"
+        className="max-w-md"
+      >
+        <p className="text-sm text-muted-foreground">
+          Send a swipe access request for all active mentors?
+        </p>
+        <ModalFooter>
+          <Button variant="ghost" onClick={() => setSwipeModalOpen(false)}>
+            Cancel
+          </Button>
+          <Button
+            onClick={() => {
+              setSwipeModalOpen(false)
+              handleSendSwipeAccess()
+            }}
+            disabled={isSendingSwipe}
+          >
+            {isSendingSwipe ? "Sending..." : "Send Request"}
           </Button>
         </ModalFooter>
       </Modal>

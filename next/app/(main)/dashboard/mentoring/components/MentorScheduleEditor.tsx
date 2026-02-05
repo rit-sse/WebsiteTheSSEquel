@@ -1,14 +1,16 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useMemo, type ReactNode } from "react"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Modal, ModalFooter } from "@/components/ui/modal"
 import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
+import { Progress } from "@/components/ui/progress"
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
+import { NeoCard, NeoCardContent, NeoCardHeader, NeoCardTitle } from "@/components/ui/neo-card"
 import { toast } from "sonner"
-import { Plus, X, User, Clock, Calendar, Users, Check, Printer, ChevronDown } from "lucide-react"
+import { Plus, X, User, Clock, Calendar, Users, Check, Printer } from "lucide-react"
 import {
   Select,
   SelectContent,
@@ -16,11 +18,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
+import { DndContext, DragEndEvent, useDraggable, useDroppable } from "@dnd-kit/core"
+import { cn } from "@/lib/utils"
 import { AvailabilitySlot, aggregateAvailability, getSlotAvailability } from "./AvailabilityGrid"
 
 // Schedule types
@@ -54,6 +53,7 @@ interface Mentor {
     image: string
   }
   isActive: boolean
+  expirationDate: string
 }
 
 // Availability data from built-in system
@@ -61,6 +61,19 @@ interface AvailabilityData {
   userId: number
   user: { id: number; name: string; email: string; image: string }
   slots: AvailabilitySlot[]
+}
+
+interface MentorSemester {
+  id: number
+  name: string
+  isActive: boolean
+}
+
+interface TrafficDatum {
+  weekday: number
+  hour: number
+  averagePeopleInLab: number
+  sampleCount: number
 }
 
 // Day and hour labels
@@ -94,8 +107,8 @@ function getMentorColor(mentorId: number): string {
 }
 
 export default function MentorScheduleEditor() {
-  const [schedules, setSchedules] = useState<MentorSchedule[]>([])
   const [activeSchedule, setActiveSchedule] = useState<MentorSchedule | null>(null)
+  const [activeSemester, setActiveSemester] = useState<MentorSemester | null>(null)
   const [blocks, setBlocks] = useState<ScheduleBlock[]>([])
   const [mentors, setMentors] = useState<Mentor[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -109,30 +122,70 @@ export default function MentorScheduleEditor() {
   const [removeModalOpen, setRemoveModalOpen] = useState(false)
   const [removeBlock, setRemoveBlock] = useState<ScheduleBlock | null>(null)
   const [isRemoving, setIsRemoving] = useState(false)
+  const [clearModalOpen, setClearModalOpen] = useState(false)
+  const [isClearing, setIsClearing] = useState(false)
 
-  const [newScheduleModalOpen, setNewScheduleModalOpen] = useState(false)
-  const [newScheduleName, setNewScheduleName] = useState("")
-  const [isCreatingSchedule, setIsCreatingSchedule] = useState(false)
+  // Detail drawer state
+  const [detailSlot, setDetailSlot] = useState<{ weekday: number; hour: number } | null>(null)
+  const [detailBlocks, setDetailBlocks] = useState<ScheduleBlock[]>([])
+  const [isDetailOpen, setIsDetailOpen] = useState(false)
 
   // Availability overlay state
   const [availabilityData, setAvailabilityData] = useState<AvailabilityData[]>([])
   const [showAvailability, setShowAvailability] = useState(false)
-  const [scheduleDropdownOpen, setScheduleDropdownOpen] = useState(false)
 
-  // Fetch schedules
-  const fetchSchedules = useCallback(async () => {
+  // Traffic indicator state
+  const [trafficData, setTrafficData] = useState<TrafficDatum[]>([])
+
+  // Auto-fill schedule modal state
+  const [autoFillOpen, setAutoFillOpen] = useState(false)
+  const [autoFillMaxPerSlot, setAutoFillMaxPerSlot] = useState(2)
+  const [autoFillSlotsPerMentor, setAutoFillSlotsPerMentor] = useState(4)
+  const [autoFillEmptyOnly, setAutoFillEmptyOnly] = useState(true)
+  const [autoFillReport, setAutoFillReport] = useState<{
+    assignments: number
+    unfilledSlots: string[]
+    unassignedMentors: string[]
+  } | null>(null)
+  const [isAutoFilling, setIsAutoFilling] = useState(false)
+
+  // Fetch the canonical schedule
+  const fetchSchedule = useCallback(async () => {
     try {
-      const response = await fetch("/api/mentorSchedule")
+      const response = await fetch("/api/mentorSchedule?activeOnly=true")
       if (response.ok) {
         const data = await response.json()
-        setSchedules(data)
-        const active = data.find((s: MentorSchedule) => s.isActive)
-        if (active) {
-          setActiveSchedule(active)
+        if (data.length > 0) {
+          setActiveSchedule(data[0])
+          return
         }
       }
+
+      const createResponse = await fetch("/api/mentorSchedule", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: "Mentor Schedule", setActive: true }),
+      })
+
+      if (createResponse.ok) {
+        const created = await createResponse.json()
+        setActiveSchedule(created)
+      }
     } catch (error) {
-      console.error("Failed to fetch schedules:", error)
+      console.error("Failed to fetch schedule:", error)
+    }
+  }, [])
+
+  // Fetch active semester
+  const fetchActiveSemester = useCallback(async () => {
+    try {
+      const semesterRes = await fetch("/api/mentor-semester?activeOnly=true")
+      if (semesterRes.ok) {
+        const semesters = await semesterRes.json()
+        setActiveSemester(semesters[0] ?? null)
+      }
+    } catch (error) {
+      console.error("Failed to fetch semester:", error)
     }
   }, [])
 
@@ -160,8 +213,13 @@ export default function MentorScheduleEditor() {
       const response = await fetch("/api/mentor")
       if (response.ok) {
         const data = await response.json()
-        // Filter to only active mentors
-        setMentors(data.filter((m: Mentor) => m.isActive))
+        const now = new Date()
+        setMentors(
+          data.filter(
+            (mentor: Mentor) =>
+              mentor.isActive && new Date(mentor.expirationDate) >= now
+          )
+        )
       }
     } catch (error) {
       console.error("Failed to fetch mentors:", error)
@@ -170,18 +228,15 @@ export default function MentorScheduleEditor() {
 
   // Fetch availability data for active semester
   const fetchAvailability = useCallback(async () => {
+    if (!activeSemester) {
+      setAvailabilityData([])
+      return
+    }
+
     try {
-      // Get active semester
-      const semesterRes = await fetch("/api/mentor-semester?activeOnly=true")
-      if (!semesterRes.ok) return
-      
-      const semesters = await semesterRes.json()
-      if (semesters.length === 0) return
-      
-      const activeSemesterId = semesters[0].id
-      
-      // Get availability for this semester
-      const availRes = await fetch(`/api/mentor-availability?semesterId=${activeSemesterId}`)
+      const availRes = await fetch(
+        `/api/mentor-availability?semesterId=${activeSemester.id}`
+      )
       if (availRes.ok) {
         const data = await availRes.json()
         setAvailabilityData(data)
@@ -189,17 +244,36 @@ export default function MentorScheduleEditor() {
     } catch (error) {
       console.error("Failed to fetch availability:", error)
     }
-  }, [])
+  }, [activeSemester])
+
+  const fetchTraffic = useCallback(async () => {
+    if (!activeSemester) {
+      setTrafficData([])
+      return
+    }
+
+    try {
+      const response = await fetch(
+        `/api/mentoring-headcount?traffic=true&semesterId=${activeSemester.id}`
+      )
+      if (response.ok) {
+        const data = await response.json()
+        setTrafficData(data)
+      }
+    } catch (error) {
+      console.error("Failed to fetch traffic data:", error)
+    }
+  }, [activeSemester])
 
   // Initial load
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(true)
-      await Promise.all([fetchSchedules(), fetchMentors(), fetchAvailability()])
+      await Promise.all([fetchSchedule(), fetchActiveSemester(), fetchMentors()])
       setIsLoading(false)
     }
     loadData()
-  }, [fetchSchedules, fetchMentors, fetchAvailability])
+  }, [fetchSchedule, fetchActiveSemester, fetchMentors])
 
   // Load blocks when active schedule changes
   useEffect(() => {
@@ -208,9 +282,33 @@ export default function MentorScheduleEditor() {
     }
   }, [activeSchedule, fetchBlocks])
 
+  // Refresh availability and traffic when semester changes
+  useEffect(() => {
+    fetchAvailability()
+    fetchTraffic()
+  }, [fetchAvailability, fetchTraffic])
+
   // Get blocks for a specific time slot
   const getBlocksForSlot = (weekday: number, hour: number): ScheduleBlock[] => {
     return blocks.filter((b) => b.weekday === weekday && b.startHour === hour)
+  }
+
+  const trafficBySlot = useMemo(() => {
+    const map = new Map<string, TrafficDatum>()
+    trafficData.forEach((entry) => {
+      map.set(`${entry.weekday}-${entry.hour}`, entry)
+    })
+    return map
+  }, [trafficData])
+
+  const getTrafficForSlot = (weekday: number, hour: number) => {
+    return trafficBySlot.get(`${weekday}-${hour}`)
+  }
+
+  const getTrafficLevel = (averagePeopleInLab: number) => {
+    if (averagePeopleInLab <= 3) return { label: "Quiet", value: 25 }
+    if (averagePeopleInLab <= 8) return { label: "Steady", value: 55 }
+    return { label: "Busy", value: 85 }
   }
 
   // Handle opening assign modal
@@ -220,34 +318,63 @@ export default function MentorScheduleEditor() {
     setAssignModalOpen(true)
   }
 
+  const handleOpenDetail = (weekday: number, hour: number) => {
+    const slotBlocks = getBlocksForSlot(weekday, hour)
+    if (slotBlocks.length === 0) return
+    setDetailSlot({ weekday, hour })
+    setDetailBlocks(slotBlocks)
+    setIsDetailOpen(true)
+  }
+
+  const assignMentorToSlot = async (mentorId: number, weekday: number, hour: number) => {
+    if (!activeSchedule) return
+    const response = await fetch("/api/scheduleBlock", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        mentorId,
+        weekday,
+        startHour: hour,
+        scheduleId: activeSchedule.id,
+      }),
+    })
+
+    if (!response.ok) {
+      const data = await response.json()
+      throw new Error(data.error || "Failed to assign mentor")
+    }
+  }
+
+  const moveScheduleBlock = async (blockId: number, weekday: number, hour: number) => {
+    const response = await fetch("/api/scheduleBlock", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: blockId, weekday, startHour: hour }),
+    })
+
+    if (!response.ok) {
+      const data = await response.json()
+      throw new Error(data.error || "Failed to move mentor")
+    }
+  }
+
   // Handle assign mentor
   const handleAssignMentor = async () => {
-    if (!assignSlot || !selectedMentorId || !activeSchedule) return
+    if (!assignSlot || !selectedMentorId) return
 
     setIsAssigning(true)
     try {
-      const response = await fetch("/api/scheduleBlock", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          mentorId: parseInt(selectedMentorId),
-          weekday: assignSlot.weekday,
-          startHour: assignSlot.hour,
-          scheduleId: activeSchedule.id,
-        }),
-      })
-
-      if (response.ok) {
-        toast.success("Mentor assigned to time slot")
-        fetchBlocks()
-        setAssignModalOpen(false)
-      } else {
-        const data = await response.json()
-        toast.error(data.error || "Failed to assign mentor")
-      }
+      await assignMentorToSlot(
+        parseInt(selectedMentorId),
+        assignSlot.weekday,
+        assignSlot.hour
+      )
+      toast.success("Mentor assigned to time slot")
+      fetchBlocks()
+      setAssignModalOpen(false)
     } catch (error) {
       console.error("Failed to assign mentor:", error)
-      toast.error("An error occurred")
+      toast.error(error instanceof Error ? error.message : "An error occurred")
     } finally {
       setIsAssigning(false)
     }
@@ -282,61 +409,180 @@ export default function MentorScheduleEditor() {
     }
   }
 
-  // Handle create new schedule
-  const handleCreateSchedule = async () => {
-    if (!newScheduleName.trim()) {
-      toast.error("Please enter a schedule name")
+  const handleClearSchedule = async () => {
+    if (!activeSchedule) return
+
+    setIsClearing(true)
+    try {
+      const response = await fetch("/api/scheduleBlock", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scheduleId: activeSchedule.id }),
+      })
+
+      if (response.ok) {
+        toast.success("Schedule cleared")
+        fetchBlocks()
+        setClearModalOpen(false)
+      } else {
+        const data = await response.json()
+        toast.error(data.error || "Failed to clear schedule")
+      }
+    } catch (error) {
+      console.error("Failed to clear schedule:", error)
+      toast.error("An error occurred")
+    } finally {
+      setIsClearing(false)
+    }
+  }
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event
+    if (!over) return
+
+    const targetId = over.id.toString()
+    if (!targetId.startsWith("slot-")) return
+
+    const [weekdayString, hourString] = targetId.replace("slot-", "").split("-")
+    const weekday = parseInt(weekdayString)
+    const hour = parseInt(hourString)
+
+    if (Number.isNaN(weekday) || Number.isNaN(hour)) return
+
+    const mentorId = active.data.current?.mentorId as number | undefined
+    const blockId = active.data.current?.blockId as number | undefined
+
+    if (!mentorId) return
+
+    try {
+      if (blockId) {
+        await moveScheduleBlock(blockId, weekday, hour)
+        toast.success("Mentor moved to new time slot")
+      } else {
+        await assignMentorToSlot(mentorId, weekday, hour)
+        toast.success("Mentor assigned to time slot")
+      }
+      fetchBlocks()
+    } catch (error) {
+      console.error("Drag assignment failed:", error)
+      toast.error(error instanceof Error ? error.message : "Failed to update slot")
+    }
+  }
+
+  const runAutoFillSchedule = async () => {
+    if (!activeSchedule) {
+      toast.error("No active schedule available")
+      return
+    }
+    if (!availabilityData.length) {
+      toast.error("No availability submissions to use")
       return
     }
 
-    setIsCreatingSchedule(true)
+    setIsAutoFilling(true)
+    setAutoFillReport(null)
     try {
-      const response = await fetch("/api/mentorSchedule", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: newScheduleName.trim(),
-          setActive: schedules.length === 0, // Make active if first schedule
-        }),
+      const mentorByUserId = new Map<number, Mentor>()
+      mentors.forEach((mentor) => mentorByUserId.set(mentor.user.id, mentor))
+
+      const mentorAvailability = new Map<number, AvailabilitySlot[]>()
+      availabilityData.forEach((entry) => {
+        const mentor = mentorByUserId.get(entry.userId)
+        if (!mentor) return
+        mentorAvailability.set(mentor.id, entry.slots)
       })
 
-      if (response.ok) {
-        toast.success("Schedule created")
-        await fetchSchedules()
-        setNewScheduleModalOpen(false)
-        setNewScheduleName("")
-      } else {
-        const data = await response.json()
-        toast.error(data.error || "Failed to create schedule")
+      const existingAssignments = new Set(
+        blocks.map((block) => `${block.mentor.id}-${block.weekday}-${block.startHour}`)
+      )
+
+      const mentorAssignmentCounts = new Map<number, number>()
+      mentors.forEach((mentor) => mentorAssignmentCounts.set(mentor.id, 0))
+      blocks.forEach((block) => {
+        mentorAssignmentCounts.set(
+          block.mentor.id,
+          (mentorAssignmentCounts.get(block.mentor.id) ?? 0) + 1
+        )
+      })
+
+      const slotCounts = new Map<string, number>()
+      blocks.forEach((block) => {
+        const key = `${block.weekday}-${block.startHour}`
+        slotCounts.set(key, (slotCounts.get(key) ?? 0) + 1)
+      })
+
+      const assignments: { mentorId: number; weekday: number; hour: number }[] = []
+      const unfilledSlots: string[] = []
+
+      for (const { hour, label } of HOURS) {
+        for (let dayIndex = 0; dayIndex < DAYS.length; dayIndex++) {
+          const weekday = dayIndex + 1
+          const slotKey = `${weekday}-${hour}`
+          const currentCount = slotCounts.get(slotKey) ?? 0
+
+          if (autoFillEmptyOnly && currentCount >= autoFillMaxPerSlot) {
+            continue
+          }
+
+          const availableMentors = mentors.filter((mentor) => {
+            const availability = mentorAvailability.get(mentor.id) || []
+            const hasSlot = availability.some(
+              (slot) => slot.weekday === weekday && slot.hour === hour
+            )
+            const alreadyAssigned = existingAssignments.has(
+              `${mentor.id}-${weekday}-${hour}`
+            )
+            const assignmentCount = mentorAssignmentCounts.get(mentor.id) ?? 0
+            return hasSlot && !alreadyAssigned && assignmentCount < autoFillSlotsPerMentor
+          })
+
+          availableMentors.sort((a, b) => {
+            const aCount = mentorAssignmentCounts.get(a.id) ?? 0
+            const bCount = mentorAssignmentCounts.get(b.id) ?? 0
+            return aCount - bCount
+          })
+
+          let filled = currentCount
+          for (const mentor of availableMentors) {
+            if (filled >= autoFillMaxPerSlot) break
+            assignments.push({ mentorId: mentor.id, weekday, hour })
+            mentorAssignmentCounts.set(
+              mentor.id,
+              (mentorAssignmentCounts.get(mentor.id) ?? 0) + 1
+            )
+            existingAssignments.add(`${mentor.id}-${weekday}-${hour}`)
+            filled += 1
+          }
+
+          if (filled < autoFillMaxPerSlot) {
+            unfilledSlots.push(`${DAYS[dayIndex]} ${label}`)
+          }
+        }
       }
+
+      for (const assignment of assignments) {
+        await assignMentorToSlot(assignment.mentorId, assignment.weekday, assignment.hour)
+      }
+
+      const unassignedMentors = mentors
+        .filter((mentor) => (mentorAssignmentCounts.get(mentor.id) ?? 0) === 0)
+        .map((mentor) => mentor.user.name)
+
+      setAutoFillReport({
+        assignments: assignments.length,
+        unfilledSlots,
+        unassignedMentors,
+      })
+      fetchBlocks()
+      toast.success(`Auto-fill completed (${assignments.length} assignments)`)
     } catch (error) {
-      console.error("Failed to create schedule:", error)
-      toast.error("An error occurred")
+      console.error("Auto-fill failed:", error)
+      toast.error(error instanceof Error ? error.message : "Failed to auto-fill schedule")
     } finally {
-      setIsCreatingSchedule(false)
+      setIsAutoFilling(false)
     }
   }
 
-  // Handle set active schedule
-  const handleSetActiveSchedule = async (scheduleId: number) => {
-    try {
-      const response = await fetch("/api/mentorSchedule", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: scheduleId, isActive: true }),
-      })
-
-      if (response.ok) {
-        toast.success("Active schedule updated")
-        await fetchSchedules()
-      } else {
-        toast.error("Failed to update active schedule")
-      }
-    } catch (error) {
-      console.error("Failed to set active schedule:", error)
-      toast.error("An error occurred")
-    }
-  }
 
   // Get mentors not already in this slot
   const getAvailableMentors = (weekday: number, hour: number) => {
@@ -374,12 +620,6 @@ export default function MentorScheduleEditor() {
   // Placeholder for When2Meet availability (for backward compatibility)
   const getWhen2MeetAvailability = (weekday: number, hour: number): string[] => {
     return getAvailabilityForSlot(weekday, hour)
-    
-    const dayName = DAYS[weekday - 1]
-    const slot = when2meetData.slots.find(
-      (s) => s.day === dayName && s.hour === hour
-    )
-    return slot?.availableNames || []
   }
 
   // Get mentors who have availability at this slot (simplified)
@@ -397,68 +637,31 @@ export default function MentorScheduleEditor() {
 
   return (
     <div className="space-y-4">
-      {/* Schedule selector and actions */}
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <h2 className="text-lg font-semibold">Mentor Schedule</h2>
-          {schedules.length > 0 && (
-            <Popover open={scheduleDropdownOpen} onOpenChange={setScheduleDropdownOpen}>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="w-[200px] justify-between">
-                  <span className="truncate">
-                    {activeSchedule?.name || "Select schedule"}
-                  </span>
-                  <ChevronDown className="h-4 w-4 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-[400px] p-0" align="start">
-                <div className="grid grid-cols-2 gap-0">
-                  {schedules.map((schedule, index) => (
-                    <button
-                      key={schedule.id}
-                      onClick={() => {
-                        setActiveSchedule(schedule)
-                        if (!schedule.isActive) {
-                          handleSetActiveSchedule(schedule.id)
-                        }
-                        setScheduleDropdownOpen(false)
-                      }}
-                      className={`p-3 text-left hover:bg-muted transition-colors ${
-                        index % 2 === 0 ? "border-r" : ""
-                      } ${index < schedules.length - 2 ? "border-b" : ""} ${
-                        activeSchedule?.id === schedule.id ? "bg-muted/50" : ""
-                      }`}
-                    >
-                      <div className="font-medium text-sm flex items-center gap-2">
-                        {schedule.name}
-                        {schedule.isActive && (
-                          <Badge variant="default" className="text-[10px] px-1.5 py-0">
-                            Active
-                          </Badge>
-                        )}
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {schedule.isActive ? "Current schedule" : "Archived"}
-                      </p>
-                    </button>
-                  ))}
-                </div>
-              </PopoverContent>
-            </Popover>
+        <div className="flex flex-wrap items-center gap-3">
+          <div>
+            <h2 className="text-lg font-semibold">Mentor Schedule</h2>
+            <p className="text-sm text-muted-foreground">
+              {activeSemester ? `Active semester: ${activeSemester.name}` : "No active semester set"}
+            </p>
+          </div>
+          {activeSchedule && (
+            <Button size="sm" variant="outline" onClick={() => setClearModalOpen(true)}>
+              Clear Schedule
+            </Button>
           )}
         </div>
-        <div className="flex items-center gap-2">
-          {activeSchedule && (
+        {activeSchedule && (
+          <div className="flex flex-wrap items-center gap-2">
+            <Button size="sm" variant="outline" onClick={() => setAutoFillOpen(true)}>
+              Auto-fill Schedule
+            </Button>
             <Button size="sm" variant="outline" onClick={handlePrint}>
               <Printer className="h-4 w-4" />
               Print
             </Button>
-          )}
-          <Button size="sm" onClick={() => setNewScheduleModalOpen(true)}>
-            <Plus className="h-4 w-4" />
-            New Schedule
-          </Button>
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Availability overlay toggle */}
@@ -476,9 +679,7 @@ export default function MentorScheduleEditor() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <Label htmlFor="show-availability" className="text-sm">
-              Show on grid
-            </Label>
+            <span className="text-sm">Show on grid</span>
             <Switch
               id="show-availability"
               checked={showAvailability}
@@ -493,110 +694,146 @@ export default function MentorScheduleEditor() {
           <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
           <p className="text-muted-foreground">No schedule selected</p>
           <p className="text-sm text-muted-foreground mt-1">
-            Create a new schedule to start assigning mentors
+            A canonical schedule will appear once it is initialized.
           </p>
-          <Button className="mt-4" onClick={() => setNewScheduleModalOpen(true)}>
-            <Plus className="h-4 w-4" />
-            Create Schedule
-          </Button>
         </div>
       ) : (
         <>
-          {/* Schedule grid */}
-          <div className="overflow-x-auto border rounded-lg">
-            <table className="w-full min-w-[800px]">
-              <thead>
-                <tr className="border-b bg-muted/50">
-                  <th className="w-24 p-2 text-left text-sm font-medium text-muted-foreground">
-                    <Clock className="h-4 w-4 inline mr-1" />
-                    Time
-                  </th>
-                  {DAYS.map((day, i) => (
-                    <th
-                      key={day}
-                      className="p-2 text-center text-sm font-medium text-muted-foreground"
-                    >
-                      {day}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {HOURS.map(({ hour, label }) => (
-                  <tr key={hour} className="border-b last:border-b-0">
-                    <td className="p-2 text-sm text-muted-foreground font-medium bg-muted/30">
-                      {label}
-                    </td>
-                    {DAYS.map((_, dayIndex) => {
-                      const weekday = dayIndex + 1
-                      const slotBlocks = getBlocksForSlot(weekday, hour)
-                      const availableNames = getWhen2MeetAvailability(weekday, hour)
-                      const mappedAvailable = getMappedAvailableMentors(weekday, hour)
-
-                      return (
-                        <td
-                          key={dayIndex}
-                          className={`p-1 h-16 align-top ${
-                            showAvailability && availableNames.length > 0
-                              ? "bg-green-500/10"
-                              : ""
-                          }`}
+          <DndContext onDragEnd={handleDragEnd}>
+            <div className="grid gap-4 xl:grid-cols-[1fr_280px]">
+              <div className="overflow-x-auto border rounded-lg">
+                <table className="w-full min-w-[800px] table-fixed">
+                  <thead>
+                    <tr className="border-b bg-muted/50">
+                      <th className="w-24 p-2 text-left text-sm font-medium text-muted-foreground">
+                        <Clock className="h-4 w-4 inline mr-1" />
+                        Time
+                      </th>
+                      {DAYS.map((day) => (
+                        <th
+                          key={day}
+                          className="p-2 text-center text-sm font-medium text-muted-foreground"
                         >
-                          <div className="flex flex-col gap-1 min-h-[3.5rem]">
-                            {/* Assigned mentors */}
-                            <div className="flex flex-wrap gap-1">
-                              {slotBlocks.map((block) => (
-                                <button
-                                  key={block.id}
-                                  onClick={() => {
-                                    setRemoveBlock(block)
-                                    setRemoveModalOpen(true)
-                                  }}
-                                  className={`${getMentorColor(block.mentor.id)} text-white text-xs px-2 py-1 rounded-md hover:opacity-80 transition-opacity truncate max-w-[100px]`}
-                                  title={`${block.mentor.name} - Click to remove`}
-                                >
-                                  {block.mentor.name.split(" ")[0]}
-                                </button>
-                              ))}
-                              {slotBlocks.length < 2 && (
-                                <button
-                                  onClick={() => handleOpenAssignModal(weekday, hour)}
-                                  className="text-muted-foreground hover:text-foreground hover:bg-muted/50 text-xs px-2 py-1 rounded-md border border-dashed border-border transition-colors flex items-center gap-1"
-                                >
-                                  <Plus className="h-3 w-3" />
-                                  Add
-                                </button>
+                          {day}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {HOURS.map(({ hour, label }) => (
+                      <tr key={hour} className="border-b last:border-b-0">
+                        <td className="p-2 text-sm text-muted-foreground font-medium bg-muted/30">
+                          {label}
+                        </td>
+                        {DAYS.map((_, dayIndex) => {
+                          const weekday = dayIndex + 1
+                          const slotBlocks = getBlocksForSlot(weekday, hour)
+                          const availableNames = getWhen2MeetAvailability(weekday, hour)
+                          const mappedAvailable = getMappedAvailableMentors(weekday, hour)
+
+                          return (
+                            <ScheduleSlotCell
+                              key={dayIndex}
+                              id={`slot-${weekday}-${hour}`}
+                              className={cn(
+                                "p-1 h-16 align-top",
+                                showAvailability && availableNames.length > 0 && "bg-green-500/10"
                               )}
-                            </div>
-                            {/* When2Meet availability indicator */}
-                            {showAvailability && availableNames.length > 0 && (
-                              <div
-                                className="text-[10px] text-green-700 dark:text-green-400 truncate"
-                                title={`Available: ${availableNames.join(", ")}`}
-                              >
-                                {mappedAvailable.length > 0 ? (
-                                  <span className="flex items-center gap-1">
-                                    <Users className="h-3 w-3" />
-                                    {mappedAvailable.map((m) => m.user.name.split(" ")[0]).join(", ")}
-                                  </span>
-                                ) : (
-                                  <span className="opacity-60">
-                                    {availableNames.length} available
-                                  </span>
+                            >
+                              <div className="flex flex-col gap-1 min-h-[3.5rem] min-w-0">
+                                <div className="flex flex-wrap gap-1">
+                                  {slotBlocks.map((block) => (
+                                    <DraggableMentorChip
+                                      key={block.id}
+                                      id={`block-${block.id}`}
+                                      mentorId={block.mentor.id}
+                                      blockId={block.id}
+                                      colorClass={getMentorColor(block.mentor.id)}
+                                      label={block.mentor.name.split(" ")[0]}
+                                      onClick={() => handleOpenDetail(weekday, hour)}
+                                      title={`${block.mentor.name} - Click for details`}
+                                    />
+                                  ))}
+                                  {slotBlocks.length < 2 && (
+                                    <button
+                                      onClick={() => handleOpenAssignModal(weekday, hour)}
+                                      className="text-muted-foreground hover:text-foreground hover:bg-muted/50 text-xs px-2 py-1 rounded-md border border-dashed border-border transition-colors flex items-center gap-1"
+                                    >
+                                      <Plus className="h-3 w-3" />
+                                      Add
+                                    </button>
+                                  )}
+                                </div>
+                                {showAvailability && availableNames.length > 0 && (
+                                  <div
+                                    className="text-[10px] text-green-700 dark:text-green-400 truncate max-w-full overflow-hidden"
+                                    title={`Available: ${availableNames.join(", ")}`}
+                                  >
+                                    {mappedAvailable.length > 0 ? (
+                                      <span className="flex items-center gap-1 min-w-0 truncate">
+                                        <Users className="h-3 w-3 shrink-0" />
+                                        <span className="min-w-0 truncate">
+                                          {mappedAvailable
+                                            .map((m) => m.user.name.split(" ")[0])
+                                            .join(", ")}
+                                        </span>
+                                      </span>
+                                    ) : (
+                                      <span className="opacity-60">
+                                        {availableNames.length} available
+                                      </span>
+                                    )}
+                                  </div>
                                 )}
                               </div>
-                            )}
-                          </div>
-                        </td>
-                      )
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                            </ScheduleSlotCell>
+                          )
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
-          {/* Legend */}
+              <div className="space-y-4">
+                <NeoCard>
+                  <NeoCardHeader>
+                    <NeoCardTitle>Mentor Pool</NeoCardTitle>
+                  </NeoCardHeader>
+                  <NeoCardContent className="flex flex-wrap gap-2">
+                    {mentors.map((mentor) => (
+                      <DraggableMentorChip
+                        key={mentor.id}
+                        id={`mentor-${mentor.id}`}
+                        mentorId={mentor.id}
+                        colorClass={getMentorColor(mentor.id)}
+                        label={mentor.user.name.split(" ")[0]}
+                        title={`Drag ${mentor.user.name} onto the schedule`}
+                      />
+                    ))}
+                  </NeoCardContent>
+                </NeoCard>
+                <NeoCard>
+                  <NeoCardHeader>
+                    <NeoCardTitle>Headcount Forms</NeoCardTitle>
+                  </NeoCardHeader>
+                  <NeoCardContent className="space-y-2">
+                    <Button asChild variant="outline" className="w-full">
+                      <a href="/mentoring/headcount/mentors" target="_blank" rel="noreferrer">
+                        30-min Mentor Headcount
+                      </a>
+                    </Button>
+                    <Button asChild variant="outline" className="w-full">
+                      <a href="/mentoring/headcount/mentees" target="_blank" rel="noreferrer">
+                        55-min Mentee Headcount
+                      </a>
+                    </Button>
+                  </NeoCardContent>
+                </NeoCard>
+              </div>
+            </div>
+          </DndContext>
+
           <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
             <span>Assigned mentors:</span>
             {Array.from(new Set(blocks.map((b) => b.mentor.id))).map((mentorId) => {
@@ -614,6 +851,170 @@ export default function MentorScheduleEditor() {
           </div>
         </>
       )}
+
+      <Sheet open={isDetailOpen} onOpenChange={setIsDetailOpen}>
+        <SheetContent side="right" className="w-[420px] sm:max-w-[420px]">
+          <SheetHeader>
+            <SheetTitle>Slot Details</SheetTitle>
+          </SheetHeader>
+          <div className="space-y-6 mt-4">
+            {detailSlot && (
+              <div className="text-sm text-muted-foreground">
+                {DAYS[detailSlot.weekday - 1]} •{" "}
+                {HOURS.find((h) => h.hour === detailSlot.hour)?.label}
+              </div>
+            )}
+
+            {detailSlot && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Expected traffic</span>
+                  {(() => {
+                    const traffic = getTrafficForSlot(detailSlot.weekday, detailSlot.hour)
+                    if (!traffic) return <span className="text-xs text-muted-foreground">No data yet</span>
+                    const level = getTrafficLevel(traffic.averagePeopleInLab)
+                    return (
+                      <span className="text-xs text-muted-foreground">
+                        {level.label} · {traffic.averagePeopleInLab.toFixed(1)} avg
+                      </span>
+                    )
+                  })()}
+                </div>
+                {(() => {
+                  const traffic = detailSlot
+                    ? getTrafficForSlot(detailSlot.weekday, detailSlot.hour)
+                    : null
+                  if (!traffic) return null
+                  const level = getTrafficLevel(traffic.averagePeopleInLab)
+                  return <Progress value={level.value} />
+                })()}
+              </div>
+            )}
+
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold">Assigned mentors</h3>
+              {detailBlocks.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No mentors assigned yet.</p>
+              ) : (
+                detailBlocks.map((block) => (
+                  <NeoCard key={block.id} className="p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <div className="font-medium">{block.mentor.name}</div>
+                        <div className="text-xs text-muted-foreground">{block.mentor.email}</div>
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {block.mentor.skills.slice(0, 4).map((skill) => (
+                            <Badge key={skill.id} variant="outline" className="text-[10px]">
+                              {skill.name}
+                            </Badge>
+                          ))}
+                          {block.mentor.skills.length === 0 && (
+                            <span className="text-xs text-muted-foreground">No skills listed</span>
+                          )}
+                        </div>
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {block.mentor.courses.slice(0, 4).map((course) => (
+                            <Badge key={course.id} variant="secondary" className="text-[10px]">
+                              {course.code}
+                            </Badge>
+                          ))}
+                          {block.mentor.courses.length === 0 && (
+                            <span className="text-xs text-muted-foreground">No courses listed</span>
+                          )}
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setRemoveBlock(block)
+                          setRemoveModalOpen(true)
+                        }}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  </NeoCard>
+                ))
+              )}
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* Auto-fill Schedule Modal */}
+      <Modal
+        open={autoFillOpen}
+        onOpenChange={(open) => {
+          setAutoFillOpen(open)
+          if (!open) setAutoFillReport(null)
+        }}
+        title="Auto-fill Schedule"
+        description="Generate schedule blocks from mentor availability."
+        className="max-w-lg"
+      >
+        <div className="space-y-4">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Max mentors per slot</label>
+              <Input
+                type="number"
+                min={1}
+                max={3}
+                value={autoFillMaxPerSlot}
+                onChange={(e) => setAutoFillMaxPerSlot(parseInt(e.target.value || "1"))}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Max slots per mentor</label>
+              <Input
+                type="number"
+                min={1}
+                max={10}
+                value={autoFillSlotsPerMentor}
+                onChange={(e) => setAutoFillSlotsPerMentor(parseInt(e.target.value || "1"))}
+              />
+            </div>
+          </div>
+          <div className="flex items-center justify-between rounded-md border p-3">
+            <div>
+              <p className="text-sm font-medium">Fill empty slots only</p>
+              <p className="text-xs text-muted-foreground">
+                Keep existing assignments and only add where capacity remains.
+              </p>
+            </div>
+            <Switch checked={autoFillEmptyOnly} onCheckedChange={setAutoFillEmptyOnly} />
+          </div>
+
+          {autoFillReport && (
+            <div className="space-y-3 rounded-md border bg-muted/40 p-3">
+              <p className="text-sm font-medium">Auto-fill report</p>
+              <p className="text-xs text-muted-foreground">
+                Assignments created: {autoFillReport.assignments}
+              </p>
+              {autoFillReport.unassignedMentors.length > 0 && (
+                <div className="text-xs text-muted-foreground">
+                  Unassigned mentors: {autoFillReport.unassignedMentors.join(", ")}
+                </div>
+              )}
+              {autoFillReport.unfilledSlots.length > 0 && (
+                <div className="text-xs text-muted-foreground">
+                  Unfilled slots: {autoFillReport.unfilledSlots.slice(0, 8).join(", ")}
+                  {autoFillReport.unfilledSlots.length > 8 && "…"}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+        <ModalFooter>
+          <Button variant="ghost" onClick={() => setAutoFillOpen(false)}>
+            Close
+          </Button>
+          <Button onClick={runAutoFillSchedule} disabled={isAutoFilling}>
+            {isAutoFilling ? "Auto-filling..." : "Run Auto-fill"}
+          </Button>
+        </ModalFooter>
+      </Modal>
 
       {/* Assign Mentor Modal */}
       <Modal
@@ -685,32 +1086,91 @@ export default function MentorScheduleEditor() {
         </ModalFooter>
       </Modal>
 
-      {/* New Schedule Modal */}
+      {/* Clear Schedule Modal */}
       <Modal
-        open={newScheduleModalOpen}
-        onOpenChange={setNewScheduleModalOpen}
-        title="Create New Schedule"
-        description="Create a new mentor schedule (e.g., Fall 2026, Spring 2027)"
+        open={clearModalOpen}
+        onOpenChange={setClearModalOpen}
+        title="Clear Schedule"
+        className="max-w-md"
       >
-        <div className="space-y-4">
-          <input
-            type="text"
-            placeholder="Schedule name (e.g., Fall 2026)"
-            value={newScheduleName}
-            onChange={(e) => setNewScheduleName(e.target.value)}
-            className="w-full px-3 py-2 border rounded-md bg-background text-foreground"
-          />
-        </div>
+        <p className="text-sm text-muted-foreground">
+          This will remove all mentors from the schedule. This cannot be undone.
+        </p>
         <ModalFooter>
-          <Button variant="ghost" onClick={() => setNewScheduleModalOpen(false)}>
+          <Button variant="ghost" onClick={() => setClearModalOpen(false)}>
             Cancel
           </Button>
-          <Button onClick={handleCreateSchedule} disabled={!newScheduleName.trim() || isCreatingSchedule}>
-            {isCreatingSchedule ? "Creating..." : "Create Schedule"}
+          <Button variant="destructive" onClick={handleClearSchedule} disabled={isClearing}>
+            {isClearing ? "Clearing..." : "Clear Schedule"}
           </Button>
         </ModalFooter>
       </Modal>
 
     </div>
+  )
+}
+
+function ScheduleSlotCell({
+  id,
+  className,
+  children,
+}: {
+  id: string
+  className?: string
+  children: ReactNode
+}) {
+  const { setNodeRef, isOver } = useDroppable({ id })
+
+  return (
+    <td
+      ref={setNodeRef}
+      className={cn(className, isOver && "bg-accent/20")}
+    >
+      {children}
+    </td>
+  )
+}
+
+function DraggableMentorChip({
+  id,
+  mentorId,
+  blockId,
+  label,
+  colorClass,
+  onClick,
+  title,
+}: {
+  id: string
+  mentorId: number
+  blockId?: number
+  label: string
+  colorClass: string
+  onClick?: () => void
+  title?: string
+}) {
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+    id,
+    data: { mentorId, blockId },
+  })
+
+  const style = transform
+    ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` }
+    : undefined
+
+  return (
+    <button
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        `${colorClass} text-white text-xs px-2 py-1 rounded-md transition-opacity truncate max-w-[100px]`,
+        isDragging && "opacity-60"
+      )}
+      onClick={onClick}
+      title={title}
+      {...attributes}
+      {...listeners}
+    >
+      {label}
+    </button>
   )
 }

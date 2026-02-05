@@ -38,9 +38,21 @@ interface MentorSemester {
 interface ExistingApplication {
   id: number
   status: string
+  discordUsername?: string
+  pronouns?: string
+  major?: string
+  yearLevel?: string
+  coursesJson?: string
+  skillsText?: string
+  toolsComfortable?: string
+  toolsLearning?: string
+  previousSemesters?: number
+  whyMentor?: string
+  comments?: string | null
   semester: {
     id: number
     name: string
+    isActive?: boolean
   }
 }
 
@@ -79,8 +91,10 @@ export default function MentorApplyPage() {
   
   const [activeSemester, setActiveSemester] = useState<MentorSemester | null>(null)
   const [existingApplication, setExistingApplication] = useState<ExistingApplication | null>(null)
+  const [previousApplication, setPreviousApplication] = useState<ExistingApplication | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [hasAutofilled, setHasAutofilled] = useState(false)
 
   // Form state
   const [discordUsername, setDiscordUsername] = useState("")
@@ -124,6 +138,12 @@ export default function MentorApplyPage() {
             if (existing) {
               setExistingApplication(existing)
             }
+            const previous = applications.find(
+              (app: ExistingApplication) => !app.semester.isActive
+            )
+            if (previous) {
+              setPreviousApplication(previous)
+            }
           }
         }
       } catch (error) {
@@ -144,6 +164,63 @@ export default function MentorApplyPage() {
         ? prev.filter((id) => id !== courseId)
         : [...prev, courseId]
     )
+  }
+
+  const parseCourses = (coursesJson?: string): string[] => {
+    if (!coursesJson) return []
+    try {
+      const parsed = JSON.parse(coursesJson)
+      return Array.isArray(parsed) ? parsed : []
+    } catch {
+      return []
+    }
+  }
+
+  const applyAutofill = () => {
+    if (!previousApplication) return
+
+    const priorPronouns = previousApplication.pronouns || ""
+    const priorMajor = previousApplication.major || ""
+    const priorYearLevel = previousApplication.yearLevel || ""
+
+    setDiscordUsername(previousApplication.discordUsername || "")
+
+    if (PRONOUNS.includes(priorPronouns)) {
+      setPronouns(priorPronouns)
+      setPronounsOther("")
+    } else if (priorPronouns) {
+      setPronouns("Other")
+      setPronounsOther(priorPronouns)
+    }
+
+    if (MAJORS.includes(priorMajor)) {
+      setMajor(priorMajor)
+      setMajorOther("")
+    } else if (priorMajor) {
+      setMajor("Other")
+      setMajorOther(priorMajor)
+    }
+
+    if (YEAR_LEVELS.includes(priorYearLevel)) {
+      setYearLevel(priorYearLevel)
+      setYearLevelOther("")
+    } else if (priorYearLevel) {
+      setYearLevel("Other")
+      setYearLevelOther(priorYearLevel)
+    }
+
+    setSelectedCourses(parseCourses(previousApplication.coursesJson))
+    setSkillsText(previousApplication.skillsText || "")
+    setToolsComfortable(previousApplication.toolsComfortable || "")
+    setToolsLearning(previousApplication.toolsLearning || "")
+    setPreviousSemesters(
+      previousApplication.previousSemesters === 5 ? "5+" : `${previousApplication.previousSemesters ?? 0}`
+    )
+    setWhyMentor(previousApplication.whyMentor || "")
+    setComments(previousApplication.comments || "")
+    setAvailabilitySlots([])
+    setHasAutofilled(true)
+    toast.success("Autofilled from your previous application (availability cleared).")
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -446,6 +523,22 @@ export default function MentorApplyPage() {
                   <li>You do NOT need to be an SE major - all majors welcome!</li>
                 </ul>
               </div>
+              {previousApplication && (
+                <div className="flex flex-col gap-2 rounded-md border border-dashed border-border p-3">
+                  <p className="text-sm text-muted-foreground">
+                    Reapplying this semester? Autofill the form with your last application.
+                  </p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={applyAutofill}
+                    disabled={hasAutofilled}
+                  >
+                    Autofill from previous application
+                  </Button>
+                </div>
+              )}
             </CardDescription>
           </CardHeader>
           <CardContent>

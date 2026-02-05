@@ -131,10 +131,22 @@ export async function POST(request: NextRequest) {
       })
     }
 
+    const existingSchedule = await prisma.mentorSchedule.findFirst({
+      where: { isActive: true },
+      select: { id: true },
+    })
+
+    if (existingSchedule) {
+      return NextResponse.json(
+        { error: "A canonical schedule already exists" },
+        { status: 409 }
+      )
+    }
+
     const schedule = await prisma.mentorSchedule.create({
       data: {
         name: name.trim(),
-        isActive: setActive,
+        isActive: true,
       },
     })
 

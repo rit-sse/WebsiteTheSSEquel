@@ -201,6 +201,8 @@ model Mentor {
   courseTaken     CourseTaken[]
   schedule        Schedule[]        // Legacy relation - to be deprecated
   scheduleBlocks  ScheduleBlock[]   // New schedule system
+  mentorHeadcount MentorHeadcountMentor[]
+  menteeHeadcount MenteeHeadcountMentor[]
   user            User              @relation(fields: [user_Id], references: [id])
 }
 
@@ -258,7 +260,8 @@ model Course {
   code Int
 
   //Relational field
-  courseTaken CourseTaken[]
+  courseTaken          CourseTaken[]
+  menteeHeadcountLinks MenteeHeadcountCourse[]
 
   //Refrence field
   department Department @relation(fields: [departmentId], references: [id])
@@ -317,8 +320,8 @@ model MentorSchedule {
   updatedAt DateTime @updatedAt
 
   // Relational fields
-  blocks   ScheduleBlock[]
-  semester MentorSemester?
+  blocks    ScheduleBlock[]
+  semesters MentorSemester[]
 }
 
 // Semester-based mentor recruitment cycle
@@ -336,20 +339,26 @@ model MentorSemester {
   applicationOpen  DateTime?
   applicationClose DateTime?
 
+  // Semester start/end dates (used for mentor offboarding)
+  semesterStart DateTime?
+  semesterEnd   DateTime?
+
   // Whether this is the currently active semester for applications
   isActive Boolean @default(false)
 
   // Link to the schedule for this semester
-  scheduleId Int? @unique
+  scheduleId Int?
 
   // Timestamps
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relational fields
-  schedule     MentorSchedule?      @relation(fields: [scheduleId], references: [id], onDelete: SetNull)
-  applications MentorApplication[]
-  availability MentorAvailability[]
+  schedule        MentorSchedule?        @relation(fields: [scheduleId], references: [id], onDelete: SetNull)
+  applications    MentorApplication[]
+  availability    MentorAvailability[]
+  mentorHeadcount MentorHeadcountEntry[]
+  menteeHeadcount MenteeHeadcountEntry[]
 }
 
 // Mentor interest form submissions
@@ -435,6 +444,86 @@ model MentorAvailability {
 
   // Unique constraint: one availability record per user per semester
   @@unique([userId, semesterId])
+}
+
+// 30-minute mentor headcount form entries
+model MentorHeadcountEntry {
+  id Int @id @default(autoincrement())
+
+  semesterId Int?
+
+  // Total people in the lab at the 30-minute mark
+  peopleInLab Int
+
+  // "How are you feeling?" response
+  feeling String @db.Text
+
+  // Timestamps
+  createdAt DateTime @default(now())
+
+  // Relational fields
+  semester MentorSemester?        @relation(fields: [semesterId], references: [id], onDelete: SetNull)
+  mentors  MentorHeadcountMentor[]
+}
+
+model MentorHeadcountMentor {
+  id Int @id @default(autoincrement())
+
+  entryId  Int
+  mentorId Int
+
+  entry  MentorHeadcountEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  mentor Mentor               @relation(fields: [mentorId], references: [id], onDelete: Cascade)
+
+  @@unique([entryId, mentorId])
+}
+
+// 55-minute mentee headcount form entries
+model MenteeHeadcountEntry {
+  id Int @id @default(autoincrement())
+
+  semesterId Int?
+
+  // Count of distinct students mentored/mentoring
+  studentsMentoredCount Int
+
+  // Count of students who checked out tests
+  testsCheckedOutCount Int
+
+  // Free-text for "Other" class
+  otherClassText String? @db.Text
+
+  // Timestamps
+  createdAt DateTime @default(now())
+
+  // Relational fields
+  semester MentorSemester?        @relation(fields: [semesterId], references: [id], onDelete: SetNull)
+  mentors  MenteeHeadcountMentor[]
+  classes  MenteeHeadcountCourse[]
+}
+
+model MenteeHeadcountMentor {
+  id Int @id @default(autoincrement())
+
+  entryId  Int
+  mentorId Int
+
+  entry  MenteeHeadcountEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  mentor Mentor               @relation(fields: [mentorId], references: [id], onDelete: Cascade)
+
+  @@unique([entryId, mentorId])
+}
+
+model MenteeHeadcountCourse {
+  id Int @id @default(autoincrement())
+
+  entryId  Int
+  courseId Int
+
+  entry  MenteeHeadcountEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  course Course              @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([entryId, courseId])
 }
 
 model ScheduleBlock {

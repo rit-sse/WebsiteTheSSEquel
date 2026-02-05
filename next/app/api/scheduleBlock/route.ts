@@ -308,7 +308,23 @@ export async function DELETE(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { id } = body
+    const { id, scheduleId } = body
+
+    if (scheduleId) {
+      const targetScheduleId = parseInt(scheduleId)
+      if (Number.isNaN(targetScheduleId)) {
+        return NextResponse.json(
+          { error: "Invalid scheduleId" },
+          { status: 400 }
+        )
+      }
+
+      await prisma.scheduleBlock.deleteMany({
+        where: { scheduleId: targetScheduleId },
+      })
+
+      return NextResponse.json({ success: true }, { status: 200 })
+    }
 
     if (!id) {
       return NextResponse.json(
@@ -339,6 +355,99 @@ export async function DELETE(request: NextRequest) {
     console.error("Error deleting schedule block:", error)
     return NextResponse.json(
       { error: "Failed to delete schedule block" },
+      { status: 500 }
+    )
+  }
+}
+
+/**
+ * HTTP PUT request to /api/scheduleBlock
+ * Move a schedule block to a new time slot
+ */
+export async function PUT(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    const canManage = await canManageSchedules(session.user.email)
+    if (!canManage) {
+      return NextResponse.json(
+        { error: "Only Mentoring Head or Primary Officers can manage schedules" },
+        { status: 403 }
+      )
+    }
+
+    const body = await request.json()
+    const { id, weekday, startHour } = body
+
+    if (!id) {
+      return NextResponse.json(
+        { error: "Schedule block ID is required" },
+        { status: 400 }
+      )
+    }
+
+    if (weekday === undefined || startHour === undefined) {
+      return NextResponse.json(
+        { error: "weekday and startHour are required" },
+        { status: 400 }
+      )
+    }
+
+    // Validate weekday (1-5, Mon-Fri)
+    if (weekday < 1 || weekday > 5) {
+      return NextResponse.json(
+        { error: "Invalid weekday. Must be between 1 (Monday) and 5 (Friday)" },
+        { status: 400 }
+      )
+    }
+
+    // Validate startHour (10-17, 10am-5pm)
+    if (startHour < 10 || startHour > 17) {
+      return NextResponse.json(
+        { error: "Invalid start hour. Must be between 10 (10am) and 17 (5pm)" },
+        { status: 400 }
+      )
+    }
+
+    const existingBlock = await prisma.scheduleBlock.findUnique({
+      where: { id },
+      select: { mentorId: true, scheduleId: true },
+    })
+
+    if (!existingBlock) {
+      return NextResponse.json({ error: "Schedule block not found" }, { status: 404 })
+    }
+
+    // Check if this mentor is already at the target slot
+    const conflict = await prisma.scheduleBlock.findFirst({
+      where: {
+        scheduleId: existingBlock.scheduleId,
+        weekday,
+        startHour,
+        mentorId: existingBlock.mentorId,
+      },
+    })
+
+    if (conflict && conflict.id !== id) {
+      return NextResponse.json(
+        { error: "This mentor is already assigned to the target slot" },
+        { status: 409 }
+      )
+    }
+
+    const updated = await prisma.scheduleBlock.update({
+      where: { id },
+      data: { weekday, startHour },
+    })
+
+    return NextResponse.json(updated)
+  } catch (error) {
+    console.error("Error updating schedule block:", error)
+    return NextResponse.json(
+      { error: "Failed to update schedule block" },
       { status: 500 }
     )
   }

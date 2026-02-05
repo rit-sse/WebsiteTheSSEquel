@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { name, when2meetUrl, applicationOpen, applicationClose, setActive = false, createSchedule = true } = body
+    const { name, when2meetUrl, applicationOpen, applicationClose, setActive = false } = body
 
     if (!name || typeof name !== "string" || name.trim() === "") {
       return NextResponse.json(
@@ -135,13 +135,21 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Create schedule first if requested
+    // Use the canonical schedule (create one if none exists)
     let scheduleId: number | null = null
-    if (createSchedule) {
+    const existingSchedule = await prisma.mentorSchedule.findFirst({
+      where: { isActive: true },
+      select: { id: true },
+      orderBy: { createdAt: "asc" },
+    })
+
+    if (existingSchedule) {
+      scheduleId = existingSchedule.id
+    } else {
       const schedule = await prisma.mentorSchedule.create({
         data: {
-          name: name.trim(),
-          isActive: setActive,
+          name: "Mentor Schedule",
+          isActive: true,
         },
       })
       scheduleId = schedule.id

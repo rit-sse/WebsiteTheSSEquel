@@ -155,7 +155,8 @@ export default function PrintableSchedule({ scheduleId }: PrintableScheduleProps
   return (
     <>
       {/* Printable content */}
-      <div id="printable-schedule" className="p-4 print:p-0 w-full mx-auto">
+      <div data-theme="light" data-style="neo" className="min-h-screen bg-background text-foreground">
+        <div id="printable-schedule" className="p-4 print:p-0 w-full mx-auto">
         {/* Header */}
         <div className="text-center mb-6 print:mb-2">
           <h1 className="text-3xl font-bold print:text-xl">SSE Mentor Schedule</h1>
@@ -190,7 +191,7 @@ export default function PrintableSchedule({ scheduleId }: PrintableScheduleProps
         <div className="border-2 border-black rounded-lg overflow-hidden">
           <table className="w-full border-collapse">
             <thead>
-              <tr className="bg-gray-100">
+              <tr className="bg-muted/60">
                 <th className="border-b-2 border-r-2 border-black p-4 text-base font-bold w-28">
                   Time
                 </th>
@@ -207,7 +208,7 @@ export default function PrintableSchedule({ scheduleId }: PrintableScheduleProps
             <tbody>
               {HOURS.map(({ hour, label }) => (
                 <tr key={hour}>
-                  <td className="border-r-2 border-b border-black p-3 text-sm font-bold text-center whitespace-nowrap bg-gray-50">
+                  <td className="border-r-2 border-b border-black p-3 text-sm font-bold text-center whitespace-nowrap bg-muted/30">
                     {label}
                   </td>
                   {DAYS.map((_, dayIndex) => {
@@ -242,7 +243,7 @@ export default function PrintableSchedule({ scheduleId }: PrintableScheduleProps
                             })}
                           </div>
                         ) : (
-                          <div className="text-center text-gray-300">—</div>
+                          <div className="text-center text-muted-foreground/30">—</div>
                         )}
                       </td>
                     )
@@ -270,6 +271,7 @@ export default function PrintableSchedule({ scheduleId }: PrintableScheduleProps
             Close
           </Button>
         </div>
+        </div>
       </div>
 
       {/* Print styles */}
@@ -278,6 +280,9 @@ export default function PrintableSchedule({ scheduleId }: PrintableScheduleProps
           body {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
+            color-scheme: light;
+            background: #ffffff !important;
+            color: #000000 !important;
           }
           
           @page {
