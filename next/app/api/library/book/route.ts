@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
     let getCount = request.nextUrl.searchParams.get("count") === "true";
 
     if (isbn || isbn.trim() !== "") {
-        const book = await prisma.textbooks.findMany({
+        const book = await prisma.textbooks.findFirst({
             where: {
                 ISBN: isbn,
             },
@@ -24,9 +24,28 @@ export async function GET(request: NextRequest) {
                 keyWords: true,
                 classInterest: true,
                 yearPublished: true,
-                checkedOut: true
             }
         });
+
+        if( getCount ) {
+            const stockNumber = await prisma.textbooks.count({
+                where: {
+                    ISBN: isbn,
+                    checkedOut: false,
+                }
+            });
+
+            const response = {
+                ...book,
+                stockNumber: stockNumber
+            };
+
+            return new Response(JSON.stringify(response), { status: 200 });
+        }
+
+        if (!book) {
+            return new Response(JSON.stringify({ error: "Not found" }), { status: 404 });
+        }
 
         return new Response(JSON.stringify(book), { status: 200 });
     }

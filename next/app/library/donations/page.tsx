@@ -2,8 +2,11 @@ import React from 'react';
 
 export default function BookDonationsPage() {
     return (<div className='w-[80%]'>
-        <div className='w-[80%]'>
+        <div className='w-[100%] md:w-[80%]'>
             <h1 className='mt-[10px]'>Book Donations</h1>
+            <div className='bg-orange-100 mt-[8px] px-5 py-5 rounded-xl border-[3px] border-orange-200 border-dotted border-spacing-[30px] '>
+                <span><b>Hey!</b> We are looking for course-required textbooks. These donations are high in priority, and you can earn double the amount of memberships. Memberships allow you to check out electronics and books from the lab! More information at <a className='underline decoration-solid decoration-[2px] decoration-black font-bold hover:text-[rgba(0,0,0,0.4)] hover:decoration-[rgba(0,0,0,0.4)] duration-200' href='/library/membershipbenefits'>Library Benefits with Memberships FAQ.</a></span>
+            </div>
             <p className='mt-[10px]'>Have textbooks gathering dust on your shelf? Turn them into something valuable, both for fellow students and yourself.</p>
             <p className='mt-[10px] font-bold text-[30px]'>How It Works</p>
             <p className='mt-[10px]'>Donating books to the Society of Software Engineers is simple:</p>

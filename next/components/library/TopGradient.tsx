@@ -6,9 +6,11 @@ import { useRouter } from "next/router";
 export default function TopGradient() {
 
     const [isAtHome, setIsAtHome] = useState(true);
+    const [authLevel, setAuthLevel] = useState<{ [key: string]: any }>({ isOfficer: false });
 
     useEffect(() => {
         setIsAtHome(window.location.href.endsWith("/library"));
+        fetch((process.env.INTERNAL_API_URL ? process.env.INTERNAL_API_URL : "") + "/api/authLevel").then(resp => resp.json()).then(authData => { setAuthLevel(authData); });
     }, []);
 
     return (
@@ -21,12 +23,30 @@ export default function TopGradient() {
                 </h1>
 
             </div>
-            <div className="w-[80%]">
+            <div className={"w-[80%] flex flex-row justify-end " + (isAtHome ? "mb-[50px]" : "")}>
                 {
-                    (!isAtHome) ? (
-                        <a href="#" onClick={() => { (!isAtHome) ? history.back() : null }} className="relative block w-full text-right text-white p-0 m-0 text-xl italic bottom-[-2px]">
+                    (authLevel.isMember || (authLevel.membershipCount > 0)) ? (
+                        <a href="/library/officer" className={"relative block text-center md:text-right text-white p-0 m-0 text-xl italic bottom-[-2px]"}>
+                            My Card
+                        </a>
+                    ) : <></>
+                }
+                {
+                    (authLevel.isOfficer || authLevel.isMentor) ? (
+                        <a href="/library/officer" className={"relative block text-center md:text-right text-white p-0 m-0 text-xl italic bottom-[-2px] ml-8"}>
+                            Mentor Portal
+                        </a>
+                    ) : <></>
+                }
+                {
+                    (!isAtHome) ? (<>
+                        <a href="/library" onClick={() => { (!isAtHome) ? history.back() : null }} className="relative block text-center md:text-right text-white p-0 m-0 text-xl italic bottom-[-2px] ml-8">
+                            Home
+                        </a>
+                        <a href="#" onClick={() => { (!isAtHome) ? history.back() : null }} className="relative block text-center md:text-right text-white p-0 m-0 text-xl italic bottom-[-2px] ml-8">
                             Go Back
                         </a>
+                    </>
                     ) : <></>
                 }
             </div>

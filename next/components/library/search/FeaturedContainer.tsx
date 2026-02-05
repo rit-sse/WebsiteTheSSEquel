@@ -23,13 +23,13 @@ export function FeaturedContainer({ props }: { props: { books: Book[], header: s
     }
 
     return (
-        <div className="w-full flex flex-col items-center mt-[15px] px-2 py-4 md:px-4 md:py-6 lg:px-6 lg:py-8">
+        <div className="w-full flex flex-col items-center mt-[15px] px-2 md:px-4 lg:px-6 ">
             <h2 className="w-full text-3xl font-normal font-sans mb-6">{props.header}</h2>
-            <div className="flex flex-row items-top  w-[100%] overflow-x-scroll justify-start scrollbar-hide ">
+            <div className="flex flex-row items-top  w-[100%] overflow-x-scroll justify-start scrollbar-hide">
                 {props.books.map((book) => (
                     <div
                         key={book.ISBN}
-                        className="flex-none w-[180px] mr-4 last:mr-0 cursor-pointer"
+                        className="flex-none w-[180px] mr-4 last:mr-0 cursor-pointer z-5"
                         onClick={() => onClickBook(book)}
                     >
                         <img

@@ -8,7 +8,7 @@ export default function LibraryLayout({
     children: React.ReactNode;
 }) {
     return (
-        <div className={`flex flex-col items-center bg-white min-h-screen w-screen z-[20]`}>
+        <div className={`flex flex-col items-center bg-white min-h-screen w-screen z-[20] text-black`}>
             <div className="h-[250px]" />
             {children}
             <TopGradient />
