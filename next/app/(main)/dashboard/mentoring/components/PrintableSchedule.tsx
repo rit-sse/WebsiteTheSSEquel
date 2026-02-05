@@ -145,25 +145,25 @@ export default function PrintableSchedule({ scheduleId }: PrintableScheduleProps
     <>
       {/* Printable content */}
       <div data-theme="light" data-style="neo" className="min-h-screen bg-background text-foreground">
-        <div id="printable-schedule" className="p-4 print:p-0 w-full mx-auto">
+        <div id="printable-schedule" className="p-4 print:p-0 w-full mx-auto print:h-screen print:flex print:flex-col">
         {/* Header */}
-        <div className="text-center mb-4 print:mb-2">
-          <h1 className="text-2xl font-bold print:text-lg">SSE Mentor Schedule</h1>
-          <p className="text-muted-foreground text-base print:text-xs">{schedule.name}</p>
+        <div className="text-center mb-4 print:mb-1">
+          <h1 className="text-2xl font-bold print:text-lg print:leading-tight">SSE Mentor Schedule</h1>
+          <p className="text-muted-foreground text-base print:text-xs print:leading-tight">{schedule.name}</p>
         </div>
 
         {/* Schedule grid */}
-        <div className="border-2 border-black rounded-lg overflow-hidden">
-          <table className="w-full border-collapse table-fixed">
+        <div className="border-2 border-black rounded-lg overflow-hidden print:flex-1 print:flex print:flex-col">
+          <table className="w-full border-collapse table-fixed print:h-full">
             <thead>
               <tr className="bg-muted/60">
-                <th className="border-b-2 border-r-2 border-black p-2 print:p-1.5 text-sm font-bold w-20 print:w-16">
+                <th className="border-b-2 border-r-2 border-black p-2 print:p-1 text-sm font-bold w-20 print:w-16">
                   Time
                 </th>
                 {DAYS.map((day) => (
                   <th
                     key={day}
-                    className="border-b-2 border-black p-2 print:p-1.5 text-sm font-bold text-center"
+                    className="border-b-2 border-black p-2 print:p-1 text-sm font-bold text-center"
                   >
                     {day}
                   </th>
@@ -174,7 +174,7 @@ export default function PrintableSchedule({ scheduleId }: PrintableScheduleProps
               {HOURS.map(({ hour, label }) => {
                 const shortLabel = label.replace("am", "").replace("pm", "").replace(" - ", "-")
                 return (
-                <tr key={hour}>
+                <tr key={hour} className="print-row">
                   <td className="border-r-2 border-b border-black p-1.5 print:p-1 text-xs font-bold text-center whitespace-nowrap bg-muted/30">
                     {shortLabel}
                   </td>
@@ -249,7 +249,7 @@ export default function PrintableSchedule({ scheduleId }: PrintableScheduleProps
           
           @page {
             size: portrait;
-            margin: 0.15in 0.4in 0.2in 0.4in; /* top right bottom left */
+            margin: 0.15in 0.4in 0.15in 0.4in;
           }
           
           /* Hide buttons when printing */
@@ -262,16 +262,30 @@ export default function PrintableSchedule({ scheduleId }: PrintableScheduleProps
           body, html {
             margin: 0 !important;
             padding: 0 !important;
+            height: 100% !important;
           }
           
           #printable-schedule {
             padding: 0 !important;
             max-width: 100% !important;
             width: 100% !important;
+            height: 100vh !important;
+            display: flex !important;
+            flex-direction: column !important;
           }
           
           #printable-schedule table {
             width: 100% !important;
+            height: 100% !important;
+          }
+
+          /* Distribute row height evenly across the page */
+          .print-row {
+            height: calc((100vh - 4.5rem) / 8);
+          }
+
+          .print-row td {
+            vertical-align: middle;
           }
         }
       `}</style>
