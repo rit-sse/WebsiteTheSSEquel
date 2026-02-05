@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
             });
 
             for (const book of books as { id: number; ISBN: string }[]) {
-                const stockNumber = await prisma.textbooks.count({
+                const stockNumber = await prisma.textbookCopies.count({
                     where: {
                         ISBN: book.ISBN,
                         checkedOut: false,

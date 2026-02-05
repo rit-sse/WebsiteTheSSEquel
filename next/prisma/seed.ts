@@ -812,8 +812,18 @@ async function seedTextbooks() {
 		},
 	});
 
+	const textbook1copy1 = await prisma.textbookCopies.upsert({
+		where: { id: 1 },
+		update: {},
+		create: {
+			ISBN: "9781556159006",
+			checkedOut: false,
+		},
+	});
+
 
 	console.log({ textbook1, textbook2, textbook3, textbook4 });
+	console.log({textbook1copy1})
 }
 
 async function seedCategories() {

@@ -9,22 +9,13 @@ export async function GET(request: NextRequest) {
     let simple = request.nextUrl.searchParams.get("simple") === "true";
 
     if (isbn || isbn.trim() !== "") {
-        const book = await prisma.textbooks.findMany({
+        const book = await prisma.textbookCopies.findMany({
             where: {
                 ISBN: isbn,
             },
             select: {
                 ISBN: !simple,
                 id: simple,
-                name: !simple,
-                authors: !simple,
-                image: !simple,
-                description: !simple,
-                publisher: !simple,
-                edition: !simple,
-                keyWords: !simple,
-                classInterest: !simple,
-                yearPublished: !simple,
                 checkedOut: true
             }
         });

@@ -33,7 +33,7 @@ export default function TopGradient() {
                 }
                 {
                     (authLevel.isOfficer || authLevel.isMentor) ? (
-                        <a href="/library/officer" className={"relative block text-center md:text-right text-white p-0 m-0 text-xl italic bottom-[-2px] ml-8"}>
+                        <a href="/library/mentorportal" className={"relative block text-center md:text-right text-white p-0 m-0 text-xl italic bottom-[-2px] ml-8"}>
                             Mentor Portal
                         </a>
                     ) : <></>
