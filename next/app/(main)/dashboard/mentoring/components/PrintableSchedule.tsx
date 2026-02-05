@@ -109,17 +109,6 @@ export default function PrintableSchedule({ scheduleId }: PrintableScheduleProps
     return colorMap
   }, [blocks])
 
-  // Get unique mentors for the legend
-  const uniqueMentors = useMemo(() => {
-    const mentorMap = new Map<number, { id: number; name: string }>()
-    blocks.forEach((block) => {
-      if (!mentorMap.has(block.mentor.id)) {
-        mentorMap.set(block.mentor.id, { id: block.mentor.id, name: block.mentor.name })
-      }
-    })
-    return Array.from(mentorMap.values())
-  }, [blocks])
-
   const getBlocksForSlot = (weekday: number, hour: number): ScheduleBlock[] => {
     return blocks.filter((b) => b.weekday === weekday && b.startHour === hour)
   }
@@ -158,47 +147,23 @@ export default function PrintableSchedule({ scheduleId }: PrintableScheduleProps
       <div data-theme="light" data-style="neo" className="min-h-screen bg-background text-foreground">
         <div id="printable-schedule" className="p-4 print:p-0 w-full mx-auto">
         {/* Header */}
-        <div className="text-center mb-6 print:mb-2">
-          <h1 className="text-3xl font-bold print:text-xl">SSE Mentor Schedule</h1>
-          <p className="text-muted-foreground text-lg print:text-sm">{schedule.name}</p>
+        <div className="text-center mb-4 print:mb-2">
+          <h1 className="text-2xl font-bold print:text-lg">SSE Mentor Schedule</h1>
+          <p className="text-muted-foreground text-base print:text-xs">{schedule.name}</p>
         </div>
 
-        {/* Legend - shows which color belongs to which mentor */}
-        <div className="mb-4 print:mb-1">
-          <div className="flex flex-wrap gap-2 justify-center">
-            {uniqueMentors.map((mentor) => {
-              const color = getMentorColor(mentor.id)
-              return (
-                <div
-                  key={mentor.id}
-                  className="flex items-center gap-1.5 px-2 py-1 rounded text-sm font-medium"
-                  style={{
-                    backgroundColor: color.bg,
-                    borderWidth: "2px",
-                    borderStyle: "solid",
-                    borderColor: color.border,
-                    color: color.text,
-                  }}
-                >
-                  {mentor.name}
-                </div>
-              )
-            })}
-          </div>
-        </div>
-
-        {/* Schedule grid - days as columns */}
+        {/* Schedule grid */}
         <div className="border-2 border-black rounded-lg overflow-hidden">
-          <table className="w-full border-collapse">
+          <table className="w-full border-collapse table-fixed">
             <thead>
               <tr className="bg-muted/60">
-                <th className="border-b-2 border-r-2 border-black p-4 text-base font-bold w-28">
+                <th className="border-b-2 border-r-2 border-black p-2 print:p-1.5 text-sm font-bold w-20 print:w-16">
                   Time
                 </th>
                 {DAYS.map((day) => (
                   <th
                     key={day}
-                    className="border-b-2 border-black p-4 text-base font-bold text-center"
+                    className="border-b-2 border-black p-2 print:p-1.5 text-sm font-bold text-center"
                   >
                     {day}
                   </th>
@@ -206,10 +171,12 @@ export default function PrintableSchedule({ scheduleId }: PrintableScheduleProps
               </tr>
             </thead>
             <tbody>
-              {HOURS.map(({ hour, label }) => (
+              {HOURS.map(({ hour, label }) => {
+                const shortLabel = label.replace("am", "").replace("pm", "").replace(" - ", "-")
+                return (
                 <tr key={hour}>
-                  <td className="border-r-2 border-b border-black p-3 text-sm font-bold text-center whitespace-nowrap bg-muted/30">
-                    {label}
+                  <td className="border-r-2 border-b border-black p-1.5 print:p-1 text-xs font-bold text-center whitespace-nowrap bg-muted/30">
+                    {shortLabel}
                   </td>
                   {DAYS.map((_, dayIndex) => {
                     const weekday = dayIndex + 1
@@ -218,46 +185,41 @@ export default function PrintableSchedule({ scheduleId }: PrintableScheduleProps
                     return (
                       <td
                         key={dayIndex}
-                        className="border-b border-black p-2 align-middle"
-                        style={{ height: "80px" }}
+                        className="border-b border-r border-black/20 p-0.5 align-top"
                       >
                         {slotBlocks.length > 0 ? (
-                          <div className="flex flex-col gap-1">
+                          <div className="flex flex-col gap-0.5 h-full">
                             {slotBlocks.map((block) => {
                               const color = getMentorColor(block.mentor.id)
                               return (
                                 <div
                                   key={block.id}
-                                  className="text-sm font-bold px-3 py-2 rounded text-center truncate"
+                                  className="text-xs font-semibold px-1 py-1.5 print:py-1 rounded-sm text-center truncate flex-1"
                                   style={{
                                     backgroundColor: color.bg,
-                                    borderWidth: "2px",
-                                    borderStyle: "solid",
-                                    borderColor: color.border,
+                                    borderLeft: `3px solid ${color.border}`,
                                     color: color.text,
                                   }}
                                 >
-                                  {block.mentor.name.split(" ")[0]}
+                                  {block.mentor.name}
                                 </div>
                               )
                             })}
                           </div>
-                        ) : (
-                          <div className="text-center text-muted-foreground/30">—</div>
-                        )}
+                        ) : null}
                       </td>
                     )
                   })}
                 </tr>
-              ))}
+                )
+              })}
             </tbody>
           </table>
         </div>
 
         {/* Footer */}
-        <div className="mt-6 print:mt-2 text-center text-sm print:text-xs text-muted-foreground">
-          <p className="font-medium">Society of Software Engineers • Golisano Hall</p>
-          <p className="mt-1">Questions? Visit sse.rit.edu or join our Discord</p>
+        <div className="mt-3 print:mt-1 text-center text-xs print:text-[10px] text-muted-foreground">
+          <p className="font-medium">Society of Software Engineers • Golisano Hall • sse.rit.edu</p>
         </div>
 
         {/* Print controls - hidden when printing */}

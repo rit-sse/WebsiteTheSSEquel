@@ -11,7 +11,7 @@ import { Progress } from "@/components/ui/progress"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { NeoCard, NeoCardContent, NeoCardHeader, NeoCardTitle } from "@/components/ui/neo-card"
 import { toast } from "sonner"
-import { Plus, X, User, Clock, Calendar, Users, Printer, Activity } from "lucide-react"
+import { X, User, Clock, Calendar, Users, Printer, Activity } from "lucide-react"
 import {
   Select,
   SelectContent,
@@ -858,15 +858,15 @@ export default function MentorScheduleEditor() {
                 <div className="overflow-auto border rounded-lg" style={{ maxHeight: "calc(100vh - 16rem)" }}>
                   <table className="w-full min-w-[800px] table-fixed">
                     <thead className="sticky top-0 z-10">
-                      <tr className="border-b bg-muted">
-                        <th className="w-24 p-2 text-left text-sm font-medium text-muted-foreground">
+                      <tr className="border-b-2 border-border bg-muted">
+                        <th className="w-24 p-2 text-left text-sm font-medium text-muted-foreground border-r border-border">
                           <Clock className="h-4 w-4 inline mr-1" />
                           Time
                         </th>
-                        {DAYS.map((day) => (
+                        {DAYS.map((day, i) => (
                           <th
                             key={day}
-                            className="p-2 text-center text-sm font-medium text-muted-foreground"
+                            className={cn("p-2 text-center text-sm font-medium text-muted-foreground", i < DAYS.length - 1 && "border-r border-border")}
                           >
                             {day}
                           </th>
@@ -875,8 +875,8 @@ export default function MentorScheduleEditor() {
                     </thead>
                     <tbody>
                       {HOURS.map(({ hour, label }) => (
-                        <tr key={hour} className="border-b last:border-b-0">
-                          <td className="p-2 text-sm text-muted-foreground font-medium bg-muted/30 whitespace-nowrap">
+                        <tr key={hour} className="border-b border-border last:border-b-0">
+                          <td className="p-2 text-sm text-muted-foreground font-medium bg-muted/30 whitespace-nowrap border-r border-border">
                             {label}
                           </td>
                           {DAYS.map((_, dayIndex) => {
@@ -890,56 +890,42 @@ export default function MentorScheduleEditor() {
                                 key={dayIndex}
                                 id={`slot-${weekday}-${hour}`}
                                 className={cn(
-                                  "p-1 h-16 align-top",
+                                  "p-1 align-top",
+                                  dayIndex < DAYS.length - 1 && "border-r border-border",
                                   getTrafficCellClass(weekday, hour),
-                                  showAvailability && availableNames.length > 0 && "bg-green-500/10"
                                 )}
+                                onClick={() => handleOpenAssignModal(weekday, hour)}
                               >
-                                <div className="flex flex-col gap-1 min-h-[3.5rem] min-w-0">
-                                  <div className="flex flex-wrap gap-1">
-                                    {slotBlocks.map((block) => (
-                                      <DraggableMentorChip
-                                        key={block.id}
-                                        id={`block-${block.id}`}
-                                        mentorId={block.mentor.id}
-                                        blockId={block.id}
-                                        colorClass={getMentorColor(block.mentor.id)}
-                                        label={block.mentor.name.split(" ")[0]}
-                                        onClick={() => handleOpenDetail(weekday, hour)}
-                                        title={`${block.mentor.name} - Click for details`}
-                                      />
-                                    ))}
-                                    {slotBlocks.length < 2 && (
-                                    <button
-                                      onClick={() => handleOpenAssignModal(weekday, hour)}
-                                      className="text-muted-foreground hover:text-foreground hover:bg-muted/50 text-sm px-3 py-1.5 rounded-md border border-dashed border-border transition-colors flex items-center gap-1"
-                                    >
-                                      <Plus className="h-3.5 w-3.5" />
-                                      Add
-                                    </button>
+                                <div className="flex flex-col gap-0.5 min-w-0">
+                                  {slotBlocks.map((block) => (
+                                    <DraggableMentorChip
+                                      key={block.id}
+                                      id={`block-${block.id}`}
+                                      mentorId={block.mentor.id}
+                                      blockId={block.id}
+                                      colorClass={getMentorColor(block.mentor.id)}
+                                      label={block.mentor.name.split(" ")[0]}
+                                      onClick={() => handleOpenDetail(weekday, hour)}
+                                      title={`${block.mentor.name} - Click for details`}
+                                      fill
+                                    />
+                                  ))}
+                                  {/* Always render the availability line to reserve space; hide text when off */}
+                                  <div
+                                    className={cn(
+                                      "text-[10px] truncate h-4 leading-4",
+                                      showAvailability ? "text-muted-foreground" : "invisible"
                                     )}
+                                    title={showAvailability && mappedAvailable.length > 0
+                                      ? `Available: ${mappedAvailable.map((m) => m.user.name).join(", ")}`
+                                      : undefined}
+                                  >
+                                    {mappedAvailable.length > 0
+                                      ? mappedAvailable.map((m) => m.user.name.split(" ")[0]).join(", ")
+                                      : availableNames.length > 0
+                                        ? `${availableNames.length} avail.`
+                                        : "\u00A0"}
                                   </div>
-                                  {showAvailability && availableNames.length > 0 && (
-                                    <div
-                                      className="text-[10px] text-green-700 dark:text-green-400 truncate max-w-full overflow-hidden"
-                                      title={`Available: ${availableNames.join(", ")}`}
-                                    >
-                                      {mappedAvailable.length > 0 ? (
-                                        <span className="flex items-center gap-1 min-w-0 truncate">
-                                          <Users className="h-3 w-3 shrink-0" />
-                                          <span className="min-w-0 truncate">
-                                            {mappedAvailable
-                                              .map((m) => m.user.name.split(" ")[0])
-                                              .join(", ")}
-                                          </span>
-                                        </span>
-                                      ) : (
-                                        <span className="opacity-60">
-                                          {availableNames.length} available
-                                        </span>
-                                      )}
-                                    </div>
-                                  )}
                                 </div>
                               </ScheduleSlotCell>
                             )
@@ -981,8 +967,8 @@ export default function MentorScheduleEditor() {
                 </div>
               </div>
 
-              {/* Sidebar — scrollable, height-matched to the calendar */}
-              <div className="flex flex-col gap-3 overflow-y-auto" style={{ maxHeight: "calc(100vh - 16rem)" }}>
+              {/* Sidebar — no overflow clipping so NeoCard shadows render fully */}
+              <div className="flex flex-col gap-3">
                 <NeoCard>
                   <NeoCardHeader className="pb-3">
                     <NeoCardTitle className="text-lg">Mentor Pool</NeoCardTitle>
@@ -1581,17 +1567,20 @@ function ScheduleSlotCell({
   id,
   className,
   children,
+  onClick,
 }: {
   id: string
   className?: string
   children: ReactNode
+  onClick?: () => void
 }) {
   const { setNodeRef, isOver } = useDroppable({ id })
 
   return (
     <td
       ref={setNodeRef}
-      className={cn(className, isOver && "bg-accent/20")}
+      className={cn(className, isOver && "bg-accent/20", onClick && "cursor-pointer hover:bg-muted/40 transition-colors")}
+      onClick={onClick}
     >
       {children}
     </td>
@@ -1606,6 +1595,7 @@ function DraggableMentorChip({
   colorClass,
   onClick,
   title,
+  fill,
 }: {
   id: string
   mentorId: number
@@ -1614,6 +1604,7 @@ function DraggableMentorChip({
   colorClass: string
   onClick?: () => void
   title?: string
+  fill?: boolean
 }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id,
@@ -1633,7 +1624,7 @@ function DraggableMentorChip({
     : undefined
 
   const handleClick = (e: React.MouseEvent) => {
-    // If we just finished dragging, suppress the click
+    e.stopPropagation()
     if (wasDragging.current) {
       wasDragging.current = false
       return
@@ -1646,7 +1637,8 @@ function DraggableMentorChip({
       ref={setNodeRef}
       style={style}
       className={cn(
-        `${colorClass} text-white text-xs px-2 py-1 rounded-md transition-opacity truncate max-w-[100px]`,
+        `${colorClass} text-white text-xs font-medium rounded transition-opacity truncate text-center`,
+        fill ? "w-full px-1 py-1.5" : "px-2.5 py-1",
         isDragging && "opacity-60"
       )}
       onClick={handleClick}
