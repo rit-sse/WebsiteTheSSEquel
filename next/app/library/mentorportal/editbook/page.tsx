@@ -1,19 +1,24 @@
 "use client"
-import { useState } from "react";
+import { useRef, useState } from "react";
 
-export default function MentorPortal() {
+export default function EditBook() {
 
     const [isbnInput, setIsbnInput] = useState("");
     const [loading, setLoading] = useState(false);
     const [loaded, setLoaded] = useState(false);
     const [error, setError] = useState("");
     const [finishedEditing, setFinishedEditing] = useState(false);
+    const inputFile = useRef<HTMLInputElement>(null);
+    const [pickedImage, setPickedImage] = useState<string>("");
+    const [showCustomImage, setShowCustomImage] = useState(false);
 
     const fetchISBN = () => {
+        setPickedImage("");
         setFinishedEditing(false);
         setLoading(true);
         setLoaded(false);
         setError("");
+        setShowCustomImage(false);
         fetch("/api/library/book?isbn=" + isbnInput).then((res) => res.json()).then((data) => {
             setLoading(false);
             if (data.error) {
@@ -49,7 +54,7 @@ export default function MentorPortal() {
         yearPublished: 0,
     });
 
-    const editBook = (field:string , value: string) => {
+    const editBook = (field: string, value: string) => {
         setBookData({
             ...bookData,
             [field]: (field == "yearPublished") ? parseInt(value) : value,
@@ -69,10 +74,35 @@ export default function MentorPortal() {
                 setError(data.error);
                 return;
             }
-            setBookData(data);
-            setLoaded(true);
-            setFinishedEditing(true);
+            if (pickedImage && pickedImage.startsWith("data:")) {
+                fetch("/api/library/uploadImage", {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        ISBN: bookData.ISBN,
+                        imageData: pickedImage,
+                    })
+                }).then((res) => res.json()).then((data) => {
+                    if (data.error) {
+                        setError(data.error);
+                        return;
+                    }
+                    setBookData({
+                        ...bookData,
+                        image: data.imageUrl,
+                    });
+                    setShowCustomImage(false);
+                    setFinishedEditing(true);
+                })
+            } else {
+                setBookData(data);
+                setLoaded(true);
+                setFinishedEditing(true);
+            }
         })
+
     }
 
     const inputHandler = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -83,7 +113,19 @@ export default function MentorPortal() {
         }
     }
 
+    const onImageRequestClick = () => {
+        inputFile.current?.click();
+    }
 
+    const readImage = () => {
+        if (!inputFile.current?.files?.[0]) return;
+        const reader = new FileReader();
+        reader.addEventListener('load', (event) => {
+            setPickedImage(event.target?.result as string);
+            setShowCustomImage(true);
+        });
+        reader.readAsDataURL(inputFile.current?.files?.[0]!);
+    }
 
     return (
         <>
@@ -110,18 +152,23 @@ export default function MentorPortal() {
             {
                 loaded ? (
                     <div className="p-4 w-fit min-w-[300px] md:min-w-[800px] mx-auto mt-4 border border-gray-300 rounded-md flex [&_input]:w-full ">
-                        <div>
+                        <input type="file" id="fileUpload" ref={inputFile} className="hidden" onChange={readImage} />
+                        <div className="flex flex-col items-center pointer" onClick={onImageRequestClick}>
                             {bookData.image ? (
-                                <img src={bookData.image} alt={bookData.name} className="mt-4 w-[200px] h-auto" />
+                                <img src={showCustomImage ? pickedImage : bookData.image + "?" + Date.now()} alt={bookData.name} className="mt-4 w-[200px] h-auto" />
                             ) : null}
+                            <div className="mt-3 flex items-center cursor-pointer">
+                                <img src="/library-icons/openfile.png" alt="Search" className="w-[25px] h-[25px] ml-2 cursor-pointer" />
+                                <p className="pl-2 text-blue-600 underline hover:text-blue-800">Change Image</p>
+                            </div>
                         </div>
                         <div className="[&_div]:flex  [&_div]:items-center [&_div]:mt-2 [&_input]:py-[3px] [&_input]:ml-3 pl-5 w-[80%]">
                             <div><strong>Name:</strong> <input value={bookData.name} onChange={(e) => editBook("name", e.target.value)} /></div>
                             <div><strong>Authors:</strong> <input value={bookData.authors} onChange={(e) => editBook("authors", e.target.value)} /></div>
                             <div><strong>ISBN:</strong> <input value={bookData.ISBN} readOnly type="text" className="bg-gray-300" /></div>
-                            <div><strong>Publisher:</strong> <input value={bookData.publisher} onChange={(e) => editBook("publisher", e.target.value)}/></div>
+                            <div><strong>Publisher:</strong> <input value={bookData.publisher} onChange={(e) => editBook("publisher", e.target.value)} /></div>
                             <div><strong>Edition:</strong> <input value={bookData.edition} onChange={(e) => editBook("edition", e.target.value)} /></div>
-                            <div><strong>Year Published:</strong> <input value={bookData.yearPublished} type="number" onChange={(e) => editBook("yearPublished", e.target.value)}/></div>
+                            <div><strong>Year Published:</strong> <input value={bookData.yearPublished} type="number" onChange={(e) => editBook("yearPublished", e.target.value)} /></div>
                             <div><strong>Description:</strong> <input value={bookData.description} onChange={(e) => editBook("description", e.target.value)} /></div>
                             <div><strong>Keywords:</strong> <input value={bookData.keyWords} onChange={(e) => editBook("keyWords", e.target.value)} /></div>
                             <div><strong>Class Interest:</strong> <input value={bookData.classInterest} onChange={(e) => editBook("classInterest", e.target.value)} /></div>
