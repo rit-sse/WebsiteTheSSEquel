@@ -19,7 +19,7 @@ export function FeaturedContainer({ props }: { props: { books: Book[], header: s
 
     function onClickBook(book: Book) {
         // Placeholder for future functionality when a book is clicked
-        location.href = "/library/book/" + book.ISBN;
+        location.href = "/library/catalog/" + book.ISBN;
     }
 
     return (

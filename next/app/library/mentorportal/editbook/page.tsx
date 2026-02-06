@@ -174,7 +174,7 @@ export default function EditBook() {
                             <div><strong>Class Interest:</strong> <input value={bookData.classInterest} onChange={(e) => editBook("classInterest", e.target.value)} /></div>
                             <div className="flex justify-end [&_button]:ml-3 [&_button]:px-4 [&_button]:py-2 [&_button]:rounded-md  mt-4">
                                 <button className="from-green-600 to-green-700 bg-gradient-to-t text-white font-bold border border-solid border-black hover:from-green-500 hover:to-green-600" onClick={finishEditing}>Apply</button>
-                                <button className="from-red-600 to-red-700 bg-gradient-to-t text-white font-bold border border-solid border-black hover:from-red-500 hover:to-red-600">Cancel</button>
+                                <button className="from-red-600 to-red-700 bg-gradient-to-t text-white font-bold border border-solid border-black hover:from-red-500 hover:to-red-600" onClick={() => {setLoaded(false)}}>Cancel</button>
                             </div>
                         </div>
 

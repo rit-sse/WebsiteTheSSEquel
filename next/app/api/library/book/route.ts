@@ -15,6 +15,7 @@ export async function GET(request: NextRequest) {
                 ISBN: isbn,
             },
             select: {
+                id: true,
                 ISBN: true,
                 name: true,
                 authors: true,
@@ -27,6 +28,10 @@ export async function GET(request: NextRequest) {
                 yearPublished: true,
             }
         });
+
+        if (!book) {
+            return new Response(JSON.stringify({ error: "Not found" }), { status: 404 });
+        }
 
         if (getCount) {
             const stockNumber = await prisma.textbookCopies.count({
@@ -44,9 +49,6 @@ export async function GET(request: NextRequest) {
             return new Response(JSON.stringify(response), { status: 200 });
         }
 
-        if (!book) {
-            return new Response(JSON.stringify({ error: "Not found" }), { status: 404 });
-        }
 
         return new Response(JSON.stringify(book), { status: 200 });
     }
