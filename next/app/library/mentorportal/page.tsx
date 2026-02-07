@@ -10,7 +10,7 @@ export default function MentorPortal() {
                     <a href="/library/mentorportal/editbook" className="underline text-blue-500">Edit Book</a>
                     <a href="/library/mentorportal/addbook" className="underline text-blue-500">Add Book</a>
                 </span>
-                <details className="" open>
+                <details className="">
                     <summary className="border-b text-[20px] cursor-pointer">Guide: Adding a book</summary>
                     <ol type="1" className="list-decimal pl-5 [&_li]:py-1">
                         <li>Go to <a href="/library/mentor/addbook" className="underline text-blue-500">Add Book</a></li>
@@ -18,6 +18,8 @@ export default function MentorPortal() {
                         <li>S</li>
                     </ol>
                 </details>  
+                <hr />
+                <p className="italic font-serif text-[15px] w-[100%] text-right">Last Updated: Feburary 6, 2026</p>
             </div>
         </>
     );
