@@ -15,7 +15,7 @@ export default function LibraryLayout({
         <div className={`flex flex-col items-center bg-white min-h-screen w-screen z-[20] text-black`}>
 
             <div className=" w-full">
-                <h1 className="text-3xl font-semibold mb-4 text-white px-5 py-4 from-blue-950 to-blue-800 bg-gradient-to-l">SSE Library System</h1>
+                <h1 className="text-3xl font-semibold mb-4 text-white px-5 py-4 from-blue-950 to-blue-800 bg-gradient-to-l">SSE Webb Library System</h1>
                 <div className="[&_a]:mr-3 flex flex-row justify-between bg-white px-5 pb-4">
                     <div>
                         <a href="/library/mentorportal" className="underline text-blue-500"><TopbarIcon iconUrl="/library-icons/world.png" /> Dashboard</a>

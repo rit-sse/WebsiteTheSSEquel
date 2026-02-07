@@ -12,10 +12,12 @@ export default function AddBook() {
         id: number;
         ISBN: string;
         stockNumber: number;
+        overallCount: number;
     }>({
         id: 0,
         ISBN: "",
         stockNumber: 0,
+        overallCount: 0,
     });
     const [registerNewPrompt, setRegisterNewPrompt] = useState(false);
     const [lookupISBNInput, setLookupISBNInput] = useState("");
@@ -75,6 +77,7 @@ export default function AddBook() {
                     id: data.id,
                     ISBN: data.ISBN,
                     stockNumber: data.stockNumber,
+                    overallCount: data.overallCount,
                 });
             }
         })
@@ -127,7 +130,7 @@ export default function AddBook() {
                         <tr>
                             <td className="bg-orange-100">{bookData.id}</td>
                             <td>{bookData.ISBN} <img className="w-[20px] h-[20px] inline cursor-pointer" src="/library-icons/information.png" alt="Book" onClick={() => location.href = "/library/catalog/" + bookData.ISBN} /></td>
-                            <td>{bookData.stockNumber}</td>
+                            <td>{bookData.overallCount}</td>
                             <td className=" text-right border-none max-w-[50px]"><button onClick={addExistingBook} className="px-3 from-sky-800 to-sky-500 bg-gradient-to-b text-white font-bold rounded hover:to-sky-400 hover:from-sky-700 italic">Add</button></td>
                         </tr>
                     </table>

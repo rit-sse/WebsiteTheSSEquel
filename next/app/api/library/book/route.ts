@@ -41,9 +41,16 @@ export async function GET(request: NextRequest) {
                 }
             });
 
+            const overallCount = await prisma.textbookCopies.count({
+                where: {
+                    ISBN: isbn,
+                }
+            });
+
             const response = {
                 ...book,
-                stockNumber: stockNumber
+                stockNumber: stockNumber,
+                overallCount: overallCount,
             };
 
             return new Response(JSON.stringify(response), { status: 200 });
