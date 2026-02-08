@@ -13,7 +13,6 @@ export default function MentorPortal() {
     useEffect(() => {
         fetch("/api/library/categories?simple=true").then(res => res.json()).then(data => {
             setCategories(data);
-            console.log(data)
             setFinishedLoading(true);
         });
     }, [])

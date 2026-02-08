@@ -4,202 +4,220 @@ import { getAuth, getSessionCookie } from "../authTools";
 import { writeFileSync } from "fs";
 
 export async function GET(request: NextRequest) {
-    console.log("GET /api/library/[isbn]");
+    try {
+        console.log("GET /api/library/[isbn]");
 
-    let isbn = request.nextUrl.searchParams.get("isbn") || "";
-    let id = request.nextUrl.searchParams.get("id") || "";
-    let getCount = request.nextUrl.searchParams.get("count") === "true";
+        let isbn = request.nextUrl.searchParams.get("isbn") || "";
+        let id = request.nextUrl.searchParams.get("id") || "";
+        let getCount = request.nextUrl.searchParams.get("count") === "true";
 
-    if (isbn || isbn.trim() !== "") {
-        const book = await prisma.textbooks.findFirst({
-            where: {
-                ISBN: isbn,
-            },
-            select: {
-                id: true,
-                ISBN: true,
-                name: true,
-                authors: true,
-                image: true,
-                description: true,
-                publisher: true,
-                edition: true,
-                keyWords: true,
-                classInterest: true,
-                yearPublished: true,
+        if (isbn || isbn.trim() !== "") {
+            const book = await prisma.textbooks.findFirst({
+                where: {
+                    ISBN: isbn,
+                },
+                select: {
+                    id: true,
+                    ISBN: true,
+                    name: true,
+                    authors: true,
+                    image: true,
+                    description: true,
+                    publisher: true,
+                    edition: true,
+                    keyWords: true,
+                    classInterest: true,
+                    yearPublished: true,
+                }
+            });
+
+            if (!book) {
+                return new Response(JSON.stringify({ error: "Not found" }), { status: 404 });
             }
-        });
 
-        if (!book) {
-            return new Response(JSON.stringify({ error: "Not found" }), { status: 404 });
+            if (getCount) {
+                const stockNumber = await prisma.textbookCopies.count({
+                    where: {
+                        ISBN: isbn,
+                        checkedOut: false,
+                    }
+                });
+
+                const overallCount = await prisma.textbookCopies.count({
+                    where: {
+                        ISBN: isbn,
+                    }
+                });
+
+                const response = {
+                    ...book,
+                    stockNumber: stockNumber,
+                    overallCount: overallCount,
+                };
+
+                return new Response(JSON.stringify(response), { status: 200 });
+            }
+
+
+            return new Response(JSON.stringify(book), { status: 200 });
         }
 
-        if (getCount) {
-            const stockNumber = await prisma.textbookCopies.count({
-                where: {
-                    ISBN: isbn,
-                    checkedOut: false,
-                }
-            });
-
-            const overallCount = await prisma.textbookCopies.count({
-                where: {
-                    ISBN: isbn,
-                }
-            });
-
-            const response = {
-                ...book,
-                stockNumber: stockNumber,
-                overallCount: overallCount,
-            };
-
-            return new Response(JSON.stringify(response), { status: 200 });
-        }
-
-
-        return new Response(JSON.stringify(book), { status: 200 });
+        return new Response(JSON.stringify({
+            error: "ISBN or ID parameter required"
+        }), { status: 404 });
+    } catch (e: any) {
+        console.error("Error fetching book:", e);
+        return new Response(JSON.stringify({ error: `Failed to fetch book: ${e.message}` }), { status: 500 });
     }
-
-    return new Response(JSON.stringify({
-        error: "ISBN or ID parameter required"
-    }), { status: 404 });
 
 }
 
 export async function POST(request: NextRequest) {
     console.log("POST /api/library/[isbn]");
-    const authToken = await getSessionCookie(request);
-    const auth = await getAuth(authToken);
-    if (!auth.isOfficer && !auth.isMentor) {
-        return new Response(JSON.stringify({error: "Unauthorized"}), { status: 401 });
-    }
-    const formData = await request.formData();
-    const ISBN = formData.get("ISBN") as string;
-    const name = formData.get("name") as string;
-    const authors = formData.get("authors") as string;
-    const description = formData.get("description") as string;
-    const publisher = formData.get("publisher") as string;
-    const edition = formData.get("edition") as string;
-    const keyWords = formData.get("keyWords") as string;
-    const classInterest = formData.get("classInterest") as string;
-    const yearPublished = formData.get("yearPublished") as string;
-    const image = formData.get("image") as File;
-
-
     try {
-        const newBook = await prisma.textbooks.create({
-            data: {
-                "ISBN": ISBN,
-                "name": name,
-                "authors": authors,
-                "image": `/library-assets/${ISBN}.jpg`,
-                "description": description,
-                "publisher": publisher,
-                "edition": edition,
-                "keyWords": keyWords,
-                "classInterest": classInterest,
-                "yearPublished": yearPublished,
-            },
-        });
+        const authToken = await getSessionCookie(request);
+        const auth = await getAuth(authToken);
+        if (!auth.isOfficer && !auth.isMentor) {
+            return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
+        }
+        const formData = await request.formData();
+        const ISBN = formData.get("ISBN") as string;
+        const name = formData.get("name") as string;
+        const authors = formData.get("authors") as string;
+        const description = formData.get("description") as string;
+        const publisher = formData.get("publisher") as string;
+        const edition = formData.get("edition") as string;
+        const keyWords = formData.get("keyWords") as string;
+        const classInterest = formData.get("classInterest") as string;
+        const yearPublished = formData.get("yearPublished") as string;
+        const image = formData.get("image") as File;
 
-        writeFileSync(`./public/library-assets/${ISBN}.jpg`, Buffer.from(await image.arrayBuffer()));
 
-        return new Response(JSON.stringify(newBook), { status: 200 });
+        try {
+            const newBook = await prisma.textbooks.create({
+                data: {
+                    "ISBN": ISBN,
+                    "name": name,
+                    "authors": authors,
+                    "image": `/library-assets/${ISBN}.jpg`,
+                    "description": description,
+                    "publisher": publisher,
+                    "edition": edition,
+                    "keyWords": keyWords,
+                    "classInterest": classInterest,
+                    "yearPublished": yearPublished,
+                },
+            });
+
+            writeFileSync(`./public/library-assets/${ISBN}.jpg`, Buffer.from(await image.arrayBuffer()));
+
+            return new Response(JSON.stringify(newBook), { status: 200 });
+        } catch (e: any) {
+            console.error("Error creating book:", e);
+            return new Response(JSON.stringify({ error: `Failed to create book: ${e.message}` }), { status: 500 });
+        }
     } catch (e: any) {
-        console.error("Error creating book:", e);
-        return new Response(JSON.stringify({error: `Failed to create book: ${e.message}`}), { status: 500 });
+        console.error("Error processing request:", e);
+        return new Response(JSON.stringify({ error: `Failed to process request: ${e.message}` }), { status: 500 });
     }
-
 }
 export async function PUT(request: NextRequest) {
     console.log("PUT /api/library/[isbn]");
-    const authToken = await getSessionCookie(request);
-    const authLevel = await getAuth(authToken);
-    console.log(authLevel);
-    if (!authLevel.isOfficer && !authLevel.isMentor) {
-        return new Response(JSON.stringify({error: "Unauthorized"}), { status: 401 });
-    }
-    let body;
     try {
-        body = await request.json();
-    } catch {
-        return new Response("Invalid JSON", { status: 422 });
-    }
+        const authToken = await getSessionCookie(request);
+        const authLevel = await getAuth(authToken);
+        if (!authLevel.isOfficer && !authLevel.isMentor) {
+            return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
+        }
+        let body;
+        try {
+            body = await request.json();
+        } catch {
+            return new Response("Invalid JSON", { status: 422 });
+        }
 
-    const { ISBN, name, authors, image, description, publisher, edition, keyWords, classInterest, yearPublished } = body;
+        const { ISBN, name, authors, image, description, publisher, edition, keyWords, classInterest, yearPublished } = body;
 
-    if (!ISBN || !name || !authors) {
-        return new Response('"ISBN", "name", and "authors" are required', { status: 400 });
-    }
+        if (!ISBN || !name || !authors) {
+            return new Response('"ISBN", "name", and "authors" are required', { status: 400 });
+        }
 
-    try {
-        const updatedBook = await prisma.textbooks.upsert({
-            where: { ISBN: ISBN },
-            update: {
-                name,
-                authors,
-                image,
-                description,
-                publisher,
-                edition,
-                keyWords,
-                classInterest,
-                yearPublished,
-            },
-            create: {
-                ISBN,
-                name,
-                authors,
-                image,
-                description,
-                publisher,
-                edition,
-                keyWords,
-                classInterest,
-                yearPublished,
-            },
-        });
+        try {
+            const updatedBook = await prisma.textbooks.upsert({
+                where: { ISBN: ISBN },
+                update: {
+                    name,
+                    authors,
+                    image,
+                    description,
+                    publisher,
+                    edition,
+                    keyWords,
+                    classInterest,
+                    yearPublished,
+                },
+                create: {
+                    ISBN,
+                    name,
+                    authors,
+                    image,
+                    description,
+                    publisher,
+                    edition,
+                    keyWords,
+                    classInterest,
+                    yearPublished,
+                },
+            });
 
-        return new Response(JSON.stringify(updatedBook), { status: 200 });
+            return new Response(JSON.stringify(updatedBook), { status: 200 });
+        } catch (e: any) {
+            console.error("Error updating/creating book:", e);
+            return new Response(`Failed to update/create book: ${e.message}`, { status: 500 });
+        }
     } catch (e: any) {
-        console.error("Error updating/creating book:", e);
-        return new Response(`Failed to update/create book: ${e.message}`, { status: 500 });
+        console.error("Error processing request:", e);
+        return new Response(`Failed to process request: ${e.message}`, { status: 500 });
     }
 }
 
 export async function DELETE(request: NextRequest) {
     console.log("DELETE /api/library/[isbn]");
-    const authToken = await getSessionCookie(request);
-    const authLevel = await getAuth(authToken);
-    if (!authLevel.isOfficer && !authLevel.isMentor) {
-        return new Response(JSON.stringify({error: "Unauthorized"}), { status: 401 });
-    }
-    let body;
     try {
-        body = await request.json();
-    } catch {
-        return new Response("Invalid JSON", { status: 422 });
-    }
+        const authToken = await getSessionCookie(request);
+        const authLevel = await getAuth(authToken);
+        if (!authLevel.isOfficer && !authLevel.isMentor) {
+            return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
+        }
+        let body;
+        try {
+            body = await request.json();
+        } catch {
+            return new Response("Invalid JSON", { status: 422 });
+        }
 
-    const { ISBN } = body;
+        const { ISBN } = body;
 
-    if (!ISBN) {
-        return new Response('"ISBN" is required', { status: 400 });
-    }
+        if (!ISBN) {
+            return new Response('"ISBN" is required', { status: 400 });
+        }
 
-    try {
-        await prisma.textbookCopies.deleteMany({
-            where: { ISBN: ISBN },
-        });
-        await prisma.textbooks.delete({
-            where: { ISBN: ISBN },
-        });
-        
+        try {
+            await prisma.textbookCopies.deleteMany({
+                where: { ISBN: ISBN },
+            });
+            await prisma.textbooks.delete({
+                where: { ISBN: ISBN },
+            });
 
-        return new Response(JSON.stringify({ message: "Book deleted successfully" }), { status: 200 });
+
+            return new Response(JSON.stringify({ message: "Book deleted successfully" }), { status: 200 });
+        } catch (e: any) {
+            console.error("Error deleting book:", e);
+            return new Response(JSON.stringify({ error: `Failed to delete book: ${e.message}` }), { status: 500 });
+        }
     } catch (e: any) {
-        console.error("Error deleting book:", e);
-        return new Response(JSON.stringify({error: `Failed to delete book: ${e.message}`}), { status: 500 });
+        console.error("Error processing request:", e);
+        return new Response(JSON.stringify({ error: `Failed to process request: ${e.message}` }), { status: 500 });
     }
 }

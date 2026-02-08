@@ -5,164 +5,181 @@ import { getAuth, getSessionCookie } from "../authTools";
 export async function GET(request: NextRequest) {
     console.log("GET /api/library/categories/");
 
-    let compressed = request.nextUrl.searchParams.get("simple") === "true";
+    try {
+        let compressed = request.nextUrl.searchParams.get("simple") === "true";
 
-    let response: { [key: string]: { id: number; categoryName: string; books: any[] } } = {}
+        let response: { [key: string]: { id: number; categoryName: string; books: any[] } } = {}
 
-    const categories = await prisma.bookCategory.findMany({
-        select: {
-            id: true,
-            categoryName: true,
-            books: true,
-        },
-        orderBy: {
-            id: 'asc'
-        }
-    });
-
-    if (!categories || categories.length === 0) {
-        return new Response(JSON.stringify({ error: "Not found" }), { status: 404 });
-    }
-    console.log(categories)
-
-    for (const category of categories) {
-        console.log(category.categoryName)
-        let bookCount: { [key: string]: number } = {}
-
-        const books = await prisma.textbooks.findMany({
-            where: {
-                id: {
-                    in: category.books
-                }
-            },
+        const categories = await prisma.bookCategory.findMany({
             select: {
-                id: !compressed,
-                ISBN: true,
-                name: !compressed,
-                authors: !compressed,
-                image: !compressed,
-                description: !compressed,
-                publisher: !compressed,
-                edition: !compressed,
-                keyWords: !compressed,
-                classInterest: !compressed,
-                yearPublished: !compressed,
+                id: true,
+                categoryName: true,
+                books: true,
+            },
+            orderBy: {
+                id: 'asc'
             }
         });
 
-        if (!compressed) {
-            for (const book of books as { id: number; ISBN: string }[]) {
-                const stockNumber = await prisma.textbookCopies.count({
-                    where: {
-                        ISBN: book.ISBN,
-                        checkedOut: false,
+        if (!categories || categories.length === 0) {
+            return new Response(JSON.stringify({ error: "Not found" }), { status: 404 });
+        }
+
+        for (const category of categories) {
+            let bookCount: { [key: string]: number } = {}
+
+            const books = await prisma.textbooks.findMany({
+                where: {
+                    id: {
+                        in: category.books
                     }
-                });
-                bookCount[book.ISBN] = stockNumber;
+                },
+                select: {
+                    id: !compressed,
+                    ISBN: true,
+                    name: !compressed,
+                    authors: !compressed,
+                    image: !compressed,
+                    description: !compressed,
+                    publisher: !compressed,
+                    edition: !compressed,
+                    keyWords: !compressed,
+                    classInterest: !compressed,
+                    yearPublished: !compressed,
+                }
+            });
+
+            if (!compressed) {
+                for (const book of books as { id: number; ISBN: string }[]) {
+                    const stockNumber = await prisma.textbookCopies.count({
+                        where: {
+                            ISBN: book.ISBN,
+                            checkedOut: false,
+                        }
+                    });
+                    bookCount[book.ISBN] = stockNumber;
+                }
+
+                for (let i = 0; i < books.length; i++) {
+                    (books[i] as any).stockNumber = bookCount[books[i].ISBN] || 0;
+                }
+                for (const book of books as any[]) {
+                    book["stockNumber"] = bookCount[book.ISBN] || 0;
+                }
             }
 
-            for (let i = 0; i < books.length; i++) {
-                (books[i] as any).stockNumber = bookCount[books[i].ISBN] || 0;
-            }
-            for (const book of books as any[]) {
-                book["stockNumber"] = bookCount[book.ISBN] || 0;
-            }
+            response[category.categoryName] = {
+                id: category.id,
+                categoryName: category.categoryName,
+                books: books
+            };
+
         }
-
-        response[category.categoryName] = {
-            id: category.id,
-            categoryName: category.categoryName,
-            books: books
-        };
+        return new Response(JSON.stringify(response), { status: 200 });
+    } catch (e: any) {
+        console.error("Error fetching categories:", e);
+        return new Response(JSON.stringify({ error: `Failed to fetch categories: ${e.message}` }), { status: 500 });
 
     }
-    return new Response(JSON.stringify(response), { status: 200 });
-
 }
-
 export async function PUT(request: NextRequest) {
-    const authToken = await getSessionCookie(request);
-    const auth = await getAuth(authToken);
-    if (!auth.isMentor && !auth.isOfficer) {
-        return new Response("Unauthorized", { status: 401 });
-    }
+    try {
+        const authToken = await getSessionCookie(request);
+        const auth = await getAuth(authToken);
+        if (!auth.isMentor && !auth.isOfficer) {
+            return new Response("Unauthorized", { status: 401 });
+        }
 
-    let body = await request.json();
+        let body = await request.json();
 
-    let affilaitedISBNs = await prisma.textbooks.findMany({
-        where: {
-            ISBN: {
-                in: body.books
+        let affilaitedISBNs = await prisma.textbooks.findMany({
+            where: {
+                ISBN: {
+                    in: body.books
+                }
+            },
+            select: {
+                id: true,
+                ISBN: true,
             }
-        },
-        select: {
-            id: true,
-            ISBN: true,
-        }
-    });
+        });
 
-    let affilaitedBooks = affilaitedISBNs.map(book => book.id);
+        let affilaitedBooks = affilaitedISBNs.map(book => book.id);
 
-    let updatedCategory = await prisma.bookCategory.update({
-        where: {
-            id: body.id,
-        },
-        data: {
-            categoryName: body.categoryName,
-            books: affilaitedBooks,
-        }
-    });
+        let updatedCategory = await prisma.bookCategory.update({
+            where: {
+                id: body.id,
+            },
+            data: {
+                categoryName: body.categoryName,
+                books: affilaitedBooks,
+            }
+        });
 
-    return new Response(JSON.stringify(updatedCategory), { status: 200 });
+        return new Response(JSON.stringify(updatedCategory), { status: 200 });
+    } catch (e: any) {
+        console.error("Error updating category:", e);
+        return new Response(JSON.stringify({ error: `Failed to update category: ${e.message}` }), { status: 500 });
+    }
 }
 
 export async function POST(request: NextRequest) {
-    const authToken = await getSessionCookie(request);
-    const auth = await getAuth(authToken);
-    if (!auth.isMentor && !auth.isOfficer) {
-        return new Response("Unauthorized", { status: 401 });
-    }
+    try {
+        const authToken = await getSessionCookie(request);
+        const auth = await getAuth(authToken);
+        if (!auth.isMentor && !auth.isOfficer) {
+            return new Response("Unauthorized", { status: 401 });
+        }
 
-    let body = await request.json();
+        let body = await request.json();
 
-    let affilaitedISBNs = await prisma.textbooks.findMany({
-        where: {
-            ISBN: {
-                in: body.books
+        let affilaitedISBNs = await prisma.textbooks.findMany({
+            where: {
+                ISBN: {
+                    in: body.books
+                }
+            },
+            select: {
+                id: true,
+                ISBN: true,
             }
-        },
-        select: {
-            id: true,
-            ISBN: true,
-        }
-    });
+        });
 
-    let affilaitedBooks = affilaitedISBNs.map(book => book.id);
+        let affilaitedBooks = affilaitedISBNs.map(book => book.id);
 
-    let newCategory = await prisma.bookCategory.create({
-        data: {
-            categoryName: body.categoryName,
-            books: affilaitedBooks,
-        }
-    });
+        let newCategory = await prisma.bookCategory.create({
+            data: {
+                categoryName: body.categoryName,
+                books: affilaitedBooks,
+            }
+        });
 
-    return new Response(JSON.stringify(newCategory), { status: 200 });
+        return new Response(JSON.stringify(newCategory), { status: 200 });
+    } catch (e: any) {
+        console.error("Error creating category:", e);
+        return new Response(JSON.stringify({ error: `Failed to create category: ${e.message}` }), { status: 500 });
+    }
 }
 
 export async function DELETE(request: NextRequest) {
-    const authToken = await getSessionCookie(request);
-    const auth = await getAuth(authToken);
-    if (!auth.isMentor && !auth.isOfficer) {
-        return new Response("Unauthorized", { status: 401 });
-    }
-
-    let body = await request.json();
-
-    let deletedCategory = await prisma.bookCategory.delete({
-        where: {
-            id: body.id,
+    try {
+        const authToken = await getSessionCookie(request);
+        const auth = await getAuth(authToken);
+        if (!auth.isMentor && !auth.isOfficer) {
+            return new Response("Unauthorized", { status: 401 });
         }
-    });
 
-    return new Response(JSON.stringify(deletedCategory), { status: 200 });
+        let body = await request.json();
+
+        let deletedCategory = await prisma.bookCategory.delete({
+            where: {
+                id: body.id,
+            }
+        });
+
+        return new Response(JSON.stringify(deletedCategory), { status: 200 });
+    } catch (e: any) {
+        console.error("Error deleting category:", e);
+        return new Response(JSON.stringify({ error: `Failed to delete category: ${e.message}` }), { status: 500 });
+    }
 }

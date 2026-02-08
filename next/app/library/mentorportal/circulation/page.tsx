@@ -9,7 +9,6 @@ export default function CirculationPage() {
 
     async function circulationLookup() {
         await fetch("/api/library/copies?" + (selectFilter === "isbn" ? "isbn=" + isbnLookup : "id=" + isbnLookup)).then(res => res.json()).then(data => {
-            console.log(data);
             if (data.error) {
                 alert(data.error);
             } else {

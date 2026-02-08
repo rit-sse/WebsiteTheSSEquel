@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { getAuth, getSessionCookie } from "../authTools";
 
 export async function GET(params: NextRequest) {
+    try {
     const cookie = await getSessionCookie(params);
     const auth = await getAuth(cookie);
 
@@ -34,6 +35,9 @@ export async function GET(params: NextRequest) {
     } catch (e) {
         return new Response(JSON.stringify({"error": e}), { status: 500 });
     }
-    console.log(bookData)
     return new Response(JSON.stringify(bookData), { status: 200 });
+    } catch (e: any) {
+        console.error("Error fetching book data:", e);
+        return new Response(JSON.stringify({ error: `Failed to fetch book data: ${e.message}` }), { status: 500 });
+    }
 }
