@@ -27,12 +27,12 @@ export async function GET(params: NextRequest) {
             return new Response(`Failed to fetch book data: ${res.statusText}`, { status: 500 });
         }
         let jsonRes = await res.json();
-        bookData["name"] = jsonRes.title + ": " + jsonRes.subtitle;
-        bookData["description"] = jsonRes["description"]["value"]
-        bookData["publisher"] = jsonRes["publishers"].join(", ")
-        bookData["yearPublished"] =  new Date(jsonRes.publish_date).getFullYear();
+        bookData["name"] = (jsonRes.title ?? "") + ": " + (jsonRes.subtitle ?? "");
+        bookData["description"] = jsonRes["description"]?.["value"] ?? ""
+        bookData["publisher"] = jsonRes["publishers"].join(", ") ?? ""
+        bookData["yearPublished"] =  (new Date(jsonRes.publish_date).getFullYear()) ?? 0;
     } catch (e) {
-        return new Response(`Failed to fetch book data: ${e}`, { status: 500 });
+        return new Response(JSON.stringify({"error": e}), { status: 500 });
     }
     console.log(bookData)
     return new Response(JSON.stringify(bookData), { status: 200 });

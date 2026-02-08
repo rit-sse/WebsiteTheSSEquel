@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 
 export default function AddBook() {
@@ -21,6 +21,7 @@ export default function AddBook() {
     });
     const [registerNewPrompt, setRegisterNewPrompt] = useState(false);
     const [lookupISBNInput, setLookupISBNInput] = useState("");
+    const inputFile = useRef<HTMLInputElement>(null);
 
     const [newBookData, setNewBookData] = useState<{
         ISBN: string;
@@ -59,7 +60,7 @@ export default function AddBook() {
             } else {
                 setBookData({
                     ...bookData,
-                    stockNumber: bookData.stockNumber + 1,
+                    overallCount: bookData.overallCount + 1,
                 });
             }
         })
@@ -96,6 +97,44 @@ export default function AddBook() {
                     publisher: data.publisher,
                     yearPublished: data.yearPublished,
                 });
+            }
+        })
+    }
+
+    const uploadBook = () => {
+        if(!newBookData.ISBN || !newBookData.name) {
+            setError("ISBN and Title are required");
+            return;
+        }
+        const formData = new FormData();
+        formData.append("ISBN", newBookData.ISBN);
+        formData.append("name", newBookData.name);
+        formData.append("authors", newBookData.authors);
+        formData.append("description", newBookData.description);
+        formData.append("publisher", newBookData.publisher);
+        formData.append("edition", newBookData.edition);
+        formData.append("keyWords", newBookData.keyWords);
+        formData.append("classInterest", newBookData.classInterest);
+        formData.append("yearPublished", newBookData.yearPublished.toString());
+        if (inputFile.current?.files && inputFile.current.files[0]) {
+            formData.append("image", inputFile.current.files[0]);
+        }
+
+        fetch("/api/library/book", {
+            method: "POST",
+            body: formData,
+        }).then((res) => res.json()).then((data) => {
+            if (data.error) {
+                setError(data.error);
+            } else {
+                setBookData({
+                    id: data.id,
+                    ISBN: data.ISBN,
+                    stockNumber: 0,
+                    overallCount: 0,
+                });
+                setBookExists(true);
+                setRegisterNewPrompt(false);
             }
         })
     }
@@ -159,8 +198,8 @@ export default function AddBook() {
                             <textarea placeholder="Description" className="p-2 border" value={newBookData.description} onChange={e => setNewBookData({ ...newBookData, description: e.target.value })} />
                             <input placeholder="Keywords (separated by commas)" className="p-2 border" value={newBookData.keyWords} onChange={e => setNewBookData({ ...newBookData, keyWords: e.target.value })} />
                             <input placeholder="Class Interest" className="p-2 border" value={newBookData.classInterest} onChange={e => setNewBookData({ ...newBookData, classInterest: e.target.value })} />
-                            <input placeholder="Image URL" className="p-2 border" type="file" />
-                            <button className="px-3 from-green-600 to-green-700 bg-gradient-to-t text-white font-bold border border-solid border-black hover:from-green-500 hover:to-green-600 rounded mt-3">Add</button>
+                            <input placeholder="Image" className="p-2 border" type="file" ref={inputFile} />
+                            <button className="px-3 from-green-600 to-green-700 bg-gradient-to-t text-white font-bold border border-solid border-black hover:from-green-500 hover:to-green-600 rounded mt-3" onClick={uploadBook}>Add</button>
                         </div>
                     </div>
                 ) : null

@@ -19,18 +19,11 @@ export default function TopGradient() {
                 <SSELogoFullWhite />
                 <div className="w-[2px] h-[40px] bg-white mx-5" />
                 <h1 className="text-white font-rethink font-bold text-xl md:text-2xl font-serif">
-                    Ryan Webb Library
+                    Webb Library
                 </h1>
 
             </div>
             <div className={"w-[80%] flex flex-row justify-end " + (isAtHome ? "mb-[50px]" : "")}>
-                {
-                    (authLevel.isMember || (authLevel.membershipCount > 0)) ? (
-                        <a href="/library/officer" className={"relative block text-center md:text-right text-white p-0 m-0 text-xl italic bottom-[-2px]"}>
-                            My Card
-                        </a>
-                    ) : <></>
-                }
                 {
                     (authLevel.isOfficer || authLevel.isMentor) ? (
                         <a href="/library/mentorportal" className={"relative block text-center md:text-right text-white p-0 m-0 text-xl italic bottom-[-2px] ml-8"}>

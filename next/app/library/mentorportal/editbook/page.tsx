@@ -127,6 +127,39 @@ export default function EditBook() {
         reader.readAsDataURL(inputFile.current?.files?.[0]!);
     }
 
+    const requestDelete = () => {
+        if (!confirm("Are you sure you want to delete this book? **This action cannot be undone.** All copies will also be removed")) {
+            return;
+        }
+        fetch("/api/library/book", {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                ISBN: bookData.ISBN,
+            })
+        }).then((res) => res.json()).then((data) => {
+            if (data.error) {
+                setError(data.error);
+                return;
+            }
+            setLoaded(false);
+            setBookData({
+                ISBN: "",
+                name: "",
+                authors: "",
+                image: "",
+                description: "",
+                publisher: "",
+                edition: "",
+                keyWords: "",
+                classInterest: "",
+                yearPublished: 0,
+            });
+        })
+    }   
+
     return (
         <>
             <div className="flex justify-center items-center w-[100%]">
@@ -172,9 +205,15 @@ export default function EditBook() {
                             <div><strong>Description:</strong> <input value={bookData.description} onChange={(e) => editBook("description", e.target.value)} /></div>
                             <div><strong>Keywords:</strong> <input value={bookData.keyWords} onChange={(e) => editBook("keyWords", e.target.value)} /></div>
                             <div><strong>Class Interest:</strong> <input value={bookData.classInterest} onChange={(e) => editBook("classInterest", e.target.value)} /></div>
-                            <div className="flex justify-end [&_button]:ml-3 [&_button]:px-4 [&_button]:py-2 [&_button]:rounded-md  mt-4">
-                                <button className="from-green-600 to-green-700 bg-gradient-to-t text-white font-bold border border-solid border-black hover:from-green-500 hover:to-green-600" onClick={finishEditing}>Apply</button>
-                                <button className="from-red-600 to-red-700 bg-gradient-to-t text-white font-bold border border-solid border-black hover:from-red-500 hover:to-red-600" onClick={() => {setLoaded(false)}}>Cancel</button>
+                            <div className="flex justify-between [&_button]:ml-3 [&_button]:px-4 [&_button]:py-2 [&_button]:rounded-md  mt-4">
+                                <div>
+                                    <button className="from-red-600 to-red-700 bg-gradient-to-t text-white font-bold border border-solid border-black hover:from-red-500 hover:to-red-600" onClick={requestDelete}>Delete</button>
+
+                                </div>
+                                <div>
+                                    <button className="from-green-600 to-green-700 bg-gradient-to-t text-white font-bold border border-solid border-black hover:from-green-500 hover:to-green-600" onClick={finishEditing}>Apply</button>
+                                    <button className="from-red-600 to-red-700 bg-gradient-to-t text-white font-bold border border-solid border-black hover:from-red-500 hover:to-red-600" onClick={() => { setLoaded(false) }}>Cancel</button>
+                                </div>
                             </div>
                         </div>
 

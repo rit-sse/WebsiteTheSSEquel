@@ -65,14 +65,10 @@ export async function PUT(request: NextRequest) {
     }
 
     try {
-        if (existsSync(process.cwd() + "/public/library-assets/" + ISBN + ".png") || existsSync(process.cwd() + "/public/library-assets/" + ISBN + ".jpg") || existsSync(process.cwd() + "/public/library-assets/" + ISBN + ".jpeg")) {
-            const base64Data = imageData.replace(/^data:image\/\w+;base64,/, "");
-            const buffer = Buffer.from(base64Data, 'base64');
-            const imagePath = `./public/library-assets/${ISBN || `image_${Date.now()}`}.jpg`;
-            writeFileSync(imagePath, buffer);
-        } else {
-            return new Response(`Image with ISBN ${ISBN} does not exist`, { status: 404 });
-        }
+        const base64Data = imageData.replace(/^data:image\/\w+;base64,/, "");
+        const buffer = Buffer.from(base64Data, 'base64');
+        const imagePath = `./public/library-assets/${ISBN || `image_${Date.now()}`}.jpg`;
+        writeFileSync(imagePath, buffer);
         return Response.json({ message: "Image uploaded successfully", imageUrl: `/library-assets/${ISBN}.jpg` });
     } catch (e) {
         return new Response(`Failed to upload image: ${e}`, { status: 500 });
