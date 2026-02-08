@@ -29,7 +29,7 @@ export default function SearchLibrary() {
                 loaded ? catalogueData.map((book) => (
                     <GeneralBookContainer key={book.ISBN} book={book} />
                 )) :
-                Array.from({ length: 30 }).map((_, index) => (
+                Array.from({ length: 8 }).map((_, index) => (
                     <GeneralBookContainerSkeleton key={index} />
                 ))
             }

@@ -21,14 +21,14 @@ export default function LibraryCatalog() {
     }, []);
 
     return (
-        <div className="w-[80%] h-full relative flex flex-wrap justify-between pt-5">
+        <div className="w-[80%] h-full relative flex flex-col md:flex-row flex-wrap justify-between pt-5">
             {
                 loaded ? catalogue.map((book) => (
                     <GeneralBookContainer key={book.ISBN} book={book} />
                 )) :
-                    Array.from({ length: 30 }).map((_, index) => (
-                        <GeneralBookContainerSkeleton key={index} />    
-                    ))
+                Array.from({ length: 15 }).map((_, index) => (
+                    <GeneralBookContainerSkeleton key={index} />    
+                ))
             }
 
         </div>

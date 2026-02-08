@@ -34,7 +34,7 @@ export default function LibraryHome() {
                 )
             }
 
-            <div className="w-[100%] md:w-[60%] grid grid-cols-2 text-center gap-6">
+            <div className="w-[100%] md:w-[60%] grid grid-cols-2 text-center gap-6 mt-5">
                 <LibraryQuickLink props={{ label: "Browse All Books", link: "/library/catalog" }} />
                 <LibraryQuickLink props={{ label: "Textbook Donations", link: "/library/donations" }} />
             </div>
