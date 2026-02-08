@@ -5,10 +5,12 @@ import { useRouter } from "next/router";
 
 export default function TopGradient() {
 
+    const [searchBarOffset, setSearchBarOffset] = useState(true);
     const [isAtHome, setIsAtHome] = useState(true);
     const [authLevel, setAuthLevel] = useState<{ [key: string]: any }>({ isOfficer: false });
 
     useEffect(() => {
+        setSearchBarOffset(window.location.href.endsWith("/library") || window.location.href.includes("/library/search"));
         setIsAtHome(window.location.href.endsWith("/library"));
         fetch((process.env.INTERNAL_API_URL ? process.env.INTERNAL_API_URL : "") + "/api/authLevel").then(resp => resp.json()).then(authData => { setAuthLevel(authData); });
     }, []);
@@ -23,7 +25,7 @@ export default function TopGradient() {
                 </h1>
 
             </div>
-            <div className={"w-[80%] flex flex-row justify-end " + (isAtHome ? "mb-[50px]" : "")}>
+            <div className={"w-[80%] flex flex-row justify-end " + (searchBarOffset ? "mb-[50px]" : "")}>
                 {
                     (authLevel.isOfficer || authLevel.isMentor) ? (
                         <a href="/library/mentorportal" className={"relative block text-center md:text-right text-white p-0 m-0 text-xl italic bottom-[-2px] ml-8"}>
@@ -33,10 +35,10 @@ export default function TopGradient() {
                 }
                 {
                     (!isAtHome) ? (<>
-                        <a href="/library" onClick={() => { (!isAtHome) ? history.back() : null }} className="relative block text-center md:text-right text-white p-0 m-0 text-xl italic bottom-[-2px] ml-8">
+                        <a href="/library" onClick={() => { (!searchBarOffset) ? history.back() : null }} className="relative block text-center md:text-right text-white p-0 m-0 text-xl italic bottom-[-2px] ml-8">
                             Home
                         </a>
-                        <a href="#" onClick={() => { (!isAtHome) ? history.back() : null }} className="relative block text-center md:text-right text-white p-0 m-0 text-xl italic bottom-[-2px] ml-8">
+                        <a href="#" onClick={() => { (!searchBarOffset) ? history.back() : null }} className="relative block text-center md:text-right text-white p-0 m-0 text-xl italic bottom-[-2px] ml-8">
                             Go Back
                         </a>
                     </>
