@@ -117,7 +117,8 @@ export async function POST(request: NextRequest) {
     let skipped = 0
     const errors: string[] = []
 
-    for (const [index, row] of rows.entries()) {
+    for (let index = 0; index < rows.length; index++) {
+      const row = rows[index];
       const createdAt = new Date(row.createdAt)
       if (Number.isNaN(createdAt.getTime())) {
         skipped += 1
