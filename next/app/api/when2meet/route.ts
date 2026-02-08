@@ -215,7 +215,9 @@ function parseWhen2MeetData(html: string): When2MeetData | null {
     }
 
     const aggregatedSlots: When2MeetSlot[] = []
-    for (const [key, names] of slotMap) {
+    const slotEntries = Array.from(slotMap.entries())
+    for (let i = 0; i < slotEntries.length; i++) {
+      const [key, names] = slotEntries[i]
       const [day, hourStr] = key.split("-")
       aggregatedSlots.push({
         day,
