@@ -111,7 +111,6 @@ export default function MentorScheduleEditor() {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
   )
-
   const [activeSchedule, setActiveSchedule] = useState<MentorSchedule | null>(null)
   const [activeSemester, setActiveSemester] = useState<MentorSemester | null>(null)
   const [blocks, setBlocks] = useState<ScheduleBlock[]>([])
@@ -386,6 +385,19 @@ export default function MentorScheduleEditor() {
     }
   }
 
+  const removeScheduleBlockById = async (blockId: number) => {
+    const response = await fetch("/api/scheduleBlock", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: blockId }),
+    })
+
+    if (!response.ok) {
+      const data = await response.json()
+      throw new Error(data.error || "Failed to remove mentor")
+    }
+  }
+
   // Handle assign mentor
   const handleAssignMentor = async () => {
     if (!assignSlot || !selectedMentorId) return
@@ -414,24 +426,14 @@ export default function MentorScheduleEditor() {
 
     setIsRemoving(true)
     try {
-      const response = await fetch("/api/scheduleBlock", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: removeBlock.id }),
-      })
-
-      if (response.ok) {
-        toast.success("Mentor removed from time slot")
-        fetchBlocks()
-        setRemoveModalOpen(false)
-        setRemoveBlock(null)
-      } else {
-        const data = await response.json()
-        toast.error(data.error || "Failed to remove mentor")
-      }
+      await removeScheduleBlockById(removeBlock.id)
+      toast.success("Mentor removed from time slot")
+      fetchBlocks()
+      setRemoveModalOpen(false)
+      setRemoveBlock(null)
     } catch (error) {
       console.error("Failed to remove mentor:", error)
-      toast.error("An error occurred")
+      toast.error(error instanceof Error ? error.message : "An error occurred")
     } finally {
       setIsRemoving(false)
     }
@@ -466,45 +468,59 @@ export default function MentorScheduleEditor() {
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over, delta } = event
-    if (!over) return
 
     // Ignore zero-distance drags (clicks)
     if (Math.abs(delta.x) < 5 && Math.abs(delta.y) < 5) return
-
-    const targetId = over.id.toString()
-    if (!targetId.startsWith("slot-")) return
-
-    const [weekdayString, hourString] = targetId.replace("slot-", "").split("-")
-    const weekday = parseInt(weekdayString)
-    const hour = parseInt(hourString)
-
-    if (Number.isNaN(weekday) || Number.isNaN(hour)) return
 
     const mentorId = active.data.current?.mentorId as number | undefined
     const blockId = active.data.current?.blockId as number | undefined
 
     if (!mentorId) return
 
-    // If moving an existing block, check it actually changed slots
-    if (blockId) {
-      const existingBlock = blocks.find((b) => b.id === blockId)
-      if (existingBlock && existingBlock.weekday === weekday && existingBlock.startHour === hour) {
-        return // Same slot, no move needed
+    const targetId = over?.id?.toString()
+
+    // If dropped on a schedule slot, assign or move
+    if (targetId && targetId.startsWith("slot-")) {
+      const [weekdayString, hourString] = targetId.replace("slot-", "").split("-")
+      const weekday = parseInt(weekdayString)
+      const hour = parseInt(hourString)
+
+      if (Number.isNaN(weekday) || Number.isNaN(hour)) return
+
+      // If moving an existing block, check it actually changed slots
+      if (blockId) {
+        const existingBlock = blocks.find((b) => b.id === blockId)
+        if (existingBlock && existingBlock.weekday === weekday && existingBlock.startHour === hour) {
+          return // Same slot, no move needed
+        }
       }
+
+      try {
+        if (blockId) {
+          await moveScheduleBlock(blockId, weekday, hour)
+          toast.success("Mentor moved to new time slot")
+        } else {
+          await assignMentorToSlot(mentorId, weekday, hour)
+          toast.success("Mentor assigned to time slot")
+        }
+        fetchBlocks()
+      } catch (error) {
+        console.error("Drag assignment failed:", error)
+        toast.error(error instanceof Error ? error.message : "Failed to update slot")
+      }
+      return
     }
 
-    try {
-      if (blockId) {
-        await moveScheduleBlock(blockId, weekday, hour)
-        toast.success("Mentor moved to new time slot")
-      } else {
-        await assignMentorToSlot(mentorId, weekday, hour)
-        toast.success("Mentor assigned to time slot")
+    // Dropped anywhere else — if it was on the schedule, remove it
+    if (blockId) {
+      try {
+        await removeScheduleBlockById(blockId)
+        toast.success("Mentor removed from schedule")
+        fetchBlocks()
+      } catch (error) {
+        console.error("Drag removal failed:", error)
+        toast.error(error instanceof Error ? error.message : "Failed to remove mentor")
       }
-      fetchBlocks()
-    } catch (error) {
-      console.error("Drag assignment failed:", error)
-      toast.error(error instanceof Error ? error.message : "Failed to update slot")
     }
   }
 
@@ -851,12 +867,12 @@ export default function MentorScheduleEditor() {
         </div>
       ) : (
         <>
-          <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+          <DndContext sensors={sensors} onDragEnd={handleDragEnd} autoScroll={false}>
             {/* Main grid: calendar + sidebar, sidebar constrained to calendar height */}
             <div className="grid gap-4 xl:grid-cols-[1fr_280px]" style={{ alignItems: "start" }}>
               <div className="flex flex-col gap-3">
-                <div className="overflow-auto border rounded-lg" style={{ maxHeight: "calc(100vh - 16rem)" }}>
-                  <table className="w-full min-w-[800px] table-fixed">
+                <div className="overflow-hidden border rounded-lg">
+                  <table className="w-full table-fixed">
                     <thead className="sticky top-0 z-10">
                       <tr className="border-b-2 border-border bg-muted">
                         <th className="w-24 p-2 text-left text-sm font-medium text-muted-foreground border-r border-border">
@@ -1639,6 +1655,7 @@ function DraggableMentorChip({
       className={cn(
         `${colorClass} text-white text-xs font-medium rounded transition-opacity truncate text-center`,
         fill ? "w-full px-1 py-1.5" : "px-2.5 py-1",
+        "touch-none",
         isDragging && "opacity-60"
       )}
       onClick={handleClick}

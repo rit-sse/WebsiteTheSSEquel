@@ -1143,13 +1143,14 @@ async function main() {
     await seedDepartment();
     await seedCourse();
     await seedCourseTaken();
-    await seedMentorHeadcountData();
     await seedHourBlock();
     await seedSchedule();
     // New mentor schedule system
     await seedMentorSchedule();
     await seedScheduleBlock();
     await seedMentorRosterAndApplications();
+    // Headcount must run after MentorRosterAndApplications (which creates the MentorSemester)
+    await seedMentorHeadcountData();
     await seedGoLinks();
     
     // REMOVED: seedAccount, seedSession, seedVerificationToken
