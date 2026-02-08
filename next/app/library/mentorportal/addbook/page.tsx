@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef } from "react";
+import Image from "next/image";
 
 
 export default function AddBook() {
@@ -147,12 +148,12 @@ export default function AddBook() {
         <div className="w-[100%] flex flex-col items-center mb-10">
             <div className="flex justify-center items-center w-[100%]">
                 <input className="w-[80%] max-w-[500px]" placeholder="Find if ISBN exists in database" onChange={e => { setIsbnInput(e.target.value) }} onKeyUp={e => e.key == "Enter" ? fetchISBNExists() : null} />
-                <img src="/library-icons/search.png" alt="Search" className="w-[30px] h-[30px] ml-2 cursor-pointer" onClick={fetchISBNExists} />
+                <Image src="/library-icons/search.png" alt="Search" className="w-[30px] h-[30px] ml-2 cursor-pointer" onClick={fetchISBNExists} width={30} height={30} />
             </div>
             {
                 error ? (
                     <div className="mt-4 flex items-center" >
-                        <img src="/library-icons/error.png" alt="Error" className="w-[20px] h-[20px] mr-2" />
+                        <Image src="/library-icons/error.png" alt="Error" className="w-[20px] h-[20px] mr-2" width={20} height={20} />
                         <p className="text-red-500 ">{error}</p>
                     </div >
                 ) : null
@@ -168,7 +169,7 @@ export default function AddBook() {
                         </tr>
                         <tr>
                             <td className="bg-orange-100">{bookData.id}</td>
-                            <td>{bookData.ISBN} <img className="w-[20px] h-[20px] inline cursor-pointer" src="/library-icons/information.png" alt="Book" onClick={() => location.href = "/library/catalog/" + bookData.ISBN} /></td>
+                            <td>{bookData.ISBN} <Image className="w-[20px] h-[20px] inline cursor-pointer" src="/library-icons/information.png" alt="Book" onClick={() => location.href = "/library/catalog/" + bookData.ISBN} width={20} height={20} /></td>
                             <td>{bookData.overallCount}</td>
                             <td className=" text-right border-none max-w-[50px]"><button onClick={addExistingBook} className="px-3 from-sky-800 to-sky-500 bg-gradient-to-b text-white font-bold rounded hover:to-sky-400 hover:from-sky-700 italic">Add</button></td>
                         </tr>
@@ -185,7 +186,7 @@ export default function AddBook() {
                         <h2 className="text-xl font-bold mb-4 w-full text-center">Register New Book</h2>
                         <div className="w-full flex flex-row justify-center items-center mb-4 ">
                             <input type="text" placeholder="Attempt auto-fill with ISBN using OpenLibrary" className="w-[40%] min-w-[250px]" onChange={e => setLookupISBNInput(e.target.value)} onKeyUp={e => e.key == "Enter" ? lookupISBN() : undefined} />
-                            <img src="/library-icons/search-web.png" alt="Search" className="h-full ml-4 cursor-pointer inline" onClick={lookupISBN} />
+                            <Image src="/library-icons/search-web.png" alt="Search" className="h-full ml-4 cursor-pointer inline" onClick={lookupISBN} width={30} height={30} />
                             <button className=" ml-3 px-3 py-2 from-gray-200 to-gray-300 bg-gradient-to-b text-black border hover:from-gray-100 hover:to-gray-200 " onClick={lookupOnIsbnSearch}>See in ISBN Search</button>
                         </div>
                         <div className="flex flex-col gap-3">

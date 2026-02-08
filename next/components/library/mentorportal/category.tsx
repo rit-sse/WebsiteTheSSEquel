@@ -1,5 +1,6 @@
 "use client"
 import { useState, useEffect } from "react";
+import Image from "next/image";
 
 export default function CategoryRow(props: { category: any }) {
     const { category } = props;
@@ -60,12 +61,12 @@ export default function CategoryRow(props: { category: any }) {
             <td className="text-center">
                 {
                     !editing ? (
-                        <img src="/library-icons/pencil.png" alt="Modify" className="w-5 h-5 inline" onClick={() => setEditing(true)} />
+                        <Image src="/library-icons/pencil.png" alt="Modify" className="w-5 h-5 inline" width={20} height={20} onClick={() => setEditing(true)} />
                     ) :
                         <>
-                            <img src="/library-icons/checkmark.png" alt="Finish" className="w-5 h-5 inline" onClick={finishEditing} />
-                            <img src="/library-icons/error.png" alt="Cancel" className="w-5 h-5 inline ml-2" onClick={() => setEditing(false)} />
-                            <img src="/library-icons/trash-it.png" alt="Delete" className="w-5 h-5 inline ml-2" onClick={trashit} />
+                            <Image src="/library-icons/checkmark.png" alt="Finish" className="w-5 h-5 inline" width={20} height={20} onClick={finishEditing} />
+                            <Image src="/library-icons/error.png" alt="Cancel" className="w-5 h-5 inline ml-2" width={20} height={20} onClick={() => setEditing(false)} />
+                            <Image src="/library-icons/trash-it.png" alt="Delete" className="w-5 h-5 inline ml-2" width={20} height={20} onClick={trashit} />
                         </>
 
                 }

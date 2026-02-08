@@ -1,6 +1,7 @@
 
 "use client"
 import { useState, useEffect } from "react";
+import Image from "next/image";
 export default function MentorPortal() {
 
     const [statistics, setStatistics] = useState<{ [key: string]: any }>({});
@@ -16,8 +17,8 @@ export default function MentorPortal() {
     return (
         <>
             <div className="w-[80%] [&_h2]:py-4 [&_p]:py-1 [&_details]:py-2 ">
-                <h2 className="italic"><img src="/library-icons/information.png" className="inline mr-2" />Welcome to the Mentor Portal!</h2>
-                <p><img src="/library-icons/pinsmall.png" className="inline mr-2" /><b className="text-orange-700">Pinned:</b> Checking out books has not been authorized yet! Please refer to the Mentor Committee Head or Primary Officers for an update on this policy</p>
+                <h2 className="italic"><Image src="/library-icons/information.png" alt="Information" className="inline mr-2" width={40} height={40} />Welcome to the Mentor Portal!</h2>
+                <p><Image src="/library-icons/pinsmall.png" alt="Pinned" className="inline mr-2" width={20} height={20} /><b className="text-orange-700">Pinned:</b> Checking out books has not been authorized yet! Please refer to the Mentor Committee Head or Primary Officers for an update on this policy</p>
 
                 <p>Welcome to the Mentor Portal! Here, you can view the current textbook circulation, current exam inventory, and more!</p>
 

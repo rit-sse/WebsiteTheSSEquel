@@ -1,4 +1,5 @@
 "use client"
+import Image from "next/image";
 
 type Book = {
     id: number;
@@ -32,10 +33,12 @@ export function FeaturedContainer({ props }: { props: { books: Book[], header: s
                         className="flex-none w-[180px] mr-4 last:mr-0 cursor-pointer z-5"
                         onClick={() => onClickBook(book)}
                     >
-                        <img
+                        <Image
                             src={book.image}
                             alt={book.name}
                             className="w-full h-[220px] object-cover rounded-md shadow-sm"
+                            width={180}
+                            height={220}
                         />
                         <h3 className="mt-2 text-lg font-medium">{book.name}</h3>
                         <p className="text-sm text-gray-600">{book.authors}</p>

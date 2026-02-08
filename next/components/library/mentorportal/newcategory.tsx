@@ -1,5 +1,6 @@
 "use client"
 import { useState, useEffect } from "react";
+import Image from "next/image";
 
 export default function NewCategory() {
 
@@ -28,9 +29,9 @@ export default function NewCategory() {
             <td>New</td>
 
             <td><input value={categoryName} onChange={(e) => setCategoryName(e.target.value)} className="border w-full" /></td>
-            <td><input value={books} onChange={(e) => setBooks(e.target.value)} className="borde w-full" /></td>
+            <td><input value={books} onChange={(e) => setBooks(e.target.value)} className="border w-full" /></td>
             <td className="text-center">
-                <img src="/library-icons/checkmark.png" alt="Finish" className="w-5 h-5 inline" onClick={finishcreation} />
+                <Image src="/library-icons/checkmark.png" alt="Finish" className="w-5 h-5 inline" width={20} height={20} onClick={finishcreation} />
             </td>
         </tr>
     )

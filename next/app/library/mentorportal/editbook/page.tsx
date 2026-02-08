@@ -1,5 +1,6 @@
 "use client"
 import { useRef, useState } from "react";
+import Image from "next/image";
 
 export default function EditBook() {
 
@@ -164,12 +165,12 @@ export default function EditBook() {
         <>
             <div className="flex justify-center items-center w-[100%]">
                 <input className="w-[80%] max-w-[500px]" placeholder="Input ISBN" value={isbnInput} onChange={(e) => setIsbnInput(e.target.value)} onKeyUp={inputHandler} />
-                <img src="/library-icons/explore.png" alt="Search" className="w-[30px] h-[30px] ml-2 cursor-pointer" onClick={fetchISBN} />
+                <Image src="/library-icons/explore.png" alt="Search" className="w-[30px] h-[30px] ml-2 cursor-pointer" onClick={fetchISBN} width={30} height={30} />
             </div>
             {
                 error ? (
                     <div className="w-full h-[50px] flex justify-center items-center text-red-500">
-                        <img src="/library-icons/error.png" alt="Error" className="w-[20px] h-[20px] mr-2" />
+                        <Image src="/library-icons/error.png" alt="Error" className="w-[20px] h-[20px] mr-2" width={20} height={20} />
 
                         <span>{error}</span>
                     </div>
@@ -188,10 +189,10 @@ export default function EditBook() {
                         <input type="file" id="fileUpload" ref={inputFile} className="hidden" onChange={readImage} />
                         <div className="flex flex-col items-center pointer" onClick={onImageRequestClick}>
                             {bookData.image ? (
-                                <img src={showCustomImage ? pickedImage : bookData.image + "?" + Date.now()} alt={bookData.name} className="mt-4 w-[200px] h-auto" />
+                                <Image src={showCustomImage ? pickedImage : bookData.image + "?" + Date.now()} alt={bookData.name} className="mt-4" width={200} height={300} />
                             ) : null}
                             <div className="mt-3 flex items-center cursor-pointer">
-                                <img src="/library-icons/openfile.png" alt="Search" className="w-[25px] h-[25px] ml-2 cursor-pointer" />
+                                <Image src="/library-icons/openfile.png" alt="Search" className="w-[25px] h-[25px] ml-2 cursor-pointer" width={25} height={25} />
                                 <p className="pl-2 text-blue-600 underline hover:text-blue-800">Change Image</p>
                             </div>
                         </div>
@@ -223,7 +224,7 @@ export default function EditBook() {
             {
                 finishedEditing ? (
                     <div className="w-[40%] h-[60px] flex justify-center items-center text-black-500 mt-4 bg-green-300 border-2 border-green-500 border-dashed rounded">
-                        <img src="/library-icons/checkmark.png" alt="Success" className="w-[20px] h-[20px] mr-2" />
+                        <Image src="/library-icons/checkmark.png" alt="Success" className="w-[20px] h-[20px] mr-2" width={20} height={20} />
                         <span>Book updated successfully!</span>
                     </div>
                 ) : null

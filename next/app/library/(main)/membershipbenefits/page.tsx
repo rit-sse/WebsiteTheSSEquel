@@ -4,7 +4,7 @@ export default function LibraryMembershipBenefitsPage() {
     return (<div className='w-[80%]'>
         <div className='w-[100%] md:w-[80%]'>
             <h1 className='mt-[10px] font-bold text-[30px]'>Library and SSE Membership Benefits </h1>
-            <p className='mt-[10px]'>Welcome to the Society of Software Engineers Library! Your SSE membership unlocks access to valuable resources that support your academic and project needs. Here's everything you need to know about maximizing your membership benefits.</p>
+            <p className='mt-[10px]'>Welcome to the Society of Software Engineers Library! Your SSE membership unlocks access to valuable resources that support your academic and project needs. Here&apos;s everything you need to know about maximizing your membership benefits.</p>
 
             <h2 className='mt-[10px] font-bold text-[24px]'>How Memberships Work</h2>
             <p className='mt-[10px]'>Each SSE membership you hold acts as a credit system for checking out library resources. Think of memberships as your borrowing power—the more memberships you have, the more resources you can access simultaneously.</p>
@@ -28,7 +28,7 @@ export default function LibraryMembershipBenefitsPage() {
             <h2 className='mt-[10px] font-bold text-[24px]'>Equipment Checkout</h2>
 
             <h3 className='mt-[10px] font-bold text-[20px]'>How Equipment Pricing Works</h3>
-            <p className='mt-[10px]'>Equipment checkout uses a credit-based system where each device has a specific "price" in memberships. You can check out any combination of equipment as long as the total membership cost doesn't exceed your available memberships.</p>
+            <p className='mt-[10px]'>Equipment checkout uses a credit-based system where each device has a specific &quot;price&quot; in memberships. You can check out any combination of equipment as long as the total membership cost doesn&apos;t exceed your available memberships.</p>
 
             <h3 className='mt-[10px] font-bold text-[20px]'>Key Rules</h3>
             <ul className='mt-[10px] list-disc list-inside'>
@@ -46,7 +46,7 @@ export default function LibraryMembershipBenefitsPage() {
             </ul>
 
             <h2 className='mt-[10px] font-bold text-[24px]'>Questions?</h2>
-            <p className='mt-[10px]'>Join our discord or visit the lab during lab hours. We're here to help you access the resources you need for academic success and project development.</p>
+            <p className='mt-[10px]'>Join our discord or visit the lab during lab hours. We&apos;re here to help you access the resources you need for academic success and project development.</p>
 
             <hr className='mt-[10px]' />
 

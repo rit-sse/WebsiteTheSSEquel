@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 
 export default function BookPage({ params }: { params: { isbn: string } }) {
 
@@ -39,7 +40,7 @@ export default function BookPage({ params }: { params: { isbn: string } }) {
         fetch((process.env.INTERNAL_API_URL ? process.env.INTERNAL_API_URL : "") + "/api/library/books?simple=true&isbn=" + params.isbn).then(resp => resp.json()).then(data => {
             setSimpleData(data);
         });
-    }, []);
+    }, [params.isbn]);
 
     return (
         <div className="p-4 w-[80%]">
@@ -47,8 +48,11 @@ export default function BookPage({ params }: { params: { isbn: string } }) {
                 <aside className="w-[260px]">
                     {
                         loaded ? (
-                            <img
+                            <Image
                                 src={`${bookData.image}`}
+                                alt={bookData.name}
+                                width={260}
+                                height={380}
                                 className={"w-full h-auto object-cover rounded shadow-lg md:mt-[-60px] relative"}
                             />
                         ) : (

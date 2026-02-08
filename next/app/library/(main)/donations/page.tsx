@@ -11,19 +11,19 @@ export default function BookDonationsPage() {
             <p className='mt-[10px] font-bold text-[30px]'>How It Works</p>
             <p className='mt-[10px]'>Donating books to the Society of Software Engineers is simple:</p>
             <p className='mt-[10px] ml-[20px]'>1. Drop off your books in the SSE room</p>
-            <p className='mt-[10px] ml-[20px]'>2. Notify the mentor on duty that you're depositing books</p>
+            <p className='mt-[10px] ml-[20px]'>2. Notify the mentor on duty that you&apos;re depositing books</p>
             <p className='mt-[10px] ml-[20px]'>3. Get registered, the mentor will note your donation and officers will give you an SSE membership.</p>
-            <p className='mt-[10px]'>It's that easy. Your unused textbooks become accessible course materials for other students, and you gain membership benefits in return.</p>
+            <p className='mt-[10px]'>It&apos;s that easy. Your unused textbooks become accessible course materials for other students, and you gain membership benefits in return.</p>
             <p className='mt-[10px] font-bold text-[30px]'>For Students</p>
-            <p className='mt-[10px]'>Every book you donate counts toward your SSE membership. Instead of letting expensive textbooks sit unused after a semester ends, give them a second life while earning your place in the SSE community. It's a practical exchange that benefits everyone.</p>
+            <p className='mt-[10px]'>Every book you donate counts toward your SSE membership. Instead of letting expensive textbooks sit unused after a semester ends, give them a second life while earning your place in the SSE community. It&apos;s a practical exchange that benefits everyone.</p>
             <p className='mt-[10px] font-bold text-[30px]'>For Professors</p>
-            <p className='mt-[10px]'>While professors aren't eligible for membership through donations, there's an even more valuable opportunity here. By donating required textbooks for your courses, you can:</p>
+            <p className='mt-[10px]'>While professors aren&apos;t eligible for membership through donations, there&apos;s an even more valuable opportunity here. By donating required textbooks for your courses, you can:</p>
             <ul className="mt-[10px] ml-[20px] list-disc space-y-2">
                 <li>Save your students thousands of dollars on course materials</li>
                 <li>Ensure more students have access to essential readings</li>
                 <li>Distribute your recommended resources more effectively through the SSE Library system</li>
             </ul>
-            <p className='mt-[10px]'>When you pass down textbooks through SSE, you're not just clearing shelf space—you're removing financial barriers for students who might otherwise struggle to afford required materials.</p>
+            <p className='mt-[10px]'>When you pass down textbooks through SSE, you&apos;re not just clearing shelf space—you&apos;re removing financial barriers for students who might otherwise struggle to afford required materials.</p>
             <p className='mt-[10px] font-bold text-[30px]'>Why This Matters</p>
             <p className='mt-[10px]'>Textbook costs add up quickly. A single semester can mean hundreds or thousands of dollars in required books, many of which are used for just one course and then abandoned. This program creates an environment where:</p>
             <ul className="mt-[10px] ml-[20px] list-disc space-y-2">
@@ -34,8 +34,8 @@ export default function BookDonationsPage() {
             </ul>
 
             <p className='mt-[10px] font-bold text-[30px]'>Ready to Donate?</p>
-            <p className='mt-[10px]'>Head to the SSE room during lab hours, bring your books, and talk to the mentor on duty. They'll handle the rest.</p>
-            <p className='mt-[10px]'>Every book donated is one less financial burden for a fellow student. That's knowledge worth sharing.</p>
+            <p className='mt-[10px]'>Head to the SSE room during lab hours, bring your books, and talk to the mentor on duty. They&apos;ll handle the rest.</p>
+            <p className='mt-[10px]'>Every book donated is one less financial burden for a fellow student. That&apos;s knowledge worth sharing.</p>
         </div>
     </div>)
 }

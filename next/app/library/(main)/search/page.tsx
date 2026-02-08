@@ -20,7 +20,7 @@ export default function SearchLibrary() {
             setLoaded(true);
         });
 
-    }, []);
+    }, [searchParams]);
 
     return (
         <div className="w-[80%] h-full relative flex flex-wrap justify-between">
