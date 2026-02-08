@@ -30,6 +30,8 @@ export default function LibraryLayout({
                         <a href="/library/mentorportal/editbook" className="underline text-blue-500"><TopbarIcon iconUrl="/library-icons/pencil.png" /> Edit Book</a>
                         <a href="/library/mentorportal/addbook" className="underline text-blue-500"><TopbarIcon iconUrl="/library-icons/book.png" /> Add Book</a>
                         <a href="/library/mentorportal/circulation" className="underline text-blue-500"><TopbarIcon iconUrl="/library-icons/database.png" /> Circulation</a>
+                        <a href="/library/mentorportal/category" className="underline text-blue-500"><TopbarIcon iconUrl="/library-icons/category.png" /> Categories</a>
+                    
                     </div>
                     <a href="/library" className="underline text-blue-500">Back to Library</a>
                 </div>

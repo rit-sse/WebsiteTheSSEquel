@@ -15,6 +15,7 @@ export async function GET(request: NextRequest) {
                 { publisher: { contains: query, mode: "insensitive" } },
                 { keyWords: { contains: query, mode: "insensitive" } },
                 { ISBN: { contains: query, mode: "insensitive" } },
+                { classInterest: { contains: query, mode: "insensitive" } },
             ]
         },
         select: {

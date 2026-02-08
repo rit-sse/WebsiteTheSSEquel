@@ -183,6 +183,12 @@ const Navbar: React.FC = () => {
                         <NavigationMenuList>
                             <NavigationMenuItem>
                                 <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+                                    <Link href="/library">Library</Link>
+                                </NavigationMenuLink>
+                            </NavigationMenuItem>
+
+                            <NavigationMenuItem>
+                                <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
                                     <Link href="/events/calendar">Events</Link>
                                 </NavigationMenuLink>
                             </NavigationMenuItem>
