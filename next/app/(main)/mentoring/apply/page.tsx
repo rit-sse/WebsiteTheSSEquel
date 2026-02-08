@@ -23,7 +23,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { toast } from "sonner"
-import { GraduationCap, Calendar, Clock, CheckCircle2 } from "lucide-react"
+import { GraduationCap, Calendar, Clock, CheckCircle2, ExternalLink } from "lucide-react"
 import AvailabilityGrid, { AvailabilitySlot } from "@/app/(main)/dashboard/mentoring/components/AvailabilityGrid"
 
 interface MentorSemester {

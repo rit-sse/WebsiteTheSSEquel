@@ -151,7 +151,7 @@ export default function MentorInviteModal({
               disabled={isSubmitting}
             />
             <p className="text-xs text-muted-foreground">
-              When the mentor's active status will expire (usually end of academic year)
+              When the mentor&apos;s active status will expire (usually end of academic year)
             </p>
           </div>
 
