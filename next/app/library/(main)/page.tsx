@@ -4,6 +4,7 @@ import { FeaturedContainer } from "@/components/library/search/FeaturedContainer
 import { FeaturedContainerSkeleton } from "@/components/library/search/FeaturedContainerSkeleton";
 import process from "process";
 import { useState, useEffect } from "react";
+import SearchBar from "@/components/library/search/SearchBar";
 
 
 export default function LibraryHome() {
@@ -15,12 +16,11 @@ export default function LibraryHome() {
 
     useEffect(() => {
         fetch((process.env.INTERNAL_API_URL ? process.env.INTERNAL_API_URL : "") + "/api/library/categories").then(resp => resp.json()).then(categoriesData => { setCategories(categoriesData); });
-
     }, []);
 
     return (
         <div className="w-[80%] h-full relative flex items-center flex-col bg-white">
-            <input className="z-[2] top-[-40px] relative w-[100%] text-[25px] border-none py-[22px] px-[20px] rounded-lg shadow-2xl" placeholder="Search our collection (Course-Code, ISBN, Name, etc...)" />
+            <SearchBar />
             {
                 (Object.keys(categories).length === 0) ? (
                     <div className="w-full">
@@ -35,9 +35,7 @@ export default function LibraryHome() {
             }
 
             <div className="w-[100%] md:w-[60%] grid grid-cols-2 text-center gap-6">
-                <LibraryQuickLink props={{ label: "Advanced Search", link: "#" }} />
                 <LibraryQuickLink props={{ label: "Browse All Books", link: "/library/catalog" }} />
-                <LibraryQuickLink props={{ label: "View Books by Keywords", link: "#" }} />
                 <LibraryQuickLink props={{ label: "Textbook Donations", link: "/library/donations" }} />
             </div>
 

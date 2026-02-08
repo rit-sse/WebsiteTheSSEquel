@@ -27,7 +27,7 @@ export default function LibraryCatalog() {
                     <GeneralBookContainer key={book.ISBN} book={book} />
                 )) :
                     Array.from({ length: 30 }).map((_, index) => (
-                        <GeneralBookContainerSkeleton key={index} />
+                        <GeneralBookContainerSkeleton key={index} />    
                     ))
             }
 
