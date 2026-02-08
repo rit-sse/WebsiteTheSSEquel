@@ -754,7 +754,7 @@ async function seedTextbooks() {
 			yearPublished: "1996",
 			keyWords: "software development, project management, software engineering",
 			classInterest: "SWEN-256",
-			checkedOut: false
+
 		},
 	});
 
@@ -772,7 +772,6 @@ async function seedTextbooks() {
 			yearPublished: "1994",
 			keyWords: "software design, software engineering, object-oriented programming",
 			classInterest: "SWEN-262",
-			checkedOut: false
 		},
 	});
 
@@ -790,7 +789,6 @@ async function seedTextbooks() {
 			yearPublished: "1988",
 			keyWords: "C programming, software development, programming languages",
 			classInterest: "SWEN-250, SWEN-340",
-			checkedOut: false
 		},
 	});
 
@@ -808,7 +806,6 @@ async function seedTextbooks() {
 			yearPublished: "2015",
 			keyWords: "probability, statistics, engineering",
 			classInterest: "MATH-251",
-			checkedOut: false
 		},
 	});
 
