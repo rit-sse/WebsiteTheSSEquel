@@ -12,16 +12,17 @@ export default function LibraryHome() {
     // const authLevel = await getAuth();
 
     const [catalogue, setCatalogue] = useState<any[]>([]);
+    const [loaded, setLoaded] = useState(false);
 
     useEffect(() => {
-        fetch((process.env.INTERNAL_API_URL ? process.env.INTERNAL_API_URL : "") + "/api/library/books?count=true").then(resp => resp.json()).then(catalogueData => { setCatalogue(catalogueData); });
-
+        fetch((process.env.INTERNAL_API_URL ? process.env.INTERNAL_API_URL : "") + "/api/library/books?count=true").then(resp => resp.json()).then(catalogueData => { setCatalogue(catalogueData); console.log(catalogueData); });
+        setLoaded(true)
     }, []);
 
     return (
-        <div className="w-[80%] h-full relative grid grid-cols-7 gap-4   bg-white">
+        <div className="w-[80%] h-full relative flex flex-wrap justify-between">
             {
-                catalogue.map((book) => (
+                loaded ? catalogue.map((book) => (
                     <div
                         key={book.ISBN}
                         className="flex-none w-[180px] mr-4 last:mr-0 cursor-pointer z-5"
@@ -38,7 +39,21 @@ export default function LibraryHome() {
                             {book.stockNumber > 0 ? `(${book.stockNumber}) on shelf` : 'Out of stock'}
                         </p> */}
                     </div>
-                ))
+                )) :
+                    Array.from({ length: 30 }).map((_, index) => (
+                        <div
+                            key={index}
+                            className="w-[180px] mr-4 last:mr-0 cursor-pointer z-5 my-2"
+                        >
+                            <div
+                                className="w-full h-[240px] object-cover rounded-md shadow-sm animate-pulse bg-gray-300"
+                            />
+                            <div className="mt-2 w-[100%] h-[20px] bg-gray-200 mt-2" />
+                            <div className="w-[80%] h-[16px] bg-gray-200 mt-2" />
+                            <div className="w-[80%] h-[16px] bg-gray-200 mt-2" />
+
+                        </div>
+                    ))
             }
 
         </div>

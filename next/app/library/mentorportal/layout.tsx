@@ -1,5 +1,7 @@
 "use client"
 
+import { useState, useEffect } from "react";
+
 const TopbarIcon = (props: { iconUrl: string}): JSX.Element => {
     return(
         <img src={props.iconUrl} className="w-4 h-4 inline" />
@@ -11,6 +13,12 @@ export default function LibraryLayout({
 }: {
     children: React.ReactNode;
 }) {
+    const [authLevel, setAuthLevel] = useState<{ [key: string]: any }>({ isOfficer: false, isMentor: false });
+    
+    useEffect(() => {
+        fetch((process.env.INTERNAL_API_URL ? process.env.INTERNAL_API_URL : "") + "/api/authLevel").then(resp => resp.json()).then(authData => { setAuthLevel(authData); });
+    }, []);
+
     return (
         <div className={`flex flex-col items-center bg-white min-h-screen w-screen z-[20] text-black`}>
 
