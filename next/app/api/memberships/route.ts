@@ -49,6 +49,7 @@ export async function GET() {
         select: {
             id: true,
             name: true,
+            image: true,
         }
     });
 
@@ -57,6 +58,7 @@ export async function GET() {
     const items = grouped.map((g) => ({
         userId: g.userId,
         name: byId.get(g.userId)?.name ?? `User ${g.userId}`,
+        image: byId.get(g.userId)?.image ?? null,
         membershipCount: g._count.userId,
         lastMembershipAt: g._max.dateGiven,
     }))

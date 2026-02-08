@@ -1,4 +1,4 @@
-import { GitHubIcon, LinkedInIcon, EmailIcon } from "@/components/common/Icons";
+import { Github, Linkedin, Mail } from "lucide-react";
 import { AlumniMember } from "./alumni";
 import Avatar from 'boring-avatars';
 import Image from "next/image";
@@ -51,7 +51,7 @@ export default function AlumniCard({ alumniMember, children }: AlumniCardProps) 
             rel="noopener noreferrer"
             className="text-muted-foreground hover:text-primary transition-colors"
           >
-            <LinkedInIcon />
+            <Linkedin className="h-5 w-5" />
           </a>
         )}
         {alumniMember.github && (
@@ -61,7 +61,7 @@ export default function AlumniCard({ alumniMember, children }: AlumniCardProps) 
             rel="noopener noreferrer"
             className="text-muted-foreground hover:text-primary transition-colors"
           >
-            <GitHubIcon />
+            <Github className="h-5 w-5" />
           </a>
         )}
         {alumniMember.email && (
@@ -69,7 +69,7 @@ export default function AlumniCard({ alumniMember, children }: AlumniCardProps) 
             href={`mailto:${alumniMember.email}`}
             className="text-muted-foreground hover:text-primary transition-colors"
           >
-            <EmailIcon />
+            <Mail className="h-5 w-5" />
           </a>
         )}
       </div>

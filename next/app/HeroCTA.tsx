@@ -46,13 +46,13 @@ export const HeroCTA = ({ description, labHoursCallout, weeklyMeetingCallout, di
                 <NeoBrutalistButton 
                     href={discordLink} 
                     text="Join Discord" 
-                    variant="blue"
+                    variant="orange"
                     icon={<Send className="h-[18px] w-[18px]" />}
                 />
                 <NeoBrutalistButton 
                     href="/about/get-involved" 
                     text="Get Involved" 
-                    variant="orange"
+                    variant="blue"
                     icon={<Rocket className="h-[18px] w-[18px]" />}
                 />
             </div>

@@ -1,4 +1,4 @@
-import { GitHubIcon, LinkedInIcon, EmailIcon } from "@/components/common/Icons";
+import { Github, Linkedin, Mail } from "lucide-react";
 import { TeamMember } from "./team";
 import Avatar from 'boring-avatars';
 import Image from "next/image";
@@ -11,7 +11,7 @@ interface OfficerCardProps {
 
 export default function OfficerCard({ teamMember, children }: OfficerCardProps) {
   return (
-    <Card depth={3} className="w-full max-w-[280px] p-5 flex flex-col items-center text-center h-full">
+    <Card depth={2} className="w-full max-w-[280px] p-5 flex flex-col items-center text-center h-full">
       {/* Avatar */}
       <div className="mb-3">
         {teamMember.image != "https://source.boringavatars.com/beam/" ? (
@@ -43,7 +43,7 @@ export default function OfficerCard({ teamMember, children }: OfficerCardProps) 
             rel="noopener noreferrer"
             className="text-muted-foreground hover:text-primary transition-colors"
           >
-            <LinkedInIcon />
+            <Linkedin className="h-5 w-5" />
           </a>
         )}
         {teamMember.github && (
@@ -53,7 +53,7 @@ export default function OfficerCard({ teamMember, children }: OfficerCardProps) 
             rel="noopener noreferrer"
             className="text-muted-foreground hover:text-primary transition-colors"
           >
-            <GitHubIcon />
+            <Github className="h-5 w-5" />
           </a>
         )}
         {teamMember.email && (
@@ -61,7 +61,7 @@ export default function OfficerCard({ teamMember, children }: OfficerCardProps) 
             href={`mailto:${teamMember.email}`}
             className="text-muted-foreground hover:text-primary transition-colors"
           >
-            <EmailIcon />
+            <Mail className="h-5 w-5" />
           </a>
         )}
       </div>

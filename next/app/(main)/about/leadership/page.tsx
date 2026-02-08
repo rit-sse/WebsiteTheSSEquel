@@ -14,7 +14,7 @@ import { Card } from "@/components/ui/card";
 // Skeleton component for officer cards
 function OfficerCardSkeleton() {
 	return (
-		<Card depth={3} className="w-full max-w-[280px] p-5 flex flex-col items-center">
+		<Card depth={2} className="w-full max-w-[280px] p-5 flex flex-col items-center">
 			<Skeleton className="h-24 w-24 rounded-full mb-3" />
 			<Skeleton className="h-5 w-32 mb-1" />
 			<Skeleton className="h-4 w-24 mb-2" />
@@ -160,57 +160,57 @@ export default function Leadership() {
 						</div>
 					</div>
 
-					{/* Primary Officers Card */}
-					<Card depth={2} className="p-6 mb-8">
-						<h2 className="text-center text-primary mb-6">
-							Primary Officers
-						</h2>
-						<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 justify-items-center">
-							{isLoading ? (
-								<>
-									<OfficerCardSkeleton />
-									<OfficerCardSkeleton />
-									<OfficerCardSkeleton />
-									<OfficerCardSkeleton />
-								</>
-							) : (
-								teamData.primary_officers.map((item, idx) => (
-									item.officer ? (
-										<OfficerCard key={idx} teamMember={item.officer} />
-									) : canSeeUnfilledPositions ? (
-										<EmptyOfficerCard key={idx} position={item.position} />
-									) : null
-								))
-							)}
-						</div>
-					</Card>
+				{/* Primary Officers */}
+				<div className="mb-10">
+					<h2 className="text-center text-primary mb-6">
+						Primary Officers
+					</h2>
+					<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 justify-items-center">
+						{isLoading ? (
+							<>
+								<OfficerCardSkeleton />
+								<OfficerCardSkeleton />
+								<OfficerCardSkeleton />
+								<OfficerCardSkeleton />
+							</>
+						) : (
+							teamData.primary_officers.map((item, idx) => (
+								item.officer ? (
+									<OfficerCard key={idx} teamMember={item.officer} />
+								) : canSeeUnfilledPositions ? (
+									<EmptyOfficerCard key={idx} position={item.position} />
+								) : null
+							))
+						)}
+					</div>
+				</div>
 
-					{/* Committee Heads Card */}
-					<Card depth={2} className="p-6">
-						<h2 className="text-center text-primary mb-6">
-							Committee Heads
-						</h2>
-						<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 justify-items-center">
-							{isLoading ? (
-								<>
-									<OfficerCardSkeleton />
-									<OfficerCardSkeleton />
-									<OfficerCardSkeleton />
-									<OfficerCardSkeleton />
-									<OfficerCardSkeleton />
-									<OfficerCardSkeleton />
-								</>
-							) : (
-								teamData.committee_heads.map((item, idx) => (
-									item.officer ? (
-										<OfficerCard key={idx} teamMember={item.officer} />
-									) : canSeeUnfilledPositions ? (
-										<EmptyOfficerCard key={idx} position={item.position} />
-									) : null
-								))
-							)}
-						</div>
-					</Card>
+				{/* Committee Heads */}
+				<div>
+					<h2 className="text-center text-primary mb-6">
+						Committee Heads
+					</h2>
+					<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 justify-items-center">
+						{isLoading ? (
+							<>
+								<OfficerCardSkeleton />
+								<OfficerCardSkeleton />
+								<OfficerCardSkeleton />
+								<OfficerCardSkeleton />
+								<OfficerCardSkeleton />
+								<OfficerCardSkeleton />
+							</>
+						) : (
+							teamData.committee_heads.map((item, idx) => (
+								item.officer ? (
+									<OfficerCard key={idx} teamMember={item.officer} />
+								) : canSeeUnfilledPositions ? (
+									<EmptyOfficerCard key={idx} position={item.position} />
+								) : null
+							))
+						)}
+					</div>
+				</div>
 				</Card>
 			</div>
 		</section>

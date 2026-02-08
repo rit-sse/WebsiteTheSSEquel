@@ -1,4 +1,5 @@
 // This file renders the /about/constitution route of the website.
+import { Card } from "@/components/ui/card";
 import { getPostData } from "@/lib/posts";
 
 export default async function Constitution() {
@@ -7,7 +8,12 @@ export default async function Constitution() {
   return (
     <section>
       <div className="text-page-structure">
-          <div dangerouslySetInnerHTML={{ __html: postData.props.htmlContent }} />
+        <Card depth={1} className="w-full p-6 md:p-8">
+          <div
+            className="prose prose-lg dark:prose-invert max-w-none"
+            dangerouslySetInnerHTML={{ __html: postData.props.htmlContent }}
+          />
+        </Card>
       </div>
     </section>
   );
