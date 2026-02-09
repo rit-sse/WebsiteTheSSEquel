@@ -244,6 +244,9 @@ export default function AlumniCard({
     // Use row layout as long as the sidebar is present (expanded or exiting)
     const useRowLayout = (isExpanded && hasWidgets) || sidebarPresent;
 
+    // Card stays wide while sidebar is visible (including during exit animation)
+    const cardIsWide = (isExpanded && hasWidgets) || sidebarPresent;
+
     // Fetch live GitHub info (cached across cards)
     const { user: ghUser } = useGitHubUser(githubUsername);
 
@@ -268,11 +271,11 @@ export default function AlumniCard({
                 "neo:rounded-xl neo:border neo:border-black/25",
                 "clean:rounded-lg clean:border clean:border-border/20 clean:shadow-sm",
                 "overflow-hidden relative",
-                "transition-[max-width,flex-basis] duration-300 ease-in-out",
-                isExpanded
-                    ? "w-full max-w-[576px] basis-[576px]"
-                    : "w-full max-w-[280px] basis-[280px] cursor-pointer hover:shadow-lg",
-            ].join(" ")}
+                cardIsWide
+                    ? "max-w-[576px]"
+                    : "w-full max-w-[280px] basis-[280px]",
+                !isExpanded && "cursor-pointer hover:shadow-lg",
+            ].filter(Boolean).join(" ")}
             onClick={isExpanded ? undefined : onClick}
         >
             <div className={[
@@ -281,11 +284,11 @@ export default function AlumniCard({
                     ? "flex flex-col md:flex-row overflow-hidden"
                     : "flex flex-col items-center text-center",
             ].join(" ")}>
-                {/* Profile section — fixed 280px on desktop when expanded */}
+                {/* Profile section — always 280px wide, never stretches */}
                 <div
                     className={
-                        isExpanded
-                            ? "flex-shrink-0 w-full md:w-[280px] p-5 flex flex-col items-center text-center flex-1"
+                        useRowLayout
+                            ? "w-[280px] shrink-0 grow-0 p-5 flex flex-col items-center text-center"
                             : "p-5 flex flex-col items-center text-center w-full flex-1"
                     }
                 >
