@@ -144,7 +144,7 @@ export default function ReceiptForm({ request, onClose, onSuccess }: ReceiptForm
           status: "returned",
           actualCost: parseFloat(actualCost),
           receiptImage,
-          receiptEmail,
+          ...(receiptEmail ? { receiptEmail } : {}),
           eventName: eventName || null,
           eventDate: eventDate ? new Date(eventDate).toISOString() : null,
           attendanceData: attendees.length > 0 ? JSON.stringify(attendees) : null,

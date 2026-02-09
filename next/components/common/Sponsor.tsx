@@ -10,7 +10,7 @@ interface SponsorProps {
 
 export const Sponsor: React.FC<SponsorProps> = ({ url, imageLink, name, description }) => (
     <a href={url} target="_blank" rel="noopener noreferrer" className="block group">
-        <Card depth={2} className="p-4 h-full transition-all duration-150 neo:hover:translate-x-[2px] neo:hover:translate-y-[2px] neo:hover:shadow-none clean:hover:shadow-lg clean:hover:scale-[1.01] w-[280px]">
+        <Card depth={2} className="p-4 h-full transition-all duration-150 neo:hover:translate-x-[2px] neo:hover:translate-y-[2px] neo:hover:shadow-none clean:hover:shadow-lg clean:hover:scale-[1.01] w-full sm:w-[280px]">
             <div className="flex flex-col items-center text-center gap-3">
                 <div className="relative w-[120px] h-[80px]">
                     <Image

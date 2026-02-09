@@ -14,7 +14,7 @@ import RequestAlumniForm from "./RequestAlumniForm";
 
 function AlumniCardSkeleton() {
 	return (
-		<Card depth={3} className="w-full max-w-[280px] p-5 flex flex-col items-center">
+		<Card depth={2} className="w-full max-w-[280px] p-5 flex flex-col items-center">
 			<Skeleton className="h-24 w-24 rounded-full mb-3" />
 			<Skeleton className="h-5 w-32 mb-1" />
 			<Skeleton className="h-4 w-24 mb-2" />

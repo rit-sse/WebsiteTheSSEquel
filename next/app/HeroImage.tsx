@@ -10,9 +10,9 @@ import {
 import ImageCard from "@/components/ui/image-card";
 
 const images = [
-    { src: "/images/group.jpg", alt: "SSE members at a meeting" },
     { src: "/images/gen-meeting.jpg", alt: "SSE general meeting" },
-    { src: "/images/mentoring.jpg", alt: "SSE mentoring session" },
+    { src: "/images/events1.jpg", alt: "SSE event" },
+    { src: "/images/group.jpg", alt: "SSE members at a meeting" },
 ];
 
 export const HeroImage = () => {

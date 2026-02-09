@@ -257,19 +257,6 @@ const Navbar: React.FC = () => {
                                 <SheetTitle className="text-left">Menu</SheetTitle>
                             </SheetHeader>
                             <nav className="flex flex-col gap-2 mt-6">
-                                <MobileNavCollapsible title="About">
-                                    {aboutItems.map((item) => (
-                                        <MobileNavLink
-                                            key={item.title}
-                                            href={item.href}
-                                            onClick={() => setOpen(false)}
-                                            className="pl-4"
-                                        >
-                                            {item.title}
-                                        </MobileNavLink>
-                                    ))}
-                                </MobileNavCollapsible>
-
                                 <MobileNavLink href="/events/calendar" onClick={() => setOpen(false)}>
                                     Events
                                 </MobileNavLink>
@@ -285,6 +272,19 @@ const Navbar: React.FC = () => {
                                 <MobileNavLink href="/go" onClick={() => setOpen(false)}>
                                     Go Links
                                 </MobileNavLink>
+
+                                <MobileNavCollapsible title="About">
+                                    {aboutItems.map((item) => (
+                                        <MobileNavLink
+                                            key={item.title}
+                                            href={item.href}
+                                            onClick={() => setOpen(false)}
+                                            className="pl-4"
+                                        >
+                                            {item.title}
+                                        </MobileNavLink>
+                                    ))}
+                                </MobileNavCollapsible>
 
                                 {showDashboard && (
                                     <MobileNavCollapsible title="Dashboard">
