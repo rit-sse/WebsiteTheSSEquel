@@ -17,7 +17,7 @@ const Footer: React.FC = () => {
             <div className="flex flex-row items-center gap-1">
                 {commitHash !== "dev" ? (
                     <Link
-                        href={`https://github.com/rit-sse/WebsiteTheSSEquel-2/commit/${commitHash}`}
+                        href={`https://github.com/rit-sse/WebsiteTheSSEquel/commit/${commitHash}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-xs font-mono text-muted-foreground/60 hover:text-foreground transition-colors mr-2"
