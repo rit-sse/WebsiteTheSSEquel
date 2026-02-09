@@ -55,6 +55,7 @@ export async function POST(request: Request) {
     quote, 
     previous_roles,
     showEmail,
+    receiveEmails,
     alumniId
   } = body;
 
@@ -80,6 +81,7 @@ export async function POST(request: Request) {
         quote,
         previous_roles,
         showEmail: showEmail === true,
+        receiveEmails: receiveEmails === true,
         alumniId: alumniId ?? null,
         status: 'pending'
       }
@@ -138,7 +140,8 @@ export async function PUT(request: Request) {
         end_date: alumniRequest.end_date,
         quote: alumniRequest.quote,
         previous_roles: alumniRequest.previous_roles,
-        showEmail: alumniRequest.showEmail
+        showEmail: alumniRequest.showEmail,
+        receiveEmails: alumniRequest.receiveEmails
       };
 
       if (alumniRequest.alumniId) {

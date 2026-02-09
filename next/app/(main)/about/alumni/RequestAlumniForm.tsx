@@ -26,7 +26,8 @@ export default function RequestAlumniForm({ onSuccess }: RequestAlumniFormProps)
   const [start_date, setStartDate] = useState("");
   const [end_date, setEndDate] = useState("");
   const [image, setImage] = useState<string | null>(null);
-  const [showEmail, setShowEmail] = useState(false);
+  const [showEmail, setShowEmail] = useState(true);
+  const [receiveEmails, setReceiveEmails] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
@@ -42,7 +43,8 @@ export default function RequestAlumniForm({ onSuccess }: RequestAlumniFormProps)
     setStartDate("");
     setEndDate("");
     setImage(null);
-    setShowEmail(false);
+    setShowEmail(true);
+    setReceiveEmails(true);
     setError("");
     setSuccess(false);
     setOpen(false);
@@ -74,7 +76,8 @@ export default function RequestAlumniForm({ onSuccess }: RequestAlumniFormProps)
           start_date,
           end_date,
           image: image || undefined,
-          showEmail
+          showEmail,
+          receiveEmails
         })
       });
 
@@ -112,7 +115,7 @@ export default function RequestAlumniForm({ onSuccess }: RequestAlumniFormProps)
         onOpenChange={setOpen} 
         title="Request to be Added as Alumni" 
         description="Submit your information to be reviewed by SSE officers. Once approved, you'll appear on the alumni page."
-        className="max-w-xl max-h-[90vh]"
+        className="max-w-2xl max-h-[90vh]"
       >
         {success ? (
           <div className="py-8 text-center">
@@ -148,19 +151,36 @@ export default function RequestAlumniForm({ onSuccess }: RequestAlumniFormProps)
                 />
               </div>
 
-              <div className="flex items-start gap-3 rounded-lg border border-border/50 p-3">
-                <Checkbox
-                  id="request-showEmail"
-                  checked={showEmail}
-                  onCheckedChange={(checked) => setShowEmail(checked === true)}
-                />
-                <div className="space-y-0.5 leading-none">
-                  <Label htmlFor="request-showEmail" className="text-sm font-medium cursor-pointer">
-                    I would like to receive emails at this address
-                  </Label>
-                  <p className="text-xs text-muted-foreground">
-                    Your email will be displayed publicly on your alumni card so others can contact you.
-                  </p>
+              <div className="space-y-2 rounded-lg border border-primary/20 bg-primary/5 p-3">
+                <div className="flex items-start gap-3">
+                  <Checkbox
+                    id="request-receiveEmails"
+                    checked={receiveEmails}
+                    onCheckedChange={(checked) => setReceiveEmails(checked === true)}
+                  />
+                  <div className="space-y-0.5 leading-none">
+                    <Label htmlFor="request-receiveEmails" className="text-sm font-medium cursor-pointer">
+                      Help us rebuild the alumni network
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      Our alumni are the most important part of this club and we&apos;re working hard to reconnect everyone. We&apos;ll only reach out sparingly: but it means a lot.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Checkbox
+                    id="request-showEmail"
+                    checked={showEmail}
+                    onCheckedChange={(checked) => setShowEmail(checked === true)}
+                  />
+                  <div className="space-y-0.5 leading-none">
+                    <Label htmlFor="request-showEmail" className="text-sm font-medium cursor-pointer">
+                      Let other alumni reach out to me
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      Your email will be visible on your card so fellow alumni can reconnect with you.
+                    </p>
+                  </div>
                 </div>
               </div>
 
@@ -216,6 +236,7 @@ export default function RequestAlumniForm({ onSuccess }: RequestAlumniFormProps)
                   value={quote}
                   onChange={(e) => setQuote(e.target.value)}
                 />
+                <p className="text-xs text-muted-foreground">This will show up on your alumni card.</p>
               </div>
 
               <div className="space-y-2">
@@ -234,8 +255,10 @@ export default function RequestAlumniForm({ onSuccess }: RequestAlumniFormProps)
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="request-github">GitHub</Label>
+              <div className="space-y-2 rounded-lg border border-primary/20 bg-primary/5 p-3">
+                <Label htmlFor="request-github" className="text-sm font-medium">
+                  GitHub <span className="text-xs font-normal text-primary ml-1">Highly recommended</span>
+                </Label>
                 <div className="flex">
                   <span className="inline-flex items-center px-3 text-sm text-muted-foreground bg-muted neo:rounded-l-base neo:border-2 neo:border-r-0 neo:border-border clean:rounded-l-md clean:border clean:border-r-0 clean:border-border/50">
                     github.com/
@@ -248,16 +271,20 @@ export default function RequestAlumniForm({ onSuccess }: RequestAlumniFormProps)
                     className="neo:rounded-l-none clean:rounded-l-none"
                   />
                 </div>
+                <p className="text-xs text-muted-foreground">
+                  Adding your GitHub makes your alumni card significantly richer: we automatically pull your company, location, website, top repos, languages, and organizations. Your card stays up to date without you ever touching it again.
+                </p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="request-desc">Description</Label>
+                <Label htmlFor="request-desc">Testimonial</Label>
                 <Textarea
                   id="request-desc"
-                  placeholder="Tell us a bit about yourself and your time at SSE"
+                  placeholder="Share your experience at SSE — what it meant to you, how it helped your career, etc."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                 />
+                <p className="text-xs text-muted-foreground">This may be featured on the SSE homepage.</p>
               </div>
             </div>
 

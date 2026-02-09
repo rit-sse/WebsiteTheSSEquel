@@ -48,6 +48,7 @@ export default function UpdateAlumniForm({ alumniMember }: UpdateAlumniFormProps
       : null
   );
   const [showEmail, setShowEmail] = useState(alumniMember.showEmail ?? false);
+  const [receiveEmails, setReceiveEmails] = useState(alumniMember.receiveEmails ?? false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
@@ -84,6 +85,7 @@ export default function UpdateAlumniForm({ alumniMember }: UpdateAlumniFormProps
           end_date,
           image: image || undefined,
           showEmail,
+          receiveEmails,
           alumniId: Number(alumniMember.alumni_id)
         })
       });
@@ -159,19 +161,36 @@ export default function UpdateAlumniForm({ alumniMember }: UpdateAlumniFormProps
                 />
               </div>
 
-              <div className="flex items-start gap-3 rounded-lg border border-border/50 p-3">
-                <Checkbox
-                  id="update-showEmail"
-                  checked={showEmail}
-                  onCheckedChange={(checked) => setShowEmail(checked === true)}
-                />
-                <div className="space-y-0.5 leading-none">
-                  <Label htmlFor="update-showEmail" className="text-sm font-medium cursor-pointer">
-                    I would like to receive emails at this address
-                  </Label>
-                  <p className="text-xs text-muted-foreground">
-                    Your email will be displayed publicly on your alumni card.
-                  </p>
+              <div className="space-y-2 rounded-lg border border-primary/20 bg-primary/5 p-3">
+                <div className="flex items-start gap-3">
+                  <Checkbox
+                    id="update-receiveEmails"
+                    checked={receiveEmails}
+                    onCheckedChange={(checked) => setReceiveEmails(checked === true)}
+                  />
+                  <div className="space-y-0.5 leading-none">
+                    <Label htmlFor="update-receiveEmails" className="text-sm font-medium cursor-pointer">
+                      Help us rebuild the alumni network
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      Our alumni are the most important part of this club and we&apos;re working hard to reconnect everyone. We&apos;ll only reach out sparingly — but it means a lot.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Checkbox
+                    id="update-showEmail"
+                    checked={showEmail}
+                    onCheckedChange={(checked) => setShowEmail(checked === true)}
+                  />
+                  <div className="space-y-0.5 leading-none">
+                    <Label htmlFor="update-showEmail" className="text-sm font-medium cursor-pointer">
+                      Let other alumni reach out to me
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      Your email will be visible on your card so fellow alumni can reconnect with you.
+                    </p>
+                  </div>
                 </div>
               </div>
 
@@ -245,8 +264,10 @@ export default function UpdateAlumniForm({ alumniMember }: UpdateAlumniFormProps
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="update-github">GitHub</Label>
+              <div className="space-y-2 rounded-lg border border-primary/20 bg-primary/5 p-3">
+                <Label htmlFor="update-github" className="text-sm font-medium">
+                  GitHub <span className="text-xs font-normal text-primary ml-1">Highly recommended</span>
+                </Label>
                 <div className="flex">
                   <span className="inline-flex items-center px-3 text-sm text-muted-foreground bg-muted neo:rounded-l-base neo:border-2 neo:border-r-0 neo:border-border clean:rounded-l-md clean:border clean:border-r-0 clean:border-border/50">
                     github.com/
@@ -259,6 +280,9 @@ export default function UpdateAlumniForm({ alumniMember }: UpdateAlumniFormProps
                     className="neo:rounded-l-none clean:rounded-l-none"
                   />
                 </div>
+                <p className="text-xs text-muted-foreground">
+                  Adding your GitHub makes your alumni card significantly richer — we automatically pull your company, location, website, top repos, languages, and organizations. Your card stays up to date without you ever touching it again.
+                </p>
               </div>
 
               <div className="space-y-2">

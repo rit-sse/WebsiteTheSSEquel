@@ -21,6 +21,7 @@ export interface AlumniRequest {
   quote: string
   previous_roles: string
   showEmail: boolean
+  receiveEmails: boolean
   alumniId?: number | null
   status: string
   created_at: string

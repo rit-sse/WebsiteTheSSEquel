@@ -45,6 +45,7 @@ export default function Alumni() {
 	// State list of all active alumni
 	const [teamData, setTeamData] = useState<Team>({ alumni_member: []});
 	const [isLoading, setIsLoading] = useState(true);
+	const [fetchError, setFetchError] = useState<string | null>(null);
 	const { isPrimary } = useAuthLevel();
 
 	// Get all active alumni when page opens
@@ -54,33 +55,37 @@ export default function Alumni() {
 
 	const getAlumni = async () => {
 		setIsLoading(true);
+		setFetchError(null);
 		const team: Team = { alumni_member: []};
 		try {
 			const response = await fetch('/api/alumni/active');
-			if (!response.ok) {
-				throw new Error('Failed to fetch alumni');
-			}
 			const data = await response.json();
+			if (!response.ok) {
+				throw new Error(data?.error || 'Failed to fetch alumni');
+			}
+			if (!Array.isArray(data)) {
+				throw new Error('Invalid response from server');
+			}
 
 			// Map alumni to AlumniMember
-			team.alumni_member = data
-				.map((alumni: any) => ({
-					alumni_id: alumni.id,
-					name: alumni.name,
-					image: alumni.image,
-					email: alumni.email,
-					linkedin: alumni.linkedIn,
-					github: alumni.gitHub,
-					description: alumni.description,
-					quote: alumni.quote,
-					previous_roles: alumni.previous_roles,
-					start_date: alumni.start_date,
-					end_date: alumni.end_date,
-					showEmail: alumni.showEmail ?? false
-				}));
-
+			team.alumni_member = data.map((alumni: any) => ({
+				alumni_id: alumni.id,
+				name: alumni.name,
+				image: alumni.image,
+				email: alumni.email,
+				linkedin: alumni.linkedIn,
+				github: alumni.gitHub,
+				description: alumni.description,
+				quote: alumni.quote,
+				previous_roles: alumni.previous_roles,
+				start_date: alumni.start_date,
+				end_date: alumni.end_date,
+				showEmail: alumni.showEmail ?? false,
+				receiveEmails: alumni.receiveEmails ?? false,
+			}));
 		} catch (error) {
 			console.error('Error:', error);
+			setFetchError(error instanceof Error ? error.message : 'Failed to load alumni');
 		}
 		setTeamData(team);
 		setIsLoading(false);
@@ -131,9 +136,16 @@ export default function Alumni() {
 							<AlumniCardSkeleton />
 							<AlumniCardSkeleton />
 						</div>
+					) : fetchError ? (
+						<div className="text-center py-8 space-y-2">
+							<p className="text-destructive font-medium">{fetchError}</p>
+							<p className="text-sm text-muted-foreground">
+								Check the server console. If the database is missing tables or columns, run: <code className="bg-muted px-1.5 py-0.5 rounded text-xs">npx prisma db push</code> and <code className="bg-muted px-1.5 py-0.5 rounded text-xs">npx prisma db seed</code> from the <code className="bg-muted px-1.5 py-0.5 rounded text-xs">next</code> folder.
+							</p>
+						</div>
 					) : teamData.alumni_member.length === 0 ? (
 						<p className="text-muted-foreground text-center py-8">
-							No alumni to display yet
+							No alumni to display yet. Officers can add alumni with the button above, or run <code className="bg-muted px-1.5 py-0.5 rounded text-xs">npx prisma db seed</code> from the <code className="bg-muted px-1.5 py-0.5 rounded text-xs">next</code> folder to seed sample data.
 						</p>
 					) : (
 					<div className="flex flex-wrap gap-4 justify-center w-full">

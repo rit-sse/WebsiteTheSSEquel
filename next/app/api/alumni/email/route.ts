@@ -125,9 +125,9 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  // Get all opted-in alumni
+  // Get all alumni who opted in to receive emails
   const alumni = await prisma.alumni.findMany({
-    where: { showEmail: true },
+    where: { receiveEmails: true },
     select: { email: true, name: true },
   });
 
@@ -224,7 +224,7 @@ export async function GET(request: NextRequest) {
   }
 
   const count = await prisma.alumni.count({
-    where: { showEmail: true },
+    where: { receiveEmails: true },
   });
 
   return Response.json({ optedInCount: count });

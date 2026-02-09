@@ -72,6 +72,9 @@ model Alumni {
   //Whether the alumni wants their email displayed publicly
   showEmail Boolean @default(false)
 
+  //Whether the alumni wants to receive mass emails from officers
+  receiveEmails Boolean @default(false)
+
   //Update requests referencing this alumni
   updateRequests AlumniRequest[]
 }
@@ -103,6 +106,9 @@ model AlumniRequest {
 
   //Whether the alumni wants their email displayed publicly
   showEmail Boolean @default(false)
+
+  //Whether the alumni wants to receive mass emails from officers
+  receiveEmails Boolean @default(false)
 
   //If set, this is an update request for an existing alumni record
   alumniId Int?
