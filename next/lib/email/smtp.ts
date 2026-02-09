@@ -12,7 +12,7 @@ import { SendEmailOptions } from "./index";
  * - SMTP_FROM: Default from address (optional, can be overridden)
  */
 export async function sendEmailViaSMTP(options: SendEmailOptions): Promise<void> {
-  const { to, subject, html, text, attachments, fromEmail, fromName } = options;
+  const { to, subject, html, text, attachments } = options;
 
   // Validate SMTP configuration
   if (!process.env.SMTP_HOST) {
@@ -36,11 +36,8 @@ export async function sendEmailViaSMTP(options: SendEmailOptions): Promise<void>
     },
   });
 
-  // Determine from address
-  const defaultFrom = process.env.SMTP_FROM || process.env.SMTP_USER;
-  const from = fromName 
-    ? `"${fromName}" <${fromEmail || defaultFrom}>`
-    : fromEmail || defaultFrom;
+  // Always send from no-reply
+  const from = '"Society of Software Engineers" <no-reply@sse.rit.edu>';
 
   // Build attachments for nodemailer format
   const nodemailerAttachments = attachments?.map((attachment) => ({

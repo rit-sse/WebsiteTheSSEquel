@@ -6,8 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import GmailAuthModal from "@/components/GmailAuthModal";
-import { useGmailAuth } from "@/lib/hooks/useGmailAuth";
 import { EmailAutocomplete } from "@/components/EmailAutocomplete";
 
 interface Position {
@@ -34,25 +32,20 @@ export default function OfficerInviteModal({
   const [endDate, setEndDate] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const gmailAuth = useGmailAuth();
 
   // Set default dates when modal opens
   const handleOpenChange = (newOpen: boolean) => {
     if (newOpen && !startDate && !endDate) {
-      // Default to current academic year
       const now = new Date();
       const currentYear = now.getFullYear();
       const currentMonth = now.getMonth();
       
-      // If before August, use current year's spring term end
-      // Otherwise use next year
       const startYear = currentMonth >= 7 ? currentYear : currentYear - 1;
       
       setStartDate(`${startYear}-08-01`);
       setEndDate(`${startYear + 1}-05-31`);
     }
     if (!newOpen) {
-      // Reset form when closing
       setEmail("");
       setStartDate("");
       setEndDate("");
@@ -113,20 +106,6 @@ export default function OfficerInviteModal({
         toast.success(`Invitation sent to ${email}`);
         onSuccess();
         handleOpenChange(false);
-      } else if (response.status === 403) {
-        // Check if Gmail authorization is needed
-        const data = await response.json();
-        if (data.needsGmailAuth) {
-          gmailAuth.setNeedsGmailAuth(window.location.pathname, data.message);
-          // Invitation was created but email wasn't sent
-          if (data.invitation) {
-            toast.warning("Invitation created but email not sent - Gmail authorization required");
-            onSuccess();
-            handleOpenChange(false);
-          }
-        } else {
-          setError(data.error || "Access denied");
-        }
       } else {
         const errorText = await response.text();
         setError(errorText || "Failed to send invitation");
@@ -140,91 +119,81 @@ export default function OfficerInviteModal({
   };
 
   return (
-    <>
-      <Modal
-        open={open}
-        onOpenChange={handleOpenChange}
-        title={position ? `Invite Officer for ${position.title}` : "Invite Officer"}
-        className="max-w-md"
-      >
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <Modal
+      open={open}
+      onOpenChange={handleOpenChange}
+      title={position ? `Invite Officer for ${position.title}` : "Invite Officer"}
+      className="max-w-md"
+    >
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="email">Email Address</Label>
+          <EmailAutocomplete
+            value={email}
+            onChange={(newEmail) => {
+              setEmail(newEmail);
+              setError(null);
+            }}
+            placeholder="Search users or enter email..."
+            disabled={isSubmitting}
+            emailDomain="@g.rit.edu"
+          />
+          <p className="text-xs text-muted-foreground">
+            Search for existing users or enter a new @g.rit.edu email
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email Address</Label>
-            <EmailAutocomplete
-              value={email}
-              onChange={(newEmail) => {
-                setEmail(newEmail);
-                setError(null);
-              }}
-              placeholder="Search users or enter email..."
+            <Label htmlFor="startDate">Term Start</Label>
+            <Input
+              id="startDate"
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
               disabled={isSubmitting}
-              emailDomain="@g.rit.edu"
             />
-            <p className="text-xs text-muted-foreground">
-              Search for existing users or enter a new @g.rit.edu email
-            </p>
           </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="startDate">Term Start</Label>
-              <Input
-                id="startDate"
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                disabled={isSubmitting}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="endDate">Term End</Label>
-              <Input
-                id="endDate"
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                disabled={isSubmitting}
-              />
-            </div>
-          </div>
-
-          {error && (
-            <p className="text-sm text-destructive">{error}</p>
-          )}
-
-          <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-md">
-            <p className="font-medium mb-1">What happens next?</p>
-            <ul className="list-disc list-inside space-y-1 text-xs">
-              <li>An invitation email will be sent to the provided address</li>
-              <li>The recipient will sign in with their RIT Google account</li>
-              <li>They will be prompted to accept the officer position</li>
-              <li>The invitation expires after 30 days</li>
-            </ul>
-          </div>
-
-          <ModalFooter>
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => handleOpenChange(false)}
+          <div className="space-y-2">
+            <Label htmlFor="endDate">Term End</Label>
+            <Input
+              id="endDate"
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
               disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Sending..." : "Send Invitation"}
-            </Button>
-          </ModalFooter>
-        </form>
-      </Modal>
+            />
+          </div>
+        </div>
 
-      <GmailAuthModal
-        open={gmailAuth.needsAuth}
-        onOpenChange={(open) => !open && gmailAuth.clearAuthState()}
-        onAuthorize={gmailAuth.startGmailAuth}
-        isLoading={gmailAuth.isLoading}
-        message={gmailAuth.message}
-      />
-    </>
+        {error && (
+          <p className="text-sm text-destructive">{error}</p>
+        )}
+
+        <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-md">
+          <p className="font-medium mb-1">What happens next?</p>
+          <ul className="list-disc list-inside space-y-1 text-xs">
+            <li>An invitation email will be sent to the provided address</li>
+            <li>The recipient will sign in with their RIT Google account</li>
+            <li>They will be prompted to accept the officer position</li>
+            <li>The invitation expires after 30 days</li>
+          </ul>
+        </div>
+
+        <ModalFooter>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => handleOpenChange(false)}
+            disabled={isSubmitting}
+          >
+            Cancel
+          </Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Sending..." : "Send Invitation"}
+          </Button>
+        </ModalFooter>
+      </form>
+    </Modal>
   );
 }

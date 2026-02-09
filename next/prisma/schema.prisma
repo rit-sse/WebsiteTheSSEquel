@@ -388,7 +388,7 @@ model Account {
   id_token          String? @db.Text
   session_state     String?
 
-  // Google OAuth returns this when requesting offline access (for Gmail API)
+  // Google OAuth refresh token expiry
   refresh_token_expires_in Int?
 
   //user is a relational field that references the User model

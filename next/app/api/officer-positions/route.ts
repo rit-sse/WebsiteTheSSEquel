@@ -26,7 +26,8 @@ export async function GET() {
             select: {
               id: true,
               name: true,
-              email: true
+              email: true,
+              image: true,
             }
           }
         },
@@ -54,6 +55,7 @@ export async function GET() {
         userId: activeOfficer.user.id,
         name: activeOfficer.user.name,
         email: activeOfficer.user.email, // User's actual email
+        image: activeOfficer.user.image,
         start_date: activeOfficer.start_date,
         end_date: activeOfficer.end_date
       } : null

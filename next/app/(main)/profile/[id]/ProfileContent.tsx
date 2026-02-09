@@ -2,12 +2,21 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { Github, Linkedin, ExternalLink, Pencil, Trophy, Calendar, Briefcase } from "lucide-react";
+import { Github, Linkedin, ExternalLink, Pencil, Trophy, Calendar, Briefcase, FileText } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import ReactMarkdown from "react-markdown";
+
+interface HandoverDoc {
+    id: number;
+    positionId: number;
+    content: string;
+    updatedAt: string;
+    position: { title: string };
+}
 
 interface ProfileData {
     id: number;
@@ -34,6 +43,7 @@ interface ProfileData {
         is_active: boolean;
         start_date: string;
         end_date: string;
+        position_id: number;
         position: { title: string };
     }[];
     isOwner: boolean;
@@ -74,6 +84,7 @@ export default function ProfileContent({ userId, children }: ProfileContentProps
     const [profile, setProfile] = useState<ProfileData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [handoverDocs, setHandoverDocs] = useState<HandoverDoc[]>([]);
 
     useEffect(() => {
         (async () => {
@@ -83,7 +94,26 @@ export default function ProfileContent({ userId, children }: ProfileContentProps
                     setError(res.status === 404 ? "User not found." : "Failed to load profile.");
                     return;
                 }
-                setProfile(await res.json());
+                const data: ProfileData = await res.json();
+                setProfile(data);
+
+                // Fetch handover docs for active officer roles
+                const activePositionIds = data.officerRoles
+                    .filter((r) => r.is_active)
+                    .map((r) => r.position_id);
+
+                if (activePositionIds.length > 0) {
+                    const docs = await Promise.all(
+                        activePositionIds.map(async (pid) => {
+                            try {
+                                const r = await fetch(`/api/handover/${pid}`);
+                                if (r.ok) return (await r.json()) as HandoverDoc;
+                            } catch { /* ignore */ }
+                            return null;
+                        })
+                    );
+                    setHandoverDocs(docs.filter((d): d is HandoverDoc => d !== null));
+                }
             } catch {
                 setError("Failed to load profile.");
             } finally {
@@ -109,12 +139,8 @@ export default function ProfileContent({ userId, children }: ProfileContentProps
     return (
         <div className="flex flex-col gap-8">
             {/* ── Hero banner ── */}
-            <div className="relative">
-                {/* Background accent strip */}
-                <div className="absolute inset-x-0 top-0 h-32 rounded-xl bg-gradient-to-r from-primary/10 via-primary/5 to-transparent" />
-
-                <div className="relative pt-10 px-2 sm:px-6">
-                    <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-end">
+            <div className="rounded-xl bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-6 sm:p-8">
+                <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-center">
                         {/* Avatar */}
                         <Avatar className="h-28 w-28 sm:h-32 sm:w-32 ring-4 ring-background shadow-lg">
                             {hasImage ? (
@@ -178,7 +204,7 @@ export default function ProfileContent({ userId, children }: ProfileContentProps
 
                         {/* Edit button (owner only) */}
                         {profile.isOwner && (
-                            <Button asChild variant="outline" size="sm" className="shrink-0 mb-1">
+                            <Button asChild variant="outline" size="sm" className="shrink-0">
                                 <Link href="/settings">
                                     <Pencil className="h-3.5 w-3.5 mr-1.5" />
                                     Edit Profile
@@ -186,7 +212,6 @@ export default function ProfileContent({ userId, children }: ProfileContentProps
                             </Button>
                         )}
                     </div>
-                </div>
             </div>
 
             {/* ── Bio ── */}
@@ -294,6 +319,31 @@ export default function ProfileContent({ userId, children }: ProfileContentProps
                     )}
                 </div>
             </div>
+
+            {/* Handover docs for active officer positions — full width */}
+            {handoverDocs.length > 0 && handoverDocs.map((doc) => (
+                <section key={doc.id}>
+                    <div className="flex items-center justify-between mb-3">
+                        <h2 className="text-lg font-heading font-semibold flex items-center gap-2">
+                            <FileText className="h-4 w-4 text-muted-foreground" />
+                            {doc.position.title} Handover
+                        </h2>
+                        {profile.isOwner && (
+                            <Button asChild variant="outline" size="sm">
+                                <Link href={`/dashboard/positions/${doc.positionId}/handover`}>
+                                    <Pencil className="h-3.5 w-3.5 mr-1.5" />
+                                    Edit
+                                </Link>
+                            </Button>
+                        )}
+                    </div>
+                    <Card depth={2} className="p-5">
+                        <div className="prose prose-sm max-w-none">
+                            <ReactMarkdown>{doc.content}</ReactMarkdown>
+                        </div>
+                    </Card>
+                </section>
+            ))}
         </div>
     );
 }
@@ -301,16 +351,13 @@ export default function ProfileContent({ userId, children }: ProfileContentProps
 function ProfileSkeleton() {
     return (
         <div className="flex flex-col gap-8">
-            <div className="relative">
-                <div className="absolute inset-x-0 top-0 h-32 rounded-xl bg-muted/50" />
-                <div className="relative pt-10 px-2 sm:px-6">
-                    <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-end">
-                        <Skeleton className="h-32 w-32 rounded-full" />
-                        <div className="flex flex-col gap-3 flex-1 pb-1">
-                            <Skeleton className="h-8 w-56" />
-                            <Skeleton className="h-4 w-40" />
-                            <Skeleton className="h-4 w-32" />
-                        </div>
+            <div className="rounded-xl bg-muted/50 p-6 sm:p-8">
+                <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-end">
+                    <Skeleton className="h-32 w-32 rounded-full" />
+                    <div className="flex flex-col gap-3 flex-1 pb-1">
+                        <Skeleton className="h-8 w-56" />
+                        <Skeleton className="h-4 w-40" />
+                        <Skeleton className="h-4 w-32" />
                     </div>
                 </div>
             </div>

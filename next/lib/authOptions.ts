@@ -3,8 +3,7 @@ import prisma from "@/lib/prisma";
 import { AuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 
-// Basic OAuth scopes for all users - gmail.send is requested via incremental
-// authorization only when officers need to send email (see /api/auth/gmail-scope)
+// OAuth scopes for authentication
 const scopes = "openid email profile";
 
 export const authOptions: AuthOptions = {

@@ -1,6 +1,5 @@
 import prisma from "@/lib/prisma";
-import { sendEmail, isEmailConfigured, isSmtpConfigured } from "@/lib/email";
-import { getValidAccessTokenWithDetails } from "@/lib/email/getAccessToken";
+import { sendEmail, isEmailConfigured } from "@/lib/email";
 import { NextRequest } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -43,14 +42,14 @@ export async function GET() {
 
 /**
  * HTTP POST request to /api/officer
- * Create a new officer and send notification email using the logged-in user's Gmail
+ * Create a new officer and send notification email
  * @param request {user_email: string, start_date: date, end_date: date, position: string}
  */
 export async function POST(request: NextRequest) {
   // Get the logged-in user's session token
   const authToken = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
   
-  // Find the logged-in user (for sending email from their account)
+  // Find the logged-in user (for sending email)
   let loggedInUser = null;
   if (authToken) {
     loggedInUser = await prisma.user.findFirst({
@@ -65,11 +64,6 @@ export async function POST(request: NextRequest) {
         id: true,
         email: true,
         name: true,
-        account: {
-          select: {
-            access_token: true,
-          },
-        },
       },
     });
   }
@@ -122,77 +116,53 @@ export async function POST(request: NextRequest) {
       is_active: true 
     },
   });
+
+  // Grant a membership for becoming an officer
+  await prisma.memberships.create({
+    data: {
+      userId: user.id,
+      reason: `Officer: ${positionRecord.title}`,
+      dateGiven: new Date(),
+    },
+  });
   
-  // Send notification email to the new officer using the logged-in user's Gmail
+  // Send notification email to the new officer
   if (isEmailConfigured() && loggedInUser) {
     const baseUrl = process.env.NEXTAUTH_URL || process.env.VERCEL_URL || 'http://localhost:3000';
     const handoverUrl = `${baseUrl}/dashboard/positions/${positionRecord.id}/handover`;
-    
-    // Get a valid access token (refreshes if expired)
-    let accessToken: string | undefined;
-    if (process.env.EMAIL_PROVIDER === "gmail") {
-      const tokenResult = await getValidAccessTokenWithDetails(loggedInUser.id);
-      if (tokenResult.success) {
-        accessToken = tokenResult.accessToken;
-      } else if (tokenResult.error === "no_scope") {
-        // User hasn't granted gmail.send scope
-        // If SMTP is configured, fall back to it; otherwise return error for frontend to prompt authorization
-        if (!isSmtpConfigured()) {
-          return Response.json(
-            { 
-              error: "Gmail authorization required",
-              needsGmailAuth: true,
-              message: "You need to grant Gmail send permissions to send notification emails. The officer was created but no email was sent."
-            },
-            { status: 403 }
-          );
-        }
-        // SMTP is configured, will fall back to it
-        console.log("Gmail auth not available for officer notification, falling back to SMTP");
-      } else {
-        console.warn(`Gmail mode enabled but could not get valid access token: ${tokenResult.error}`);
-      }
-    }
-    
-    // Send if we have Gmail access token, or if SMTP is configured as fallback
-    if (accessToken || process.env.EMAIL_PROVIDER !== "gmail" || isSmtpConfigured()) {
-      try {
-        await sendEmail({
-          to: user.email,
-          subject: `You've been assigned as ${positionRecord.title} - SSE`,
-          html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-              <h1 style="color: #333;">Welcome, ${user.name}!</h1>
-              <p>You have been assigned to the <strong>${positionRecord.title}</strong> position in the Society of Software Engineers.</p>
-              <p>To help you get started, we've prepared a handover document with important information about your new role.</p>
-              <div style="margin: 30px 0;">
-                <a href="${handoverUrl}" style="background-color: #0066cc; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
-                  View Handover Document
-                </a>
-              </div>
-              <p>This document contains:</p>
-              <ul>
-                <li>Responsibilities of your role</li>
-                <li>Key contacts and resources</li>
-                <li>Notes from previous officers</li>
-              </ul>
-              <p>Please review and update the document as you settle into your new position.</p>
-              <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;" />
-              <p style="color: #666; font-size: 12px;">
-                This email was sent by ${loggedInUser.name} via the SSE website.
-              </p>
+
+    try {
+      await sendEmail({
+        to: user.email,
+        subject: `You've been assigned as ${positionRecord.title} - SSE`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h1 style="color: #333;">Welcome, ${user.name}!</h1>
+            <p>You have been assigned to the <strong>${positionRecord.title}</strong> position in the Society of Software Engineers.</p>
+            <p>To help you get started, we've prepared a handover document with important information about your new role.</p>
+            <div style="margin: 30px 0;">
+              <a href="${handoverUrl}" style="background-color: #0066cc; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+                View Handover Document
+              </a>
             </div>
-          `,
-          text: `Welcome, ${user.name}!\n\nYou have been assigned to the ${positionRecord.title} position in the Society of Software Engineers.\n\nView your handover document at: ${handoverUrl}\n\nThis document contains important information about your role including responsibilities, key contacts, and notes from previous officers.`,
-          fromEmail: loggedInUser.email,
-          fromName: loggedInUser.name,
-          accessToken,
-        });
-        console.log(`Notification email sent to ${user.email} for ${positionRecord.title} assignment (from ${loggedInUser.email})`);
-      } catch (emailError) {
-        // Log the error but don't fail the request
-        console.error("Failed to send officer assignment notification email:", emailError);
-      }
+            <p>This document contains:</p>
+            <ul>
+              <li>Responsibilities of your role</li>
+              <li>Key contacts and resources</li>
+              <li>Notes from previous officers</li>
+            </ul>
+            <p>Please review and update the document as you settle into your new position.</p>
+            <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;" />
+            <p style="color: #666; font-size: 12px;">
+              This email was sent by ${loggedInUser.name} via the SSE website.
+            </p>
+          </div>
+        `,
+        text: `Welcome, ${user.name}!\n\nYou have been assigned to the ${positionRecord.title} position in the Society of Software Engineers.\n\nView your handover document at: ${handoverUrl}\n\nThis document contains important information about your role including responsibilities, key contacts, and notes from previous officers.`,
+      });
+      console.log(`Notification email sent to ${user.email} for ${positionRecord.title} assignment`);
+    } catch (emailError) {
+      console.error("Failed to send officer assignment notification email:", emailError);
     }
   }
   

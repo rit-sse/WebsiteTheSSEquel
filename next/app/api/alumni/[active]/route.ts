@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
  *            position: {is_primary: boolean, title: string}}]
  */
 export async function GET() {
-  const officer = await prisma.alumni.findMany({
+  const alumni = await prisma.alumni.findMany({
     select: {
       quote: true,
       previous_roles: true,
@@ -22,8 +22,9 @@ export async function GET() {
       linkedIn: true,
       image: true,
       gitHub: true,
-      description: true
+      description: true,
+      showEmail: true,
     },
   });
-  return Response.json(officer);
+  return Response.json(alumni);
 }

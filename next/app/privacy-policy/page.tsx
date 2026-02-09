@@ -34,25 +34,15 @@ export default function PrivacyPolicyPage() {
               <li><strong>Profile picture</strong> - Your Google profile image (optional)</li>
             </ul>
 
-            <h3>Gmail Send Permission</h3>
+            <h3>Email Notifications</h3>
             <p>
-              For officers and administrators, we request permission to send emails on your behalf 
-              using the Gmail API. This permission is used <strong>only</strong> for:
+              We send official SSE notifications via SMTP email for:
             </p>
             <ul>
               <li>Sending officer invitation notifications to new officers</li>
               <li>Sending membership invitation notifications to new members</li>
               <li>Sending purchase request notifications to the treasurer</li>
               <li>Other official SSE organizational communications</li>
-            </ul>
-            <p>
-              <strong>We never:</strong>
-            </p>
-            <ul>
-              <li>Read your emails</li>
-              <li>Access your email history</li>
-              <li>Send emails without your knowledge (all emails are triggered by actions you take)</li>
-              <li>Share your email credentials with third parties</li>
             </ul>
 
             <h2>How We Use Your Information</h2>
@@ -88,7 +78,7 @@ export default function PrivacyPolicyPage() {
             <p>We use the following third-party services:</p>
             <ul>
               <li><strong>Google OAuth</strong> - For secure authentication</li>
-              <li><strong>Gmail API</strong> - For sending official notifications (with your permission)</li>
+              <li><strong>SMTP Email</strong> - For sending official notifications</li>
               <li><strong>Google Calendar API</strong> - For event synchronization (optional)</li>
             </ul>
             <p>
@@ -104,11 +94,7 @@ export default function PrivacyPolicyPage() {
               <li>Access the personal information we hold about you</li>
               <li>Request correction of inaccurate information</li>
               <li>Request deletion of your account and associated data</li>
-              <li>Revoke Gmail send permissions at any time through your {" "}
-                <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener noreferrer">
-                  Google Account settings
-                </a>
-              </li>
+              <li>Opt out of email notifications</li>
             </ul>
 
             <h2>Cookies</h2>
@@ -149,9 +135,8 @@ export default function PrivacyPolicyPage() {
               </a>, including the Limited Use requirements.
             </p>
             <p>
-              Specifically, our application&apos;s use of data obtained via the Gmail API is limited to 
-              sending emails on behalf of authenticated users for official SSE organizational purposes only. 
-              We do not use this data for any other purpose, including advertising or data mining.
+              We only use Google OAuth for authentication purposes. We do not access, store, or use 
+              any Google data for advertising, data mining, or any purpose beyond authentication.
             </p>
           </div>
         </Card>

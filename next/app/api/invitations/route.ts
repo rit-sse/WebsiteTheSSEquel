@@ -1,6 +1,5 @@
 import prisma from "@/lib/prisma";
-import { sendEmail, isEmailConfigured, isSmtpConfigured } from "@/lib/email";
-import { getValidAccessTokenWithDetails } from "@/lib/email/getAccessToken";
+import { sendEmail, isEmailConfigured } from "@/lib/email";
 import { NextRequest } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -68,11 +67,6 @@ export async function POST(request: NextRequest) {
         id: true,
         email: true,
         name: true,
-        account: {
-          select: {
-            access_token: true,
-          },
-        },
       },
     });
   }
@@ -195,40 +189,9 @@ export async function POST(request: NextRequest) {
   if (isEmailConfigured()) {
     const baseUrl = process.env.NEXTAUTH_URL || process.env.VERCEL_URL || "http://localhost:3000";
     const acceptUrl = `${baseUrl}/accept-invitation`;
-    
-    // Get a valid access token (refreshes if expired)
-    let accessToken: string | undefined;
-    let gmailAuthNeeded = false;
-    if (process.env.EMAIL_PROVIDER === "gmail") {
-      const tokenResult = await getValidAccessTokenWithDetails(loggedInUser.id);
-      if (tokenResult.success) {
-        accessToken = tokenResult.accessToken;
-      } else if (tokenResult.error === "no_scope") {
-        // User hasn't granted gmail.send scope
-        // If SMTP is configured, fall back to it; otherwise return error for frontend to prompt authorization
-        if (!isSmtpConfigured()) {
-          return Response.json(
-            { 
-              error: "Gmail authorization required",
-              needsGmailAuth: true,
-              invitation, // Return the created invitation so frontend knows it was created
-              message: "You need to grant Gmail send permissions to send invitation emails. The invitation was created but no email was sent."
-            },
-            { status: 403 }
-          );
-        }
-        // SMTP is configured, will fall back to it
-        console.log("Gmail auth not available, falling back to SMTP");
-        gmailAuthNeeded = true;
-      } else {
-        console.warn(`Gmail mode enabled but could not get valid access token: ${tokenResult.error}`);
-        // Will fall back to SMTP if configured
-      }
-    }
 
     try {
       if (type === "officer" && invitation.position) {
-        // Officer invitation email
         await sendEmail({
           to: email,
           subject: `You've been invited to join SSE as ${invitation.position.title}`,
@@ -251,12 +214,8 @@ export async function POST(request: NextRequest) {
             </div>
           `,
           text: `You've been invited to join SSE as ${invitation.position.title}!\n\nYour term: ${new Date(invitation.startDate!).toLocaleDateString()} to ${new Date(invitation.endDate!).toLocaleDateString()}\n\nAccept your invitation at: ${acceptUrl}\n\nThis invitation expires in 30 days.\n\nQuestions? Contact ${invitation.inviter.name} at ${invitation.inviter.email}`,
-          fromEmail: loggedInUser.email,
-          fromName: loggedInUser.name,
-          accessToken,
         });
       } else {
-        // User invitation email
         await sendEmail({
           to: email,
           subject: "You've been invited to join SSE",
@@ -286,15 +245,11 @@ export async function POST(request: NextRequest) {
             </div>
           `,
           text: `You've been invited to join the Society of Software Engineers!\n\nSSE is RIT's premier organization for software engineering students.\n\nComplete your membership at: ${acceptUrl}\n\nThis invitation expires in 30 days.\n\nQuestions? Contact ${invitation.inviter.name} at ${invitation.inviter.email}`,
-          fromEmail: loggedInUser.email,
-          fromName: loggedInUser.name,
-          accessToken,
         });
       }
       console.log(`Invitation email sent to ${email} for ${type} invitation`);
     } catch (emailError) {
       console.error("Failed to send invitation email:", emailError);
-      // Don't fail the request, the invitation is created
     }
   }
 

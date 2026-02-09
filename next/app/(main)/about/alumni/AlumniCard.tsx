@@ -214,7 +214,6 @@ interface AlumniCardProps {
     onClick?: () => void;
     isExpanded?: boolean;
     onClose?: () => void;
-    order?: number;
 }
 
 export default function AlumniCard({
@@ -223,7 +222,6 @@ export default function AlumniCard({
     onClick,
     isExpanded,
     onClose,
-    order,
 }: AlumniCardProps) {
     const cardRef = useRef<HTMLDivElement>(null);
 
@@ -231,6 +229,20 @@ export default function AlumniCard({
         ? extractGitHubUsername(alumniMember.github)
         : null;
     const hasWidgets = !!githubUsername;
+
+    // Track whether the sidebar is still in the DOM (including during exit animation).
+    // This prevents the inner flex direction from flipping to column while the sidebar
+    // is still animating out, which would cause it to briefly wrap below the card.
+    const [sidebarPresent, setSidebarPresent] = useState(false);
+
+    useEffect(() => {
+        if (isExpanded && hasWidgets) {
+            setSidebarPresent(true);
+        }
+    }, [isExpanded, hasWidgets]);
+
+    // Use row layout as long as the sidebar is present (expanded or exiting)
+    const useRowLayout = (isExpanded && hasWidgets) || sidebarPresent;
 
     // Fetch live GitHub info (cached across cards)
     const { user: ghUser } = useGitHubUser(githubUsername);
@@ -249,36 +261,32 @@ export default function AlumniCard({
     }, [isExpanded]);
 
     return (
-        <motion.div
+        <div
             ref={cardRef}
-            layout
-            transition={{
-                layout: { type: "spring", stiffness: 400, damping: 35 },
-            }}
-            style={order !== undefined ? { order } : undefined}
             className={[
-                "bg-surface-2",
+                "bg-surface-2 flex flex-col",
                 "neo:rounded-xl neo:border neo:border-black/25",
                 "clean:rounded-lg clean:border clean:border-border/20 clean:shadow-sm",
                 "overflow-hidden relative",
+                "transition-[max-width,flex-basis] duration-300 ease-in-out",
                 isExpanded
                     ? "w-full max-w-[576px] basis-[576px]"
                     : "w-full max-w-[280px] basis-[280px] cursor-pointer hover:shadow-lg",
             ].join(" ")}
             onClick={isExpanded ? undefined : onClick}
         >
-            <div className={
-                isExpanded
-                    ? "flex flex-col md:flex-row"
-                    : "flex flex-col items-center text-center"
-            }>
+            <div className={[
+                "flex-1",
+                useRowLayout
+                    ? "flex flex-col md:flex-row overflow-hidden"
+                    : "flex flex-col items-center text-center",
+            ].join(" ")}>
                 {/* Profile section — fixed 280px on desktop when expanded */}
-                <motion.div
-                    layout="position"
+                <div
                     className={
                         isExpanded
-                            ? "flex-shrink-0 w-full md:w-[280px] p-5 flex flex-col items-center text-center"
-                            : "p-5 flex flex-col items-center text-center w-full"
+                            ? "flex-shrink-0 w-full md:w-[280px] p-5 flex flex-col items-center text-center flex-1"
+                            : "p-5 flex flex-col items-center text-center w-full flex-1"
                     }
                 >
                     {/* Avatar */}
@@ -323,7 +331,7 @@ export default function AlumniCard({
 
                     {/* Live GitHub info */}
                     {ghUser && (ghUser.company || ghUser.location || ghUser.hireable) && (
-                        <div className="flex flex-col items-center gap-1 mt-2">
+                        <div className="flex flex-col items-center gap-1 mt-2 mb-4">
                             {ghUser.company && (
                                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                                     <Building2 className="h-3 w-3 shrink-0" />
@@ -345,9 +353,9 @@ export default function AlumniCard({
                         </div>
                     )}
 
-                    {/* Contact & social icons */}
+                    {/* Contact & social icons — pinned to bottom */}
                     <div
-                        className="flex flex-wrap items-center gap-3 mt-4 pt-3 border-t border-border w-full justify-center"
+                        className="flex flex-wrap items-center gap-3 mt-auto pt-3 border-t border-border w-full justify-center"
                         onClick={(e) => e.stopPropagation()}
                     >
                         {alumniMember.linkedin && (
@@ -414,28 +422,33 @@ export default function AlumniCard({
                             {children}
                         </div>
                     )}
-                </motion.div>
+                </div>
 
                 {/* Expanded: compact GitHub sidebar */}
-                <AnimatePresence initial={false} mode="sync">
+                <AnimatePresence
+                    initial={false}
+                    mode="sync"
+                    onExitComplete={() => setSidebarPresent(false)}
+                >
                     {isExpanded && hasWidgets && githubUsername && (
                         <motion.div
                             key="widgets"
-                            layout
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            transition={{ duration: 0.2, ease: "easeOut" }}
-                            className="flex-1 min-w-0 border-t md:border-t-0 md:border-l border-border p-4 flex flex-col"
+                            initial={{ opacity: 0, width: 0 }}
+                            animate={{ opacity: 1, width: "auto" }}
+                            exit={{ opacity: 0, width: 0 }}
+                            transition={{ duration: 0.25, ease: "easeInOut" }}
+                            className="min-w-0 border-t md:border-t-0 md:border-l border-border overflow-hidden flex flex-col"
                             onClick={(e) => e.stopPropagation()}
                         >
-                            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide mb-2">
-                                GitHub
-                            </p>
-                            <GitHubMiniPreview username={githubUsername} />
-                            {/* Request Update — pinned to bottom */}
-                            <div className="mt-auto pt-3 flex justify-end">
-                                <UpdateAlumniForm alumniMember={alumniMember} />
+                            <div className="p-4 flex flex-col flex-1 min-w-[200px]">
+                                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide mb-2">
+                                    GitHub
+                                </p>
+                                <GitHubMiniPreview username={githubUsername} />
+                                {/* Request Update — pinned to bottom */}
+                                <div className="mt-auto pt-3 flex justify-end">
+                                    <UpdateAlumniForm alumniMember={alumniMember} />
+                                </div>
                             </div>
                         </motion.div>
                     )}
@@ -467,6 +480,6 @@ export default function AlumniCard({
                     </motion.div>
                 )}
             </AnimatePresence>
-        </motion.div>
+        </div>
     );
 }

@@ -84,6 +84,7 @@ export async function GET(request: NextRequest) {
     membershipCount: number;
     isMentor: boolean;
     isOfficer: boolean;
+    isPrimary: boolean;
   } = {
     userId: null,
     isUser: false,
@@ -91,6 +92,7 @@ export async function GET(request: NextRequest) {
     membershipCount: 0,
     isMentor: false,
     isOfficer: false,
+    isPrimary: false,
   };
 
   if (authToken == null) {
@@ -113,7 +115,12 @@ export async function GET(request: NextRequest) {
       },
       officers: {
         where: { is_active: true },
-        select: { id: true },
+        select: {
+          id: true,
+          position: {
+            select: { is_primary: true },
+          },
+        },
       },
       _count: {
         select: { Memberships: true },
@@ -129,6 +136,7 @@ export async function GET(request: NextRequest) {
     authLevel.isMember = membershipCount >= 1;
     authLevel.isMentor = user.mentor.length > 0;
     authLevel.isOfficer = user.officers.length > 0;
+    authLevel.isPrimary = user.officers.some((o) => o.position.is_primary);
   }
 
   return Response.json(authLevel);

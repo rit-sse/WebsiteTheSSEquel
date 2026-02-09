@@ -54,6 +54,7 @@ export async function GET(
           is_active: true,
           start_date: true,
           end_date: true,
+          position_id: true,
           position: {
             select: {
               title: true,

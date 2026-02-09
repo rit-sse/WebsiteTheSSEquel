@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useState } from "react";
-import { LayoutGroup, motion } from "motion/react";
 import AlumniCard from "./AlumniCard";
 import { Modal } from "@/components/ui/modal";
 import { Card } from "@/components/ui/card";
@@ -12,6 +11,18 @@ import EditAlumniForm from "./EditAlumniForm";
 import CreateAlumniButton from "./MakeNewAlumni";
 import DeleteAlumniButton from "./DeleteAlumni";
 import RequestAlumniForm from "./RequestAlumniForm";
+import AlumniEmailModal from "./AlumniEmailModal";
+
+function useAuthLevel() {
+	const [authLevel, setAuthLevel] = useState<{ isPrimary: boolean }>({ isPrimary: false });
+	useEffect(() => {
+		fetch("/api/authLevel")
+			.then((r) => r.json())
+			.then((data) => setAuthLevel({ isPrimary: data.isPrimary ?? false }))
+			.catch(() => {});
+	}, []);
+	return authLevel;
+}
 
 function AlumniCardSkeleton() {
 	return (
@@ -34,6 +45,7 @@ export default function Alumni() {
 	// State list of all active alumni
 	const [teamData, setTeamData] = useState<Team>({ alumni_member: []});
 	const [isLoading, setIsLoading] = useState(true);
+	const { isPrimary } = useAuthLevel();
 
 	// Get all active alumni when page opens
 	useEffect(() => {
@@ -106,6 +118,8 @@ export default function Alumni() {
 							<RequestAlumniForm />
 							{/* Direct add - officer only (handled inside component) */}
 							<CreateAlumniButton fetchData={getAlumni} />
+							{/* Mass email - primary officers only */}
+							<AlumniEmailModal isPrimary={isPrimary} />
 						</div>
 					</div>
 					
@@ -122,41 +136,32 @@ export default function Alumni() {
 							No alumni to display yet
 						</p>
 					) : (
-						<LayoutGroup>
-							<motion.div
-								layout
-								transition={{ layout: { type: "spring", stiffness: 300, damping: 30 } }}
-								className="flex flex-wrap gap-4 justify-center w-full"
-							>
-								{teamData.alumni_member.map((member, idx) => {
-									const id = String(member.alumni_id);
-									const isExpanded = expandedIds.includes(id);
-									const expandedIndex = expandedIds.indexOf(id);
-									const order = isExpanded ? expandedIndex : expandedIds.length + idx + 1;
-									return (
-										<AlumniCard
-											key={id || idx}
-											alumniMember={member}
-											onClick={() => toggleExpanded(id)}
-											isExpanded={isExpanded}
-											order={order}
-											onClose={() =>
-												setExpandedIds((prev) =>
-													prev.filter((item) => item !== id)
-												)
-											}
-										>
-											<ModifyAlumni 
-												alumniMember={member} 
-												openDeleteModal={() => setDeleteOpen(true)} 
-												openEditModal={() => setEditOpen(true)} 
-												setSelectedAlumni={setSelectedAlumni} 
-											/>
-										</AlumniCard>
-									);
-								})}
-							</motion.div>
-						</LayoutGroup>
+					<div className="flex flex-wrap gap-4 justify-center w-full">
+						{teamData.alumni_member.map((member, idx) => {
+							const id = String(member.alumni_id);
+							const isExpanded = expandedIds.includes(id);
+							return (
+								<AlumniCard
+									key={id || idx}
+									alumniMember={member}
+									onClick={() => toggleExpanded(id)}
+									isExpanded={isExpanded}
+									onClose={() =>
+										setExpandedIds((prev) =>
+											prev.filter((item) => item !== id)
+										)
+									}
+								>
+									<ModifyAlumni 
+										alumniMember={member} 
+										openDeleteModal={() => setDeleteOpen(true)} 
+										openEditModal={() => setEditOpen(true)} 
+										setSelectedAlumni={setSelectedAlumni} 
+									/>
+								</AlumniCard>
+							);
+						})}
+					</div>
 					)}
 				</Card>
 			</div>
