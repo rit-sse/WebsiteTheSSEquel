@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react";
+import { LayoutGroup, motion } from "motion/react";
 import AlumniCard from "./AlumniCard";
 import { Modal } from "@/components/ui/modal";
 import { Card } from "@/components/ui/card";
@@ -27,8 +28,9 @@ export default function Alumni() {
 	// States to manage opening/closing of modals
 	const [deleteOpen, setDeleteOpen] = useState(false);
 	const [editOpen, setEditOpen] = useState(false);
-	// State of the current selected alumni (being edited / replaced)
+	// State of the current selected alumni (being edited / replaced / viewed)
 	const [selectedAlumni, setSelectedAlumni] = useState<AlumniMember>();
+	const [expandedIds, setExpandedIds] = useState<string[]>([]);
 	// State list of all active alumni
 	const [teamData, setTeamData] = useState<Team>({ alumni_member: []});
 	const [isLoading, setIsLoading] = useState(true);
@@ -72,8 +74,14 @@ export default function Alumni() {
 		setIsLoading(false);
 	};
 
+	const toggleExpanded = (id: string) => {
+		setExpandedIds((prev) =>
+			prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+		);
+	};
+
 	return (
-		<section className="py-8 px-4 md:px-8">
+		<section className="w-full mt-16 pb-16">
 			{/* Modals for editing and deleting alumni */}
 			<Modal open={deleteOpen} onOpenChange={setDeleteOpen} title="Remove Alumni">
 				<DeleteAlumniButton open={deleteOpen} alumniMember={selectedAlumni} fetchData={getAlumni} closeModal={() => setDeleteOpen(false)}/>
@@ -82,8 +90,8 @@ export default function Alumni() {
 				<EditAlumniForm open={editOpen} alumniMember={selectedAlumni} getAlumni={getAlumni} closeModal={() => setEditOpen(false)} />
 			</Modal>
 			
-			<div className="max-w-screen-xl mx-auto">
-				<Card depth={1} className="p-6 md:p-8">
+			<div className="w-full px-4 md:px-8\">
+				<Card depth={1} className="w-full p-6 md:p-8 overflow-hidden">
 					{/* Header */}
 					<div className="text-center mb-8">
 						<h1 className="text-primary">
@@ -102,31 +110,54 @@ export default function Alumni() {
 					</div>
 					
 					{/* Alumni Grid */}
-					<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 justify-items-center">
-						{isLoading ? (
-							<>
-								<AlumniCardSkeleton />
-								<AlumniCardSkeleton />
-								<AlumniCardSkeleton />
-								<AlumniCardSkeleton />
-							</>
-						) : teamData.alumni_member.length === 0 ? (
-							<p className="col-span-full text-muted-foreground text-center py-8">
-								No alumni to display yet
-							</p>
-						) : (
-							teamData.alumni_member.map((member, idx) => (
-								<AlumniCard key={idx} alumniMember={member}>
-									<ModifyAlumni 
-										alumniMember={member} 
-										openDeleteModal={() => setDeleteOpen(true)} 
-										openEditModal={() => setEditOpen(true)} 
-										setSelectedAlumni={setSelectedAlumni} 
-									/>
-								</AlumniCard>
-							))
-						)}
-					</div>
+					{isLoading ? (
+						<div className="flex flex-wrap gap-4 justify-center w-full">
+							<AlumniCardSkeleton />
+							<AlumniCardSkeleton />
+							<AlumniCardSkeleton />
+							<AlumniCardSkeleton />
+						</div>
+					) : teamData.alumni_member.length === 0 ? (
+						<p className="text-muted-foreground text-center py-8">
+							No alumni to display yet
+						</p>
+					) : (
+						<LayoutGroup>
+							<motion.div
+								layout
+								transition={{ layout: { type: "spring", stiffness: 300, damping: 30 } }}
+								className="flex flex-wrap gap-4 justify-center w-full"
+							>
+								{teamData.alumni_member.map((member, idx) => {
+									const id = String(member.alumni_id);
+									const isExpanded = expandedIds.includes(id);
+									const expandedIndex = expandedIds.indexOf(id);
+									const order = isExpanded ? expandedIndex : expandedIds.length + idx + 1;
+									return (
+										<AlumniCard
+											key={id || idx}
+											alumniMember={member}
+											onClick={() => toggleExpanded(id)}
+											isExpanded={isExpanded}
+											order={order}
+											onClose={() =>
+												setExpandedIds((prev) =>
+													prev.filter((item) => item !== id)
+												)
+											}
+										>
+											<ModifyAlumni 
+												alumniMember={member} 
+												openDeleteModal={() => setDeleteOpen(true)} 
+												openEditModal={() => setEditOpen(true)} 
+												setSelectedAlumni={setSelectedAlumni} 
+											/>
+										</AlumniCard>
+									);
+								})}
+							</motion.div>
+						</LayoutGroup>
+					)}
 				</Card>
 			</div>
 		</section>

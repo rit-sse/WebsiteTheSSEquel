@@ -71,6 +71,9 @@ model Alumni {
 
   //Whether the alumni wants their email displayed publicly
   showEmail Boolean @default(false)
+
+  //Update requests referencing this alumni
+  updateRequests AlumniRequest[]
 }
 
 model AlumniRequest {
@@ -100,6 +103,10 @@ model AlumniRequest {
 
   //Whether the alumni wants their email displayed publicly
   showEmail Boolean @default(false)
+
+  //If set, this is an update request for an existing alumni record
+  alumniId Int?
+  alumni   Alumni? @relation(fields: [alumniId], references: [id], onDelete: Cascade)
 
   //Status of the request: pending, approved, rejected
   status String @default("pending")

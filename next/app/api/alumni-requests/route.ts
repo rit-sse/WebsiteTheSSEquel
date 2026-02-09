@@ -54,10 +54,19 @@ export async function POST(request: Request) {
     end_date, 
     quote, 
     previous_roles,
-    showEmail
+    showEmail,
+    alumniId
   } = body;
 
   try {
+    // If this is an update request, verify the alumni exists
+    if (alumniId) {
+      const existingAlumni = await prisma.alumni.findUnique({ where: { id: alumniId } });
+      if (!existingAlumni) {
+        return new Response('Alumni record not found', { status: 404 });
+      }
+    }
+
     const newRequest = await prisma.alumniRequest.create({
       data: {
         name,
@@ -71,6 +80,7 @@ export async function POST(request: Request) {
         quote,
         previous_roles,
         showEmail: showEmail === true,
+        alumniId: alumniId ?? null,
         status: 'pending'
       }
     });
@@ -115,26 +125,34 @@ export async function PUT(request: Request) {
       return new Response('Alumni request not found', { status: 404 });
     }
 
-    // If approving, create the Alumni record
+    // If approving, create or update the Alumni record
     if (status === 'approved' && alumniRequest.status !== 'approved') {
-      // Reset the Alumni sequence if it's out of sync with existing data
-      await prisma.$executeRawUnsafe(`SELECT setval('"Alumni_id_seq"', GREATEST((SELECT MAX(id) FROM "Alumni"), 1))`);
+      const alumniData = {
+        name: alumniRequest.name,
+        email: alumniRequest.email,
+        linkedIn: alumniRequest.linkedIn,
+        gitHub: alumniRequest.gitHub,
+        description: alumniRequest.description,
+        image: alumniRequest.image,
+        start_date: alumniRequest.start_date,
+        end_date: alumniRequest.end_date,
+        quote: alumniRequest.quote,
+        previous_roles: alumniRequest.previous_roles,
+        showEmail: alumniRequest.showEmail
+      };
 
-      await prisma.alumni.create({
-        data: {
-          name: alumniRequest.name,
-          email: alumniRequest.email,
-          linkedIn: alumniRequest.linkedIn,
-          gitHub: alumniRequest.gitHub,
-          description: alumniRequest.description,
-          image: alumniRequest.image,
-          start_date: alumniRequest.start_date,
-          end_date: alumniRequest.end_date,
-          quote: alumniRequest.quote,
-          previous_roles: alumniRequest.previous_roles,
-          showEmail: alumniRequest.showEmail
-        }
-      });
+      if (alumniRequest.alumniId) {
+        // Update existing alumni record
+        await prisma.alumni.update({
+          where: { id: alumniRequest.alumniId },
+          data: alumniData
+        });
+      } else {
+        // Create new alumni record
+        // Reset the Alumni sequence if it's out of sync with existing data
+        await prisma.$executeRawUnsafe(`SELECT setval('"Alumni_id_seq"', GREATEST((SELECT MAX(id) FROM "Alumni"), 1))`);
+        await prisma.alumni.create({ data: alumniData });
+      }
     }
 
     // Update the request status
