@@ -4,6 +4,18 @@ import Avatar from 'boring-avatars';
 import Image from "next/image";
 import { Card } from "@/components/ui/card";
 
+function ensureGithubUrl(val: string): string {
+  if (val.startsWith("https://") || val.startsWith("http://")) return val;
+  if (val.includes("github.com")) return `https://${val}`;
+  return `https://github.com/${val}`;
+}
+
+function ensureLinkedinUrl(val: string): string {
+  if (val.startsWith("https://") || val.startsWith("http://")) return val;
+  if (val.includes("linkedin.com")) return `https://${val}`;
+  return `https://linkedin.com/in/${val}`;
+}
+
 interface AlumniCardProps {
   alumniMember: AlumniMember;
   children?: React.ReactNode;
@@ -46,7 +58,7 @@ export default function AlumniCard({ alumniMember, children }: AlumniCardProps) 
       <div className="flex gap-3 mt-4 pt-3 border-t border-border w-full justify-center">
         {alumniMember.linkedin && (
           <a 
-            href={alumniMember.linkedin} 
+            href={ensureLinkedinUrl(alumniMember.linkedin)} 
             target="_blank" 
             rel="noopener noreferrer"
             className="text-muted-foreground hover:text-primary transition-colors"
@@ -56,7 +68,7 @@ export default function AlumniCard({ alumniMember, children }: AlumniCardProps) 
         )}
         {alumniMember.github && (
           <a 
-            href={alumniMember.github} 
+            href={ensureGithubUrl(alumniMember.github)} 
             target="_blank" 
             rel="noopener noreferrer"
             className="text-muted-foreground hover:text-primary transition-colors"
@@ -64,7 +76,7 @@ export default function AlumniCard({ alumniMember, children }: AlumniCardProps) 
             <Github className="h-5 w-5" />
           </a>
         )}
-        {alumniMember.email && (
+        {alumniMember.showEmail && alumniMember.email && (
           <a 
             href={`mailto:${alumniMember.email}`}
             className="text-muted-foreground hover:text-primary transition-colors"

@@ -61,7 +61,8 @@ export default function Alumni() {
 					quote: alumni.quote,
 					previous_roles: alumni.previous_roles,
 					start_date: alumni.start_date,
-					end_date: alumni.end_date
+					end_date: alumni.end_date,
+					showEmail: alumni.showEmail ?? false
 				}));
 
 		} catch (error) {

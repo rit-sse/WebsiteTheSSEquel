@@ -10,6 +10,7 @@ export interface AlumniMember {
   previous_roles?: string;
   start_date: string;
   end_date: string;
+  showEmail?: boolean;
 }
 
 export interface Team {

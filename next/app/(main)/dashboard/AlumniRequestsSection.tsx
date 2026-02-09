@@ -20,6 +20,7 @@ export interface AlumniRequest {
   end_date: string
   quote: string
   previous_roles: string
+  showEmail: boolean
   status: string
   created_at: string
 }

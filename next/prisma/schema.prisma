@@ -68,6 +68,9 @@ model Alumni {
   //Store Quote and Previous Roles
   quote          String @default("")
   previous_roles String @default("")
+
+  //Whether the alumni wants their email displayed publicly
+  showEmail Boolean @default(false)
 }
 
 model AlumniRequest {
@@ -94,6 +97,9 @@ model AlumniRequest {
   //Store Quote and Previous Roles
   quote          String @default("")
   previous_roles String @default("")
+
+  //Whether the alumni wants their email displayed publicly
+  showEmail Boolean @default(false)
 
   //Status of the request: pending, approved, rejected
   status String @default("pending")

@@ -1,4 +1,7 @@
 import prisma from "@/lib/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
+import { NextRequest } from "next/server";
 
 export const dynamic = 'force-dynamic'
 
@@ -107,13 +110,15 @@ export async function DELETE(request: Request) {
 /**
  * Update an existing user
  * HTTP PUT request to /api/user
- * @param request { id: number, name?: string, email?: string, linkedIn?: string, gitHub?: string, description?: string }
+ * @param request { id: number, name?: string, email?: string, linkedIn?: string, gitHub?: string, description?: string, image?: string }
  * @returns updated user object
+ * 
+ * Auth: Users can update their own profile. Officers can update any user.
  * 
  * NOTE: Membership is no longer controlled via isMember boolean.
  * Use the Memberships table and /api/memberships endpoints instead.
  */
-export async function PUT(request: Request) {
+export async function PUT(request: NextRequest) {
   let body;
   try {
     body = await request.json();
@@ -127,8 +132,39 @@ export async function PUT(request: Request) {
   }
   const id = body.id;
 
+  // Auth check: users can only edit their own profile, officers can edit anyone
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+
+  const targetUser = await prisma.user.findUnique({
+    where: { id },
+    select: { email: true },
+  });
+
+  if (!targetUser) {
+    return new Response(`User ${id} not found`, { status: 404 });
+  }
+
+  const isOwner = session.user.email === targetUser.email;
+
+  if (!isOwner) {
+    // Check if the caller is an officer
+    const authToken = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
+    const callerUser = authToken ? await prisma.user.findFirst({
+      where: { session: { some: { sessionToken: authToken } } },
+      select: { officers: { where: { is_active: true }, select: { id: true } } },
+    }) : null;
+
+    const isOfficer = (callerUser?.officers?.length ?? 0) > 0;
+    if (!isOfficer) {
+      return new Response("You can only edit your own profile", { status: 403 });
+    }
+  }
+
   // only update fields the caller wants to update
-  const data: { name?: string; email?: string; description?: string; linkedIn?: string; gitHub?: string } = {};
+  const data: { name?: string; email?: string; description?: string; linkedIn?: string; gitHub?: string; image?: string } = {};
   if ("name" in body) {
     data.name = body.name;
   }
@@ -143,6 +179,9 @@ export async function PUT(request: Request) {
   }
   if ("gitHub" in body) {
     data.gitHub = body.gitHub;
+  }
+  if ("image" in body) {
+    data.image = body.image;
   }
 
   try {

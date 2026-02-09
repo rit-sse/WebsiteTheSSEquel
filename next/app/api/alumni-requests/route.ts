@@ -53,7 +53,8 @@ export async function POST(request: Request) {
     start_date, 
     end_date, 
     quote, 
-    previous_roles 
+    previous_roles,
+    showEmail
   } = body;
 
   try {
@@ -69,6 +70,7 @@ export async function POST(request: Request) {
         end_date,
         quote,
         previous_roles,
+        showEmail: showEmail === true,
         status: 'pending'
       }
     });
@@ -129,7 +131,8 @@ export async function PUT(request: Request) {
           start_date: alumniRequest.start_date,
           end_date: alumniRequest.end_date,
           quote: alumniRequest.quote,
-          previous_roles: alumniRequest.previous_roles
+          previous_roles: alumniRequest.previous_roles,
+          showEmail: alumniRequest.showEmail
         }
       });
     }

@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import ImageUpload from "@/components/common/ImageUpload";
 
 interface RequestAlumniFormProps {
   onSuccess?: () => void;
@@ -23,7 +25,8 @@ export default function RequestAlumniForm({ onSuccess }: RequestAlumniFormProps)
   const [email, setEmail] = useState("");
   const [start_date, setStartDate] = useState("");
   const [end_date, setEndDate] = useState("");
-  const [image, setImage] = useState("");
+  const [image, setImage] = useState<string | null>(null);
+  const [showEmail, setShowEmail] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
@@ -38,7 +41,8 @@ export default function RequestAlumniForm({ onSuccess }: RequestAlumniFormProps)
     setEmail("");
     setStartDate("");
     setEndDate("");
-    setImage("");
+    setImage(null);
+    setShowEmail(false);
     setError("");
     setSuccess(false);
     setOpen(false);
@@ -69,7 +73,8 @@ export default function RequestAlumniForm({ onSuccess }: RequestAlumniFormProps)
           previous_roles,
           start_date,
           end_date,
-          image: image || undefined
+          image: image || undefined,
+          showEmail
         })
       });
 
@@ -143,6 +148,22 @@ export default function RequestAlumniForm({ onSuccess }: RequestAlumniFormProps)
                 />
               </div>
 
+              <div className="flex items-start gap-3 rounded-lg border border-border/50 p-3">
+                <Checkbox
+                  id="request-showEmail"
+                  checked={showEmail}
+                  onCheckedChange={(checked) => setShowEmail(checked === true)}
+                />
+                <div className="space-y-0.5 leading-none">
+                  <Label htmlFor="request-showEmail" className="text-sm font-medium cursor-pointer">
+                    I would like to receive emails at this address
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    Your email will be displayed publicly on your alumni card so others can contact you.
+                  </p>
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="request-start">Start Date *</Label>
                 <Input
@@ -176,12 +197,14 @@ export default function RequestAlumniForm({ onSuccess }: RequestAlumniFormProps)
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="request-image">Profile Image URL</Label>
-                <Input
-                  id="request-image"
-                  placeholder="https://... (optional)"
+                <Label>Profile Image</Label>
+                <ImageUpload
                   value={image}
-                  onChange={(e) => setImage(e.target.value)}
+                  onChange={setImage}
+                  initials={name ? name.split(" ").map(n => n[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() : "?"}
+                  avatarSize="h-16 w-16"
+                  compact
+                  hint="JPG, PNG, or GIF up to 5 MB"
                 />
               </div>
 
@@ -197,22 +220,34 @@ export default function RequestAlumniForm({ onSuccess }: RequestAlumniFormProps)
 
               <div className="space-y-2">
                 <Label htmlFor="request-linkedin">LinkedIn</Label>
-                <Input
-                  id="request-linkedin"
-                  placeholder="https://linkedin.com/in/..."
-                  value={linkedin}
-                  onChange={(e) => setLinkedin(e.target.value)}
-                />
+                <div className="flex">
+                  <span className="inline-flex items-center px-3 text-sm text-muted-foreground bg-muted neo:rounded-l-base neo:border-2 neo:border-r-0 neo:border-border clean:rounded-l-md clean:border clean:border-r-0 clean:border-border/50">
+                    linkedin.com/in/
+                  </span>
+                  <Input
+                    id="request-linkedin"
+                    placeholder="username"
+                    value={linkedin}
+                    onChange={(e) => setLinkedin(e.target.value)}
+                    className="neo:rounded-l-none clean:rounded-l-none"
+                  />
+                </div>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="request-github">GitHub</Label>
-                <Input
-                  id="request-github"
-                  placeholder="https://github.com/..."
-                  value={github}
-                  onChange={(e) => setGithub(e.target.value)}
-                />
+                <div className="flex">
+                  <span className="inline-flex items-center px-3 text-sm text-muted-foreground bg-muted neo:rounded-l-base neo:border-2 neo:border-r-0 neo:border-border clean:rounded-l-md clean:border clean:border-r-0 clean:border-border/50">
+                    github.com/
+                  </span>
+                  <Input
+                    id="request-github"
+                    placeholder="username"
+                    value={github}
+                    onChange={(e) => setGithub(e.target.value)}
+                    className="neo:rounded-l-none clean:rounded-l-none"
+                  />
+                </div>
               </div>
 
               <div className="space-y-2">
