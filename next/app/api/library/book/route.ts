@@ -7,11 +7,13 @@ export async function GET(request: NextRequest) {
     try {
         console.log("GET /api/library/[isbn]");
 
+        // Get query parameters
         let isbn = request.nextUrl.searchParams.get("isbn") || "";
         let id = request.nextUrl.searchParams.get("id") || "";
         let getCount = request.nextUrl.searchParams.get("count") === "true";
 
         if (isbn || isbn.trim() !== "") {
+            // Get book details by ISBN
             const book = await prisma.textbooks.findFirst({
                 where: {
                     ISBN: isbn,
@@ -31,11 +33,14 @@ export async function GET(request: NextRequest) {
                 }
             });
 
+            // If book not found, return 404
             if (!book) {
                 return new Response(JSON.stringify({ error: "Not found" }), { status: 404 });
             }
 
+            // If the user requested count information, fetch the stock number and overall count
             if (getCount) {
+                // Get the number of copies currently in stock (not checked out)
                 const stockNumber = await prisma.textbookCopies.count({
                     where: {
                         ISBN: isbn,
@@ -43,12 +48,14 @@ export async function GET(request: NextRequest) {
                     }
                 });
 
+                // Get the total number of copies (both checked out and in stock)
                 const overallCount = await prisma.textbookCopies.count({
                     where: {
                         ISBN: isbn,
                     }
                 });
 
+                // Combine the book details with the count information in the response
                 const response = {
                     ...book,
                     stockNumber: stockNumber,
@@ -65,9 +72,9 @@ export async function GET(request: NextRequest) {
         return new Response(JSON.stringify({
             error: "ISBN or ID parameter required"
         }), { status: 404 });
-    } catch (e: any) {
+    } catch (e) {
         console.error("Error fetching book:", e);
-        return new Response(JSON.stringify({ error: `Failed to fetch book: ${e.message}` }), { status: 500 });
+        return new Response(JSON.stringify({ error: `Failed to fetch book: ${e}` }), { status: 500 });
     }
 
 }
@@ -75,11 +82,13 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
     console.log("POST /api/library/[isbn]");
     try {
+        // Authentication check
         const authToken = await getSessionCookie(request);
         const auth = await getAuth(authToken);
         if (!auth.isOfficer && !auth.isMentor) {
             return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
         }
+
         const formData = await request.formData();
         const ISBN = formData.get("ISBN") as string;
         const name = formData.get("name") as string;
@@ -109,21 +118,23 @@ export async function POST(request: NextRequest) {
                 },
             });
 
+            // Save the uploaded image to the public directory with the filename as the ISBN
             writeFileSync(`./public/library-assets/${ISBN}.jpg`, Buffer.from(await image.arrayBuffer()));
 
             return new Response(JSON.stringify(newBook), { status: 200 });
-        } catch (e: any) {
+        } catch (e) {
             console.error("Error creating book:", e);
-            return new Response(JSON.stringify({ error: `Failed to create book: ${e.message}` }), { status: 500 });
+            return new Response(JSON.stringify({ error: `Failed to create book: ${e}` }), { status: 500 });
         }
-    } catch (e: any) {
+    } catch (e) {
         console.error("Error processing request:", e);
-        return new Response(JSON.stringify({ error: `Failed to process request: ${e.message}` }), { status: 500 });
+        return new Response(JSON.stringify({ error: `Failed to process request: ${e}` }), { status: 500 });
     }
 }
 export async function PUT(request: NextRequest) {
     console.log("PUT /api/library/[isbn]");
     try {
+        // Authentication check
         const authToken = await getSessionCookie(request);
         const authLevel = await getAuth(authToken);
         if (!authLevel.isOfficer && !authLevel.isMentor) {
@@ -171,19 +182,20 @@ export async function PUT(request: NextRequest) {
             });
 
             return new Response(JSON.stringify(updatedBook), { status: 200 });
-        } catch (e: any) {
+        } catch (e) {
             console.error("Error updating/creating book:", e);
-            return new Response(`Failed to update/create book: ${e.message}`, { status: 500 });
+            return new Response(`Failed to update/create book: ${e}`, { status: 500 });
         }
-    } catch (e: any) {
+    } catch (e) {
         console.error("Error processing request:", e);
-        return new Response(`Failed to process request: ${e.message}`, { status: 500 });
+        return new Response(`Failed to process request: ${e}`, { status: 500 });
     }
 }
 
 export async function DELETE(request: NextRequest) {
     console.log("DELETE /api/library/[isbn]");
     try {
+        // Authentication check
         const authToken = await getSessionCookie(request);
         const authLevel = await getAuth(authToken);
         if (!authLevel.isOfficer && !authLevel.isMentor) {
@@ -196,13 +208,16 @@ export async function DELETE(request: NextRequest) {
             return new Response("Invalid JSON", { status: 422 });
         }
 
+        // Get ISBN from request body
         const { ISBN } = body;
 
+        // If ISBN is not provided, return an error
         if (!ISBN) {
             return new Response('"ISBN" is required', { status: 400 });
         }
 
         try {
+            // Erase all records of the book in textbookCopies and textbooks tables
             await prisma.textbookCopies.deleteMany({
                 where: { ISBN: ISBN },
             });
@@ -212,12 +227,12 @@ export async function DELETE(request: NextRequest) {
 
 
             return new Response(JSON.stringify({ message: "Book deleted successfully" }), { status: 200 });
-        } catch (e: any) {
+        } catch (e) {
             console.error("Error deleting book:", e);
-            return new Response(JSON.stringify({ error: `Failed to delete book: ${e.message}` }), { status: 500 });
+            return new Response(JSON.stringify({ error: `Failed to delete book: ${e}` }), { status: 500 });
         }
-    } catch (e: any) {
+    } catch (e) {
         console.error("Error processing request:", e);
-        return new Response(JSON.stringify({ error: `Failed to process request: ${e.message}` }), { status: 500 });
+        return new Response(JSON.stringify({ error: `Failed to process request: ${e}` }), { status: 500 });
     }
 }

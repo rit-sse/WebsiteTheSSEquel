@@ -6,6 +6,7 @@ export async function GET(request: NextRequest) {
     console.log("GET /api/library/categories/");
 
     try {
+        // If "simple" query parameter is true, only return id and categoryName for categories, and only return id and ISBN for books.
         let compressed = request.nextUrl.searchParams.get("simple") === "true";
 
         let response: { [key: string]: { id: number; categoryName: string; books: any[] } } = {}
@@ -76,9 +77,9 @@ export async function GET(request: NextRequest) {
 
         }
         return new Response(JSON.stringify(response), { status: 200 });
-    } catch (e: any) {
+    } catch (e) {
         console.error("Error fetching categories:", e);
-        return new Response(JSON.stringify({ error: `Failed to fetch categories: ${e.message}` }), { status: 500 });
+        return new Response(JSON.stringify({ error: `Failed to fetch categories: ${e}` }), { status: 500 });
 
     }
 }
@@ -117,9 +118,9 @@ export async function PUT(request: NextRequest) {
         });
 
         return new Response(JSON.stringify(updatedCategory), { status: 200 });
-    } catch (e: any) {
+    } catch (e) {
         console.error("Error updating category:", e);
-        return new Response(JSON.stringify({ error: `Failed to update category: ${e.message}` }), { status: 500 });
+        return new Response(JSON.stringify({ error: `Failed to update category: ${e}` }), { status: 500 });
     }
 }
 
@@ -155,9 +156,9 @@ export async function POST(request: NextRequest) {
         });
 
         return new Response(JSON.stringify(newCategory), { status: 200 });
-    } catch (e: any) {
+    } catch (e) {
         console.error("Error creating category:", e);
-        return new Response(JSON.stringify({ error: `Failed to create category: ${e.message}` }), { status: 500 });
+        return new Response(JSON.stringify({ error: `Failed to create category: ${e}` }), { status: 500 });
     }
 }
 
@@ -178,8 +179,8 @@ export async function DELETE(request: NextRequest) {
         });
 
         return new Response(JSON.stringify(deletedCategory), { status: 200 });
-    } catch (e: any) {
+    } catch (e) {
         console.error("Error deleting category:", e);
-        return new Response(JSON.stringify({ error: `Failed to delete category: ${e.message}` }), { status: 500 });
+        return new Response(JSON.stringify({ error: `Failed to delete category: ${e}` }), { status: 500 });
     }
 }

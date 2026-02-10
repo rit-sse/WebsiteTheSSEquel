@@ -1,12 +1,13 @@
 "use client"
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import { Book } from "../Book";
 
-export default function CategoryRow(props: { category: any }) {
+export default function CategoryRow(props: { category: {books: Book[], categoryName: string, id: number} }) {
     const { category } = props;
 
     const [categoryName, setCategoryName] = useState(category.categoryName);
-    const [books, setBooks] = useState(category.books.map((book: any) => book.ISBN).join(", "));
+    const [books, setBooks] = useState(category.books.map((book: Book) => book.ISBN).join(", "));
 
     const [editing, setEditing] = useState(false);
 

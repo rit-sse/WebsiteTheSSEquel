@@ -7,10 +7,10 @@ export async function GET(request: NextRequest) {
     try {
         let isbn = request.nextUrl.searchParams.get("isbn") || "";
         let id = request.nextUrl.searchParams.get("id") || "";
-        let simple = request.nextUrl.searchParams.get("simple") === "true";
-        let getCount = request.nextUrl.searchParams.get("count") === "true";
+        let simple = request.nextUrl.searchParams.get("simple") === "true"; // If true, only return ISBN and id for copies, and do not return id for book details.
 
         if (isbn || isbn.trim() !== "") {
+            
             const book = await prisma.textbookCopies.findMany({
                 where: {
                     ISBN: isbn,

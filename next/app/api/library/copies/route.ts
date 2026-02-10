@@ -5,18 +5,21 @@ import { getAuth, getSessionCookie } from "../authTools";
 export async function GET(request: NextRequest) {
     console.log("GET /api/library/copies");
     try {
+        // Authentication check
         let cookie = await getSessionCookie(request);
         let auth = await getAuth(cookie);
         if (!auth.isMentor && !auth.isOfficer) {
             return new Response("Unauthorized", { status: 401 });
         }
 
+        // Validate query parameters
         let isbn = request.nextUrl.searchParams.get("isbn") || "";
         let id = request.nextUrl.searchParams.get("id") || "";
         if ((!isbn || isbn.trim() === "") && (!id || id.trim() === "")) {
             return new Response('"isbn" or "id" is required', { status: 400 });
         }
 
+        // Build the where selection based on the provided query parameters
         let whereSelection = {}
         if (isbn && isbn.trim() !== "") {
             whereSelection = { ISBN: isbn };
@@ -34,9 +37,9 @@ export async function GET(request: NextRequest) {
         });
 
         return new Response(JSON.stringify(copies), { status: 200 });
-    } catch (e: any) {
+    } catch (e) {
         console.error("Error fetching copies:", e);
-        return new Response(JSON.stringify({ error: `Failed to fetch copies: ${e.message}` }), { status: 500 });
+        return new Response(JSON.stringify({ error: `Failed to fetch copies: ${e}` }), { status: 500 });
     }
 }
 
@@ -58,9 +61,9 @@ export async function POST(request: NextRequest) {
         });
 
         return new Response(JSON.stringify(bookData), { status: 200 });
-    } catch (e: any) {
+    } catch (e) {
         console.error("Error creating copy:", e);
-        return new Response(JSON.stringify({ error: `Failed to create copy: ${e.message}` }), { status: 500 });
+        return new Response(JSON.stringify({ error: `Failed to create copy: ${e}` }), { status: 500 });
     }
 }
 
@@ -85,8 +88,8 @@ export async function PUT(request: NextRequest) {
         });
 
         return new Response(JSON.stringify(updatedCopy), { status: 200 });
-    } catch (e: any) {
+    } catch (e) {
         console.error("Error updating copy:", e);
-        return new Response(JSON.stringify({ error: `Failed to update copy: ${e.message}` }), { status: 500 });
+        return new Response(JSON.stringify({ error: `Failed to update copy: ${e}` }), { status: 500 });
     }
 }

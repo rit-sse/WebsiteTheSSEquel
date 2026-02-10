@@ -17,8 +17,8 @@ export async function GET() {
             checkedOutBooks,
             totalTextbooks,
         });
-    } catch (e: any) {
+    } catch (e) {
         console.error("Error fetching statistics:", e);
-        return new Response(JSON.stringify({ error: `Failed to fetch statistics: ${e.message}` }), { status: 500 });
+        return new Response(JSON.stringify({ error: `Failed to fetch statistics: ${e}` }), { status: 500 });
     }
 }

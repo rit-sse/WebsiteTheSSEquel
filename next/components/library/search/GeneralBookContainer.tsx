@@ -1,9 +1,16 @@
 import Image from "next/image"
+import { Book } from "../Book";
 
-export default function GeneralBookContainer({ book }: { book: any }) {
+export default function GeneralBookContainer({ book }: { book: Book }) {
+    
+    function onClickBook() {
+        location.href = "/library/catalog/" + book.ISBN;
+    }
+
     return (<div
         key={book.ISBN}
         className="flex w-[100%] mr-4 last:mr-0 cursor-pointer z-5 mt-4"
+        onClick={onClickBook}
     >
         <Image
             src={book.image}

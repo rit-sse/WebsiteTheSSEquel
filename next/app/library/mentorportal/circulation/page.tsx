@@ -51,7 +51,7 @@ export default function CirculationPage() {
                     <option value="isbn">ISBN</option>
                 </select>
                 <input placeholder="Search" className="py-0 px-1" onChange={e => setIsbnLookup(e.target.value)} onKeyUp={e => e.key === "Enter" ? circulationLookup() : null} />
-                <button className=" ml-2 px-2 from-gray-200 to-gray-300 bg-gradient-to-b text-black border hover:from-gray-100 hover:to-gray-200 ">Search</button>
+                <button className=" ml-2 px-2 from-gray-200 to-gray-300 bg-gradient-to-b text-black border hover:from-gray-100 hover:to-gray-200 " onClick={circulationLookup}>Search</button>
             </div>
             <table className="w-full mt-2 border [&_td]:border [&_td]:px-4">
                 <tbody>
