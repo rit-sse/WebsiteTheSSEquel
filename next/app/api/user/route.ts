@@ -24,7 +24,7 @@ export async function GET() {
   });
   
   // Transform to include membershipCount and isMember (computed) for backward compatibility
-  const usersWithMembershipCount = users.map(user => ({
+  const usersWithMembershipCount = users.map((user: { id: any; name: any; email: any; linkedIn: any; gitHub: any; description: any; image: any; _count: { Memberships: number; }; }) => ({
     id: user.id,
     name: user.name,
     email: user.email,
