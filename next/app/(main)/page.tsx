@@ -92,7 +92,7 @@ export default async function Home() {
                     })}
                 </div>
                 ) : (
-                    <p className="text-gray-500">No events available.</p>
+                    <p className="text-muted-foreground">No events available.</p>
                 )}
               </div>
             </NeoCard>

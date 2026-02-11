@@ -296,15 +296,15 @@ export default function ReceiptForm({ request, onClose, onSuccess }: ReceiptForm
               {/* Linked Event Info */}
               {hasLinkedEvent && request.event ? (
                 <div className="space-y-4">
-                  <div className="flex items-center gap-2 p-4 bg-primary/5 border border-primary/20 rounded-lg">
-                    <Link2 className="h-5 w-5 text-primary" />
+                  <div className="flex items-center gap-2 p-4 bg-chart-4/10 border border-chart-4/20 rounded-lg">
+                    <Link2 className="h-5 w-5 text-chart-4" />
                     <div className="flex-1">
-                      <p className="font-medium text-primary">Linked to Event</p>
+                      <p className="font-medium text-chart-4">Linked to Event</p>
                       <p className="text-sm text-muted-foreground">
                         Attendance will be pulled from the event check-in list
                       </p>
                     </div>
-                    <Badge variant="secondary" className="gap-1">
+                    <Badge variant="cat-4" className="gap-1">
                       <Calendar className="h-3 w-3" />
                       {request.event.title}
                     </Badge>
@@ -329,7 +329,7 @@ export default function ReceiptForm({ request, onClose, onSuccess }: ReceiptForm
                         <Users className="h-4 w-4" />
                         Attendance from Event
                       </Label>
-                      <Badge variant="outline">
+                      <Badge variant="cat-1">
                         {loadingEventAttendance ? "Loading..." : `${linkedEventAttendees.length} attendees`}
                       </Badge>
                     </div>
@@ -435,19 +435,19 @@ export default function ReceiptForm({ request, onClose, onSuccess }: ReceiptForm
               </div>
 
               {/* Reminder Banner */}
-              <div className="flex items-start gap-3 p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
-                <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-500 flex-shrink-0 mt-0.5" />
+              <div className="flex items-start gap-3 p-4 bg-accentScale-3/15 border border-accentScale-3/30 rounded-lg">
+                <AlertTriangle className="h-5 w-5 text-accentScale-3 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-medium text-amber-800 dark:text-amber-400">
+                  <p className="font-medium text-accentScale-3">
                     Don&apos;t forget!
                   </p>
-                  <p className="text-sm text-amber-700 dark:text-amber-500">
+                  <p className="text-sm text-foreground/80">
                     Save a copy of the receipt to the{" "}
                     <a 
                       href="https://drive.google.com/drive/u/1/folders/0AMM6DHs73ONAUk9PVA" 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="font-semibold underline hover:text-amber-900 dark:hover:text-amber-300"
+                      className="font-semibold underline hover:text-accentScale-3"
                     >
                       SSE Drive
                     </a>

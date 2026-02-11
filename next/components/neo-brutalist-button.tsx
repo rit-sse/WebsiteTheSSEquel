@@ -14,10 +14,10 @@ interface NeoBrutalistButtonProps {
 }
 
 const variantStyles = {
-    pink: "bg-[#ff90e8]",
-    orange: "bg-[#ffb347]",
-    blue: "bg-[#87ceeb]",
-    green: "bg-[#98fb98]",
+    pink: "bg-accentScale-5",
+    orange: "bg-accentScale-3",
+    blue: "bg-accentScale-4",
+    green: "bg-accentScale-2",
 };
 
 const NeoBrutalistButton = ({

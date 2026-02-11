@@ -6,48 +6,85 @@
 
 :root,
 [data-theme="light"] {
-  --background: 220 30% 85%;
-  --foreground: 220 30% 15%;
-  --card: 220 35% 80%;
-  --card-foreground: 220 30% 15%;
-  --popover: 220 30% 82%;
-  --popover-foreground: 220 30% 15%;
-  --primary: 220 60% 45%;
-  --primary-foreground: 0 0% 100%;
-  --secondary: 270 40% 70%;
-  --secondary-foreground: 270 30% 20%;
-  --muted: 220 25% 75%;
-  --muted-foreground: 220 20% 35%;
-  --accent: 35 75% 60%;
-  --accent-foreground: 35 80% 15%;
+  --background: 220 52% 96%;
+  --foreground: 209 42% 12%;
+  --card: 218 50% 89%;
+  --card-foreground: 209 42% 12%;
+  --popover: 216 42% 84%;
+  --popover-foreground: 209 42% 12%;
+  --primary: 205 37% 50%;
+  --primary-foreground: 212 35% 8%;
+  --secondary: 218 50% 89%;
+  --secondary-foreground: 209 42% 12%;
+  --muted: 218 50% 89%;
+  --muted-foreground: 210 30% 36%;
+  --accent: 213 65% 58%;
+  --accent-foreground: 209 42% 12%;
+  --accent-1: 41 75% 84%;
+  --accent-2: 120 43% 87%;
+  --accent-3: 38 80% 57%;
+  --accent-4: 213 65% 58%;
+  --accent-5: 15 57% 58%;
+  --accent-6: 321 28% 51%;
   --destructive: 0 70% 55%;
   --destructive-foreground: 0 0% 100%;
-  --border: 220 20% 20%;
-  --input: 220 30% 78%;
-  --ring: 220 60% 45%;
+  --border: 215 32% 76%;
+  --input: 216 36% 86%;
+  --ring: 205 35% 57%;
   --radius: 0.5rem;
   --info: 200 70% 50%;
   --success: 150 60% 45%;
   --warning: 40 80% 55%;
   --error: 0 70% 55%;
-  
-  /* Depth/Surface system - blue tones with clear distinction */
-  --surface-0: 220 25% 82%;  /* Page background - muted blue-gray */
-  --surface-1: 225 40% 90%;  /* Level 1 - light periwinkle */
-  --surface-2: 220 45% 85%;  /* Level 2 - soft blue */
-  --surface-3: 215 50% 78%;  /* Level 3 - medium blue */
-  --surface-4: 210 55% 72%;  /* Level 4 - deeper blue */
-  
+
+  /* Dedicated text tiers */
+  --text-high: 209 42% 12%;
+  --text-mid: 208 32% 26%;
+  --text-subtle: 210 24% 42%;
+  --text-on-overlay: 0 0% 100%;
+
+  /* Border and separator tiers */
+  --border-subtle: 216 30% 87%;
+  --border-default: 215 32% 76%;
+  --border-strong: 212 34% 65%;
+
+  /* Interaction helpers */
+  --interactive-disabled: 214 38% 74%;
+
+  /* Depth/Surface system - slate blue progression */
+  --surface-0: 220 52% 96%;
+  --surface-1: 222 58% 93%;
+  --surface-2: 218 50% 89%;
+  --surface-3: 216 42% 84%;
+  --surface-4: 214 36% 79%;
+
   /* Dropdown/popover specific */
-  --dropdown: 225 45% 92%;  /* Light blue for dropdowns */
-  
+  --dropdown: 220 52% 96%;
+
+  /* New Tableau 10 categorical colors (light mode: deeper warm tones for contrast) */
+  --chart-1: 211 36% 48%;
+  --chart-2: 25 75% 38%;
+  --chart-3: 359 65% 48%;
+  --chart-4: 175 40% 40%;
+  --chart-5: 113 40% 36%;
+  --chart-6: 42 70% 38%;
+  --chart-7: 317 30% 46%;
+  --chart-8: 354 60% 52%;
+  --chart-9: 22 30% 40%;
+  --chart-10: 17 12% 52%;
+
+  /* Logo ramp */
+  --brand-logo-deep: 204 36% 40%;
+  --brand-logo-mid: 205 37% 50%;
+  --brand-logo-light: 206 36% 66%;
+
   /* Neobrutalism variables */
-  --main: 220 35% 82%;
-  --main-foreground: 220 30% 15%;
-  --secondary-background: 225 40% 80%;
+  --main: 218 50% 89%;
+  --main-foreground: 209 42% 12%;
+  --secondary-background: 218 50% 89%;
   --overlay: 0 0% 0% / 0.5;
   --radius-base: 0.5rem;
-  --shadow: 4px 4px 0px 0px hsl(220 20% 20%);
+  --shadow: 4px 4px 0px 0px hsl(0 0% 0%);
   --box-shadow-x: 4px;
   --box-shadow-y: 4px;
   --reverse-box-shadow-x: -4px;
@@ -57,47 +94,84 @@
 }
 
 [data-theme="dark"] {
-  --background: 225 40% 8%;
-  --foreground: 220 20% 92%;
-  --card: 225 45% 14%;
-  --card-foreground: 220 20% 92%;
-  --popover: 225 40% 10%;
-  --popover-foreground: 220 20% 92%;
-  --primary: 210 70% 55%;
-  --primary-foreground: 0 0% 100%;
-  --secondary: 280 50% 55%;
-  --secondary-foreground: 0 0% 100%;
-  --muted: 225 35% 18%;
-  --muted-foreground: 220 20% 65%;
-  --accent: 25 85% 50%;
-  --accent-foreground: 0 0% 100%;
+  --background: 222 34% 14%;
+  --foreground: 210 40% 94%;
+  --card: 217 46% 29%;
+  --card-foreground: 210 40% 94%;
+  --popover: 213 52% 38%;
+  --popover-foreground: 210 40% 94%;
+  --primary: 205 37% 50%;
+  --primary-foreground: 212 35% 8%;
+  --secondary: 217 46% 29%;
+  --secondary-foreground: 210 40% 94%;
+  --muted: 217 46% 29%;
+  --muted-foreground: 210 22% 74%;
+  --accent: 213 65% 58%;
+  --accent-foreground: 209 42% 12%;
+  --accent-1: 41 75% 84%;
+  --accent-2: 120 43% 87%;
+  --accent-3: 38 80% 57%;
+  --accent-4: 213 65% 58%;
+  --accent-5: 15 57% 58%;
+  --accent-6: 321 28% 51%;
   --destructive: 0 70% 50%;
   --destructive-foreground: 0 0% 100%;
-  --border: 225 30% 5%;
-  --input: 225 40% 16%;
-  --ring: 210 70% 55%;
+  --border: 213 35% 44%;
+  --input: 218 38% 32%;
+  --ring: 208 58% 48%;
   --info: 200 80% 55%;
   --success: 160 70% 40%;
   --warning: 35 90% 50%;
   --error: 0 70% 50%;
-  
-  /* Depth/Surface system - deep rich blues with color accents */
-  --surface-0: 225 40% 8%;   /* Page background - deep navy */
-  --surface-1: 220 50% 14%;  /* Level 1 - rich blue */
-  --surface-2: 215 55% 20%;  /* Level 2 - brighter blue */
-  --surface-3: 210 60% 26%;  /* Level 3 - vibrant blue */
-  --surface-4: 200 65% 32%;  /* Level 4 - teal-blue */
-  
+
+  /* Dedicated text tiers */
+  --text-high: 210 40% 94%;
+  --text-mid: 210 28% 83%;
+  --text-subtle: 210 20% 70%;
+  --text-on-overlay: 0 0% 100%;
+
+  /* Border and separator tiers */
+  --border-subtle: 219 34% 28%;
+  --border-default: 213 35% 44%;
+  --border-strong: 208 48% 56%;
+
+  /* Interaction helpers */
+  --interactive-disabled: 214 26% 46%;
+
+  /* Depth/Surface system - slate blue progression */
+  --surface-0: 222 34% 14%;
+  --surface-1: 220 40% 21%;
+  --surface-2: 217 46% 29%;
+  --surface-3: 213 52% 38%;
+  --surface-4: 208 58% 48%;
+
   /* Dropdown/popover specific */
-  --dropdown: 215 55% 22%;  /* Deep blue for dropdowns */
-  
+  --dropdown: 222 34% 14%;
+
+  /* New Tableau 10 categorical colors (dark shares categorical hues) */
+  --chart-1: 211 36% 48%;
+  --chart-2: 30 88% 56%;
+  --chart-3: 359 70% 61%;
+  --chart-4: 175 31% 59%;
+  --chart-5: 113 34% 47%;
+  --chart-6: 47 82% 61%;
+  --chart-7: 317 25% 58%;
+  --chart-8: 354 100% 81%;
+  --chart-9: 22 24% 49%;
+  --chart-10: 17 9% 70%;
+
+  /* Logo ramp */
+  --brand-logo-deep: 204 36% 40%;
+  --brand-logo-mid: 205 37% 50%;
+  --brand-logo-light: 206 36% 66%;
+
   /* Neobrutalism variables */
-  --main: 225 45% 14%;
-  --main-foreground: 220 20% 92%;
-  --secondary-background: 220 50% 16%;
+  --main: 217 46% 29%;
+  --main-foreground: 210 40% 94%;
+  --secondary-background: 217 46% 29%;
   --overlay: 0 0% 0% / 0.7;
   --radius-base: 0.5rem;
-  --shadow: 4px 4px 0px 0px hsl(225 30% 5%);
+  --shadow: 4px 4px 0px 0px hsl(0 0% 0%);
   --box-shadow-x: 4px;
   --box-shadow-y: 4px;
   --reverse-box-shadow-x: -4px;
@@ -125,7 +199,7 @@
 [data-style="neo"],
 :root {
   --border-width: 2px;
-  --card-shadow: 4px 4px 0px 0px hsl(var(--border));
+  --card-shadow: 4px 4px 0px 0px hsl(0 0% 0%);
   --card-border-color: 0 0% 0%;
   --button-translate-x: 4px;
   --button-translate-y: 4px;
@@ -205,7 +279,7 @@
 }
 
 .title-classes {
-  @apply font-display font-bold text-2xl sm:text-3xl text-primary;
+  @apply font-display font-bold text-2xl sm:text-3xl text-foreground;
 }
 
 .description-classes {
@@ -240,6 +314,51 @@
   animation: neo-shimmer 0.4s ease-out forwards;
 }
 
+@keyframes accent-rule-slide {
+  0% {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Small decorative accent lines for card hierarchy */
+.accent-rule {
+  height: 2px;
+  width: 3.25rem;
+  border-radius: 9999px;
+  opacity: 0.95;
+}
+
+.accent-rule-amber {
+  background: hsl(var(--chart-2));
+}
+
+.accent-rule-teal {
+  background: hsl(var(--chart-4));
+}
+
+.accent-rule-green {
+  background: hsl(var(--chart-5));
+}
+
+.accent-rule-purple {
+  background: hsl(var(--chart-7));
+}
+
+.accent-rule-animate {
+  animation: accent-rule-slide 420ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .accent-rule-animate {
+    animation: none;
+  }
+}
+
 /* ===== Legacy compatibility (migrate to shadcn components) ===== */
 @layer components {
   /* Matches shadcn Input */
@@ -271,7 +390,7 @@
   }
 
   .btn-accent {
-    @apply bg-accent text-accent-foreground hover:bg-accent/80;
+    @apply bg-accentScale-3 text-accent-foreground hover:bg-accentScale-4;
   }
 
   .btn-error {
@@ -279,7 +398,7 @@
   }
 
   .btn-success {
-    @apply bg-green-600 text-white hover:bg-green-700;
+    @apply bg-success text-white hover:bg-success/90;
   }
 
   .btn-outline {

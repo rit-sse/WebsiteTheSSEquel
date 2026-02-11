@@ -8,25 +8,25 @@ const cardVariants = cva(
   {
     variants: {
       depth: {
-        // Depth 1: Full neo-brutalist statement — page wrappers, hero cards
+        // Depth 1: Full neo-brutalist statement — sits on page background (surface-2)
         1: [
-          "bg-surface-1",
-          "neo:rounded-xl neo:border-2 neo:border-black neo:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]",
+          "bg-surface-2",
+          "neo:rounded-xl neo:border-2 neo:border-black neo:shadow-shadow",
           "clean:rounded-lg clean:border clean:border-border/30 clean:shadow-md",
         ].join(" "),
-        // Depth 2: Quiet container — inner cards, data tables. No neo shadow.
+        // Depth 2: Quiet container — inner cards inside depth-1 (surface-3)
         2: [
-          "bg-surface-2",
-          "neo:rounded-xl neo:border neo:border-black/25",
-          "clean:rounded-lg clean:border clean:border-border/20 clean:shadow-sm",
-        ].join(" "),
-        // Depth 3: Subtle — deeply nested items. Lightest border.
-        3: [
           "bg-surface-3",
-          "neo:rounded-lg neo:border neo:border-black/15",
-          "clean:rounded-lg clean:border clean:border-border/10",
+          "neo:rounded-xl neo:border-2 neo:border-foreground/20",
+          "clean:rounded-lg clean:border clean:border-foreground/15 clean:shadow-sm",
         ].join(" "),
-        // Depth 4: Minimal — just background color + rounding.
+        // Depth 3: Emphasis — deeply nested / overlays (surface-4)
+        3: [
+          "bg-surface-4",
+          "neo:rounded-lg neo:border neo:border-foreground/18",
+          "clean:rounded-lg clean:border clean:border-foreground/12",
+        ].join(" "),
+        // Depth 4: Minimal — same as depth-3, just rounding.
         4: [
           "bg-surface-4",
           "neo:rounded-lg",

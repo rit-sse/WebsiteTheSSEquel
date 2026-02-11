@@ -171,6 +171,14 @@ const config: Config = {
                     DEFAULT: 'hsl(var(--accent))',
                     foreground: 'hsl(var(--accent-foreground))'
                 },
+                accentScale: {
+                    '1': 'hsl(var(--accent-1))',
+                    '2': 'hsl(var(--accent-2))',
+                    '3': 'hsl(var(--accent-3))',
+                    '4': 'hsl(var(--accent-4))',
+                    '5': 'hsl(var(--accent-5))',
+                    '6': 'hsl(var(--accent-6))',
+                },
                 destructive: {
                     DEFAULT: 'hsl(var(--destructive))',
                     foreground: 'hsl(var(--destructive-foreground))'
@@ -183,7 +191,12 @@ const config: Config = {
                     '2': 'hsl(var(--chart-2))',
                     '3': 'hsl(var(--chart-3))',
                     '4': 'hsl(var(--chart-4))',
-                    '5': 'hsl(var(--chart-5))'
+                    '5': 'hsl(var(--chart-5))',
+                    '6': 'hsl(var(--chart-6))',
+                    '7': 'hsl(var(--chart-7))',
+                    '8': 'hsl(var(--chart-8))',
+                    '9': 'hsl(var(--chart-9))',
+                    '10': 'hsl(var(--chart-10))'
                 },
                 
                 // Semantic colors (replacing DaisyUI)
@@ -205,6 +218,29 @@ const config: Config = {
                     '2': 'hsl(var(--surface-2))',
                     '3': 'hsl(var(--surface-3))',
                     '4': 'hsl(var(--surface-4))',
+                },
+
+                // Dedicated text tiers
+                text: {
+                    high: 'hsl(var(--text-high))',
+                    mid: 'hsl(var(--text-mid))',
+                    subtle: 'hsl(var(--text-subtle))',
+                },
+
+                on: {
+                    overlay: 'hsl(var(--text-on-overlay))',
+                },
+
+                // Border/separator tiers
+                borderTier: {
+                    subtle: 'hsl(var(--border-subtle))',
+                    DEFAULT: 'hsl(var(--border-default))',
+                    strong: 'hsl(var(--border-strong))',
+                },
+
+                // Shared interaction helpers
+                interactive: {
+                    disabled: 'hsl(var(--interactive-disabled))',
                 },
                 
                 // Dropdown color

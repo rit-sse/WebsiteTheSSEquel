@@ -59,9 +59,9 @@ const ProjectCard = ({project, propKey, isOfficer}: {project: Project, propKey: 
           unoptimized
         />
         {/* Project Title Container */}
-        <div className="absolute bottom-0 w-full min-h-[48px] max-h-[80px] bg-black/40 backdrop-blur-md
+        <div className="absolute bottom-0 w-full min-h-[48px] max-h-[80px] bg-overlay backdrop-blur-md
                         p-3 flex items-center">
-          <p className="text-white text-base font-bold font-display line-clamp-2">{project.title}</p>
+          <p className="text-on-overlay text-base font-bold font-display line-clamp-2">{project.title}</p>
         </div>
       </Card>
       {/* Project Modal associated with the card */}

@@ -21,7 +21,7 @@ function Calendar({
     <DayPicker
       showOutsideDays={showOutsideDays}
       className={cn(
-        "rounded-base! border-2 border-border bg-main p-3 font-heading shadow-shadow",
+        "rounded-base! border-2 border-border/50 bg-main p-3 font-heading shadow-shadow",
         className,
       )}
       classNames={{
@@ -43,25 +43,25 @@ function Calendar({
           "text-main-foreground rounded-base w-9 font-base text-[0.8rem]",
         row: "flex w-full mt-2",
         cell: cn(
-          "relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-black/50 [&:has([aria-selected])]:text-white! [&:has([aria-selected].day-range-end)]:rounded-r-base",
+          "relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-primary/40 [&:has([aria-selected])]:text-primary-foreground! [&:has([aria-selected].day-range-end)]:rounded-r-base",
           props.mode === "range"
-            ? "[&:has(>.day-range-end)]:rounded-r-base [&:has(>.day-range-start)]:rounded-l-base [&:has([aria-selected])]:bg-black/50! first:[&:has([aria-selected])]:rounded-l-base last:[&:has([aria-selected])]:rounded-r-base"
-            : "[&:has([aria-selected])]:rounded-base [&:has([aria-selected])]:bg-black/50",
+            ? "[&:has(>.day-range-end)]:rounded-r-base [&:has(>.day-range-start)]:rounded-l-base [&:has([aria-selected])]:bg-primary/40! first:[&:has([aria-selected])]:rounded-l-base last:[&:has([aria-selected])]:rounded-r-base"
+            : "[&:has([aria-selected])]:rounded-base [&:has([aria-selected])]:bg-primary/40",
         ),
         day: cn(
           buttonVariants({ variant: "noShadow" }),
           "size-9 p-0 font-base aria-selected:opacity-100",
         ),
         day_range_start:
-          "day-range-start aria-selected:bg-black! aria-selected:text-white rounded-base",
+          "day-range-start aria-selected:bg-primary! aria-selected:text-primary-foreground rounded-base",
         day_range_end:
-          "day-range-end aria-selected:bg-black! aria-selected:text-white rounded-base",
-        day_selected: "bg-black! text-white! rounded-base",
+          "day-range-end aria-selected:bg-primary! aria-selected:text-primary-foreground rounded-base",
+        day_selected: "bg-primary! text-primary-foreground! rounded-base",
         day_today: "bg-secondary-background text-foreground!",
         day_outside:
           "day-outside text-main-foreground opacity-50 aria-selected:bg-none",
         day_disabled: "text-main-foreground opacity-50 rounded-base",
-        day_range_middle: "aria-selected:bg-black/50! aria-selected:text-white",
+        day_range_middle: "aria-selected:bg-primary/40! aria-selected:text-primary-foreground",
         day_hidden: "invisible",
         ...classNames,
       }}

@@ -175,7 +175,7 @@ export default function AcceptInvitationPage() {
                   <span
                     className={`px-2 py-1 rounded text-xs font-medium ${
                       invitation.type === "officer"
-                        ? "bg-primary/20 text-primary"
+                        ? "bg-chart-1/20 text-foreground"
                         : "bg-accent/20 text-accent-foreground"
                     }`}
                   >

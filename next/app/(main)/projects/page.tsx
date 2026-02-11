@@ -59,28 +59,28 @@ const Projects = () => {
         <Card depth={1} className="p-6 md:p-8">
           {/* Intro */}
           <div className="text-center mb-8">
-            <h1 className="text-primary">
+            <h1 className="text-foreground">
               Projects
             </h1>
             <div className="mt-3 text-xl">
               <div className="leading-8">Our mission is simple.</div>
               <div className="leading-8">Want to build? We&apos;ll make it happen.</div>
-              <div className="text-xl text-primary opacity-70 mt-1">
-                Write to <span className="hover:underline hover:font-bold"><a href="mailto:projects@sse.rit.edu">projects@sse.rit.edu</a></span> for more info.
+              <div className="text-xl text-muted-foreground mt-1">
+                Write to <a href="mailto:projects@sse.rit.edu" className="text-chart-4 hover:underline hover:font-bold">projects@sse.rit.edu</a> for more info.
               </div>
             </div>
             
             {/* Officer-only Add Project Modal Button */}
             { isOfficer ? 
               <div className="flex justify-center mt-6">
-                <button className="bg-primary text-primary-foreground px-[25px] py-[10px] rounded-lg" onClick={enableModal}>Add Project</button>
+                <button className="bg-chart-2 text-white px-[25px] py-[10px] rounded-lg hover:bg-chart-2/85 transition-colors font-medium" onClick={enableModal}>Add Project</button>
               </div>
               : undefined}
           </div>
           
           {/* Current Projects */}
           <div className="mb-8">
-            <h2 className="text-primary text-center lg:text-left mb-4">
+            <h2 className="text-chart-7 dark:text-chart-8 text-center lg:text-left mb-4">
               Current Projects
             </h2>
             <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
@@ -92,7 +92,7 @@ const Projects = () => {
 
           {/* Past Projects */}
           <div>
-            <h2 className="text-primary text-center lg:text-left mb-4">
+            <h2 className="text-chart-7 dark:text-chart-8 text-center lg:text-left mb-4">
               Past Projects
             </h2>
             <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">

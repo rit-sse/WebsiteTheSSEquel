@@ -78,10 +78,10 @@ export default function OfficerAssignmentCard({
   // State 1: Officer is assigned
   if (officer) {
     return (
-      <div className="flex items-center gap-3 p-2 rounded-lg bg-surface-2 border border-border/30">
+      <div className="flex items-center gap-3 p-2 rounded-lg bg-chart-5/28 border-2 border-chart-5/50">
         <Avatar className="h-8 w-8">
           <AvatarImage src={officer.image} alt={officer.name} />
-          <AvatarFallback className="text-xs">
+          <AvatarFallback className="text-xs bg-chart-5 text-white">
             {getInitials(officer.name)}
           </AvatarFallback>
         </Avatar>
@@ -107,20 +107,20 @@ export default function OfficerAssignmentCard({
   // State 2: Pending invitation
   if (pendingInvitation) {
     return (
-      <div className="flex items-center gap-3 p-2 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/30">
-        <div className="h-8 w-8 rounded-full bg-amber-200 dark:bg-amber-800 flex items-center justify-center">
-          <Mail className="h-4 w-4 text-amber-700 dark:text-amber-300" />
+      <div className="flex items-center gap-3 p-2 rounded-lg bg-accentScale-5 border border-accentScale-5">
+        <div className="h-8 w-8 rounded-full bg-black/10 flex items-center justify-center">
+          <Mail className="h-4 w-4 text-white/80" />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="font-medium text-sm truncate text-amber-900 dark:text-amber-100">
+          <div className="font-medium text-sm truncate text-white">
             {pendingInvitation.invitedEmail}
           </div>
-          <div className="flex items-center gap-1 text-xs text-amber-700 dark:text-amber-400">
+          <div className="flex items-center gap-1 text-xs text-white/70">
             <Clock className="h-3 w-3" />
             <span>Invited {formatTimeAgo(pendingInvitation.createdAt)}</span>
           </div>
         </div>
-        <span className="px-2 py-0.5 rounded text-xs font-medium bg-amber-200 dark:bg-amber-800 text-amber-800 dark:text-amber-200">
+        <span className="px-2 py-0.5 rounded text-xs font-semibold bg-white/20 text-white border border-white/30">
           Pending
         </span>
         <Button
@@ -129,7 +129,7 @@ export default function OfficerAssignmentCard({
           onClick={onCancelInvitation}
           disabled={disabled}
           title="Cancel invitation"
-          className="text-amber-700 hover:text-amber-900 dark:text-amber-400 dark:hover:text-amber-200"
+          className="text-white/70 hover:text-white hover:bg-white/10"
         >
           <X className="h-3 w-3" />
         </Button>
@@ -139,17 +139,22 @@ export default function OfficerAssignmentCard({
 
   // State 3: No officer assigned
   return (
-    <div className="flex items-center gap-3 p-2 rounded-lg border border-dashed border-border/50 bg-surface-1/50">
-      <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
-        <UserPlus className="h-4 w-4 text-muted-foreground" />
+    <div
+      className="flex items-center gap-3 p-2 rounded-lg bg-accentScale-4/32 border-2 border-accentScale-4/60 cursor-pointer transition-all duration-150 hover:bg-accentScale-4/42 hover:border-accentScale-4/75"
+      onClick={!disabled ? onInvite : undefined}
+      role="button"
+      tabIndex={0}
+    >
+      <div className="h-8 w-8 rounded-full bg-chart-5/20 flex items-center justify-center">
+        <UserPlus className="h-4 w-4 text-chart-5" />
       </div>
       <div className="flex-1">
-        <span className="text-sm text-muted-foreground italic">No officer assigned</span>
+        <span className="text-sm text-foreground/70 italic">No officer assigned</span>
       </div>
       <Button
         size="xs"
-        variant="outline"
-        onClick={onInvite}
+        variant="default"
+        onClick={(e) => { e.stopPropagation(); onInvite(); }}
         disabled={disabled}
       >
         <UserPlus className="h-3 w-3 mr-1" />

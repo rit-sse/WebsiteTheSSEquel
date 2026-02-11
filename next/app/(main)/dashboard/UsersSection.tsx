@@ -167,7 +167,7 @@ export default function UsersSection() {
       header: "Memberships",
       sortable: true,
       render: (user) => (
-        <Badge variant={user.membershipCount >= 1 ? "default" : "outline"} className="text-xs">
+        <Badge variant={user.membershipCount >= 1 ? "cat-5" : "outline"} className="text-xs">
           {user.membershipCount}
         </Badge>
       )
@@ -232,21 +232,21 @@ export default function UsersSection() {
             {pendingInvitations.map((invitation) => (
               <div
                 key={invitation.id}
-                className="flex items-center gap-3 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/30"
+                className="flex items-center gap-3 p-3 rounded-lg bg-accentScale-5/15 border border-accentScale-5/30"
               >
-                <div className="h-8 w-8 rounded-full bg-amber-200 dark:bg-amber-800 flex items-center justify-center shrink-0">
-                  <Mail className="h-4 w-4 text-amber-700 dark:text-amber-300" />
+                <div className="h-8 w-8 rounded-full bg-accentScale-5/25 flex items-center justify-center shrink-0">
+                  <Mail className="h-4 w-4 text-accentScale-5" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium text-sm truncate text-amber-900 dark:text-amber-100">
+                  <div className="font-medium text-sm truncate text-accentScale-5">
                     {invitation.invitedEmail}
                   </div>
-                  <div className="flex items-center gap-1 text-xs text-amber-700 dark:text-amber-400">
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <Clock className="h-3 w-3" />
                     <span>Invited {formatTimeAgo(invitation.createdAt)} by {invitation.inviter.name}</span>
                   </div>
                 </div>
-                <Badge variant="outline" className="bg-amber-200/50 dark:bg-amber-800/50 text-amber-800 dark:text-amber-200 border-amber-300 dark:border-amber-700">
+                <Badge variant="cat-6">
                   Pending
                 </Badge>
                 <Button
@@ -254,7 +254,7 @@ export default function UsersSection() {
                   variant="ghost"
                   onClick={() => setCancelInvitation(invitation)}
                   title="Cancel invitation"
-                  className="text-amber-700 hover:text-amber-900 dark:text-amber-400 dark:hover:text-amber-200"
+                  className="text-accentScale-5 hover:text-accentScale-5"
                 >
                   <X className="h-3 w-3" />
                 </Button>

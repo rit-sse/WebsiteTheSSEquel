@@ -35,7 +35,7 @@ const ImageCard = ({
       className={cn(
         "overflow-hidden rounded-xl border-2 border-black",
         depthClasses[depth],
-        "shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]",
+        "shadow-[4px_4px_0px_0px_black]",
         !disableHover && [
           "transition-all duration-150",
           "neo:hover:translate-x-[2px] neo:hover:translate-y-[2px] neo:hover:shadow-none",

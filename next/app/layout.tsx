@@ -43,7 +43,7 @@ export default async function RootLayout({
         // Also: https://www.reddit.com/r/nextjs/comments/138smpm/how_to_fix_extra_attributes_from_the_server_error/
         <html lang="en" data-theme="dark" className={`${inter.variable} ${rethinkSans.variable} ${ptSerif.variable}`} suppressHydrationWarning>
             <body
-                className={`min-h-screen flex flex-col bg-gradient-to-b from-background to-muted overflow-x-hidden`}
+                className={`min-h-screen flex flex-col bg-gradient-to-b from-surface-0 to-surface-1 overflow-x-hidden`}
             >
                 <Providers session={session}>
                     {children}

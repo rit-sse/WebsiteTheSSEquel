@@ -27,7 +27,7 @@ export default function SponsorCard({ sponsor, onEdit, onDelete }: SponsorCardPr
   return (
     <Card depth={2} className="p-4 flex flex-col">
       {/* Logo */}
-      <div className="relative w-full h-24 mb-4 bg-surface-3 rounded-lg overflow-hidden">
+      <div className="relative w-full h-24 mb-4 bg-surface-4/30 rounded-lg overflow-hidden">
         <Image
           src={sponsor.logoUrl}
           alt={sponsor.name}
@@ -42,7 +42,7 @@ export default function SponsorCard({ sponsor, onEdit, onDelete }: SponsorCardPr
           <h3 className="font-display text-lg font-bold text-foreground">
             {sponsor.name}
           </h3>
-          <Badge variant={sponsor.isActive ? "default" : "outline"} className="text-xs shrink-0">
+          <Badge variant={sponsor.isActive ? "cat-5" : "cat-3"} className="text-xs shrink-0">
             {sponsor.isActive ? "Active" : "Inactive"}
           </Badge>
         </div>
@@ -53,7 +53,7 @@ export default function SponsorCard({ sponsor, onEdit, onDelete }: SponsorCardPr
           href={sponsor.websiteUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-sm text-primary hover:underline inline-flex items-center gap-1"
+          className="text-sm text-chart-4 hover:underline inline-flex items-center gap-1"
         >
           Visit Website
           <ExternalLink className="h-3 w-3" />
@@ -61,7 +61,7 @@ export default function SponsorCard({ sponsor, onEdit, onDelete }: SponsorCardPr
       </div>
 
       {/* Actions */}
-      <div className="flex gap-2 mt-4 pt-4 border-t border-border">
+      <div className="flex gap-2 mt-4 pt-4 border-t border-border/30">
         <Button
           size="sm"
           variant="neutral"

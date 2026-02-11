@@ -19,7 +19,7 @@ function OfficerCardSkeleton() {
 			<Skeleton className="h-5 w-32 mb-1" />
 			<Skeleton className="h-4 w-24 mb-2" />
 			<Skeleton className="h-12 w-full mb-3" />
-			<div className="flex gap-3 pt-3 border-t border-border w-full justify-center">
+			<div className="flex gap-3 pt-3 border-t border-border/30 w-full justify-center">
 				<Skeleton className="h-5 w-5" />
 				<Skeleton className="h-5 w-5" />
 				<Skeleton className="h-5 w-5" />
@@ -59,7 +59,7 @@ function ManageLink({ isOfficer }: { isOfficer: boolean }) {
 
 	return (
 		<Link href="/dashboard/positions">
-			<Button variant="neutral" size="sm">
+			<Button variant="reverse" size="sm">
 				<Settings className="h-4 w-4 mr-2" />
 				Manage Officers
 			</Button>
@@ -149,7 +149,7 @@ export default function Leadership() {
 				<Card depth={1} className="p-6 md:p-8">
 					{/* Header section */}
 					<div className="text-center mb-8">
-						<h1 className="text-primary">
+						<h1 className="text-foreground">
 							Meet our Team
 						</h1>
 						<p className="mt-3 text-xl leading-8">
@@ -162,7 +162,7 @@ export default function Leadership() {
 
 				{/* Primary Officers */}
 				<div className="mb-10">
-					<h2 className="text-center text-primary mb-6">
+					<h2 className="text-center text-chart-7 dark:text-chart-8 mb-6">
 						Primary Officers
 					</h2>
 					<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 justify-items-center">
@@ -187,7 +187,7 @@ export default function Leadership() {
 
 				{/* Committee Heads */}
 				<div>
-					<h2 className="text-center text-primary mb-6">
+					<h2 className="text-center text-chart-7 dark:text-chart-8 mb-6">
 						Committee Heads
 					</h2>
 					<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 justify-items-center">

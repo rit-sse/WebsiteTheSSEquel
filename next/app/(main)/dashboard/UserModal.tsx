@@ -148,11 +148,11 @@ export default function UserModal({ open, onOpenChange, user, onSuccess }: UserM
 
         {/* Note: Membership is now controlled via the Memberships table, not a checkbox */}
         {user && (
-          <div className="p-3 bg-surface-2 rounded-lg text-sm">
+          <div className="p-3 bg-surface-4/20 rounded-lg border border-border/20 text-sm">
             <span className="text-muted-foreground">Membership Count: </span>
             <span className="font-medium">{user.membershipCount}</span>
             {user.membershipCount >= 1 && (
-              <span className="ml-2 text-xs text-primary">(Active Member)</span>
+              <span className="ml-2 text-xs text-accentScale-4 font-medium">(Active Member)</span>
             )}
           </div>
         )}

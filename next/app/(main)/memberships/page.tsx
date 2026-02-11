@@ -7,6 +7,7 @@ import { DataTable, Column } from "@/components/ui/data-table"
 import { Badge } from "@/components/ui/badge"
 import Avatar from "boring-avatars"
 import Image from "next/image"
+import { BRAND_AVATAR_COLORS } from "@/lib/theme/colors"
 
 export default function Leaderboard() {
     const [items, setItems] = useState<LeaderboardItem[]>([])
@@ -49,7 +50,7 @@ export default function Leaderboard() {
             className: "w-14",
             mobileHidden: true,
             render: (item) => (
-                <Badge variant="secondary" className="font-bold text-sm tabular-nums">
+                <Badge variant="cat-2" className="font-bold text-sm tabular-nums">
                     {item.rank}
                 </Badge>
             )
@@ -73,19 +74,19 @@ export default function Leaderboard() {
                             />
                         ) : (
                             <span className="block sm:hidden">
-                                <Avatar size={40} name={item.name || "default"} colors={["#426E8C", "#5289AF", "#86ACC7"]} variant="beam" />
+                                <Avatar size={40} name={item.name || "default"} colors={[...BRAND_AVATAR_COLORS]} variant="beam" />
                             </span>
                         )}
                         {item.image && item.image === "https://source.boringavatars.com/beam/" || !item.image ? (
                             <span className="hidden sm:block">
-                                <Avatar size={32} name={item.name || "default"} colors={["#426E8C", "#5289AF", "#86ACC7"]} variant="beam" />
+                                <Avatar size={32} name={item.name || "default"} colors={[...BRAND_AVATAR_COLORS]} variant="beam" />
                             </span>
                         ) : null}
-                        <span className="absolute -top-1 -left-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground sm:hidden">
+                        <span className="absolute -top-1 -left-1 flex h-5 w-5 items-center justify-center rounded-full bg-chart-2 text-[10px] font-bold text-white sm:hidden">
                             {item.rank}
                         </span>
                     </div>
-                    <span className="font-medium text-primary">{item.name}</span>
+                    <span className="font-medium text-foreground">{item.name}</span>
                 </div>
             )
         },

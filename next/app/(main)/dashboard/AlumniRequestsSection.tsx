@@ -7,6 +7,7 @@ import { Check, X, Trash2 } from "lucide-react"
 import Avatar from 'boring-avatars'
 import Image from "next/image"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { BRAND_AVATAR_COLORS } from "@/lib/theme/colors"
 
 export interface AlumniRequest {
   id: number
@@ -143,7 +144,7 @@ export default function AlumniRequestsSection() {
               unoptimized
             /> 
           ) : (
-            <Avatar size={32} name={request.name || "default"} colors={["#426E8C", "#5289AF", "#86ACC7"]} variant="beam"/>
+            <Avatar size={32} name={request.name || "default"} colors={[...BRAND_AVATAR_COLORS]} variant="beam"/>
           )}
           <span className="font-medium text-sm truncate">{request.name}</span>
         </div>

@@ -44,7 +44,7 @@ export default function ModifyAlumni({ alumniMember, openDeleteModal, openEditMo
                     Edit
                 </button>
                 <button 
-                    className="flex items-center gap-1.5 text-xs bg-destructive/10 hover:bg-destructive/20 rounded-md px-2.5 py-1.5 text-destructive transition-colors" 
+                    className="flex items-center gap-1.5 text-xs bg-destructive hover:bg-destructive/90 border border-black/20 rounded-md px-2.5 py-1.5 text-white transition-colors" 
                     onClick={() => {setSelectedAlumni(alumniMember); openDeleteModal()}}
                 >
                     <Trash2 size={12} />

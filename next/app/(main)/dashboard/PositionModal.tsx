@@ -115,7 +115,7 @@ export default function PositionModal({ open, onOpenChange, position, defaultIsP
         {isEditMode ? (
           <div className="flex items-center gap-2">
             <span className="font-semibold">{position?.title}</span>
-            <Badge variant={position?.is_primary ? "default" : "outline"} className="text-xs">
+            <Badge variant={position?.is_primary ? "cat-1" : "cat-7"} className="text-xs">
               {position?.is_primary ? "Primary" : "Committee"}
             </Badge>
           </div>

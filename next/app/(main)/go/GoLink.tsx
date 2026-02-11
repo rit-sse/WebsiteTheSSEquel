@@ -96,7 +96,7 @@ const GoLink: React.FC<GoLinkProps> = ({
         >
           <div className="flex-grow overflow-hidden">
             <div className="flex items-center gap-2">
-              {pinned && <Star className="h-5 w-5 text-yellow-500 fill-yellow-500 flex-shrink-0" />}
+              {pinned && <Star className="h-5 w-5 text-chart-6 fill-chart-6 flex-shrink-0" />}
               <p className="font-bold font-display text-lg truncate">{goUrl}</p>
             </div>
             <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{description}</p>
@@ -113,7 +113,7 @@ const GoLink: React.FC<GoLinkProps> = ({
               onEditClick={() => setEditOpen(true)}
               onDeleteClick={() => setDeleteOpen(true)}
             />
-            <ExternalLink className="h-5 w-5 text-primary" />
+            <ExternalLink className="h-5 w-5 text-chart-4" />
           </div>
         </Card>
       </a>

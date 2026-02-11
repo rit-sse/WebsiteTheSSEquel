@@ -3,6 +3,7 @@ import { AlumniMember } from "./alumni";
 import Avatar from 'boring-avatars';
 import Image from "next/image";
 import { Card } from "@/components/ui/card";
+import { BRAND_AVATAR_COLORS } from "@/lib/theme/colors";
 
 interface AlumniCardProps {
   alumniMember: AlumniMember;
@@ -24,12 +25,13 @@ export default function AlumniCard({ alumniMember, children }: AlumniCardProps) 
             unoptimized
           /> 
         ) : (
-          <Avatar size={96} name={alumniMember.name || "default"} colors={["#426E8C", "#5289AF", "#86ACC7"]} variant="beam"/>
+          <Avatar size={96} name={alumniMember.name || "default"} colors={[...BRAND_AVATAR_COLORS]} variant="beam"/>
         )}
       </div>
 
       {/* Name */}
       <h4 className="font-bold text-lg text-foreground">{alumniMember.name}</h4>
+      <div className="accent-rule accent-rule-purple mt-1 mb-2" aria-hidden="true" />
       
       {/* Quote */}
       {alumniMember.quote && (
@@ -37,19 +39,20 @@ export default function AlumniCard({ alumniMember, children }: AlumniCardProps) 
       )}
       
       {/* Previous Roles */}
-      <p className="text-sm font-semibold text-primary">{alumniMember.previous_roles}</p>
+      <p className="text-sm font-semibold text-chart-2 dark:text-chart-8">{alumniMember.previous_roles}</p>
+      <div className="h-0.5 w-[94%] bg-chart-4/35 rounded-full my-2" aria-hidden="true" />
       
       {/* End Date */}
       <p className="text-xs text-muted-foreground mt-1 flex-grow">{alumniMember.end_date}</p>
 
       {/* Contact Icons */}
-      <div className="flex gap-3 mt-4 pt-3 border-t border-border w-full justify-center">
+      <div className="flex gap-3 mt-4 pt-3 border-t border-chart-4/40 w-full justify-center">
         {alumniMember.linkedin && (
           <a 
             href={alumniMember.linkedin} 
             target="_blank" 
             rel="noopener noreferrer"
-            className="text-muted-foreground hover:text-primary transition-colors"
+            className="text-muted-foreground hover:text-chart-4 transition-colors"
           >
             <Linkedin className="h-5 w-5" />
           </a>
@@ -59,7 +62,7 @@ export default function AlumniCard({ alumniMember, children }: AlumniCardProps) 
             href={alumniMember.github} 
             target="_blank" 
             rel="noopener noreferrer"
-            className="text-muted-foreground hover:text-primary transition-colors"
+            className="text-muted-foreground hover:text-chart-4 transition-colors"
           >
             <Github className="h-5 w-5" />
           </a>
@@ -67,7 +70,7 @@ export default function AlumniCard({ alumniMember, children }: AlumniCardProps) 
         {alumniMember.email && (
           <a 
             href={`mailto:${alumniMember.email}`}
-            className="text-muted-foreground hover:text-primary transition-colors"
+            className="text-muted-foreground hover:text-chart-4 transition-colors"
           >
             <Mail className="h-5 w-5" />
           </a>
@@ -76,7 +79,7 @@ export default function AlumniCard({ alumniMember, children }: AlumniCardProps) 
 
       {/* Edit/Delete buttons slot */}
       {children && (
-        <div className="mt-3 pt-3 border-t border-border w-full">
+        <div className="mt-3 pt-3 border-t border-chart-4/40 w-full">
           {children}
         </div>
       )}

@@ -42,7 +42,7 @@ export default function EventsCalendar() {
     return (
         <>
             <Card className="flex flex-col w-full max-w-[94vw] xl:max-w-[1400px] p-6 md:p-10 mx-auto mt-8">            
-                <h1 className="text-primary text-left mb-6">
+                <h1 className="text-foreground text-left mb-6">
                     Events Calendar
                 </h1>
                 <div className="flex flex-col lg:flex-row w-full gap-6">

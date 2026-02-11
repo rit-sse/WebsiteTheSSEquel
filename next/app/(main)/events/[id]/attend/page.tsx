@@ -160,7 +160,7 @@ export default function AttendEventPage() {
         <CardHeader>
           <CardTitle className="text-2xl">{event.title}</CardTitle>
           <CardDescription className="space-y-2">
-            <div className="flex items-center gap-2 text-primary font-medium">
+            <div className="flex items-center gap-2 text-chart-2 dark:text-chart-8 font-medium">
               <Calendar className="h-4 w-4" />
               {formatDate(event.date)}
             </div>
@@ -177,8 +177,8 @@ export default function AttendEventPage() {
           <p className="text-muted-foreground">{event.description}</p>
           
           {event.grantsMembership && !attended && (
-            <div className="mt-4 p-3 bg-primary/10 rounded-lg">
-              <p className="text-sm text-primary font-medium">
+            <div className="mt-4 p-3 bg-chart-5/15 rounded-lg">
+              <p className="text-sm text-chart-5 font-medium">
                 This event grants membership! Attending will add to your membership count.
               </p>
             </div>
@@ -188,10 +188,10 @@ export default function AttendEventPage() {
         <CardFooter className="flex flex-col gap-4">
           {attended ? (
             <div className="w-full flex flex-col items-center gap-3 py-4">
-              <CheckCircle className="h-16 w-16 text-green-500" />
-              <p className="text-xl font-medium text-green-600">You&apos;re checked in!</p>
+              <CheckCircle className="h-16 w-16 text-success" />
+              <p className="text-xl font-medium text-success">You&apos;re checked in!</p>
               {membershipGranted && (
-                <p className="text-sm text-primary">
+                <p className="text-sm text-chart-5">
                   A membership has been added to your account.
                 </p>
               )}

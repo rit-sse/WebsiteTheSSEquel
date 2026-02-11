@@ -9,7 +9,7 @@ export default function Committees() {
       <div className="max-w-screen-xl mx-auto">
         <Card depth={1} className="p-6 md:p-8">
           <div className="text-center mb-8">
-            <h1 className="text-primary">Committees</h1>
+            <h1 className="text-foreground">Committees</h1>
             <p className="mt-4 text-lg max-w-3xl mx-auto">
               The Society of Software Engineers delegates responsibility for tasks with committees. These
               committees play pivotal roles in organizing events, facilitating projects, providing platforms for

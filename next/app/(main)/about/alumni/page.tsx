@@ -85,7 +85,7 @@ export default function Alumni() {
 				<Card depth={1} className="p-6 md:p-8">
 					{/* Header */}
 					<div className="text-center mb-8">
-						<h1 className="text-primary">
+						<h1 className="text-foreground">
 							Meet our Alumni
 						</h1>
 						<p className="mt-3 text-lg max-w-2xl mx-auto">

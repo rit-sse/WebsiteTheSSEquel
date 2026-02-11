@@ -239,10 +239,10 @@ export default function EventForm({
             <div className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               <span className="font-medium">Attendance</span>
-              <Badge variant="secondary">{attendanceCount}</Badge>
+              <Badge variant="cat-1">{attendanceCount}</Badge>
             </div>
             {event.grantsMembership && (
-              <Badge className="gap-1">
+              <Badge variant="cat-5" className="gap-1">
                 <Award className="h-3 w-3" />
                 Grants Membership
               </Badge>

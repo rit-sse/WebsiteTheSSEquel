@@ -191,7 +191,7 @@ export const QuoteCard = (quote: Quote) => {
                 <Modal open={editOpen} onOpenChange={setEditOpen} title="Edit Quote" className="max-w-xl">
                     <div className="space-y-4 max-h-[60vh] overflow-y-auto">
                         {editableQuotes.map((entry, index) => (
-                            <div key={index} className="space-y-2 p-3 border border-border rounded-base">
+                            <div key={index} className="space-y-2 p-3 border border-border/30 rounded-base">
                                 <div className="space-y-1">
                                     <Label htmlFor={`edit-quote-${quote.id}-${index}`}>Quote</Label>
                                     <Input

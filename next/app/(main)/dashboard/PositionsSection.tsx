@@ -242,25 +242,27 @@ export default function PositionsSection() {
       render: (position) => (
         <Button 
           size="xs" 
-          variant="outline"
+          variant="accent"
           onClick={() => router.push(`/dashboard/positions/${position.id}/handover`)}
           title="View/Edit handover document"
+          className="gap-1"
         >
-          View
+          <FileText className="h-3 w-3" />
+          Handover
         </Button>
       )
     },
     {
       key: "actions",
-      header: "",
+      header: "Actions",
       isAction: true,
-      className: "w-[80px]",
+      className: "w-[160px]",
       render: (position) => (
         <div className={`flex items-center ${isMobile ? "flex-wrap gap-2" : "gap-1"}`}>
           {isMobile && (
             <Button
               size="sm"
-              variant="outline"
+              variant="accent"
               onClick={() => router.push(`/dashboard/positions/${position.id}/handover`)}
               className="gap-1.5"
             >
@@ -270,26 +272,26 @@ export default function PositionsSection() {
           )}
           <Button
             size={isMobile ? "sm" : "xs"}
-            variant={isMobile ? "outline" : "ghost"}
+            variant="reverse"
             onClick={() => handleEdit(position)}
             title="Edit position"
-            className={isMobile ? "gap-1.5" : ""}
+            className="gap-1"
           >
             <Pencil className={isMobile ? "h-3.5 w-3.5" : "h-3 w-3"} />
-            {isMobile && "Edit"}
+            Edit
           </Button>
           <Button
             size={isMobile ? "sm" : "xs"}
-            variant={isMobile ? "outline" : "destructiveGhost"}
+            variant="destructive"
             onClick={() => setDeletePosition(position)}
             disabled={position.isFilled || !!getPendingInvitation(position.id)}
             title={position.isFilled ? "Cannot delete position with assigned officer" : 
                    getPendingInvitation(position.id) ? "Cannot delete position with pending invitation" :
                    "Delete position"}
-            className={isMobile ? "gap-1.5 text-destructive hover:text-destructive" : ""}
+            className="gap-1 text-white border-black/20"
           >
             <Trash2 className={isMobile ? "h-3.5 w-3.5" : "h-3 w-3"} />
-            {isMobile && "Delete"}
+            Delete
           </Button>
         </div>
       )

@@ -17,7 +17,7 @@ const About = () => {
       <div className="max-w-screen-xl mx-auto">
         <Card depth={1} className="p-6 md:p-8">
           <div className="text-center mb-8">
-            <h1 className="text-primary">About Us</h1>
+            <h1 className="text-foreground">About Us</h1>
             <p className="mt-4 text-lg max-w-3xl mx-auto">
               The Society of Software Engineers at RIT fosters a vibrant community
               of tech enthusiasts, bridging academia with industry partnerships

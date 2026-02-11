@@ -81,7 +81,7 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
     <>
       <button
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors"
+        className="inline-flex items-center gap-2 px-4 py-2 bg-chart-2 text-white rounded-lg font-medium hover:bg-chart-2/85 transition-colors"
       >
         <Plus size={18} />
         Add Alumni

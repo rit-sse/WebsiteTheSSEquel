@@ -22,7 +22,7 @@ export const HeroCTA = ({ description, labHoursCallout, weeklyMeetingCallout, di
                 <DancingLetters 
                     text="build  your  best  ideas" 
                     className="justify-center lg:justify-start flex-nowrap"
-                    letterClassName="text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-bold !leading-none tracking-tight font-display text-primary"
+                    letterClassName="text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-bold !leading-none tracking-tight font-display text-chart-2"
                 />
             </div>
             <p className="py-4 text-muted-foreground text-lg">
@@ -30,13 +30,13 @@ export const HeroCTA = ({ description, labHoursCallout, weeklyMeetingCallout, di
             </p>
             <div className="flex flex-col sm:flex-row gap-2 mt-2">
                 <NeoCard depth={2} className="inline-flex items-center gap-2 px-3 py-2">
-                    <Clock className="h-[18px] w-[18px] text-primary flex-shrink-0" />
+                    <Clock className="h-[18px] w-[18px] text-chart-2 dark:text-chart-8 flex-shrink-0" />
                     <span className="font-bold text-foreground text-sm">
                         {labHoursCallout}
                     </span>
                 </NeoCard>
                 <NeoCard depth={2} className="inline-flex items-center gap-2 px-3 py-2">
-                    <Calendar className="h-[18px] w-[18px] text-primary flex-shrink-0" />
+                    <Calendar className="h-[18px] w-[18px] text-chart-2 dark:text-chart-8 flex-shrink-0" />
                     <span className="font-bold text-foreground text-sm">
                         {weeklyMeetingCallout}
                     </span>

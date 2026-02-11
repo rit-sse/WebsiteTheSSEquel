@@ -241,6 +241,7 @@ export default function AttendancePage() {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold mb-2">Attendance Lists</h1>
+              <div className="h-0.5 w-[96%] bg-chart-4/45 rounded-full mb-3" aria-hidden="true" />
               <p className="text-muted-foreground text-base">
                 View and manage event attendance, download QR flyers, and link to purchase requests
               </p>
@@ -257,7 +258,7 @@ export default function AttendancePage() {
               <h3 className="text-lg font-medium mb-2">No events with attendance tracking</h3>
               <p className="text-muted-foreground">
                 Create an event with attendance enabled on the{" "}
-                <a href="/events/calendar" className="text-primary underline">
+                <a href="/events/calendar" className="text-chart-4 underline">
                   calendar page
                 </a>
               </p>
@@ -300,7 +301,7 @@ export default function AttendancePage() {
                 {attendanceData.count} total attendee{attendanceData.count !== 1 ? "s" : ""}
               </p>
               {selectedEvent?.grantsMembership && (
-                <Badge variant="secondary" className="gap-1">
+                <Badge variant="cat-5" className="gap-1 bg-chart-5 text-white border-transparent">
                   <Award className="h-3 w-3" />
                   Memberships Granted
                 </Badge>
@@ -510,22 +511,22 @@ function SemesterAccordion({
             className={`h-5 w-5 shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
           />
           <span className="font-semibold">{label}</span>
-          <Badge variant="secondary" className="text-xs">
+          <Badge variant="cat-1" className="text-xs bg-chart-1 text-white border-transparent">
             {events.length} event{events.length !== 1 ? "s" : ""}
           </Badge>
-          <Badge variant="outline" className="text-xs gap-1">
+          <Badge variant="cat-4" className="text-xs gap-1 bg-chart-4 text-white border-transparent">
             <Users className="h-3 w-3" />
             {totalAttendees} attendees
           </Badge>
           {recurringSeriesCount > 0 && (
-            <Badge variant="outline" className="text-xs gap-1">
+            <Badge variant="cat-7" className="text-xs gap-1 bg-chart-7 text-white border-transparent">
               <Repeat className="h-3 w-3" />
               {recurringSeriesCount} series
             </Badge>
           )}
         </div>
       </CollapsibleTrigger>
-      <CollapsibleContent className="pt-3 space-y-3">
+      <CollapsibleContent className="pt-3 space-y-3 border-t-2 border-chart-4/45">
         {eventGroups.map((group) =>
           group.type === "recurring" ? (
             <RecurringSeriesAccordion
@@ -588,16 +589,16 @@ function RecurringSeriesAccordion({
           />
           <Repeat className="h-4 w-4 shrink-0 text-muted-foreground" />
           <span className="font-medium">{title}</span>
-          <Badge variant="secondary" className="text-xs">
+          <Badge variant="cat-2" className="text-xs bg-chart-2 text-white border-transparent">
             {events.length} occurrences
           </Badge>
-          <Badge variant="outline" className="text-xs gap-1">
+          <Badge variant="cat-4" className="text-xs gap-1 bg-chart-4 text-white border-transparent">
             <Users className="h-3 w-3" />
             {totalAttendees} attendees
           </Badge>
         </div>
       </CollapsibleTrigger>
-      <CollapsibleContent className="pt-3 space-y-3">
+      <CollapsibleContent className="pt-3 space-y-3 border-t-2 border-chart-7/45">
         {events.map((event) => (
           <EventCard
             key={event.id}
@@ -644,12 +645,13 @@ function EventCard({
               <span className="font-medium">{formatDate(event.date)}</span>
             )}
             {event.grantsMembership && (
-              <Badge variant="default" className="gap-1 shrink-0">
+              <Badge variant="cat-5" className="gap-1 shrink-0 bg-chart-5 text-white border-transparent">
                 <Award className="h-3 w-3" />
                 Grants Membership
               </Badge>
             )}
           </div>
+          <div className="h-0.5 w-[96%] bg-chart-4/40 rounded-full my-2" aria-hidden="true" />
           <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
             {showTitle && (
               <span className="flex items-center gap-1">
@@ -706,12 +708,13 @@ function EventCard({
             Check-in
           </Button>
           <Button
-            variant="ghost"
+            variant="destructive"
             size="sm"
             onClick={() => onDeleteEvent(event)}
-            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+            className="gap-1 text-white border-black/20"
           >
             <Trash2 className="h-4 w-4" />
+            Delete
           </Button>
         </div>
       </div>

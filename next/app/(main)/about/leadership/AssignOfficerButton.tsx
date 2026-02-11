@@ -30,7 +30,7 @@ export default function AssignOfficerButton({ position, openAssignModal, setSele
         return (
             <div className="flex gap-2 justify-center">
                 <button 
-                    className="flex items-center gap-1.5 text-xs bg-primary/10 hover:bg-primary/20 rounded-md px-2.5 py-1.5 text-primary transition-colors" 
+                    className="flex items-center gap-1.5 text-xs bg-chart-7/20 hover:bg-chart-7/30 rounded-md px-2.5 py-1.5 text-foreground transition-colors" 
                     onClick={() => {setSelectedPosition(position); openAssignModal()}}
                 >
                     <UserPlus size={12} />

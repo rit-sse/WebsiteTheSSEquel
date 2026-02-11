@@ -158,7 +158,7 @@ const Navbar: React.FC = () => {
     return (
         <nav
             id="navbar"
-            className="sticky top-0 z-50 flex items-center justify-center bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border"
+            className="sticky top-0 z-50 flex items-center justify-center bg-surface-0/95 backdrop-blur supports-[backdrop-filter]:bg-surface-0/80 border-b border-borderTier-subtle"
         >
             <div
                 id="nav-content"
@@ -248,7 +248,7 @@ const Navbar: React.FC = () => {
                 <div className="lg:hidden">
                     <Sheet open={open} onOpenChange={setOpen}>
                         <SheetTrigger asChild>
-                            <button className="p-2 hover:bg-accent rounded-md" aria-label="Open menu">
+                            <button className="p-2 hover:bg-accent/20 rounded-md transition-colors" aria-label="Open menu">
                                 <Menu className="h-6 w-6" />
                             </button>
                         </SheetTrigger>
@@ -301,7 +301,7 @@ const Navbar: React.FC = () => {
                                     </MobileNavCollapsible>
                                 )}
 
-                                <div className="pt-4 border-t border-border mt-2">
+                                <div className="pt-4 border-t border-borderTier-subtle mt-2">
                                     <AuthButton />
                                 </div>
                             </nav>
@@ -329,7 +329,7 @@ function MobileNavLink({
             href={href}
             onClick={onClick}
             className={cn(
-                "flex items-center py-2 px-3 text-base font-medium rounded-md hover:bg-accent transition-colors",
+                "flex items-center py-2 px-3 text-base font-medium rounded-md border border-foreground/20 hover:bg-accent hover:border-foreground/35 transition-colors",
                 className
             )}
         >
@@ -349,7 +349,7 @@ function MobileNavCollapsible({
 
     return (
         <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-            <CollapsibleTrigger className="flex items-center justify-between w-full py-2 px-3 text-base font-medium rounded-md hover:bg-accent transition-colors">
+            <CollapsibleTrigger className="flex items-center justify-between w-full py-2 px-3 text-base font-medium rounded-md border border-foreground/20 hover:bg-accent hover:border-foreground/35 transition-colors">
                 {title}
                 <ChevronDown
                     className={cn(
@@ -379,9 +379,9 @@ function ListItem({
                     href={href}
                     className={cn(
                         "block select-none space-y-1 rounded-lg p-3 leading-none no-underline outline-none",
-                        "bg-surface-1 border border-border/30",
-                        "hover:bg-surface-2 hover:border-border/50 hover:shadow-md",
-                        "focus:bg-surface-2 focus:border-border/50",
+                        "bg-surface-2 border-2 border-foreground/25",
+                        "hover:bg-surface-3 hover:border-foreground/45 hover:shadow-md",
+                        "focus:bg-surface-3 focus:border-foreground/45",
                         "transition-colors",
                         className
                     )}

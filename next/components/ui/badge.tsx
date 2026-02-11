@@ -8,13 +8,34 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
+        // Semantic variants backed by categorical colors
         default:
-          "border-transparent bg-primary text-primary-foreground shadow hover:bg-primary/80",
+          "border-transparent bg-chart-1/25 text-foreground",
         secondary:
-          "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
+          "border-transparent bg-chart-9/25 text-foreground",
         destructive:
-          "border-transparent bg-destructive text-destructive-foreground shadow hover:bg-destructive/80",
+          "border-transparent bg-chart-3/25 text-foreground",
         outline: "text-foreground",
+        accent:
+          "border-transparent bg-chart-2/25 text-foreground",
+        warning:
+          "border-transparent bg-chart-6/30 text-foreground",
+        success:
+          "border-transparent bg-chart-5/25 text-foreground",
+        muted:
+          "border-transparent bg-muted text-muted-foreground",
+
+        // Explicit categorical variants (New Tableau 10)
+        "cat-1": "border-transparent bg-chart-1/25 text-foreground",   // Blue
+        "cat-2": "border-transparent bg-chart-2/25 text-foreground",   // Orange
+        "cat-3": "border-transparent bg-chart-3/25 text-foreground",   // Red
+        "cat-4": "border-transparent bg-chart-4/25 text-foreground",   // Teal
+        "cat-5": "border-transparent bg-chart-5/25 text-foreground",   // Green
+        "cat-6": "border-transparent bg-chart-6/30 text-foreground",   // Yellow
+        "cat-7": "border-transparent bg-chart-7/25 text-foreground",   // Purple
+        "cat-8": "border-transparent bg-chart-8/25 text-foreground",   // Pink
+        "cat-9": "border-transparent bg-chart-9/25 text-foreground",   // Brown
+        "cat-10": "border-transparent bg-chart-10/25 text-foreground", // Gray
       },
     },
     defaultVariants: {

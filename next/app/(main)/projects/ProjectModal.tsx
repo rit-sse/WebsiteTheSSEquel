@@ -136,7 +136,7 @@ const ProjectModal = ({ enabled, setEnabled, project, isOfficer }: ProjectModalI
             className="object-cover"
             unoptimized
           />
-          <div className="absolute inset-0 backdrop-blur-[15px] bg-black/25" />
+          <div className="absolute inset-0 backdrop-blur-[15px] bg-overlay/60" />
           <Image
             src={projectBackground}
             alt={project.title}

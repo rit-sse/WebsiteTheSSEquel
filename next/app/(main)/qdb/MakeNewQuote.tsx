@@ -97,7 +97,7 @@ export const MakeNewQuote = () => {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="p-4 h-full bg-background rounded-md shadow-md justify-items-center hover:shadow-lg transition-shadow border-2 border-border hover:border-primary text-xl"
+        className="p-4 h-full bg-background rounded-md shadow-md justify-items-center hover:shadow-lg transition-shadow border-2 border-border/30 hover:border-primary text-xl"
       >
         Add A Quote
       </button>
@@ -105,7 +105,7 @@ export const MakeNewQuote = () => {
       <Modal open={open} onOpenChange={setOpen} title="Add a Quote" className="max-w-xl">
         <div className="space-y-4 max-h-[60vh] overflow-y-auto">
           {quotes.map((entry, index) => (
-            <div key={index} className="space-y-2 p-3 border border-border rounded-base">
+            <div key={index} className="space-y-2 p-3 border border-border/30 rounded-base">
               <div className="space-y-1">
                 <Label htmlFor={`quote-${index}`}>Quote</Label>
                 <Input

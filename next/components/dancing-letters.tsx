@@ -8,6 +8,8 @@ interface DancingLettersProps {
     text?: string;
     className?: string;
     letterClassName?: string;
+    /** Array of color classes the user can cycle through with arrow buttons. All letters use the active color. */
+    colors?: string[];
     autoPlay?: boolean;
     autoPlayInterval?: number;
 }
@@ -102,9 +104,23 @@ const DancingLetters = ({
     text = "ANIMATE",
     className = "",
     letterClassName = "",
+    colors,
 }: DancingLettersProps) => {
     const [activeIndices, setActiveIndices] = useState<Set<number>>(new Set());
     const [isLoaded, setIsLoaded] = useState(false);
+    const [colorIndex, setColorIndex] = useState(0);
+
+    const activeColor = colors && colors.length > 0 ? colors[colorIndex % colors.length] : undefined;
+
+    const prevColor = useCallback(() => {
+        if (!colors || colors.length === 0) return;
+        setColorIndex((prev) => (prev - 1 + colors.length) % colors.length);
+    }, [colors]);
+
+    const nextColor = useCallback(() => {
+        if (!colors || colors.length === 0) return;
+        setColorIndex((prev) => (prev + 1) % colors.length);
+    }, [colors]);
 
     // Split text into words, preserving global letter indices
     const words = useMemo(() => {
@@ -152,7 +168,9 @@ const DancingLetters = ({
         });
     }, []);
 
-    return (
+    const showArrows = colors && colors.length > 1;
+
+    const lettersEl = (
         <motion.div
             className={cn("flex flex-wrap items-center justify-center select-none overflow-visible gap-[0.25em]", className)}
             style={{ perspective: "1000px" }}
@@ -211,7 +229,8 @@ const DancingLetters = ({
                                     if (definition === "active") handleAnimationComplete(globalIdx);
                                 }}
                                 className={cn(
-                                    "relative inline-block text-5xl md:text-7xl lg:text-8xl font-bold text-foreground cursor-pointer",
+                                    "relative inline-block text-5xl md:text-7xl lg:text-8xl font-bold cursor-pointer transition-colors duration-300",
+                                    activeColor,
                                     letterClassName,
                                     isActive ? "z-10" : "z-0"
                                 )}
@@ -227,6 +246,30 @@ const DancingLetters = ({
                 </span>
             ))}
         </motion.div>
+    );
+
+    if (!showArrows) return lettersEl;
+
+    return (
+        <div className="flex items-center gap-2">
+            <button
+                type="button"
+                onClick={prevColor}
+                className="p-1.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-surface-2 transition-colors"
+                aria-label="Previous color"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+            </button>
+            {lettersEl}
+            <button
+                type="button"
+                onClick={nextColor}
+                className="p-1.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-surface-2 transition-colors"
+                aria-label="Next color"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+            </button>
+        </div>
     );
 };
 

@@ -203,7 +203,7 @@ export default function OfficerModal({ open, onOpenChange, officer, preselectedP
       <form onSubmit={handleSubmit} className="space-y-4">
         {isEditMode ? (
           // Edit mode - show readonly info
-          <div className="space-y-2 p-3 bg-surface-2 rounded-lg">
+          <div className="space-y-2 p-3 bg-surface-4/20 rounded-lg border border-border/20">
             <p className="text-sm text-muted-foreground">Officer</p>
             <p className="font-medium">{officer?.user.name}</p>
             <p className="text-sm text-muted-foreground">{officer?.position.title}</p>
@@ -234,7 +234,7 @@ export default function OfficerModal({ open, onOpenChange, officer, preselectedP
               // Position is preselected from positions table context
               <div className="space-y-2">
                 <Label>Position</Label>
-                <div className="p-3 bg-surface-2 rounded-lg">
+                <div className="p-3 bg-surface-4/20 rounded-lg border border-border/20">
                   <p className="font-medium">{preselectedPosition?.title}</p>
                   <p className="text-xs text-muted-foreground">
                     {preselectedPosition?.is_primary ? "Primary Officer" : "Committee Head"}

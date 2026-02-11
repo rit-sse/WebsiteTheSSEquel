@@ -115,11 +115,11 @@ export default function PurchasingPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "pending":
-        return <Badge variant="secondary" className="gap-1"><Clock className="h-3 w-3" /> Pending</Badge>
+        return <Badge variant="cat-6" className="gap-1"><Clock className="h-3 w-3" /> Pending</Badge>
       case "checked_out":
-        return <Badge variant="default" className="gap-1"><CreditCard className="h-3 w-3" /> Checked Out</Badge>
+        return <Badge variant="cat-1" className="gap-1"><CreditCard className="h-3 w-3" /> Checked Out</Badge>
       case "returned":
-        return <Badge className="gap-1 bg-green-600 hover:bg-green-700"><CheckCircle className="h-3 w-3" /> Returned</Badge>
+        return <Badge variant="cat-5" className="gap-1"><CheckCircle className="h-3 w-3" /> Returned</Badge>
       default:
         return <Badge variant="outline">{status}</Badge>
     }
@@ -177,7 +177,11 @@ export default function PurchasingPage() {
 
           {/* Action Cards */}
           <div className="grid md:grid-cols-2 gap-6">
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer border-2" onClick={() => setShowCheckoutForm(true)}>
+            <Card
+              depth={2}
+              className="cursor-pointer border-2 border-foreground/25 hover:border-foreground/40"
+              onClick={() => setShowCheckoutForm(true)}
+            >
               <CardHeader>
                 <CardTitle>
                   Request PCard Checkout
@@ -194,8 +198,8 @@ export default function PurchasingPage() {
               </CardContent>
             </Card>
 
-            <Card className={cn(
-              "hover:shadow-lg transition-shadow border-2",
+            <Card depth={2} className={cn(
+              "border-2 border-foreground/25 hover:border-foreground/40",
               needsReceipt.length === 0 && "opacity-60"
             )}>
               <CardHeader>
@@ -333,11 +337,11 @@ function SemesterAccordion({
             className={`h-5 w-5 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
           />
           <span className="font-semibold">{label}</span>
-          <Badge variant="secondary" className="text-xs">
+          <Badge variant="cat-1" className="text-xs">
             {requests.length} request{requests.length !== 1 ? "s" : ""}
           </Badge>
           {pendingCount > 0 && (
-            <Badge variant="outline" className="text-xs">
+            <Badge variant="cat-6" className="text-xs">
               {pendingCount} pending
             </Badge>
           )}
@@ -355,7 +359,7 @@ function SemesterAccordion({
                     {request.description.substring(0, 50)}
                     {request.description.length > 50 && "..."}
                     {request.event && (
-                      <Badge variant="outline" className="gap-1 text-xs ml-1">
+                      <Badge variant="cat-4" className="gap-1 text-xs ml-1">
                         <Link2 className="h-3 w-3" />
                         {request.event.title.substring(0, 15)}{request.event.title.length > 15 ? "..." : ""}
                       </Badge>
@@ -441,7 +445,7 @@ function SemesterAccordion({
                         <span className="font-medium">{request.description.substring(0, 40)}</span>
                         {request.description.length > 40 && "..."}
                         {request.event && (
-                          <Badge variant="outline" className="gap-1 text-xs">
+                          <Badge variant="cat-4" className="gap-1 text-xs">
                             <Link2 className="h-3 w-3" />
                             {request.event.title.substring(0, 15)}{request.event.title.length > 15 ? "..." : ""}
                           </Badge>

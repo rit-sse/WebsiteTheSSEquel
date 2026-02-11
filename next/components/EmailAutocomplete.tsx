@@ -214,7 +214,7 @@ export function EmailAutocomplete({
         <ul
           ref={listRef}
           role="listbox"
-          className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border rounded-md shadow-lg max-h-64 z-50 overflow-y-auto"
+          className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border/30 rounded-md shadow-lg max-h-64 z-50 overflow-y-auto"
         >
           {options.map((option, index) => (
             <li

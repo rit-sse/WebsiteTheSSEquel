@@ -213,7 +213,7 @@ export default function HandoverDocPage() {
                 id="content"
                 value={content}
                 onChange={(e) => handleContentChange(e.target.value)}
-                className="w-full h-[500px] p-4 font-mono text-sm bg-background border border-border rounded-md resize-y focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full h-[500px] p-4 font-mono text-sm bg-background border border-border/30 rounded-md resize-y focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 placeholder="Write your handover documentation here using Markdown..."
               />
             </>

@@ -96,7 +96,7 @@ export default function RequestAlumniForm({ onSuccess }: RequestAlumniFormProps)
     <>
       <button
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-2 px-4 py-2 bg-secondary text-secondary-foreground border-2 border-border rounded-lg font-medium hover:bg-secondary/80 transition-colors"
+        className="inline-flex items-center gap-2 px-4 py-2 bg-chart-4 text-white rounded-lg font-medium hover:bg-chart-4/85 transition-colors"
       >
         <UserPlus size={18} />
         Request to be Added

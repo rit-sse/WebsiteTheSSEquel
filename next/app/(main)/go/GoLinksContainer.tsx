@@ -68,7 +68,7 @@ const GoLinksContainer: React.FC<GoLinksContainerProps> = ({
       <div className="max-w-screen-xl mx-auto">
         <Card depth={1} className="p-6 md:p-8">
           <div className="text-center mb-8">
-            <h1 className="text-primary">
+            <h1 className="text-foreground">
               Go Links
             </h1>
             <p className="mt-4 text-lg text-muted-foreground max-w-3xl mx-auto">
@@ -82,7 +82,7 @@ const GoLinksContainer: React.FC<GoLinksContainerProps> = ({
             <Input
               type="text"
               placeholder="Search golinks..."
-              className="pl-10 h-11 border-2 border-black rounded-lg"
+              className="pl-10 h-11 border-2 border-borderTier-strong rounded-lg"
               onChange={(event) => handleFilterChange(event)}
             />
           </div>

@@ -32,9 +32,9 @@ export default function GmailAuthModal({
       className="max-w-md"
     >
       <div className="space-y-4">
-        <div className="flex items-start gap-3 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
-          <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-500 flex-shrink-0 mt-0.5" />
-          <div className="text-sm text-amber-800 dark:text-amber-200">
+        <div className="flex items-start gap-3 p-3 bg-accentScale-3/15 border border-accentScale-3/30 rounded-lg">
+          <AlertTriangle className="h-5 w-5 text-accentScale-3 flex-shrink-0 mt-0.5" />
+          <div className="text-sm text-foreground/80">
             {message || "To send emails through the SSE website, you need to grant Gmail access."}
           </div>
         </div>

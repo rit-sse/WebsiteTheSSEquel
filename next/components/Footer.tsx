@@ -9,7 +9,7 @@ const commitHash = process.env.NEXT_PUBLIC_COMMIT_HASH || "dev";
 
 const Footer: React.FC = () => {
     return (
-        <footer className="flex items-center justify-between w-full h-auto p-3">
+        <footer className="flex items-center justify-between w-full h-auto p-3 border-t border-borderTier-subtle bg-surface-1/30">
             <div className="fixed left-3 bottom-3">
                 <ThemeControlsToggle />
             </div>
