@@ -1,4 +1,4 @@
-import { s3Service } from "@/lib/services/s3Serivce";
+import { s3Service } from "@/lib/services/s3Service";
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 

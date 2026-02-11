@@ -107,9 +107,9 @@ export async function DELETE(request: Request) {
 /**
  * Update an existing user
  * HTTP PUT request to /api/user
- * @param request { id: number, name?: string, email?: string, linkedIn?: string, gitHub?: string, description?: string }
+ * @param request { id: number, name?: string, email?: string, linkedIn?: string, gitHub?: string, description?: string, image?: string }
  * @returns updated user object
- * 
+ *
  * NOTE: Membership is no longer controlled via isMember boolean.
  * Use the Memberships table and /api/memberships endpoints instead.
  */
@@ -128,7 +128,7 @@ export async function PUT(request: Request) {
   const id = body.id;
 
   // only update fields the caller wants to update
-  const data: { name?: string; email?: string; description?: string; linkedIn?: string; gitHub?: string } = {};
+  const data: { name?: string; email?: string; description?: string; linkedIn?: string; gitHub?: string; image?: string } = {};
   if ("name" in body) {
     data.name = body.name;
   }
@@ -143,6 +143,9 @@ export async function PUT(request: Request) {
   }
   if ("gitHub" in body) {
     data.gitHub = body.gitHub;
+  }
+  if ("image" in body) {
+    data.image = body.image;
   }
 
   try {
