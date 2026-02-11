@@ -1,4 +1,6 @@
 import prisma from "@/lib/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
 
 /**
  * HTTP GET request to /api/user/[id]
@@ -18,15 +20,39 @@ export async function GET(
         id,
       },
       select: {
+        id: true,
         name: true,
         email: true,
+        image: true,
       },
     });
     // make sure the selected user exists
     if (user == null) {
       return new Response(`Didn't find User ID ${id}`, { status: 404 });
     }
-    return Response.json(user);
+    const session = await getServerSession(authOptions);
+    const sessionEmail = session?.user?.email ?? null;
+
+    const isOfficer = sessionEmail
+      ? !!(await prisma.user.findFirst({
+          where: {
+            email: sessionEmail,
+            officers: {
+              some: { is_active: true },
+            },
+          },
+          select: { id: true },
+        }))
+      : false;
+
+    const isOwner = !!sessionEmail && sessionEmail === user.email;
+
+    return Response.json({
+      id: user.id,
+      name: user.name,
+      image: user.image,
+      email: isOwner || isOfficer ? user.email : undefined,
+    });
   } catch {
     return new Response("Invalid User ID", { status: 422 });
   }

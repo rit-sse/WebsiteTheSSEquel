@@ -7,9 +7,27 @@ export const dynamic = 'force-dynamic'
 
 /**
  * HTTP GET request to /api/user/
- * @returns list of user objects with all relevant fields
+ * Returns user list with field-level restrictions:
+ * - Officers: full user directory fields.
+ * - Authenticated non-officers: full fields only for self; limited public fields for others.
+ * - Unauthenticated: limited public fields only.
  */
 export async function GET() {
+  const session = await getServerSession(authOptions);
+  const sessionEmail = session?.user?.email ?? null;
+
+  const isOfficer = sessionEmail
+    ? !!(await prisma.user.findFirst({
+        where: {
+          email: sessionEmail,
+          officers: {
+            some: { is_active: true },
+          },
+        },
+        select: { id: true },
+      }))
+    : false;
+
   const users = await prisma.user.findMany({
     select: {
       id: true,
@@ -26,18 +44,23 @@ export async function GET() {
     orderBy: { name: 'asc' }
   });
   
-  // Transform to include membershipCount and isMember (computed) for backward compatibility
-  const usersWithMembershipCount = users.map(user => ({
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    linkedIn: user.linkedIn,
-    gitHub: user.gitHub,
-    description: user.description,
-    image: user.image,
-    membershipCount: user._count.Memberships,
-    isMember: user._count.Memberships >= 1, // Computed for backward compatibility
-  }));
+  // Transform with role-based field filtering.
+  const usersWithMembershipCount = users.map(user => {
+    const isSelf = !!sessionEmail && user.email === sessionEmail;
+    const canSeePrivate = isOfficer || isSelf;
+
+    return {
+      id: user.id,
+      name: user.name,
+      email: canSeePrivate ? user.email : undefined,
+      linkedIn: canSeePrivate ? user.linkedIn : null,
+      gitHub: canSeePrivate ? user.gitHub : null,
+      description: canSeePrivate ? user.description : null,
+      image: user.image,
+      membershipCount: user._count.Memberships,
+      isMember: user._count.Memberships >= 1, // Computed for backward compatibility
+    };
+  });
   
   return Response.json(usersWithMembershipCount);
 }
@@ -168,7 +191,9 @@ export async function PUT(request: NextRequest) {
   if ("name" in body) {
     data.name = body.name;
   }
-  if ("email" in body) {
+  // Email identity should generally come from OAuth provider.
+  // Keep this officer-only to avoid account confusion and impersonation risk.
+  if ("email" in body && !isOwner) {
     data.email = body.email;
   }
   if ("description" in body) {

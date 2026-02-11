@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 /**
  * GET /api/user/[id]/profile
  * Returns a user's public profile data including memberships, projects, and officer roles.
- * Email is only included if the requester is viewing their own profile.
+ * Email is only included for the owner or an active officer.
  */
 export async function GET(
   request: Request,
@@ -70,16 +70,30 @@ export async function GET(
     return new Response(`User ${id} not found`, { status: 404 });
   }
 
-  // Check if the viewer is the profile owner - if so, include email
+  // Public profile route: anyone can view profile fields.
+  // Email remains private unless owner or active officer.
   const session = await getServerSession(authOptions);
   const isOwner = session?.user?.email === user.email;
+  const isOfficer = session?.user?.email
+    ? await prisma.user.findFirst({
+        where: {
+          email: session.user.email,
+          officers: {
+            some: {
+              is_active: true,
+            },
+          },
+        },
+        select: { id: true },
+      })
+    : null;
 
   const projects = user.projectContributions.map((pc) => pc.project);
 
   return Response.json({
     id: user.id,
     name: user.name,
-    email: isOwner ? user.email : undefined,
+    email: isOwner || !!isOfficer ? user.email : undefined,
     image: user.image,
     linkedIn: user.linkedIn,
     gitHub: user.gitHub,
@@ -88,6 +102,6 @@ export async function GET(
     memberships: user.Memberships,
     projects,
     officerRoles: user.officers,
-    isOwner,
+    isOwner: !!isOwner,
   });
 }

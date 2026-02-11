@@ -59,6 +59,21 @@ function getInitials(name: string): string {
         .toUpperCase();
 }
 
+function parseMembershipReason(reason: string): { label: string; detail: string } {
+    const [first, ...rest] = reason.split(":");
+    if (rest.length === 0) {
+        return {
+            label: "Membership",
+            detail: reason.trim(),
+        };
+    }
+    const detail = rest.join(":").trim();
+    return {
+        label: first.trim() || "Membership",
+        detail: detail || reason.trim(),
+    };
+}
+
 /** Normalize a github value to a full URL */
 function githubUrl(val: string): string {
     if (val.startsWith("https://") || val.startsWith("http://")) return val;
@@ -91,7 +106,13 @@ export default function ProfileContent({ userId, children }: ProfileContentProps
             try {
                 const res = await fetch(`/api/user/${userId}/profile`);
                 if (!res.ok) {
-                    setError(res.status === 404 ? "User not found." : "Failed to load profile.");
+                    if (res.status === 401 || res.status === 403) {
+                        setError("You do not have permission to view this profile.");
+                    } else if (res.status === 404) {
+                        setError("User not found.");
+                    } else {
+                        setError("Failed to load profile.");
+                    }
                     return;
                 }
                 const data: ProfileData = await res.json();
@@ -137,7 +158,7 @@ export default function ProfileContent({ userId, children }: ProfileContentProps
     const hasImage = profile.image && profile.image !== DEFAULT_IMAGE;
 
     return (
-        <div className="flex flex-col gap-8">
+        <Card depth={1} className="flex flex-col gap-8 p-4 sm:p-6 lg:p-8">
             {/* ── Hero banner ── */}
             <div className="rounded-xl bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-6 sm:p-8">
                 <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-center">
@@ -223,10 +244,10 @@ export default function ProfileContent({ userId, children }: ProfileContentProps
 
             <hr className="border-border" />
 
-            {/* ── Content grid ── */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Main column */}
-                <div className="lg:col-span-2 flex flex-col gap-6">
+            {/* ── Content sections ── */}
+            <div className="flex flex-col gap-6">
+                {/* Main sections */}
+                <div className="flex flex-col gap-6">
                     {/* Projects */}
                     {profile.projects.length > 0 && (
                         <section>
@@ -267,7 +288,7 @@ export default function ProfileContent({ userId, children }: ProfileContentProps
                     {children}
                 </div>
 
-                {/* Sidebar */}
+                {/* Supporting sections */}
                 <div className="flex flex-col gap-6">
                     {/* Officer History */}
                     {pastRoles.length > 0 && (
@@ -299,15 +320,28 @@ export default function ProfileContent({ userId, children }: ProfileContentProps
                                 Recent Memberships
                             </h2>
                             <Card depth={2} className="p-4">
-                                <div className="flex flex-col gap-2">
-                                    {profile.memberships.slice(0, 8).map((m) => (
-                                        <div key={m.id} className="flex items-center justify-between text-sm">
-                                            <span className="truncate mr-2">{m.reason}</span>
-                                            <span className="text-muted-foreground text-xs tabular-nums shrink-0">
-                                                {new Date(m.dateGiven).toLocaleDateString("en-US", { month: "short", year: "numeric" })}
-                                            </span>
+                                <div className="flex flex-col gap-2.5">
+                                    {profile.memberships.slice(0, 8).map((m) => {
+                                        const parsed = parseMembershipReason(m.reason);
+                                        return (
+                                        <div key={m.id} className="rounded-lg border border-border/70 bg-background/70 px-3 py-2">
+                                            <div className="flex items-center justify-between gap-2">
+                                                <Badge variant="secondary" className="text-[10px] uppercase tracking-wide">
+                                                    {parsed.label}
+                                                </Badge>
+                                                <span className="text-muted-foreground text-xs tabular-nums shrink-0">
+                                                    {new Date(m.dateGiven).toLocaleDateString("en-US", {
+                                                        month: "short",
+                                                        day: "numeric",
+                                                        year: "numeric",
+                                                    })}
+                                                </span>
+                                            </div>
+                                            <p className="mt-1 text-sm font-medium leading-snug">
+                                                {parsed.detail}
+                                            </p>
                                         </div>
-                                    ))}
+                                    )})}
                                     {profile.memberships.length > 8 && (
                                         <p className="text-xs text-muted-foreground mt-1">
                                             +{profile.memberships.length - 8} more
@@ -344,13 +378,13 @@ export default function ProfileContent({ userId, children }: ProfileContentProps
                     </Card>
                 </section>
             ))}
-        </div>
+        </Card>
     );
 }
 
 function ProfileSkeleton() {
     return (
-        <div className="flex flex-col gap-8">
+        <Card depth={1} className="flex flex-col gap-8 p-4 sm:p-6 lg:p-8">
             <div className="rounded-xl bg-muted/50 p-6 sm:p-8">
                 <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-end">
                     <Skeleton className="h-32 w-32 rounded-full" />
@@ -361,6 +395,6 @@ function ProfileSkeleton() {
                     </div>
                 </div>
             </div>
-        </div>
+        </Card>
     );
 }
