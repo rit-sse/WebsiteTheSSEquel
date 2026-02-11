@@ -23,7 +23,8 @@ export async function GET(
         id: true,
         name: true,
         email: true,
-        image: true,
+        profileImageKey: true,
+        googleImageURL: true,
       },
     });
     // make sure the selected user exists
@@ -50,7 +51,7 @@ export async function GET(
     return Response.json({
       id: user.id,
       name: user.name,
-      image: user.image,
+      image: user.profileImageKey ?? user.googleImageURL ?? null,
       email: isOwner || isOfficer ? user.email : undefined,
     });
   } catch {

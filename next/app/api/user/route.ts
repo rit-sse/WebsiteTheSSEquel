@@ -36,7 +36,8 @@ export async function GET() {
       linkedIn: true,
       gitHub: true,
       description: true,
-      image: true,
+      profileImageKey: true,
+      googleImageURL: true,
       _count: {
         select: { Memberships: true },
       },
@@ -45,14 +46,14 @@ export async function GET() {
   });
   
   // Transform to include membershipCount and isMember (computed) for backward compatibility
-  const usersWithMembershipCount = users.map((user: { id: any; name: any; email: any; linkedIn: any; gitHub: any; description: any; image: any; _count: { Memberships: number; }; }) => ({
+  const usersWithMembershipCount = users.map((user: { id: any; name: any; email: any; linkedIn: any; gitHub: any; description: any; profileImageKey: any; googleImageURL: any; _count: { Memberships: number; }; }) => ({
     id: user.id,
     name: user.name,
     email: user.email,
     linkedIn: user.linkedIn,
     gitHub: user.gitHub,
     description: user.description,
-    image: user.image,
+    image: user.profileImageKey ?? user.googleImageURL ?? null,
     membershipCount: user._count.Memberships,
     isMember: user._count.Memberships >= 1, // Computed for backward compatibility
   }));

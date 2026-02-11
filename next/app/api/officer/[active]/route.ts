@@ -20,7 +20,8 @@ export async function GET() {
           name: true,
           email: true,
           linkedIn: true,
-          image: true,
+          profileImageKey: true,
+          googleImageURL: true,
           gitHub: true,
           description: true
         },
@@ -33,5 +34,15 @@ export async function GET() {
       },
     },
   });
-  return Response.json(officer);
+
+  // Transform to include image field from profileImageKey or googleImageURL
+  const officersWithImage = officer.map((o: { id: number; user: { id: number; name: string; email: string; linkedIn: string | null; profileImageKey: string | null; googleImageURL: string | null; gitHub: string | null; description: string | null; }; position: { is_primary: boolean; title: string; }; }) => ({
+    ...o,
+    user: {
+      ...o.user,
+      image: o.user.profileImageKey ?? o.user.googleImageURL ?? null,
+    },
+  }));
+
+  return Response.json(officersWithImage);
 }
