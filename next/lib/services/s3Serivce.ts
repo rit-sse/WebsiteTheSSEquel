@@ -57,5 +57,5 @@ export class S3Service implements IS3Service {
   }
 }
 
-// Default instance — swap in tests via constructor or mock
+// Default instance, swap in tests via constructor or mock
 export const s3Service = new S3Service();
