@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import ReactMarkdown from "react-markdown";
+import { getImageUrl } from "@/lib/s3Utils";
 
 interface HandoverDoc {
     id: number;
@@ -155,7 +156,10 @@ export default function ProfileContent({ userId, children }: ProfileContentProps
 
     const activeRoles = profile.officerRoles.filter((r) => r.is_active);
     const pastRoles = profile.officerRoles.filter((r) => !r.is_active);
-    const hasImage = profile.image && profile.image !== DEFAULT_IMAGE;
+
+    // Use getImageUrl to handle both S3 keys and full URLs
+    const profileImageUrl = getImageUrl(profile.image);
+    const hasImage = profileImageUrl !== DEFAULT_IMAGE;
 
     return (
         <Card depth={1} className="flex flex-col gap-8 p-4 sm:p-6 lg:p-8">
@@ -165,7 +169,7 @@ export default function ProfileContent({ userId, children }: ProfileContentProps
                         {/* Avatar */}
                         <Avatar className="h-28 w-28 sm:h-32 sm:w-32 ring-4 ring-background shadow-lg">
                             {hasImage ? (
-                                <AvatarImage src={profile.image} alt={profile.name} />
+                                <AvatarImage src={profileImageUrl} alt={profile.name} />
                             ) : null}
                             <AvatarFallback className="text-3xl font-bold">
                                 {getInitials(profile.name)}

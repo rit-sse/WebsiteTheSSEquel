@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import ImageUpload from "@/components/common/ImageUpload";
+import { getImageUrl, isS3Key } from "@/lib/s3Utils";
 
 const DEFAULT_IMAGE = "https://source.boringavatars.com/beam/";
 
@@ -106,12 +107,17 @@ export default function ProfileSettings() {
 
     /** The image to display: custom upload > OAuth > null */
     function getDisplayImage(): string | null {
-        if (image && image !== DEFAULT_IMAGE) return image;
+        if (image && image !== DEFAULT_IMAGE) {
+            // Convert S3 keys to full URLs for display
+            return getImageUrl(image);
+        }
         if (oauthImage) return oauthImage;
         return null;
     }
 
-    const isCustomUpload = image?.startsWith("data:") ?? false;
+    // Check if the user has uploaded a custom image (S3 key or contains our bucket name)
+    const isCustomUpload = !!(image && image !== DEFAULT_IMAGE &&
+        (isS3Key(image) || (image.includes('.s3.') && image.includes('.amazonaws.com'))));
 
     const handleImageChange = (newImage: string | null) => {
         setImage(newImage ?? original?.image ?? DEFAULT_IMAGE);

@@ -2,7 +2,7 @@
 
 import React, { useCallback, useRef, useState } from "react";
 import Cropper, { Area } from "react-easy-crop";
-import { Camera, Trash2, Upload, ZoomIn, ZoomOut } from "lucide-react";
+import { Camera, Trash2, Upload, ZoomIn, ZoomOut, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,6 +13,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { getImageUrl } from "@/lib/s3Utils";
 
 const DEFAULT_OUTPUT_SIZE = 256;
 
@@ -37,7 +38,7 @@ interface ImageUploadProps {
     compact?: boolean;
 }
 
-function getCroppedImage(imageSrc: string, cropArea: Area, outputSize: number): Promise<string> {
+function getCroppedImage(imageSrc: string, cropArea: Area, outputSize: number): Promise<Blob> {
     return new Promise((resolve, reject) => {
         const img = new Image();
         img.crossOrigin = "anonymous";
@@ -51,11 +52,60 @@ function getCroppedImage(imageSrc: string, cropArea: Area, outputSize: number): 
                 cropArea.x, cropArea.y, cropArea.width, cropArea.height,
                 0, 0, outputSize, outputSize
             );
-            resolve(canvas.toDataURL("image/jpeg", 0.85));
+            canvas.toBlob(
+                (blob) => {
+                    if (blob) {
+                        resolve(blob);
+                    } else {
+                        reject(new Error("Failed to create blob from canvas"));
+                    }
+                },
+                "image/jpeg",
+                0.85
+            );
         };
         img.onerror = () => reject(new Error("Failed to load image for cropping"));
         img.src = imageSrc;
     });
+}
+
+/**
+ * Upload a blob to S3 using presigned URL
+ * @returns The S3 key for the uploaded image
+ */
+async function uploadToS3(blob: Blob, filename: string): Promise<string> {
+    // Get presigned URL from our API
+    const response = await fetch("/api/aws/profilePictures", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            filename,
+            contentType: blob.type,
+        }),
+    });
+
+    if (!response.ok) {
+        const error = await response.text();
+        throw new Error(`Failed to get upload URL: ${error}`);
+    }
+
+    const { uploadUrl, key } = await response.json();
+
+    // Upload directly to S3 using the presigned URL
+    const uploadResponse = await fetch(uploadUrl, {
+        method: "PUT",
+        headers: {
+            "Content-Type": blob.type,
+        },
+        body: blob,
+    });
+
+    if (!uploadResponse.ok) {
+        throw new Error(`Failed to upload to S3: ${uploadResponse.statusText}`);
+    }
+
+    // Return the S3 key (not the full URL)
+    return key;
 }
 
 export default function ImageUpload({
@@ -71,10 +121,12 @@ export default function ImageUpload({
 }: ImageUploadProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [dragging, setDragging] = useState(false);
+    const [uploading, setUploading] = useState(false);
 
     // Crop dialog state
     const [cropDialogOpen, setCropDialogOpen] = useState(false);
     const [cropSource, setCropSource] = useState<string | null>(null);
+    const [cropFilename, setCropFilename] = useState<string>("");
     const [crop, setCrop] = useState({ x: 0, y: 0 });
     const [zoom, setZoom] = useState(1);
     const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
@@ -93,6 +145,7 @@ export default function ImageUpload({
         const reader = new FileReader();
         reader.onload = (ev) => {
             setCropSource(ev.target?.result as string);
+            setCropFilename(file.name);
             setCrop({ x: 0, y: 0 });
             setZoom(1);
             setCroppedAreaPixels(null);
@@ -121,15 +174,27 @@ export default function ImageUpload({
 
     const handleCropConfirm = useCallback(async () => {
         if (!cropSource || !croppedAreaPixels) return;
+        setUploading(true);
         try {
-            const cropped = await getCroppedImage(cropSource, croppedAreaPixels, outputSize);
-            onChange(cropped);
+            // Crop the image to a blob
+            const croppedBlob = await getCroppedImage(cropSource, croppedAreaPixels, outputSize);
+
+            // Upload to S3 and get the key
+            const s3Key = await uploadToS3(croppedBlob, cropFilename || "profile-picture.jpg");
+
+            // Update the parent component with the S3 key
+            onChange(s3Key);
+
             setCropDialogOpen(false);
             setCropSource(null);
-        } catch {
-            toast.error("Failed to crop image.");
+            toast.success("Profile picture uploaded successfully!");
+        } catch (error) {
+            console.error("Upload error:", error);
+            toast.error(error instanceof Error ? error.message : "Failed to upload image.");
+        } finally {
+            setUploading(false);
         }
-    }, [cropSource, croppedAreaPixels, outputSize, onChange]);
+    }, [cropSource, croppedAreaPixels, outputSize, cropFilename, onChange]);
 
     const handleCropCancel = useCallback(() => {
         setCropDialogOpen(false);
@@ -137,6 +202,8 @@ export default function ImageUpload({
     }, []);
 
     const hasImage = value && value !== "https://source.boringavatars.com/beam/";
+    // Convert S3 keys to full URLs for display
+    const displayUrl = hasImage ? getImageUrl(value) : null;
 
     // ── Compact mode: avatar + small button ──
     if (compact) {
@@ -146,7 +213,7 @@ export default function ImageUpload({
                 <div className="flex items-center gap-4">
                     <div className="relative group">
                         <Avatar className={avatarSize}>
-                            {hasImage ? <AvatarImage src={value!} alt="Upload" /> : null}
+                            {displayUrl ? <AvatarImage src={displayUrl} alt="Upload" /> : null}
                             <AvatarFallback className="text-lg font-bold">{initials}</AvatarFallback>
                         </Avatar>
                         <button
@@ -182,6 +249,7 @@ export default function ImageUpload({
                     source={cropSource}
                     crop={crop}
                     zoom={zoom}
+                    uploading={uploading}
                     onCropChange={setCrop}
                     onZoomChange={setZoom}
                     onCropComplete={onCropComplete}
@@ -200,7 +268,7 @@ export default function ImageUpload({
             <div className="flex flex-col sm:flex-row items-center gap-6">
                 {/* Current avatar */}
                 <Avatar className={`${avatarSize} shrink-0`}>
-                    {hasImage ? <AvatarImage src={value!} alt="Upload" /> : null}
+                    {displayUrl ? <AvatarImage src={displayUrl} alt="Upload" /> : null}
                     <AvatarFallback className="text-2xl font-bold">{initials}</AvatarFallback>
                 </Avatar>
 
@@ -255,6 +323,7 @@ export default function ImageUpload({
                 source={cropSource}
                 crop={crop}
                 zoom={zoom}
+                uploading={uploading}
                 onCropChange={setCrop}
                 onZoomChange={setZoom}
                 onCropComplete={onCropComplete}
@@ -272,6 +341,7 @@ function CropDialog({
     source,
     crop,
     zoom,
+    uploading,
     onCropChange,
     onZoomChange,
     onCropComplete,
@@ -282,6 +352,7 @@ function CropDialog({
     source: string | null;
     crop: { x: number; y: number };
     zoom: number;
+    uploading: boolean;
     onCropChange: (c: { x: number; y: number }) => void;
     onZoomChange: (z: number) => void;
     onCropComplete: (area: Area, pixels: Area) => void;
@@ -289,7 +360,7 @@ function CropDialog({
     onCancel: () => void;
 }) {
     return (
-        <Dialog open={open} onOpenChange={(o) => { if (!o) onCancel(); }}>
+        <Dialog open={open} onOpenChange={(o) => { if (!o && !uploading) onCancel(); }}>
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                     <DialogTitle>Crop Image</DialogTitle>
@@ -319,15 +390,23 @@ function CropDialog({
                         value={zoom}
                         onChange={(e) => onZoomChange(Number(e.target.value))}
                         className="w-full accent-primary"
+                        disabled={uploading}
                     />
                     <ZoomIn className="h-4 w-4 text-muted-foreground shrink-0" />
                 </div>
                 <DialogFooter>
-                    <Button type="button" variant="outline" onClick={onCancel}>
+                    <Button type="button" variant="outline" onClick={onCancel} disabled={uploading}>
                         Cancel
                     </Button>
-                    <Button type="button" onClick={onConfirm}>
-                        Apply
+                    <Button type="button" onClick={onConfirm} disabled={uploading}>
+                        {uploading ? (
+                            <>
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                Uploading...
+                            </>
+                        ) : (
+                            "Apply"
+                        )}
                     </Button>
                 </DialogFooter>
             </DialogContent>
