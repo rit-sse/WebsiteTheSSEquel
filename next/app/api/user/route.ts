@@ -129,7 +129,9 @@ export async function DELETE(request: Request) {
  * Update an existing user
  * HTTP PUT request to /api/user
  * @param request { id: number, name?: string, email?: string, linkedIn?: string, gitHub?: string, description?: string, image?: string }
+ * @param request { id: number, name?: string, email?: string, linkedIn?: string, gitHub?: string, description?: string, image?: string }
  * @returns updated user object
+ *
  * 
  * Auth: Users can update their own profile. Officers can update any user.
  * 
@@ -182,6 +184,7 @@ export async function PUT(request: NextRequest) {
   }
 
   // only update fields the caller wants to update
+  const data: { name?: string; email?: string; description?: string; linkedIn?: string; gitHub?: string; image?: string } = {};
   const data: { name?: string; email?: string; description?: string; linkedIn?: string; gitHub?: string; image?: string } = {};
   if ("name" in body) {
     data.name = body.name;
