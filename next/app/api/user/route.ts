@@ -44,23 +44,18 @@ export async function GET() {
     orderBy: { name: 'asc' }
   });
   
-  // Transform with role-based field filtering.
-  const usersWithMembershipCount = users.map(user => {
-    const isSelf = !!sessionEmail && user.email === sessionEmail;
-    const canSeePrivate = isOfficer || isSelf;
-
-    return {
-      id: user.id,
-      name: user.name,
-      email: canSeePrivate ? user.email : undefined,
-      linkedIn: canSeePrivate ? user.linkedIn : null,
-      gitHub: canSeePrivate ? user.gitHub : null,
-      description: canSeePrivate ? user.description : null,
-      image: user.image,
-      membershipCount: user._count.Memberships,
-      isMember: user._count.Memberships >= 1, // Computed for backward compatibility
-    };
-  });
+  // Transform to include membershipCount and isMember (computed) for backward compatibility
+  const usersWithMembershipCount = users.map((user: { id: any; name: any; email: any; linkedIn: any; gitHub: any; description: any; image: any; _count: { Memberships: number; }; }) => ({
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    linkedIn: user.linkedIn,
+    gitHub: user.gitHub,
+    description: user.description,
+    image: user.image,
+    membershipCount: user._count.Memberships,
+    isMember: user._count.Memberships >= 1, // Computed for backward compatibility
+  }));
   
   return Response.json(usersWithMembershipCount);
 }
