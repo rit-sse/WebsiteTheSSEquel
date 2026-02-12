@@ -3,6 +3,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { NextRequest } from "next/server";
 import { getPublicS3Url } from "@/lib/s3Utils";
+import { s3Service } from "@/lib/services/s3Service";
+import { getKeyFromS3Url, isS3Key } from "@/lib/s3Utils";
 
 export const dynamic = 'force-dynamic'
 
@@ -166,7 +168,7 @@ export async function PUT(request: NextRequest) {
 
   const targetUser = await prisma.user.findUnique({
     where: { id },
-    select: { email: true },
+    select: { email: true, profileImageKey: true },
   });
 
   if (!targetUser) {
@@ -210,12 +212,40 @@ export async function PUT(request: NextRequest) {
   }
   if ("image" in body) {
     if (body.image === null) {
-      // User removed their custom upload — clear the S3 key
+      // User removed their custom upload -> delete from S3 and clear the key
+      if (targetUser.profileImageKey) {
+        try {
+          await s3Service.deleteObject(targetUser.profileImageKey);
+        } catch (err) {
+          console.error("Failed to delete old profile picture:", err);
+        }
+      }
       data.profileImageKey = null;
-    } else {
-      // User uploaded a new image — save the S3 key and clear Google image
+    } else if (isS3Key(body.image)) {
+      // User uploaded a new image -> delete old one from S3
+      if (targetUser.profileImageKey && targetUser.profileImageKey !== body.image) {
+        try {
+          await s3Service.deleteObject(targetUser.profileImageKey);
+        } catch (err) {
+          console.error("Failed to delete old profile picture:", err);
+        }
+      }
       data.profileImageKey = body.image;
       data.googleImageURL = null;
+    } else {
+      // Full URL -> try to extract S3 key
+      const extracted = getKeyFromS3Url(body.image);
+      if (extracted) {
+        if (targetUser.profileImageKey && targetUser.profileImageKey !== extracted) {
+          try {
+            await s3Service.deleteObject(targetUser.profileImageKey);
+          } catch (err) {
+            console.error("Failed to delete old profile picture:", err);
+          }
+        }
+        data.profileImageKey = extracted;
+        data.googleImageURL = null;
+      }
     }
   }
 
