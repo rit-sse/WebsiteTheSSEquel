@@ -23,7 +23,6 @@ export async function POST(req: NextRequest) {
     const user = await prisma.user.findFirst({
       where: {
         session: { some: { sessionToken: authToken } },
-        // optional: require active officer to update officer pictures
         officers: { some: { is_active: true } },
       },
       select: { id: true },
@@ -81,12 +80,4 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
-}
-
-// This route is only for generating presigned upload URLs.
-export async function PUT() {
-  return NextResponse.json(
-    { error: "Method not allowed" },
-    { status: 405 }
-  );
 }
