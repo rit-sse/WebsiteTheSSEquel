@@ -2,6 +2,7 @@ import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { NextRequest } from "next/server";
+import { getPublicS3Url } from "@/lib/s3Utils";
 
 export const dynamic = 'force-dynamic'
 
@@ -53,7 +54,11 @@ export async function GET() {
     linkedIn: user.linkedIn,
     gitHub: user.gitHub,
     description: user.description,
-    image: user.profileImageKey ?? user.googleImageURL ?? null,
+    image: user.profileImageKey
+      ? getPublicS3Url(user.profileImageKey)
+      : user.googleImageURL ?? null,
+    // Keep the raw key so the frontend can send it back on save
+    profileImageKey: user.profileImageKey ?? null,
     membershipCount: user._count.Memberships,
     isMember: user._count.Memberships >= 1, // Computed for backward compatibility
   }));
@@ -185,7 +190,7 @@ export async function PUT(request: NextRequest) {
   }
 
   // only update fields the caller wants to update
-  const data: { name?: string; email?: string; description?: string; linkedIn?: string; gitHub?: string; image?: string } = {};
+  const data: { name?: string; email?: string; description?: string; linkedIn?: string; gitHub?: string; profileImageKey?: string | null; googleImageURL?: string | null } = {};
   if ("name" in body) {
     data.name = body.name;
   }
@@ -204,7 +209,14 @@ export async function PUT(request: NextRequest) {
     data.gitHub = body.gitHub;
   }
   if ("image" in body) {
-    data.image = body.image;
+    if (body.image === null) {
+      // User removed their custom upload — clear the S3 key
+      data.profileImageKey = null;
+    } else {
+      // User uploaded a new image — save the S3 key and clear Google image
+      data.profileImageKey = body.image;
+      data.googleImageURL = null;
+    }
   }
 
   try {
@@ -218,11 +230,16 @@ export async function PUT(request: NextRequest) {
       },
     });
     
-    // Return with membershipCount
+    // Transform for memberships & image based on URL
+    const { profileImageKey, googleImageURL, _count, ...rest } = user;
     return Response.json({
-      ...user,
-      membershipCount: user._count.Memberships,
-      isMember: user._count.Memberships >= 1,
+      ...rest,
+      image: profileImageKey
+        ? getPublicS3Url(profileImageKey)
+        : googleImageURL ?? null,
+      profileImageKey: profileImageKey ?? null,
+      membershipCount: _count.Memberships,
+      isMember: _count.Memberships >= 1,
     });
   } catch (e) {
     // make sure the selected user exists

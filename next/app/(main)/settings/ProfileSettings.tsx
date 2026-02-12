@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import ImageUpload from "@/components/common/ImageUpload";
-import { getImageUrl, isS3Key } from "@/lib/s3Utils";
+import { isS3Key } from "@/lib/s3Utils";
 
 const DEFAULT_IMAGE = "https://source.boringavatars.com/beam/";
 
@@ -19,6 +19,7 @@ interface UserProfile {
     name: string;
     email: string;
     image: string;
+    profileImageKey: string | null;
     linkedIn: string | null;
     gitHub: string | null;
     description: string | null;
@@ -108,8 +109,7 @@ export default function ProfileSettings() {
     /** The image to display: custom upload > OAuth > null */
     function getDisplayImage(): string | null {
         if (image && image !== DEFAULT_IMAGE) {
-            // Convert S3 keys to full URLs for display
-            return getImageUrl(image);
+            return image; // Already a full URL from the API
         }
         if (oauthImage) return oauthImage;
         return null;
@@ -142,7 +142,11 @@ export default function ProfileSettings() {
             const originalGh = extractGitHubUsername(original?.gitHub ?? "");
             if (linkedIn !== originalLi) payload.linkedIn = linkedIn;
             if (gitHub !== originalGh) payload.gitHub = gitHub;
-            if (image !== (original?.image ?? DEFAULT_IMAGE)) payload.image = image;
+            if (image !== (original?.image ?? DEFAULT_IMAGE)) {
+                // If the image is a full S3 URL, it hasn't changed. 
+                // If it's a key (from a new upload), send that.
+                payload.image = isS3Key(image) ? image : original?.profileImageKey ?? image;
+            }
 
             const res = await fetch("/api/user", {
                 method: "PUT",
@@ -157,6 +161,7 @@ export default function ProfileSettings() {
                 name: updated.name,
                 email: updated.email,
                 image: updated.image,
+                profileImageKey: updated.profileImageKey ?? null,
                 linkedIn: updated.linkedIn,
                 gitHub: updated.gitHub,
                 description: updated.description,

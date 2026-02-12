@@ -135,6 +135,19 @@ const alumniRequestsVerifier: AuthVerifier = async (request: NextRequest) => {
 };
 
 /**
+ * Auth verifier for user routes:
+ * - GET is public
+ * - PUT is allowed through (route-level checks handle self-edit vs officer-edit)
+ * - POST, DELETE require officer
+ */
+const userVerifier: AuthVerifier = async (request: NextRequest) => {
+  if (request.method === "GET" || request.method === "PUT") {
+    return { isAllowed: true, authType: "None" };
+  }
+  return officerVerifier(request);
+};
+
+/**
  * Map from API route name to authorization verifier. The verifier should be run against any request that
  * goes through that route.
  * Keys are the second element in the path segment; for example, the path "/api/golinks/officer" would
@@ -164,7 +177,7 @@ const ROUTES: { [key: string]: AuthVerifier } = {
   schedule: nonGetMentorVerifier,
   skills: nonGetOfficerVerifier,
   sponsor: nonGetOfficerVerifier,
-  user: nonGetOfficerVerifier,
+  user: userVerifier,
   userProject: nonGetOfficerVerifier,
 };
 

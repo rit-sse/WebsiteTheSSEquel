@@ -23,7 +23,7 @@ interface ProfileData {
     id: number;
     name: string;
     email?: string;
-    image: string;
+    imageURL: string;
     linkedIn: string | null;
     gitHub: string | null;
     description: string | null;
@@ -158,7 +158,7 @@ export default function ProfileContent({ userId, children }: ProfileContentProps
     const pastRoles = profile.officerRoles.filter((r) => !r.is_active);
 
     // Use getImageUrl to handle both S3 keys and full URLs
-    const profileImageUrl = getImageUrl(profile.image);
+    const profileImageUrl = getImageUrl(profile.imageURL);
     const hasImage = profileImageUrl !== DEFAULT_IMAGE;
 
     return (

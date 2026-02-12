@@ -5,9 +5,20 @@ import GoogleProvider from "next-auth/providers/google";
 
 // OAuth scopes for authentication
 const scopes = "openid email profile";
+const adapter = PrismaAdapter(prisma);
 
 export const authOptions: AuthOptions = {
-  adapter: PrismaAdapter(prisma),
+  adapter: { ...adapter,
+    createUser: async (data: any) => {
+      const { image, ...rest } = data as any;
+      return prisma.user.create({
+        data: {
+          ...rest,
+          googleImageURL: image ?? null,
+        },
+      }) as any;
+    }
+  },
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || "",
@@ -24,10 +35,35 @@ export const authOptions: AuthOptions = {
     }),
   ],
   callbacks: {
-    async signIn({ user, account }) {
-      // Log all sign-in attempts for monitoring
+    async signIn({ user, account, profile }) {
+      // Monitor sign ins
       console.log(`Sign-in attempt: ${user.email} via ${account?.provider}`);
-      
+
+      if (user.email && account?.provider === "google") {
+        try {
+          const googleImage = (profile as { picture?: string })?.picture;
+          console.log("Google image URL:", googleImage);
+          if (googleImage) {
+            // Only update googleImageURL, don't overwrite a custom profileImageKey
+            const existingUser = await prisma.user.findUnique({
+              where: { email: user.email },
+              select: { id: true },
+            });
+
+            if (existingUser) {
+              await prisma.user.update({
+                where: { email: user.email },
+                data: { googleImageURL: googleImage },
+              });
+            }
+            // If user doesn't exist yet, the PrismaAdapter will create them.
+            // We handle that in the createUser event below.
+          }
+        } catch (err) {
+          console.error("Error saving Google profile image:", err);
+        }
+      }
+
       // Check for pending invitations
       if (user.email) {
         try {

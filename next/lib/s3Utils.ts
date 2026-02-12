@@ -6,8 +6,8 @@
  * Constructs a public S3 URL from a key
  */
 export function getPublicS3Url(key: string): string {
-  const bucket = process.env.AWS_S3_BUCKET_NAME!;
-  const region = process.env.AWS_S3_REGION!;
+  const bucket = process.env.AWS_S3_BUCKET_NAME || process.env.NEXT_PUBLIC_AWS_S3_BUCKET_NAME;
+  const region = process.env.AWS_S3_REGION || process.env.NEXT_PUBLIC_AWS_S3_REGION;
   return `https://${bucket}.s3.${region}.amazonaws.com/${key}`;
 }
 
@@ -15,8 +15,8 @@ export function getPublicS3Url(key: string): string {
  * Extracts the S3 key from a public S3 URL
  */
 export function getKeyFromS3Url(url: string): string | null {
-  const bucket = process.env.AWS_S3_BUCKET_NAME!;
-  const region = process.env.AWS_S3_REGION!;
+  const bucket = process.env.AWS_S3_BUCKET_NAME || process.env.NEXT_PUBLIC_AWS_S3_BUCKET_NAME;
+  const region = process.env.AWS_S3_REGION || process.env.NEXT_PUBLIC_AWS_S3_REGION;
   const pattern = new RegExp(`https://${bucket}\\.s3\\.${region}\\.amazonaws\\.com/(.+)`);
   const match = url.match(pattern);
   return match ? match[1] : null;

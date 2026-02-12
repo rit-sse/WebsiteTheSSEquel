@@ -89,3 +89,86 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
+export async function PUT(req: NextRequest) {
+  try {
+    const authToken = req.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
+
+    if (!authToken) {
+      return NextResponse.json(
+        { error: "Unauthorized: no session token" },
+        { status: 401 }
+      );
+    }
+
+    const user = await prisma.user.findFirst({
+      where: {
+        session: {
+          some: {
+            sessionToken: authToken,
+          },
+        },
+      },
+      select: {
+        id: true,
+        profileImageKey: true,
+      },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "Unauthorized: user not found" },
+        { status: 401 }
+      );
+    }
+
+    let body;
+    try {
+      body = await req.json();
+    } catch (err) {
+      console.error("Failed to parse JSON", err);
+      return NextResponse.json(
+        { error: "Invalid JSON payload" },
+        { status: 400 }
+      );
+    }
+
+    const { key } = body;
+
+    if (!key) {
+      return NextResponse.json(
+        { error: "key is required" },
+        { status: 400 }
+      );
+    }
+
+    // Delete old profile picture from S3 if it exists
+    if (user.profileImageKey) {
+      try {
+        await s3Service.deleteObject(user.profileImageKey);
+      } catch (err) {
+        console.error("Failed to delete old profile picture:", err);
+      }
+    }
+
+    // Save the new key to the database and clear googleImageURL
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        profileImageKey: key,
+        googleImageURL: null,
+      },
+    });
+
+    return NextResponse.json({
+      message: "Profile picture saved successfully",
+      key,
+    });
+  } catch (error: any) {
+    console.error("Error saving profile picture key:", error);
+    return NextResponse.json(
+      { error: "Failed to save profile picture", details: error.message },
+      { status: 500 }
+    );
+  }
+}
