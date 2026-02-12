@@ -31,8 +31,8 @@ Slate-blue progression with toned-down saturation (saturation decreases with dep
 | `surface-0` | `220 52% 96%` | `#EEF2F9` | Page background (gradient start) |
 | `surface-1` | `222 58% 93%` | `#E4EAF5` | Page background (gradient end) |
 | `surface-2` | `218 50% 89%` | `#D6DEF0` | Primary cards, panels |
-| `surface-3` | `216 42% 84%` | `#C7D1E2` | Inner cards (card-in-card) |
-| `surface-4` | `214 36% 79%` | `#B9C3D4` | Emphasis / deeply nested containers |
+| `surface-3` | `216 46% 80%` | `#B4C7E3` | Inner cards (card-in-card) |
+| `surface-4` | `212 34% 73%` | `#A2B8D1` | Emphasis / deeply nested containers |
 
 ## Dark Theme Depths
 
@@ -44,7 +44,7 @@ Vibrant slate-blue progression with increasing saturation for rich depth.
 | `surface-1` | `220 40% 21%` | `#1F2D42` | Secondary sections |
 | `surface-2` | `217 46% 29%` | `#283D58` | Primary cards, panels |
 | `surface-3` | `213 52% 38%` | `#2E5278` | Inner cards (card-in-card) |
-| `surface-4` | `208 58% 48%` | `#3371A3` | Emphasis / deeply nested containers |
+| `surface-4` | `208 54% 52%` | `#4289C6` | Emphasis / deeply nested containers |
 
 ## Categorical Colors (New Tableau 10)
 
@@ -98,8 +98,8 @@ Theme-aware: light mode uses deeper tones for contrast on pale backgrounds, dark
 | Role | Light Mode | Dark Mode |
 | --- | --- | --- |
 | Page headings (h1) | `text-foreground` | `text-foreground` |
-| Section headings (h2) | `chart-7` (plum) | `chart-8` (pink) |
-| CTA headings (h3) | `chart-2` (deep amber) | `chart-8` (pink) |
+| Section headings (h2) | `text-foreground` | `text-foreground` |
+| CTA headings (h3) | `chart-2` (deep amber) | `text-foreground` |
 | Hero dancing text | `chart-2` (deep amber) | `chart-2` (orange) |
 | Labels / metadata | `chart-2` (deep amber) | `chart-8` (pink) |
 | Links | `chart-4` (deep teal) | `chart-4` (teal) |
@@ -115,6 +115,7 @@ Theme-aware: light mode uses deeper tones for contrast on pale backgrounds, dark
 | Outline | `surface-2` | foreground | Neutral action |
 | Destructive | destructive | white | Dangerous action |
 | NeoBrutalist CTA | `accentScale-4` / custom | black | Hero CTA only |
+| Data table add button | `accent-3` (yellow) | black | Dashboard create/add actions |
 
 ### Tags / Badges (categorical fill + foreground text)
 
@@ -142,18 +143,28 @@ All badge variants use a categorical color as background fill (25-30% opacity) w
 
 ### Borders and Separators
 
-Borders use `foreground`-based opacity for guaranteed contrast (since `border` color is the same hue as surfaces):
+Borders use high-contrast neutral strokes for guaranteed separation (pure black across the app):
 
 | Context | Opacity | Notes |
 | --- | --- | --- |
 | Depth-1 card (neo) | `border-black` | Full neobrutalist statement |
-| Depth-2 card (neo) | `foreground/20` | Visible inner card edge |
-| Depth-3 card (neo) | `foreground/18` | Subtle emphasis edge |
+| Depth-2 card (neo) | `border-black` | Visible inner card edge |
+| Depth-3 card (neo) | `border-black` | Subtle emphasis edge |
 | Depth-1 card (clean) | `border/30` | Soft shadow carries depth |
-| Depth-2 card (clean) | `foreground/15` | Clean visible edge |
-| Table header | `foreground/20` | Clear section separator |
-| Table row | `foreground/12` | Subtle row divider |
-| Data table wrapper | `foreground/18` | Container edge |
+| Depth-2 card (clean) | `border-black` | Clean visible edge |
+| Table header | `border-black` | Clear section separator |
+| Table row | `border-black` | Strong row divider |
+| Data table wrapper | `border-black` | Container edge |
+
+### Form Field Depth Standard
+
+Form controls (`Input`, `Textarea`, `Select`) are depth-aware and should render one surface level above their container:
+
+- On `surface-0` / `background` -> fields use `surface-1`
+- On `surface-1` -> fields use `surface-2`
+- On `surface-2` / `card` / `secondary-background` -> fields use `surface-3`
+- On `surface-3` / `popover` -> fields use `surface-4`
+- On `surface-4` -> fields stay `surface-4`
 
 ### Interactive Components
 

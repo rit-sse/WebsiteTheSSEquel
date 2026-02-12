@@ -55,8 +55,8 @@
   --surface-0: 220 52% 96%;
   --surface-1: 222 58% 93%;
   --surface-2: 218 50% 89%;
-  --surface-3: 216 42% 84%;
-  --surface-4: 214 36% 79%;
+  --surface-3: 216 46% 80%;
+  --surface-4: 212 34% 73%;
 
   /* Dropdown/popover specific */
   --dropdown: 220 52% 96%;
@@ -91,6 +91,46 @@
   --reverse-box-shadow-y: -4px;
   
   color-scheme: light;
+}
+
+/* Global border normalization: pure black and thinner */
+[class*="border"] {
+  border-color: #000 !important;
+}
+
+[class*="border-2"],
+[class*="border-t-2"],
+[class*="border-r-2"],
+[class*="border-b-2"],
+[class*="border-l-2"],
+[class*="border-x-2"],
+[class*="border-y-2"] {
+  border-width: 1px !important;
+}
+
+.depth1-thick-border {
+  border-width: 2px !important;
+}
+
+/* Field depth mapping: inputs/selects/textareas sit one surface above container */
+:where(.bg-surface-0, .bg-background) :is([data-slot="input"], [data-slot="textarea"], [data-slot="select-trigger"]) {
+  background-color: hsl(var(--surface-1));
+}
+
+:where(.bg-surface-1) :is([data-slot="input"], [data-slot="textarea"], [data-slot="select-trigger"]) {
+  background-color: hsl(var(--surface-2));
+}
+
+:where(.bg-surface-2, .bg-card, .bg-secondary-background) :is([data-slot="input"], [data-slot="textarea"], [data-slot="select-trigger"]) {
+  background-color: hsl(var(--surface-3));
+}
+
+:where(.bg-surface-3, .bg-popover) :is([data-slot="input"], [data-slot="textarea"], [data-slot="select-trigger"]) {
+  background-color: hsl(var(--surface-4));
+}
+
+:where(.bg-surface-4) :is([data-slot="input"], [data-slot="textarea"], [data-slot="select-trigger"]) {
+  background-color: hsl(var(--surface-4));
 }
 
 [data-theme="dark"] {
@@ -143,7 +183,7 @@
   --surface-1: 220 40% 21%;
   --surface-2: 217 46% 29%;
   --surface-3: 213 52% 38%;
-  --surface-4: 208 58% 48%;
+  --surface-4: 208 54% 52%;
 
   /* Dropdown/popover specific */
   --dropdown: 222 34% 14%;

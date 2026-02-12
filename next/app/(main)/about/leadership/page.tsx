@@ -162,7 +162,7 @@ export default function Leadership() {
 
 				{/* Primary Officers */}
 				<div className="mb-10">
-					<h2 className="text-center text-chart-7 dark:text-chart-8 mb-6">
+					<h2 className="text-center text-foreground mb-6">
 						Primary Officers
 					</h2>
 					<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 justify-items-center">
@@ -187,7 +187,7 @@ export default function Leadership() {
 
 				{/* Committee Heads */}
 				<div>
-					<h2 className="text-center text-chart-7 dark:text-chart-8 mb-6">
+					<h2 className="text-center text-foreground mb-6">
 						Committee Heads
 					</h2>
 					<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 justify-items-center">

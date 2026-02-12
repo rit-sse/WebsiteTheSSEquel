@@ -120,7 +120,7 @@ export function DataTable<T extends Record<string, any>>({
     <Card depth={1} className="w-full max-w-full overflow-hidden">
       {/* Title bar */}
       {title && (
-        <div className="px-4 py-3 flex flex-wrap items-center justify-between gap-2 border-b border-foreground/20">
+        <div className="px-4 py-3 flex flex-wrap items-center justify-between gap-2 border-b border-black">
           <h3 className="text-lg font-semibold">{title}</h3>
           {titleExtra}
         </div>
@@ -136,11 +136,15 @@ export function DataTable<T extends Record<string, any>>({
               placeholder={searchPlaceholder}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 text-sm"
+              className="pl-9 text-sm bg-surface-1 border border-black focus-visible:border-black focus-visible:ring-black/20"
             />
           </div>
           {onAdd && (
-            <Button variant="accent" onClick={onAdd} className="w-full sm:w-auto text-sm">
+            <Button
+              variant="default"
+              onClick={onAdd}
+              className="w-full sm:w-auto text-sm bg-accentScale-3 hover:bg-accentScale-3/90 text-black border-black/25"
+            >
               <Plus className="h-4 w-4 mr-2" />
               {addLabel}
             </Button>
@@ -158,7 +162,7 @@ export function DataTable<T extends Record<string, any>>({
               sortedData.map((item) => (
                 <div
                   key={String(item[keyField])}
-                  className="rounded-lg border border-foreground/18 bg-surface-3 p-3 space-y-2"
+                  className="rounded-lg border border-black bg-surface-3 p-3 space-y-2"
                 >
                   {/* Primary value - card header */}
                   <div className="font-medium text-sm">
@@ -167,7 +171,7 @@ export function DataTable<T extends Record<string, any>>({
 
                   {/* Detail rows */}
                   {detailColumns.length > 0 && (
-                    <div className="border-t border-foreground/18 pt-2 space-y-2">
+                    <div className="border-t border-black pt-2 space-y-2">
                       {detailColumns.map((column) =>
                         column.isFullWidth ? (
                           <div key={column.key} className="space-y-1">
@@ -190,7 +194,7 @@ export function DataTable<T extends Record<string, any>>({
 
                   {/* Actions - card footer */}
                   {actionColumn && (
-                    <div className="border-t border-foreground/18 pt-2">
+                    <div className="border-t border-black pt-2">
                       {renderCellValue(actionColumn, item)}
                     </div>
                   )}
@@ -200,10 +204,10 @@ export function DataTable<T extends Record<string, any>>({
           </div>
         ) : (
           /* Desktop table layout */
-          <div className="rounded-md border border-foreground/18 overflow-x-auto w-full bg-surface-3">
+          <div className="rounded-md border border-black overflow-x-auto w-full bg-surface-3">
             <Table>
               <TableHeader>
-                <TableRow className="border-b border-foreground/20">
+                <TableRow className="border-b border-black">
                   {columns.map((column) => (
                     <TableHead
                       key={column.key}

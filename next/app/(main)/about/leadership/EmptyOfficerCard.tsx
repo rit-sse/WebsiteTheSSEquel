@@ -19,8 +19,8 @@ export default function EmptyOfficerCard({ position, children }: EmptyOfficerCar
 
       {/* Position Title */}
       <h4 className="font-bold text-lg text-muted-foreground">Position Open</h4>
-      <div className="accent-rule accent-rule-green mt-1 mb-2" aria-hidden="true" />
-      <p className="text-sm font-semibold text-chart-2 dark:text-chart-8 mb-2">{position.title}</p>
+      <div className="accent-rule accent-rule-teal mt-1 mb-2" aria-hidden="true" />
+      <p className="text-sm font-semibold text-chart-2 dark:text-foreground mb-2">{position.title}</p>
       <div className="h-0.5 w-[94%] bg-chart-4/35 rounded-full mb-3" aria-hidden="true" />
       
       {/* Description placeholder */}

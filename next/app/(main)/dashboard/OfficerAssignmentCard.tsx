@@ -78,7 +78,7 @@ export default function OfficerAssignmentCard({
   // State 1: Officer is assigned
   if (officer) {
     return (
-      <div className="flex items-center gap-3 p-2 rounded-lg bg-chart-5/28 border-2 border-chart-5/50">
+      <div className="flex items-center gap-3 p-2 rounded-lg bg-surface-4 border-2 border-black/20">
         <Avatar className="h-8 w-8">
           <AvatarImage src={officer.image} alt={officer.name} />
           <AvatarFallback className="text-xs bg-chart-5 text-white">
@@ -140,7 +140,7 @@ export default function OfficerAssignmentCard({
   // State 3: No officer assigned
   return (
     <div
-      className="flex items-center gap-3 p-2 rounded-lg bg-accentScale-4/32 border-2 border-accentScale-4/60 cursor-pointer transition-all duration-150 hover:bg-accentScale-4/42 hover:border-accentScale-4/75"
+      className="flex items-center gap-3 p-2 rounded-lg bg-surface-4 border-2 border-black/20 cursor-pointer transition-all duration-150 hover:bg-surface-4 hover:border-black/35"
       onClick={!disabled ? onInvite : undefined}
       role="button"
       tabIndex={0}
@@ -156,6 +156,7 @@ export default function OfficerAssignmentCard({
         variant="default"
         onClick={(e) => { e.stopPropagation(); onInvite(); }}
         disabled={disabled}
+        className="bg-accentScale-3 hover:bg-accentScale-3/90 text-black border-black/25"
       >
         <UserPlus className="h-3 w-3 mr-1" />
         Invite

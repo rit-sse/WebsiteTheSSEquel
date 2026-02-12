@@ -82,7 +82,7 @@ const GoLinksContainer: React.FC<GoLinksContainerProps> = ({
             <Input
               type="text"
               placeholder="Search golinks..."
-              className="pl-10 h-11 border-2 border-borderTier-strong rounded-lg"
+              className="pl-10 h-11 bg-surface-1 border border-black rounded-lg focus-visible:border-black"
               onChange={(event) => handleFilterChange(event)}
             />
           </div>

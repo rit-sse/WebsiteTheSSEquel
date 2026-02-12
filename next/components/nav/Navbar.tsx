@@ -65,6 +65,11 @@ const aboutItems = [
         href: "/about/primary-officers-policy",
         description: "View our officer guidelines and policies.",
     },
+    {
+        title: "Color Palette Docs",
+        href: "/about/docs/color-palette",
+        description: "Read the live website color system and token documentation.",
+    },
 ];
 
 const dashboardItems = [

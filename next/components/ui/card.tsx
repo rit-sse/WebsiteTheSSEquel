@@ -11,6 +11,7 @@ const cardVariants = cva(
         // Depth 1: Full neo-brutalist statement — sits on page background (surface-2)
         1: [
           "bg-surface-2",
+          "depth1-thick-border",
           "neo:rounded-xl neo:border-2 neo:border-black neo:shadow-shadow",
           "clean:rounded-lg clean:border clean:border-border/30 clean:shadow-md",
         ].join(" "),

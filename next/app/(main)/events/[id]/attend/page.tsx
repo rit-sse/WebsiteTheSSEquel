@@ -160,7 +160,7 @@ export default function AttendEventPage() {
         <CardHeader>
           <CardTitle className="text-2xl">{event.title}</CardTitle>
           <CardDescription className="space-y-2">
-            <div className="flex items-center gap-2 text-chart-2 dark:text-chart-8 font-medium">
+            <div className="flex items-center gap-2 text-chart-2 dark:text-foreground font-medium">
               <Calendar className="h-4 w-4" />
               {formatDate(event.date)}
             </div>

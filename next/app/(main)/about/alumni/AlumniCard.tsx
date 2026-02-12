@@ -39,7 +39,7 @@ export default function AlumniCard({ alumniMember, children }: AlumniCardProps) 
       )}
       
       {/* Previous Roles */}
-      <p className="text-sm font-semibold text-chart-2 dark:text-chart-8">{alumniMember.previous_roles}</p>
+      <p className="text-sm font-semibold text-chart-2 dark:text-foreground">{alumniMember.previous_roles}</p>
       <div className="h-0.5 w-[94%] bg-chart-4/35 rounded-full my-2" aria-hidden="true" />
       
       {/* End Date */}

@@ -242,10 +242,10 @@ export default function PositionsSection() {
       render: (position) => (
         <Button 
           size="xs" 
-          variant="accent"
+          variant="outline"
           onClick={() => router.push(`/dashboard/positions/${position.id}/handover`)}
           title="View/Edit handover document"
-          className="gap-1"
+          className="gap-1 border-black/25 hover:border-black/40"
         >
           <FileText className="h-3 w-3" />
           Handover
@@ -262,9 +262,9 @@ export default function PositionsSection() {
           {isMobile && (
             <Button
               size="sm"
-              variant="accent"
+              variant="outline"
               onClick={() => router.push(`/dashboard/positions/${position.id}/handover`)}
-              className="gap-1.5"
+              className="gap-1.5 border-black/25 hover:border-black/40"
             >
               <FileText className="h-3.5 w-3.5" />
               Handover
@@ -272,10 +272,10 @@ export default function PositionsSection() {
           )}
           <Button
             size={isMobile ? "sm" : "xs"}
-            variant="reverse"
+            variant="outline"
             onClick={() => handleEdit(position)}
             title="Edit position"
-            className="gap-1"
+            className="gap-1 border-black/25 hover:border-black/40"
           >
             <Pencil className={isMobile ? "h-3.5 w-3.5" : "h-3 w-3"} />
             Edit

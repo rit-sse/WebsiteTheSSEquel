@@ -73,14 +73,14 @@ const Projects = () => {
             {/* Officer-only Add Project Modal Button */}
             { isOfficer ? 
               <div className="flex justify-center mt-6">
-                <button className="bg-chart-2 text-white px-[25px] py-[10px] rounded-lg hover:bg-chart-2/85 transition-colors font-medium" onClick={enableModal}>Add Project</button>
+                <button className="bg-accentScale-3 text-black px-[25px] py-[10px] rounded-lg hover:bg-accentScale-3/90 transition-colors font-medium" onClick={enableModal}>Add Project</button>
               </div>
               : undefined}
           </div>
           
           {/* Current Projects */}
           <div className="mb-8">
-            <h2 className="text-chart-7 dark:text-chart-8 text-center lg:text-left mb-4">
+            <h2 className="text-foreground text-center lg:text-left mb-4">
               Current Projects
             </h2>
             <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
@@ -92,7 +92,7 @@ const Projects = () => {
 
           {/* Past Projects */}
           <div>
-            <h2 className="text-chart-7 dark:text-chart-8 text-center lg:text-left mb-4">
+            <h2 className="text-foreground text-center lg:text-left mb-4">
               Past Projects
             </h2>
             <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">

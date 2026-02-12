@@ -30,8 +30,8 @@ export default function OfficerCard({ teamMember, children }: OfficerCardProps) 
 
       {/* Name & Title */}
       <h4 className="font-bold text-lg text-foreground">{teamMember.name}</h4>
-      <div className="accent-rule accent-rule-amber accent-rule-animate mt-1 mb-2" aria-hidden="true" />
-      <p className="text-sm font-semibold text-chart-2 dark:text-chart-8 mb-2">{teamMember.title}</p>
+      <div className="accent-rule accent-rule-teal accent-rule-animate mt-1 mb-2" aria-hidden="true" />
+      <p className="text-sm font-semibold text-chart-2 dark:text-foreground mb-2">{teamMember.title}</p>
       <div className="h-0.5 w-[94%] bg-chart-4/35 rounded-full mb-3" aria-hidden="true" />
       
       {/* Description */}
