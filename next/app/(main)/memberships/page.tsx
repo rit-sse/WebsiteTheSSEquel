@@ -7,6 +7,7 @@ import { DataTable, Column } from "@/components/ui/data-table"
 import { Badge } from "@/components/ui/badge"
 import Avatar from "boring-avatars"
 import Image from "next/image"
+import { getImageUrl } from "@/lib/s3Utils"
 
 export default function Leaderboard() {
     const [items, setItems] = useState<LeaderboardItem[]>([])
@@ -28,6 +29,7 @@ export default function Leaderboard() {
                 const data = await res.json()
                 const rankedData = data.map((item: LeaderboardItem, index: number) => ({
                     ...item,
+                    image: getImageUrl(item.image),
                     rank: index + 1
                 }))
                 setItems(rankedData)

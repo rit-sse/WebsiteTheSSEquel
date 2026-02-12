@@ -2,6 +2,8 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import prisma from "@/lib/prisma";
 import { AuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
+import { getImageProps } from "next/image";
+import { getImageUrl } from "./s3Utils";
 
 // OAuth scopes for authentication
 const scopes = "openid email profile";
@@ -35,6 +37,24 @@ export const authOptions: AuthOptions = {
     }),
   ],
   callbacks: {
+    async session({ session }) {
+      if (!session.user?.email) return session;
+      
+      const dbUser = await prisma.user.findUnique({
+        where: {email: session.user.email }, 
+        select: {
+          profileImageKey: true,
+          googleImageURL: true,
+        }
+      });
+
+      if (dbUser) {
+        const raw = dbUser.profileImageKey ?? dbUser.googleImageURL ?? null;
+        session.user.image = raw ? getImageUrl(raw) : null;
+      }
+
+      return session;
+    }, 
     async signIn({ user, account, profile }) {
       // Monitor sign ins
       console.log(`Sign-in attempt: ${user.email} via ${account?.provider}`);
