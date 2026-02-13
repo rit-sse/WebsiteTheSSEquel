@@ -34,7 +34,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
-import { isS3Key } from "@/lib/s3Utils";
+import { isS3Key, normalizeToS3Key } from "@/lib/s3Utils";
 import { useProfileImage } from "@/contexts/ProfileImageContext";
 import ImageUpload from "@/components/common/ImageUpload";
 
@@ -194,6 +194,7 @@ export default function ProfileContent({ userId, children }: ProfileContentProps
     const [editMajor, setEditMajor] = useState("");
     const [editCoopSummary, setEditCoopSummary] = useState("");
     const [editImage, setEditImage] = useState(DEFAULT_IMAGE);
+    const [pendingCleanupKeys, setPendingCleanupKeys] = useState<string[]>([]);
 
     const fetchProfile = useCallback(async () => {
         try {
@@ -254,11 +255,13 @@ export default function ProfileContent({ userId, children }: ProfileContentProps
 
     function enterEditMode() {
         if (profile) populateEditFields(profile);
+        setPendingCleanupKeys([]);
         setEditing(true);
     }
 
     function cancelEdit() {
         if (profile) populateEditFields(profile);
+        setPendingCleanupKeys([]);
         setEditing(false);
     }
 
@@ -292,6 +295,9 @@ export default function ProfileContent({ userId, children }: ProfileContentProps
                     payload.image = isS3Key(editImage) ? editImage : profile.profileImageKey ?? editImage;
                 }
             }
+            if (pendingCleanupKeys.length > 0) {
+                payload.cleanupImageKeys = pendingCleanupKeys;
+            }
 
             const res = await fetch("/api/user", {
                 method: "PUT",
@@ -321,6 +327,7 @@ export default function ProfileContent({ userId, children }: ProfileContentProps
                 populateEditFields(freshProfile);
             }
 
+            setPendingCleanupKeys([]);
             setEditing(false);
 
             if (updated.membershipAwarded) {
@@ -388,7 +395,17 @@ export default function ProfileContent({ userId, children }: ProfileContentProps
                         <div className="shrink-0">
                             <ImageUpload
                                 value={editImage === DEFAULT_IMAGE ? null : editImage}
-                                onChange={(img) => setEditImage(img ?? DEFAULT_IMAGE)}
+                                onChange={(img) => {
+                                    const nextImage = img ?? DEFAULT_IMAGE;
+                                    const currentKey = normalizeToS3Key(editImage);
+                                    const nextKey = normalizeToS3Key(nextImage);
+                                    if (currentKey && currentKey !== nextKey) {
+                                        setPendingCleanupKeys((prev) =>
+                                            prev.includes(currentKey) ? prev : [...prev, currentKey]
+                                        );
+                                    }
+                                    setEditImage(nextImage);
+                                }}
                                 initials={getInitials(editName || profile.name)}
                                 avatarSize="h-28 w-28 sm:h-32 sm:w-32"
                                 compact

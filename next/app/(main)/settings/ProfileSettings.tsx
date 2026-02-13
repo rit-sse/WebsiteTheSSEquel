@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import ImageUpload from "@/components/common/ImageUpload";
-import { isS3Key } from "@/lib/s3Utils";
+import { isS3Key, normalizeToS3Key } from "@/lib/s3Utils";
 
 const DEFAULT_IMAGE = "https://source.boringavatars.com/beam/";
 
@@ -84,6 +84,7 @@ export default function ProfileSettings() {
     const [graduationYear, setGraduationYear] = useState("");
     const [major, setMajor] = useState("");
     const [coopSummary, setCoopSummary] = useState("");
+    const [pendingCleanupKeys, setPendingCleanupKeys] = useState<string[]>([]);
 
     const [original, setOriginal] = useState<UserProfile | null>(null);
     const oauthImage = session?.user?.image ?? null;
@@ -134,6 +135,14 @@ export default function ProfileSettings() {
         (isS3Key(image) || (image.includes('.s3.') && image.includes('.amazonaws.com'))));
 
     const handleImageChange = (newImage: string | null) => {
+        const nextImage = newImage ?? DEFAULT_IMAGE;
+        const currentKey = normalizeToS3Key(image);
+        const nextKey = normalizeToS3Key(nextImage);
+        if (currentKey && currentKey !== nextKey) {
+            setPendingCleanupKeys((prev) =>
+                prev.includes(currentKey) ? prev : [...prev, currentKey]
+            );
+        }
         setImage(newImage ?? DEFAULT_IMAGE);
     };
 
@@ -174,6 +183,9 @@ export default function ProfileSettings() {
                     payload.image = isS3Key(image) ? image : original?.profileImageKey ?? image;
                 }
             }
+            if (pendingCleanupKeys.length > 0) {
+                payload.cleanupImageKeys = pendingCleanupKeys;
+            }
 
             const res = await fetch("/api/user", {
                 method: "PUT",
@@ -198,6 +210,7 @@ export default function ProfileSettings() {
                 coopSummary: updated.coopSummary ?? null,
             });
             setImage(updated.image ?? DEFAULT_IMAGE);
+            setPendingCleanupKeys([]);
             // Refresh NextAuth session image so navbar and other session consumers update immediately
             await update({
                 name: updated.name,
@@ -226,6 +239,7 @@ export default function ProfileSettings() {
         setLinkedIn(extractLinkedInUsername(original.linkedIn ?? ""));
         setGitHub(extractGitHubUsername(original.gitHub ?? ""));
         setImage(original.image ?? DEFAULT_IMAGE);
+        setPendingCleanupKeys([]);
         setGraduationTerm(original.graduationTerm ?? "");
         setGraduationYear(original.graduationYear ? String(original.graduationYear) : "");
         setMajor(original.major ?? "");
