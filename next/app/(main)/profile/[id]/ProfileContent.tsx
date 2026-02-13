@@ -148,14 +148,14 @@ const DEFAULT_IMAGE = "https://source.boringavatars.com/beam/";
 
 // --- Quest field definitions ---
 const QUEST_FIELDS = [
-    { key: "graduationTerm", label: "Graduation Term", icon: GraduationCap, points: 20 },
-    { key: "graduationYear", label: "Graduation Year", icon: Calendar, points: 20 },
-    { key: "major", label: "Major", icon: Briefcase, points: 20 },
-    { key: "gitHub", label: "GitHub", icon: Github, points: 20 },
-    { key: "linkedIn", label: "LinkedIn", icon: Linkedin, points: 20 },
+    { key: "graduationTerm", label: "Graduation Term", icon: GraduationCap },
+    { key: "graduationYear", label: "Graduation Year", icon: Calendar },
+    { key: "major", label: "Major", icon: Briefcase },
+    { key: "gitHub", label: "GitHub", icon: Github },
+    { key: "linkedIn", label: "LinkedIn", icon: Linkedin },
 ] as const;
 
-const TOTAL_QUEST_POINTS = QUEST_FIELDS.reduce((sum, f) => sum + f.points, 0);
+const TOTAL_QUEST_FIELDS = QUEST_FIELDS.length;
 
 interface ProfileContentProps {
     userId: string;
@@ -382,8 +382,8 @@ export default function ProfileContent({ userId, children }: ProfileContentProps
             default: return false;
         }
     };
-    const earnedPoints = QUEST_FIELDS.reduce((sum, f) => sum + (fieldComplete(f.key) ? f.points : 0), 0);
-    const allQuestComplete = earnedPoints === TOTAL_QUEST_POINTS;
+    const completedQuestFields = QUEST_FIELDS.reduce((sum, f) => sum + (fieldComplete(f.key) ? 1 : 0), 0);
+    const allQuestComplete = completedQuestFields === TOTAL_QUEST_FIELDS;
 
     return (
         <Card depth={1} className="flex flex-col gap-8 p-4 sm:p-6 lg:p-8">
@@ -543,47 +543,34 @@ export default function ProfileContent({ userId, children }: ProfileContentProps
             ) : null}
 
             {/* ── Profile Quest (Nate Parrott-inspired gamification) ── */}
-            {profile.isOwner && (
+            {profile.isOwner && !allQuestComplete && (
                 <div>
                     <Card
                         depth={2}
-                        className={allQuestComplete
-                            ? "border-emerald-500/40 bg-gradient-to-br from-emerald-500/5 to-emerald-600/10 p-5"
-                            : "border-primary/30 bg-gradient-to-br from-primary/5 to-primary/10 p-5"
-                        }
+                        className="border-primary/30 bg-gradient-to-br from-primary/5 to-primary/10 p-5"
                     >
                         <div className="flex items-start gap-4">
                             <div className="shrink-0 mt-0.5">
-                                {allQuestComplete ? (
-                                    <div className="h-10 w-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                                        <Sparkles className="h-5 w-5 text-emerald-500" />
-                                    </div>
-                                ) : (
-                                    <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center">
-                                        <Target className="h-5 w-5 text-primary" />
-                                    </div>
-                                )}
+                                <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center">
+                                    <Target className="h-5 w-5 text-primary" />
+                                </div>
                             </div>
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 mb-1">
-                                    <h3 className="font-bold text-sm">
-                                        {allQuestComplete ? "Quest Complete!" : "Profile Quest"}
-                                    </h3>
-                                    <Badge variant={allQuestComplete ? "default" : "secondary"} className="text-[10px]">
-                                        {earnedPoints} / {TOTAL_QUEST_POINTS} XP
+                                    <h3 className="font-bold text-sm">Profile Quest</h3>
+                                    <Badge variant="secondary" className="text-[10px]">
+                                        {completedQuestFields} / {TOTAL_QUEST_FIELDS} fields
                                     </Badge>
                                 </div>
                                 <p className="text-xs text-muted-foreground mb-3">
-                                    {allQuestComplete
-                                        ? "All fields complete. You've unlocked your profile-completion membership!"
-                                        : "Complete your profile to earn XP and unlock your membership. Each field unlocked gets you closer!"}
+                                    Complete your profile to unlock your membership. Each field gets you closer.
                                 </p>
 
-                                {/* XP bar */}
+                                {/* Progress bar */}
                                 <div className="h-3 rounded-full bg-muted overflow-hidden mb-3">
                                     <div
-                                        className={`h-full transition-all duration-500 rounded-full ${allQuestComplete ? "bg-emerald-500" : "bg-primary"}`}
-                                        style={{ width: `${(earnedPoints / TOTAL_QUEST_POINTS) * 100}%` }}
+                                        className="h-full transition-all duration-500 rounded-full bg-primary"
+                                        style={{ width: `${(completedQuestFields / TOTAL_QUEST_FIELDS) * 100}%` }}
                                     />
                                 </div>
 
@@ -609,15 +596,12 @@ export default function ProfileContent({ userId, children }: ProfileContentProps
                                                 <span className={complete ? "line-through opacity-70" : ""}>
                                                     {field.label}
                                                 </span>
-                                                <span className="ml-auto font-mono text-[10px] opacity-60">
-                                                    +{field.points} XP
-                                                </span>
                                             </div>
                                         );
                                     })}
                                 </div>
 
-                                {!allQuestComplete && !editing && (
+                                {!editing && (
                                     <Button
                                         size="sm"
                                         className="mt-3"
