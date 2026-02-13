@@ -569,49 +569,73 @@ export default function MentorScheduleEditor() {
       const assignments: { mentorId: number; weekday: number; hour: number }[] = []
       const unfilledSlots: string[] = []
 
+      type CandidateSlot = { weekday: number; hour: number; dayIndex: number; label: string }
+      const candidateSlots: CandidateSlot[] = []
+
       for (const { hour, label } of HOURS) {
         for (let dayIndex = 0; dayIndex < DAYS.length; dayIndex++) {
           const weekday = dayIndex + 1
           const slotKey = `${weekday}-${hour}`
           const currentCount = slotCounts.get(slotKey) ?? 0
 
-          if (autoFillEmptyOnly && currentCount >= autoFillMaxPerSlot) {
-            continue
-          }
+          // Strict mode: only touch completely empty slots.
+          if (autoFillEmptyOnly && currentCount > 0) continue
+          if (currentCount >= autoFillMaxPerSlot) continue
 
-          const availableMentors = mentors.filter((mentor) => {
-            const availability = mentorAvailability.get(mentor.id) || []
-            const hasSlot = availability.some(
-              (slot) => slot.weekday === weekday && slot.hour === hour
-            )
-            const alreadyAssigned = existingAssignments.has(
-              `${mentor.id}-${weekday}-${hour}`
-            )
-            const assignmentCount = mentorAssignmentCounts.get(mentor.id) ?? 0
-            return hasSlot && !alreadyAssigned && assignmentCount < autoFillSlotsPerMentor
-          })
+          candidateSlots.push({ weekday, hour, dayIndex, label })
+        }
+      }
 
-          availableMentors.sort((a, b) => {
-            const aCount = mentorAssignmentCounts.get(a.id) ?? 0
-            const bCount = mentorAssignmentCounts.get(b.id) ?? 0
-            return aCount - bCount
-          })
+      // Fill in passes so lower-coverage slots are always prioritized first:
+      // pass 1 fills up to one mentor per slot, pass 2 fills up to two, etc.
+      for (let targetCoverage = 1; targetCoverage <= autoFillMaxPerSlot; targetCoverage++) {
+        candidateSlots.sort((a, b) => {
+          const aCount = slotCounts.get(`${a.weekday}-${a.hour}`) ?? 0
+          const bCount = slotCounts.get(`${b.weekday}-${b.hour}`) ?? 0
+          return aCount - bCount
+        })
 
-          let filled = currentCount
-          for (const mentor of availableMentors) {
-            if (filled >= autoFillMaxPerSlot) break
-            assignments.push({ mentorId: mentor.id, weekday, hour })
-            mentorAssignmentCounts.set(
-              mentor.id,
-              (mentorAssignmentCounts.get(mentor.id) ?? 0) + 1
-            )
-            existingAssignments.add(`${mentor.id}-${weekday}-${hour}`)
-            filled += 1
-          }
+        for (const slot of candidateSlots) {
+          const slotKey = `${slot.weekday}-${slot.hour}`
+          const currentCount = slotCounts.get(slotKey) ?? 0
+          if (currentCount >= targetCoverage) continue
+          if (currentCount >= autoFillMaxPerSlot) continue
 
-          if (filled < autoFillMaxPerSlot) {
-            unfilledSlots.push(`${DAYS[dayIndex]} ${label}`)
-          }
+          const availableMentors = mentors
+            .filter((mentor) => {
+              const availability = mentorAvailability.get(mentor.id) || []
+              const hasSlot = availability.some(
+                (entry) => entry.weekday === slot.weekday && entry.hour === slot.hour
+              )
+              const alreadyAssigned = existingAssignments.has(
+                `${mentor.id}-${slot.weekday}-${slot.hour}`
+              )
+              const assignmentCount = mentorAssignmentCounts.get(mentor.id) ?? 0
+              return hasSlot && !alreadyAssigned && assignmentCount < autoFillSlotsPerMentor
+            })
+            .sort((a, b) => {
+              const aCount = mentorAssignmentCounts.get(a.id) ?? 0
+              const bCount = mentorAssignmentCounts.get(b.id) ?? 0
+              return aCount - bCount
+            })
+
+          const mentor = availableMentors[0]
+          if (!mentor) continue
+
+          assignments.push({ mentorId: mentor.id, weekday: slot.weekday, hour: slot.hour })
+          mentorAssignmentCounts.set(
+            mentor.id,
+            (mentorAssignmentCounts.get(mentor.id) ?? 0) + 1
+          )
+          existingAssignments.add(`${mentor.id}-${slot.weekday}-${slot.hour}`)
+          slotCounts.set(slotKey, currentCount + 1)
+        }
+      }
+
+      for (const slot of candidateSlots) {
+        const filled = slotCounts.get(`${slot.weekday}-${slot.hour}`) ?? 0
+        if (filled < autoFillMaxPerSlot) {
+          unfilledSlots.push(`${DAYS[slot.dayIndex]} ${slot.label}`)
         }
       }
 
