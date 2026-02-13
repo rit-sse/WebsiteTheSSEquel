@@ -291,6 +291,29 @@ export async function PUT(request: NextRequest) {
     }
   }
 
+  // Cleanup any intermediate uploads produced during client-side recropping
+  // before save (these are owned by the user but never persisted in DB).
+  if (Array.isArray(body.cleanupImageKeys)) {
+    const currentBodyImage = typeof body.image === "string" ? normalizeToS3Key(body.image) : null;
+    const uniqueCleanupKeys = Array.from(
+      new Set(
+        body.cleanupImageKeys
+          .map((key: unknown) => (typeof key === "string" ? normalizeToS3Key(key) : null))
+          .filter((key: string | null): key is string => !!key)
+      )
+    );
+
+    for (const cleanupKey of uniqueCleanupKeys) {
+      if (!isOwnedProfileImageKey(cleanupKey, targetUser.id)) continue;
+      if (cleanupKey === currentBodyImage) continue;
+      try {
+        await s3Service.deleteObject(cleanupKey);
+      } catch (err) {
+        console.error("Failed to delete intermediate profile picture:", err);
+      }
+    }
+  }
+
   try {
     const { user, membershipResult } = await prisma.$transaction(async (tx) => {
       const updatedUser = await tx.user.update({
