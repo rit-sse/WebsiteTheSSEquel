@@ -64,14 +64,51 @@ const mentorVerifier = authVerifierFactory((permissions) => {
  * Auth verifier specifically for the golinks route
  */
 const goLinkVerifier = async (request: NextRequest) => {
+  const pathname = request.nextUrl.pathname;
   // if it's a GET to a public route, just allow it
   if (
     request.method === "GET" &&
-    !request.nextUrl.toString().startsWith("/api/golinks/officer")
+    !pathname.startsWith("/api/golinks/officer")
   ) {
     return { isAllowed: true, authType: "None" };
   }
   // otherwise, run the officer verifier
+  return officerVerifier(request);
+};
+
+/**
+ * Auth verifier for invitations:
+ * - officer required for invitation management endpoints
+ * - invitee endpoints rely on route-level ownership checks
+ */
+const invitationsVerifier: AuthVerifier = async (request: NextRequest) => {
+  const pathname = request.nextUrl.pathname;
+  if (
+    pathname.startsWith("/api/invitations/accept") ||
+    pathname.startsWith("/api/invitations/decline") ||
+    pathname.startsWith("/api/invitations/pending")
+  ) {
+    return { isAllowed: true, authType: "None" };
+  }
+  return officerVerifier(request);
+};
+
+/**
+ * Auth verifier for events:
+ * - GET remains public
+ * - attendance mutation endpoints keep their route-level auth logic
+ * - all other non-GET event mutations require officer
+ */
+const eventVerifier: AuthVerifier = async (request: NextRequest) => {
+  const pathname = request.nextUrl.pathname;
+  if (request.method === "GET") {
+    return { isAllowed: true, authType: "None" };
+  }
+
+  if (/^\/api\/event\/[^/]+\/attendance$/.test(pathname)) {
+    return { isAllowed: true, authType: "None" };
+  }
+
   return officerVerifier(request);
 };
 
@@ -98,23 +135,41 @@ const alumniRequestsVerifier: AuthVerifier = async (request: NextRequest) => {
 };
 
 /**
+ * Auth verifier for user routes:
+ * - GET is public
+ * - PUT is allowed through (route-level checks handle self-edit vs officer-edit)
+ * - POST, DELETE require officer
+ */
+const userVerifier: AuthVerifier = async (request: NextRequest) => {
+  if (request.method === "GET" || request.method === "PUT") {
+    return { isAllowed: true, authType: "None" };
+  }
+  return officerVerifier(request);
+};
+
+/**
  * Map from API route name to authorization verifier. The verifier should be run against any request that
  * goes through that route.
  * Keys are the second element in the path segment; for example, the path "/api/golinks/officer" would
  * correspond to the key "golinks"
  */
 const ROUTES: { [key: string]: AuthVerifier } = {
+  alumni: nonGetOfficerVerifier,
   "alumni-requests": alumniRequestsVerifier,
   calendar: nonGetOfficerVerifier,
   course: nonGetOfficerVerifier,
   courseTaken: nonGetMentorVerifier,
   departments: nonGetOfficerVerifier,
+  event: eventVerifier,
   golinks: goLinkVerifier,
   handover: officerVerifier, // All handover document routes require officer auth
   hourBlocks: nonGetOfficerVerifier,
+  invitations: invitationsVerifier,
+  memberships: nonGetOfficerVerifier,
   mentor: nonGetOfficerVerifier,
   mentorSkill: nonGetMentorVerifier,
   officer: nonGetOfficerVerifier,
+  "officer-positions": nonGetOfficerVerifier,
   project: nonGetOfficerVerifier,
   projectContributor: nonGetOfficerVerifier,
   purchasing: officerVerifier, // All purchasing routes require officer auth
@@ -122,7 +177,7 @@ const ROUTES: { [key: string]: AuthVerifier } = {
   schedule: nonGetMentorVerifier,
   skills: nonGetOfficerVerifier,
   sponsor: nonGetOfficerVerifier,
-  user: nonGetOfficerVerifier,
+  user: userVerifier,
   userProject: nonGetOfficerVerifier,
 };
 

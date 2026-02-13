@@ -545,10 +545,12 @@ async function seedAlumni() {
 			linkedIn: "linkedin.com/bob",
 			gitHub: "github.com/bob",
 			description: "bob is bob",
-			start_date: ("Fall 2017"),
-			end_date: ("Spring 2023"),
+			start_date: "Fall 2017",
+			end_date: "Spring 2023",
 			previous_roles: "President",
-			quote: "01001000 01100101 01101100 01101100 01101111"
+			quote: "01001000 01100101 01101100 01101100 01101111",
+			showEmail: true,
+			receiveEmails: true,
 		},
 	});
 
@@ -562,14 +564,73 @@ async function seedAlumni() {
 			linkedIn: "linkedin.com/fred",
 			gitHub: "github.com/fred",
 			description: "fred is fred",
-			start_date: ("Spring 2020"),
-			end_date: ("Fall 2025"),
+			start_date: "Spring 2020",
+			end_date: "Fall 2025",
 			previous_roles: "Tech Head, Vice President",
-			quote: "Pinapple on pizza <3"
+			quote: "Pinapple on pizza <3",
+			showEmail: true,
+			receiveEmails: true,
 		},
 	});
-	console.log({ alumni1, alumni2 });
 
+	const alumni3 = await prisma.alumni.upsert({
+		where: { id: 3 },
+		update: {},
+		create: {
+			id: 3,
+			name: "Alex Chen",
+			email: "alex.chen@rit.edu",
+			linkedIn: "alexchen",
+			gitHub: "alexchen",
+			description: "Former Events Head. Loved running hackathons and game nights.",
+			start_date: "Fall 2019",
+			end_date: "Spring 2022",
+			previous_roles: "Events Head",
+			quote: "I once went here every day",
+			showEmail: false,
+			receiveEmails: true,
+		},
+	});
+
+	const alumni4 = await prisma.alumni.upsert({
+		where: { id: 4 },
+		update: {},
+		create: {
+			id: 4,
+			name: "Jordan Lee",
+			email: "jordan.lee@rit.edu",
+			linkedIn: "jordanlee",
+			gitHub: "jordanlee",
+			description: "Mentoring and career dev were my focus. Now in FAANG.",
+			start_date: "Spring 2018",
+			end_date: "Fall 2021",
+			previous_roles: "Mentoring Head, Career Development Head",
+			quote: "SSE gave me my first real network.",
+			showEmail: true,
+			receiveEmails: true,
+		},
+	});
+
+	const alumni5 = await prisma.alumni.upsert({
+		where: { id: 5 },
+		update: {},
+		create: {
+			id: 5,
+			name: "Sam Rivera",
+			email: "sam.rivera@rit.edu",
+			linkedIn: "samrivera",
+			gitHub: "samrivera",
+			description: "Lab ops and projects. Built a lot of the physical space.",
+			start_date: "Fall 2020",
+			end_date: "Spring 2024",
+			previous_roles: "Lab Ops Head, Projects Head",
+			quote: "Best community at RIT.",
+			showEmail: true,
+			receiveEmails: false,
+		},
+	});
+
+	console.log({ alumni1, alumni2, alumni3, alumni4, alumni5 });
 }
 
 async function seedMentorSkill() {

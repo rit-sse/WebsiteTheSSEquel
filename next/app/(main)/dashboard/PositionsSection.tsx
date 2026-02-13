@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation"
 import { DataTable, Column } from "@/components/ui/data-table"
 import { Button } from "@/components/ui/button"
 import { Modal, ModalFooter } from "@/components/ui/modal"
-import { Mail, Pencil, Trash2 } from "lucide-react"
+import { Mail, Pencil, Trash2, FileText } from "lucide-react"
 import { toast } from "sonner"
+import { useIsMobile } from "@/hooks/use-mobile"
 import PositionModal from "./PositionModal"
 import OfficerAssignmentCard from "./OfficerAssignmentCard"
 import OfficerInviteModal from "./OfficerInviteModal"
@@ -245,6 +246,8 @@ export default function PositionsSection() {
     }
   }
 
+  const isMobile = useIsMobile()
+
   // Separate primary officers and committee heads
   const primaryOfficers = positions.filter(p => p.is_primary)
   const committeeHeads = positions.filter(p => !p.is_primary)
@@ -254,6 +257,7 @@ export default function PositionsSection() {
       key: "title",
       header: "Position",
       sortable: true,
+      isPrimary: true,
       className: "w-[180px]",
       render: (position) => (
         <span className="font-medium text-sm">{position.title}</span>
@@ -262,6 +266,7 @@ export default function PositionsSection() {
     {
       key: "officer",
       header: "Assigned Officer",
+      isFullWidth: true,
       className: "w-[420px]",
       render: (position) => {
         const pendingInv = getPendingInvitation(position.id)
@@ -279,6 +284,7 @@ export default function PositionsSection() {
     {
       key: "handover",
       header: "Handover",
+      mobileHidden: true,
       className: "hidden lg:table-cell w-[100px]",
       render: (position) => (
         <Button 
@@ -294,22 +300,43 @@ export default function PositionsSection() {
     {
       key: "actions",
       header: "",
+      isAction: true,
       className: "w-[80px]",
       render: (position) => (
-        <div className="flex items-center gap-1">
-          <Button size="xs" variant="ghost" onClick={() => handleEdit(position)} title="Edit position">
-            <Pencil className="h-3 w-3" />
+        <div className={`flex items-center ${isMobile ? "flex-wrap gap-2" : "gap-1"}`}>
+          {isMobile && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => router.push(`/dashboard/positions/${position.id}/handover`)}
+              className="gap-1.5"
+            >
+              <FileText className="h-3.5 w-3.5" />
+              Handover
+            </Button>
+          )}
+          <Button
+            size={isMobile ? "sm" : "xs"}
+            variant={isMobile ? "outline" : "ghost"}
+            onClick={() => handleEdit(position)}
+            title="Edit position"
+            className={isMobile ? "gap-1.5" : ""}
+          >
+            <Pencil className={isMobile ? "h-3.5 w-3.5" : "h-3 w-3"} />
+            {isMobile && "Edit"}
           </Button>
-          <Button 
-            size="xs" 
-            variant="destructiveGhost" 
+          <Button
+            size={isMobile ? "sm" : "xs"}
+            variant={isMobile ? "outline" : "destructiveGhost"}
             onClick={() => setDeletePosition(position)}
             disabled={position.isFilled || !!getPendingInvitation(position.id)}
             title={position.isFilled ? "Cannot delete position with assigned officer" : 
                    getPendingInvitation(position.id) ? "Cannot delete position with pending invitation" :
                    "Delete position"}
+            className={isMobile ? "gap-1.5 text-destructive hover:text-destructive" : ""}
           >
-            <Trash2 className="h-3 w-3" />
+            <Trash2 className={isMobile ? "h-3.5 w-3.5" : "h-3 w-3"} />
+            {isMobile && "Delete"}
           </Button>
         </div>
       )

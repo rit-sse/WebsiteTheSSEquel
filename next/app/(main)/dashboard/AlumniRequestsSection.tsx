@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Check, X, Trash2 } from "lucide-react"
 import Avatar from 'boring-avatars'
 import Image from "next/image"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 export interface AlumniRequest {
   id: number
@@ -19,6 +20,9 @@ export interface AlumniRequest {
   end_date: string
   quote: string
   previous_roles: string
+  showEmail: boolean
+  receiveEmails: boolean
+  alumniId?: number | null
   status: string
   created_at: string
 }
@@ -31,6 +35,7 @@ export default function AlumniRequestsSection() {
   const [processingId, setProcessingId] = useState<number | null>(null)
   const [filter, setFilter] = useState<FilterStatus>('pending')
   const [error, setError] = useState("")
+  const isMobile = useIsMobile()
 
   const fetchRequests = useCallback(async () => {
     setIsLoading(true)
@@ -128,6 +133,7 @@ export default function AlumniRequestsSection() {
       key: "name",
       header: "Name",
       sortable: true,
+      isPrimary: true,
       render: (request) => (
         <div className="flex items-center gap-2">
           {request.image && request.image !== "https://source.boringavatars.com/beam/" ? (
@@ -143,8 +149,12 @@ export default function AlumniRequestsSection() {
             <Avatar size={32} name={request.name || "default"} colors={["#426E8C", "#5289AF", "#86ACC7"]} variant="beam"/>
           )}
           <div className="min-w-0">
-            <span className="font-medium text-sm block truncate">{request.name}</span>
-            <span className="text-xs text-muted-foreground block sm:hidden truncate">{request.email}</span>
+            <span className="font-medium text-sm truncate block">{request.name}</span>
+            {request.alumniId ? (
+              <span className="text-[10px] text-amber-600 dark:text-amber-400 font-medium uppercase tracking-wide">Update</span>
+            ) : (
+              <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium uppercase tracking-wide">New</span>
+            )}
           </div>
         </div>
       )
@@ -152,7 +162,6 @@ export default function AlumniRequestsSection() {
     {
       key: "email",
       header: "Email",
-      className: "hidden sm:table-cell",
       render: (request) => (
         <span className="text-muted-foreground text-xs truncate">{request.email}</span>
       )
@@ -160,7 +169,6 @@ export default function AlumniRequestsSection() {
     {
       key: "previous_roles",
       header: "Previous Roles",
-      className: "hidden md:table-cell",
       render: (request) => (
         <span className="text-muted-foreground text-xs truncate max-w-[150px] block">{request.previous_roles || "-"}</span>
       )
@@ -168,7 +176,6 @@ export default function AlumniRequestsSection() {
     {
       key: "dates",
       header: "Dates",
-      className: "hidden lg:table-cell",
       render: (request) => (
         <span className="text-muted-foreground text-xs">{request.start_date} - {request.end_date}</span>
       )
@@ -176,11 +183,35 @@ export default function AlumniRequestsSection() {
     {
       key: "actions",
       header: "",
+      isAction: true,
       render: (request) => {
         const isProcessing = processingId === request.id
         
         if (request.status === 'pending') {
-          return (
+          return isMobile ? (
+            <div className="flex flex-wrap gap-2">
+              <Button 
+                size="sm" 
+                variant="outline"
+                onClick={() => handleReject(request.id)}
+                disabled={isProcessing}
+                className="gap-1.5"
+              >
+                <X className="h-3.5 w-3.5" />
+                Reject
+              </Button>
+              <Button 
+                size="sm"
+                variant="accent"
+                onClick={() => handleApprove(request.id)}
+                disabled={isProcessing}
+                className="gap-1.5"
+              >
+                <Check className="h-3.5 w-3.5" />
+                Approve
+              </Button>
+            </div>
+          ) : (
             <div className="flex gap-1">
               <Button 
                 size="xs" 
@@ -204,7 +235,18 @@ export default function AlumniRequestsSection() {
           )
         }
         
-        return (
+        return isMobile ? (
+          <Button 
+            size="sm" 
+            variant="destructive"
+            onClick={() => handleDelete(request.id)}
+            disabled={isProcessing}
+            className="gap-1.5"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            Delete
+          </Button>
+        ) : (
           <Button 
             size="xs" 
             variant="destructiveGhost"

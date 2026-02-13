@@ -94,20 +94,33 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Create the officer record
-      const officer = await prisma.officer.create({
-        data: {
-          user_id: loggedInUser.id,
-          position_id: invitation.positionId,
-          start_date: invitation.startDate,
-          end_date: invitation.endDate,
-          is_active: true,
-        },
-      });
+      // Create the officer record and grant a membership in a transaction
+      const { officer, membership } = await prisma.$transaction(async (tx) => {
+        const off = await tx.officer.create({
+          data: {
+            user_id: loggedInUser.id,
+            position_id: invitation.positionId!,
+            start_date: invitation.startDate!,
+            end_date: invitation.endDate!,
+            is_active: true,
+          },
+        });
 
-      // Delete the invitation
-      await prisma.invitation.delete({
-        where: { id: invitationId },
+        // Grant membership for becoming an officer
+        const mem = await tx.memberships.create({
+          data: {
+            userId: loggedInUser.id,
+            reason: `Officer: ${invitation.position?.title ?? "Unknown Position"}`,
+            dateGiven: new Date(),
+          },
+        });
+
+        // Delete the invitation
+        await tx.invitation.delete({
+          where: { id: invitationId },
+        });
+
+        return { officer: off, membership: mem };
       });
 
       console.log(
@@ -118,6 +131,7 @@ export async function POST(request: NextRequest) {
         success: true,
         message: `You are now ${invitation.position?.title}!`,
         officer,
+        membership,
       });
     } else if (invitation.type === "mentor") {
       // Create mentor record

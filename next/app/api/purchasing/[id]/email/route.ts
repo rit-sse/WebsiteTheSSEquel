@@ -1,7 +1,6 @@
 import prisma from "@/lib/prisma";
 import { NextRequest } from "next/server";
-import { sendEmail, isSmtpConfigured } from "@/lib/email";
-import { getValidAccessTokenWithDetails } from "@/lib/email/getAccessToken";
+import { sendEmail } from "@/lib/email";
 
 export const dynamic = 'force-dynamic'
 
@@ -28,7 +27,6 @@ export async function POST(
     return new Response("Unauthorized", { status: 401 });
   }
 
-  // Get the user from the session token (needed for Gmail API mode)
   const user = await prisma.user.findFirst({
     where: {
       session: {
@@ -41,12 +39,6 @@ export async function POST(
       id: true, 
       email: true, 
       name: true,
-      account: {
-        select: {
-          access_token: true,
-          refresh_token: true,
-        },
-      },
     },
   });
 
@@ -129,58 +121,12 @@ export async function POST(
       }
     }
 
-    // Get a valid access token (refreshes if expired)
-    let accessToken: string | undefined;
-    if (process.env.EMAIL_PROVIDER === "gmail") {
-      const tokenResult = await getValidAccessTokenWithDetails(user.id);
-      if (tokenResult.success) {
-        accessToken = tokenResult.accessToken;
-      } else if (tokenResult.error === "no_scope") {
-        // User hasn't granted gmail.send scope
-        // If SMTP is configured, fall back to it; otherwise return error for frontend to prompt authorization
-        if (!isSmtpConfigured()) {
-          return Response.json(
-            { 
-              error: "Gmail authorization required",
-              needsGmailAuth: true,
-              message: "You need to grant Gmail send permissions to send emails."
-            },
-            { status: 403 }
-          );
-        }
-        // SMTP is configured, will fall back to it
-        console.log("Gmail auth not available, falling back to SMTP");
-      } else {
-        console.warn(`Gmail mode enabled but could not get valid access token: ${tokenResult.error}`);
-        // Will fall back to SMTP if configured
-        if (!isSmtpConfigured()) {
-          return Response.json(
-            { 
-              error: "Gmail authorization error",
-              message: "Could not get a valid Gmail access token. Please try logging out and back in."
-            },
-            { status: 400 }
-          );
-        }
-      }
-    }
-    
-    console.log("Email config:", {
-      provider: process.env.EMAIL_PROVIDER || "smtp",
-      hasAccessToken: !!accessToken,
-      toEmail,
-      fromEmail: user.email,
-    });
-
-    // Send the email
+    // Send the email via SMTP
     await sendEmail({
       to: toEmail,
       subject,
       html: htmlContent,
       attachments,
-      fromEmail: user.email,
-      fromName: user.name,
-      accessToken,
     });
 
     return Response.json({ success: true, message: "Email sent successfully" });

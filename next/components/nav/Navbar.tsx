@@ -2,10 +2,12 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ChevronDown, Menu } from "lucide-react";
-import { useSession } from "next-auth/react";
+import { ChevronDown, Menu, User, LogOut } from "lucide-react";
+import { signOut, useSession } from "next-auth/react";
 import SSELogoFull from "../common/SSELogoFull";
 import AuthButton from "./AuthButton";
+import NavAvatar from "./NavAvatar";
+import { useProfileImage } from "@/contexts/ProfileImageContext";
 import {
     NavigationMenu,
     NavigationMenuContent,
@@ -104,23 +106,38 @@ const dashboardItems = [
         description: "Manage sponsor information.",
     },
     {
-        title: "Alumni Requests",
+        title: "Alumni Review",
         href: "/dashboard/alumni",
-        description: "Review alumni submission requests.",
+        description: "Review alumni requests and auto-generated candidates.",
     },
 ];
 
-const Navbar: React.FC = () => {
+interface NavbarProps {
+    /** Resolved on the server so the first paint already includes Dashboard / profile link. */
+    serverUserId?: number | null;
+    serverShowDashboard?: boolean;
+    serverProfileComplete?: boolean;
+}
+
+const Navbar: React.FC<NavbarProps> = ({
+    serverUserId = null,
+    serverShowDashboard = false,
+    serverProfileComplete = true,
+}) => {
     const [open, setOpen] = React.useState(false);
     const { data: session } = useSession();
+    const { profileImage } = useProfileImage();
     
-    // Only show dashboard when user is an officer or mentor
-    const [showDashboard, setShowDashboard] = React.useState(false);
+    // Initialize from server props — no flash on first paint
+    const [showDashboard, setShowDashboard] = React.useState(serverShowDashboard);
+    const [userId, setUserId] = React.useState<number | null>(serverUserId);
+    const [profileComplete, setProfileComplete] = React.useState(serverProfileComplete);
 
-    // Fetch auth level to determine if user can see dashboard
+    // Background refresh so dynamic changes (e.g. profile completion) still propagate
     React.useEffect(() => {
         if (!session) {
             setShowDashboard(false);
+            setUserId(null);
             return;
         }
         
@@ -129,9 +146,10 @@ const Navbar: React.FC = () => {
                 const response = await fetch("/api/authLevel");
                 const data = await response.json();
                 setShowDashboard(data.isOfficer || data.isMentor);
+                setUserId(data.userId ?? null);
+                setProfileComplete(data.profileComplete ?? true);
             } catch (error) {
                 console.error("Error checking auth level:", error);
-                setShowDashboard(false);
             }
         })();
     }, [session]);
@@ -168,7 +186,7 @@ const Navbar: React.FC = () => {
     return (
         <nav
             id="navbar"
-            className="sticky top-0 z-50 flex items-center justify-center bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border"
+            className="sticky top-0 z-50 flex items-center justify-center bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b-[2px] border-black"
         >
             <div
                 id="nav-content"
@@ -247,8 +265,8 @@ const Navbar: React.FC = () => {
                                 </NavigationMenuItem>
                             )}
 
-                            <NavigationMenuItem>
-                                <AuthButton />
+                            <NavigationMenuItem className="flex items-center ml-1">
+                                <AuthButton userId={userId} profileComplete={profileComplete} />
                             </NavigationMenuItem>
                         </NavigationMenuList>
                     </NavigationMenu>
@@ -267,19 +285,6 @@ const Navbar: React.FC = () => {
                                 <SheetTitle className="text-left">Menu</SheetTitle>
                             </SheetHeader>
                             <nav className="flex flex-col gap-2 mt-6">
-                                <MobileNavCollapsible title="About">
-                                    {aboutItems.map((item) => (
-                                        <MobileNavLink
-                                            key={item.title}
-                                            href={item.href}
-                                            onClick={() => setOpen(false)}
-                                            className="pl-4"
-                                        >
-                                            {item.title}
-                                        </MobileNavLink>
-                                    ))}
-                                </MobileNavCollapsible>
-
                                 <MobileNavLink href="/events/calendar" onClick={() => setOpen(false)}>
                                     Events
                                 </MobileNavLink>
@@ -295,6 +300,19 @@ const Navbar: React.FC = () => {
                                 <MobileNavLink href="/go" onClick={() => setOpen(false)}>
                                     Go Links
                                 </MobileNavLink>
+
+                                <MobileNavCollapsible title="About">
+                                    {aboutItems.map((item) => (
+                                        <MobileNavLink
+                                            key={item.title}
+                                            href={item.href}
+                                            onClick={() => setOpen(false)}
+                                            className="pl-4"
+                                        >
+                                            {item.title}
+                                        </MobileNavLink>
+                                    ))}
+                                </MobileNavCollapsible>
 
                                 {showDashboard && (
                                     <MobileNavCollapsible title="Dashboard">
@@ -312,7 +330,44 @@ const Navbar: React.FC = () => {
                                 )}
 
                                 <div className="pt-4 border-t border-border mt-2">
-                                    <AuthButton />
+                                    {session ? (
+                                        <div className="flex flex-col gap-1">
+                                            <div className="flex items-center gap-3 px-3 py-2 mb-1">
+                                                <div className="relative">
+                                                    <NavAvatar
+                                                        src={profileImage ?? session.user?.image ?? null}
+                                                        name={session.user?.name ?? "User"}
+                                                        className="h-9 w-9"
+                                                    />
+                                                    {!profileComplete && (
+                                                        <span className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-destructive border-2 border-background" />
+                                                    )}
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm font-medium">{session.user?.name}</span>
+                                                    <span className="text-xs text-muted-foreground">{session.user?.email}</span>
+                                                </div>
+                                            </div>
+                                            {userId && (
+                                                <MobileNavLink href={`/profile/${userId}`} onClick={() => setOpen(false)}>
+                                                    <User className="h-4 w-4 mr-2" />
+                                                    My Profile
+                                                    {!profileComplete && (
+                                                        <span className="ml-auto h-2 w-2 rounded-full bg-destructive" />
+                                                    )}
+                                                </MobileNavLink>
+                                            )}
+                            <button
+                                                onClick={() => { signOut(); setOpen(false); }}
+                                                className="flex items-center py-2 px-3 text-base font-medium rounded-md hover:bg-accent transition-colors text-destructive"
+                                            >
+                                                <LogOut className="h-4 w-4 mr-2" />
+                                                Sign Out
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <AuthButton userId={userId} profileComplete={profileComplete} />
+                                    )}
                                 </div>
                             </nav>
                         </SheetContent>
@@ -389,8 +444,8 @@ function ListItem({
                     href={href}
                     className={cn(
                         "block select-none space-y-1 rounded-lg p-3 leading-none no-underline outline-none",
-                        "bg-surface-1 border border-border/30",
-                        "hover:bg-surface-2 hover:border-border/50 hover:shadow-md",
+                        "bg-surface-2 border border-border/30",
+                        "hover:bg-surface-1 hover:border-border/50 hover:shadow-md",
                         "focus:bg-surface-2 focus:border-border/50",
                         "transition-colors",
                         className

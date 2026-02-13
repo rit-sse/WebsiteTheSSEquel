@@ -505,9 +505,9 @@ function SemesterAccordion({
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
       <CollapsibleTrigger className="flex items-center justify-between w-full p-3 bg-muted/50 hover:bg-muted rounded-lg transition-colors">
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           <ChevronDown
-            className={`h-5 w-5 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+            className={`h-5 w-5 shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
           />
           <span className="font-semibold">{label}</span>
           <Badge variant="secondary" className="text-xs">
@@ -515,7 +515,7 @@ function SemesterAccordion({
           </Badge>
           <Badge variant="outline" className="text-xs gap-1">
             <Users className="h-3 w-3" />
-            {totalAttendees} total attendees
+            {totalAttendees} attendees
           </Badge>
           {recurringSeriesCount > 0 && (
             <Badge variant="outline" className="text-xs gap-1">
@@ -525,7 +525,7 @@ function SemesterAccordion({
           )}
         </div>
       </CollapsibleTrigger>
-      <CollapsibleContent className="pt-2 space-y-2 pl-2">
+      <CollapsibleContent className="pt-3 space-y-3">
         {eventGroups.map((group) =>
           group.type === "recurring" ? (
             <RecurringSeriesAccordion
@@ -582,11 +582,11 @@ function RecurringSeriesAccordion({
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
       <CollapsibleTrigger className="flex items-center justify-between w-full p-3 bg-muted/30 hover:bg-muted/50 rounded-lg transition-colors">
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           <ChevronDown
-            className={`h-4 w-4 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+            className={`h-4 w-4 shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
           />
-          <Repeat className="h-4 w-4 text-muted-foreground" />
+          <Repeat className="h-4 w-4 shrink-0 text-muted-foreground" />
           <span className="font-medium">{title}</span>
           <Badge variant="secondary" className="text-xs">
             {events.length} occurrences
@@ -597,7 +597,7 @@ function RecurringSeriesAccordion({
           </Badge>
         </div>
       </CollapsibleTrigger>
-      <CollapsibleContent className="pt-2 space-y-2 pl-4">
+      <CollapsibleContent className="pt-3 space-y-3">
         {events.map((event) => (
           <EventCard
             key={event.id}
@@ -637,7 +637,7 @@ function EventCard({
     <Card depth={2} className="p-4">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex flex-wrap items-center gap-2 mb-1">
             {showTitle ? (
               <h3 className="text-lg font-semibold truncate">{event.title}</h3>
             ) : (

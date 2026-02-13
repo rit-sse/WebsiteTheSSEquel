@@ -1,5 +1,4 @@
-import Image from 'next/image'
-import { CTAButton } from '@/components/common/CTAButton';
+import { Card } from "@/components/ui/card";
 import { getPostData } from "@/lib/posts";
 
 export default async function PrimaryOfficersPolicy() {
@@ -7,10 +6,13 @@ export default async function PrimaryOfficersPolicy() {
 
   return (
     <section>
-      <div className="flex flex-col items-center">
-        <div className="mx-auto px-4 sm: py-16 md:pb-8 lg:max-w-6xl">
-          <div dangerouslySetInnerHTML={{ __html: postData.props.htmlContent }} />
-        </div>
+      <div className="text-page-structure">
+        <Card depth={1} className="w-full p-6 md:p-8">
+          <div
+            className="prose prose-lg dark:prose-invert max-w-none"
+            dangerouslySetInnerHTML={{ __html: postData.props.htmlContent }}
+          />
+        </Card>
       </div>
     </section>
   );

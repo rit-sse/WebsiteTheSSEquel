@@ -6,6 +6,7 @@ import { Inter, Rethink_Sans, PT_Serif } from 'next/font/google';
 import { Providers } from "./Providers";
 import { getServerSession } from "next-auth";
 import { authOptions } from '@/lib/authOptions';
+import Script from "next/script";
 
 
 const inter = Inter({
@@ -41,10 +42,29 @@ export default async function RootLayout({
     return (
         // details on suppressHydrationWarning: https://github.com/pacocoursey/next-themes#html--css (scroll up a bit)
         // Also: https://www.reddit.com/r/nextjs/comments/138smpm/how_to_fix_extra_attributes_from_the_server_error/
-        <html lang="en" data-theme="dark" className={`${inter.variable} ${rethinkSans.variable} ${ptSerif.variable}`} suppressHydrationWarning>
+        <html
+            lang="en"
+            data-theme="dark"
+            data-style="neo"
+            data-font="pt-serif"
+            className={`${inter.variable} ${rethinkSans.variable} ${ptSerif.variable}`}
+            suppressHydrationWarning
+        >
             <body
                 className={`min-h-screen flex flex-col bg-gradient-to-b from-background to-muted overflow-x-hidden`}
             >
+                <Script id="init-style-font" strategy="beforeInteractive">
+                    {`try {
+  var styleMode = localStorage.getItem("sse-style-mode");
+  if (styleMode === "neo" || styleMode === "clean") {
+    document.documentElement.setAttribute("data-style", styleMode);
+  }
+  var fontMode = localStorage.getItem("sse-font-mode");
+  if (fontMode === "rethink" || fontMode === "pt-serif") {
+    document.documentElement.setAttribute("data-font", fontMode);
+  }
+} catch (e) {}`}
+                </Script>
                 <Providers session={session}>
                     {children}
                 </Providers>
