@@ -22,6 +22,11 @@ NEXTAUTH_SECRET="random string of characters used for encryption -- feel free to
 
 GCAL_CLIENT_EMAIL="gcal client email"
 GCAL_PRIVATE_KEY="gcal private key"
+
+AWS_S3_BUCKET_NAME="s3 bucket name"
+AWS_S3_REGION="s3 region (for example us-east-1)"
+AWS_ACCESS_KEY_ID="aws access key"
+AWS_SECRET_ACCESS_KEY="aws secret key"
 ```
 
 The above is just a placeholder, you'll need to fill in each entry with the appropriate information. First, let's step through setting up a local database.
@@ -85,3 +90,13 @@ If you run the project now, you'll encounter schema errors. This is because the 
 In the /next/ directory, run `npx prisma migrate dev`. Then run `npx prisma db seed` to populate the database with test data.
 
 That's it! You should now be able to run `npm run dev` and view the website at `localhost:3000` with authentication and access to your local database instance. Try logging in with your RIT email.
+
+## Alumni lifecycle migrations
+
+If your branch includes alumni/profile lifecycle changes, apply migrations before running:
+
+1. `cd next`
+2. `npx prisma migrate dev`
+3. `npx prisma generate`
+
+This ensures new academic term fields, alumni candidate queue tables, and enums are available locally.

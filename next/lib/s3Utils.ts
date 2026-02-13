@@ -26,7 +26,12 @@ export function getKeyFromS3Url(url: string): string | null {
  * Checks if a string is an S3 key (not a full URL)
  */
 export function isS3Key(imageValue: string): boolean {
-  return !imageValue.startsWith('http://') && !imageValue.startsWith('https://');
+  if (!imageValue) return false;
+  // Treat absolute/protocol-relative/app-relative/data URLs as URLs, not S3 keys
+  if (imageValue.startsWith("http://") || imageValue.startsWith("https://")) return false;
+  if (imageValue.startsWith("//") || imageValue.startsWith("/")) return false;
+  if (imageValue.startsWith("data:")) return false;
+  return true;
 }
 
 /**

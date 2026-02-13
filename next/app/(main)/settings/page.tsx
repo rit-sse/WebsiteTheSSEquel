@@ -1,34 +1,33 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
-import ProfileSettings from "./ProfileSettings";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { redirect } from "next/navigation";
+import prisma from "@/lib/prisma";
 
 export const metadata = {
     title: "Settings - SSE",
 };
 
+/**
+ * Settings page now redirects to the user's profile page,
+ * where editing is done inline via the "Edit Profile" button.
+ */
 export default async function SettingsPage() {
     const session = await getServerSession(authOptions);
 
-    if (!session) {
-        return (
-            <section className="w-full max-w-3xl mx-auto space-y-4">
-                <h1 className="text-2xl font-bold font-heading mb-2">Settings</h1>
-                <p className="text-muted-foreground">
-                    You need to sign in to edit your profile settings.
-                </p>
-                <Button asChild>
-                    <Link href="/api/auth/signin">Sign In</Link>
-                </Button>
-            </section>
-        );
+    if (!session?.user?.email) {
+        redirect("/api/auth/signin");
     }
 
-    return (
-        <section className="w-full max-w-3xl mx-auto">
-            <h1 className="text-2xl font-bold font-heading mb-6">Settings</h1>
-            <ProfileSettings />
-        </section>
-    );
+    // Look up the user's numeric ID for the profile route
+    const user = await prisma.user.findUnique({
+        where: { email: session.user.email },
+        select: { id: true },
+    });
+
+    if (user) {
+        redirect(`/profile/${user.id}`);
+    }
+
+    // Fallback if user not found (shouldn't happen for authenticated users)
+    redirect("/");
 }

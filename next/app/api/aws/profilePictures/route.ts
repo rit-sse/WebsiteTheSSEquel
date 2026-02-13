@@ -142,6 +142,14 @@ export async function PUT(req: NextRequest) {
       );
     }
 
+    const requiredPrefix = `uploads/profile-pictures/${user.id}/`;
+    if (!String(key).startsWith(requiredPrefix)) {
+      return NextResponse.json(
+        { error: "Invalid key prefix for current user" },
+        { status: 403 }
+      );
+    }
+
     // Delete old profile picture from S3 if it exists
     if (user.profileImageKey) {
       try {

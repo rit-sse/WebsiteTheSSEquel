@@ -6,38 +6,7 @@ import { getImageUrl } from "@/lib/s3Utils";
 
 const DEFAULT_IMAGE = "https://source.boringavatars.com/beam/";
 
-// Expect these to live under: next/public/assets/officers/*.jpg
-const OFFICER_STATIC_PHOTOS: Record<string, string> = {
-  // S3 KEYS (NOT "/assets/..."):
-  president: "assets/officers/president.jpg",
-  vice_president: "assets/officers/vice_president.jpg",
-  treasurer: "assets/officers/treasurer.jpg",
-  secretary: "assets/officers/secretary.jpg",
-  tech_head: "assets/officers/tech_head.jpg",
-  events_officer: "assets/officers/events_officer.jpg",
-  lab_ops: "assets/officers/lab_ops.jpg",
-  marketing_officer: "assets/officers/marketing_officer.jpg",
-  mentoring_officer: "assets/officers/mentoring_officer.jpg",
-  projects_head: "assets/officers/projects_head.jpg",
-  talks_officer: "assets/officers/talks_officer.jpg",
-  lab_division_manager: "assets/officers/lab_division_manager.jpg",
-  web_division_manager: "assets/officers/web_division_manager.jpg",
-  services_division_manager: "assets/officers/services_division_manager.jpg",
-};
-
-function normalizeKey(val: string) {
-  return val
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "_")
-    .replace(/^_+|_+$/g, "");
-}
-
 function getOfficerPhoto(teamMember: TeamMember) {
-  const titleKey = normalizeKey(teamMember.title ?? "");
-  const staticPhoto = titleKey ? OFFICER_STATIC_PHOTOS[titleKey] : undefined;
-  if (staticPhoto) return getImageUrl(staticPhoto);
-
   if (teamMember.image && teamMember.image !== DEFAULT_IMAGE) {
     return getImageUrl(teamMember.image);
   }

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,6 +24,10 @@ interface UserProfile {
     linkedIn: string | null;
     gitHub: string | null;
     description: string | null;
+    graduationTerm: "SPRING" | "SUMMER" | "FALL" | null;
+    graduationYear: number | null;
+    major: string | null;
+    coopSummary: string | null;
 }
 
 function getInitials(name: string): string {
@@ -63,7 +68,8 @@ function extractGitHubUsername(val: string): string {
 }
 
 export default function ProfileSettings() {
-    const { data: session } = useSession();
+    const { data: session, update } = useSession();
+    const router = useRouter();
 
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -74,6 +80,10 @@ export default function ProfileSettings() {
     const [linkedIn, setLinkedIn] = useState("");
     const [gitHub, setGitHub] = useState("");
     const [image, setImage] = useState(DEFAULT_IMAGE);
+    const [graduationTerm, setGraduationTerm] = useState<"SPRING" | "SUMMER" | "FALL" | "">("");
+    const [graduationYear, setGraduationYear] = useState("");
+    const [major, setMajor] = useState("");
+    const [coopSummary, setCoopSummary] = useState("");
 
     const [original, setOriginal] = useState<UserProfile | null>(null);
     const oauthImage = session?.user?.image ?? null;
@@ -93,6 +103,10 @@ export default function ProfileSettings() {
                     setLinkedIn(extractLinkedInUsername(me.linkedIn ?? ""));
                     setGitHub(extractGitHubUsername(me.gitHub ?? ""));
                     setImage(me.image ?? DEFAULT_IMAGE);
+                    setGraduationTerm(me.graduationTerm ?? "");
+                    setGraduationYear(me.graduationYear ? String(me.graduationYear) : "");
+                    setMajor(me.major ?? "");
+                    setCoopSummary(me.coopSummary ?? "");
                     setOriginal(me);
                 }
             } catch (err) {
@@ -120,7 +134,7 @@ export default function ProfileSettings() {
         (isS3Key(image) || (image.includes('.s3.') && image.includes('.amazonaws.com'))));
 
     const handleImageChange = (newImage: string | null) => {
-        setImage(newImage ?? original?.image ?? DEFAULT_IMAGE);
+        setImage(newImage ?? DEFAULT_IMAGE);
     };
 
     // ── Save / Reset ──
@@ -142,10 +156,23 @@ export default function ProfileSettings() {
             const originalGh = extractGitHubUsername(original?.gitHub ?? "");
             if (linkedIn !== originalLi) payload.linkedIn = linkedIn;
             if (gitHub !== originalGh) payload.gitHub = gitHub;
+            if (graduationTerm !== (original?.graduationTerm ?? "")) {
+                payload.graduationTerm = graduationTerm || null;
+            }
+            const originalGraduationYear = original?.graduationYear ? String(original.graduationYear) : "";
+            if (graduationYear !== originalGraduationYear) {
+                payload.graduationYear = graduationYear ? Number(graduationYear) : null;
+            }
+            if (major !== (original?.major ?? "")) payload.major = major;
+            if (coopSummary !== (original?.coopSummary ?? "")) payload.coopSummary = coopSummary;
             if (image !== (original?.image ?? DEFAULT_IMAGE)) {
                 // If the image is a full S3 URL, it hasn't changed. 
                 // If it's a key (from a new upload), send that.
-                payload.image = isS3Key(image) ? image : original?.profileImageKey ?? image;
+                if (image === DEFAULT_IMAGE) {
+                    payload.image = null;
+                } else {
+                    payload.image = isS3Key(image) ? image : original?.profileImageKey ?? image;
+                }
             }
 
             const res = await fetch("/api/user", {
@@ -165,8 +192,25 @@ export default function ProfileSettings() {
                 linkedIn: updated.linkedIn,
                 gitHub: updated.gitHub,
                 description: updated.description,
+                graduationTerm: updated.graduationTerm ?? null,
+                graduationYear: updated.graduationYear ?? null,
+                major: updated.major ?? null,
+                coopSummary: updated.coopSummary ?? null,
             });
-            toast.success("Profile saved successfully.");
+            setImage(updated.image ?? DEFAULT_IMAGE);
+            // Refresh NextAuth session image so navbar and other session consumers update immediately
+            await update({
+                name: updated.name,
+                email: updated.email,
+                image: updated.image ?? null,
+            });
+            router.refresh();
+            if (updated.membershipAwarded) {
+                const awardLabel = [updated.awardTerm, updated.awardYear].filter(Boolean).join(" ");
+                toast.success(`Profile saved. Membership awarded${awardLabel ? ` for ${awardLabel}` : ""}!`);
+            } else {
+                toast.success("Profile saved successfully.");
+            }
         } catch (err) {
             console.error("Save error:", err);
             toast.error("Failed to save profile. Please try again.");
@@ -182,6 +226,10 @@ export default function ProfileSettings() {
         setLinkedIn(extractLinkedInUsername(original.linkedIn ?? ""));
         setGitHub(extractGitHubUsername(original.gitHub ?? ""));
         setImage(original.image ?? DEFAULT_IMAGE);
+        setGraduationTerm(original.graduationTerm ?? "");
+        setGraduationYear(original.graduationYear ? String(original.graduationYear) : "");
+        setMajor(original.major ?? "");
+        setCoopSummary(original.coopSummary ?? "");
     };
 
     const hasChanges = original && (
@@ -189,6 +237,10 @@ export default function ProfileSettings() {
         description !== (original.description ?? "") ||
         linkedIn !== extractLinkedInUsername(original.linkedIn ?? "") ||
         gitHub !== extractGitHubUsername(original.gitHub ?? "") ||
+        graduationTerm !== (original.graduationTerm ?? "") ||
+        graduationYear !== (original.graduationYear ? String(original.graduationYear) : "") ||
+        major !== (original.major ?? "") ||
+        coopSummary !== (original.coopSummary ?? "") ||
         image !== (original.image ?? DEFAULT_IMAGE)
     );
 
@@ -251,6 +303,58 @@ export default function ProfileSettings() {
                                 placeholder="Tell people a bit about yourself..."
                                 rows={3}
                             />
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                            <div className="flex flex-col gap-2">
+                                <Label htmlFor="graduationTerm">Graduation Term</Label>
+                                <select
+                                    id="graduationTerm"
+                                    value={graduationTerm}
+                                    onChange={(e) => setGraduationTerm(e.target.value as "SPRING" | "SUMMER" | "FALL" | "")}
+                                    className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                                >
+                                    <option value="">Select term</option>
+                                    <option value="SPRING">Spring</option>
+                                    <option value="SUMMER">Summer</option>
+                                    <option value="FALL">Fall</option>
+                                </select>
+                            </div>
+
+                            <div className="flex flex-col gap-2">
+                                <Label htmlFor="graduationYear">Graduation Year</Label>
+                                <Input
+                                    id="graduationYear"
+                                    type="number"
+                                    min={2000}
+                                    max={2100}
+                                    value={graduationYear}
+                                    onChange={(e) => setGraduationYear(e.target.value)}
+                                    placeholder="2026"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                            <div className="flex flex-col gap-2">
+                                <Label htmlFor="major">Major</Label>
+                                <Input
+                                    id="major"
+                                    value={major}
+                                    onChange={(e) => setMajor(e.target.value)}
+                                    placeholder="Software Engineering"
+                                />
+                            </div>
+
+                            <div className="flex flex-col gap-2">
+                                <Label htmlFor="coopSummary">Co-op Summary (Optional)</Label>
+                                <Input
+                                    id="coopSummary"
+                                    value={coopSummary}
+                                    onChange={(e) => setCoopSummary(e.target.value)}
+                                    placeholder="Current or recent co-op"
+                                />
+                            </div>
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">

@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { getImageUrl } from "@/lib/s3Utils";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +25,13 @@ export async function GET() {
       previous_roles: true
     },
   });
-  return Response.json(alumni);
+  return Response.json(
+    alumni.map((entry) => ({
+      ...entry,
+      image: getImageUrl(entry.image),
+      imageKey: entry.image,
+    }))
+  );
 }
 
 /**

@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { EmailAutocomplete } from "@/components/EmailAutocomplete";
+import { getDefaultOfficerTermDateRange } from "@/lib/academicTerm";
 
 interface Position {
   id: number;
@@ -33,17 +34,14 @@ export default function OfficerInviteModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const toDateInputValue = (date: Date) => date.toISOString().split("T")[0];
+
   // Set default dates when modal opens
   const handleOpenChange = (newOpen: boolean) => {
     if (newOpen && !startDate && !endDate) {
-      const now = new Date();
-      const currentYear = now.getFullYear();
-      const currentMonth = now.getMonth();
-      
-      const startYear = currentMonth >= 7 ? currentYear : currentYear - 1;
-      
-      setStartDate(`${startYear}-08-01`);
-      setEndDate(`${startYear + 1}-05-31`);
+      const { startDate: defaultStart, endDate: defaultEnd } = getDefaultOfficerTermDateRange();
+      setStartDate(toDateInputValue(defaultStart));
+      setEndDate(toDateInputValue(defaultEnd));
     }
     if (!newOpen) {
       setEmail("");

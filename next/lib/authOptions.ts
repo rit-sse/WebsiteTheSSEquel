@@ -4,6 +4,7 @@ import { AuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { getImageProps } from "next/image";
 import { getImageUrl } from "./s3Utils";
+import { maybeCreateAlumniCandidate } from "@/lib/services/alumniCandidateService";
 
 // OAuth scopes for authentication
 const scopes = "openid email profile";
@@ -81,6 +82,20 @@ export const authOptions: AuthOptions = {
           }
         } catch (err) {
           console.error("Error saving Google profile image:", err);
+        }
+      }
+
+      if (user.email) {
+        try {
+          const existing = await prisma.user.findUnique({
+            where: { email: user.email },
+            select: { id: true },
+          });
+          if (existing) {
+            await maybeCreateAlumniCandidate(existing.id);
+          }
+        } catch (err) {
+          console.error("Error creating alumni candidate on sign-in:", err);
         }
       }
 

@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { getImageUrl } from "@/lib/s3Utils";
 
 export const dynamic = "force-dynamic";
 
@@ -28,7 +29,13 @@ export async function GET() {
         receiveEmails: true,
       },
     });
-    return Response.json(alumni);
+    return Response.json(
+      alumni.map((entry) => ({
+        ...entry,
+        image: getImageUrl(entry.image),
+        imageKey: entry.image,
+      }))
+    );
   } catch (e) {
     console.error("GET /api/alumni/active failed:", e);
     return new Response(

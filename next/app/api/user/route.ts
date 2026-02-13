@@ -5,8 +5,14 @@ import { NextRequest } from "next/server";
 import { getPublicS3Url } from "@/lib/s3Utils";
 import { s3Service } from "@/lib/services/s3Service";
 import { getKeyFromS3Url, isS3Key } from "@/lib/s3Utils";
+import { maybeGrantProfileCompletionMembership } from "@/lib/services/profileCompletionService";
+import { maybeCreateAlumniCandidate } from "@/lib/services/alumniCandidateService";
 
 export const dynamic = 'force-dynamic'
+
+function isOwnedProfileImageKey(key: string, userId: number): boolean {
+  return key.startsWith(`uploads/profile-pictures/${userId}/`);
+}
 
 /**
  * HTTP GET request to /api/user/
@@ -39,6 +45,10 @@ export async function GET() {
       linkedIn: true,
       gitHub: true,
       description: true,
+      graduationTerm: true,
+      graduationYear: true,
+      major: true,
+      coopSummary: true,
       profileImageKey: true,
       googleImageURL: true,
       _count: {
@@ -49,13 +59,17 @@ export async function GET() {
   });
   
   // Transform to include membershipCount and isMember (computed) for backward compatibility
-  const usersWithMembershipCount = users.map((user: { id: any; name: any; email: any; linkedIn: any; gitHub: any; description: any; profileImageKey: any; googleImageURL: any; _count: { Memberships: number; }; }) => ({
+  const usersWithMembershipCount = users.map((user) => ({
     id: user.id,
     name: user.name,
     email: user.email,
     linkedIn: user.linkedIn,
     gitHub: user.gitHub,
     description: user.description,
+    graduationTerm: user.graduationTerm ?? null,
+    graduationYear: user.graduationYear ?? null,
+    major: user.major ?? null,
+    coopSummary: user.coopSummary ?? null,
     image: user.profileImageKey
       ? getPublicS3Url(user.profileImageKey)
       : user.googleImageURL ?? null,
@@ -168,7 +182,7 @@ export async function PUT(request: NextRequest) {
 
   const targetUser = await prisma.user.findUnique({
     where: { id },
-    select: { email: true, profileImageKey: true },
+    select: { email: true, profileImageKey: true, id: true },
   });
 
   if (!targetUser) {
@@ -192,7 +206,19 @@ export async function PUT(request: NextRequest) {
   }
 
   // only update fields the caller wants to update
-  const data: { name?: string; email?: string; description?: string; linkedIn?: string; gitHub?: string; profileImageKey?: string | null; googleImageURL?: string | null } = {};
+  const data: {
+    name?: string;
+    email?: string;
+    description?: string | null;
+    linkedIn?: string | null;
+    gitHub?: string | null;
+    profileImageKey?: string | null;
+    googleImageURL?: string | null;
+    graduationTerm?: "SPRING" | "SUMMER" | "FALL" | null;
+    graduationYear?: number | null;
+    major?: string | null;
+    coopSummary?: string | null;
+  } = {};
   if ("name" in body) {
     data.name = body.name;
   }
@@ -210,6 +236,18 @@ export async function PUT(request: NextRequest) {
   if ("gitHub" in body) {
     data.gitHub = body.gitHub;
   }
+  if ("graduationTerm" in body) {
+    data.graduationTerm = body.graduationTerm;
+  }
+  if ("graduationYear" in body) {
+    data.graduationYear = body.graduationYear;
+  }
+  if ("major" in body) {
+    data.major = body.major;
+  }
+  if ("coopSummary" in body) {
+    data.coopSummary = body.coopSummary;
+  }
   if ("image" in body) {
     if (body.image === null) {
       // User removed their custom upload -> delete from S3 and clear the key
@@ -222,6 +260,9 @@ export async function PUT(request: NextRequest) {
       }
       data.profileImageKey = null;
     } else if (isS3Key(body.image)) {
+      if (!isOwnedProfileImageKey(body.image, targetUser.id)) {
+        return new Response("Profile image key is not owned by this user", { status: 403 });
+      }
       // User uploaded a new image -> delete old one from S3
       if (targetUser.profileImageKey && targetUser.profileImageKey !== body.image) {
         try {
@@ -236,6 +277,9 @@ export async function PUT(request: NextRequest) {
       // Full URL -> try to extract S3 key
       const extracted = getKeyFromS3Url(body.image);
       if (extracted) {
+        if (!isOwnedProfileImageKey(extracted, targetUser.id)) {
+          return new Response("Profile image key is not owned by this user", { status: 403 });
+        }
         if (targetUser.profileImageKey && targetUser.profileImageKey !== extracted) {
           try {
             await s3Service.deleteObject(targetUser.profileImageKey);
@@ -250,26 +294,40 @@ export async function PUT(request: NextRequest) {
   }
 
   try {
-    const user = await prisma.user.update({
-      where: { id },
-      data,
-      include: {
-        _count: {
-          select: { Memberships: true },
-        },
-      },
+    const { user, membershipResult } = await prisma.$transaction(async (tx) => {
+      const updatedUser = await tx.user.update({
+        where: { id },
+        data,
+      });
+
+      const grant = await maybeGrantProfileCompletionMembership(tx, id);
+
+      // Re-fetch membership count after potential grant/revoke
+      const freshCount = await tx.memberships.count({ where: { userId: id } });
+
+      return {
+        user: { ...updatedUser, _membershipCount: freshCount },
+        membershipResult: grant,
+      };
     });
+
+    await maybeCreateAlumniCandidate(id);
     
     // Transform for memberships & image based on URL
-    const { profileImageKey, googleImageURL, _count, ...rest } = user;
+    const { profileImageKey, googleImageURL, _membershipCount, ...rest } = user;
     return Response.json({
       ...rest,
       image: profileImageKey
         ? getPublicS3Url(profileImageKey)
         : googleImageURL ?? null,
       profileImageKey: profileImageKey ?? null,
-      membershipCount: _count.Memberships,
-      isMember: _count.Memberships >= 1,
+      membershipCount: _membershipCount,
+      isMember: _membershipCount >= 1,
+      membershipAwarded: membershipResult.membershipAwarded,
+      membershipRevoked: membershipResult.membershipRevoked,
+      awardReason: membershipResult.awardReason,
+      awardTerm: membershipResult.awardTerm,
+      awardYear: membershipResult.awardYear,
     });
   } catch (e) {
     // make sure the selected user exists

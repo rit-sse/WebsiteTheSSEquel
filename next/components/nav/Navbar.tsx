@@ -2,11 +2,12 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ChevronDown, Menu, User, Settings, LogOut } from "lucide-react";
+import { ChevronDown, Menu, User, LogOut } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import SSELogoFull from "../common/SSELogoFull";
 import AuthButton from "./AuthButton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useProfileImage } from "@/contexts/ProfileImageContext";
 import {
     NavigationMenu,
     NavigationMenuContent,
@@ -95,19 +96,21 @@ const dashboardItems = [
         description: "Manage sponsor information.",
     },
     {
-        title: "Alumni Requests",
+        title: "Alumni Review",
         href: "/dashboard/alumni",
-        description: "Review alumni submission requests.",
+        description: "Review alumni requests and auto-generated candidates.",
     },
 ];
 
 const Navbar: React.FC = () => {
     const [open, setOpen] = React.useState(false);
     const { data: session } = useSession();
+    const { profileImage } = useProfileImage();
     
     // Only show dashboard when user is an officer or mentor
     const [showDashboard, setShowDashboard] = React.useState(false);
     const [userId, setUserId] = React.useState<number | null>(null);
+    const [profileComplete, setProfileComplete] = React.useState(true);
 
     // Fetch auth level to determine if user can see dashboard and get userId
     React.useEffect(() => {
@@ -123,6 +126,7 @@ const Navbar: React.FC = () => {
                 const data = await response.json();
                 setShowDashboard(data.isOfficer || data.isMentor);
                 setUserId(data.userId ?? null);
+                setProfileComplete(data.profileComplete ?? true);
             } catch (error) {
                 console.error("Error checking auth level:", error);
                 setShowDashboard(false);
@@ -243,7 +247,7 @@ const Navbar: React.FC = () => {
                             )}
 
                             <NavigationMenuItem className="flex items-center ml-1 mr-4">
-                                <AuthButton userId={userId} />
+                                <AuthButton userId={userId} profileComplete={profileComplete} />
                             </NavigationMenuItem>
                         </NavigationMenuList>
                     </NavigationMenu>
@@ -310,12 +314,17 @@ const Navbar: React.FC = () => {
                                     {session ? (
                                         <div className="flex flex-col gap-1">
                                             <div className="flex items-center gap-3 px-3 py-2 mb-1">
-                                                <Avatar className="h-9 w-9">
-                                                    <AvatarImage src={session.user?.image ?? undefined} alt={session.user?.name ?? "User"} />
-                                                    <AvatarFallback className="text-xs font-medium">
-                                                        {session.user?.name?.split(" ").map(n => n[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() ?? "?"}
-                                                    </AvatarFallback>
-                                                </Avatar>
+                                                <div className="relative">
+                                                    <Avatar className="h-9 w-9">
+                                                        <AvatarImage src={profileImage ?? session.user?.image ?? undefined} alt={session.user?.name ?? "User"} />
+                                                        <AvatarFallback className="text-xs font-medium">
+                                                            {session.user?.name?.split(" ").map(n => n[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() ?? "?"}
+                                                        </AvatarFallback>
+                                                    </Avatar>
+                                                    {!profileComplete && (
+                                                        <span className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-destructive border-2 border-background" />
+                                                    )}
+                                                </div>
                                                 <div className="flex flex-col">
                                                     <span className="text-sm font-medium">{session.user?.name}</span>
                                                     <span className="text-xs text-muted-foreground">{session.user?.email}</span>
@@ -325,13 +334,12 @@ const Navbar: React.FC = () => {
                                                 <MobileNavLink href={`/profile/${userId}`} onClick={() => setOpen(false)}>
                                                     <User className="h-4 w-4 mr-2" />
                                                     My Profile
+                                                    {!profileComplete && (
+                                                        <span className="ml-auto h-2 w-2 rounded-full bg-destructive" />
+                                                    )}
                                                 </MobileNavLink>
                                             )}
-                                            <MobileNavLink href="/settings" onClick={() => setOpen(false)}>
-                                                <Settings className="h-4 w-4 mr-2" />
-                                                Settings
-                                            </MobileNavLink>
-                                            <button
+                            <button
                                                 onClick={() => { signOut(); setOpen(false); }}
                                                 className="flex items-center py-2 px-3 text-base font-medium rounded-md hover:bg-accent transition-colors text-destructive"
                                             >
@@ -340,7 +348,7 @@ const Navbar: React.FC = () => {
                                             </button>
                                         </div>
                                     ) : (
-                                        <AuthButton userId={userId} />
+                                        <AuthButton userId={userId} profileComplete={profileComplete} />
                                     )}
                                 </div>
                             </nav>

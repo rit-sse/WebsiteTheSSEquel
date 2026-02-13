@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
+import { getImageUrl } from "@/lib/s3Utils";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +30,10 @@ export async function GET(
       linkedIn: true,
       gitHub: true,
       description: true,
+      graduationTerm: true,
+      graduationYear: true,
+      major: true,
+      coopSummary: true,
       Memberships: {
         select: {
           id: true,
@@ -95,10 +100,15 @@ export async function GET(
     id: user.id,
     name: user.name,
     email: isOwner || !!isOfficer ? user.email : undefined,
-    image: user.profileImageKey ?? user.googleImageURL ?? null,
+    image: getImageUrl(user.profileImageKey ?? user.googleImageURL ?? null),
+    profileImageKey: user.profileImageKey ?? null,
     linkedIn: user.linkedIn,
     gitHub: user.gitHub,
     description: user.description,
+    graduationTerm: user.graduationTerm,
+    graduationYear: user.graduationYear,
+    major: user.major,
+    coopSummary: user.coopSummary,
     membershipCount: user.Memberships.length,
     memberships: user.Memberships,
     projects,

@@ -85,6 +85,7 @@ export async function GET(request: NextRequest) {
     isMentor: boolean;
     isOfficer: boolean;
     isPrimary: boolean;
+    profileComplete: boolean;
   } = {
     userId: null,
     isUser: false,
@@ -93,6 +94,7 @@ export async function GET(request: NextRequest) {
     isMentor: false,
     isOfficer: false,
     isPrimary: false,
+    profileComplete: true,
   };
 
   if (authToken == null) {
@@ -109,6 +111,11 @@ export async function GET(request: NextRequest) {
     },
     select: {
       id: true,
+      graduationTerm: true,
+      graduationYear: true,
+      major: true,
+      gitHub: true,
+      linkedIn: true,
       mentor: {
         where: { isActive: true },
         select: { id: true },
@@ -137,6 +144,13 @@ export async function GET(request: NextRequest) {
     authLevel.isMentor = user.mentor.length > 0;
     authLevel.isOfficer = user.officers.length > 0;
     authLevel.isPrimary = user.officers.some((o) => o.position.is_primary);
+    authLevel.profileComplete = !!(
+      user.graduationTerm &&
+      user.graduationYear &&
+      user.major?.trim() &&
+      user.gitHub?.trim() &&
+      user.linkedIn?.trim()
+    );
   }
 
   return Response.json(authLevel);

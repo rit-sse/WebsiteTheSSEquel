@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { signIn, signOut, useSession } from "next-auth/react";
-import { User, Settings, LogOut } from "lucide-react";
+import { User, LogOut } from "lucide-react";
 import HoverBoldButton from "../common/HoverBoldButton";
 import {
     DropdownMenu,
@@ -13,9 +15,11 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useProfileImage } from "@/contexts/ProfileImageContext";
 
 interface AuthButtonProps {
     userId?: number | null;
+    profileComplete?: boolean;
 }
 
 function getInitials(name: string | null | undefined): string {
@@ -29,22 +33,53 @@ function getInitials(name: string | null | undefined): string {
         .toUpperCase();
 }
 
-export default function AuthButton({ userId }: AuthButtonProps = {}) {
+export default function AuthButton({ userId, profileComplete = true }: AuthButtonProps = {}) {
     const { data: session } = useSession();
+    const router = useRouter();
+    const pathname = usePathname();
+
+    useEffect(() => {
+        if (!session?.user?.email) return;
+        if (pathname === "/accept-invitation") return;
+
+        const cacheKey = `invitation-check:${session.user.email}`;
+        if (sessionStorage.getItem(cacheKey) === "done") return;
+
+        (async () => {
+            try {
+                const response = await fetch("/api/invitations/pending");
+                if (!response.ok) return;
+                const invitations = await response.json();
+                sessionStorage.setItem(cacheKey, "done");
+                if (Array.isArray(invitations) && invitations.length > 0) {
+                    router.push("/accept-invitation");
+                }
+            } catch (error) {
+                console.error("Failed to check pending invitations:", error);
+            }
+        })();
+    }, [pathname, router, session?.user?.email]);
+
+    // Use the context-provided image so it updates instantly after upload
+    const { profileImage } = useProfileImage();
 
     if (session) {
         const userName = session.user?.name ?? "User";
         const userEmail = session.user?.email ?? "";
-        const userImage = session.user?.image;
+        // Prefer context image (updates immediately) over session image
+        const userImage = profileImage ?? session.user?.image;
 
         return (
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <button className="rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+                    <button className="relative rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                         <Avatar className="h-8 w-8">
                             <AvatarImage src={userImage ?? undefined} alt={userName} />
                             <AvatarFallback>{getInitials(userName)}</AvatarFallback>
                         </Avatar>
+                        {!profileComplete && (
+                            <span className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-destructive border-2 border-background" />
+                        )}
                     </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
@@ -57,18 +92,17 @@ export default function AuthButton({ userId }: AuthButtonProps = {}) {
                     <DropdownMenuSeparator />
                     {userId && (
                         <DropdownMenuItem asChild>
-                            <Link href={`/profile/${userId}`} className="cursor-pointer">
-                                <User className="mr-2 h-4 w-4" />
-                                My Profile
+                            <Link href={`/profile/${userId}`} className="cursor-pointer flex items-center justify-between">
+                                <span className="flex items-center">
+                                    <User className="mr-2 h-4 w-4" />
+                                    My Profile
+                                </span>
+                                {!profileComplete && (
+                                    <span className="h-2 w-2 rounded-full bg-destructive" />
+                                )}
                             </Link>
                         </DropdownMenuItem>
                     )}
-                    <DropdownMenuItem asChild>
-                        <Link href="/settings" className="cursor-pointer">
-                            <Settings className="mr-2 h-4 w-4" />
-                            Settings
-                        </Link>
-                    </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                         className="cursor-pointer text-destructive focus:text-destructive"

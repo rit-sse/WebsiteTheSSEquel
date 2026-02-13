@@ -10,6 +10,23 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum AcademicTerm {
+  SPRING
+  SUMMER
+  FALL
+}
+
+enum AlumniSource {
+  manual
+  from_user
+}
+
+enum AlumniCandidateStatus {
+  pending
+  approved
+  rejected
+}
+
 model User {
   //Store an automatically generated unique int for id
   id Int @id @default(autoincrement())
@@ -23,6 +40,12 @@ model User {
   linkedIn    String?
   gitHub      String?
   description String?
+  graduationTerm AcademicTerm?
+  graduationYear Int?
+  major          String?
+  coopSummary    String?
+  profileCompletionGrantedTerm AcademicTerm?
+  profileCompletionGrantedYear Int?
 
   //Image will be saved
   profileImageKey String?
@@ -44,6 +67,9 @@ model User {
   purchaseRequests PurchaseRequest[]
   invitationsSent  Invitation[]
   eventAttendances EventAttendance[]
+  alumni           Alumni?
+  alumniCandidates AlumniCandidate[] @relation("AlumniCandidateOwner")
+  reviewedAlumniCandidates AlumniCandidate[] @relation("AlumniCandidateReviewer")
 }
 
 model Alumni {
@@ -62,6 +88,10 @@ model Alumni {
 
   //Image will be saved
   image String @default("https://source.boringavatars.com/beam/")
+  userId Int? @unique
+  source AlumniSource @default(manual)
+  graduationTerm AcademicTerm?
+  graduationYear Int?
 
   //Store startDate and endDate as a String
   start_date String
@@ -79,6 +109,35 @@ model Alumni {
 
   //Update requests referencing this alumni
   updateRequests AlumniRequest[]
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
+
+model AlumniCandidate {
+  id Int @id @default(autoincrement())
+  userId Int
+
+  name String
+  email String
+  linkedIn String?
+  gitHub String?
+  description String?
+  imageKey String?
+  graduationTerm AcademicTerm?
+  graduationYear Int?
+  major String?
+  coopSummary String?
+
+  status AlumniCandidateStatus @default(pending)
+  reviewedById Int?
+  reviewedAt DateTime?
+  reviewNotes String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation("AlumniCandidateOwner", fields: [userId], references: [id], onDelete: Cascade)
+  reviewedBy User? @relation("AlumniCandidateReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  @@unique([userId])
 }
 
 model AlumniRequest {
