@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/authOptions"
 import prisma from "@/lib/prisma"
 import { MENTOR_HEAD_TITLE } from "@/lib/utils"
+import { resolveUserImage } from "@/lib/s3Utils"
 
 export const dynamic = "force-dynamic"
 
@@ -73,7 +74,8 @@ export async function GET(request: NextRequest) {
                     id: true,
                     name: true,
                     email: true,
-                    image: true,
+                    profileImageKey: true,
+                    googleImageURL: true,
                     description: true,
                     linkedIn: true,
                     gitHub: true,
@@ -132,7 +134,10 @@ export async function GET(request: NextRequest) {
         isActive: block.mentor.isActive,
         name: block.mentor.user.name,
         email: block.mentor.user.email,
-        image: block.mentor.user.image,
+        image: resolveUserImage(
+          block.mentor.user.profileImageKey,
+          block.mentor.user.googleImageURL
+        ),
         description: block.mentor.user.description,
         linkedIn: block.mentor.user.linkedIn,
         gitHub: block.mentor.user.gitHub,
@@ -270,15 +275,29 @@ export async function POST(request: NextRequest) {
               select: {
                 name: true,
                 email: true,
-                image: true,
+                profileImageKey: true,
+                googleImageURL: true,
               },
             },
           },
         },
       },
     })
+    const scheduleBlockWithImage = {
+      ...scheduleBlock,
+      mentor: {
+        ...scheduleBlock.mentor,
+        user: {
+          ...scheduleBlock.mentor.user,
+          image: resolveUserImage(
+            scheduleBlock.mentor.user.profileImageKey,
+            scheduleBlock.mentor.user.googleImageURL
+          ),
+        },
+      },
+    }
 
-    return NextResponse.json(scheduleBlock, { status: 201 })
+    return NextResponse.json(scheduleBlockWithImage, { status: 201 })
   } catch (error) {
     console.error("Error creating schedule block:", error)
     return NextResponse.json(

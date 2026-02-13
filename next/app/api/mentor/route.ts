@@ -1,6 +1,7 @@
 import { MENTOR_HEAD_TITLE } from "@/lib/utils";
 import prisma from "@/lib/prisma";
 import { NextRequest } from "next/server";
+import { resolveUserImage } from "@/lib/s3Utils";
 
 export const dynamic = "force-dynamic";
 
@@ -59,7 +60,8 @@ export async function GET(request: NextRequest) {
           id: true,
           name: true,
           email: true,
-          image: true,
+          profileImageKey: true,
+          googleImageURL: true,
           description: true,
           linkedIn: true,
           gitHub: true,
@@ -110,7 +112,15 @@ export async function GET(request: NextRequest) {
     ],
   });
 
-  return Response.json(allMentors);
+  const mentorsWithImage = allMentors.map((mentor) => ({
+    ...mentor,
+    user: {
+      ...mentor.user,
+      image: resolveUserImage(mentor.user.profileImageKey, mentor.user.googleImageURL),
+    },
+  }));
+
+  return Response.json(mentorsWithImage);
 }
 
 /**

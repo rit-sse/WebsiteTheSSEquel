@@ -287,9 +287,6 @@ export async function POST(request: NextRequest) {
             </div>
           `,
           text: `You've been invited to become an SSE Mentor!\n\nAs a mentor, you'll help fellow students with homework, assignments, and test preparation.\n\nMentorship expires: ${expirationDate}\n\nAccept your invitation at: ${acceptUrl}\n\nThis invitation expires in 30 days.\n\nQuestions? Contact ${invitation.inviter.name} at ${invitation.inviter.email}`,
-          fromEmail: loggedInUser.email,
-          fromName: loggedInUser.name,
-          accessToken,
         });
       } else {
         await sendEmail({

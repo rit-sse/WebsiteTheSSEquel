@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/authOptions"
 import prisma from "@/lib/prisma"
 import { MENTOR_HEAD_TITLE } from "@/lib/utils"
+import { resolveUserImage } from "@/lib/s3Utils"
 
 export const dynamic = "force-dynamic"
 
@@ -93,7 +94,8 @@ export async function GET(request: NextRequest) {
               id: true,
               name: true,
               email: true,
-              image: true,
+              profileImageKey: true,
+              googleImageURL: true,
             },
           },
           semester: {
@@ -123,7 +125,18 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
       }
 
-      return NextResponse.json(application)
+      const applicationWithImage = {
+        ...application,
+        user: {
+          ...application.user,
+          image: resolveUserImage(
+            application.user.profileImageKey,
+            application.user.googleImageURL
+          ),
+        },
+      }
+
+      return NextResponse.json(applicationWithImage)
     }
 
     // For listing applications (requires management permission)
@@ -157,7 +170,8 @@ export async function GET(request: NextRequest) {
             id: true,
             name: true,
             email: true,
-            image: true,
+            profileImageKey: true,
+            googleImageURL: true,
           },
         },
         semester: {
@@ -170,7 +184,18 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: "desc" },
     })
 
-    return NextResponse.json(applications)
+    const applicationsWithImage = applications.map((application) => ({
+      ...application,
+      user: {
+        ...application.user,
+        image: resolveUserImage(
+          application.user.profileImageKey,
+          application.user.googleImageURL
+        ),
+      },
+    }))
+
+    return NextResponse.json(applicationsWithImage)
   } catch (error) {
     console.error("Error fetching applications:", error)
     return NextResponse.json(
@@ -367,7 +392,8 @@ export async function PUT(request: NextRequest) {
             id: true,
             name: true,
             email: true,
-            image: true,
+            profileImageKey: true,
+            googleImageURL: true,
           },
         },
         semester: {
@@ -379,7 +405,18 @@ export async function PUT(request: NextRequest) {
       },
     })
 
-    return NextResponse.json(application)
+    const applicationWithImage = {
+      ...application,
+      user: {
+        ...application.user,
+        image: resolveUserImage(
+          application.user.profileImageKey,
+          application.user.googleImageURL
+        ),
+      },
+    }
+
+    return NextResponse.json(applicationWithImage)
   } catch (error) {
     console.error("Error updating application:", error)
     return NextResponse.json(

@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/authOptions"
 import prisma from "@/lib/prisma"
-import { sendEmail, isEmailConfigured, isSmtpConfigured } from "@/lib/email"
-import { getValidAccessTokenWithDetails } from "@/lib/email/getAccessToken"
+import { sendEmail, isEmailConfigured } from "@/lib/email"
 
 export const dynamic = "force-dynamic"
 
@@ -28,11 +27,6 @@ export async function POST(request: NextRequest) {
         officers: {
           where: { is_active: true },
           select: { id: true },
-        },
-        account: {
-          select: {
-            access_token: true,
-          },
         },
       },
     })
@@ -73,26 +67,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    let accessToken: string | undefined
-    if (process.env.EMAIL_PROVIDER === "gmail") {
-      const tokenResult = await getValidAccessTokenWithDetails(loggedInUser.id)
-      if (tokenResult.success) {
-        accessToken = tokenResult.accessToken
-      } else if (tokenResult.error === "no_scope") {
-        if (!isSmtpConfigured()) {
-          return NextResponse.json(
-            {
-              error: "Gmail authorization required",
-              needsGmailAuth: true,
-              message:
-                "You need to grant Gmail send permissions to send swipe access requests.",
-            },
-            { status: 403 }
-          )
-        }
-      }
-    }
-
     await sendEmail({
       to: "softwareengineering@rit.edu",
       subject,
@@ -109,9 +83,6 @@ export async function POST(request: NextRequest) {
         </div>
       `,
       text: `Swipe Access Request\n\nPlease add swipe access for the following people:\n${textList}\n\nSent by ${loggedInUser.name} via the SSE website.`,
-      fromEmail: loggedInUser.email,
-      fromName: loggedInUser.name,
-      accessToken,
     })
 
     return NextResponse.json({ success: true })

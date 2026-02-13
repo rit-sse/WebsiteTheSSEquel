@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/authOptions"
 import prisma from "@/lib/prisma"
 import { MENTOR_HEAD_TITLE } from "@/lib/utils"
+import { resolveUserImage } from "@/lib/s3Utils"
 
 export const dynamic = "force-dynamic"
 
@@ -106,7 +107,8 @@ export async function GET(request: NextRequest) {
             id: true,
             name: true,
             email: true,
-            image: true,
+            profileImageKey: true,
+            googleImageURL: true,
           },
         },
       },
@@ -115,7 +117,10 @@ export async function GET(request: NextRequest) {
     // Parse slots and return structured data
     const result = availability.map((a) => ({
       userId: a.userId,
-      user: a.user,
+      user: {
+        ...a.user,
+        image: resolveUserImage(a.user.profileImageKey, a.user.googleImageURL),
+      },
       semesterId: a.semesterId,
       slots: JSON.parse(a.slots) as AvailabilitySlot[],
       updatedAt: a.updatedAt,

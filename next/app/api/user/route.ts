@@ -295,7 +295,7 @@ export async function PUT(request: NextRequest) {
   // before save (these are owned by the user but never persisted in DB).
   if (Array.isArray(body.cleanupImageKeys)) {
     const currentBodyImage = typeof body.image === "string" ? normalizeToS3Key(body.image) : null;
-    const uniqueCleanupKeys = Array.from(
+    const uniqueCleanupKeys: string[] = Array.from(
       new Set(
         body.cleanupImageKeys
           .map((key: unknown) => (typeof key === "string" ? normalizeToS3Key(key) : null))
