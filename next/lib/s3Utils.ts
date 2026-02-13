@@ -33,15 +33,12 @@ export function isS3Key(imageValue: string): boolean {
  * Gets the display URL for an image, handling both S3 keys and full URLs
  */
 export function getImageUrl(imageValue: string | null | undefined): string {
-  if (!imageValue) {
-    return "https://source.boringavatars.com/beam/";
-  }
+  if (!imageValue) return "https://source.boringavatars.com/beam/";
 
-  // If it's already a full URL, return it
-  if (!isS3Key(imageValue)) {
-    return imageValue;
-  }
+  // Already a full URL (Google, boring avatars, etc.) return as-is
+  if (!isS3Key(imageValue)) return imageValue;
 
-  // If it's a key, construct the public URL
-  return getPublicS3Url(imageValue);
+  // ALWAYS proxy through our API (server AND client)
+  // This ensures no-cache headers are applied
+  return `/api/aws/image?key=${encodeURIComponent(imageValue)}`;
 }

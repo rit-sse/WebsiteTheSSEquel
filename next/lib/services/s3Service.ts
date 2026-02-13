@@ -41,9 +41,10 @@ export class S3Service implements IS3Service {
     expiresIn = 3600
   ): Promise<string> {
     const command = new PutObjectCommand({
-      Bucket: this.bucket,
+      Bucket: process.env.AWS_S3_BUCKET_NAME!,
       Key: key,
       ContentType: contentType,
+      CacheControl: "no-store, max-age=0",
     });
     return getSignedUrl(this.client, command, { expiresIn });
   }
