@@ -230,12 +230,26 @@ export async function POST(request: NextRequest) {
           where: { id: invitationId },
         });
 
-        // Remove the linked application entirely after invite acceptance.
+        // Close accepted mentor applications so they no longer appear in review queues.
         if (invitation.application?.id) {
-          await tx.mentorApplication.deleteMany({
+          await tx.mentorApplication.updateMany({
             where: {
               id: invitation.application.id,
               userId: loggedInUser.id,
+            },
+            data: {
+              status: "closed",
+            },
+          });
+        } else {
+          // Backward compatibility: close any outstanding invited applications for this user.
+          await tx.mentorApplication.updateMany({
+            where: {
+              userId: loggedInUser.id,
+              status: "invited",
+            },
+            data: {
+              status: "closed",
             },
           });
         }

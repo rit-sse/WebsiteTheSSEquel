@@ -35,6 +35,12 @@ interface EventOption {
   attendanceEnabled: boolean
 }
 
+interface OfficerLookup {
+  is_active: boolean
+  position: { title: string }
+  user: { email: string }
+}
+
 interface CheckoutFormProps {
   userName: string
   onClose: () => void
@@ -54,6 +60,7 @@ export default function CheckoutForm({ userName, onClose, onSuccess }: CheckoutF
   const [selectedEventId, setSelectedEventId] = useState<string>("")
   const [events, setEvents] = useState<EventOption[]>([])
   const [loadingEvents, setLoadingEvents] = useState(true)
+  const [treasurerEmail, setTreasurerEmail] = useState("treasurer's email")
 
   // Fetch events with attendance enabled
   useEffect(() => {
@@ -77,6 +84,25 @@ export default function CheckoutForm({ userName, onClose, onSuccess }: CheckoutF
       }
     }
     fetchEvents()
+  }, [])
+
+  useEffect(() => {
+    const loadTreasurerEmail = async () => {
+      try {
+        const response = await fetch("/api/officer")
+        if (!response.ok) return
+        const officers = (await response.json()) as OfficerLookup[]
+        const treasurer = officers.find(
+          (officer) => officer.is_active && officer.position.title === "Treasurer"
+        )
+        if (treasurer?.user?.email) {
+          setTreasurerEmail(treasurer.user.email)
+        }
+      } catch (error) {
+        console.error("Failed to load treasurer email:", error)
+      }
+    }
+    loadTreasurerEmail()
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -274,7 +300,7 @@ export default function CheckoutForm({ userName, onClose, onSuccess }: CheckoutF
                     type="email"
                     value={notifyEmail}
                     onChange={(e) => setNotifyEmail(e.target.value)}
-                    placeholder="treasurer@sse.rit.edu"
+                    placeholder={treasurerEmail}
                     className="mt-1"
                   />
                 </div>

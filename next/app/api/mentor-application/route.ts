@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
+import { Prisma } from "@prisma/client"
 import { authOptions } from "@/lib/authOptions"
 import prisma from "@/lib/prisma"
 import { MENTOR_HEAD_TITLE } from "@/lib/utils"
@@ -152,14 +153,42 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const where: {
-      semesterId?: number
-      status?: string
-      userId?: number
-    } = {}
+    const where: Prisma.MentorApplicationWhereInput = {}
 
     if (semesterId) where.semesterId = parseInt(semesterId)
-    if (status) where.status = status
+    if (status) {
+      if (status === "invited") {
+        where.AND = [
+          { status: "invited" },
+          {
+            user: {
+              mentor: {
+                none: { isActive: true },
+              },
+            },
+          },
+        ]
+      } else {
+        where.status = status
+      }
+    } else {
+      // Keep accepted/closed applications out of the review queue by default.
+      where.NOT = [
+        { status: "closed" },
+        {
+          AND: [
+            { status: "invited" },
+            {
+              user: {
+                mentor: {
+                  some: { isActive: true },
+                },
+              },
+            },
+          ],
+        },
+      ]
+    }
     if (userId) where.userId = parseInt(userId)
 
     const applications = await prisma.mentorApplication.findMany({
@@ -367,9 +396,9 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "Application ID is required" }, { status: 400 })
     }
 
-    if (!status || !["pending", "approved", "rejected", "invited"].includes(status)) {
+    if (!status || !["pending", "approved", "rejected", "invited", "closed"].includes(status)) {
       return NextResponse.json(
-        { error: "Valid status is required (pending, approved, rejected, invited)" },
+        { error: "Valid status is required (pending, approved, rejected, invited, closed)" },
         { status: 400 }
       )
     }
@@ -419,6 +448,119 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json(applicationWithImage)
   } catch (error) {
     console.error("Error updating application:", error)
+    return NextResponse.json(
+      { error: "Failed to update application" },
+      { status: 500 }
+    )
+  }
+}
+
+/**
+ * HTTP PATCH request to /api/mentor-application
+ * Allow applicants to edit their own application answers (non-status fields)
+ */
+export async function PATCH(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { id: true },
+    })
+
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 })
+    }
+
+    const body = await request.json()
+    const {
+      id,
+      discordUsername,
+      pronouns,
+      major,
+      yearLevel,
+      coursesJson,
+      skillsText,
+      toolsComfortable,
+      toolsLearning,
+      previousSemesters,
+      whyMentor,
+      comments,
+    } = body ?? {}
+
+    if (!id || Number.isNaN(Number(id))) {
+      return NextResponse.json({ error: "Valid application id is required" }, { status: 400 })
+    }
+
+    const existingApplication = await prisma.mentorApplication.findUnique({
+      where: { id: Number(id) },
+      select: {
+        id: true,
+        userId: true,
+      },
+    })
+
+    if (!existingApplication) {
+      return NextResponse.json({ error: "Application not found" }, { status: 404 })
+    }
+
+    if (existingApplication.userId !== user.id) {
+      return NextResponse.json({ error: "Access denied" }, { status: 403 })
+    }
+
+    if (!discordUsername?.trim()) {
+      return NextResponse.json({ error: "Discord username is required" }, { status: 400 })
+    }
+    if (!pronouns?.trim()) {
+      return NextResponse.json({ error: "Pronouns are required" }, { status: 400 })
+    }
+    if (!major?.trim()) {
+      return NextResponse.json({ error: "Major is required" }, { status: 400 })
+    }
+    if (!yearLevel?.trim()) {
+      return NextResponse.json({ error: "Year level is required" }, { status: 400 })
+    }
+    if (!whyMentor?.trim()) {
+      return NextResponse.json({ error: "Please explain why you want to be a mentor" }, { status: 400 })
+    }
+
+    const parsedPreviousSemesters = Number.parseInt(String(previousSemesters), 10)
+    const safePreviousSemesters = Number.isNaN(parsedPreviousSemesters)
+      ? 0
+      : Math.max(0, Math.min(parsedPreviousSemesters, 5))
+
+    const updated = await prisma.mentorApplication.update({
+      where: { id: Number(id) },
+      data: {
+        discordUsername: discordUsername.trim(),
+        pronouns: pronouns.trim(),
+        major: major.trim(),
+        yearLevel: yearLevel.trim(),
+        coursesJson: typeof coursesJson === "string" ? coursesJson : "[]",
+        skillsText: (skillsText ?? "").trim(),
+        toolsComfortable: (toolsComfortable ?? "").trim(),
+        toolsLearning: (toolsLearning ?? "").trim(),
+        previousSemesters: safePreviousSemesters,
+        whyMentor: whyMentor.trim(),
+        comments: comments?.trim() || null,
+      },
+      include: {
+        semester: {
+          select: {
+            id: true,
+            name: true,
+            isActive: true,
+          },
+        },
+      },
+    })
+
+    return NextResponse.json(updated)
+  } catch (error) {
+    console.error("Error patching application:", error)
     return NextResponse.json(
       { error: "Failed to update application" },
       { status: 500 }

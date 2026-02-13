@@ -21,7 +21,10 @@ interface AuthButtonProps {
     profileComplete?: boolean;
 }
 
-export default function AuthButton({ userId, profileComplete = true }: AuthButtonProps = {}) {
+export default function AuthButton({
+    userId,
+    profileComplete = true,
+}: AuthButtonProps = {}) {
     const { data: session } = useSession();
     const router = useRouter();
     const pathname = usePathname();

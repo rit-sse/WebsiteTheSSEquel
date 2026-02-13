@@ -16,6 +16,20 @@ function parseCourses(coursesJson: string | null | undefined): string[] {
   }
 }
 
+function parseAvailability(slotsJson: string | null | undefined): Array<{ weekday: number; hour: number }> {
+  if (!slotsJson) return [];
+  try {
+    const parsed = JSON.parse(slotsJson);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(
+      (slot): slot is { weekday: number; hour: number } =>
+        typeof slot?.weekday === "number" && typeof slot?.hour === "number"
+    );
+  } catch {
+    return [];
+  }
+}
+
 /**
  * GET /api/user/[id]/profile
  * Returns a user's public profile data including memberships, projects, and officer roles.
@@ -168,15 +182,27 @@ export async function GET(
           email: true,
         },
       },
-      position: {
-        select: {
-          email: true,
-        },
-      },
     },
   });
 
   const latestMentorApplication = user.mentorApplications[0];
+  const activeSemester = await prisma.mentorSemester.findFirst({
+    where: { isActive: true },
+    select: { id: true },
+    orderBy: { updatedAt: "desc" },
+  });
+  const mentorAvailability = activeSemester
+    ? await prisma.mentorAvailability.findUnique({
+        where: {
+          userId_semesterId: {
+            userId: user.id,
+            semesterId: activeSemester.id,
+          },
+        },
+        select: { slots: true },
+      })
+    : null;
+  const availabilitySlots = parseAvailability(mentorAvailability?.slots);
 
   return Response.json({
     id: user.id,
@@ -201,6 +227,7 @@ export async function GET(
             id: user.mentor[0].id,
             isActive: user.mentor[0].isActive,
             expirationDate: user.mentor[0].expirationDate,
+            availability: availabilitySlots,
             shifts: user.mentor[0].scheduleBlocks.map((slot) => ({
               id: slot.id,
               weekday: slot.weekday,
@@ -221,7 +248,6 @@ export async function GET(
                   id: mentoringHead.user.id,
                   name: mentoringHead.user.name,
                   email: mentoringHead.user.email,
-                  roleEmail: mentoringHead.position.email,
                 }
               : null,
           }

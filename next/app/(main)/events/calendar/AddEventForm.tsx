@@ -30,6 +30,12 @@ interface FormProps {
 
 type RecurrenceType = "none" | "weekly" | "biweekly"
 
+interface OfficerLookup {
+  is_active: boolean
+  position: { title: string }
+  user: { email: string }
+}
+
 const COMMITTEES = [
   "Mentoring",
   "Lab Ops",
@@ -77,6 +83,7 @@ export default function AddEventForm({ isOpen, onClose, events, setEvents }: For
   const [purchaseEstimatedCost, setPurchaseEstimatedCost] = useState("")
   const [purchaseDescription, setPurchaseDescription] = useState("")
   const [purchaseNotifyEmail, setPurchaseNotifyEmail] = useState("")
+  const [treasurerEmail, setTreasurerEmail] = useState("treasurer's email")
 
   // Clear form on close
   useEffect(() => {
@@ -84,6 +91,25 @@ export default function AddEventForm({ isOpen, onClose, events, setEvents }: For
       clearForm()
     }
   }, [isOpen])
+
+  useEffect(() => {
+    const loadTreasurerEmail = async () => {
+      try {
+        const response = await fetch("/api/officer")
+        if (!response.ok) return
+        const officers = (await response.json()) as OfficerLookup[]
+        const treasurer = officers.find(
+          (officer) => officer.is_active && officer.position.title === "Treasurer"
+        )
+        if (treasurer?.user?.email) {
+          setTreasurerEmail(treasurer.user.email)
+        }
+      } catch (error) {
+        console.error("Failed to load treasurer email:", error)
+      }
+    }
+    loadTreasurerEmail()
+  }, [])
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -456,7 +482,7 @@ export default function AddEventForm({ isOpen, onClose, events, setEvents }: For
                       type="email"
                       value={purchaseNotifyEmail}
                       onChange={(e) => setPurchaseNotifyEmail(e.target.value)}
-                      placeholder="treasurer@sse.rit.edu"
+                      placeholder={treasurerEmail}
                       className="mt-1"
                     />
                   </div>

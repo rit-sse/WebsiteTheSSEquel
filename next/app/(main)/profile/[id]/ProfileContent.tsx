@@ -32,11 +32,25 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import { isS3Key, normalizeToS3Key } from "@/lib/s3Utils";
 import { useProfileImage } from "@/contexts/ProfileImageContext";
 import ImageUpload from "@/components/common/ImageUpload";
+import AvailabilityGrid, { AvailabilitySlot } from "@/app/(main)/dashboard/mentoring/components/AvailabilityGrid";
+import {
+    CATEGORICAL_COLOR_COUNT,
+    getCategoricalColorByIndex,
+    getCategoricalColorFromSeed,
+} from "@/lib/categoricalColors";
 
 interface HandoverDoc {
     id: number;
@@ -83,6 +97,7 @@ interface ProfileData {
         id: number;
         isActive: boolean;
         expirationDate: string;
+        availability: AvailabilitySlot[];
         shifts: {
             id: number;
             weekday: number;
@@ -94,7 +109,6 @@ interface ProfileData {
             id: number;
             name: string;
             email: string;
-            roleEmail: string;
         } | null;
         latestApplication: {
             id: number;
@@ -115,10 +129,38 @@ interface ProfileData {
             semester: {
                 id: number;
                 name: string;
+                isActive?: boolean;
             };
         } | null;
     } | null;
     isOwner: boolean;
+}
+
+interface MentorSemester {
+    id: number;
+    name: string;
+    isActive: boolean;
+}
+
+interface ExistingApplication {
+    id: number;
+    status: string;
+    discordUsername?: string;
+    pronouns?: string;
+    major?: string;
+    yearLevel?: string;
+    coursesJson?: string;
+    skillsText?: string;
+    toolsComfortable?: string;
+    toolsLearning?: string;
+    previousSemesters?: number;
+    whyMentor?: string;
+    comments?: string | null;
+    semester: {
+        id: number;
+        name: string;
+        isActive?: boolean;
+    };
 }
 
 function getInitials(name: string): string {
@@ -196,6 +238,92 @@ const QUEST_FIELDS = [
 
 const TOTAL_QUEST_FIELDS = QUEST_FIELDS.length;
 
+const MENTOR_COURSES = [
+    { id: "CSCI-141", label: "CSCI 141: Computer Science I" },
+    { id: "CSCI-142", label: "CSCI 142: Computer Science II" },
+    { id: "CSCI-140", label: "CS for AP Student/Transfers" },
+    { id: "GCIS-123", label: "GCIS 123: Software Development & Problem Solving I" },
+    { id: "GCIS-124", label: "GCIS 124: Software Development & Problem Solving II" },
+    { id: "SWEN-250", label: "SWEN 250: Personal Software Engineering WITHOUT C++" },
+    { id: "SWEN-251", label: "SWEN 251: Personal Software Engineering WITH C++" },
+    { id: "SWEN-261-WC", label: "SWEN 261: Intro to Software Engineering (Web Checkers)" },
+    { id: "SWEN-261-ES", label: "SWEN 261: Intro to Software Engineering (E-Store)" },
+    { id: "SWEN-261-UF", label: "SWEN 261: Intro to Software Engineering (UFund)" },
+    { id: "SWEN-344", label: "SWEN 344: Web Engineering" },
+    { id: "SWEN-262", label: "SWEN 262: Engineering of Software Subsystems" },
+    { id: "SWEN-331", label: "SWEN 331: Engineering Secure Software" },
+    { id: "SWEN-340-MP", label: "SWEN 340: Software Design for Computing Systems (Music Player)" },
+    { id: "SWEN-340-NMP", label: "SWEN 340: Software Design for Computing Systems (Not Music Player)" },
+    { id: "SWEN-440", label: "SWEN 440: Software System Requirements and Architecture" },
+    { id: "SWEN-444", label: "SWEN 444: Human Centered Requirements and Design" },
+    { id: "CSCI-243", label: "CSCI 243: Mechanics of Programming" },
+    { id: "CSCI-261", label: "CSCI 261: Analysis of Algorithms" },
+    { id: "CSCI-262", label: "CSCI 262: Introduction to CS Theory" },
+] as const;
+
+const PRONOUNS = ["She/Her", "He/Him", "They/Them", "Other"] as const;
+const MAJORS = ["Software Engineering", "Computer Science", "Other"] as const;
+const YEAR_LEVELS = ["1st", "2nd", "3rd", "4th", "5th (Undergrad)", "MS Student", "Other"] as const;
+const PREVIOUS_SEMESTERS = ["0", "1", "2", "3", "4", "5+"] as const;
+
+function parseCourses(coursesJson?: string): string[] {
+    if (!coursesJson) return [];
+    try {
+        const parsed = JSON.parse(coursesJson);
+        return Array.isArray(parsed) ? parsed.filter((value) => typeof value === "string") : [];
+    } catch {
+        return [];
+    }
+}
+
+function categoricalBadgeStyle(seed: string | number): React.CSSProperties {
+    const token = getCategoricalColorFromSeed(seed);
+    return {
+        backgroundColor: token.fill,
+        color: token.foreground,
+        borderColor: token.fill,
+    };
+}
+
+function uniqueCategoricalBadgeStyles(
+    seeds: Array<string | number>
+): Map<string, React.CSSProperties> {
+    const styles = new Map<string, React.CSSProperties>();
+    const usedIndices = new Set<number>();
+
+    for (const seed of seeds) {
+        const key = String(seed);
+        if (styles.has(key)) continue;
+
+        const baseIndex = getCategoricalColorFromSeed(seed).index;
+        let chosenIndex = baseIndex;
+
+        for (let offset = 0; offset < CATEGORICAL_COLOR_COUNT; offset++) {
+            const candidate = (baseIndex + offset) % CATEGORICAL_COLOR_COUNT;
+            if (!usedIndices.has(candidate)) {
+                chosenIndex = candidate;
+                break;
+            }
+        }
+
+        usedIndices.add(chosenIndex);
+        const token = getCategoricalColorByIndex(chosenIndex);
+        styles.set(key, {
+            backgroundColor: token.fill,
+            color: token.foreground,
+            borderColor: token.fill,
+        });
+    }
+
+    return styles;
+}
+
+function normalizeMentorApplicationStatus(status: string | undefined, isActiveMentor: boolean): string {
+    if (!status) return "unknown";
+    if (isActiveMentor && status.toLowerCase() === "invited") return "closed";
+    return status;
+}
+
 interface ProfileContentProps {
     userId: string;
     children?: React.ReactNode;
@@ -234,6 +362,28 @@ export default function ProfileContent({ userId, children }: ProfileContentProps
     const [editCoopSummary, setEditCoopSummary] = useState("");
     const [editImage, setEditImage] = useState(DEFAULT_IMAGE);
     const [pendingCleanupKeys, setPendingCleanupKeys] = useState<string[]>([]);
+    const [mentorEditing, setMentorEditing] = useState(false);
+    const [mentorLoading, setMentorLoading] = useState(false);
+    const [mentorSavingAnswers, setMentorSavingAnswers] = useState(false);
+    const [mentorSavingAvailability, setMentorSavingAvailability] = useState(false);
+    const [mentorResubmitting, setMentorResubmitting] = useState(false);
+    const [activeMentorSemester, setActiveMentorSemester] = useState<MentorSemester | null>(null);
+    const [mentorApplications, setMentorApplications] = useState<ExistingApplication[]>([]);
+    const [mentorAvailabilitySlots, setMentorAvailabilitySlots] = useState<AvailabilitySlot[]>([]);
+    const [discordUsername, setDiscordUsername] = useState("");
+    const [pronouns, setPronouns] = useState("");
+    const [pronounsOther, setPronounsOther] = useState("");
+    const [mentorMajor, setMentorMajor] = useState("");
+    const [mentorMajorOther, setMentorMajorOther] = useState("");
+    const [yearLevel, setYearLevel] = useState("");
+    const [yearLevelOther, setYearLevelOther] = useState("");
+    const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
+    const [skillsText, setSkillsText] = useState("");
+    const [toolsComfortable, setToolsComfortable] = useState("");
+    const [toolsLearning, setToolsLearning] = useState("");
+    const [previousSemesters, setPreviousSemesters] = useState("0");
+    const [whyMentor, setWhyMentor] = useState("");
+    const [mentorComments, setMentorComments] = useState("");
 
     const fetchProfile = useCallback(async () => {
         try {
@@ -390,6 +540,267 @@ export default function ProfileContent({ userId, children }: ProfileContentProps
         }
     }
 
+    function populateMentorFields(
+        source: ExistingApplication | NonNullable<NonNullable<ProfileData["mentorProfile"]>["latestApplication"]> | null
+    ) {
+        if (!source) return;
+
+        const priorPronouns = source.pronouns || "";
+        const priorMajor = source.major || "";
+        const priorYear = source.yearLevel || "";
+
+        setDiscordUsername(source.discordUsername || "");
+        setSelectedCourses(parseCourses(source.coursesJson));
+        setSkillsText(source.skillsText || "");
+        setToolsComfortable(source.toolsComfortable || "");
+        setToolsLearning(source.toolsLearning || "");
+        setPreviousSemesters(source.previousSemesters === 5 ? "5+" : `${source.previousSemesters ?? 0}`);
+        setWhyMentor(source.whyMentor || "");
+        setMentorComments(source.comments || "");
+
+        if (PRONOUNS.includes(priorPronouns as (typeof PRONOUNS)[number])) {
+            setPronouns(priorPronouns);
+            setPronounsOther("");
+        } else if (priorPronouns) {
+            setPronouns("Other");
+            setPronounsOther(priorPronouns);
+        } else {
+            setPronouns("");
+            setPronounsOther("");
+        }
+
+        if (MAJORS.includes(priorMajor as (typeof MAJORS)[number])) {
+            setMentorMajor(priorMajor);
+            setMentorMajorOther("");
+        } else if (priorMajor) {
+            setMentorMajor("Other");
+            setMentorMajorOther(priorMajor);
+        } else {
+            setMentorMajor("");
+            setMentorMajorOther("");
+        }
+
+        if (YEAR_LEVELS.includes(priorYear as (typeof YEAR_LEVELS)[number])) {
+            setYearLevel(priorYear);
+            setYearLevelOther("");
+        } else if (priorYear) {
+            setYearLevel("Other");
+            setYearLevelOther(priorYear);
+        } else {
+            setYearLevel("");
+            setYearLevelOther("");
+        }
+    }
+
+    useEffect(() => {
+        const loadMentorData = async () => {
+            if (!profile?.isOwner || !profile.mentorProfile) {
+                return;
+            }
+            setMentorLoading(true);
+            try {
+                const semesterRes = await fetch("/api/mentor-semester?activeOnly=true");
+                let activeSemester: MentorSemester | null = null;
+                if (semesterRes.ok) {
+                    const semesters = await semesterRes.json();
+                    activeSemester = semesters?.[0] ?? null;
+                    setActiveMentorSemester(activeSemester);
+                } else {
+                    setActiveMentorSemester(null);
+                }
+
+                const appsRes = await fetch("/api/mentor-application?my=true");
+                let apps: ExistingApplication[] = [];
+                if (appsRes.ok) {
+                    apps = await appsRes.json();
+                    setMentorApplications(apps);
+                } else {
+                    setMentorApplications([]);
+                }
+
+                populateMentorFields((apps[0] ?? profile.mentorProfile.latestApplication) ?? null);
+
+                const defaultSlots = profile.mentorProfile.availability ?? [];
+                setMentorAvailabilitySlots(defaultSlots);
+
+                if (activeSemester?.id) {
+                    const availabilityRes = await fetch(`/api/mentor-availability?my=true&semesterId=${activeSemester.id}`);
+                    if (availabilityRes.ok) {
+                        const availability = await availabilityRes.json();
+                        const slots = availability?.[0]?.slots;
+                        if (Array.isArray(slots)) {
+                            setMentorAvailabilitySlots(slots);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error("Failed to load mentor profile editor state:", error);
+            } finally {
+                setMentorLoading(false);
+            }
+        };
+
+        loadMentorData();
+    }, [profile?.id, profile?.isOwner, profile?.mentorProfile]);
+
+    const activeApplication = mentorApplications.find((application) => application.semester.isActive) ?? null;
+    const latestApplication = mentorApplications[0] ?? null;
+    const editableApplication = activeApplication ?? latestApplication ?? profile?.mentorProfile?.latestApplication ?? null;
+    const canResubmitForActiveSemester = !!(
+        profile?.mentorProfile &&
+        !profile.mentorProfile.isActive &&
+        activeMentorSemester &&
+        !activeApplication
+    );
+    const displayedEditableStatus = normalizeMentorApplicationStatus(
+        editableApplication?.status,
+        !!profile?.mentorProfile?.isActive
+    );
+
+    const getResolvedPronouns = () => (pronouns === "Other" ? pronounsOther.trim() : pronouns);
+    const getResolvedMajor = () => (mentorMajor === "Other" ? mentorMajorOther.trim() : mentorMajor);
+    const getResolvedYearLevel = () => (yearLevel === "Other" ? yearLevelOther.trim() : yearLevel);
+
+    const validateMentorAnswers = () => {
+        if (!discordUsername.trim()) return "Discord username is required.";
+        if (!getResolvedPronouns().trim()) return "Pronouns are required.";
+        if (!getResolvedMajor().trim()) return "Major is required.";
+        if (!getResolvedYearLevel().trim()) return "Year level is required.";
+        if (!whyMentor.trim()) return "Please explain why you want to mentor.";
+        return null;
+    };
+
+    const buildMentorPayload = () => ({
+        discordUsername: discordUsername.trim(),
+        pronouns: getResolvedPronouns().trim(),
+        major: getResolvedMajor().trim(),
+        yearLevel: getResolvedYearLevel().trim(),
+        coursesJson: JSON.stringify(selectedCourses),
+        skillsText: skillsText.trim(),
+        toolsComfortable: toolsComfortable.trim(),
+        toolsLearning: toolsLearning.trim(),
+        previousSemesters: previousSemesters === "5+" ? 5 : Number.parseInt(previousSemesters, 10) || 0,
+        whyMentor: whyMentor.trim(),
+        comments: mentorComments.trim(),
+    });
+
+    const handleMentorCourseToggle = (courseId: string) => {
+        setSelectedCourses((previous) =>
+            previous.includes(courseId)
+                ? previous.filter((id) => id !== courseId)
+                : [...previous, courseId]
+        );
+    };
+
+    const handleSaveMentorAnswers = async () => {
+        if (!editableApplication) {
+            toast.error("No application available to update.");
+            return;
+        }
+        const validationError = validateMentorAnswers();
+        if (validationError) {
+            toast.error(validationError);
+            return;
+        }
+
+        setMentorSavingAnswers(true);
+        try {
+            const response = await fetch("/api/mentor-application", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    id: editableApplication.id,
+                    ...buildMentorPayload(),
+                }),
+            });
+            if (!response.ok) {
+                const data = await response.json().catch(() => null);
+                throw new Error(data?.error || "Failed to update mentor application.");
+            }
+            toast.success("Mentor answers updated.");
+            await fetchProfile();
+        } catch (error) {
+            console.error(error);
+            toast.error("Could not save mentor answers.");
+        } finally {
+            setMentorSavingAnswers(false);
+        }
+    };
+
+    const handleResubmitMentorApplication = async () => {
+        if (!activeMentorSemester) {
+            toast.error("No active semester found.");
+            return;
+        }
+        const validationError = validateMentorAnswers();
+        if (validationError) {
+            toast.error(validationError);
+            return;
+        }
+
+        setMentorResubmitting(true);
+        try {
+            const response = await fetch("/api/mentor-application", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    semesterId: activeMentorSemester.id,
+                    ...buildMentorPayload(),
+                }),
+            });
+            if (!response.ok) {
+                const data = await response.json().catch(() => null);
+                throw new Error(data?.error || "Failed to resubmit mentor application.");
+            }
+            toast.success(`Application submitted for ${activeMentorSemester.name}.`);
+            await fetchProfile();
+        } catch (error) {
+            console.error(error);
+            toast.error("Could not resubmit application.");
+        } finally {
+            setMentorResubmitting(false);
+        }
+    };
+
+    const handleSaveMentorAvailability = async () => {
+        if (!activeMentorSemester) {
+            toast.error("No active semester found.");
+            return;
+        }
+
+        setMentorSavingAvailability(true);
+        try {
+            const response = await fetch("/api/mentor-availability", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    semesterId: activeMentorSemester.id,
+                    slots: mentorAvailabilitySlots,
+                }),
+            });
+            if (!response.ok) {
+                const data = await response.json().catch(() => null);
+                throw new Error(data?.error || "Failed to update availability.");
+            }
+            const data = await response.json();
+            if (Array.isArray(data?.slots)) {
+                setMentorAvailabilitySlots(data.slots);
+            }
+            const removedCount = Array.isArray(data?.removedBlocks) ? data.removedBlocks.length : 0;
+            toast.success(
+                removedCount > 0
+                    ? `Availability updated and removed ${removedCount} incompatible shift${removedCount === 1 ? "" : "s"}.`
+                    : "Availability updated."
+            );
+            await fetchProfile();
+        } catch (error) {
+            console.error(error);
+            toast.error("Could not update availability.");
+        } finally {
+            setMentorSavingAvailability(false);
+        }
+    };
+
     // Show skeleton while session is loading or while redirecting after sign-out
     if (sessionStatus === "loading" || sessionStatus === "unauthenticated") return <ProfileSkeleton />;
 
@@ -423,6 +834,15 @@ export default function ProfileContent({ userId, children }: ProfileContentProps
     };
     const completedQuestFields = QUEST_FIELDS.reduce((sum, f) => sum + (fieldComplete(f.key) ? 1 : 0), 0);
     const allQuestComplete = completedQuestFields === TOTAL_QUEST_FIELDS;
+    const headerTagStyles = uniqueCategoricalBadgeStyles([
+        ...(profile.mentorProfile?.isActive ? ["Mentor"] : []),
+        ...activeRoles.map((role) => role.position.title),
+    ]);
+    const mentorAvailabilityForDisplay = profile.isOwner
+        ? (mentorAvailabilitySlots.length > 0
+            ? mentorAvailabilitySlots
+            : (profile.mentorProfile?.availability ?? []))
+        : (profile.mentorProfile?.availability ?? []);
 
     return (
         <Card depth={1} className="flex flex-col gap-8 p-4 sm:p-6 lg:p-8">
@@ -477,16 +897,34 @@ export default function ProfileContent({ userId, children }: ProfileContentProps
                                     {profile.name}
                                 </h1>
                                 {profile.mentorProfile?.isActive && (
-                                    <Badge>Mentor</Badge>
+                                    <Badge style={headerTagStyles.get("Mentor") ?? categoricalBadgeStyle("Mentor")}>
+                                        Mentor
+                                    </Badge>
                                 )}
                                 {activeRoles.map((role) => (
-                                    <Badge key={role.id}>{role.position.title}</Badge>
+                                    <Badge
+                                        key={role.id}
+                                        style={headerTagStyles.get(role.position.title) ?? categoricalBadgeStyle(role.position.title)}
+                                    >
+                                        {role.position.title}
+                                    </Badge>
                                 ))}
                             </div>
                         )}
 
                         {profile.email && !editing && (
                             <p className="text-sm text-muted-foreground">{profile.email}</p>
+                        )}
+                        {!editing && (
+                            <p className="text-sm text-muted-foreground">
+                                {profile.major?.trim() || "Major not set"}{" "}
+                                {"\u00b7"}{" "}
+                                {profile.graduationTerm && profile.graduationYear
+                                    ? `${prettifyTerm(profile.graduationTerm)} ${profile.graduationYear}`
+                                    : "Graduation not set"}
+                                {" \u00b7 "}
+                                Co-op: {profile.coopSummary?.trim() || "Not set"}
+                            </p>
                         )}
 
                         {/* Stats + social row (view mode) */}
@@ -600,7 +1038,11 @@ export default function ProfileContent({ userId, children }: ProfileContentProps
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 mb-1">
                                     <h3 className="font-bold text-sm">Profile Quest</h3>
-                                    <Badge variant="secondary" className="text-[10px]">
+                                    <Badge
+                                        variant="secondary"
+                                        className="text-[10px]"
+                                        style={categoricalBadgeStyle("profile-quest-progress")}
+                                    >
                                         {completedQuestFields} / {TOTAL_QUEST_FIELDS} fields
                                     </Badge>
                                 </div>
@@ -798,35 +1240,6 @@ export default function ProfileContent({ userId, children }: ProfileContentProps
                 </div>
 
                 <div className="flex flex-col gap-6">
-                    {/* Academic metadata (view mode only) */}
-                    {!editing && (
-                        <section>
-                            <h2 className="text-lg font-heading font-semibold mb-3 flex items-center gap-2">
-                                <GraduationCap className="h-4 w-4 text-muted-foreground" />
-                                Academic Snapshot
-                            </h2>
-                            <Card depth={2} className="p-4">
-                                <div className="grid gap-2 sm:grid-cols-2 text-sm">
-                                    <div>
-                                        <span className="text-muted-foreground">Graduation:</span>{" "}
-                                        <span className="font-medium">
-                                            {profile.graduationTerm && profile.graduationYear
-                                                ? `${prettifyTerm(profile.graduationTerm)} ${profile.graduationYear}`
-                                                : "Not set"}
-                                        </span>
-                                    </div>
-                                    <div>
-                                        <span className="text-muted-foreground">Major:</span>{" "}
-                                        <span className="font-medium">{profile.major?.trim() || "Not set"}</span>
-                                    </div>
-                                    <div className="sm:col-span-2">
-                                        <span className="text-muted-foreground">Co-op Summary:</span>{" "}
-                                        <span className="font-medium">{profile.coopSummary?.trim() || "Not set"}</span>
-                                    </div>
-                                </div>
-                            </Card>
-                        </section>
-                    )}
 
                     {/* Officer History */}
                     {pastRoles.length > 0 && (
@@ -850,19 +1263,19 @@ export default function ProfileContent({ userId, children }: ProfileContentProps
                         </section>
                     )}
 
-                    {/* Mentor details */}
+                    {/* Mentor profile */}
                     {profile.mentorProfile && (
                         <section>
                             <h2 className="text-lg font-heading font-semibold mb-3 flex items-center gap-2">
                                 <GraduationCap className="h-4 w-4 text-muted-foreground" />
-                                Mentor Details
+                                Mentor Profile
                             </h2>
                             <Card depth={2} className="p-4 space-y-4">
                                 <div className="flex flex-wrap items-center gap-2">
-                                    <Badge variant={profile.mentorProfile.isActive ? "default" : "secondary"}>
+                                    <Badge style={categoricalBadgeStyle(profile.mentorProfile.isActive ? "Active Mentor" : "Inactive Mentor")}>
                                         {profile.mentorProfile.isActive ? "Active Mentor" : "Inactive Mentor"}
                                     </Badge>
-                                    <Badge variant="outline">
+                                    <Badge variant="outline" style={categoricalBadgeStyle(`expires-${profile.mentorProfile.expirationDate}`)}>
                                         Expires{" "}
                                         {new Date(profile.mentorProfile.expirationDate).toLocaleDateString("en-US", {
                                             month: "short",
@@ -870,6 +1283,17 @@ export default function ProfileContent({ userId, children }: ProfileContentProps
                                             year: "numeric",
                                         })}
                                     </Badge>
+                                    {profile.isOwner && (
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            className="ml-auto"
+                                            onClick={() => setMentorEditing((previous) => !previous)}
+                                            disabled={mentorLoading}
+                                        >
+                                            {mentorEditing ? "View" : "Edit"}
+                                        </Button>
+                                    )}
                                 </div>
 
                                 <div>
@@ -877,7 +1301,12 @@ export default function ProfileContent({ userId, children }: ProfileContentProps
                                     <div className="flex flex-wrap gap-1">
                                         {profile.mentorProfile.shifts.length > 0 ? (
                                             profile.mentorProfile.shifts.map((shift) => (
-                                                <Badge key={shift.id} variant="outline" className="text-xs">
+                                                <Badge
+                                                    key={shift.id}
+                                                    variant="outline"
+                                                    className="text-xs"
+                                                    style={categoricalBadgeStyle(`shift-${shift.label}`)}
+                                                >
                                                     {shift.label}
                                                 </Badge>
                                             ))
@@ -892,117 +1321,360 @@ export default function ProfileContent({ userId, children }: ProfileContentProps
                                     {profile.mentorProfile.mentoringHead ? (
                                         <p className="font-medium">
                                             {profile.mentorProfile.mentoringHead.name} (
-                                            {profile.mentorProfile.mentoringHead.email}){" "}
-                                            <span className="text-muted-foreground">
-                                                • {profile.mentorProfile.mentoringHead.roleEmail}
-                                            </span>
+                                            {profile.mentorProfile.mentoringHead.email})
                                         </p>
                                     ) : (
                                         <p className="font-medium">Not assigned right now</p>
                                     )}
                                 </div>
+                                {profile.isOwner && profile.mentorProfile.isActive && (
+                                    <div>
+                                        <p className="text-sm text-muted-foreground mb-2">Headcount Forms</p>
+                                        <div className="flex flex-wrap gap-2">
+                                            <Button asChild size="sm" variant="outline">
+                                                <Link href="/mentoring/headcount/mentors">30-minute Form</Link>
+                                            </Button>
+                                            <Button asChild size="sm" variant="outline">
+                                                <Link href="/mentoring/headcount/mentees">55-minute Form</Link>
+                                            </Button>
+                                        </div>
+                                    </div>
+                                )}
 
-                                {profile.mentorProfile.latestApplication ? (
+                                {!mentorEditing || !profile.isOwner ? (
                                     <>
-                                        <div className="grid gap-2 sm:grid-cols-2 text-sm">
-                                            <div>
-                                                <span className="text-muted-foreground">Semester:</span>{" "}
-                                                <span className="font-medium">
-                                                    {profile.mentorProfile.latestApplication.semester.name}
-                                                </span>
-                                            </div>
-                                            <div>
-                                                <span className="text-muted-foreground">Application Status:</span>{" "}
-                                                <span className="font-medium">
-                                                    {profile.mentorProfile.latestApplication.status}
-                                                </span>
-                                            </div>
-                                            <div>
-                                                <span className="text-muted-foreground">Discord:</span>{" "}
-                                                <span className="font-medium">
-                                                    {profile.mentorProfile.latestApplication.discordUsername || "—"}
-                                                </span>
-                                            </div>
-                                            <div>
-                                                <span className="text-muted-foreground">Pronouns:</span>{" "}
-                                                <span className="font-medium">
-                                                    {profile.mentorProfile.latestApplication.pronouns || "—"}
-                                                </span>
-                                            </div>
-                                            <div>
-                                                <span className="text-muted-foreground">Major:</span>{" "}
-                                                <span className="font-medium">
-                                                    {profile.mentorProfile.latestApplication.major || "—"}
-                                                </span>
-                                            </div>
-                                            <div>
-                                                <span className="text-muted-foreground">Year Level:</span>{" "}
-                                                <span className="font-medium">
-                                                    {profile.mentorProfile.latestApplication.yearLevel || "—"}
-                                                </span>
-                                            </div>
-                                            <div>
-                                                <span className="text-muted-foreground">Previous Semesters:</span>{" "}
-                                                <span className="font-medium">
-                                                    {profile.mentorProfile.latestApplication.previousSemesters}
-                                                </span>
-                                            </div>
+                                        {profile.mentorProfile.latestApplication ? (
+                                            <>
+                                                <div className="grid gap-2 sm:grid-cols-2 text-sm">
+                                                    <div>
+                                                        <span className="text-muted-foreground">Semester:</span>{" "}
+                                                        <span className="font-medium">
+                                                            {profile.mentorProfile.latestApplication.semester.name}
+                                                        </span>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-muted-foreground">Application Status:</span>{" "}
+                                                        <span className="font-medium">
+                                                            {normalizeMentorApplicationStatus(
+                                                                profile.mentorProfile.latestApplication.status,
+                                                                profile.mentorProfile.isActive
+                                                            )}
+                                                        </span>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-muted-foreground">Discord:</span>{" "}
+                                                        <span className="font-medium">
+                                                            {profile.mentorProfile.latestApplication.discordUsername || "—"}
+                                                        </span>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-muted-foreground">Pronouns:</span>{" "}
+                                                        <span className="font-medium">
+                                                            {profile.mentorProfile.latestApplication.pronouns || "—"}
+                                                        </span>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-muted-foreground">Major:</span>{" "}
+                                                        <span className="font-medium">
+                                                            {profile.mentorProfile.latestApplication.major || "—"}
+                                                        </span>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-muted-foreground">Year Level:</span>{" "}
+                                                        <span className="font-medium">
+                                                            {profile.mentorProfile.latestApplication.yearLevel || "—"}
+                                                        </span>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-muted-foreground">Previous Semesters:</span>{" "}
+                                                        <span className="font-medium">
+                                                            {profile.mentorProfile.latestApplication.previousSemesters}
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                <div>
+                                                    <p className="text-sm text-muted-foreground mb-2">Courses</p>
+                                                    <div className="flex flex-wrap gap-1">
+                                                        {profile.mentorProfile.latestApplication.courses.length > 0 ? (
+                                                            profile.mentorProfile.latestApplication.courses.map((course) => (
+                                                                <Badge
+                                                                    key={course}
+                                                                    variant="secondary"
+                                                                    className="text-xs"
+                                                                    style={categoricalBadgeStyle(course)}
+                                                                >
+                                                                    {course}
+                                                                </Badge>
+                                                            ))
+                                                        ) : (
+                                                            <span className="text-sm font-medium">Not set</span>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                <div className="space-y-3 text-sm">
+                                                    <div>
+                                                        <p className="text-muted-foreground mb-1">Other Skills</p>
+                                                        <p className="font-medium whitespace-pre-wrap">
+                                                            {profile.mentorProfile.latestApplication.skillsText || "Not set"}
+                                                        </p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-muted-foreground mb-1">Tools Comfortable With</p>
+                                                        <p className="font-medium whitespace-pre-wrap">
+                                                            {profile.mentorProfile.latestApplication.toolsComfortable || "Not set"}
+                                                        </p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-muted-foreground mb-1">Tools Currently Learning</p>
+                                                        <p className="font-medium whitespace-pre-wrap">
+                                                            {profile.mentorProfile.latestApplication.toolsLearning || "Not set"}
+                                                        </p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-muted-foreground mb-1">Why Mentor</p>
+                                                        <p className="font-medium whitespace-pre-wrap">
+                                                            {profile.mentorProfile.latestApplication.whyMentor || "Not set"}
+                                                        </p>
+                                                    </div>
+                                                    {profile.mentorProfile.latestApplication.comments && (
+                                                        <div>
+                                                            <p className="text-muted-foreground mb-1">Comments</p>
+                                                            <p className="font-medium whitespace-pre-wrap">
+                                                                {profile.mentorProfile.latestApplication.comments}
+                                                            </p>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <p className="text-sm text-muted-foreground">
+                                                Mentor record exists, but no application details are available yet.
+                                            </p>
+                                        )}
+
+                                        <div className="space-y-2 border-t border-border/60 pt-4">
+                                            <p className="text-sm text-muted-foreground">Current Availability</p>
+                                            <Card depth={3} className="neo:border-0">
+                                                <CardContent className="p-3">
+                                                <AvailabilityGrid
+                                                    value={mentorAvailabilityForDisplay}
+                                                    onChange={() => {}}
+                                                    readOnly
+                                                />
+                                                </CardContent>
+                                            </Card>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div className="space-y-5">
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            <Badge style={categoricalBadgeStyle(activeMentorSemester ? `semester-${activeMentorSemester.name}` : "semester-none")}>
+                                                {activeMentorSemester
+                                                    ? `Active semester: ${activeMentorSemester.name}`
+                                                    : "No active semester"}
+                                            </Badge>
+                                            {editableApplication && (
+                                                <Badge variant="outline" style={categoricalBadgeStyle(`editing-${editableApplication.semester.name}-${displayedEditableStatus}`)}>
+                                                    {editableApplication.semester.name}
+                                                </Badge>
+                                            )}
                                         </div>
 
-                                        <div>
-                                            <p className="text-sm text-muted-foreground mb-2">Courses</p>
-                                            <div className="flex flex-wrap gap-1">
-                                                {profile.mentorProfile.latestApplication.courses.length > 0 ? (
-                                                    profile.mentorProfile.latestApplication.courses.map((course) => (
-                                                        <Badge key={course} variant="secondary" className="text-xs">
-                                                            {course}
-                                                        </Badge>
-                                                    ))
-                                                ) : (
-                                                    <span className="text-sm font-medium">Not set</span>
+                                        <div className="grid gap-3 sm:grid-cols-2">
+                                            <div className="space-y-2">
+                                                <Label htmlFor="mentor-discord">Discord username</Label>
+                                                <Input
+                                                    id="mentor-discord"
+                                                    value={discordUsername}
+                                                    onChange={(event) => setDiscordUsername(event.target.value)}
+                                                    placeholder="username#1234 or username"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label>Pronouns</Label>
+                                                <Select value={pronouns} onValueChange={setPronouns}>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select pronouns" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {PRONOUNS.map((value) => (
+                                                            <SelectItem key={value} value={value}>{value}</SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                                {pronouns === "Other" && (
+                                                    <Input
+                                                        value={pronounsOther}
+                                                        onChange={(event) => setPronounsOther(event.target.value)}
+                                                        placeholder="Please specify"
+                                                    />
+                                                )}
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label>Major</Label>
+                                                <Select value={mentorMajor} onValueChange={setMentorMajor}>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select major" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {MAJORS.map((value) => (
+                                                            <SelectItem key={value} value={value}>{value}</SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                                {mentorMajor === "Other" && (
+                                                    <Input
+                                                        value={mentorMajorOther}
+                                                        onChange={(event) => setMentorMajorOther(event.target.value)}
+                                                        placeholder="Please specify"
+                                                    />
+                                                )}
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label>Year level</Label>
+                                                <Select value={yearLevel} onValueChange={setYearLevel}>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select year level" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {YEAR_LEVELS.map((value) => (
+                                                            <SelectItem key={value} value={value}>{value}</SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                                {yearLevel === "Other" && (
+                                                    <Input
+                                                        value={yearLevelOther}
+                                                        onChange={(event) => setYearLevelOther(event.target.value)}
+                                                        placeholder="Please specify"
+                                                    />
                                                 )}
                                             </div>
                                         </div>
 
-                                        <div className="space-y-3 text-sm">
-                                            <div>
-                                                <p className="text-muted-foreground mb-1">Other Skills</p>
-                                                <p className="font-medium whitespace-pre-wrap">
-                                                    {profile.mentorProfile.latestApplication.skillsText || "Not set"}
-                                                </p>
+                                        <div className="space-y-2">
+                                            <Label>Courses</Label>
+                                            <div className="grid grid-cols-1 gap-2 max-h-[220px] overflow-y-auto border rounded-md p-3">
+                                                {MENTOR_COURSES.map((course) => (
+                                                    <div key={course.id} className="flex items-center space-x-2">
+                                                        <Checkbox
+                                                            id={`mentor-course-${course.id}`}
+                                                            checked={selectedCourses.includes(course.id)}
+                                                            onCheckedChange={() => handleMentorCourseToggle(course.id)}
+                                                        />
+                                                        <label htmlFor={`mentor-course-${course.id}`} className="text-sm cursor-pointer">
+                                                            {course.label}
+                                                        </label>
+                                                    </div>
+                                                ))}
                                             </div>
-                                            <div>
-                                                <p className="text-muted-foreground mb-1">Tools Comfortable With</p>
-                                                <p className="font-medium whitespace-pre-wrap">
-                                                    {profile.mentorProfile.latestApplication.toolsComfortable || "Not set"}
-                                                </p>
+                                        </div>
+
+                                        <div className="grid gap-3 sm:grid-cols-2">
+                                            <div className="space-y-2 sm:col-span-2">
+                                                <Label htmlFor="mentor-why">Why mentor?</Label>
+                                                <Textarea
+                                                    id="mentor-why"
+                                                    value={whyMentor}
+                                                    onChange={(event) => setWhyMentor(event.target.value)}
+                                                    rows={3}
+                                                />
                                             </div>
-                                            <div>
-                                                <p className="text-muted-foreground mb-1">Tools Currently Learning</p>
-                                                <p className="font-medium whitespace-pre-wrap">
-                                                    {profile.mentorProfile.latestApplication.toolsLearning || "Not set"}
-                                                </p>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="mentor-skills">Other skills</Label>
+                                                <Textarea
+                                                    id="mentor-skills"
+                                                    value={skillsText}
+                                                    onChange={(event) => setSkillsText(event.target.value)}
+                                                    rows={2}
+                                                />
                                             </div>
-                                            <div>
-                                                <p className="text-muted-foreground mb-1">Why Mentor</p>
-                                                <p className="font-medium whitespace-pre-wrap">
-                                                    {profile.mentorProfile.latestApplication.whyMentor || "Not set"}
-                                                </p>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="mentor-tools-comfortable">Tools comfortable with</Label>
+                                                <Textarea
+                                                    id="mentor-tools-comfortable"
+                                                    value={toolsComfortable}
+                                                    onChange={(event) => setToolsComfortable(event.target.value)}
+                                                    rows={2}
+                                                />
                                             </div>
-                                            {profile.mentorProfile.latestApplication.comments && (
-                                                <div>
-                                                    <p className="text-muted-foreground mb-1">Comments</p>
-                                                    <p className="font-medium whitespace-pre-wrap">
-                                                        {profile.mentorProfile.latestApplication.comments}
-                                                    </p>
-                                                </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="mentor-tools-learning">Tools currently learning</Label>
+                                                <Textarea
+                                                    id="mentor-tools-learning"
+                                                    value={toolsLearning}
+                                                    onChange={(event) => setToolsLearning(event.target.value)}
+                                                    rows={2}
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label>Previous mentoring semesters</Label>
+                                                <Select value={previousSemesters} onValueChange={setPreviousSemesters}>
+                                                    <SelectTrigger>
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {PREVIOUS_SEMESTERS.map((value) => (
+                                                            <SelectItem key={value} value={value}>{value}</SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                            <div className="space-y-2 sm:col-span-2">
+                                                <Label htmlFor="mentor-comments">Comments</Label>
+                                                <Textarea
+                                                    id="mentor-comments"
+                                                    value={mentorComments}
+                                                    onChange={(event) => setMentorComments(event.target.value)}
+                                                    rows={2}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="flex flex-wrap gap-2">
+                                            <Button
+                                                type="button"
+                                                onClick={handleSaveMentorAnswers}
+                                                disabled={mentorSavingAnswers || !editableApplication}
+                                            >
+                                                {mentorSavingAnswers ? "Saving answers..." : "Save Answers"}
+                                            </Button>
+                                            {canResubmitForActiveSemester && (
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    onClick={handleResubmitMentorApplication}
+                                                    disabled={mentorResubmitting || !activeMentorSemester}
+                                                >
+                                                    {mentorResubmitting
+                                                        ? "Resubmitting..."
+                                                        : `Resubmit for ${activeMentorSemester?.name ?? "active semester"}`}
+                                                </Button>
                                             )}
                                         </div>
-                                    </>
-                                ) : (
-                                    <p className="text-sm text-muted-foreground">
-                                        Mentor record exists, but no application details are available yet.
-                                    </p>
+
+                                        <div className="space-y-2 border-t border-border/60 pt-4">
+                                            <Label>Availability</Label>
+                                            <p className="text-xs text-muted-foreground">
+                                                Updates here notify the mentoring head and remove incompatible scheduled shifts.
+                                            </p>
+                                            <Card depth={3} className="neo:border-0">
+                                                <CardContent className="p-3">
+                                                <AvailabilityGrid value={mentorAvailabilitySlots} onChange={setMentorAvailabilitySlots} />
+                                                </CardContent>
+                                            </Card>
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                onClick={handleSaveMentorAvailability}
+                                                disabled={mentorSavingAvailability || !activeMentorSemester}
+                                            >
+                                                {mentorSavingAvailability ? "Saving availability..." : "Save Availability"}
+                                            </Button>
+                                        </div>
+                                    </div>
                                 )}
                             </Card>
                         </section>
@@ -1022,7 +1694,11 @@ export default function ProfileContent({ userId, children }: ProfileContentProps
                                         return (
                                             <div key={m.id} className="rounded-lg border border-border/70 bg-background/70 px-3 py-2">
                                                 <div className="flex items-center justify-between gap-2">
-                                                    <Badge variant="secondary" className="text-[10px] uppercase tracking-wide">
+                                                    <Badge
+                                                        variant="secondary"
+                                                        className="text-[10px] uppercase tracking-wide"
+                                                        style={categoricalBadgeStyle(parsed.label)}
+                                                    >
                                                         {parsed.label}
                                                     </Badge>
                                                     <span className="text-muted-foreground text-xs tabular-nums shrink-0">

@@ -132,6 +132,7 @@ const Navbar: React.FC<NavbarProps> = ({
     const [showDashboard, setShowDashboard] = React.useState(serverShowDashboard);
     const [userId, setUserId] = React.useState<number | null>(serverUserId);
     const [profileComplete, setProfileComplete] = React.useState(serverProfileComplete);
+    const [hasMentorAvailabilityUpdates, setHasMentorAvailabilityUpdates] = React.useState(false);
 
     // Background refresh so dynamic changes (e.g. profile completion) still propagate
     React.useEffect(() => {
@@ -148,11 +149,34 @@ const Navbar: React.FC<NavbarProps> = ({
                 setShowDashboard(data.isOfficer || data.isMentor);
                 setUserId(data.userId ?? null);
                 setProfileComplete(data.profileComplete ?? true);
+                if (data.isMentoringHead) {
+                    const updatesResponse = await fetch("/api/mentor-availability/updates");
+                    if (updatesResponse.ok) {
+                        const updatesData = await updatesResponse.json();
+                        const latestUpdatedAt = updatesData?.latestUpdatedAt ? Date.parse(updatesData.latestUpdatedAt) : 0;
+                        const seenAt = Number(localStorage.getItem("mentor-availability-last-seen") || "0");
+                        setHasMentorAvailabilityUpdates(latestUpdatedAt > seenAt);
+                    } else {
+                        setHasMentorAvailabilityUpdates(false);
+                    }
+                } else {
+                    setHasMentorAvailabilityUpdates(false);
+                }
             } catch (error) {
                 console.error("Error checking auth level:", error);
             }
         })();
     }, [session]);
+
+    React.useEffect(() => {
+        const handleMentorAvailabilitySeen = () => {
+            setHasMentorAvailabilityUpdates(false);
+        };
+        window.addEventListener("mentor-availability-seen", handleMentorAvailabilitySeen);
+        return () => {
+            window.removeEventListener("mentor-availability-seen", handleMentorAvailabilitySeen);
+        };
+    }, []);
 
     // Controlled state for navigation menu - click to activate, then hover works
     const [menuValue, setMenuValue] = React.useState<string>("");
@@ -257,12 +281,30 @@ const Navbar: React.FC<NavbarProps> = ({
                             {showDashboard && (
                                 <NavigationMenuItem value="dashboard">
                                     <NavigationMenuTrigger onClick={handleTriggerClick("dashboard")}>
-                                        Dashboard
+                                        <span className="inline-flex items-center gap-2">
+                                            Dashboard
+                                            {hasMentorAvailabilityUpdates && (
+                                                <span className="h-2 w-2 rounded-full bg-destructive" />
+                                            )}
+                                        </span>
                                     </NavigationMenuTrigger>
                                     <NavigationMenuContent>
                                         <ul className="grid gap-3 p-4 md:w-[400px] lg:w-[500px] lg:grid-cols-2">
                                             {dashboardItems.map((item) => (
-                                                <ListItem key={item.title} title={item.title} href={item.href}>
+                                                <ListItem
+                                                    key={item.title}
+                                                    title={
+                                                        item.href === "/dashboard/mentoring" && hasMentorAvailabilityUpdates ? (
+                                                            <span className="inline-flex items-center gap-2">
+                                                                {item.title}
+                                                                <span className="h-2 w-2 rounded-full bg-destructive" />
+                                                            </span>
+                                                        ) : (
+                                                            item.title
+                                                        )
+                                                    }
+                                                    href={item.href}
+                                                >
                                                     {item.description}
                                                 </ListItem>
                                             ))}
@@ -272,7 +314,10 @@ const Navbar: React.FC<NavbarProps> = ({
                             )}
 
                             <NavigationMenuItem className="flex items-center ml-1">
-                                <AuthButton userId={userId} profileComplete={profileComplete} />
+                                <AuthButton
+                                    userId={userId}
+                                    profileComplete={profileComplete}
+                                />
                             </NavigationMenuItem>
                         </NavigationMenuList>
                     </NavigationMenu>
@@ -325,7 +370,16 @@ const Navbar: React.FC<NavbarProps> = ({
                                 </MobileNavCollapsible>
 
                                 {showDashboard && (
-                                    <MobileNavCollapsible title="Dashboard">
+                                    <MobileNavCollapsible
+                                        title={
+                                            <span className="inline-flex items-center gap-2">
+                                                Dashboard
+                                                {hasMentorAvailabilityUpdates && (
+                                                    <span className="h-2 w-2 rounded-full bg-destructive" />
+                                                )}
+                                            </span>
+                                        }
+                                    >
                                         {dashboardItems.map((item) => (
                                             <MobileNavLink
                                                 key={item.title}
@@ -334,6 +388,9 @@ const Navbar: React.FC<NavbarProps> = ({
                                                 className="pl-4"
                                             >
                                                 {item.title}
+                                                {item.href === "/dashboard/mentoring" && hasMentorAvailabilityUpdates && (
+                                                    <span className="ml-auto h-2 w-2 rounded-full bg-destructive" />
+                                                )}
                                             </MobileNavLink>
                                         ))}
                                     </MobileNavCollapsible>
@@ -376,7 +433,10 @@ const Navbar: React.FC<NavbarProps> = ({
                                             </button>
                                         </div>
                                     ) : (
-                                        <AuthButton userId={userId} profileComplete={profileComplete} />
+                                        <AuthButton
+                                            userId={userId}
+                                            profileComplete={profileComplete}
+                                        />
                                     )}
                                 </div>
                             </nav>
@@ -417,7 +477,7 @@ function MobileNavCollapsible({
     title,
     children,
 }: {
-    title: string;
+    title: React.ReactNode;
     children: React.ReactNode;
 }) {
     const [isOpen, setIsOpen] = React.useState(false);
@@ -446,7 +506,7 @@ function ListItem({
     href,
     className,
     ...props
-}: React.ComponentPropsWithoutRef<"li"> & { href: string }) {
+}: Omit<React.ComponentPropsWithoutRef<"li">, "title"> & { href: string; title: React.ReactNode }) {
     return (
         <li {...props}>
             <NavigationMenuLink asChild>

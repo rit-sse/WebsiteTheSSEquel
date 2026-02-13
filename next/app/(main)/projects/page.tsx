@@ -6,12 +6,19 @@ import { useState } from "react";
 import AddProjectModal from "./AddProjectModal";
 import { Card } from "@/components/ui/card";
 
+interface OfficerLookup {
+  is_active: boolean;
+  position: { title: string };
+  user: { email: string };
+}
+
 const Projects = () => {
   // projects has an array of Project[]
   // Also, Dispatch<SetStateAction<never[]>> makes sure this format is followed. Otherwise, an error would occur
   // Also ALSO, the above dispatch is apparently required so I can declare projects to be Project[], so that project.completed would not throw an error in VSCode
   const [projects, setProjects]: [Project[], Dispatch<SetStateAction<never[]>>] = useState([]);
   const [isOfficer, setOfficer] = useState(false);
+  const [projectsHeadEmail, setProjectsHeadEmail] = useState<string | null>(null);
 
   // Enables the AddProject modal. setAddProjectModalEnabled is passed to the modal in order for certain functions (such as clicking the black background and the exit button) to close the modal.
   let [addProjectModalEnabled, setAddProjectModalEnabled] = useState(false);
@@ -37,6 +44,15 @@ const Projects = () => {
     .then(resp => {
       setProjects(resp)
       console.log(resp)
+    })
+
+    fetch("/api/officer")
+    .then(res => res.json())
+    .then((officers: OfficerLookup[]) => {
+      const projectsHead = officers.find(
+        (officer) => officer.is_active && officer.position.title === "Projects Head"
+      );
+      setProjectsHeadEmail(projectsHead?.user?.email ?? null);
     })
   }, [])
 
@@ -66,7 +82,13 @@ const Projects = () => {
               <div className="leading-8">Our mission is simple.</div>
               <div className="leading-8">Want to build? We&apos;ll make it happen.</div>
               <div className="text-xl text-primary opacity-70 mt-1">
-                Write to <span className="hover:underline hover:font-bold"><a href="mailto:projects@sse.rit.edu">projects@sse.rit.edu</a></span> for more info.
+                Write to{" "}
+                <span className="hover:underline hover:font-bold">
+                  <a href={`mailto:${projectsHeadEmail ?? "softwareengineering@rit.edu"}`}>
+                    {projectsHeadEmail ?? "softwareengineering@rit.edu"}
+                  </a>
+                </span>{" "}
+                for more info.
               </div>
             </div>
             

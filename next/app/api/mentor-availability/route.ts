@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/authOptions"
 import prisma from "@/lib/prisma"
 import { MENTOR_HEAD_TITLE } from "@/lib/utils"
 import { resolveUserImage } from "@/lib/s3Utils"
+import { recordMentorAvailabilityEvent } from "@/lib/mentorAvailabilityEvents"
 
 export const dynamic = "force-dynamic"
 
@@ -224,9 +225,58 @@ export async function POST(request: NextRequest) {
       },
     })
 
+    const mentor = await prisma.mentor.findFirst({
+      where: { user_Id: user.id },
+      select: { id: true },
+    })
+
+    const slotSet = new Set(
+      slots.map((slot: AvailabilitySlot) => `${slot.weekday}-${slot.hour}`)
+    )
+
+    let removedBlocks: Array<{ weekday: number; startHour: number }> = []
+    if (mentor && semester.scheduleId) {
+      const existingBlocks = await prisma.scheduleBlock.findMany({
+        where: {
+          mentorId: mentor.id,
+          scheduleId: semester.scheduleId,
+        },
+        select: {
+          id: true,
+          weekday: true,
+          startHour: true,
+        },
+      })
+
+      const blocksToRemove = existingBlocks.filter(
+        (block) => !slotSet.has(`${block.weekday}-${block.startHour}`)
+      )
+
+      if (blocksToRemove.length > 0) {
+        await prisma.scheduleBlock.deleteMany({
+          where: {
+            id: { in: blocksToRemove.map((block) => block.id) },
+          },
+        })
+      }
+
+      removedBlocks = blocksToRemove.map((block) => ({
+        weekday: block.weekday,
+        startHour: block.startHour,
+      }))
+    }
+
+    recordMentorAvailabilityEvent({
+      semesterId,
+      userId: user.id,
+      updatedAt: availability.updatedAt.toISOString(),
+      removedBlocks,
+    })
+
     return NextResponse.json({
       ...availability,
       slots: JSON.parse(availability.slots),
+      removedBlocks,
     })
   } catch (error) {
     console.error("Error saving availability:", error)

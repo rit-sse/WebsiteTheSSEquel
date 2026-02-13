@@ -32,6 +32,12 @@ interface PurchaseRequest {
   event?: LinkedEvent | null
 }
 
+interface OfficerLookup {
+  is_active: boolean
+  position: { title: string }
+  user: { email: string }
+}
+
 interface ReceiptFormProps {
   request: PurchaseRequest
   onClose: () => void
@@ -49,6 +55,7 @@ export default function ReceiptForm({ request, onClose, onSuccess }: ReceiptForm
   const [receiptEmail, setReceiptEmail] = useState("")
   const [attendees, setAttendees] = useState<Attendee[]>([])
   const [attendanceImage, setAttendanceImage] = useState<string | null>(null)
+  const [treasurerEmail, setTreasurerEmail] = useState("treasurer's email")
   
   // Linked event state
   const [linkedEventAttendees, setLinkedEventAttendees] = useState<Attendee[]>([])
@@ -87,6 +94,25 @@ export default function ReceiptForm({ request, onClose, onSuccess }: ReceiptForm
         .finally(() => setLoadingEventAttendance(false))
     }
   }, [hasLinkedEvent, request.eventId, request.event])
+
+  useEffect(() => {
+    const loadTreasurerEmail = async () => {
+      try {
+        const response = await fetch("/api/officer")
+        if (!response.ok) return
+        const officers = (await response.json()) as OfficerLookup[]
+        const treasurer = officers.find(
+          (officer) => officer.is_active && officer.position.title === "Treasurer"
+        )
+        if (treasurer?.user?.email) {
+          setTreasurerEmail(treasurer.user.email)
+        }
+      } catch (error) {
+        console.error("Failed to load treasurer email:", error)
+      }
+    }
+    loadTreasurerEmail()
+  }, [])
 
   // Receipt image upload handler
   const handleReceiptUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -414,7 +440,7 @@ export default function ReceiptForm({ request, onClose, onSuccess }: ReceiptForm
                     type="email"
                     value={receiptEmail}
                     onChange={(e) => setReceiptEmail(e.target.value)}
-                    placeholder="treasurer@sse.rit.edu"
+                    placeholder={treasurerEmail}
                     className="mt-1"
                   />
                 </div>
