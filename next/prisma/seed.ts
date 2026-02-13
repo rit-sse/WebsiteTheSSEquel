@@ -1,4 +1,9 @@
 import { PrismaClient } from "@prisma/client";
+import {
+	formatAcademicTerm,
+	getAcademicTermDateRange,
+	parseAcademicTermLabel,
+} from "../lib/academicTerm";
 const prisma = new PrismaClient();
 
 /**
@@ -185,8 +190,15 @@ async function seedMentorRosterAndApplications() {
 			data: { name: "Mentor Schedule", isActive: true },
 		}));
 
-	const semesterStart = new Date("2026-01-12T00:00:00.000Z");
-	const semesterEnd = new Date("2026-05-08T00:00:00.000Z");
+	const seededTermLabel = "Spring 2026";
+	const parsedSeededTerm = parseAcademicTermLabel(seededTermLabel);
+	if (!parsedSeededTerm) {
+		throw new Error(`Invalid seeded mentoring term label: ${seededTermLabel}`);
+	}
+	const { startDate: semesterStart, endDate: semesterEnd } = getAcademicTermDateRange(
+		parsedSeededTerm.term,
+		parsedSeededTerm.year
+	);
 	const applicationOpen = new Date("2025-11-15T00:00:00.000Z");
 	const applicationClose = new Date("2026-01-10T00:00:00.000Z");
 
@@ -194,7 +206,7 @@ async function seedMentorRosterAndApplications() {
 		(await prisma.mentorSemester.findFirst({ where: { isActive: true } })) ??
 		(await prisma.mentorSemester.create({
 			data: {
-				name: "Spring 2026",
+				name: formatAcademicTerm(parsedSeededTerm.term, parsedSeededTerm.year),
 				isActive: true,
 				scheduleId: activeSchedule.id,
 				semesterStart,

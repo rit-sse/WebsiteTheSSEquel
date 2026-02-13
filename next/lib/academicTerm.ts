@@ -69,6 +69,31 @@ export function formatAcademicTerm(term: AcademicTerm, year: number): string {
   return `${label} ${year}`;
 }
 
+export function parseAcademicTermLabel(label: string): TermYear | null {
+  const normalized = label.trim().toLowerCase();
+  const match = normalized.match(/^(spring|summer|fall)\s+(\d{4})$/);
+  if (!match) return null;
+
+  const termLabel = match[1];
+  const year = Number.parseInt(match[2], 10);
+  if (Number.isNaN(year)) return null;
+
+  const term: AcademicTerm =
+    termLabel === "spring" ? "SPRING" : termLabel === "summer" ? "SUMMER" : "FALL";
+
+  return { term, year };
+}
+
+export function getAcademicTermDateRange(term: AcademicTerm, year: number): {
+  startDate: Date;
+  endDate: Date;
+} {
+  const termConfig = ACADEMIC_CALENDAR_CONFIG[term];
+  const startDate = new Date(year, termConfig.startMonth - 1, 1);
+  const endDate = new Date(year, termConfig.endMonth - 1, termConfig.endDay);
+  return { startDate, endDate };
+}
+
 export function getAcademicTermEndDate(date: Date): Date {
   const term = getAcademicTermFromDate(date);
   const termConfig = ACADEMIC_CALENDAR_CONFIG[term];

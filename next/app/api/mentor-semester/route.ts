@@ -3,6 +3,8 @@ import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/authOptions"
 import prisma from "@/lib/prisma"
 import { MENTOR_HEAD_TITLE } from "@/lib/utils"
+import { getCurrentSemester } from "@/lib/semester"
+import { getAcademicTermDateRange, parseAcademicTermLabel } from "@/lib/academicTerm"
 
 export const dynamic = "force-dynamic"
 
@@ -118,14 +120,24 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { name, when2meetUrl, applicationOpen, applicationClose, setActive = false } = body
+    const {
+      name,
+      when2meetUrl,
+      applicationOpen,
+      applicationClose,
+      semesterStart,
+      semesterEnd,
+      setActive = false,
+    } = body
 
-    if (!name || typeof name !== "string" || name.trim() === "") {
-      return NextResponse.json(
-        { error: "Semester name is required" },
-        { status: 400 }
-      )
-    }
+    const semesterName =
+      typeof name === "string" && name.trim() !== ""
+        ? name.trim()
+        : getCurrentSemester().label
+    const parsedTerm = parseAcademicTermLabel(semesterName)
+    const derivedDateRange = parsedTerm
+      ? getAcademicTermDateRange(parsedTerm.term, parsedTerm.year)
+      : null
 
     // If setting this as active, deactivate all other semesters
     if (setActive) {
@@ -157,10 +169,16 @@ export async function POST(request: NextRequest) {
 
     const semester = await prisma.mentorSemester.create({
       data: {
-        name: name.trim(),
+        name: semesterName,
         when2meetUrl: when2meetUrl || null,
         applicationOpen: applicationOpen ? new Date(applicationOpen) : null,
         applicationClose: applicationClose ? new Date(applicationClose) : null,
+        semesterStart: semesterStart
+          ? new Date(semesterStart)
+          : derivedDateRange?.startDate ?? null,
+        semesterEnd: semesterEnd
+          ? new Date(semesterEnd)
+          : derivedDateRange?.endDate ?? null,
         isActive: setActive,
         scheduleId,
       },
@@ -202,7 +220,16 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { id, name, when2meetUrl, applicationOpen, applicationClose, isActive } = body
+    const {
+      id,
+      name,
+      when2meetUrl,
+      applicationOpen,
+      applicationClose,
+      semesterStart,
+      semesterEnd,
+      isActive,
+    } = body
 
     if (!id) {
       return NextResponse.json(
@@ -233,13 +260,39 @@ export async function PUT(request: NextRequest) {
       when2meetUrl?: string | null
       applicationOpen?: Date | null
       applicationClose?: Date | null
+      semesterStart?: Date | null
+      semesterEnd?: Date | null
       isActive?: boolean
     } = {}
 
-    if (name !== undefined) updateData.name = name.trim()
+    if (name !== undefined) {
+      const trimmedName = typeof name === "string" ? name.trim() : ""
+      if (!trimmedName) {
+        return NextResponse.json(
+          { error: "Semester name cannot be empty" },
+          { status: 400 }
+        )
+      }
+      updateData.name = trimmedName
+
+      // Keep date boundaries aligned when the name is canonical and no explicit override is provided.
+      if (semesterStart === undefined && semesterEnd === undefined) {
+        const parsedTerm = parseAcademicTermLabel(trimmedName)
+        if (parsedTerm) {
+          const derivedDateRange = getAcademicTermDateRange(
+            parsedTerm.term,
+            parsedTerm.year
+          )
+          updateData.semesterStart = derivedDateRange.startDate
+          updateData.semesterEnd = derivedDateRange.endDate
+        }
+      }
+    }
     if (when2meetUrl !== undefined) updateData.when2meetUrl = when2meetUrl || null
     if (applicationOpen !== undefined) updateData.applicationOpen = applicationOpen ? new Date(applicationOpen) : null
     if (applicationClose !== undefined) updateData.applicationClose = applicationClose ? new Date(applicationClose) : null
+    if (semesterStart !== undefined) updateData.semesterStart = semesterStart ? new Date(semesterStart) : null
+    if (semesterEnd !== undefined) updateData.semesterEnd = semesterEnd ? new Date(semesterEnd) : null
     if (isActive !== undefined) updateData.isActive = isActive
 
     const semester = await prisma.mentorSemester.update({
