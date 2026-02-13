@@ -1,8 +1,11 @@
-import { contributors } from "./contributingMembers";
+'use server'
+
+import { getSSEMembers } from "@/lib/github/search";
 import MemberCard from "./MemberCard";
 import { Card } from "@/components/ui/card";
 
-export default function Credits() {
+export default async function Credits() {
+  const members = await getSSEMembers();
   return (
     <section className="py-8 px-4 md:px-8">
       <div className="max-w-screen-xl mx-auto">
@@ -16,8 +19,8 @@ export default function Credits() {
             </div>
           </div>
           <div className="flex justify-center flex-wrap gap-4">
-          {contributors.map( (member, idx) => (
-              <MemberCard key={idx} member={member}></MemberCard>
+          {members.map( (member, idx) => (
+            <MemberCard key={idx} member={member}></MemberCard>
           ))}
           </div>
       </Card>
