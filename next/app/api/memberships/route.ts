@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { z } from "zod";
+import { resolveUserImage } from "@/lib/s3Utils";
 
 
 const CreateMembershipSchema = z.object({
@@ -60,7 +61,7 @@ export async function GET() {
     const items = grouped.map((g: any) => ({
         userId: g.userId,
         name: byId.get(g.userId)?.name ?? `User ${g.userId}`,
-        image: byId.get(g.userId)?.profileImageKey ?? byId.get(g.userId)?.googleImageURL ?? null,
+        image: resolveUserImage(byId.get(g.userId)?.profileImageKey, byId.get(g.userId)?.googleImageURL),
         membershipCount: g._count.userId,
         lastMembershipAt: g._max.dateGiven,
     }))

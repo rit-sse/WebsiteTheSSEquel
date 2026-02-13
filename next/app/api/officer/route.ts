@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
 import { sendEmail, isEmailConfigured } from "@/lib/email";
 import { NextRequest } from "next/server";
+import { resolveUserImage } from "@/lib/s3Utils";
 
 export const dynamic = "force-dynamic";
 
@@ -39,12 +40,12 @@ export async function GET() {
     ]
   });
 
-  // Transform to include image field from profileImageKey or googleImageURL
-  const officersWithImage = officers.map((officer: { id: number; is_active: boolean; start_date: Date; end_date: Date; user: { id: number; name: string; email: string; profileImageKey: string | null; googleImageURL: string | null; }; position: { id: number; is_primary: boolean; title: string; }; }) => ({
-    ...officer,
+  // Transform to include resolved image URL
+  const officersWithImage = officers.map((o: typeof officers[number]) => ({
+    ...o,
     user: {
-      ...officer.user,
-      image: officer.user.profileImageKey ?? officer.user.googleImageURL ?? null,
+      ...o.user,
+      image: resolveUserImage(o.user.profileImageKey, o.user.googleImageURL),
     },
   }));
 

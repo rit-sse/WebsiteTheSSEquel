@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { resolveUserImage } from "@/lib/s3Utils";
 
 export const dynamic = "force-dynamic";
 
@@ -35,12 +36,12 @@ export async function GET() {
     },
   });
 
-  // Transform to include image field from profileImageKey or googleImageURL
-  const officersWithImage = officer.map((o: { id: number; user: { id: number; name: string; email: string; linkedIn: string | null; profileImageKey: string | null; googleImageURL: string | null; gitHub: string | null; description: string | null; }; position: { is_primary: boolean; title: string; }; }) => ({
+  // Transform to include resolved image URL
+  const officersWithImage = officer.map((o: typeof officer[number]) => ({
     ...o,
     user: {
       ...o.user,
-      image: o.user.profileImageKey ?? o.user.googleImageURL ?? null,
+      image: resolveUserImage(o.user.profileImageKey, o.user.googleImageURL),
     },
   }));
 

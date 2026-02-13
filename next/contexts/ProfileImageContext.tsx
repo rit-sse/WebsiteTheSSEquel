@@ -19,13 +19,11 @@ interface ProfileImageProviderProps {
 export function ProfileImageProvider({ children }: ProfileImageProviderProps) {
   const { data: session } = useSession();
   const [profileImage, setProfileImageState] = React.useState<string | null>(null);
-  const [initialized, setInitialized] = React.useState(false);
 
   // Sync from session whenever it changes (login, session refresh, etc.)
   React.useEffect(() => {
     if (session?.user?.image !== undefined) {
       setProfileImageState(session.user.image ?? null);
-      setInitialized(true);
     }
   }, [session?.user?.image]);
 

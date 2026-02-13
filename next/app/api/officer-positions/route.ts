@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { resolveUserImage } from "@/lib/s3Utils";
 
 export const dynamic = "force-dynamic";
 
@@ -56,7 +57,7 @@ export async function GET() {
         userId: activeOfficer.user.id,
         name: activeOfficer.user.name,
         email: activeOfficer.user.email, // User's actual email
-        image: activeOfficer.user.profileImageKey ?? activeOfficer.user.googleImageURL ?? null,
+        image: resolveUserImage(activeOfficer.user.profileImageKey, activeOfficer.user.googleImageURL),
         start_date: activeOfficer.start_date,
         end_date: activeOfficer.end_date
       } : null

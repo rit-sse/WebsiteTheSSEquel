@@ -2,15 +2,12 @@ import { Github, Linkedin, Mail } from "lucide-react";
 import { TeamMember } from "./team";
 import Avatar from "boring-avatars";
 import { Card } from "@/components/ui/card";
-import { getImageUrl } from "@/lib/s3Utils";
-
-const DEFAULT_IMAGE = "https://source.boringavatars.com/beam/";
 
 function getOfficerPhoto(teamMember: TeamMember) {
-  if (teamMember.image && teamMember.image !== DEFAULT_IMAGE) {
-    return getImageUrl(teamMember.image);
+  // Image URL is already resolved by the API via resolveUserImage()
+  if (teamMember.image) {
+    return teamMember.image;
   }
-
   return null;
 }
 

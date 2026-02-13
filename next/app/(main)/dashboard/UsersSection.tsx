@@ -10,6 +10,7 @@ import UserInviteModal from "./UserInviteModal"
 import { Modal, ModalFooter } from "@/components/ui/modal"
 import { toast } from "sonner"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 interface PendingInvitation {
   id: number
@@ -150,9 +151,25 @@ export default function UsersSection() {
       header: "Name",
       sortable: true,
       isPrimary: true,
-      render: (user) => (
-        <span className="font-medium">{user.name}</span>
-      )
+      render: (user) => {
+        const imgUrl = user.image || null;
+        const initials = user.name
+          .split(" ")
+          .map((n) => n[0])
+          .filter(Boolean)
+          .slice(0, 2)
+          .join("")
+          .toUpperCase();
+        return (
+          <div className="flex items-center gap-2">
+            <Avatar className="h-7 w-7 shrink-0">
+              {imgUrl ? <AvatarImage src={imgUrl} alt={user.name} /> : null}
+              <AvatarFallback className="text-[10px]">{initials}</AvatarFallback>
+            </Avatar>
+            <span className="font-medium truncate">{user.name}</span>
+          </div>
+        );
+      }
     },
     {
       key: "email",

@@ -6,7 +6,7 @@ import { ChevronDown, Menu, User, LogOut } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import SSELogoFull from "../common/SSELogoFull";
 import AuthButton from "./AuthButton";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import NavAvatar from "./NavAvatar";
 import { useProfileImage } from "@/contexts/ProfileImageContext";
 import {
     NavigationMenu,
@@ -102,17 +102,28 @@ const dashboardItems = [
     },
 ];
 
-const Navbar: React.FC = () => {
+interface NavbarProps {
+    /** Resolved on the server so the first paint already includes Dashboard / profile link. */
+    serverUserId?: number | null;
+    serverShowDashboard?: boolean;
+    serverProfileComplete?: boolean;
+}
+
+const Navbar: React.FC<NavbarProps> = ({
+    serverUserId = null,
+    serverShowDashboard = false,
+    serverProfileComplete = true,
+}) => {
     const [open, setOpen] = React.useState(false);
     const { data: session } = useSession();
     const { profileImage } = useProfileImage();
     
-    // Only show dashboard when user is an officer or mentor
-    const [showDashboard, setShowDashboard] = React.useState(false);
-    const [userId, setUserId] = React.useState<number | null>(null);
-    const [profileComplete, setProfileComplete] = React.useState(true);
+    // Initialize from server props — no flash on first paint
+    const [showDashboard, setShowDashboard] = React.useState(serverShowDashboard);
+    const [userId, setUserId] = React.useState<number | null>(serverUserId);
+    const [profileComplete, setProfileComplete] = React.useState(serverProfileComplete);
 
-    // Fetch auth level to determine if user can see dashboard and get userId
+    // Background refresh so dynamic changes (e.g. profile completion) still propagate
     React.useEffect(() => {
         if (!session) {
             setShowDashboard(false);
@@ -129,8 +140,6 @@ const Navbar: React.FC = () => {
                 setProfileComplete(data.profileComplete ?? true);
             } catch (error) {
                 console.error("Error checking auth level:", error);
-                setShowDashboard(false);
-                setUserId(null);
             }
         })();
     }, [session]);
@@ -167,7 +176,7 @@ const Navbar: React.FC = () => {
     return (
         <nav
             id="navbar"
-            className="sticky top-0 z-50 flex items-center justify-center bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b-[2px] border-border"
+            className="sticky top-0 z-50 flex items-center justify-center bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b-[2px] border-zinc-400/70 dark:border-black"
         >
             <div
                 id="nav-content"
@@ -246,7 +255,7 @@ const Navbar: React.FC = () => {
                                 </NavigationMenuItem>
                             )}
 
-                            <NavigationMenuItem className="flex items-center ml-1 mr-4">
+                            <NavigationMenuItem className="flex items-center ml-1">
                                 <AuthButton userId={userId} profileComplete={profileComplete} />
                             </NavigationMenuItem>
                         </NavigationMenuList>
@@ -315,12 +324,11 @@ const Navbar: React.FC = () => {
                                         <div className="flex flex-col gap-1">
                                             <div className="flex items-center gap-3 px-3 py-2 mb-1">
                                                 <div className="relative">
-                                                    <Avatar className="h-9 w-9">
-                                                        <AvatarImage src={profileImage ?? session.user?.image ?? undefined} alt={session.user?.name ?? "User"} />
-                                                        <AvatarFallback className="text-xs font-medium">
-                                                            {session.user?.name?.split(" ").map(n => n[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() ?? "?"}
-                                                        </AvatarFallback>
-                                                    </Avatar>
+                                                    <NavAvatar
+                                                        src={profileImage ?? session.user?.image ?? null}
+                                                        name={session.user?.name ?? "User"}
+                                                        className="h-9 w-9"
+                                                    />
                                                     {!profileComplete && (
                                                         <span className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-destructive border-2 border-background" />
                                                     )}
@@ -426,8 +434,8 @@ function ListItem({
                     href={href}
                     className={cn(
                         "block select-none space-y-1 rounded-lg p-3 leading-none no-underline outline-none",
-                        "bg-surface-1 border border-border/30",
-                        "hover:bg-surface-2 hover:border-border/50 hover:shadow-md",
+                        "bg-surface-2 border border-border/30",
+                        "hover:bg-surface-1 hover:border-border/50 hover:shadow-md",
                         "focus:bg-surface-2 focus:border-border/50",
                         "transition-colors",
                         className

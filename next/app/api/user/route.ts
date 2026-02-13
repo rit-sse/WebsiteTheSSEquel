@@ -2,9 +2,8 @@ import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { NextRequest } from "next/server";
-import { getPublicS3Url } from "@/lib/s3Utils";
+import { resolveUserImage, getKeyFromS3Url, isS3Key } from "@/lib/s3Utils";
 import { s3Service } from "@/lib/services/s3Service";
-import { getKeyFromS3Url, isS3Key } from "@/lib/s3Utils";
 import { maybeGrantProfileCompletionMembership } from "@/lib/services/profileCompletionService";
 import { maybeCreateAlumniCandidate } from "@/lib/services/alumniCandidateService";
 
@@ -70,9 +69,7 @@ export async function GET() {
     graduationYear: user.graduationYear ?? null,
     major: user.major ?? null,
     coopSummary: user.coopSummary ?? null,
-    image: user.profileImageKey
-      ? getPublicS3Url(user.profileImageKey)
-      : user.googleImageURL ?? null,
+    image: resolveUserImage(user.profileImageKey, user.googleImageURL),
     // Keep the raw key so the frontend can send it back on save
     profileImageKey: user.profileImageKey ?? null,
     membershipCount: user._count.Memberships,
@@ -317,9 +314,7 @@ export async function PUT(request: NextRequest) {
     const { profileImageKey, googleImageURL, _membershipCount, ...rest } = user;
     return Response.json({
       ...rest,
-      image: profileImageKey
-        ? getPublicS3Url(profileImageKey)
-        : googleImageURL ?? null,
+      image: resolveUserImage(profileImageKey, googleImageURL),
       profileImageKey: profileImageKey ?? null,
       membershipCount: _membershipCount,
       isMember: _membershipCount >= 1,

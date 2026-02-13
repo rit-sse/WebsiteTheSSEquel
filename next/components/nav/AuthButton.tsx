@@ -5,7 +5,6 @@ import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { User, LogOut } from "lucide-react";
-import HoverBoldButton from "../common/HoverBoldButton";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -14,23 +13,12 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import NavAvatar from "./NavAvatar";
 import { useProfileImage } from "@/contexts/ProfileImageContext";
 
 interface AuthButtonProps {
     userId?: number | null;
     profileComplete?: boolean;
-}
-
-function getInitials(name: string | null | undefined): string {
-    if (!name) return "?";
-    return name
-        .split(" ")
-        .map((n) => n[0])
-        .filter(Boolean)
-        .slice(0, 2)
-        .join("")
-        .toUpperCase();
 }
 
 export default function AuthButton({ userId, profileComplete = true }: AuthButtonProps = {}) {
@@ -72,17 +60,14 @@ export default function AuthButton({ userId, profileComplete = true }: AuthButto
         return (
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <button className="relative rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
-                        <Avatar className="h-8 w-8">
-                            <AvatarImage src={userImage ?? undefined} alt={userName} />
-                            <AvatarFallback>{getInitials(userName)}</AvatarFallback>
-                        </Avatar>
+                    <button className="relative rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 mr-2">
+                        <NavAvatar src={userImage} name={userName} className="h-8 w-8 ring-1 ring-border/50 shadow-sm" />
                         {!profileComplete && (
                             <span className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-destructive border-2 border-background" />
                         )}
                     </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuContent align="end" className="w-56 bg-surface-1">
                     <DropdownMenuLabel className="font-normal">
                         <div className="flex flex-col space-y-1">
                             <p className="text-sm font-medium leading-none">{userName}</p>
@@ -117,11 +102,14 @@ export default function AuthButton({ userId, profileComplete = true }: AuthButto
     }
 
     return (
-        <HoverBoldButton
-            className="text-left"
-            text="Login"
-            dataLabel="Logout"
+        <button
             onClick={() => signIn("google")}
-        />
+            className="relative rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 mr-2"
+            aria-label="Sign in"
+        >
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted ring-1 ring-border/50 shadow-sm">
+                <User className="h-4 w-4 text-muted-foreground" />
+            </div>
+        </button>
     );
 }

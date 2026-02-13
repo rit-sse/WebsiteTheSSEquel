@@ -1,7 +1,7 @@
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
-import { getImageUrl } from "@/lib/s3Utils";
+import { resolveUserImage } from "@/lib/s3Utils";
 
 export const dynamic = "force-dynamic";
 
@@ -100,7 +100,7 @@ export async function GET(
     id: user.id,
     name: user.name,
     email: isOwner || !!isOfficer ? user.email : undefined,
-    image: getImageUrl(user.profileImageKey ?? user.googleImageURL ?? null),
+    image: resolveUserImage(user.profileImageKey, user.googleImageURL),
     profileImageKey: user.profileImageKey ?? null,
     linkedIn: user.linkedIn,
     gitHub: user.gitHub,

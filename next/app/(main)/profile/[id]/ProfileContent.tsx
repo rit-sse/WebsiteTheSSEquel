@@ -34,7 +34,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
-import { getImageUrl, isS3Key } from "@/lib/s3Utils";
+import { isS3Key } from "@/lib/s3Utils";
 import { useProfileImage } from "@/contexts/ProfileImageContext";
 import ImageUpload from "@/components/common/ImageUpload";
 
@@ -310,8 +310,8 @@ export default function ProfileContent({ userId, children }: ProfileContentProps
             });
 
             // Update global profile image context — this propagates to navbar, etc. instantly
-            const resolvedImage = updated.image ? getImageUrl(updated.image) : null;
-            setProfileImage(resolvedImage);
+            // Image URL is already resolved by the API via resolveUserImage()
+            setProfileImage(updated.image ?? null);
 
             // Refetch the profile to get the fully resolved data
             const profileRes = await fetch(`/api/user/${userId}/profile`);
@@ -360,8 +360,9 @@ export default function ProfileContent({ userId, children }: ProfileContentProps
     const activeRoles = profile.officerRoles.filter((r) => r.is_active);
     const pastRoles = profile.officerRoles.filter((r) => !r.is_active);
 
-    const profileImageUrl = getImageUrl(profile.image);
-    const hasImage = profileImageUrl !== DEFAULT_IMAGE;
+    // Image URL is already resolved by the API via resolveUserImage()
+    const profileImageUrl = profile.image ?? DEFAULT_IMAGE;
+    const hasImage = !!profile.image;
 
     // Quest scoring
     const fieldComplete = (key: string): boolean => {

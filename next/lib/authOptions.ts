@@ -3,7 +3,7 @@ import prisma from "@/lib/prisma";
 import { AuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { getImageProps } from "next/image";
-import { getImageUrl } from "./s3Utils";
+import { resolveUserImage } from "./s3Utils";
 import { maybeCreateAlumniCandidate } from "@/lib/services/alumniCandidateService";
 
 // OAuth scopes for authentication
@@ -50,8 +50,7 @@ export const authOptions: AuthOptions = {
       });
 
       if (dbUser) {
-        const raw = dbUser.profileImageKey ?? dbUser.googleImageURL ?? null;
-        session.user.image = raw ? getImageUrl(raw) : null;
+        session.user.image = resolveUserImage(dbUser.profileImageKey, dbUser.googleImageURL);
       }
 
       return session;

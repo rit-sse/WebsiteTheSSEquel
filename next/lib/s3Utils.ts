@@ -47,3 +47,19 @@ export function getImageUrl(imageValue: string | null | undefined): string {
   // This ensures no-cache headers are applied
   return `/api/aws/image?key=${encodeURIComponent(imageValue)}`;
 }
+
+/**
+ * Resolves a user's profile image from their DB fields into a display-ready URL.
+ * Use this in API routes so clients always receive a usable image URL
+ * without needing to call getImageUrl() themselves.
+ *
+ * Priority: profileImageKey (S3) > googleImageURL (OAuth) > null
+ */
+export function resolveUserImage(
+  profileImageKey: string | null | undefined,
+  googleImageURL: string | null | undefined,
+): string | null {
+  const raw = profileImageKey ?? googleImageURL ?? null;
+  if (!raw) return null;
+  return getImageUrl(raw);
+}

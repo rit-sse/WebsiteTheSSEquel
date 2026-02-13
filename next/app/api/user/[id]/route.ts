@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
+import { resolveUserImage } from "@/lib/s3Utils";
 
 /**
  * HTTP GET request to /api/user/[id]
@@ -51,7 +52,7 @@ export async function GET(
     return Response.json({
       id: user.id,
       name: user.name,
-      image: user.profileImageKey ?? user.googleImageURL ?? null,
+      image: resolveUserImage(user.profileImageKey, user.googleImageURL),
       email: isOwner || isOfficer ? user.email : undefined,
     });
   } catch {
