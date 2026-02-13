@@ -295,13 +295,10 @@ export async function PUT(request: NextRequest) {
   // before save (these are owned by the user but never persisted in DB).
   if (Array.isArray(body.cleanupImageKeys)) {
     const currentBodyImage = typeof body.image === "string" ? normalizeToS3Key(body.image) : null;
-    const uniqueCleanupKeys: string[] = Array.from(
-      new Set(
-        body.cleanupImageKeys
-          .map((key: unknown) => (typeof key === "string" ? normalizeToS3Key(key) : null))
-          .filter((key: string | null): key is string => !!key)
-      )
-    );
+    const normalizedCleanupKeys: string[] = body.cleanupImageKeys
+      .map((key: unknown) => (typeof key === "string" ? normalizeToS3Key(key) : null))
+      .filter((key: string | null): key is string => !!key);
+    const uniqueCleanupKeys: string[] = Array.from(new Set(normalizedCleanupKeys));
 
     for (const cleanupKey of uniqueCleanupKeys) {
       if (!isOwnedProfileImageKey(cleanupKey, targetUser.id)) continue;
