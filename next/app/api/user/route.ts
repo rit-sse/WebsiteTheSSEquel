@@ -2,7 +2,7 @@ import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { NextRequest } from "next/server";
-import { resolveUserImage, getKeyFromS3Url, isS3Key } from "@/lib/s3Utils";
+import { resolveUserImage, getKeyFromS3Url, isS3Key, normalizeToS3Key } from "@/lib/s3Utils";
 import { s3Service } from "@/lib/services/s3Service";
 import { maybeGrantProfileCompletionMembership } from "@/lib/services/profileCompletionService";
 import { maybeCreateAlumniCandidate } from "@/lib/services/alumniCandidateService";
@@ -185,6 +185,7 @@ export async function PUT(request: NextRequest) {
   if (!targetUser) {
     return new Response(`User ${id} not found`, { status: 404 });
   }
+  const existingProfileImageKey = normalizeToS3Key(targetUser.profileImageKey);
 
   const isOwner = session.user.email === targetUser.email;
 
@@ -248,9 +249,9 @@ export async function PUT(request: NextRequest) {
   if ("image" in body) {
     if (body.image === null) {
       // User removed their custom upload -> delete from S3 and clear the key
-      if (targetUser.profileImageKey) {
+      if (existingProfileImageKey) {
         try {
-          await s3Service.deleteObject(targetUser.profileImageKey);
+          await s3Service.deleteObject(existingProfileImageKey);
         } catch (err) {
           console.error("Failed to delete old profile picture:", err);
         }
@@ -261,9 +262,9 @@ export async function PUT(request: NextRequest) {
         return new Response("Profile image key is not owned by this user", { status: 403 });
       }
       // User uploaded a new image -> delete old one from S3
-      if (targetUser.profileImageKey && targetUser.profileImageKey !== body.image) {
+      if (existingProfileImageKey && existingProfileImageKey !== body.image) {
         try {
-          await s3Service.deleteObject(targetUser.profileImageKey);
+          await s3Service.deleteObject(existingProfileImageKey);
         } catch (err) {
           console.error("Failed to delete old profile picture:", err);
         }
@@ -277,9 +278,9 @@ export async function PUT(request: NextRequest) {
         if (!isOwnedProfileImageKey(extracted, targetUser.id)) {
           return new Response("Profile image key is not owned by this user", { status: 403 });
         }
-        if (targetUser.profileImageKey && targetUser.profileImageKey !== extracted) {
+        if (existingProfileImageKey && existingProfileImageKey !== extracted) {
           try {
-            await s3Service.deleteObject(targetUser.profileImageKey);
+            await s3Service.deleteObject(existingProfileImageKey);
           } catch (err) {
             console.error("Failed to delete old profile picture:", err);
           }

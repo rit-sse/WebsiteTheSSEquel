@@ -35,6 +35,28 @@ export function isS3Key(imageValue: string): boolean {
 }
 
 /**
+ * Normalizes an image value into an S3 key when possible.
+ * Supports raw keys, public S3 URLs, and `/api/aws/image?key=...` proxy URLs.
+ */
+export function normalizeToS3Key(imageValue: string | null | undefined): string | null {
+  if (!imageValue) return null;
+
+  if (isS3Key(imageValue)) return imageValue;
+
+  const fromPublicUrl = getKeyFromS3Url(imageValue);
+  if (fromPublicUrl) return fromPublicUrl;
+
+  try {
+    // Support relative URLs (e.g. `/api/aws/image?key=...`) by using a base URL.
+    const parsed = new URL(imageValue, "http://localhost");
+    if (parsed.pathname !== "/api/aws/image") return null;
+    return parsed.searchParams.get("key");
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Gets the display URL for an image, handling both S3 keys and full URLs
  */
 export function getImageUrl(imageValue: string | null | undefined): string {

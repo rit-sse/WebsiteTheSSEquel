@@ -1,6 +1,7 @@
 import { s3Service } from "@/lib/services/s3Service";
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
+import { normalizeToS3Key } from "@/lib/s3Utils";
 
 export async function POST(req: NextRequest) {
   try {
@@ -150,10 +151,12 @@ export async function PUT(req: NextRequest) {
       );
     }
 
-    // Delete old profile picture from S3 if it exists
-    if (user.profileImageKey) {
+    const existingProfileImageKey = normalizeToS3Key(user.profileImageKey);
+
+    // Delete old profile picture from S3 if it exists and differs
+    if (existingProfileImageKey && existingProfileImageKey !== key) {
       try {
-        await s3Service.deleteObject(user.profileImageKey);
+        await s3Service.deleteObject(existingProfileImageKey);
       } catch (err) {
         console.error("Failed to delete old profile picture:", err);
       }
