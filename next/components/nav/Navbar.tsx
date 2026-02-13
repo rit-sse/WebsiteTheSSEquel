@@ -176,7 +176,7 @@ const Navbar: React.FC<NavbarProps> = ({
     return (
         <nav
             id="navbar"
-            className="sticky top-0 z-50 flex items-center justify-center bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b-[2px] border-zinc-400/70 dark:border-black"
+            className="sticky top-0 z-50 flex items-center justify-center bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b-[2px] border-black"
         >
             <div
                 id="nav-content"
