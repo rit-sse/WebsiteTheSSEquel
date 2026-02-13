@@ -5,6 +5,26 @@ import { resolveUserImage } from "@/lib/s3Utils";
 
 export const dynamic = "force-dynamic";
 
+function parseCourseCount(coursesJson: string | null | undefined): number {
+  if (!coursesJson) return 0;
+  try {
+    const parsed = JSON.parse(coursesJson);
+    return Array.isArray(parsed) ? parsed.length : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function parseCourses(coursesJson: string | null | undefined): string[] {
+  if (!coursesJson) return [];
+  try {
+    const parsed = JSON.parse(coursesJson);
+    return Array.isArray(parsed) ? parsed.filter((value) => typeof value === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
 /**
  * Check if user can manage mentors (Mentoring Head or Primary Officer)
  */
@@ -65,6 +85,34 @@ export async function GET(request: NextRequest) {
           description: true,
           linkedIn: true,
           gitHub: true,
+          ...(detailed && {
+            mentorApplications: {
+              orderBy: { createdAt: "desc" as const },
+              take: 1,
+              select: {
+                id: true,
+                discordUsername: true,
+                pronouns: true,
+                major: true,
+                yearLevel: true,
+                coursesJson: true,
+                skillsText: true,
+                toolsComfortable: true,
+                toolsLearning: true,
+                previousSemesters: true,
+                whyMentor: true,
+                comments: true,
+                createdAt: true,
+                status: true,
+                semester: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
+                },
+              },
+            },
+          }),
         },
       },
       ...(detailed && {
@@ -112,13 +160,47 @@ export async function GET(request: NextRequest) {
     ],
   });
 
-  const mentorsWithImage = allMentors.map((mentor) => ({
-    ...mentor,
-    user: {
-      ...mentor.user,
-      image: resolveUserImage(mentor.user.profileImageKey, mentor.user.googleImageURL),
-    },
-  }));
+  const mentorsWithImage = allMentors.map((mentor) => {
+    const latestApplication =
+      "mentorApplications" in mentor.user ? mentor.user.mentorApplications?.[0] : undefined;
+    const applicationCourseCount = parseCourseCount(latestApplication?.coursesJson);
+    const applicationCourses = parseCourses(latestApplication?.coursesJson);
+
+    const { mentorApplications, ...userWithoutApplications } = mentor.user as typeof mentor.user & {
+      mentorApplications?: Array<{
+        id: number;
+        discordUsername: string;
+        pronouns: string;
+        major: string;
+        yearLevel: string;
+        coursesJson: string;
+        skillsText: string;
+        toolsComfortable: string;
+        toolsLearning: string;
+        previousSemesters: number;
+        whyMentor: string;
+        comments: string | null;
+        createdAt: Date;
+        status: string;
+        semester: { id: number; name: string };
+      }>;
+    };
+
+    return {
+      ...mentor,
+      applicationCourseCount,
+      latestMentorApplication: latestApplication
+        ? {
+            ...latestApplication,
+            courses: applicationCourses,
+          }
+        : null,
+      user: {
+        ...userWithoutApplications,
+        image: resolveUserImage(mentor.user.profileImageKey, mentor.user.googleImageURL),
+      },
+    };
+  });
 
   return Response.json(mentorsWithImage);
 }

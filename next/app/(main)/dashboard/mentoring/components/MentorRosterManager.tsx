@@ -5,6 +5,7 @@ import { DataTable, Column } from "@/components/ui/data-table"
 import { Button } from "@/components/ui/button"
 import { Modal, ModalFooter } from "@/components/ui/modal"
 import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   Select,
   SelectContent,
@@ -13,13 +14,37 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { toast } from "sonner"
-import { Pencil, Trash2, UserCheck, UserX, Mail, Clock } from "lucide-react"
+import { Pencil, Trash2, UserCheck, UserX, Mail, Clock, ChevronDown, ChevronUp } from "lucide-react"
 import MentorInviteModal from "../../MentorInviteModal"
+
+interface LatestMentorApplication {
+  id: number
+  discordUsername: string
+  pronouns: string
+  major: string
+  yearLevel: string
+  coursesJson: string
+  courses: string[]
+  skillsText: string
+  toolsComfortable: string
+  toolsLearning: string
+  previousSemesters: number
+  whyMentor: string
+  comments: string | null
+  createdAt: string
+  status: string
+  semester: {
+    id: number
+    name: string
+  }
+}
 
 interface Mentor {
   id: number
   isActive: boolean
   expirationDate: string
+  applicationCourseCount?: number
+  latestMentorApplication?: LatestMentorApplication | null
   user: {
     id: number
     name: string
@@ -91,6 +116,40 @@ export default function MentorRosterManager() {
   const [isCancellingInvitation, setIsCancellingInvitation] = useState(false)
   const [isSendingSwipe, setIsSendingSwipe] = useState(false)
   const [swipeModalOpen, setSwipeModalOpen] = useState(false)
+  const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set())
+
+  const getInitials = (name: string) =>
+    name
+      .split(" ")
+      .filter(Boolean)
+      .map((part) => part[0]?.toUpperCase() ?? "")
+      .join("")
+      .slice(0, 2) || "?"
+
+  const renderWrappedList = (items: string[]) => {
+    if (items.length === 0) return <span className="text-muted-foreground">—</span>
+    return (
+      <div className="flex flex-wrap gap-1">
+        {items.map((item) => (
+          <Badge key={item} variant="secondary" className="text-xs">
+            {item}
+          </Badge>
+        ))}
+      </div>
+    )
+  }
+
+  const toggleRowExpand = (id: number) => {
+    setExpandedRows((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
+      return next
+    })
+  }
 
   // Fetch mentors with details
   const fetchMentors = useCallback(async () => {
@@ -321,17 +380,34 @@ export default function MentorRosterManager() {
 
   const columns: Column<Mentor>[] = [
     {
+      key: "expand",
+      header: "",
+      className: "w-[40px]",
+      render: (mentor) => (
+        <Button size="xs" variant="ghost" onClick={() => toggleRowExpand(mentor.id)}>
+          {expandedRows.has(mentor.id) ? (
+            <ChevronUp className="h-4 w-4" />
+          ) : (
+            <ChevronDown className="h-4 w-4" />
+          )}
+        </Button>
+      ),
+    },
+    {
       key: "name",
       header: "Mentor",
       sortable: true,
       className: "w-[200px]",
       render: (mentor) => (
         <div className="flex items-center gap-3">
-          <img
-            src={mentor.user.image}
-            alt={mentor.user.name}
-            className="w-8 h-8 rounded-full object-cover"
-          />
+          <Avatar className="w-8 h-8">
+            {mentor.user.image ? (
+              <AvatarImage src={mentor.user.image} alt={mentor.user.name} />
+            ) : null}
+            <AvatarFallback className="text-[10px]">
+              {getInitials(mentor.user.name)}
+            </AvatarFallback>
+          </Avatar>
           <div>
             <p className="font-medium text-sm">{mentor.user.name}</p>
             <p className="text-xs text-muted-foreground">{mentor.user.email}</p>
@@ -350,6 +426,12 @@ export default function MentorRosterManager() {
               {ms.skill.skill}
             </Badge>
           ))}
+          {(!mentor.mentorSkill || mentor.mentorSkill.length === 0) &&
+            mentor.latestMentorApplication?.skillsText?.trim() && (
+              <span className="text-xs text-muted-foreground truncate max-w-[150px]">
+                {mentor.latestMentorApplication.skillsText}
+              </span>
+            )}
           {(mentor.mentorSkill?.length || 0) > 3 && (
             <Badge variant="outline" className="text-xs">
               +{(mentor.mentorSkill?.length || 0) - 3}
@@ -364,7 +446,10 @@ export default function MentorRosterManager() {
       className: "hidden lg:table-cell w-[150px]",
       render: (mentor) => (
         <span className="text-sm text-muted-foreground">
-          {mentor.courseTaken?.length || 0} courses
+          {(mentor.courseTaken?.length ?? 0) > 0
+            ? mentor.courseTaken?.length
+            : mentor.applicationCourseCount ?? 0}{" "}
+          courses
         </span>
       ),
     },
@@ -443,6 +528,89 @@ export default function MentorRosterManager() {
     },
   ]
 
+  const expandedContent = (mentor: Mentor) => {
+    if (!expandedRows.has(mentor.id)) return null
+    const app = mentor.latestMentorApplication
+    if (!app) {
+      return (
+        <div className="px-4 py-3 bg-muted/30 border-t text-sm text-muted-foreground">
+          No mentor application data found for this mentor.
+        </div>
+      )
+    }
+
+    return (
+      <div className="px-4 py-3 bg-muted/30 border-t">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 text-sm">
+          <div>
+            <p className="font-medium mb-1">Application Semester</p>
+            <p className="text-muted-foreground">
+              {app.semester.name} ({app.status})
+            </p>
+          </div>
+          <div>
+            <p className="font-medium mb-1">Applied On</p>
+            <p className="text-muted-foreground">{formatDate(app.createdAt)}</p>
+          </div>
+          <div>
+            <p className="font-medium mb-1">Discord</p>
+            <p className="text-muted-foreground">{app.discordUsername || "—"}</p>
+          </div>
+          <div>
+            <p className="font-medium mb-1">Pronouns</p>
+            <p className="text-muted-foreground">{app.pronouns || "—"}</p>
+          </div>
+          <div>
+            <p className="font-medium mb-1">Major</p>
+            <p className="text-muted-foreground">{app.major || "—"}</p>
+          </div>
+          <div>
+            <p className="font-medium mb-1">Year Level</p>
+            <p className="text-muted-foreground">{app.yearLevel || "—"}</p>
+          </div>
+          <div>
+            <p className="font-medium mb-1">Previous Mentoring Semesters</p>
+            <p className="text-muted-foreground">{app.previousSemesters}</p>
+          </div>
+          <div>
+            <p className="font-medium mb-1">Courses</p>
+            {renderWrappedList(app.courses || [])}
+          </div>
+          <div className="lg:col-span-2">
+            <p className="font-medium mb-1">Other Skills</p>
+            <p className="text-muted-foreground whitespace-pre-wrap">
+              {app.skillsText || "—"}
+            </p>
+          </div>
+          <div className="lg:col-span-2">
+            <p className="font-medium mb-1">Tools Comfortable With</p>
+            <p className="text-muted-foreground whitespace-pre-wrap">
+              {app.toolsComfortable || "—"}
+            </p>
+          </div>
+          <div className="lg:col-span-2">
+            <p className="font-medium mb-1">Tools Currently Learning</p>
+            <p className="text-muted-foreground whitespace-pre-wrap">
+              {app.toolsLearning || "—"}
+            </p>
+          </div>
+          <div className="lg:col-span-2">
+            <p className="font-medium mb-1">Why Mentor</p>
+            <p className="text-muted-foreground whitespace-pre-wrap">
+              {app.whyMentor || "—"}
+            </p>
+          </div>
+          {app.comments && (
+            <div className="lg:col-span-2">
+              <p className="font-medium mb-1">Comments</p>
+              <p className="text-muted-foreground whitespace-pre-wrap">{app.comments}</p>
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
+
   if (isLoading) {
     return (
       <div className="text-muted-foreground text-sm py-8 text-center">
@@ -496,6 +664,7 @@ export default function MentorRosterManager() {
         data={activeMentors}
         columns={columns}
         keyField="id"
+        expandedContent={expandedContent}
         title={`Active Mentors (${activeMentors.length})`}
         titleExtra={
           <Button
@@ -520,6 +689,7 @@ export default function MentorRosterManager() {
           data={inactiveMentors}
           columns={columns}
           keyField="id"
+          expandedContent={expandedContent}
           title={`Inactive Mentors (${inactiveMentors.length})`}
           searchPlaceholder="Search inactive mentors..."
           emptyMessage="No inactive mentors"

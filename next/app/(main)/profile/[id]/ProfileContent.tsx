@@ -79,6 +79,45 @@ interface ProfileData {
         position_id: number;
         position: { title: string };
     }[];
+    mentorProfile: {
+        id: number;
+        isActive: boolean;
+        expirationDate: string;
+        shifts: {
+            id: number;
+            weekday: number;
+            dayLabel: string;
+            startHour: number;
+            label: string;
+        }[];
+        mentoringHead: {
+            id: number;
+            name: string;
+            email: string;
+            roleEmail: string;
+        } | null;
+        latestApplication: {
+            id: number;
+            discordUsername: string;
+            pronouns: string;
+            major: string;
+            yearLevel: string;
+            coursesJson: string;
+            courses: string[];
+            skillsText: string;
+            toolsComfortable: string;
+            toolsLearning: string;
+            previousSemesters: number;
+            whyMentor: string;
+            comments: string | null;
+            status: string;
+            createdAt: string;
+            semester: {
+                id: number;
+                name: string;
+            };
+        } | null;
+    } | null;
     isOwner: boolean;
 }
 
@@ -437,6 +476,9 @@ export default function ProfileContent({ userId, children }: ProfileContentProps
                                 <h1 className="text-3xl font-bold font-heading tracking-tight">
                                     {profile.name}
                                 </h1>
+                                {profile.mentorProfile?.isActive && (
+                                    <Badge>Mentor</Badge>
+                                )}
                                 {activeRoles.map((role) => (
                                     <Badge key={role.id}>{role.position.title}</Badge>
                                 ))}
@@ -804,6 +846,164 @@ export default function ProfileContent({ userId, children }: ProfileContentProps
                                         </div>
                                     ))}
                                 </div>
+                            </Card>
+                        </section>
+                    )}
+
+                    {/* Mentor details */}
+                    {profile.mentorProfile && (
+                        <section>
+                            <h2 className="text-lg font-heading font-semibold mb-3 flex items-center gap-2">
+                                <GraduationCap className="h-4 w-4 text-muted-foreground" />
+                                Mentor Details
+                            </h2>
+                            <Card depth={2} className="p-4 space-y-4">
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <Badge variant={profile.mentorProfile.isActive ? "default" : "secondary"}>
+                                        {profile.mentorProfile.isActive ? "Active Mentor" : "Inactive Mentor"}
+                                    </Badge>
+                                    <Badge variant="outline">
+                                        Expires{" "}
+                                        {new Date(profile.mentorProfile.expirationDate).toLocaleDateString("en-US", {
+                                            month: "short",
+                                            day: "numeric",
+                                            year: "numeric",
+                                        })}
+                                    </Badge>
+                                </div>
+
+                                <div>
+                                    <p className="text-sm text-muted-foreground mb-2">Assigned Shifts</p>
+                                    <div className="flex flex-wrap gap-1">
+                                        {profile.mentorProfile.shifts.length > 0 ? (
+                                            profile.mentorProfile.shifts.map((shift) => (
+                                                <Badge key={shift.id} variant="outline" className="text-xs">
+                                                    {shift.label}
+                                                </Badge>
+                                            ))
+                                        ) : (
+                                            <span className="text-sm font-medium">No shifts assigned yet</span>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="text-sm">
+                                    <p className="text-muted-foreground mb-1">Mentoring Head Contact</p>
+                                    {profile.mentorProfile.mentoringHead ? (
+                                        <p className="font-medium">
+                                            {profile.mentorProfile.mentoringHead.name} (
+                                            {profile.mentorProfile.mentoringHead.email}){" "}
+                                            <span className="text-muted-foreground">
+                                                • {profile.mentorProfile.mentoringHead.roleEmail}
+                                            </span>
+                                        </p>
+                                    ) : (
+                                        <p className="font-medium">Not assigned right now</p>
+                                    )}
+                                </div>
+
+                                {profile.mentorProfile.latestApplication ? (
+                                    <>
+                                        <div className="grid gap-2 sm:grid-cols-2 text-sm">
+                                            <div>
+                                                <span className="text-muted-foreground">Semester:</span>{" "}
+                                                <span className="font-medium">
+                                                    {profile.mentorProfile.latestApplication.semester.name}
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <span className="text-muted-foreground">Application Status:</span>{" "}
+                                                <span className="font-medium">
+                                                    {profile.mentorProfile.latestApplication.status}
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <span className="text-muted-foreground">Discord:</span>{" "}
+                                                <span className="font-medium">
+                                                    {profile.mentorProfile.latestApplication.discordUsername || "—"}
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <span className="text-muted-foreground">Pronouns:</span>{" "}
+                                                <span className="font-medium">
+                                                    {profile.mentorProfile.latestApplication.pronouns || "—"}
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <span className="text-muted-foreground">Major:</span>{" "}
+                                                <span className="font-medium">
+                                                    {profile.mentorProfile.latestApplication.major || "—"}
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <span className="text-muted-foreground">Year Level:</span>{" "}
+                                                <span className="font-medium">
+                                                    {profile.mentorProfile.latestApplication.yearLevel || "—"}
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <span className="text-muted-foreground">Previous Semesters:</span>{" "}
+                                                <span className="font-medium">
+                                                    {profile.mentorProfile.latestApplication.previousSemesters}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <p className="text-sm text-muted-foreground mb-2">Courses</p>
+                                            <div className="flex flex-wrap gap-1">
+                                                {profile.mentorProfile.latestApplication.courses.length > 0 ? (
+                                                    profile.mentorProfile.latestApplication.courses.map((course) => (
+                                                        <Badge key={course} variant="secondary" className="text-xs">
+                                                            {course}
+                                                        </Badge>
+                                                    ))
+                                                ) : (
+                                                    <span className="text-sm font-medium">Not set</span>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-3 text-sm">
+                                            <div>
+                                                <p className="text-muted-foreground mb-1">Other Skills</p>
+                                                <p className="font-medium whitespace-pre-wrap">
+                                                    {profile.mentorProfile.latestApplication.skillsText || "Not set"}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <p className="text-muted-foreground mb-1">Tools Comfortable With</p>
+                                                <p className="font-medium whitespace-pre-wrap">
+                                                    {profile.mentorProfile.latestApplication.toolsComfortable || "Not set"}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <p className="text-muted-foreground mb-1">Tools Currently Learning</p>
+                                                <p className="font-medium whitespace-pre-wrap">
+                                                    {profile.mentorProfile.latestApplication.toolsLearning || "Not set"}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <p className="text-muted-foreground mb-1">Why Mentor</p>
+                                                <p className="font-medium whitespace-pre-wrap">
+                                                    {profile.mentorProfile.latestApplication.whyMentor || "Not set"}
+                                                </p>
+                                            </div>
+                                            {profile.mentorProfile.latestApplication.comments && (
+                                                <div>
+                                                    <p className="text-muted-foreground mb-1">Comments</p>
+                                                    <p className="font-medium whitespace-pre-wrap">
+                                                        {profile.mentorProfile.latestApplication.comments}
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </>
+                                ) : (
+                                    <p className="text-sm text-muted-foreground">
+                                        Mentor record exists, but no application details are available yet.
+                                    </p>
+                                )}
                             </Card>
                         </section>
                     )}

@@ -3,6 +3,30 @@ import { NextRequest } from "next/server";
 
 export const dynamic = "force-dynamic";
 
+function parseApplicationCourses(coursesJson: string | null | undefined): string[] {
+  if (!coursesJson) return [];
+  try {
+    const parsed = JSON.parse(coursesJson);
+    return Array.isArray(parsed) ? parsed.filter((value) => typeof value === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+function parseCourseToken(token: string): { department: string; code: number } | null {
+  const match = token.toUpperCase().match(/([A-Z]+)[-\s]?(\d{3})/);
+  if (!match) return null;
+  return {
+    department: match[1],
+    code: Number.parseInt(match[2], 10),
+  };
+}
+
+function getDepartmentAliases(department: string): string[] {
+  if (department === "CSCI") return ["CSCI", "CS"];
+  return [department];
+}
+
 /**
  * HTTP POST request to /api/invitations/accept
  * Accept a pending invitation
@@ -48,6 +72,12 @@ export async function POST(request: NextRequest) {
     where: { id: invitationId },
     include: {
       position: true,
+      application: {
+        select: {
+          id: true,
+          coursesJson: true,
+        },
+      },
     },
   });
 
@@ -134,7 +164,6 @@ export async function POST(request: NextRequest) {
         membership,
       });
     } else if (invitation.type === "mentor") {
-      // Create mentor record
       // Use endDate from invitation as expiration, or default to 1 year from now
       const expirationDate = invitation.endDate || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
 
@@ -150,18 +179,58 @@ export async function POST(request: NextRequest) {
         return new Response("You are already an active mentor", { status: 409 });
       }
 
-      // Create the mentor record
-      const mentor = await prisma.mentor.create({
-        data: {
-          user_Id: loggedInUser.id,
-          expirationDate: expirationDate,
-          isActive: true,
-        },
-      });
+      const mentor = await prisma.$transaction(async (tx) => {
+        const createdMentor = await tx.mentor.create({
+          data: {
+            user_Id: loggedInUser.id,
+            expirationDate: expirationDate,
+            isActive: true,
+          },
+        });
 
-      // Delete the invitation
-      await prisma.invitation.delete({
-        where: { id: invitationId },
+        // Backfill courses from the accepted application into CourseTaken when possible.
+        const submittedCourses = parseApplicationCourses(invitation.application?.coursesJson);
+        if (submittedCourses.length > 0) {
+          const allCourses = await tx.course.findMany({
+            select: {
+              id: true,
+              code: true,
+              department: {
+                select: {
+                  shortTitle: true,
+                },
+              },
+            },
+          });
+
+          const matchedCourseIds = new Set<number>();
+          for (const token of submittedCourses) {
+            const parsed = parseCourseToken(token);
+            if (!parsed) continue;
+            const aliases = getDepartmentAliases(parsed.department);
+            const match = allCourses.find(
+              (course) =>
+                course.code === parsed.code &&
+                aliases.includes(course.department.shortTitle.toUpperCase())
+            );
+            if (match) matchedCourseIds.add(match.id);
+          }
+
+          if (matchedCourseIds.size > 0) {
+            await tx.courseTaken.createMany({
+              data: Array.from(matchedCourseIds).map((courseId) => ({
+                mentorId: createdMentor.id,
+                courseId,
+              })),
+            });
+          }
+        }
+
+        await tx.invitation.delete({
+          where: { id: invitationId },
+        });
+
+        return createdMentor;
       });
 
       console.log(`User ${loggedInUser.email} accepted mentor invitation`);

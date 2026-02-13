@@ -217,6 +217,12 @@ const Navbar: React.FC<NavbarProps> = ({
 
                             <NavigationMenuItem>
                                 <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+                                    <Link href="/mentoring/schedule">Mentor Schedule</Link>
+                                </NavigationMenuLink>
+                            </NavigationMenuItem>
+
+                            <NavigationMenuItem>
+                                <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
                                     <Link href="/memberships">Leaderboard</Link>
                                 </NavigationMenuLink>
                             </NavigationMenuItem>
@@ -287,6 +293,10 @@ const Navbar: React.FC<NavbarProps> = ({
                             <nav className="flex flex-col gap-2 mt-6">
                                 <MobileNavLink href="/events/calendar" onClick={() => setOpen(false)}>
                                     Events
+                                </MobileNavLink>
+
+                                <MobileNavLink href="/mentoring/schedule" onClick={() => setOpen(false)}>
+                                    Mentor Schedule
                                 </MobileNavLink>
 
                                 <MobileNavLink href="/memberships" onClick={() => setOpen(false)}>

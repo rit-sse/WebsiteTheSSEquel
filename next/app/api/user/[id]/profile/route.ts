@@ -2,8 +2,19 @@ import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { resolveUserImage } from "@/lib/s3Utils";
+import { MENTOR_HEAD_TITLE } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
+
+function parseCourses(coursesJson: string | null | undefined): string[] {
+  if (!coursesJson) return [];
+  try {
+    const parsed = JSON.parse(coursesJson);
+    return Array.isArray(parsed) ? parsed.filter((value) => typeof value === "string") : [];
+  } catch {
+    return [];
+  }
+}
 
 /**
  * GET /api/user/[id]/profile
@@ -14,6 +25,7 @@ export async function GET(
   request: Request,
   { params }: { params: { id: string } }
 ) {
+  const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
   const id = parseInt(params.id);
   if (isNaN(id)) {
     return new Response("Invalid User ID", { status: 422 });
@@ -69,6 +81,52 @@ export async function GET(
         },
         orderBy: { start_date: "desc" },
       },
+      mentor: {
+        select: {
+          id: true,
+          isActive: true,
+          expirationDate: true,
+          scheduleBlocks: {
+            where: {
+              schedule: {
+                isActive: true,
+              },
+            },
+            select: {
+              id: true,
+              weekday: true,
+              startHour: true,
+            },
+            orderBy: [{ weekday: "asc" }, { startHour: "asc" }],
+          },
+        },
+      },
+      mentorApplications: {
+        orderBy: { createdAt: "desc" },
+        take: 1,
+        select: {
+          id: true,
+          discordUsername: true,
+          pronouns: true,
+          major: true,
+          yearLevel: true,
+          coursesJson: true,
+          skillsText: true,
+          toolsComfortable: true,
+          toolsLearning: true,
+          previousSemesters: true,
+          whyMentor: true,
+          comments: true,
+          status: true,
+          createdAt: true,
+          semester: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      },
     },
   });
 
@@ -95,6 +153,30 @@ export async function GET(
     : null;
 
   const projects = user.projectContributions.map((pc) => pc.project);
+  const mentoringHead = await prisma.officer.findFirst({
+    where: {
+      is_active: true,
+      position: {
+        title: MENTOR_HEAD_TITLE,
+      },
+    },
+    select: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+      position: {
+        select: {
+          email: true,
+        },
+      },
+    },
+  });
+
+  const latestMentorApplication = user.mentorApplications[0];
 
   return Response.json({
     id: user.id,
@@ -113,6 +195,37 @@ export async function GET(
     memberships: user.Memberships,
     projects,
     officerRoles: user.officers,
+    mentorProfile:
+      user.mentor.length > 0
+        ? {
+            id: user.mentor[0].id,
+            isActive: user.mentor[0].isActive,
+            expirationDate: user.mentor[0].expirationDate,
+            shifts: user.mentor[0].scheduleBlocks.map((slot) => ({
+              id: slot.id,
+              weekday: slot.weekday,
+              dayLabel: DAYS[slot.weekday - 1] ?? "Unknown",
+              startHour: slot.startHour,
+              label: `${DAYS[slot.weekday - 1] ?? "Unknown"} ${slot.startHour}:00-${
+                slot.startHour + 1
+              }:00`,
+            })),
+            latestApplication: latestMentorApplication
+              ? {
+                  ...latestMentorApplication,
+                  courses: parseCourses(latestMentorApplication.coursesJson),
+                }
+              : null,
+            mentoringHead: mentoringHead
+              ? {
+                  id: mentoringHead.user.id,
+                  name: mentoringHead.user.name,
+                  email: mentoringHead.user.email,
+                  roleEmail: mentoringHead.position.email,
+                }
+              : null,
+          }
+        : null,
     isOwner: !!isOwner,
   });
 }
