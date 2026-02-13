@@ -1,15 +1,16 @@
 "use client"
 
-import { useState, useEffect, useCallback, useMemo, useRef, type ReactNode } from "react"
+import { useState, useEffect, useCallback, useMemo, useRef, type CSSProperties, type ReactNode } from "react"
 import Papa from "papaparse"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Modal, ModalFooter } from "@/components/ui/modal"
 import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Switch } from "@/components/ui/switch"
 import { Progress } from "@/components/ui/progress"
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
-import { NeoCard, NeoCardContent, NeoCardHeader, NeoCardTitle } from "@/components/ui/neo-card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { toast } from "sonner"
 import { X, User, Clock, Calendar, Users, Printer, Activity } from "lucide-react"
 import {
@@ -21,6 +22,7 @@ import {
 } from "@/components/ui/select"
 import { DndContext, DragEndEvent, PointerSensor, useDraggable, useDroppable, useSensor, useSensors } from "@dnd-kit/core"
 import { cn } from "@/lib/utils"
+import { getCategoricalColorFromSeed } from "@/lib/categoricalColors"
 import { AvailabilitySlot, aggregateAvailability, getSlotAvailability } from "./AvailabilityGrid"
 
 // Schedule types
@@ -90,24 +92,27 @@ const HOURS = [
   { hour: 17, label: "5pm - 6pm" },
 ]
 
-// Mentor colors for visual distinction
-const MENTOR_COLORS = [
-  "bg-orange-500/80",
-  "bg-fuchsia-500/80",
-  "bg-sky-500/80",
-  "bg-red-500/80",
-  "bg-violet-500/80",
-  "bg-emerald-500/80",
-  "bg-indigo-500/80",
-  "bg-green-500/80",
-  "bg-cyan-500/80",
-]
-
-function getMentorColor(mentorId: number): string {
-  return MENTOR_COLORS[mentorId % MENTOR_COLORS.length]
+function getMentorColor(mentorId: number) {
+  return getCategoricalColorFromSeed(mentorId)
 }
 
-export default function MentorScheduleEditor() {
+function getInitials(name: string) {
+  return (
+    name
+      .split(" ")
+      .filter(Boolean)
+      .map((part) => part[0]?.toUpperCase() ?? "")
+      .join("")
+      .slice(0, 2) || "?"
+  )
+}
+
+interface MentorScheduleEditorProps {
+  ToolbarPortal?: React.ComponentType<{ target: HTMLElement | null; children: React.ReactNode }>
+  toolbarNode?: HTMLElement | null
+}
+
+export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: MentorScheduleEditorProps) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
   )
@@ -325,10 +330,10 @@ export default function MentorScheduleEditor() {
   }
 
   const getTrafficLevel = (averagePeopleInLab: number) => {
-    if (averagePeopleInLab < 10) return { label: "Quiet", value: 20, color: "bg-gray-400", cellTint: "bg-gray-400/15" }
-    if (averagePeopleInLab < 12) return { label: "Steady", value: 45, color: "bg-blue-500", cellTint: "bg-blue-500/20" }
-    if (averagePeopleInLab < 16) return { label: "Packed", value: 70, color: "bg-yellow-400", cellTint: "bg-yellow-400/25" }
-    return { label: "Peak", value: 95, color: "bg-red-500", cellTint: "bg-red-500/30" }
+    if (averagePeopleInLab < 6) return { label: "Quiet", value: 20, cellTint: "bg-blue-500/10" }
+    if (averagePeopleInLab < 10) return { label: "Steady", value: 45, cellTint: "bg-blue-500/25" }
+    if (averagePeopleInLab < 20) return { label: "Packed", value: 70, cellTint: "bg-blue-500/40" }
+    return { label: "Peak", value: 95, cellTint: "bg-blue-500/60" }
   }
 
   const getTrafficCellClass = (weekday: number, hour: number) => {
@@ -827,98 +832,100 @@ export default function MentorScheduleEditor() {
     )
   }
 
+  const toolbarButtons = activeSchedule ? (
+    <>
+      <Button
+        size="sm"
+        variant="outline"
+        onClick={() => setClearModalOpen(true)}
+        className="text-muted-foreground hover:text-destructive hover:border-destructive"
+      >
+        <X className="h-3.5 w-3.5" />
+        Clear
+      </Button>
+      {availabilityData.length > 0 && (
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => setShowAvailability(!showAvailability)}
+          className={showAvailability ? "bg-green-600 hover:bg-green-700 text-white border-green-600" : ""}
+        >
+          <Users className="h-3.5 w-3.5" />
+          Availability
+        </Button>
+      )}
+      {trafficData.length > 0 && (
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => setShowTraffic(!showTraffic)}
+        >
+          <Activity className="h-3.5 w-3.5" />
+          Traffic
+        </Button>
+      )}
+      <Button size="sm" variant="outline" onClick={() => setAutoFillOpen(true)}>
+        Auto-fill
+      </Button>
+      <Button size="sm" variant="outline" onClick={handlePrint}>
+        <Printer className="h-3.5 w-3.5" />
+      </Button>
+    </>
+  ) : null
+
   return (
     <div className="space-y-4">
-      {/* Header bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div>
-            <h2 className="text-lg font-semibold leading-tight">Mentor Schedule</h2>
-            {activeSemester && (
-              <p className="text-xs text-muted-foreground">{activeSemester.name}</p>
-            )}
-          </div>
+      {/* Portal toolbar buttons into the page-level tab bar when available */}
+      {ToolbarPortal && toolbarButtons && (
+        <ToolbarPortal target={toolbarNode ?? null}>{toolbarButtons}</ToolbarPortal>
+      )}
+      {/* Fallback: render inline if no portal target provided */}
+      {!ToolbarPortal && toolbarButtons && (
+        <div className="flex flex-wrap items-center justify-end gap-1.5">
+          {toolbarButtons}
         </div>
-        {activeSchedule && (
-          <div className="flex flex-wrap items-center gap-1.5">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setClearModalOpen(true)}
-              className="text-muted-foreground hover:text-destructive hover:border-destructive"
-            >
-              <X className="h-3.5 w-3.5" />
-              Clear
-            </Button>
-            {availabilityData.length > 0 && (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setShowAvailability(!showAvailability)}
-                className={showAvailability ? "bg-green-600 hover:bg-green-700 text-white border-green-600" : ""}
-              >
-                <Users className="h-3.5 w-3.5" />
-                Availability
-              </Button>
-            )}
-            {trafficData.length > 0 && (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setShowTraffic(!showTraffic)}
-              >
-                <Activity className="h-3.5 w-3.5" />
-                Traffic
-              </Button>
-            )}
-            <Button size="sm" variant="outline" onClick={() => setAutoFillOpen(true)}>
-              Auto-fill
-            </Button>
-            <Button size="sm" variant="outline" onClick={handlePrint}>
-              <Printer className="h-3.5 w-3.5" />
-            </Button>
-          </div>
-        )}
-      </div>
+      )}
 
       {!activeSchedule ? (
-        <div className="text-center py-12 border rounded-lg bg-surface-1">
-          <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
-          <p className="text-muted-foreground">No schedule selected</p>
-          <p className="text-sm text-muted-foreground mt-1">
-            A canonical schedule will appear once it is initialized.
-          </p>
-        </div>
+        <Card depth={3} className="neo:border-0">
+          <CardContent className="py-12 text-center">
+            <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
+            <p className="text-muted-foreground">No schedule selected</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              A canonical schedule will appear once it is initialized.
+            </p>
+          </CardContent>
+        </Card>
       ) : (
         <>
           <DndContext sensors={sensors} onDragEnd={handleDragEnd} autoScroll={false}>
             {/* Main grid: calendar + sidebar, sidebar constrained to calendar height */}
             <div className="grid gap-4 xl:grid-cols-[1fr_280px]" style={{ alignItems: "start" }}>
               <div className="flex flex-col gap-3">
-                <div className="overflow-hidden border rounded-lg">
-                  <table className="w-full table-fixed">
-                    <thead className="sticky top-0 z-10">
-                      <tr className="border-b-2 border-border bg-muted">
-                        <th className="w-24 p-2 text-left text-sm font-medium text-muted-foreground border-r border-border">
+                <div className="overflow-hidden border rounded-lg bg-card">
+                  <Table className="table-fixed">
+                    <TableHeader className="sticky top-0 z-10">
+                      <TableRow className="border-b-2 border-border bg-primary/10 hover:bg-primary/10">
+                        <TableHead className="w-24 p-2 text-left text-sm font-semibold text-foreground border-r border-border">
                           <Clock className="h-4 w-4 inline mr-1" />
                           Time
-                        </th>
+                        </TableHead>
                         {DAYS.map((day, i) => (
-                          <th
+                          <TableHead
                             key={day}
-                            className={cn("p-2 text-center text-sm font-medium text-muted-foreground", i < DAYS.length - 1 && "border-r border-border")}
+                            className={cn("p-2 text-center text-sm font-semibold text-foreground", i < DAYS.length - 1 && "border-r border-border")}
                           >
                             {day}
-                          </th>
+                          </TableHead>
                         ))}
-                      </tr>
-                    </thead>
-                    <tbody>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
                       {HOURS.map(({ hour, label }) => (
-                        <tr key={hour} className="border-b border-border last:border-b-0">
-                          <td className="p-2 text-sm text-muted-foreground font-medium bg-muted/30 whitespace-nowrap border-r border-border">
+                        <TableRow key={hour} className="border-b border-border last:border-b-0 hover:bg-transparent">
+                          <TableCell className="p-2 text-sm text-foreground font-semibold bg-primary/5 whitespace-nowrap border-r border-border">
                             {label}
-                          </td>
+                          </TableCell>
                           {DAYS.map((_, dayIndex) => {
                             const weekday = dayIndex + 1
                             const slotBlocks = getBlocksForSlot(weekday, hour)
@@ -943,8 +950,10 @@ export default function MentorScheduleEditor() {
                                       id={`block-${block.id}`}
                                       mentorId={block.mentor.id}
                                       blockId={block.id}
-                                      colorClass={getMentorColor(block.mentor.id)}
+                                      colorToken={getMentorColor(block.mentor.id)}
                                       label={block.mentor.name.split(" ")[0]}
+                                      fullName={block.mentor.name}
+                                      image={block.mentor.image}
                                       onClick={() => handleOpenDetail(weekday, hour)}
                                       title={`${block.mentor.name} - Click for details`}
                                       fill
@@ -970,10 +979,10 @@ export default function MentorScheduleEditor() {
                               </ScheduleSlotCell>
                             )
                           })}
-                        </tr>
+                        </TableRow>
                       ))}
-                    </tbody>
-                  </table>
+                    </TableBody>
+                  </Table>
                 </div>
 
                 {/* Traffic legend + assigned mentors below the calendar */}
@@ -981,10 +990,10 @@ export default function MentorScheduleEditor() {
                   {showTraffic && trafficData.length > 0 && (
                     <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
                       <span className="font-medium">Traffic:</span>
-                      <span className="flex items-center gap-1"><span className="h-2.5 w-5 rounded-sm bg-gray-400/15 border border-gray-400/30" /> &lt;10 Quiet</span>
-                      <span className="flex items-center gap-1"><span className="h-2.5 w-5 rounded-sm bg-blue-500/20 border border-blue-500/30" /> 10-12 Steady</span>
-                      <span className="flex items-center gap-1"><span className="h-2.5 w-5 rounded-sm bg-yellow-400/25 border border-yellow-400/40" /> 12-16 Packed</span>
-                      <span className="flex items-center gap-1"><span className="h-2.5 w-5 rounded-sm bg-red-500/30 border border-red-500/40" /> 16+ Peak</span>
+                      <span className="flex items-center gap-1"><span className="h-2.5 w-5 rounded-sm bg-blue-500/10 border border-blue-500/20" /> &lt;6 Quiet</span>
+                      <span className="flex items-center gap-1"><span className="h-2.5 w-5 rounded-sm bg-blue-500/25 border border-blue-500/35" /> 6-10 Steady</span>
+                      <span className="flex items-center gap-1"><span className="h-2.5 w-5 rounded-sm bg-blue-500/40 border border-blue-500/50" /> 10-20 Packed</span>
+                      <span className="flex items-center gap-1"><span className="h-2.5 w-5 rounded-sm bg-blue-500/60 border border-blue-500/70" /> 20+ Peak</span>
                     </div>
                   )}
                   {blocks.length > 0 && (
@@ -996,7 +1005,12 @@ export default function MentorScheduleEditor() {
                         return (
                           <span
                             key={mentorId}
-                            className={`${getMentorColor(mentorId)} text-white px-1.5 py-0.5 rounded text-[11px]`}
+                            className="px-1.5 py-0.5 rounded text-[11px] border"
+                            style={{
+                              backgroundColor: getMentorColor(mentorId).fill,
+                              color: getMentorColor(mentorId).foreground,
+                              borderColor: getMentorColor(mentorId).fill,
+                            }}
                           >
                             {mentor.name}
                           </span>
@@ -1007,30 +1021,32 @@ export default function MentorScheduleEditor() {
                 </div>
               </div>
 
-              {/* Sidebar — no overflow clipping so NeoCard shadows render fully */}
+              {/* Sidebar */}
               <div className="flex flex-col gap-3">
-                <NeoCard>
-                  <NeoCardHeader className="pb-3">
-                    <NeoCardTitle className="text-lg">Mentor Pool</NeoCardTitle>
-                  </NeoCardHeader>
-                  <NeoCardContent className="flex flex-wrap gap-1.5">
+                <Card depth={3} className="neo:border-0">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg">Mentor Pool</CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex flex-wrap gap-1.5">
                     {mentors.map((mentor) => (
                       <DraggableMentorChip
                         key={mentor.id}
                         id={`mentor-${mentor.id}`}
                         mentorId={mentor.id}
-                        colorClass={getMentorColor(mentor.id)}
+                        colorToken={getMentorColor(mentor.id)}
                         label={mentor.user.name.split(" ")[0]}
+                        fullName={mentor.user.name}
+                        image={mentor.user.image}
                         title={`Drag ${mentor.user.name} onto the schedule`}
                       />
                     ))}
-                  </NeoCardContent>
-                </NeoCard>
-                <NeoCard>
-                  <NeoCardHeader className="pb-3">
-                    <NeoCardTitle className="text-lg">Headcount Forms</NeoCardTitle>
-                  </NeoCardHeader>
-                  <NeoCardContent className="space-y-2">
+                  </CardContent>
+                </Card>
+                <Card depth={3} className="neo:border-0">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg">Headcount Forms</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
                     <Button asChild variant="outline" size="sm" className="w-full justify-start gap-2">
                       <a href="/mentoring/headcount/mentors" target="_blank" rel="noreferrer">
                         <Clock className="h-3.5 w-3.5" />
@@ -1053,83 +1069,75 @@ export default function MentorScheduleEditor() {
                         Import historical CSV
                       </Button>
                     </div>
-                  </NeoCardContent>
-                </NeoCard>
+                  </CardContent>
+                </Card>
               </div>
             </div>
           </DndContext>
         </>
       )}
 
-      <Sheet open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-        <SheetContent side="right" className="w-[420px] sm:max-w-[420px]">
-          <SheetHeader>
-            <SheetTitle>Slot Details</SheetTitle>
-          </SheetHeader>
-          <div className="space-y-6 mt-4">
-            {detailSlot && (
-              <div className="text-sm text-muted-foreground">
-                {DAYS[detailSlot.weekday - 1]} •{" "}
-                {HOURS.find((h) => h.hour === detailSlot.hour)?.label}
-              </div>
-            )}
-
-            {detailSlot && (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Expected traffic</span>
-                  {(() => {
-                    const traffic = getTrafficForSlot(detailSlot.weekday, detailSlot.hour)
-                    if (!traffic) return <span className="text-xs text-muted-foreground">No data yet</span>
-                    const level = getTrafficLevel(traffic.averagePeopleInLab)
-                    return (
-                      <span className="text-xs text-muted-foreground">
-                        {level.label} · {traffic.averagePeopleInLab.toFixed(1)} avg
-                      </span>
-                    )
-                  })()}
-                </div>
+      <Modal
+        open={isDetailOpen}
+        onOpenChange={setIsDetailOpen}
+        title="Slot Details"
+        description={
+          detailSlot
+            ? `${DAYS[detailSlot.weekday - 1]} • ${HOURS.find((h) => h.hour === detailSlot.hour)?.label ?? ""}`
+            : undefined
+        }
+        className="max-w-2xl"
+      >
+        <div className="space-y-4">
+          {detailSlot && (
+            <div className="rounded-md border bg-muted/30 p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Expected traffic</span>
                 {(() => {
-                  const traffic = detailSlot
-                    ? getTrafficForSlot(detailSlot.weekday, detailSlot.hour)
-                    : null
-                  if (!traffic) return null
+                  const traffic = getTrafficForSlot(detailSlot.weekday, detailSlot.hour)
+                  if (!traffic) return <span className="text-xs text-muted-foreground">No data yet</span>
                   const level = getTrafficLevel(traffic.averagePeopleInLab)
-                  return <Progress value={level.value} />
+                  return (
+                    <span className="text-xs text-muted-foreground">
+                      {level.label} · {traffic.averagePeopleInLab.toFixed(1)} avg
+                    </span>
+                  )
                 })()}
               </div>
-            )}
+              {(() => {
+                const traffic = detailSlot
+                  ? getTrafficForSlot(detailSlot.weekday, detailSlot.hour)
+                  : null
+                if (!traffic) return null
+                const level = getTrafficLevel(traffic.averagePeopleInLab)
+                return <Progress value={level.value} />
+              })()}
+            </div>
+          )}
 
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold">Assigned mentors</h3>
-              {detailBlocks.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No mentors assigned yet.</p>
-              ) : (
-                detailBlocks.map((block) => (
-                  <NeoCard key={block.id} className="p-4">
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold">Assigned mentors</h3>
+            {detailBlocks.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No mentors assigned yet.</p>
+            ) : (
+              detailBlocks.map((block) => (
+                <Card key={block.id} depth={3} className="neo:border-0">
+                  <CardContent className="p-3 space-y-2">
                     <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <div className="font-medium">{block.mentor.name}</div>
-                        <div className="text-xs text-muted-foreground">{block.mentor.email}</div>
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          {block.mentor.skills.slice(0, 4).map((skill) => (
-                            <Badge key={skill.id} variant="outline" className="text-[10px]">
-                              {skill.name}
-                            </Badge>
-                          ))}
-                          {block.mentor.skills.length === 0 && (
-                            <span className="text-xs text-muted-foreground">No skills listed</span>
-                          )}
-                        </div>
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          {block.mentor.courses.slice(0, 4).map((course) => (
-                            <Badge key={course.id} variant="secondary" className="text-[10px]">
-                              {course.code}
-                            </Badge>
-                          ))}
-                          {block.mentor.courses.length === 0 && (
-                            <span className="text-xs text-muted-foreground">No courses listed</span>
-                          )}
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-7 w-7">
+                            {block.mentor.image ? (
+                              <AvatarImage src={block.mentor.image} alt={block.mentor.name} />
+                            ) : null}
+                            <AvatarFallback className="text-[10px]">
+                              {getInitials(block.mentor.name)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <div className="font-medium truncate">{block.mentor.name}</div>
+                            <div className="text-xs text-muted-foreground truncate">{block.mentor.email}</div>
+                          </div>
                         </div>
                       </div>
                       <Button
@@ -1143,13 +1151,60 @@ export default function MentorScheduleEditor() {
                         Remove
                       </Button>
                     </div>
-                  </NeoCard>
-                ))
-              )}
-            </div>
+                    <div className="flex flex-wrap gap-1">
+                      {block.mentor.skills.slice(0, 6).map((skill) => {
+                        const color = getCategoricalColorFromSeed(skill.id)
+                        return (
+                          <Badge
+                            key={skill.id}
+                            className="text-[10px] border"
+                            style={{
+                              backgroundColor: color.fill,
+                              color: color.foreground,
+                              borderColor: color.fill,
+                            }}
+                          >
+                            {skill.name}
+                          </Badge>
+                        )
+                      })}
+                      {block.mentor.skills.length === 0 && (
+                        <span className="text-xs text-muted-foreground">No skills listed</span>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {block.mentor.courses.slice(0, 6).map((course) => {
+                        const color = getCategoricalColorFromSeed(course.code)
+                        return (
+                          <Badge
+                            key={course.id}
+                            className="text-[10px] border"
+                            style={{
+                              backgroundColor: color.fill,
+                              color: color.foreground,
+                              borderColor: color.fill,
+                            }}
+                          >
+                            {course.code}
+                          </Badge>
+                        )
+                      })}
+                      {block.mentor.courses.length === 0 && (
+                        <span className="text-xs text-muted-foreground">No courses listed</span>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
-        </SheetContent>
-      </Sheet>
+        </div>
+        <ModalFooter>
+          <Button variant="ghost" onClick={() => setIsDetailOpen(false)}>
+            Close
+          </Button>
+        </ModalFooter>
+      </Modal>
 
       {/* Auto-fill Schedule Modal */}
       <Modal
@@ -1632,7 +1687,9 @@ function DraggableMentorChip({
   mentorId,
   blockId,
   label,
-  colorClass,
+  fullName,
+  image,
+  colorToken,
   onClick,
   title,
   fill,
@@ -1641,7 +1698,9 @@ function DraggableMentorChip({
   mentorId: number
   blockId?: number
   label: string
-  colorClass: string
+  fullName: string
+  image?: string | null
+  colorToken: { fill: string; foreground: string }
   onClick?: () => void
   title?: string
   fill?: boolean
@@ -1659,9 +1718,14 @@ function DraggableMentorChip({
     }
   }, [isDragging])
 
-  const style = transform
-    ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` }
-    : undefined
+  const style = {
+    ...(transform
+      ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` }
+      : {}),
+    backgroundColor: colorToken.fill,
+    color: colorToken.foreground,
+    borderColor: colorToken.fill,
+  } as CSSProperties
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -1677,8 +1741,8 @@ function DraggableMentorChip({
       ref={setNodeRef}
       style={style}
       className={cn(
-        `${colorClass} text-white text-xs font-medium rounded transition-opacity truncate text-center`,
-        fill ? "w-full px-1 py-1.5" : "px-2.5 py-1",
+        "text-xs font-medium rounded transition-opacity border",
+        fill ? "w-full px-1 py-1" : "px-2 py-1",
         "touch-none",
         isDragging && "opacity-60"
       )}
@@ -1687,7 +1751,15 @@ function DraggableMentorChip({
       {...attributes}
       {...listeners}
     >
-      {label}
+      <span className="flex items-center gap-1.5 min-w-0">
+        <Avatar className="h-4 w-4 shrink-0">
+          {image ? <AvatarImage src={image} alt={fullName} /> : null}
+          <AvatarFallback className="text-[8px] bg-black/10 text-inherit">
+            {getInitials(fullName)}
+          </AvatarFallback>
+        </Avatar>
+        <span className="truncate text-left">{label}</span>
+      </span>
     </button>
   )
 }

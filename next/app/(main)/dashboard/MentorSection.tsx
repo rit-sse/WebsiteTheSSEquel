@@ -5,6 +5,7 @@ import { DataTable, Column } from "@/components/ui/data-table"
 import { Button } from "@/components/ui/button"
 import { Modal, ModalFooter } from "@/components/ui/modal"
 import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   Select,
   SelectContent,
@@ -41,6 +42,14 @@ interface PendingInvitation {
     email: string
   }
 }
+
+const getInitials = (name: string) =>
+  name
+    .split(" ")
+    .filter(Boolean)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("")
+    .slice(0, 2) || "?"
 
 export default function MentorSection() {
   const [mentors, setMentors] = useState<Mentor[]>([])
@@ -298,11 +307,14 @@ export default function MentorSection() {
       className: "w-[250px]",
       render: (mentor) => (
         <div className="flex items-center gap-3">
-          <img
-            src={mentor.user.image}
-            alt={mentor.user.name}
-            className="w-8 h-8 rounded-full object-cover"
-          />
+          <Avatar className="w-8 h-8">
+            {mentor.user.image ? (
+              <AvatarImage src={mentor.user.image} alt={mentor.user.name} />
+            ) : null}
+            <AvatarFallback className="text-[10px]">
+              {getInitials(mentor.user.name)}
+            </AvatarFallback>
+          </Avatar>
           <div>
             <p className="font-medium text-sm">{mentor.user.name}</p>
             <p className="text-xs text-muted-foreground">{mentor.user.email}</p>

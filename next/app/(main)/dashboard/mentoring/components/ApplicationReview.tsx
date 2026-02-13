@@ -5,6 +5,7 @@ import { DataTable, Column } from "@/components/ui/data-table"
 import { Button } from "@/components/ui/button"
 import { Modal, ModalFooter } from "@/components/ui/modal"
 import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   Select,
   SelectContent,
@@ -62,6 +63,14 @@ const STATUS_COLORS: Record<string, string> = {
   rejected: "bg-red-500/20 text-red-700 dark:text-red-400",
   invited: "bg-blue-500/20 text-blue-700 dark:text-blue-400",
 }
+
+const getInitials = (name: string) =>
+  name
+    .split(" ")
+    .filter(Boolean)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("")
+    .slice(0, 2) || "?"
 
 export default function ApplicationReview() {
   const [applications, setApplications] = useState<MentorApplication[]>([])
@@ -252,11 +261,14 @@ export default function ApplicationReview() {
       sortable: true,
       render: (app) => (
         <div className="flex items-center gap-3">
-          <img
-            src={app.user.image}
-            alt={app.user.name}
-            className="w-8 h-8 rounded-full object-cover"
-          />
+          <Avatar className="w-8 h-8">
+            {app.user.image ? (
+              <AvatarImage src={app.user.image} alt={app.user.name} />
+            ) : null}
+            <AvatarFallback className="text-[10px]">
+              {getInitials(app.user.name)}
+            </AvatarFallback>
+          </Avatar>
           <div>
             <p className="font-medium text-sm">{app.user.name}</p>
             <p className="text-xs text-muted-foreground">{app.user.email}</p>
@@ -468,11 +480,14 @@ export default function ApplicationReview() {
         {viewApplication && (
           <div className="space-y-4 max-h-[60vh] overflow-y-auto">
             <div className="flex items-center gap-4">
-              <img
-                src={viewApplication.user.image}
-                alt={viewApplication.user.name}
-                className="w-16 h-16 rounded-full"
-              />
+              <Avatar className="w-16 h-16">
+                {viewApplication.user.image ? (
+                  <AvatarImage src={viewApplication.user.image} alt={viewApplication.user.name} />
+                ) : null}
+                <AvatarFallback className="text-base">
+                  {getInitials(viewApplication.user.name)}
+                </AvatarFallback>
+              </Avatar>
               <div>
                 <h3 className="font-semibold text-lg">{viewApplication.user.name}</h3>
                 <p className="text-muted-foreground">{viewApplication.user.email}</p>

@@ -7,6 +7,7 @@ import {
     GitFork,
     Calendar,
 } from "lucide-react";
+import { getCategoricalColorFromSeed } from "@/lib/categoricalColors";
 
 interface GitHubProfileCardProps {
     /** GitHub username (e.g. "jjalangtry") */
@@ -54,35 +55,8 @@ interface GitHubOrg {
 }
 
 // Well-known language colors (subset)
-const LANG_COLORS: Record<string, string> = {
-    JavaScript: "#f1e05a",
-    TypeScript: "#3178c6",
-    Python: "#3572A5",
-    Java: "#b07219",
-    "C++": "#f34b7d",
-    C: "#555555",
-    "C#": "#178600",
-    Go: "#00ADD8",
-    Rust: "#dea584",
-    Ruby: "#701516",
-    PHP: "#4F5D95",
-    Swift: "#F05138",
-    Kotlin: "#A97BFF",
-    Dart: "#00B4AB",
-    HTML: "#e34c26",
-    CSS: "#563d7c",
-    Shell: "#89e051",
-    Lua: "#000080",
-    Scala: "#c22d40",
-    R: "#198CE7",
-    Haskell: "#5e5086",
-    Elixir: "#6e4a7e",
-    Vim: "#199f4b",
-    Zig: "#ec915c",
-};
-
 function getLangColor(lang: string): string {
-    return LANG_COLORS[lang] || "#8b8b8b";
+    return getCategoricalColorFromSeed(lang).fill;
 }
 
 function formatDate(iso: string): string {

@@ -1,8 +1,9 @@
 "use client"
 
-import { useState, useEffect, useCallback, useMemo } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Printer, X } from "lucide-react"
+import { getCategoricalColorFromSeed } from "@/lib/categoricalColors"
 
 interface ScheduleBlock {
   id: number
@@ -34,19 +35,16 @@ const HOURS = [
   { hour: 17, label: "5pm - 6pm" },
 ]
 
-// Color palette for mentors - print-friendly colors with good contrast
-const MENTOR_COLORS = [
-  { bg: "#FEE2E2", border: "#EF4444", text: "#991B1B" },   // Red
-  { bg: "#DBEAFE", border: "#3B82F6", text: "#1E40AF" },   // Blue
-  { bg: "#D1FAE5", border: "#10B981", text: "#065F46" },   // Green
-  { bg: "#FEF3C7", border: "#F59E0B", text: "#92400E" },   // Amber
-  { bg: "#E9D5FF", border: "#A855F7", text: "#6B21A8" },   // Purple
-  { bg: "#CFFAFE", border: "#06B6D4", text: "#155E75" },   // Cyan
-  { bg: "#FCE7F3", border: "#EC4899", text: "#9D174D" },   // Pink
-  { bg: "#FED7AA", border: "#F97316", text: "#9A3412" },   // Orange
-  { bg: "#E0E7FF", border: "#6366F1", text: "#3730A3" },   // Indigo
-  { bg: "#ECFCCB", border: "#84CC16", text: "#3F6212" },   // Lime
-]
+function getInitials(name: string): string {
+  return (
+    name
+      .split(" ")
+      .filter(Boolean)
+      .map((part) => part[0]?.toUpperCase() ?? "")
+      .join("")
+      .slice(0, 2) || "?"
+  )
+}
 
 interface PrintableScheduleProps {
   scheduleId?: number
@@ -97,24 +95,12 @@ export default function PrintableSchedule({ scheduleId }: PrintableScheduleProps
     fetchData()
   }, [fetchData])
 
-  // Build a color map for unique mentors
-  const mentorColorMap = useMemo(() => {
-    const uniqueMentorIds = Array.from(new Set(blocks.map((b) => b.mentor.id)))
-    const colorMap = new Map<number, typeof MENTOR_COLORS[0]>()
-    
-    uniqueMentorIds.forEach((mentorId, index) => {
-      colorMap.set(mentorId, MENTOR_COLORS[index % MENTOR_COLORS.length])
-    })
-    
-    return colorMap
-  }, [blocks])
-
   const getBlocksForSlot = (weekday: number, hour: number): ScheduleBlock[] => {
     return blocks.filter((b) => b.weekday === weekday && b.startHour === hour)
   }
 
   const getMentorColor = (mentorId: number) => {
-    return mentorColorMap.get(mentorId) || MENTOR_COLORS[0]
+    return getCategoricalColorFromSeed(mentorId)
   }
 
   const handlePrint = () => {
@@ -144,7 +130,7 @@ export default function PrintableSchedule({ scheduleId }: PrintableScheduleProps
   return (
     <>
       {/* Printable content */}
-      <div data-theme="light" data-style="neo" className="min-h-screen bg-background text-foreground">
+      <div data-theme="light" data-style="neo" className="min-h-screen bg-white text-black">
         <div id="printable-schedule" className="p-4 print:p-0 w-full mx-auto print:h-screen print:flex print:flex-col">
         {/* Header */}
         <div className="text-center mb-4 print:mb-1">
@@ -156,7 +142,7 @@ export default function PrintableSchedule({ scheduleId }: PrintableScheduleProps
         <div className="border-2 border-black rounded-lg overflow-hidden print:flex-1 print:flex print:flex-col">
           <table className="w-full border-collapse table-fixed print:h-full">
             <thead>
-              <tr className="bg-muted/60">
+              <tr className="bg-white">
                 <th className="border-b-2 border-r-2 border-black p-2 print:p-1 text-sm font-bold w-20 print:w-16">
                   Time
                 </th>
@@ -175,7 +161,7 @@ export default function PrintableSchedule({ scheduleId }: PrintableScheduleProps
                 const shortLabel = label.replace("am", "").replace("pm", "").replace(" - ", "-")
                 return (
                 <tr key={hour} className="print-row">
-                  <td className="border-r-2 border-b border-black p-1.5 print:p-1 text-xs font-bold text-center whitespace-nowrap bg-muted/30">
+                  <td className="border-r-2 border-b border-black p-1.5 print:p-1 text-xs font-bold text-center whitespace-nowrap bg-white">
                     {shortLabel}
                   </td>
                   {DAYS.map((_, dayIndex) => {
@@ -194,14 +180,26 @@ export default function PrintableSchedule({ scheduleId }: PrintableScheduleProps
                               return (
                                 <div
                                   key={block.id}
-                                  className="text-xs font-semibold px-1 py-1.5 print:py-1 rounded-sm text-center truncate flex-1"
+                                  className="text-xs font-semibold px-1 py-1.5 print:py-1 rounded-sm flex items-center gap-1.5 min-w-0 flex-1"
                                   style={{
-                                    backgroundColor: color.bg,
-                                    borderLeft: `3px solid ${color.border}`,
-                                    color: color.text,
+                                    backgroundColor: color.fill,
+                                    borderLeft: `3px solid ${color.fill}`,
+                                    color: color.foreground,
                                   }}
                                 >
-                                  {block.mentor.name}
+                                  <span className="h-6 w-6 rounded-full overflow-hidden bg-white border border-black/20 shrink-0 flex items-center justify-center text-[10px] font-bold">
+                                    {block.mentor.image ? (
+                                      // eslint-disable-next-line @next/next/no-img-element
+                                      <img
+                                        src={block.mentor.image}
+                                        alt={block.mentor.name}
+                                        className="h-full w-full object-cover"
+                                      />
+                                    ) : (
+                                      <span>{getInitials(block.mentor.name)}</span>
+                                    )}
+                                  </span>
+                                  <span className="truncate">{block.mentor.name}</span>
                                 </div>
                               )
                             })}

@@ -1,10 +1,12 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
-import { Card } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Modal, ModalFooter } from "@/components/ui/modal"
 import { Button } from "@/components/ui/button"
+import { getCategoricalColorFromSeed } from "@/lib/categoricalColors"
 
 interface MentorSkill {
   id: number
@@ -18,6 +20,7 @@ interface ScheduleBlock {
   mentor: {
     id: number
     name: string
+    image?: string | null
     skills: MentorSkill[]
   }
 }
@@ -39,6 +42,14 @@ const HOURS = [
   { hour: 16, label: "4pm - 5pm" },
   { hour: 17, label: "5pm - 6pm" },
 ]
+
+const getInitials = (name: string) =>
+  name
+    .split(" ")
+    .filter(Boolean)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("")
+    .slice(0, 2) || "?"
 
 export default function PublicMentorSchedulePage() {
   const [schedule, setSchedule] = useState<MentorSchedule | null>(null)
@@ -99,62 +110,84 @@ export default function PublicMentorSchedulePage() {
       </div>
 
       {!schedule ? (
-        <Card depth={1} className="p-4">
+        <Card depth={2} className="p-4">
           <p className="text-sm text-muted-foreground">No active mentor schedule is available yet.</p>
         </Card>
       ) : (
-        <Card depth={1} className="p-3 sm:p-4 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full table-fixed border-collapse">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="w-28 p-2 text-left text-xs sm:text-sm font-medium text-muted-foreground border-r border-border">
-                    Time
-                  </th>
-                  {DAYS.map((day, index) => (
-                    <th
-                      key={day}
-                      className={`p-2 text-center text-xs sm:text-sm font-medium text-muted-foreground ${
-                        index < DAYS.length - 1 ? "border-r border-border" : ""
-                      }`}
-                    >
-                      {day}
+        <Card depth={2} className="overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/20">
+            <h2 className="text-base font-semibold">Weekly Mentor Coverage</h2>
+            <p className="text-xs text-muted-foreground">Click any filled time slot to view mentor skills.</p>
+          </div>
+          <div className="p-3 sm:p-4">
+            <div className="overflow-x-auto rounded-lg border border-border/70 bg-card">
+              <table className="w-full table-fixed border-collapse">
+                <thead>
+                  <tr className="border-b border-border bg-muted/40">
+                    <th className="w-28 p-2 text-left text-xs sm:text-sm font-medium text-muted-foreground border-r border-border">
+                      Time
                     </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {HOURS.map(({ hour, label }) => (
-                  <tr key={hour} className="border-b border-border last:border-b-0">
-                    <td className="p-2 text-xs sm:text-sm text-muted-foreground border-r border-border">
-                      {label}
-                    </td>
-                    {DAYS.map((_, dayIndex) => {
-                      const weekday = dayIndex + 1
-                      const slotBlocks = getBlocksForSlot(weekday, hour)
-                      const clickable = slotBlocks.length > 0
-                      return (
-                        <td
-                          key={`${weekday}-${hour}`}
-                          className={`p-1.5 align-top ${
-                            dayIndex < DAYS.length - 1 ? "border-r border-border" : ""
-                          } ${clickable ? "cursor-pointer hover:bg-muted/40" : ""}`}
-                          onClick={() => openSlotDetails(weekday, hour, label)}
-                        >
-                          <div className="flex flex-col gap-1">
-                            {slotBlocks.map((block) => (
-                              <Badge key={block.id} variant="secondary" className="justify-center text-xs">
-                                {block.mentor.name.split(" ")[0]}
-                              </Badge>
-                            ))}
-                          </div>
-                        </td>
-                      )
-                    })}
+                    {DAYS.map((day, index) => (
+                      <th
+                        key={day}
+                        className={`p-2 text-center text-xs sm:text-sm font-medium text-muted-foreground ${
+                          index < DAYS.length - 1 ? "border-r border-border" : ""
+                        }`}
+                      >
+                        {day}
+                      </th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {HOURS.map(({ hour, label }) => (
+                    <tr key={hour} className="border-b border-border last:border-b-0">
+                      <td className="p-2 text-xs sm:text-sm text-muted-foreground border-r border-border bg-muted/20">
+                        {label}
+                      </td>
+                      {DAYS.map((_, dayIndex) => {
+                        const weekday = dayIndex + 1
+                        const slotBlocks = getBlocksForSlot(weekday, hour)
+                        const clickable = slotBlocks.length > 0
+                        return (
+                          <td
+                            key={`${weekday}-${hour}`}
+                            className={`p-1.5 align-top ${
+                              dayIndex < DAYS.length - 1 ? "border-r border-border" : ""
+                            } ${clickable ? "cursor-pointer hover:bg-muted/40 transition-colors" : ""}`}
+                            onClick={() => openSlotDetails(weekday, hour, label)}
+                          >
+                            <div className="flex flex-col gap-1">
+                              {slotBlocks.map((block) => (
+                                <div
+                                  key={block.id}
+                                  className="flex items-center justify-center gap-1.5 rounded-md px-2 py-1 text-xs border"
+                                  style={{
+                                    backgroundColor: getCategoricalColorFromSeed(block.mentor.id).fill,
+                                    color: getCategoricalColorFromSeed(block.mentor.id).foreground,
+                                    borderColor: getCategoricalColorFromSeed(block.mentor.id).fill,
+                                  }}
+                                >
+                                  <Avatar className="h-4 w-4">
+                                    {block.mentor.image ? (
+                                      <AvatarImage src={block.mentor.image} alt={block.mentor.name} />
+                                    ) : null}
+                                    <AvatarFallback className="text-[8px] bg-black/10 text-inherit">
+                                      {getInitials(block.mentor.name)}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  {block.mentor.name.split(" ")[0]}
+                                </div>
+                              ))}
+                            </div>
+                          </td>
+                        )
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </Card>
       )}
@@ -162,26 +195,50 @@ export default function PublicMentorSchedulePage() {
       <Modal
         open={slotModalOpen}
         onOpenChange={setSlotModalOpen}
-        title="Mentor Skills"
+        title="Slot Details"
         description={slotTitle}
-        className="max-w-lg"
+        className="max-w-2xl"
       >
         <div className="space-y-3">
+          <h3 className="text-sm font-semibold">Assigned mentors</h3>
           {slotMentors.map((block) => (
-            <div key={block.id} className="rounded-md border p-3">
-              <p className="text-sm font-medium mb-2">{block.mentor.name}</p>
-              <div className="flex flex-wrap gap-1">
-                {block.mentor.skills.length > 0 ? (
-                  block.mentor.skills.map((skill) => (
-                    <Badge key={`${block.id}-${skill.id}`} variant="outline" className="text-xs">
-                      {skill.name}
-                    </Badge>
-                  ))
-                ) : (
-                  <span className="text-xs text-muted-foreground">No listed skills</span>
-                )}
-              </div>
-            </div>
+            <Card key={block.id} depth={3} className="neo:border-0">
+              <CardContent className="p-3 space-y-2">
+                <div className="flex items-center gap-2">
+                  <Avatar className="h-7 w-7">
+                    {block.mentor.image ? (
+                      <AvatarImage src={block.mentor.image} alt={block.mentor.name} />
+                    ) : null}
+                    <AvatarFallback className="text-[10px]">
+                      {getInitials(block.mentor.name)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <p className="text-sm font-medium">{block.mentor.name}</p>
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {block.mentor.skills.length > 0 ? (
+                    block.mentor.skills.map((skill) => {
+                      const color = getCategoricalColorFromSeed(skill.id)
+                      return (
+                        <Badge
+                          key={`${block.id}-${skill.id}`}
+                          className="text-xs border"
+                          style={{
+                            backgroundColor: color.fill,
+                            color: color.foreground,
+                            borderColor: color.fill,
+                          }}
+                        >
+                          {skill.name}
+                        </Badge>
+                      )
+                    })
+                  ) : (
+                    <span className="text-xs text-muted-foreground">No listed skills</span>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
         <ModalFooter>

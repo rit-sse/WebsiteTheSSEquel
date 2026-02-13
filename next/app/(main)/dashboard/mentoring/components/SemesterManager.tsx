@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
-import { NeoCard, NeoCardContent, NeoCardHeader, NeoCardTitle, NeoCardDescription } from "@/components/ui/neo-card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { toast } from "sonner"
 import { Calendar, Copy, Users, Pencil, Check, X } from "lucide-react"
 import { getCurrentSemester } from "@/lib/semester"
@@ -172,8 +172,8 @@ export default function SemesterManager() {
       {/* Stats row */}
       {semester && (
         <div className="grid gap-3 grid-cols-2">
-          <NeoCard>
-            <NeoCardContent className="p-4 flex items-center gap-3">
+          <Card depth={2} className="neo:border-0">
+            <CardContent className="p-4 flex items-center gap-3">
               <div className="h-9 w-9 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
                 <Users className="h-4 w-4 text-blue-600 dark:text-blue-400" />
               </div>
@@ -181,10 +181,10 @@ export default function SemesterManager() {
                 <div className="text-xs text-muted-foreground">Applications</div>
                 <div className="text-xl font-semibold tabular-nums">{applicationCount}</div>
               </div>
-            </NeoCardContent>
-          </NeoCard>
-          <NeoCard>
-            <NeoCardContent className="p-4 flex items-center gap-3">
+            </CardContent>
+          </Card>
+          <Card depth={2} className="neo:border-0">
+            <CardContent className="p-4 flex items-center gap-3">
               <div className="h-9 w-9 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0">
                 <Calendar className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
               </div>
@@ -192,22 +192,22 @@ export default function SemesterManager() {
                 <div className="text-xs text-muted-foreground">With Availability</div>
                 <div className="text-xl font-semibold tabular-nums">{availabilityCount}</div>
               </div>
-            </NeoCardContent>
-          </NeoCard>
+            </CardContent>
+          </Card>
         </div>
       )}
 
       {/* Main Recruitment Card */}
-      <NeoCard>
-        <NeoCardHeader className="pb-3">
+      <Card depth={2} className="neo:border-0">
+        <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div>
-              <NeoCardTitle className="text-xl">
+              <CardTitle className="text-xl">
                 {semester?.name || currentSemesterName} Recruitment
-              </NeoCardTitle>
-              <NeoCardDescription>
+              </CardTitle>
+              <CardDescription>
                 Manage mentor applications for this semester
-              </NeoCardDescription>
+              </CardDescription>
             </div>
             <Badge
               variant={isOpen ? "default" : "secondary"}
@@ -216,8 +216,8 @@ export default function SemesterManager() {
               {isOpen ? "Applications Open" : "Applications Closed"}
             </Badge>
           </div>
-        </NeoCardHeader>
-        <NeoCardContent className="space-y-6">
+        </CardHeader>
+        <CardContent className="space-y-6">
           {/* Toggle Applications */}
           <div className="flex items-center justify-between p-4 bg-muted/40 rounded-lg border border-border/40">
             <div className="space-y-0.5">
@@ -306,12 +306,12 @@ export default function SemesterManager() {
               )}
             </div>
           )}
-        </NeoCardContent>
-      </NeoCard>
+        </CardContent>
+      </Card>
 
       {/* Application URL */}
-      <NeoCard>
-        <NeoCardContent className="p-4 flex items-center justify-between">
+      <Card depth={2} className="neo:border-0">
+        <CardContent className="p-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm text-muted-foreground">
@@ -325,8 +325,8 @@ export default function SemesterManager() {
             <Copy className="h-4 w-4 mr-1" />
             Copy
           </Button>
-        </NeoCardContent>
-      </NeoCard>
+        </CardContent>
+      </Card>
     </div>
   )
 }

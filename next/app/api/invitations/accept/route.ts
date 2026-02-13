@@ -230,6 +230,16 @@ export async function POST(request: NextRequest) {
           where: { id: invitationId },
         });
 
+        // Remove the linked application entirely after invite acceptance.
+        if (invitation.application?.id) {
+          await tx.mentorApplication.deleteMany({
+            where: {
+              id: invitation.application.id,
+              userId: loggedInUser.id,
+            },
+          });
+        }
+
         return createdMentor;
       });
 
