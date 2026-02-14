@@ -11,8 +11,9 @@ import { getToken } from "@/lib/calendar";
  */
 export async function GET(
   request: NextRequest,
-  { params: { id } }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const gcal_token = await getToken();
 
   return await fetch(

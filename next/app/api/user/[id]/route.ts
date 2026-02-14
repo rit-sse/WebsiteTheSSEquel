@@ -11,11 +11,12 @@ import { resolveUserImage } from "@/lib/s3Utils";
  */
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   // make sure the provided ID is a valid integer
   try {
-    const id = parseInt(params.id);
+    const { id: idParam } = await params;
+    const id = parseInt(idParam);
     const user = await prisma.user.findUnique({
       where: {
         id,

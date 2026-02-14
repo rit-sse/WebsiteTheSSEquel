@@ -32,6 +32,7 @@ RUN COMMIT_HASH=$(git ls-remote https://github.com/rit-sse/WebsiteTheSSEquel.git
     echo "$COMMIT_HASH" > /tmp/commit_hash
 
 RUN npx prisma generate
+RUN npx payload generate:types
 
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry

@@ -1,4 +1,4 @@
-import prisma from "@/lib/prisma";
+import { getPayloadClient } from "@/lib/payload";
 import { NextRequest, NextResponse } from "next/server";
 import QRCode from "qrcode";
 
@@ -8,20 +8,16 @@ import QRCode from "qrcode";
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id: eventId } = params;
+  const { id: eventId } = await params;
 
   try {
-    // Check if event exists
-    const event = await prisma.event.findUnique({
-      where: { id: eventId },
-      select: {
-        id: true,
-        title: true,
-        attendanceEnabled: true,
-      },
-    });
+    const payload = await getPayloadClient();
+    const event = (await payload.findByID({
+      collection: "events",
+      id: eventId,
+    })) as Record<string, any> | null;
 
     if (!event) {
       return NextResponse.json(
@@ -30,7 +26,7 @@ export async function GET(
       );
     }
 
-    if (!event.attendanceEnabled) {
+    if (!Boolean(event.attendanceEnabled)) {
       return NextResponse.json(
         { error: "Attendance tracking is not enabled for this event" },
         { status: 400 }

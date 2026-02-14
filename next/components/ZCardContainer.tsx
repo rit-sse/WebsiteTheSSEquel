@@ -9,7 +9,9 @@ const ZCardContainer: React.FC<{
   }> = ({ contentSlots }) => {
     return (
         <div className='pt-4'>
-            {contentSlots.map((slot, index) => (
+            {contentSlots.map((slot, index) => {
+                const SlotContent = slot.toContent();
+                return (
                 <RevealOnScroll key={index}>
                     <Card depth={2} className="mb-8 px-6 py-4 md:px-8 md:py-5">
                         <ZCard imageSide={index % 2 == 0 ? 'left' : 'right'}>
@@ -20,11 +22,12 @@ const ZCardContainer: React.FC<{
                                 height='400'
                                 className="w-full h-auto rounded-md"
                             />
-                            {slot.toContent()({})}
+                            <SlotContent />
                         </ZCard>
                     </Card>
                 </RevealOnScroll>
-            ))}
+                );
+            })}
         </div>
       );
   };

@@ -3,7 +3,6 @@ import { golinksMiddleware } from "./lib/middlewares/golinks";
 import { authMiddleware } from "./lib/middlewares/authentication";
 
 export async function middleware(request: NextRequest) {
-  console.log("Middleware is running on", request.url);
   // Run the authentication middleware logic
   // let response = await authMiddleware(request);
   let response = await authMiddleware(request);
@@ -19,4 +18,12 @@ export async function middleware(request: NextRequest) {
   if (response.headers.get("x-middleware-next") != "1") {
     return response;
   }
+
+  return response;
 }
+
+export const config = {
+  matcher: [
+    "/((?!_next|admin|api/payload|api/auth).*)",
+  ],
+};

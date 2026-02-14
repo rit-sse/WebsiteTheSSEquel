@@ -25,7 +25,7 @@ export async function getPostData(url: string) {
     //console.dir(htmlContent)
     return {
       props: {
-        htmlContent: htmlContent.value,
+        htmlContent: String(htmlContent.value),
       },
     };
   } catch (error) {

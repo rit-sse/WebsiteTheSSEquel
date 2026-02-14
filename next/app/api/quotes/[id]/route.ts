@@ -1,4 +1,4 @@
-import prisma from "@/lib/prisma";
+import { getPayloadClient } from "@/lib/payload";
 
 export const dynamic = 'force-dynamic'
 
@@ -10,25 +10,33 @@ export const dynamic = 'force-dynamic'
  */
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id);
-    const quote = await prisma.quote.findUnique({
-      where: {
-        id,
-      },
-      select: {
-        date_added: true,
-        quote: true,
-        user_id: true,
-        author: true,
-      },
+    const { id: idParam } = await params;
+    const id = parseInt(idParam);
+
+    if (!Number.isFinite(id)) {
+      return new Response("Invalid Quote ID", { status: 422 });
+    }
+
+    const payload = await getPayloadClient();
+    const quote = await payload.findByID({
+      collection: "quotes",
+      id,
     });
+
     if (quote == null) {
       return new Response(`Could not find Quote ID ${id}`, { status: 404 });
     }
-    return Response.json(quote);
+
+    const typed = quote as Record<string, any>;
+    return Response.json({
+      date_added: typed.dateAdded ?? new Date().toISOString(),
+      quote: typed.quote ?? "",
+      user_id: Number(typed.userId ?? 0),
+      author: typed.author ?? "Anonymous",
+    });
   } catch {
     return new Response("Invalid Quote ID", { status: 422 });
   }

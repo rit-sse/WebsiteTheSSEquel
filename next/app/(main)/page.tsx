@@ -1,7 +1,6 @@
 // This file renders the home page route (/) of the website.
 // We know that this is the homepage because this file resides in the root of the `app` directory.
 
-import HomepageContent from '../HomepageContent';
 import { EventCard } from './events/EventCard';
 import { Event } from "./events/event";
 import { compareDateStrings, formatDate } from './events/calendar/utils';
@@ -10,24 +9,16 @@ import { Sponsor } from '@/components/common/Sponsor';
 import { HeroCTA } from '../HeroCTA';
 import { HeroImage } from '../HeroImage';
 import { NeoCard } from "@/components/ui/neo-card";
-import prisma from '@/lib/prisma';
-
-interface SponsorData {
-    id: number;
-    description: string;
-    name: string;
-    logoUrl: string;
-    websiteUrl: string;
-    isActive: boolean;
-    createdAt: Date;
-    updatedAt: Date;
-}
+import { getHomepageContent } from "@/lib/cmsContent";
+import { getPayloadClient } from "@/lib/payload";
+import { resolveMediaURL } from "@/lib/payloadCms";
 
 // Tell next.js to run only during run-time execution
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function Home() {
+    const homepageContent = await getHomepageContent();
 
     let events = await getEvents() as Event[] | null;
 
@@ -35,14 +26,17 @@ export default async function Home() {
     // Wrapped in try-catch to handle case where table doesn't exist yet
     let sponsors: { image: string; url: string; name: string; description: string }[] = [];
     try {
-        const sponsorsData = await prisma.sponsor.findMany({
-            where: { isActive: true },
-            orderBy: { createdAt: 'desc' },
+        const payload = await getPayloadClient();
+        const sponsorsData = await payload.find({
+            collection: "sponsors",
+            where: { isActive: { equals: true } },
+            depth: 1,
+            sort: "-createdAt",
+            limit: 100,
         });
 
-        // Transform to match the Sponsor component props
-        sponsors = sponsorsData.map((sponsor: SponsorData) => ({
-            image: sponsor.logoUrl,
+        sponsors = sponsorsData.docs.map((sponsor) => ({
+            image: resolveMediaURL((sponsor as Record<string, any>).logo),
             url: sponsor.websiteUrl,
             name: sponsor.name,
             description: sponsor.description,
@@ -69,10 +63,10 @@ export default async function Home() {
             <NeoCard className="w-full p-6 md:p-10">
                 <div className="flex flex-col lg:flex-row items-start gap-8 lg:gap-10">
                     <HeroCTA 
-                        description={HomepageContent.description}
-                        labHoursCallout={HomepageContent.labHoursCallout}
-                        weeklyMeetingCallout={HomepageContent.weeklyMeetingCallout}
-                        discordLink={HomepageContent.discordLink}
+                        description={homepageContent.description}
+                        labHoursCallout={homepageContent.labHoursCallout}
+                        weeklyMeetingCallout={homepageContent.weeklyMeetingCallout}
+                        discordLink={homepageContent.discordLink}
                     />
                     <HeroImage />
                 </div>

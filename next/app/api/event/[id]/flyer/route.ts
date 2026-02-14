@@ -1,4 +1,4 @@
-import prisma from "@/lib/prisma";
+import { getPayloadClient } from "@/lib/payload";
 import { NextRequest, NextResponse } from "next/server";
 import QRCode from "qrcode";
 
@@ -8,27 +8,22 @@ import QRCode from "qrcode";
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id: eventId } = params;
+  const { id: eventId } = await params;
 
   try {
-    const event = await prisma.event.findUnique({
-      where: { id: eventId },
-      select: {
-        id: true,
-        title: true,
-        date: true,
-        location: true,
-        attendanceEnabled: true,
-      },
-    });
+    const payload = await getPayloadClient();
+    const event = (await payload.findByID({
+      collection: "events",
+      id: eventId,
+    })) as Record<string, any> | null;
 
     if (!event) {
       return NextResponse.json({ error: "Event not found" }, { status: 404 });
     }
 
-    if (!event.attendanceEnabled) {
+    if (!Boolean(event.attendanceEnabled)) {
       return NextResponse.json(
         { error: "Attendance tracking is not enabled for this event" },
         { status: 400 }
@@ -51,7 +46,7 @@ export async function GET(
     });
 
     // Format date
-    const eventDate = new Date(event.date);
+    const eventDate = new Date(String(event.date));
     const dateString = eventDate.toLocaleDateString("en-US", {
       weekday: "long",
       year: "numeric",
@@ -68,8 +63,8 @@ export async function GET(
     const escapeHtml = (str: string) =>
       str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-    const safeTitle = escapeHtml(event.title);
-    const safeLocation = event.location ? escapeHtml(event.location) : "";
+    const safeTitle = escapeHtml(String(event.title));
+    const safeLocation = event.location ? escapeHtml(String(event.location)) : "";
 
     // Create SVG flyer (8.5x11 aspect ratio)
     const svgFlyer = `<?xml version="1.0" encoding="UTF-8"?>

@@ -5,16 +5,18 @@ import { redirect } from "next/navigation";
 import ProfileContent from "./ProfileContent";
 
 interface ProfilePageProps {
-    params: { id: string };
+    params: Promise<{ id: string }>;
 }
 
 export async function generateMetadata({ params }: ProfilePageProps): Promise<Metadata> {
+    await params;
     return {
         title: `Profile - SSE`,
     };
 }
 
 export default async function ProfilePage({ params }: ProfilePageProps) {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
 
     if (!session) {
@@ -23,7 +25,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
     return (
         <section className="w-full max-w-5xl mx-auto">
-            <ProfileContent userId={params.id} />
+            <ProfileContent userId={id} />
         </section>
     );
 }

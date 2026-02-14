@@ -1,12 +1,32 @@
-import prisma from "@/lib/prisma";
+import { getPayloadClient } from "@/lib/payload";
+import { isOfficerRequest, resolveMediaURL } from "@/lib/payloadCms";
 import { NextRequest } from "next/server";
+
+function toSponsorResponse(doc: Record<string, any>) {
+  return {
+    id: Number(doc.id),
+    name: doc.name ?? "",
+    description: doc.description ?? "",
+    logoUrl: resolveMediaURL(doc.logo),
+    websiteUrl: doc.websiteUrl ?? "",
+    isActive: Boolean(doc.isActive),
+    createdAt: doc.createdAt ?? new Date().toISOString(),
+    updatedAt: doc.updatedAt ?? new Date().toISOString(),
+  };
+}
 
 export async function GET() {
   try {
-    const sponsors = await prisma.sponsor.findMany({
-      orderBy: { createdAt: "desc" },
+    const payload = await getPayloadClient();
+    const sponsors = await payload.find({
+      collection: "sponsors",
+      depth: 1,
+      limit: 1000,
+      sort: "-createdAt",
     });
-    return Response.json(sponsors);
+    return Response.json(
+      sponsors.docs.map((doc) => toSponsorResponse(doc as Record<string, any>))
+    );
   } catch (error) {
     console.error("GET /api/sponsor error:", error);
     return new Response(`Database error: ${error}`, { status: 500 });
@@ -14,6 +34,11 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const isOfficer = await isOfficerRequest(request);
+  if (!isOfficer) {
+    return new Response("Only officers may modify sponsors", { status: 403 });
+  }
+
   let body;
   try {
     body = await request.json();
@@ -21,10 +46,9 @@ export async function POST(request: NextRequest) {
     return new Response("Invalid JSON", { status: 422 });
   }
 
-  // Validate required fields
-  if (!("name" in body && "description" in body && "logoUrl" in body && "websiteUrl" in body)) {
+  if (!("name" in body && "description" in body && "websiteUrl" in body)) {
     return new Response(
-      "'name', 'description', 'logoUrl', 'websiteUrl' must be included in the body",
+      "'name', 'description', and 'websiteUrl' must be included in the body",
       { status: 400 }
     );
   }
@@ -35,9 +59,6 @@ export async function POST(request: NextRequest) {
   if (typeof body.description !== "string") {
     return new Response("'description' must be a string", { status: 422 });
   }
-  if (typeof body.logoUrl !== "string") {
-    return new Response("'logoUrl' must be a string", { status: 422 });
-  }
   if (typeof body.websiteUrl !== "string") {
     return new Response("'websiteUrl' must be a string", { status: 422 });
   }
@@ -45,13 +66,11 @@ export async function POST(request: NextRequest) {
   const data: {
     name: string;
     description: string;
-    logoUrl: string;
     websiteUrl: string;
     isActive?: boolean;
   } = {
     name: body.name,
     description: body.description,
-    logoUrl: body.logoUrl,
     websiteUrl: body.websiteUrl,
   };
 
@@ -63,8 +82,12 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const sponsor = await prisma.sponsor.create({ data });
-    return Response.json(sponsor, { status: 201 });
+    const payload = await getPayloadClient();
+    const sponsor = await payload.create({
+      collection: "sponsors",
+      data,
+    });
+    return Response.json(toSponsorResponse(sponsor as Record<string, any>), { status: 201 });
   } catch (error) {
     console.error("POST /api/sponsor error:", error);
     return new Response(`Database error: ${error}`, { status: 500 });
@@ -72,6 +95,11 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
+  const isOfficer = await isOfficerRequest(request);
+  if (!isOfficer) {
+    return new Response("Only officers may modify sponsors", { status: 403 });
+  }
+
   let body;
   try {
     body = await request.json();
@@ -87,20 +115,9 @@ export async function PUT(request: NextRequest) {
     return new Response("'id' must be an integer", { status: 422 });
   }
 
-  const sponsorExists = await prisma.sponsor.findUnique({
-    where: { id: body.id },
-  });
-
-  if (!sponsorExists) {
-    return new Response(`Sponsor with 'id': ${body.id} doesn't exist`, {
-      status: 404,
-    });
-  }
-
   const data: {
     name?: string;
     description?: string;
-    logoUrl?: string;
     websiteUrl?: string;
     isActive?: boolean;
   } = {};
@@ -117,12 +134,6 @@ export async function PUT(request: NextRequest) {
     }
     data.description = body.description;
   }
-  if ("logoUrl" in body) {
-    if (typeof body.logoUrl !== "string") {
-      return new Response("'logoUrl' must be a string", { status: 422 });
-    }
-    data.logoUrl = body.logoUrl;
-  }
   if ("websiteUrl" in body) {
     if (typeof body.websiteUrl !== "string") {
       return new Response("'websiteUrl' must be a string", { status: 422 });
@@ -136,15 +147,22 @@ export async function PUT(request: NextRequest) {
     data.isActive = body.isActive;
   }
 
-  const sponsor = await prisma.sponsor.update({
-    where: { id: body.id },
+  const payload = await getPayloadClient();
+  const sponsor = await payload.update({
+    collection: "sponsors",
+    id: body.id,
     data,
   });
 
-  return Response.json(sponsor, { status: 200 });
+  return Response.json(toSponsorResponse(sponsor as Record<string, any>), { status: 200 });
 }
 
 export async function DELETE(request: NextRequest) {
+  const isOfficer = await isOfficerRequest(request);
+  if (!isOfficer) {
+    return new Response("Only officers may modify sponsors", { status: 403 });
+  }
+
   let body;
   try {
     body = await request.json();
@@ -160,19 +178,11 @@ export async function DELETE(request: NextRequest) {
     return new Response("'id' must be an integer", { status: 422 });
   }
 
-  const sponsorExists = await prisma.sponsor.findUnique({
-    where: { id: body.id },
+  const payload = await getPayloadClient();
+  const sponsor = await payload.delete({
+    collection: "sponsors",
+    id: body.id,
   });
 
-  if (!sponsorExists) {
-    return new Response(`Sponsor with 'id': ${body.id} doesn't exist`, {
-      status: 404,
-    });
-  }
-
-  const sponsor = await prisma.sponsor.delete({
-    where: { id: body.id },
-  });
-
-  return Response.json(sponsor, { status: 200 });
+  return Response.json(toSponsorResponse(sponsor as Record<string, any>), { status: 200 });
 }

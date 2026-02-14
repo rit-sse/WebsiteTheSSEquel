@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { getPayloadClient } from "@/lib/payload";
 import { NextRequest, NextResponse } from "next/server";
 
 /**
@@ -39,20 +40,16 @@ async function getUserFromSession(request: NextRequest) {
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id: eventId } = params;
+  const { id: eventId } = await params;
 
   try {
-    // Check if event exists
-    const event = await prisma.event.findUnique({
-      where: { id: eventId },
-      select: {
-        id: true,
-        title: true,
-        attendanceEnabled: true,
-      },
-    });
+    const payload = await getPayloadClient();
+    const event = (await payload.findByID({
+      collection: "events",
+      id: eventId,
+    })) as Record<string, any> | null;
 
     if (!event) {
       return NextResponse.json(
@@ -81,7 +78,7 @@ export async function GET(
     return NextResponse.json({
       eventId,
       eventTitle: event.title,
-      attendanceEnabled: event.attendanceEnabled,
+      attendanceEnabled: Boolean(event.attendanceEnabled),
       attendees: attendances.map((a: { id: any; user: { id: any; name: any; email: any; }; createdAt: any; }) => ({
         id: a.id,
         userId: a.user.id,
@@ -106,9 +103,9 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id: eventId } = params;
+  const { id: eventId } = await params;
 
   // Get current user from session
   const user = await getUserFromSession(request);
@@ -120,22 +117,11 @@ export async function POST(
   }
 
   try {
-    // Check if event exists and has attendance enabled
-    const event = await prisma.event.findUnique({
-      where: { id: eventId },
-      select: {
-        id: true,
-        title: true,
-        attendanceEnabled: true,
-        grantsMembership: true,
-        purchaseRequests: {
-          select: {
-            id: true,
-            attendanceData: true,
-          },
-        },
-      },
-    });
+    const payload = await getPayloadClient();
+    const event = (await payload.findByID({
+      collection: "events",
+      id: eventId,
+    })) as Record<string, any> | null;
 
     if (!event) {
       return NextResponse.json(
@@ -144,7 +130,7 @@ export async function POST(
       );
     }
 
-    if (!event.attendanceEnabled) {
+    if (!Boolean(event.attendanceEnabled)) {
       return NextResponse.json(
         { error: "Attendance tracking is not enabled for this event" },
         { status: 400 }
@@ -177,12 +163,12 @@ export async function POST(
     });
 
     // If event grants membership, create a membership record
-    if (event.grantsMembership) {
+    if (Boolean(event.grantsMembership)) {
       // Check if user already has a membership for this event
       const existingMembership = await prisma.memberships.findFirst({
         where: {
           userId: user.id,
-          reason: `Attended event: ${event.title}`,
+          reason: `Attended event: ${String(event.title)}`,
         },
       });
 
@@ -190,7 +176,7 @@ export async function POST(
         await prisma.memberships.create({
           data: {
             userId: user.id,
-            reason: `Attended event: ${event.title}`,
+            reason: `Attended event: ${String(event.title)}`,
             dateGiven: new Date(),
           },
         });
@@ -198,7 +184,12 @@ export async function POST(
     }
 
     // If event has linked purchase requests, append user to attendanceData
-    for (const pr of event.purchaseRequests) {
+    const linkedPurchaseRequests = await prisma.purchaseRequest.findMany({
+      where: { eventId },
+      select: { id: true, attendanceData: true },
+    });
+
+    for (const pr of linkedPurchaseRequests) {
       const existingData = pr.attendanceData ? JSON.parse(pr.attendanceData) : [];
       
       // Check if user is already in the attendance data
@@ -234,7 +225,7 @@ export async function POST(
         userId: attendance.userId,
         createdAt: attendance.createdAt,
       },
-      membershipGranted: event.grantsMembership,
+      membershipGranted: Boolean(event.grantsMembership),
     }, { status: 201 });
   } catch (error) {
     console.error("Error marking attendance:", error);
@@ -252,9 +243,9 @@ export async function POST(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id: eventId } = params;
+  const { id: eventId } = await params;
 
   // Get current user from session
   const user = await getUserFromSession(request);

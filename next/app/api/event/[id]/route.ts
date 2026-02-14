@@ -1,4 +1,5 @@
-import prisma from "@/lib/prisma";
+import { getPayloadClient } from "@/lib/payload";
+import { resolveMediaURL } from "@/lib/payloadCms";
 
 /**
  * HTTP GET request to /api/event/[id]
@@ -8,31 +9,32 @@ import prisma from "@/lib/prisma";
  */
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  // make sure the provided ID is a valid integer
   try {
-    const id = params.id;
-    const event = await prisma.event.findUnique({
-      where: {
-        id,
-      },
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        image: true,
-        date: true,
-        location: true,
-        attendanceEnabled: true,
-        grantsMembership: true,
-      },
+    const { id } = await params;
+    const payload = await getPayloadClient();
+    const event = await payload.findByID({
+      collection: "events",
+      id,
+      depth: 1,
     });
-    // make sure the selected event exists
+
     if (event == null) {
       return new Response(`Didn't find Event ID ${id}`, { status: 404 });
     }
-    return Response.json(event);
+
+    const typed = event as Record<string, any>;
+    return Response.json({
+      id: String(typed.id),
+      title: typed.title ?? "",
+      description: typed.description ?? "",
+      image: resolveMediaURL(typed.image),
+      date: typed.date ?? "",
+      location: typed.location ?? "",
+      attendanceEnabled: Boolean(typed.attendanceEnabled),
+      grantsMembership: Boolean(typed.grantsMembership),
+    });
   } catch {
     return new Response("Invalid Event ID", { status: 422 });
   }

@@ -2,9 +2,13 @@ import prisma from "@/lib/prisma";
 
 export const dynamic = 'force-dynamic'
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(
+	request: Request,
+	{ params }: { params: Promise<{ id: string }> }
+) {
 	try {
-		const id = parseInt(params.id);
+		const { id: idParam } = await params;
+		const id = parseInt(idParam);
 		const skill = await prisma.skill.findUnique({
 			where: {
 				id,

@@ -37,10 +37,11 @@ function parseAvailability(slotsJson: string | null | undefined): Array<{ weekda
  */
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
-  const id = parseInt(params.id);
+  const { id: idParam } = await params;
+  const id = parseInt(idParam);
   if (isNaN(id)) {
     return new Response("Invalid User ID", { status: 422 });
   }
