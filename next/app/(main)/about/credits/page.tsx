@@ -1,5 +1,3 @@
-'use server'
-
 import { getSSEMembers } from "@/lib/github/search";
 import MemberCard from "./MemberCard";
 import { Card } from "@/components/ui/card";

@@ -1,10 +1,8 @@
-'use client'
-
 import { GitHubIcon } from "@/components/common/Icons";
 import { CommitteeMemberProp } from "./member";
 import { NeoCard } from "@/components/ui/neo-card";
 
-export default function MemberCard({ member }: CommitteeMemberProp) {
+export default async function MemberCard({ member }: CommitteeMemberProp) {
   return ( 
     <NeoCard className="max-w-xs sm:max-w-sm p-4 pt-2 flex-grow">
       <div className="mt-2 flex flex-col items-center">
