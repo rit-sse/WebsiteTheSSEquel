@@ -185,6 +185,28 @@ const config: Config = {
                     '4': 'hsl(var(--chart-4))',
                     '5': 'hsl(var(--chart-5))'
                 },
+                categorical: {
+                    '1': 'var(--cat-1)',
+                    '2': 'var(--cat-2)',
+                    '3': 'var(--cat-3)',
+                    '4': 'var(--cat-4)',
+                    '5': 'var(--cat-5)',
+                    '6': 'var(--cat-6)',
+                    '7': 'var(--cat-7)',
+                    '8': 'var(--cat-8)',
+                    '9': 'var(--cat-9)',
+                    '10': 'var(--cat-10)',
+                    '11': 'var(--cat-11)',
+                    '12': 'var(--cat-12)',
+                    '13': 'var(--cat-13)',
+                    '14': 'var(--cat-14)',
+                    '15': 'var(--cat-15)',
+                    '16': 'var(--cat-16)',
+                    '17': 'var(--cat-17)',
+                    '18': 'var(--cat-18)',
+                    '19': 'var(--cat-19)',
+                    '20': 'var(--cat-20)',
+                },
                 
                 // Semantic colors (replacing DaisyUI)
                 info: 'hsl(var(--info))',

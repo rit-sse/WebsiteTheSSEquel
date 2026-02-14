@@ -2,10 +2,12 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ChevronDown, Menu } from "lucide-react";
-import { useSession } from "next-auth/react";
+import { ChevronDown, Menu, User, LogOut } from "lucide-react";
+import { signOut, useSession } from "next-auth/react";
 import SSELogoFull from "../common/SSELogoFull";
 import AuthButton from "./AuthButton";
+import NavAvatar from "./NavAvatar";
+import { useProfileImage } from "@/contexts/ProfileImageContext";
 import {
     NavigationMenu,
     NavigationMenuContent,
@@ -39,6 +41,11 @@ const aboutItems = [
         title: "Get Involved",
         href: "/about/get-involved",
         description: "Discover ways to participate and contribute to SSE.",
+    },
+    {
+        title: "Become a Mentor",
+        href: "/mentoring/apply",
+        description: "Apply to help fellow students in the SSE lab.",
     },
     {
         title: "Leadership",
@@ -79,6 +86,11 @@ const dashboardItems = [
         description: "View event attendance lists and QR flyers.",
     },
     {
+        title: "Mentoring",
+        href: "/dashboard/mentoring",
+        description: "Manage mentor schedules and roster.",
+    },
+    {
         title: "Positions & Officers",
         href: "/dashboard/positions",
         description: "Manage officer positions and assignments.",
@@ -94,23 +106,39 @@ const dashboardItems = [
         description: "Manage sponsor information.",
     },
     {
-        title: "Alumni Requests",
+        title: "Alumni Review",
         href: "/dashboard/alumni",
-        description: "Review alumni submission requests.",
+        description: "Review alumni requests and auto-generated candidates.",
     },
 ];
 
-const Navbar: React.FC = () => {
+interface NavbarProps {
+    /** Resolved on the server so the first paint already includes Dashboard / profile link. */
+    serverUserId?: number | null;
+    serverShowDashboard?: boolean;
+    serverProfileComplete?: boolean;
+}
+
+const Navbar: React.FC<NavbarProps> = ({
+    serverUserId = null,
+    serverShowDashboard = false,
+    serverProfileComplete = true,
+}) => {
     const [open, setOpen] = React.useState(false);
     const { data: session } = useSession();
+    const { profileImage } = useProfileImage();
     
-    // Only show dashboard when user is an officer or mentor
-    const [showDashboard, setShowDashboard] = React.useState(false);
+    // Initialize from server props — no flash on first paint
+    const [showDashboard, setShowDashboard] = React.useState(serverShowDashboard);
+    const [userId, setUserId] = React.useState<number | null>(serverUserId);
+    const [profileComplete, setProfileComplete] = React.useState(serverProfileComplete);
+    const [hasMentorAvailabilityUpdates, setHasMentorAvailabilityUpdates] = React.useState(false);
 
-    // Fetch auth level to determine if user can see dashboard
+    // Background refresh so dynamic changes (e.g. profile completion) still propagate
     React.useEffect(() => {
         if (!session) {
             setShowDashboard(false);
+            setUserId(null);
             return;
         }
         
@@ -119,12 +147,36 @@ const Navbar: React.FC = () => {
                 const response = await fetch("/api/authLevel");
                 const data = await response.json();
                 setShowDashboard(data.isOfficer || data.isMentor);
+                setUserId(data.userId ?? null);
+                setProfileComplete(data.profileComplete ?? true);
+                if (data.isMentoringHead) {
+                    const updatesResponse = await fetch("/api/mentor-availability/updates");
+                    if (updatesResponse.ok) {
+                        const updatesData = await updatesResponse.json();
+                        const latestUpdatedAt = updatesData?.latestUpdatedAt ? Date.parse(updatesData.latestUpdatedAt) : 0;
+                        const seenAt = Number(localStorage.getItem("mentor-availability-last-seen") || "0");
+                        setHasMentorAvailabilityUpdates(latestUpdatedAt > seenAt);
+                    } else {
+                        setHasMentorAvailabilityUpdates(false);
+                    }
+                } else {
+                    setHasMentorAvailabilityUpdates(false);
+                }
             } catch (error) {
                 console.error("Error checking auth level:", error);
-                setShowDashboard(false);
             }
         })();
     }, [session]);
+
+    React.useEffect(() => {
+        const handleMentorAvailabilitySeen = () => {
+            setHasMentorAvailabilityUpdates(false);
+        };
+        window.addEventListener("mentor-availability-seen", handleMentorAvailabilitySeen);
+        return () => {
+            window.removeEventListener("mentor-availability-seen", handleMentorAvailabilitySeen);
+        };
+    }, []);
 
     // Controlled state for navigation menu - click to activate, then hover works
     const [menuValue, setMenuValue] = React.useState<string>("");
@@ -158,7 +210,7 @@ const Navbar: React.FC = () => {
     return (
         <nav
             id="navbar"
-            className="sticky top-0 z-50 flex items-center justify-center bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border"
+            className="fixed inset-x-0 top-0 z-50 flex items-center justify-center bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b-[2px] border-black"
         >
             <div
                 id="nav-content"
@@ -184,6 +236,12 @@ const Navbar: React.FC = () => {
                             <NavigationMenuItem>
                                 <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
                                     <Link href="/events/calendar">Events</Link>
+                                </NavigationMenuLink>
+                            </NavigationMenuItem>
+
+                            <NavigationMenuItem>
+                                <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+                                    <Link href="/mentoring/schedule">Mentor Schedule</Link>
                                 </NavigationMenuLink>
                             </NavigationMenuItem>
 
@@ -223,12 +281,30 @@ const Navbar: React.FC = () => {
                             {showDashboard && (
                                 <NavigationMenuItem value="dashboard">
                                     <NavigationMenuTrigger onClick={handleTriggerClick("dashboard")}>
-                                        Dashboard
+                                        <span className="inline-flex items-center gap-2">
+                                            Dashboard
+                                            {hasMentorAvailabilityUpdates && (
+                                                <span className="h-2 w-2 rounded-full bg-destructive" />
+                                            )}
+                                        </span>
                                     </NavigationMenuTrigger>
                                     <NavigationMenuContent>
-                                        <ul className="grid gap-3 p-4 w-[300px]">
+                                        <ul className="grid gap-3 p-4 md:w-[400px] lg:w-[500px] lg:grid-cols-2">
                                             {dashboardItems.map((item) => (
-                                                <ListItem key={item.title} title={item.title} href={item.href}>
+                                                <ListItem
+                                                    key={item.title}
+                                                    title={
+                                                        item.href === "/dashboard/mentoring" && hasMentorAvailabilityUpdates ? (
+                                                            <span className="inline-flex items-center gap-2">
+                                                                {item.title}
+                                                                <span className="h-2 w-2 rounded-full bg-destructive" />
+                                                            </span>
+                                                        ) : (
+                                                            item.title
+                                                        )
+                                                    }
+                                                    href={item.href}
+                                                >
                                                     {item.description}
                                                 </ListItem>
                                             ))}
@@ -237,8 +313,11 @@ const Navbar: React.FC = () => {
                                 </NavigationMenuItem>
                             )}
 
-                            <NavigationMenuItem>
-                                <AuthButton />
+                            <NavigationMenuItem className="flex items-center ml-1">
+                                <AuthButton
+                                    userId={userId}
+                                    profileComplete={profileComplete}
+                                />
                             </NavigationMenuItem>
                         </NavigationMenuList>
                     </NavigationMenu>
@@ -257,21 +336,12 @@ const Navbar: React.FC = () => {
                                 <SheetTitle className="text-left">Menu</SheetTitle>
                             </SheetHeader>
                             <nav className="flex flex-col gap-2 mt-6">
-                                <MobileNavCollapsible title="About">
-                                    {aboutItems.map((item) => (
-                                        <MobileNavLink
-                                            key={item.title}
-                                            href={item.href}
-                                            onClick={() => setOpen(false)}
-                                            className="pl-4"
-                                        >
-                                            {item.title}
-                                        </MobileNavLink>
-                                    ))}
-                                </MobileNavCollapsible>
-
                                 <MobileNavLink href="/events/calendar" onClick={() => setOpen(false)}>
                                     Events
+                                </MobileNavLink>
+
+                                <MobileNavLink href="/mentoring/schedule" onClick={() => setOpen(false)}>
+                                    Mentor Schedule
                                 </MobileNavLink>
 
                                 <MobileNavLink href="/memberships" onClick={() => setOpen(false)}>
@@ -286,8 +356,30 @@ const Navbar: React.FC = () => {
                                     Go Links
                                 </MobileNavLink>
 
+                                <MobileNavCollapsible title="About">
+                                    {aboutItems.map((item) => (
+                                        <MobileNavLink
+                                            key={item.title}
+                                            href={item.href}
+                                            onClick={() => setOpen(false)}
+                                            className="pl-4"
+                                        >
+                                            {item.title}
+                                        </MobileNavLink>
+                                    ))}
+                                </MobileNavCollapsible>
+
                                 {showDashboard && (
-                                    <MobileNavCollapsible title="Dashboard">
+                                    <MobileNavCollapsible
+                                        title={
+                                            <span className="inline-flex items-center gap-2">
+                                                Dashboard
+                                                {hasMentorAvailabilityUpdates && (
+                                                    <span className="h-2 w-2 rounded-full bg-destructive" />
+                                                )}
+                                            </span>
+                                        }
+                                    >
                                         {dashboardItems.map((item) => (
                                             <MobileNavLink
                                                 key={item.title}
@@ -296,13 +388,56 @@ const Navbar: React.FC = () => {
                                                 className="pl-4"
                                             >
                                                 {item.title}
+                                                {item.href === "/dashboard/mentoring" && hasMentorAvailabilityUpdates && (
+                                                    <span className="ml-auto h-2 w-2 rounded-full bg-destructive" />
+                                                )}
                                             </MobileNavLink>
                                         ))}
                                     </MobileNavCollapsible>
                                 )}
 
                                 <div className="pt-4 border-t border-border mt-2">
-                                    <AuthButton />
+                                    {session ? (
+                                        <div className="flex flex-col gap-1">
+                                            <div className="flex items-center gap-3 px-3 py-2 mb-1">
+                                                <div className="relative">
+                                                    <NavAvatar
+                                                        src={profileImage ?? session.user?.image ?? null}
+                                                        name={session.user?.name ?? "User"}
+                                                        className="h-9 w-9"
+                                                    />
+                                                    {!profileComplete && (
+                                                        <span className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-destructive border-2 border-background" />
+                                                    )}
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm font-medium">{session.user?.name}</span>
+                                                    <span className="text-xs text-muted-foreground">{session.user?.email}</span>
+                                                </div>
+                                            </div>
+                                            {userId && (
+                                                <MobileNavLink href={`/profile/${userId}`} onClick={() => setOpen(false)}>
+                                                    <User className="h-4 w-4 mr-2" />
+                                                    My Profile
+                                                    {!profileComplete && (
+                                                        <span className="ml-auto h-2 w-2 rounded-full bg-destructive" />
+                                                    )}
+                                                </MobileNavLink>
+                                            )}
+                            <button
+                                                onClick={() => { signOut(); setOpen(false); }}
+                                                className="flex items-center py-2 px-3 text-base font-medium rounded-md hover:bg-accent transition-colors text-destructive"
+                                            >
+                                                <LogOut className="h-4 w-4 mr-2" />
+                                                Sign Out
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <AuthButton
+                                            userId={userId}
+                                            profileComplete={profileComplete}
+                                        />
+                                    )}
                                 </div>
                             </nav>
                         </SheetContent>
@@ -342,7 +477,7 @@ function MobileNavCollapsible({
     title,
     children,
 }: {
-    title: string;
+    title: React.ReactNode;
     children: React.ReactNode;
 }) {
     const [isOpen, setIsOpen] = React.useState(false);
@@ -371,7 +506,7 @@ function ListItem({
     href,
     className,
     ...props
-}: React.ComponentPropsWithoutRef<"li"> & { href: string }) {
+}: Omit<React.ComponentPropsWithoutRef<"li">, "title"> & { href: string; title: React.ReactNode }) {
     return (
         <li {...props}>
             <NavigationMenuLink asChild>
@@ -379,8 +514,8 @@ function ListItem({
                     href={href}
                     className={cn(
                         "block select-none space-y-1 rounded-lg p-3 leading-none no-underline outline-none",
-                        "bg-surface-1 border border-border/30",
-                        "hover:bg-surface-2 hover:border-border/50 hover:shadow-md",
+                        "bg-surface-2 border border-border/30",
+                        "hover:bg-surface-1 hover:border-border/50 hover:shadow-md",
                         "focus:bg-surface-2 focus:border-border/50",
                         "transition-colors",
                         className

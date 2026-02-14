@@ -10,7 +10,7 @@ import { toast } from "sonner";
 interface Invitation {
   id: number;
   invitedEmail: string;
-  type: "officer" | "user";
+  type: "officer" | "user" | "mentor";
   positionId: number | null;
   startDate: string | null;
   endDate: string | null;
@@ -176,15 +176,19 @@ export default function AcceptInvitationPage() {
                     className={`px-2 py-1 rounded text-xs font-medium ${
                       invitation.type === "officer"
                         ? "bg-primary/20 text-primary"
+                        : invitation.type === "mentor"
+                        ? "bg-green-500/20 text-green-700 dark:text-green-400"
                         : "bg-accent/20 text-accent-foreground"
                     }`}
                   >
-                    {invitation.type === "officer" ? "Officer Position" : "Membership"}
+                    {invitation.type === "officer" ? "Officer Position" : invitation.type === "mentor" ? "Mentor Position" : "Membership"}
                   </span>
                 </div>
                 <CardTitle>
                   {invitation.type === "officer" && invitation.position
                     ? invitation.position.title
+                    : invitation.type === "mentor"
+                    ? "Join SSE as a Mentor"
                     : "Join SSE as a Member"}
                 </CardTitle>
                 <CardDescription>
@@ -210,6 +214,22 @@ export default function AcceptInvitationPage() {
                         This is a <strong>primary officer</strong> position.
                       </p>
                     )}
+                  </div>
+                ) : invitation.type === "mentor" ? (
+                  <div className="space-y-3">
+                    <p className="text-sm">
+                      You&apos;ve been invited to join the Society of Software Engineers
+                      as a <strong>Mentor</strong>.
+                    </p>
+                    {invitation.endDate && (
+                      <div className="text-sm text-muted-foreground">
+                        <strong>Mentorship expires:</strong> {formatDate(invitation.endDate)}
+                      </div>
+                    )}
+                    <p className="text-sm text-muted-foreground">
+                      As a mentor, you&apos;ll help fellow students with coursework,
+                      assignments, and test preparation in the SSE lab.
+                    </p>
                   </div>
                 ) : (
                   <div className="space-y-3">

@@ -80,7 +80,9 @@ export default function OfficerAssignmentCard({
     return (
       <div className="flex items-center gap-3 p-2 rounded-lg bg-surface-2 border border-border/30">
         <Avatar className="h-8 w-8">
-          <AvatarImage src={officer.image} alt={officer.name} />
+          {officer.image ? (
+            <AvatarImage src={officer.image} alt={officer.name} />
+          ) : null}
           <AvatarFallback className="text-xs">
             {getInitials(officer.name)}
           </AvatarFallback>

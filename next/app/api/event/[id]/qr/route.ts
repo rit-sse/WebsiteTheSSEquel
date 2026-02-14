@@ -53,8 +53,10 @@ export async function GET(
       },
     });
 
+    const body = new Uint8Array(qrCodeBuffer);
+
     // Return the QR code image
-    return new NextResponse(qrCodeBuffer, {
+    return new NextResponse(body, {
       status: 200,
       headers: {
         "Content-Type": "image/png",

@@ -1,14 +1,75 @@
 import { MENTOR_HEAD_TITLE } from "@/lib/utils";
 import prisma from "@/lib/prisma";
 import { NextRequest } from "next/server";
+import { resolveUserImage } from "@/lib/s3Utils";
 
 export const dynamic = "force-dynamic";
 
+function parseCourseCount(coursesJson: string | null | undefined): number {
+  if (!coursesJson) return 0;
+  try {
+    const parsed = JSON.parse(coursesJson);
+    return Array.isArray(parsed) ? parsed.length : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function parseCourses(coursesJson: string | null | undefined): string[] {
+  if (!coursesJson) return [];
+  try {
+    const parsed = JSON.parse(coursesJson);
+    return Array.isArray(parsed) ? parsed.filter((value) => typeof value === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Check if user can manage mentors (Mentoring Head or Primary Officer)
+ */
+async function canManageMentors(sessionToken: string | undefined): Promise<boolean> {
+  if (!sessionToken) return false;
+
+  const user = await prisma.user.findFirst({
+    where: {
+      session: {
+        some: {
+          sessionToken,
+        },
+      },
+    },
+    select: {
+      officers: {
+        where: { is_active: true },
+        select: {
+          position: {
+            select: {
+              title: true,
+              is_primary: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!user) return false;
+
+  return user.officers.some(
+    (officer) =>
+      officer.position.title === MENTOR_HEAD_TITLE ||
+      officer.position.is_primary
+  );
+}
+
 /**
  * HTTP GET request to /api/mentor/
- * @return list of mentor objects
+ * @return list of mentor objects with detailed information
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const detailed = request.nextUrl.searchParams.get("detailed") === "true";
+
   const allMentors = await prisma.mentor.findMany({
     select: {
       id: true,
@@ -19,11 +80,129 @@ export async function GET() {
           id: true,
           name: true,
           email: true,
+          profileImageKey: true,
+          googleImageURL: true,
+          description: true,
+          linkedIn: true,
+          gitHub: true,
+          ...(detailed && {
+            mentorApplications: {
+              orderBy: { createdAt: "desc" as const },
+              take: 1,
+              select: {
+                id: true,
+                discordUsername: true,
+                pronouns: true,
+                major: true,
+                yearLevel: true,
+                coursesJson: true,
+                skillsText: true,
+                toolsComfortable: true,
+                toolsLearning: true,
+                previousSemesters: true,
+                whyMentor: true,
+                comments: true,
+                createdAt: true,
+                status: true,
+                semester: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
+                },
+              },
+            },
+          }),
         },
       },
+      ...(detailed && {
+        mentorSkill: {
+          select: {
+            skill: {
+              select: {
+                id: true,
+                skill: true,
+              },
+            },
+          },
+        },
+        courseTaken: {
+          select: {
+            course: {
+              select: {
+                id: true,
+                title: true,
+                code: true,
+                department: {
+                  select: {
+                    id: true,
+                    title: true,
+                    shortTitle: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+        scheduleBlocks: {
+          select: {
+            id: true,
+            weekday: true,
+            startHour: true,
+            scheduleId: true,
+          },
+        },
+      }),
     },
+    orderBy: [
+      { isActive: "desc" },
+      { user: { name: "asc" } },
+    ],
   });
-  return Response.json(allMentors);
+
+  const mentorsWithImage = allMentors.map((mentor) => {
+    const latestApplication =
+      "mentorApplications" in mentor.user ? mentor.user.mentorApplications?.[0] : undefined;
+    const applicationCourseCount = parseCourseCount(latestApplication?.coursesJson);
+    const applicationCourses = parseCourses(latestApplication?.coursesJson);
+
+    const { mentorApplications, ...userWithoutApplications } = mentor.user as typeof mentor.user & {
+      mentorApplications?: Array<{
+        id: number;
+        discordUsername: string;
+        pronouns: string;
+        major: string;
+        yearLevel: string;
+        coursesJson: string;
+        skillsText: string;
+        toolsComfortable: string;
+        toolsLearning: string;
+        previousSemesters: number;
+        whyMentor: string;
+        comments: string | null;
+        createdAt: Date;
+        status: string;
+        semester: { id: number; name: string };
+      }>;
+    };
+
+    return {
+      ...mentor,
+      applicationCourseCount,
+      latestMentorApplication: latestApplication
+        ? {
+            ...latestApplication,
+            courses: applicationCourses,
+          }
+        : null,
+      user: {
+        ...userWithoutApplications,
+        image: resolveUserImage(mentor.user.profileImageKey, mentor.user.googleImageURL),
+      },
+    };
+  });
+
+  return Response.json(mentorsWithImage);
 }
 
 /**
@@ -51,27 +230,10 @@ export async function POST(request: NextRequest) {
   const isActive = body.isActive;
   const user_Id = body.userId;
 
-  // Only the mentor head may modify the mentors
-  if (
-    (await prisma.user.findFirst({
-      where: {
-        session: {
-          some: {
-            sessionToken: request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value,
-          },
-        },
-        officers: {
-          some: {
-            position: {
-              title: MENTOR_HEAD_TITLE,
-            },
-            is_active: true,
-          },
-        },
-      },
-    })) == null
-  ) {
-    return new Response("Only the mentoring head may modify mentorships", {
+  // Only Mentoring Head or Primary Officers may modify mentors
+  const sessionToken = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
+  if (!(await canManageMentors(sessionToken))) {
+    return new Response("Only the Mentoring Head or Primary Officers may modify mentorships", {
       status: 403,
     });
   }
@@ -86,7 +248,7 @@ export async function POST(request: NextRequest) {
     });
     return Response.json(mentor, { status: 201 });
   } catch (e) {
-    return new Response(`Failed to create user: ${e}`, { status: 500 });
+    return new Response(`Failed to create mentor: ${e}`, { status: 500 });
   }
 }
 
@@ -109,35 +271,21 @@ export async function DELETE(request: NextRequest) {
   }
   const id = body.id;
 
-  // Only the mentor head may modify the mentors
-  if (
-    (await prisma.user.findFirst({
-      where: {
-        session: {
-          some: {
-            sessionToken: request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value,
-          },
-        },
-        officers: {
-          some: {
-            position: {
-              title: MENTOR_HEAD_TITLE,
-            },
-            is_active: true,
-          },
-        },
-      },
-    })) == null
-  ) {
-    return new Response("Only the mentoring head may modify mentorships", {
+  // Only Mentoring Head or Primary Officers may modify mentors
+  const sessionToken = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
+  if (!(await canManageMentors(sessionToken))) {
+    return new Response("Only the Mentoring Head or Primary Officers may modify mentorships", {
       status: 403,
     });
   }
+
   // mentor object from database
   const mentorExists = await prisma.mentor.findUnique({ where: { id: id } });
   if (mentorExists == null) {
     return new Response(`Couldn't find mentor ID ${id}`, { status: 404 });
   }
+  
+  // Delete related records
   await prisma.courseTaken.deleteMany({
     where: { mentorId: id },
   });
@@ -145,6 +293,9 @@ export async function DELETE(request: NextRequest) {
     where: { mentor_Id: id },
   });
   await prisma.schedule.deleteMany({
+    where: { mentorId: id },
+  });
+  await prisma.scheduleBlock.deleteMany({
     where: { mentorId: id },
   });
 
@@ -174,30 +325,14 @@ export async function PUT(request: NextRequest) {
   }
   const id = body.id;
 
-  // Only the mentor head may modify the mentors
-  if (
-    (await prisma.user.findFirst({
-      where: {
-        session: {
-          some: {
-            sessionToken: request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value,
-          },
-        },
-        officers: {
-          some: {
-            position: {
-              title: MENTOR_HEAD_TITLE,
-            },
-            is_active: true,
-          },
-        },
-      },
-    })) == null
-  ) {
-    return new Response("Only the mentoring head may modify mentorships", {
+  // Only Mentoring Head or Primary Officers may modify mentors
+  const sessionToken = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
+  if (!(await canManageMentors(sessionToken))) {
+    return new Response("Only the Mentoring Head or Primary Officers may modify mentorships", {
       status: 403,
     });
   }
+
   // only update included fields
   const data: {
     expirationDate?: string;

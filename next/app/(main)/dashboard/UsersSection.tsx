@@ -9,6 +9,8 @@ import UserModal, { User } from "./UserModal"
 import UserInviteModal from "./UserInviteModal"
 import { Modal, ModalFooter } from "@/components/ui/modal"
 import { toast } from "sonner"
+import { useIsMobile } from "@/hooks/use-mobile"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 interface PendingInvitation {
   id: number
@@ -34,6 +36,7 @@ export default function UsersSection() {
   const [isDeleting, setIsDeleting] = useState(false)
   const [cancelInvitation, setCancelInvitation] = useState<PendingInvitation | null>(null)
   const [isCancellingInvitation, setIsCancellingInvitation] = useState(false)
+  const isMobile = useIsMobile()
 
   const fetchData = useCallback(async () => {
     setIsLoading(true)
@@ -147,18 +150,31 @@ export default function UsersSection() {
       key: "name",
       header: "Name",
       sortable: true,
-      render: (user) => (
-        <div>
-          <span className="font-medium">{user.name}</span>
-          <span className="block sm:hidden text-xs text-muted-foreground truncate max-w-[120px]">{user.email}</span>
-        </div>
-      )
+      isPrimary: true,
+      render: (user) => {
+        const imgUrl = user.image || null;
+        const initials = user.name
+          .split(" ")
+          .map((n) => n[0])
+          .filter(Boolean)
+          .slice(0, 2)
+          .join("")
+          .toUpperCase();
+        return (
+          <div className="flex items-center gap-2">
+            <Avatar className="h-7 w-7 shrink-0">
+              {imgUrl ? <AvatarImage src={imgUrl} alt={user.name} /> : null}
+              <AvatarFallback className="text-[10px]">{initials}</AvatarFallback>
+            </Avatar>
+            <span className="font-medium truncate">{user.name}</span>
+          </div>
+        );
+      }
     },
     {
       key: "email",
       header: "Email",
       sortable: true,
-      className: "hidden sm:table-cell",
       render: (user) => (
         <span className="text-muted-foreground">{user.email}</span>
       )
@@ -176,23 +192,47 @@ export default function UsersSection() {
     {
       key: "actions",
       header: "",
+      isAction: true,
       render: (user) => (
-        <div className="flex gap-1">
-          <Button
-            size="xs"
-            variant="ghost"
-            onClick={() => handleEdit(user)}
-          >
-            <Pencil className="h-3 w-3" />
-          </Button>
-          <Button
-            size="xs"
-            variant="destructiveGhost"
-            onClick={() => handleDeleteClick(user)}
-          >
-            <Trash2 className="h-3 w-3" />
-          </Button>
-        </div>
+        isMobile ? (
+          <div className="flex flex-wrap gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => handleEdit(user)}
+              className="gap-1.5"
+            >
+              <Pencil className="h-3.5 w-3.5" />
+              Edit
+            </Button>
+            <Button
+              size="sm"
+              variant="destructive"
+              onClick={() => handleDeleteClick(user)}
+              className="gap-1.5"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              Delete
+            </Button>
+          </div>
+        ) : (
+          <div className="flex gap-1">
+            <Button
+              size="xs"
+              variant="ghost"
+              onClick={() => handleEdit(user)}
+            >
+              <Pencil className="h-3 w-3" />
+            </Button>
+            <Button
+              size="xs"
+              variant="destructiveGhost"
+              onClick={() => handleDeleteClick(user)}
+            >
+              <Trash2 className="h-3 w-3" />
+            </Button>
+          </div>
+        )
       )
     }
   ]

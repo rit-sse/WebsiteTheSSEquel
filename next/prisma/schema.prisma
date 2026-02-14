@@ -10,6 +10,23 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum AcademicTerm {
+  SPRING
+  SUMMER
+  FALL
+}
+
+enum AlumniSource {
+  manual
+  from_user
+}
+
+enum AlumniCandidateStatus {
+  pending
+  approved
+  rejected
+}
+
 model User {
   //Store an automatically generated unique int for id
   id Int @id @default(autoincrement())
@@ -23,9 +40,17 @@ model User {
   linkedIn    String?
   gitHub      String?
   description String?
+  graduationTerm AcademicTerm?
+  graduationYear Int?
+  major          String?
+  coopSummary    String?
+  profileCompletionGrantedTerm AcademicTerm?
+  profileCompletionGrantedYear Int?
 
   //Image will be saved
-  image String @default("https://source.boringavatars.com/beam/")
+  profileImageKey String?
+  googleImageURL String?
+  
 
   emailVerified DateTime?
 
@@ -38,10 +63,15 @@ model User {
   projectContributions ProjectContributor[]
   projects             Project[]
 
-  Memberships      Memberships[]
-  purchaseRequests PurchaseRequest[]
-  invitationsSent  Invitation[]
-  eventAttendances EventAttendance[]
+  Memberships              Memberships[]
+  purchaseRequests         PurchaseRequest[]
+  invitationsSent          Invitation[]
+  eventAttendances         EventAttendance[]
+  mentorApplications       MentorApplication[]
+  mentorAvailability       MentorAvailability[]
+  alumni                   Alumni?
+  alumniCandidates         AlumniCandidate[] @relation("AlumniCandidateOwner")
+  reviewedAlumniCandidates AlumniCandidate[] @relation("AlumniCandidateReviewer")
 }
 
 model Alumni {
@@ -60,6 +90,10 @@ model Alumni {
 
   //Image will be saved
   image String @default("https://source.boringavatars.com/beam/")
+  userId Int? @unique
+  source AlumniSource @default(manual)
+  graduationTerm AcademicTerm?
+  graduationYear Int?
 
   //Store startDate and endDate as a String
   start_date String
@@ -68,6 +102,44 @@ model Alumni {
   //Store Quote and Previous Roles
   quote          String @default("")
   previous_roles String @default("")
+
+  //Whether the alumni wants their email displayed publicly
+  showEmail Boolean @default(false)
+
+  //Whether the alumni wants to receive mass emails from officers
+  receiveEmails Boolean @default(false)
+
+  //Update requests referencing this alumni
+  updateRequests AlumniRequest[]
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
+
+model AlumniCandidate {
+  id Int @id @default(autoincrement())
+  userId Int
+
+  name String
+  email String
+  linkedIn String?
+  gitHub String?
+  description String?
+  imageKey String?
+  graduationTerm AcademicTerm?
+  graduationYear Int?
+  major String?
+  coopSummary String?
+
+  status AlumniCandidateStatus @default(pending)
+  reviewedById Int?
+  reviewedAt DateTime?
+  reviewNotes String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation("AlumniCandidateOwner", fields: [userId], references: [id], onDelete: Cascade)
+  reviewedBy User? @relation("AlumniCandidateReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  @@unique([userId])
 }
 
 model AlumniRequest {
@@ -94,6 +166,16 @@ model AlumniRequest {
   //Store Quote and Previous Roles
   quote          String @default("")
   previous_roles String @default("")
+
+  //Whether the alumni wants their email displayed publicly
+  showEmail Boolean @default(false)
+
+  //Whether the alumni wants to receive mass emails from officers
+  receiveEmails Boolean @default(false)
+
+  //If set, this is an update request for an existing alumni record
+  alumniId Int?
+  alumni   Alumni? @relation(fields: [alumniId], references: [id], onDelete: Cascade)
 
   //Status of the request: pending, approved, rejected
   status String @default("pending")
@@ -195,10 +277,13 @@ model Mentor {
   isActive Boolean
 
   //Relatinal fields
-  mentorSkill MentorSkill[]
-  courseTaken CourseTaken[]
-  schedule    Schedule[]
-  user        User          @relation(fields: [user_Id], references: [id])
+  mentorSkill     MentorSkill[]
+  courseTaken     CourseTaken[]
+  schedule        Schedule[]        // Legacy relation - to be deprecated
+  scheduleBlocks  ScheduleBlock[]   // New schedule system
+  mentorHeadcount MentorHeadcountMentor[]
+  menteeHeadcount MenteeHeadcountMentor[]
+  user            User              @relation(fields: [user_Id], references: [id])
 }
 
 model Skill {
@@ -255,7 +340,8 @@ model Course {
   code Int
 
   //Relational field
-  courseTaken CourseTaken[]
+  courseTaken          CourseTaken[]
+  menteeHeadcountLinks MenteeHeadcountCourse[]
 
   //Refrence field
   department Department @relation(fields: [departmentId], references: [id])
@@ -296,6 +382,250 @@ model Schedule {
   //Relational fields
   hourBlock HourBlock @relation(fields: [hourBlockId], references: [id])
   mentor    Mentor    @relation(fields: [mentorId], references: [id])
+}
+
+// New schedule system - cleaner approach from PR #254
+model MentorSchedule {
+  // Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
+
+  // Name of the schedule (e.g., "Fall 2026", "Spring 2026")
+  name String
+
+  // Whether this is the currently active schedule
+  isActive Boolean @default(false)
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relational fields
+  blocks    ScheduleBlock[]
+  semesters MentorSemester[]
+}
+
+// Semester-based mentor recruitment cycle
+model MentorSemester {
+  // Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
+
+  // Name of the semester (e.g., "Spring 2026", "Fall 2026")
+  name String
+
+  // When2Meet URL for availability collection
+  when2meetUrl String?
+
+  // Application window dates
+  applicationOpen  DateTime?
+  applicationClose DateTime?
+
+  // Semester start/end dates (used for mentor offboarding)
+  semesterStart DateTime?
+  semesterEnd   DateTime?
+
+  // Whether this is the currently active semester for applications
+  isActive Boolean @default(false)
+
+  // Link to the schedule for this semester
+  scheduleId Int?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relational fields
+  schedule        MentorSchedule?        @relation(fields: [scheduleId], references: [id], onDelete: SetNull)
+  applications    MentorApplication[]
+  availability    MentorAvailability[]
+  mentorHeadcount MentorHeadcountEntry[]
+  menteeHeadcount MenteeHeadcountEntry[]
+}
+
+// Mentor interest form submissions
+model MentorApplication {
+  // Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
+
+  // User who submitted the application (requires login)
+  userId Int
+
+  // Semester this application is for
+  semesterId Int
+
+  // Discord username
+  discordUsername String
+
+  // Pronouns (She/Her, He/Him, They/Them, Other)
+  pronouns String
+
+  // Major (SE, CS, Other with text)
+  major String
+
+  // Year level (1st, 2nd, 3rd, 4th, 5th, MS, Other)
+  yearLevel String
+
+  // Courses taken - stored as JSON array of course identifiers
+  coursesJson String @db.Text
+
+  // Other skills/technologies
+  skillsText String @db.Text
+
+  // Tools/technologies comfortable with
+  toolsComfortable String @db.Text
+
+  // Tools/technologies currently learning
+  toolsLearning String @db.Text
+
+  // Number of previous mentoring semesters (0-5+)
+  previousSemesters Int @default(0)
+
+  // Why interested in being a mentor
+  whyMentor String @db.Text
+
+  // Additional comments/questions
+  comments String? @db.Text
+
+  // Application status: pending, approved, rejected, invited
+  status String @default("pending")
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relational fields
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  semester   MentorSemester  @relation(fields: [semesterId], references: [id], onDelete: Cascade)
+  invitation Invitation?
+
+  // Unique constraint: one application per user per semester
+  @@unique([userId, semesterId])
+}
+
+// Mentor availability per user per semester (replaces When2Meet)
+model MentorAvailability {
+  // Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
+
+  // User who submitted availability
+  userId Int
+
+  // Semester this availability is for
+  semesterId Int
+
+  // Availability slots stored as JSON: [{weekday:1, hour:10}, {weekday:1, hour:11}, ...]
+  slots String @db.Text
+
+  // Timestamps
+  updatedAt DateTime @updatedAt
+
+  // Relational fields
+  user     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  semester MentorSemester @relation(fields: [semesterId], references: [id], onDelete: Cascade)
+
+  // Unique constraint: one availability record per user per semester
+  @@unique([userId, semesterId])
+}
+
+// 30-minute mentor headcount form entries
+model MentorHeadcountEntry {
+  id Int @id @default(autoincrement())
+
+  semesterId Int?
+
+  // Total people in the lab at the 30-minute mark
+  peopleInLab Int
+
+  // "How are you feeling?" response
+  feeling String @db.Text
+
+  // Timestamps
+  createdAt DateTime @default(now())
+
+  // Relational fields
+  semester MentorSemester?        @relation(fields: [semesterId], references: [id], onDelete: SetNull)
+  mentors  MentorHeadcountMentor[]
+}
+
+model MentorHeadcountMentor {
+  id Int @id @default(autoincrement())
+
+  entryId  Int
+  mentorId Int
+
+  entry  MentorHeadcountEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  mentor Mentor               @relation(fields: [mentorId], references: [id], onDelete: Cascade)
+
+  @@unique([entryId, mentorId])
+}
+
+// 55-minute mentee headcount form entries
+model MenteeHeadcountEntry {
+  id Int @id @default(autoincrement())
+
+  semesterId Int?
+
+  // Count of distinct students mentored/mentoring
+  studentsMentoredCount Int
+
+  // Count of students who checked out tests
+  testsCheckedOutCount Int
+
+  // Free-text for "Other" class
+  otherClassText String? @db.Text
+
+  // Timestamps
+  createdAt DateTime @default(now())
+
+  // Relational fields
+  semester MentorSemester?        @relation(fields: [semesterId], references: [id], onDelete: SetNull)
+  mentors  MenteeHeadcountMentor[]
+  classes  MenteeHeadcountCourse[]
+}
+
+model MenteeHeadcountMentor {
+  id Int @id @default(autoincrement())
+
+  entryId  Int
+  mentorId Int
+
+  entry  MenteeHeadcountEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  mentor Mentor               @relation(fields: [mentorId], references: [id], onDelete: Cascade)
+
+  @@unique([entryId, mentorId])
+}
+
+model MenteeHeadcountCourse {
+  id Int @id @default(autoincrement())
+
+  entryId  Int
+  courseId Int
+
+  entry  MenteeHeadcountEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  course Course              @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([entryId, courseId])
+}
+
+model ScheduleBlock {
+  // Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
+
+  // Day of week: 1 = Monday, 5 = Friday
+  weekday Int
+
+  // Start hour in 24h time (10 = 10am, 17 = 5pm)
+  startHour Int
+
+  // Foreign keys
+  mentorId   Int
+  scheduleId Int
+
+  // Relational fields
+  mentor   Mentor         @relation(fields: [mentorId], references: [id])
+  schedule MentorSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+
+  // Unique constraint: one mentor per time slot per schedule
+  @@unique([scheduleId, weekday, startHour, mentorId])
 }
 
 model GoLinks {
@@ -375,7 +705,7 @@ model Account {
   id_token          String? @db.Text
   session_state     String?
 
-  // Google OAuth returns this when requesting offline access (for Gmail API)
+  // Google OAuth refresh token expiry
   refresh_token_expires_in Int?
 
   //user is a relational field that references the User model
@@ -546,13 +876,16 @@ model Invitation {
   // Email address invited (must be @g.rit.edu)
   invitedEmail String
 
-  // Type of invitation: "officer" or "user"
+  // Type of invitation: "officer", "user", or "mentor"
   type String
 
   // Optional: Position for officer invitations
   positionId Int?
 
-  // Optional: Term dates for officer invitations
+  // Optional: Link to mentor application (for mentor invitations)
+  applicationId Int? @unique
+
+  // Optional: Term dates for officer invitations / expiration for mentor invitations
   startDate DateTime?
   endDate   DateTime?
 
@@ -564,8 +897,9 @@ model Invitation {
   expiresAt DateTime // 30 days from creation
 
   // Relations
-  position OfficerPosition? @relation(fields: [positionId], references: [id], onDelete: Cascade)
-  inviter  User             @relation(fields: [invitedBy], references: [id])
+  position    OfficerPosition?    @relation(fields: [positionId], references: [id], onDelete: Cascade)
+  inviter     User                @relation(fields: [invitedBy], references: [id])
+  application MentorApplication?  @relation(fields: [applicationId], references: [id], onDelete: SetNull)
 
   // Unique constraint: one pending invitation per email per type
   @@unique([invitedEmail, type])

@@ -24,19 +24,16 @@ export function FontModeProvider({
   defaultMode = "rethink" 
 }: FontModeProviderProps) {
   const [fontMode, setFontModeState] = React.useState<FontMode>(defaultMode)
-  const [mounted, setMounted] = React.useState(false)
 
-  // Load from localStorage on mount
-  React.useEffect(() => {
-    setMounted(true)
+  // Sync React state from localStorage before the browser paints.
+  // The DOM attribute is already set correctly by the synchronous <Script>
+  // in layout.tsx, so we only need to align the React state here.
+  React.useLayoutEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY) as FontMode | null
     if (stored && (stored === "rethink" || stored === "pt-serif")) {
       setFontModeState(stored)
-      document.documentElement.setAttribute("data-font", stored)
-    } else {
-      document.documentElement.setAttribute("data-font", defaultMode)
     }
-  }, [defaultMode])
+  }, [])
 
   // Update localStorage and DOM when fontMode changes
   const setFontMode = React.useCallback((mode: FontMode) => {
@@ -49,13 +46,6 @@ export function FontModeProvider({
     const newMode = fontMode === "rethink" ? "pt-serif" : "rethink"
     setFontMode(newMode)
   }, [fontMode, setFontMode])
-
-  // Prevent hydration mismatch by setting initial attribute
-  React.useEffect(() => {
-    if (!mounted) {
-      document.documentElement.setAttribute("data-font", defaultMode)
-    }
-  }, [mounted, defaultMode])
 
   const value = React.useMemo(
     () => ({

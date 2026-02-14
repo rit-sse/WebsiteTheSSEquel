@@ -44,9 +44,7 @@ const ProjectCard = ({project, propKey, isOfficer}: {project: Project, propKey: 
       <Card 
         depth={2}
         className="relative h-[320px] overflow-hidden cursor-pointer
-                   transition-all duration-150 ease-out
-                   neo:hover:translate-x-[2px] neo:hover:translate-y-[2px] neo:hover:shadow-none
-                   clean:hover:shadow-lg clean:hover:scale-[1.01]"
+                   transition-all hover:scale-[1.02]"
         onClick={openModal} 
         style={{opacity: cardOpacity, transform: translationLoad}}
       >
