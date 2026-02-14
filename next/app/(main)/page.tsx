@@ -101,18 +101,16 @@ export default async function Home() {
             {sponsors.length > 0 && (
                 <NeoCard className="w-full p-6 md:p-10">
                     <h2 className='mb-6 text-3xl font-bold font-display'>Sponsors</h2>
-                    <div className='flex flex-row justify-center items-center'>
-                        <div className='grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-full'>
-                            {sponsors.map(sponsor => (
-                                <Sponsor
-                                    key={sponsor.url}
-                                    url={sponsor.url}
-                                    imageLink={sponsor.image}
-                                    name={sponsor.name}
-                                    description={sponsor.description}
-                                />
-                            ))}
-                        </div>
+                    <div className='grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-full'>
+                        {sponsors.map(sponsor => (
+                            <Sponsor
+                                key={sponsor.url}
+                                url={sponsor.url}
+                                imageLink={sponsor.image}
+                                name={sponsor.name}
+                                description={sponsor.description}
+                            />
+                        ))}
                     </div>
                 </NeoCard>
             )}

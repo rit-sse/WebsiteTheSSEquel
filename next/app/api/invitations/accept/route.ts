@@ -3,6 +3,30 @@ import { NextRequest } from "next/server";
 
 export const dynamic = "force-dynamic";
 
+function parseApplicationCourses(coursesJson: string | null | undefined): string[] {
+  if (!coursesJson) return [];
+  try {
+    const parsed = JSON.parse(coursesJson);
+    return Array.isArray(parsed) ? parsed.filter((value) => typeof value === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+function parseCourseToken(token: string): { department: string; code: number } | null {
+  const match = token.toUpperCase().match(/([A-Z]+)[-\s]?(\d{3})/);
+  if (!match) return null;
+  return {
+    department: match[1],
+    code: Number.parseInt(match[2], 10),
+  };
+}
+
+function getDepartmentAliases(department: string): string[] {
+  if (department === "CSCI") return ["CSCI", "CS"];
+  return [department];
+}
+
 /**
  * HTTP POST request to /api/invitations/accept
  * Accept a pending invitation
@@ -48,6 +72,12 @@ export async function POST(request: NextRequest) {
     where: { id: invitationId },
     include: {
       position: true,
+      application: {
+        select: {
+          id: true,
+          coursesJson: true,
+        },
+      },
     },
   });
 
@@ -94,20 +124,33 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Create the officer record
-      const officer = await prisma.officer.create({
-        data: {
-          user_id: loggedInUser.id,
-          position_id: invitation.positionId,
-          start_date: invitation.startDate,
-          end_date: invitation.endDate,
-          is_active: true,
-        },
-      });
+      // Create the officer record and grant a membership in a transaction
+      const { officer, membership } = await prisma.$transaction(async (tx) => {
+        const off = await tx.officer.create({
+          data: {
+            user_id: loggedInUser.id,
+            position_id: invitation.positionId!,
+            start_date: invitation.startDate!,
+            end_date: invitation.endDate!,
+            is_active: true,
+          },
+        });
 
-      // Delete the invitation
-      await prisma.invitation.delete({
-        where: { id: invitationId },
+        // Grant membership for becoming an officer
+        const mem = await tx.memberships.create({
+          data: {
+            userId: loggedInUser.id,
+            reason: `Officer: ${invitation.position?.title ?? "Unknown Position"}`,
+            dateGiven: new Date(),
+          },
+        });
+
+        // Delete the invitation
+        await tx.invitation.delete({
+          where: { id: invitationId },
+        });
+
+        return { officer: off, membership: mem };
       });
 
       console.log(
@@ -118,6 +161,108 @@ export async function POST(request: NextRequest) {
         success: true,
         message: `You are now ${invitation.position?.title}!`,
         officer,
+        membership,
+      });
+    } else if (invitation.type === "mentor") {
+      // Use endDate from invitation as expiration, or default to 1 year from now
+      const expirationDate = invitation.endDate || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+
+      // Check if user already has an active mentor record
+      const existingMentor = await prisma.mentor.findFirst({
+        where: {
+          user_Id: loggedInUser.id,
+          isActive: true,
+        },
+      });
+
+      if (existingMentor) {
+        return new Response("You are already an active mentor", { status: 409 });
+      }
+
+      const mentor = await prisma.$transaction(async (tx) => {
+        const createdMentor = await tx.mentor.create({
+          data: {
+            user_Id: loggedInUser.id,
+            expirationDate: expirationDate,
+            isActive: true,
+          },
+        });
+
+        // Backfill courses from the accepted application into CourseTaken when possible.
+        const submittedCourses = parseApplicationCourses(invitation.application?.coursesJson);
+        if (submittedCourses.length > 0) {
+          const allCourses = await tx.course.findMany({
+            select: {
+              id: true,
+              code: true,
+              department: {
+                select: {
+                  shortTitle: true,
+                },
+              },
+            },
+          });
+
+          const matchedCourseIds = new Set<number>();
+          for (const token of submittedCourses) {
+            const parsed = parseCourseToken(token);
+            if (!parsed) continue;
+            const aliases = getDepartmentAliases(parsed.department);
+            const match = allCourses.find(
+              (course) =>
+                course.code === parsed.code &&
+                aliases.includes(course.department.shortTitle.toUpperCase())
+            );
+            if (match) matchedCourseIds.add(match.id);
+          }
+
+          if (matchedCourseIds.size > 0) {
+            await tx.courseTaken.createMany({
+              data: Array.from(matchedCourseIds).map((courseId) => ({
+                mentorId: createdMentor.id,
+                courseId,
+              })),
+            });
+          }
+        }
+
+        await tx.invitation.delete({
+          where: { id: invitationId },
+        });
+
+        // Close accepted mentor applications so they no longer appear in review queues.
+        if (invitation.application?.id) {
+          await tx.mentorApplication.updateMany({
+            where: {
+              id: invitation.application.id,
+              userId: loggedInUser.id,
+            },
+            data: {
+              status: "closed",
+            },
+          });
+        } else {
+          // Backward compatibility: close any outstanding invited applications for this user.
+          await tx.mentorApplication.updateMany({
+            where: {
+              userId: loggedInUser.id,
+              status: "invited",
+            },
+            data: {
+              status: "closed",
+            },
+          });
+        }
+
+        return createdMentor;
+      });
+
+      console.log(`User ${loggedInUser.email} accepted mentor invitation`);
+
+      return Response.json({
+        success: true,
+        message: "Welcome to the SSE Mentoring team!",
+        mentor,
       });
     } else if (invitation.type === "user") {
       // Create a membership record for the user

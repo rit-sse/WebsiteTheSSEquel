@@ -20,6 +20,9 @@ export interface AlumniRequest {
   end_date: string
   quote: string
   previous_roles: string
+  showEmail: boolean
+  receiveEmails: boolean
+  alumniId?: number | null
   status: string
   created_at: string
 }
@@ -145,7 +148,14 @@ export default function AlumniRequestsSection() {
           ) : (
             <Avatar size={32} name={request.name || "default"} colors={["#426E8C", "#5289AF", "#86ACC7"]} variant="beam"/>
           )}
-          <span className="font-medium text-sm truncate">{request.name}</span>
+          <div className="min-w-0">
+            <span className="font-medium text-sm truncate block">{request.name}</span>
+            {request.alumniId ? (
+              <span className="text-[10px] text-amber-600 dark:text-amber-400 font-medium uppercase tracking-wide">Update</span>
+            ) : (
+              <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium uppercase tracking-wide">New</span>
+            )}
+          </div>
         </div>
       )
     },

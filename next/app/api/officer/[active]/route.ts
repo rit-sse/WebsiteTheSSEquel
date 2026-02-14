@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { resolveUserImage } from "@/lib/s3Utils";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +21,8 @@ export async function GET() {
           name: true,
           email: true,
           linkedIn: true,
-          image: true,
+          profileImageKey: true,
+          googleImageURL: true,
           gitHub: true,
           description: true
         },
@@ -33,5 +35,15 @@ export async function GET() {
       },
     },
   });
-  return Response.json(officer);
+
+  // Transform to include resolved image URL
+  const officersWithImage = officer.map((o: typeof officer[number]) => ({
+    ...o,
+    user: {
+      ...o.user,
+      image: resolveUserImage(o.user.profileImageKey, o.user.googleImageURL),
+    },
+  }));
+
+  return Response.json(officersWithImage);
 }

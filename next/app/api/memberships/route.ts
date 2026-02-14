@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { z } from "zod";
+import { resolveUserImage } from "@/lib/s3Utils";
 
 
 const CreateMembershipSchema = z.object({
@@ -39,7 +40,7 @@ export async function GET() {
         ],
     });
 
-    const userIds = grouped.map(g => g.userId);
+    const userIds = grouped.map((g: any) => g.userId);
     const users = await prisma.user.findMany({
         where: {
             id: {
@@ -49,16 +50,18 @@ export async function GET() {
         select: {
             id: true,
             name: true,
-            image: true,
+            profileImageKey: true,
+            googleImageURL: true,
         }
     });
 
-    const byId = new Map(users.map(u => [u.id, u]))
+    const byId = new Map<number, typeof users[0]>(users.map((u: any) => [u.id, u]))
+    ;
 
-    const items = grouped.map((g) => ({
+    const items = grouped.map((g: any) => ({
         userId: g.userId,
         name: byId.get(g.userId)?.name ?? `User ${g.userId}`,
-        image: byId.get(g.userId)?.image ?? null,
+        image: resolveUserImage(byId.get(g.userId)?.profileImageKey, byId.get(g.userId)?.googleImageURL),
         membershipCount: g._count.userId,
         lastMembershipAt: g._max.dateGiven,
     }))

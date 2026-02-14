@@ -39,6 +39,7 @@ interface DataTableProps<T> {
   addLabel?: string
   isLoading?: boolean
   emptyMessage?: string
+  expandedContent?: (item: T) => React.ReactNode
 }
 
 export function DataTable<T extends Record<string, any>>({
@@ -52,7 +53,8 @@ export function DataTable<T extends Record<string, any>>({
   onAdd,
   addLabel = "Add New",
   isLoading = false,
-  emptyMessage = "No data found"
+  emptyMessage = "No data found",
+  expandedContent
 }: DataTableProps<T>) {
   const [searchQuery, setSearchQuery] = React.useState("")
   const [sortKey, setSortKey] = React.useState<string | null>(null)
@@ -238,17 +240,29 @@ export function DataTable<T extends Record<string, any>>({
                     </TableCell>
                   </TableRow>
                 ) : (
-                  sortedData.map((item) => (
-                    <TableRow key={String(item[keyField])}>
-                      {columns.map((column) => (
-                        <TableCell key={column.key} className={`text-xs sm:text-sm ${column.className || ""}`}>
-                          {column.render
-                            ? column.render(item)
-                            : String(item[column.key] ?? "")}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))
+                  sortedData.map((item) => {
+                    const expanded = expandedContent ? expandedContent(item) : null
+                    return (
+                      <React.Fragment key={String(item[keyField])}>
+                        <TableRow>
+                          {columns.map((column) => (
+                            <TableCell key={column.key} className={`text-xs sm:text-sm ${column.className || ""}`}>
+                              {column.render
+                                ? column.render(item)
+                                : String(item[column.key] ?? "")}
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                        {expanded && (
+                          <TableRow>
+                            <TableCell colSpan={columns.length}>
+                              {expanded}
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </React.Fragment>
+                    )
+                  })
                 )}
               </TableBody>
             </Table>

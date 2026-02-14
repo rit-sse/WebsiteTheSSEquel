@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Loader2, Calendar, MapPin, Image as ImageIcon, Users, Repeat, CreditCard, Lock } from "lucide-react"
+import { getAcademicTermEndDate } from "@/lib/academicTerm"
 
 // Required email recipient that is always included for purchase requests
 const REQUIRED_RECIPIENT = "softwareengineering@rit.edu";
@@ -29,6 +30,12 @@ interface FormProps {
 
 type RecurrenceType = "none" | "weekly" | "biweekly"
 
+interface OfficerLookup {
+  is_active: boolean
+  position: { title: string }
+  user: { email: string }
+}
+
 const COMMITTEES = [
   "Mentoring",
   "Lab Ops",
@@ -39,29 +46,12 @@ const COMMITTEES = [
   "Misc/Presidential",
 ]
 
-// Get the end date for the current semester
-function getSemesterEndDate(startDate: Date): Date {
-  const month = startDate.getMonth() + 1 // 1-12
-  const year = startDate.getFullYear()
-  
-  if (month >= 8 && month <= 12) {
-    // Fall semester: August - December
-    return new Date(year, 11, 31) // December 31
-  } else if (month >= 1 && month <= 5) {
-    // Spring semester: January - May
-    return new Date(year, 4, 31) // May 31
-  } else {
-    // Summer: June - July (no recurrence, just single event)
-    return startDate
-  }
-}
-
 // Generate recurring dates within the semester
 function generateRecurringDates(startDate: Date, recurrence: RecurrenceType): Date[] {
   if (recurrence === "none") return [startDate]
   
   const dates: Date[] = []
-  const endDate = getSemesterEndDate(startDate)
+  const endDate = getAcademicTermEndDate(startDate)
   const intervalDays = recurrence === "weekly" ? 7 : 14
   
   let currentDate = new Date(startDate)
@@ -93,6 +83,7 @@ export default function AddEventForm({ isOpen, onClose, events, setEvents }: For
   const [purchaseEstimatedCost, setPurchaseEstimatedCost] = useState("")
   const [purchaseDescription, setPurchaseDescription] = useState("")
   const [purchaseNotifyEmail, setPurchaseNotifyEmail] = useState("")
+  const [treasurerEmail, setTreasurerEmail] = useState("treasurer's email")
 
   // Clear form on close
   useEffect(() => {
@@ -100,6 +91,25 @@ export default function AddEventForm({ isOpen, onClose, events, setEvents }: For
       clearForm()
     }
   }, [isOpen])
+
+  useEffect(() => {
+    const loadTreasurerEmail = async () => {
+      try {
+        const response = await fetch("/api/officer")
+        if (!response.ok) return
+        const officers = (await response.json()) as OfficerLookup[]
+        const treasurer = officers.find(
+          (officer) => officer.is_active && officer.position.title === "Treasurer"
+        )
+        if (treasurer?.user?.email) {
+          setTreasurerEmail(treasurer.user.email)
+        }
+      } catch (error) {
+        console.error("Failed to load treasurer email:", error)
+      }
+    }
+    loadTreasurerEmail()
+  }, [])
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -472,7 +482,7 @@ export default function AddEventForm({ isOpen, onClose, events, setEvents }: For
                       type="email"
                       value={purchaseNotifyEmail}
                       onChange={(e) => setPurchaseNotifyEmail(e.target.value)}
-                      placeholder="treasurer@sse.rit.edu"
+                      placeholder={treasurerEmail}
                       className="mt-1"
                     />
                   </div>

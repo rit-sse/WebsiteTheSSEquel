@@ -21,7 +21,7 @@ function NavigationMenu({
       data-slot="navigation-menu"
       data-viewport={viewport}
       className={cn(
-        "relative z-10 flex max-w-max rounded-base font-heading border-border border-2 p-1 bg-main flex-1 items-center justify-center",
+        "relative z-10 flex max-w-max rounded-base font-heading border-border border-2 p-1 bg-surface-1 flex-1 items-center justify-center",
         className,
       )}
       {...props}
@@ -62,7 +62,7 @@ function NavigationMenuItem({
 }
 
 const navigationMenuTriggerStyle = cva(
-  "group inline-flex h-10 w-max items-center justify-center text-main-foreground rounded-base bg-main px-4 py-2 text-sm font-heading transition-colors focus:outline-none disabled:pointer-events-none disabled:opacity-50",
+  "group inline-flex h-10 w-max items-center justify-center text-main-foreground rounded-base px-2.5 py-2 text-sm font-heading transition-colors focus:outline-none disabled:pointer-events-none disabled:opacity-50",
 )
 
 function NavigationMenuTrigger({

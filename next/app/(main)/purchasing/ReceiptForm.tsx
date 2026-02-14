@@ -11,8 +11,6 @@ import { ArrowLeft, Send, Loader2, Upload, Trash2, AlertTriangle, Calendar, User
 // Required email recipient that is always included
 const REQUIRED_RECIPIENT = "softwareengineering@rit.edu";
 import AttendanceInput, { Attendee } from "./AttendanceInput"
-import GmailAuthModal from "@/components/GmailAuthModal"
-import { useGmailAuth } from "@/lib/hooks/useGmailAuth"
 
 interface LinkedEvent {
   id: string
@@ -34,6 +32,12 @@ interface PurchaseRequest {
   event?: LinkedEvent | null
 }
 
+interface OfficerLookup {
+  is_active: boolean
+  position: { title: string }
+  user: { email: string }
+}
+
 interface ReceiptFormProps {
   request: PurchaseRequest
   onClose: () => void
@@ -43,8 +47,6 @@ interface ReceiptFormProps {
 export default function ReceiptForm({ request, onClose, onSuccess }: ReceiptFormProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const gmailAuth = useGmailAuth()
-  
   // Form state
   const [receiptImage, setReceiptImage] = useState<string | null>(null)
   const [actualCost, setActualCost] = useState(request.estimatedCost)
@@ -53,6 +55,7 @@ export default function ReceiptForm({ request, onClose, onSuccess }: ReceiptForm
   const [receiptEmail, setReceiptEmail] = useState("")
   const [attendees, setAttendees] = useState<Attendee[]>([])
   const [attendanceImage, setAttendanceImage] = useState<string | null>(null)
+  const [treasurerEmail, setTreasurerEmail] = useState("treasurer's email")
   
   // Linked event state
   const [linkedEventAttendees, setLinkedEventAttendees] = useState<Attendee[]>([])
@@ -91,6 +94,25 @@ export default function ReceiptForm({ request, onClose, onSuccess }: ReceiptForm
         .finally(() => setLoadingEventAttendance(false))
     }
   }, [hasLinkedEvent, request.eventId, request.event])
+
+  useEffect(() => {
+    const loadTreasurerEmail = async () => {
+      try {
+        const response = await fetch("/api/officer")
+        if (!response.ok) return
+        const officers = (await response.json()) as OfficerLookup[]
+        const treasurer = officers.find(
+          (officer) => officer.is_active && officer.position.title === "Treasurer"
+        )
+        if (treasurer?.user?.email) {
+          setTreasurerEmail(treasurer.user.email)
+        }
+      } catch (error) {
+        console.error("Failed to load treasurer email:", error)
+      }
+    }
+    loadTreasurerEmail()
+  }, [])
 
   // Receipt image upload handler
   const handleReceiptUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -166,15 +188,8 @@ export default function ReceiptForm({ request, onClose, onSuccess }: ReceiptForm
         })
         if (emailResponse.ok) {
           console.log("Receipt email sent successfully")
-        } else if (emailResponse.status === 403) {
-          const data = await emailResponse.json()
-          if (data.needsGmailAuth) {
-            // Receipt was saved but email not sent - prompt for Gmail auth
-            gmailAuth.setNeedsGmailAuth("/purchasing", data.message)
-            // Still call onSuccess since the receipt was saved
-            onSuccess()
-            return
-          }
+        } else {
+          console.error("Email API error:", await emailResponse.text())
         }
       } catch (emailError) {
         console.error("Error sending email:", emailError)
@@ -425,7 +440,7 @@ export default function ReceiptForm({ request, onClose, onSuccess }: ReceiptForm
                     type="email"
                     value={receiptEmail}
                     onChange={(e) => setReceiptEmail(e.target.value)}
-                    placeholder="treasurer@sse.rit.edu"
+                    placeholder={treasurerEmail}
                     className="mt-1"
                   />
                 </div>
@@ -478,14 +493,6 @@ export default function ReceiptForm({ request, onClose, onSuccess }: ReceiptForm
           </CardContent>
         </Card>
       </div>
-
-      <GmailAuthModal
-        open={gmailAuth.needsAuth}
-        onOpenChange={(open) => !open && gmailAuth.clearAuthState()}
-        onAuthorize={gmailAuth.startGmailAuth}
-        isLoading={gmailAuth.isLoading}
-        message={gmailAuth.message}
-      />
     </>
   )
 }

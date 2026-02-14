@@ -1,4 +1,6 @@
 import prisma from "@/lib/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
 
 /**
  * Handles GET requests to search for users by name or email.
@@ -10,6 +12,23 @@ import prisma from "@/lib/prisma";
  * @returns A JSON response containing an array of matching user objects with `id`, `name`, and `email` fields.
  */
 export async function GET(req: Request) {
+  const session = await getServerSession(authOptions);
+  const sessionEmail = session?.user?.email ?? null;
+
+  if (!sessionEmail) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+
+  const isOfficer = !!(await prisma.user.findFirst({
+    where: {
+      email: sessionEmail,
+      officers: {
+        some: { is_active: true },
+      },
+    },
+    select: { id: true },
+  }));
+
   const url = new URL(req.url);
   const query = (url.searchParams.get("q") || "").trim();
 
@@ -46,7 +65,7 @@ export async function GET(req: Request) {
     items: items.map((u) => ({
       id: u.id,
       name: u.name,
-      email: u.email,
+      email: isOfficer ? u.email : undefined,
     })),
   });
 }

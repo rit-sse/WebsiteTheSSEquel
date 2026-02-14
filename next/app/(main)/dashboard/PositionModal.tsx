@@ -37,6 +37,7 @@ export default function PositionModal({ open, onOpenChange, position, defaultIsP
   const [error, setError] = useState("")
 
   const isEditMode = !!position
+  const editingPositionId = position?.id ?? null
 
   useEffect(() => {
     if (open) {
@@ -64,10 +65,16 @@ export default function PositionModal({ open, onOpenChange, position, defaultIsP
 
     try {
       if (isEditMode) {
+        if (!editingPositionId) {
+          setError("Invalid position selected")
+          setIsSubmitting(false)
+          return
+        }
+
         const response = await fetch("/api/officer-positions", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: position.id, title })
+          body: JSON.stringify({ id: editingPositionId, title: title.trim() }),
         })
 
         if (response.ok) {
@@ -81,7 +88,7 @@ export default function PositionModal({ open, onOpenChange, position, defaultIsP
         const response = await fetch("/api/officer-positions", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ title, is_primary: isPrimary })
+          body: JSON.stringify({ title: title.trim(), is_primary: isPrimary }),
         })
 
         if (response.ok) {
@@ -105,23 +112,24 @@ export default function PositionModal({ open, onOpenChange, position, defaultIsP
     : isPrimary ? "Add Primary Officer" : "Add Committee Head"
 
   return (
-    <Modal
-      open={open}
-      onOpenChange={onOpenChange}
-      title={modalTitle}
-      className="max-w-md"
-    >
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {isEditMode ? (
-          <div className="flex items-center gap-2">
-            <span className="font-semibold">{position?.title}</span>
-            <Badge variant={position?.is_primary ? "default" : "outline"} className="text-xs">
-              {position?.is_primary ? "Primary" : "Committee"}
-            </Badge>
-          </div>
-        ) : (
+    <>
+      <Modal
+        open={open}
+        onOpenChange={onOpenChange}
+        title={modalTitle}
+        className="max-w-md"
+      >
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
-            <Label htmlFor="title">Position Title</Label>
+            <div className="flex items-center justify-between gap-2">
+              <Label htmlFor="title">Position Title</Label>
+              {isEditMode && (
+                <Badge variant={position?.is_primary ? "default" : "outline"} className="text-xs shrink-0">
+                  {position?.is_primary ? "Primary" : "Committee"}
+                </Badge>
+              )}
+            </div>
+
             <Input
               id="title"
               type="text"
@@ -131,33 +139,19 @@ export default function PositionModal({ open, onOpenChange, position, defaultIsP
               required
             />
           </div>
-        )}
 
-        {isEditMode && (
-          <div className="space-y-2">
-            <Label htmlFor="title">Position Title</Label>
-            <Input
-              id="title"
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Position title"
-              required
-            />
-          </div>
-        )}
+          {error && <p className="text-destructive text-sm">{error}</p>}
 
-        {error && <p className="text-destructive text-sm">{error}</p>}
-
-        <ModalFooter>
-          <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button type="submit" variant="outline" disabled={isSubmitting}>
-            {isSubmitting ? "Saving..." : isEditMode ? "Save" : "Create"}
-          </Button>
-        </ModalFooter>
-      </form>
-    </Modal>
+          <ModalFooter className="flex justify-end gap-2">
+            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" variant="outline" disabled={isSubmitting}>
+              {isSubmitting ? "Saving..." : isEditMode ? "Save" : "Create"}
+            </Button>
+          </ModalFooter>
+        </form>
+      </Modal>
+    </>
   )
 }

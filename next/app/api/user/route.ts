@@ -1,12 +1,41 @@
 import prisma from "@/lib/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
+import { NextRequest } from "next/server";
+import { resolveUserImage, getKeyFromS3Url, isS3Key, normalizeToS3Key } from "@/lib/s3Utils";
+import { s3Service } from "@/lib/services/s3Service";
+import { maybeGrantProfileCompletionMembership } from "@/lib/services/profileCompletionService";
+import { maybeCreateAlumniCandidate } from "@/lib/services/alumniCandidateService";
 
 export const dynamic = 'force-dynamic'
 
+function isOwnedProfileImageKey(key: string, userId: number): boolean {
+  return key.startsWith(`uploads/profile-pictures/${userId}/`);
+}
+
 /**
  * HTTP GET request to /api/user/
- * @returns list of user objects with all relevant fields
+ * Returns user list with field-level restrictions:
+ * - Officers: full user directory fields.
+ * - Authenticated non-officers: full fields only for self; limited public fields for others.
+ * - Unauthenticated: limited public fields only.
  */
 export async function GET() {
+  const session = await getServerSession(authOptions);
+  const sessionEmail = session?.user?.email ?? null;
+
+  const isOfficer = sessionEmail
+    ? !!(await prisma.user.findFirst({
+        where: {
+          email: sessionEmail,
+          officers: {
+            some: { is_active: true },
+          },
+        },
+        select: { id: true },
+      }))
+    : false;
+
   const users = await prisma.user.findMany({
     select: {
       id: true,
@@ -15,7 +44,12 @@ export async function GET() {
       linkedIn: true,
       gitHub: true,
       description: true,
-      image: true,
+      graduationTerm: true,
+      graduationYear: true,
+      major: true,
+      coopSummary: true,
+      profileImageKey: true,
+      googleImageURL: true,
       _count: {
         select: { Memberships: true },
       },
@@ -24,14 +58,20 @@ export async function GET() {
   });
   
   // Transform to include membershipCount and isMember (computed) for backward compatibility
-  const usersWithMembershipCount = users.map(user => ({
+  const usersWithMembershipCount = users.map((user) => ({
     id: user.id,
     name: user.name,
     email: user.email,
     linkedIn: user.linkedIn,
     gitHub: user.gitHub,
     description: user.description,
-    image: user.image,
+    graduationTerm: user.graduationTerm ?? null,
+    graduationYear: user.graduationYear ?? null,
+    major: user.major ?? null,
+    coopSummary: user.coopSummary ?? null,
+    image: resolveUserImage(user.profileImageKey, user.googleImageURL),
+    // Keep the raw key so the frontend can send it back on save
+    profileImageKey: user.profileImageKey ?? null,
     membershipCount: user._count.Memberships,
     isMember: user._count.Memberships >= 1, // Computed for backward compatibility
   }));
@@ -107,13 +147,17 @@ export async function DELETE(request: Request) {
 /**
  * Update an existing user
  * HTTP PUT request to /api/user
- * @param request { id: number, name?: string, email?: string, linkedIn?: string, gitHub?: string, description?: string }
+ * @param request { id: number, name?: string, email?: string, linkedIn?: string, gitHub?: string, description?: string, image?: string }
+ * @param request { id: number, name?: string, email?: string, linkedIn?: string, gitHub?: string, description?: string, image?: string }
  * @returns updated user object
+ *
+ * 
+ * Auth: Users can update their own profile. Officers can update any user.
  * 
  * NOTE: Membership is no longer controlled via isMember boolean.
  * Use the Memberships table and /api/memberships endpoints instead.
  */
-export async function PUT(request: Request) {
+export async function PUT(request: NextRequest) {
   let body;
   try {
     body = await request.json();
@@ -127,12 +171,58 @@ export async function PUT(request: Request) {
   }
   const id = body.id;
 
+  // Auth check: users can only edit their own profile, officers can edit anyone
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+
+  const targetUser = await prisma.user.findUnique({
+    where: { id },
+    select: { email: true, profileImageKey: true, id: true },
+  });
+
+  if (!targetUser) {
+    return new Response(`User ${id} not found`, { status: 404 });
+  }
+  const existingProfileImageKey = normalizeToS3Key(targetUser.profileImageKey);
+
+  const isOwner = session.user.email === targetUser.email;
+
+  if (!isOwner) {
+    // Check if the caller is an officer
+    const authToken = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
+    const callerUser = authToken ? await prisma.user.findFirst({
+      where: { session: { some: { sessionToken: authToken } } },
+      select: { officers: { where: { is_active: true }, select: { id: true } } },
+    }) : null;
+
+    const isOfficer = (callerUser?.officers?.length ?? 0) > 0;
+    if (!isOfficer) {
+      return new Response("You can only edit your own profile", { status: 403 });
+    }
+  }
+
   // only update fields the caller wants to update
-  const data: { name?: string; email?: string; description?: string; linkedIn?: string; gitHub?: string } = {};
+  const data: {
+    name?: string;
+    email?: string;
+    description?: string | null;
+    linkedIn?: string | null;
+    gitHub?: string | null;
+    profileImageKey?: string | null;
+    googleImageURL?: string | null;
+    graduationTerm?: "SPRING" | "SUMMER" | "FALL" | null;
+    graduationYear?: number | null;
+    major?: string | null;
+    coopSummary?: string | null;
+  } = {};
   if ("name" in body) {
     data.name = body.name;
   }
-  if ("email" in body) {
+  // Email identity should generally come from OAuth provider.
+  // Keep this officer-only to avoid account confusion and impersonation risk.
+  if ("email" in body && !isOwner) {
     data.email = body.email;
   }
   if ("description" in body) {
@@ -144,23 +234,116 @@ export async function PUT(request: Request) {
   if ("gitHub" in body) {
     data.gitHub = body.gitHub;
   }
+  if ("graduationTerm" in body) {
+    data.graduationTerm = body.graduationTerm;
+  }
+  if ("graduationYear" in body) {
+    data.graduationYear = body.graduationYear;
+  }
+  if ("major" in body) {
+    data.major = body.major;
+  }
+  if ("coopSummary" in body) {
+    data.coopSummary = body.coopSummary;
+  }
+  if ("image" in body) {
+    if (body.image === null) {
+      // User removed their custom upload -> delete from S3 and clear the key
+      if (existingProfileImageKey) {
+        try {
+          await s3Service.deleteObject(existingProfileImageKey);
+        } catch (err) {
+          console.error("Failed to delete old profile picture:", err);
+        }
+      }
+      data.profileImageKey = null;
+    } else if (isS3Key(body.image)) {
+      if (!isOwnedProfileImageKey(body.image, targetUser.id)) {
+        return new Response("Profile image key is not owned by this user", { status: 403 });
+      }
+      // User uploaded a new image -> delete old one from S3
+      if (existingProfileImageKey && existingProfileImageKey !== body.image) {
+        try {
+          await s3Service.deleteObject(existingProfileImageKey);
+        } catch (err) {
+          console.error("Failed to delete old profile picture:", err);
+        }
+      }
+      data.profileImageKey = body.image;
+      data.googleImageURL = null;
+    } else {
+      // Full URL -> try to extract S3 key
+      const extracted = getKeyFromS3Url(body.image);
+      if (extracted) {
+        if (!isOwnedProfileImageKey(extracted, targetUser.id)) {
+          return new Response("Profile image key is not owned by this user", { status: 403 });
+        }
+        if (existingProfileImageKey && existingProfileImageKey !== extracted) {
+          try {
+            await s3Service.deleteObject(existingProfileImageKey);
+          } catch (err) {
+            console.error("Failed to delete old profile picture:", err);
+          }
+        }
+        data.profileImageKey = extracted;
+        data.googleImageURL = null;
+      }
+    }
+  }
+
+  // Cleanup any intermediate uploads produced during client-side recropping
+  // before save (these are owned by the user but never persisted in DB).
+  if (Array.isArray(body.cleanupImageKeys)) {
+    const currentBodyImage = typeof body.image === "string" ? normalizeToS3Key(body.image) : null;
+    const normalizedCleanupKeys: string[] = body.cleanupImageKeys
+      .map((key: unknown) => (typeof key === "string" ? normalizeToS3Key(key) : null))
+      .filter((key: string | null): key is string => !!key);
+    const uniqueCleanupKeys: string[] = Array.from(new Set(normalizedCleanupKeys));
+
+    for (const cleanupKey of uniqueCleanupKeys) {
+      if (!isOwnedProfileImageKey(cleanupKey, targetUser.id)) continue;
+      if (cleanupKey === currentBodyImage) continue;
+      try {
+        await s3Service.deleteObject(cleanupKey);
+      } catch (err) {
+        console.error("Failed to delete intermediate profile picture:", err);
+      }
+    }
+  }
 
   try {
-    const user = await prisma.user.update({
-      where: { id },
-      data,
-      include: {
-        _count: {
-          select: { Memberships: true },
-        },
-      },
+    const { user, membershipResult } = await prisma.$transaction(async (tx) => {
+      const updatedUser = await tx.user.update({
+        where: { id },
+        data,
+      });
+
+      const grant = await maybeGrantProfileCompletionMembership(tx, id);
+
+      // Re-fetch membership count after potential grant/revoke
+      const freshCount = await tx.memberships.count({ where: { userId: id } });
+
+      return {
+        user: { ...updatedUser, _membershipCount: freshCount },
+        membershipResult: grant,
+      };
     });
+
+    await maybeCreateAlumniCandidate(id);
     
-    // Return with membershipCount
+    // Transform for memberships & image based on URL
+    const { profileImageKey, googleImageURL, _membershipCount, ...rest } = user;
     return Response.json({
-      ...user,
-      membershipCount: user._count.Memberships,
-      isMember: user._count.Memberships >= 1,
+      ...rest,
+      image: resolveUserImage(profileImageKey, googleImageURL),
+      profileImageKey: profileImageKey ?? null,
+      membershipCount: _membershipCount,
+      isMember: _membershipCount >= 1,
+      membershipAwarded: membershipResult.membershipAwarded,
+      membershipRevoked: membershipResult.membershipRevoked,
+      awardReason: membershipResult.awardReason,
+      awardTerm: membershipResult.awardTerm,
+      awardYear: membershipResult.awardYear,
     });
   } catch (e) {
     // make sure the selected user exists

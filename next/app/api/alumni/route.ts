@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { getImageUrl } from "@/lib/s3Utils";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +25,13 @@ export async function GET() {
       previous_roles: true
     },
   });
-  return Response.json(alumni);
+  return Response.json(
+    alumni.map((entry) => ({
+      ...entry,
+      image: getImageUrl(entry.image),
+      imageKey: entry.image,
+    }))
+  );
 }
 
 /**
@@ -48,11 +55,26 @@ export async function POST(request: Request) {
     );
   }
 
-  const { name, email, linkedIn, gitHub, start_date, end_date, quote, previous_roles, description, image} = body;
+  const { name, email, linkedIn, gitHub, start_date, end_date, quote, previous_roles, description, image, showEmail, receiveEmails } = body;
 
   // Set the new alumni
   try {
-    const newAlumni = await prisma.alumni.create({ data: {name, email, linkedIn, gitHub, start_date, end_date, quote, previous_roles, description, image} });
+    const newAlumni = await prisma.alumni.create({
+      data: {
+        name,
+        email,
+        linkedIn: linkedIn || null,
+        gitHub: gitHub || null,
+        start_date,
+        end_date,
+        quote: quote || "",
+        previous_roles: previous_roles || "",
+        description: description || null,
+        image: image || undefined,
+        showEmail: showEmail === true,
+        receiveEmails: receiveEmails === true,
+      },
+    });
     return Response.json(newAlumni);
   } catch (e) {
     // make sure the alumni was created

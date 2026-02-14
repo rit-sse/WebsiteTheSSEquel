@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { getImageUrl } from "@/lib/s3Utils";
 
 export const dynamic = "force-dynamic";
 
@@ -10,20 +11,36 @@ export const dynamic = "force-dynamic";
  *            position: {is_primary: boolean, title: string}}]
  */
 export async function GET() {
-  const officer = await prisma.alumni.findMany({
-    select: {
-      quote: true,
-      previous_roles: true,
-      id: true,
-      start_date: true,
-      end_date: true,
-      name: true,
-      email: true,
-      linkedIn: true,
-      image: true,
-      gitHub: true,
-      description: true
-    },
-  });
-  return Response.json(officer);
+  try {
+    const alumni = await prisma.alumni.findMany({
+      select: {
+        quote: true,
+        previous_roles: true,
+        id: true,
+        start_date: true,
+        end_date: true,
+        name: true,
+        email: true,
+        linkedIn: true,
+        image: true,
+        gitHub: true,
+        description: true,
+        showEmail: true,
+        receiveEmails: true,
+      },
+    });
+    return Response.json(
+      alumni.map((entry) => ({
+        ...entry,
+        image: getImageUrl(entry.image),
+        imageKey: entry.image,
+      }))
+    );
+  } catch (e) {
+    console.error("GET /api/alumni/active failed:", e);
+    return new Response(
+      JSON.stringify({ error: e instanceof Error ? e.message : "Failed to fetch alumni" }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
+  }
 }
