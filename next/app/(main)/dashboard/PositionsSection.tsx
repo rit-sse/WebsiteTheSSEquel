@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation"
 import { DataTable, Column } from "@/components/ui/data-table"
 import { Button } from "@/components/ui/button"
 import { Modal, ModalFooter } from "@/components/ui/modal"
-import { Pencil, Trash2 } from "lucide-react"
+import { Mail, Pencil, Trash2, FileText } from "lucide-react"
 import { toast } from "sonner"
+import { useIsMobile } from "@/hooks/use-mobile"
 import PositionModal from "./PositionModal"
 import OfficerAssignmentCard from "./OfficerAssignmentCard"
 import OfficerInviteModal from "./OfficerInviteModal"
@@ -64,6 +65,10 @@ export default function PositionsSection() {
   // Cancel invitation state
   const [cancelInvitation, setCancelInvitation] = useState<PendingInvitation | null>(null)
   const [isCancellingInvitation, setIsCancellingInvitation] = useState(false)
+  const [isSendingSwipe, setIsSendingSwipe] = useState(false)
+  const [swipeModalOpen, setSwipeModalOpen] = useState(false)
+  const [swipeModalLabel, setSwipeModalLabel] = useState("")
+  const [swipeModalPositions, setSwipeModalPositions] = useState<Position[]>([])
 
   const fetchPositions = useCallback(async () => {
     setIsLoading(true)
@@ -198,6 +203,51 @@ export default function PositionsSection() {
     }
   }
 
+  const handleSendSwipeAccess = async (positionsToSend: Position[], label: string) => {
+    const people = positionsToSend
+      .map((position) => position.currentOfficer)
+      .filter((officer): officer is NonNullable<Position["currentOfficer"]> => !!officer)
+      .map((officer) => ({ name: officer.name, email: officer.email }))
+
+    if (people.length === 0) {
+      toast.error("No officers to include in swipe request")
+      return
+    }
+
+    setIsSendingSwipe(true)
+    try {
+      const response = await fetch("/api/swipe-access", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          context: label,
+          people,
+        }),
+      })
+
+      const data = await response.json()
+      if (response.ok) {
+        toast.success("Swipe access request sent")
+      } else {
+        if (data.needsGmailAuth) {
+          toast.warning(
+            data.message ||
+              "Swipe request created but Gmail authorization is required to send"
+          )
+        } else {
+          toast.error(data.error || "Failed to send swipe access request")
+        }
+      }
+    } catch (error) {
+      console.error("Failed to send swipe access request:", error)
+      toast.error("An error occurred while sending swipe request")
+    } finally {
+      setIsSendingSwipe(false)
+    }
+  }
+
+  const isMobile = useIsMobile()
+
   // Separate primary officers and committee heads
   const primaryOfficers = positions.filter(p => p.is_primary)
   const committeeHeads = positions.filter(p => !p.is_primary)
@@ -207,6 +257,7 @@ export default function PositionsSection() {
       key: "title",
       header: "Position",
       sortable: true,
+      isPrimary: true,
       className: "w-[180px]",
       render: (position) => (
         <span className="font-medium text-sm">{position.title}</span>
@@ -215,6 +266,7 @@ export default function PositionsSection() {
     {
       key: "officer",
       header: "Assigned Officer",
+      isFullWidth: true,
       className: "w-[420px]",
       render: (position) => {
         const pendingInv = getPendingInvitation(position.id)
@@ -232,6 +284,7 @@ export default function PositionsSection() {
     {
       key: "handover",
       header: "Handover",
+      mobileHidden: true,
       className: "hidden lg:table-cell w-[100px]",
       render: (position) => (
         <Button 
@@ -247,22 +300,43 @@ export default function PositionsSection() {
     {
       key: "actions",
       header: "",
+      isAction: true,
       className: "w-[80px]",
       render: (position) => (
-        <div className="flex items-center gap-1">
-          <Button size="xs" variant="ghost" onClick={() => handleEdit(position)} title="Edit position">
-            <Pencil className="h-3 w-3" />
+        <div className={`flex items-center ${isMobile ? "flex-wrap gap-2" : "gap-1"}`}>
+          {isMobile && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => router.push(`/dashboard/positions/${position.id}/handover`)}
+              className="gap-1.5"
+            >
+              <FileText className="h-3.5 w-3.5" />
+              Handover
+            </Button>
+          )}
+          <Button
+            size={isMobile ? "sm" : "xs"}
+            variant={isMobile ? "outline" : "ghost"}
+            onClick={() => handleEdit(position)}
+            title="Edit position"
+            className={isMobile ? "gap-1.5" : ""}
+          >
+            <Pencil className={isMobile ? "h-3.5 w-3.5" : "h-3 w-3"} />
+            {isMobile && "Edit"}
           </Button>
-          <Button 
-            size="xs" 
-            variant="destructiveGhost" 
+          <Button
+            size={isMobile ? "sm" : "xs"}
+            variant={isMobile ? "outline" : "destructiveGhost"}
             onClick={() => setDeletePosition(position)}
             disabled={position.isFilled || !!getPendingInvitation(position.id)}
             title={position.isFilled ? "Cannot delete position with assigned officer" : 
                    getPendingInvitation(position.id) ? "Cannot delete position with pending invitation" :
                    "Delete position"}
+            className={isMobile ? "gap-1.5 text-destructive hover:text-destructive" : ""}
           >
-            <Trash2 className="h-3 w-3" />
+            <Trash2 className={isMobile ? "h-3.5 w-3.5" : "h-3 w-3"} />
+            {isMobile && "Delete"}
           </Button>
         </div>
       )
@@ -281,6 +355,21 @@ export default function PositionsSection() {
         columns={columns}
         keyField="id"
         title={`Primary Officers (${primaryOfficers.filter(p => p.isFilled).length}/${primaryOfficers.length} filled)`}
+        titleExtra={
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              setSwipeModalPositions(primaryOfficers)
+              setSwipeModalLabel("Primary Officers")
+              setSwipeModalOpen(true)
+            }}
+            disabled={isSendingSwipe}
+          >
+            <Mail className="h-4 w-4 mr-2" />
+            Request Swipe Access
+          </Button>
+        }
         searchPlaceholder="Search primary officers..."
         onAdd={handleAddPrimary}
         addLabel="Add Primary Officer"
@@ -293,6 +382,21 @@ export default function PositionsSection() {
         columns={columns}
         keyField="id"
         title={`Committee Heads (${committeeHeads.filter(p => p.isFilled).length}/${committeeHeads.length} filled)`}
+        titleExtra={
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              setSwipeModalPositions(committeeHeads)
+              setSwipeModalLabel("Committee Heads")
+              setSwipeModalOpen(true)
+            }}
+            disabled={isSendingSwipe}
+          >
+            <Mail className="h-4 w-4 mr-2" />
+            Request Swipe Access
+          </Button>
+        }
         searchPlaceholder="Search committee heads..."
         onAdd={handleAddCommittee}
         addLabel="Add Committee Head"
@@ -391,6 +495,31 @@ export default function PositionsSection() {
             disabled={isCancellingInvitation}
           >
             {isCancellingInvitation ? "Cancelling..." : "Cancel Invitation"}
+          </Button>
+        </ModalFooter>
+      </Modal>
+
+      <Modal
+        open={swipeModalOpen}
+        onOpenChange={setSwipeModalOpen}
+        title="Request Swipe Access"
+        className="max-w-md"
+      >
+        <p className="text-sm text-muted-foreground">
+          Send a swipe access request for the currently assigned {swipeModalLabel.toLowerCase()}?
+        </p>
+        <ModalFooter>
+          <Button variant="ghost" onClick={() => setSwipeModalOpen(false)}>
+            Cancel
+          </Button>
+          <Button
+            onClick={() => {
+              setSwipeModalOpen(false)
+              handleSendSwipeAccess(swipeModalPositions, swipeModalLabel)
+            }}
+            disabled={isSendingSwipe}
+          >
+            {isSendingSwipe ? "Sending..." : "Send Request"}
           </Button>
         </ModalFooter>
       </Modal>

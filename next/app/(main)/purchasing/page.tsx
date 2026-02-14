@@ -13,6 +13,7 @@ import {
 import { Modal, ModalFooter } from "@/components/ui/modal"
 import { Plus, Clock, CheckCircle, ArrowRight, ChevronDown, CreditCard, Link2, Trash2, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useIsMobile } from "@/hooks/use-mobile"
 import CheckoutForm from "./CheckoutForm"
 import ReceiptForm from "./ReceiptForm"
 
@@ -210,8 +211,8 @@ export default function PurchasingPage() {
               </CardHeader>
               <CardContent>
                 {needsReceipt.length > 0 ? (
-                  <div className="space-y-2">
-                    {needsReceipt.slice(0, 3).map((request) => (
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                    {needsReceipt.map((request) => (
                       <Button
                         key={request.id}
                         variant="outline"
@@ -222,11 +223,6 @@ export default function PurchasingPage() {
                         <ArrowRight className="h-4 w-4" />
                       </Button>
                     ))}
-                    {needsReceipt.length > 3 && (
-                      <p className="text-sm text-muted-foreground text-center">
-                        +{needsReceipt.length - 3} more
-                      </p>
-                    )}
                   </div>
                 ) : (
                   <p className="text-sm text-muted-foreground">
@@ -327,6 +323,7 @@ function SemesterAccordion({
 }) {
   const [isOpen, setIsOpen] = useState(defaultOpen)
   const pendingCount = requests.filter(r => r.status !== "returned").length
+  const isMobile = useIsMobile()
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -347,73 +344,144 @@ function SemesterAccordion({
         </div>
       </CollapsibleTrigger>
       <CollapsibleContent className="pt-2">
-        <div className="overflow-x-auto border rounded-lg">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b bg-muted/30">
-                <th className="text-left py-3 px-3 text-sm font-medium">Date</th>
-                <th className="text-left py-3 px-3 text-sm font-medium">Submitted By</th>
-                <th className="text-left py-3 px-3 text-sm font-medium">Description</th>
-                <th className="text-left py-3 px-3 text-sm font-medium">Committee</th>
-                <th className="text-left py-3 px-3 text-sm font-medium">Est. Cost</th>
-                <th className="text-left py-3 px-3 text-sm font-medium">Status</th>
-                <th className="text-left py-3 px-3 text-sm font-medium">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {requests.map((request) => (
-                <tr key={request.id} className="border-b last:border-b-0 hover:bg-muted/30">
-                  <td className="py-3 px-3 text-sm">
-                    {new Date(request.createdAt).toLocaleDateString()}
-                  </td>
-                  <td className="py-3 px-3 text-sm">
-                    {request.user.name}
-                  </td>
-                  <td className="py-3 px-3">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{request.description.substring(0, 40)}</span>
-                      {request.description.length > 40 && "..."}
-                      {request.event && (
-                        <Badge variant="outline" className="gap-1 text-xs">
-                          <Link2 className="h-3 w-3" />
-                          {request.event.title.substring(0, 15)}{request.event.title.length > 15 ? "..." : ""}
-                        </Badge>
-                      )}
-                    </div>
-                  </td>
-                  <td className="py-3 px-3 text-sm">{request.committee}</td>
-                  <td className="py-3 px-3 text-sm">
-                    ${parseFloat(request.estimatedCost).toFixed(2)}
-                  </td>
-                  <td className="py-3 px-3">{getStatusBadge(request.status)}</td>
-                  <td className="py-3 px-3">
-                    <div className="flex gap-2">
-                      {request.status !== "returned" && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => onSubmitReceipt(request)}
-                        >
-                          Submit Receipt
-                        </Button>
-                      )}
-                      {isOfficer && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => onDelete(request)}
-                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
-                  </td>
+        {isMobile ? (
+          /* Mobile card layout */
+          <div className="space-y-3">
+            {requests.map((request) => (
+              <div key={request.id} className="rounded-lg border bg-muted/20 p-3 space-y-2">
+                {/* Header: description + status */}
+                <div className="flex items-start justify-between gap-2">
+                  <div className="font-medium text-sm min-w-0">
+                    {request.description.substring(0, 50)}
+                    {request.description.length > 50 && "..."}
+                    {request.event && (
+                      <Badge variant="outline" className="gap-1 text-xs ml-1">
+                        <Link2 className="h-3 w-3" />
+                        {request.event.title.substring(0, 15)}{request.event.title.length > 15 ? "..." : ""}
+                      </Badge>
+                    )}
+                  </div>
+                  {getStatusBadge(request.status)}
+                </div>
+
+                {/* Detail rows */}
+                <div className="border-t border-border/50 pt-2 space-y-1 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Date</span>
+                    <span>{new Date(request.createdAt).toLocaleDateString()}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Submitted By</span>
+                    <span>{request.user.name}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Committee</span>
+                    <span>{request.committee}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Est. Cost</span>
+                    <span>${parseFloat(request.estimatedCost).toFixed(2)}</span>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                {(request.status !== "returned" || isOfficer) && (
+                  <div className="border-t border-border/50 pt-2 flex gap-2">
+                    {request.status !== "returned" && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="flex-1"
+                        onClick={() => onSubmitReceipt(request)}
+                      >
+                        Submit Receipt
+                      </Button>
+                    )}
+                    {isOfficer && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => onDelete(request)}
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          /* Desktop table layout */
+          <div className="overflow-x-auto border rounded-lg">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b bg-muted/30">
+                  <th className="text-left py-3 px-3 text-sm font-medium">Date</th>
+                  <th className="text-left py-3 px-3 text-sm font-medium">Submitted By</th>
+                  <th className="text-left py-3 px-3 text-sm font-medium">Description</th>
+                  <th className="text-left py-3 px-3 text-sm font-medium">Committee</th>
+                  <th className="text-left py-3 px-3 text-sm font-medium">Est. Cost</th>
+                  <th className="text-left py-3 px-3 text-sm font-medium">Status</th>
+                  <th className="text-left py-3 px-3 text-sm font-medium">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {requests.map((request) => (
+                  <tr key={request.id} className="border-b last:border-b-0 hover:bg-muted/30">
+                    <td className="py-3 px-3 text-sm">
+                      {new Date(request.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="py-3 px-3 text-sm">
+                      {request.user.name}
+                    </td>
+                    <td className="py-3 px-3">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">{request.description.substring(0, 40)}</span>
+                        {request.description.length > 40 && "..."}
+                        {request.event && (
+                          <Badge variant="outline" className="gap-1 text-xs">
+                            <Link2 className="h-3 w-3" />
+                            {request.event.title.substring(0, 15)}{request.event.title.length > 15 ? "..." : ""}
+                          </Badge>
+                        )}
+                      </div>
+                    </td>
+                    <td className="py-3 px-3 text-sm">{request.committee}</td>
+                    <td className="py-3 px-3 text-sm">
+                      ${parseFloat(request.estimatedCost).toFixed(2)}
+                    </td>
+                    <td className="py-3 px-3">{getStatusBadge(request.status)}</td>
+                    <td className="py-3 px-3">
+                      <div className="flex gap-2">
+                        {request.status !== "returned" && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => onSubmitReceipt(request)}
+                          >
+                            Submit Receipt
+                          </Button>
+                        )}
+                        {isOfficer && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => onDelete(request)}
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </CollapsibleContent>
     </Collapsible>
   )

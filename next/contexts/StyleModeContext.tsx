@@ -24,19 +24,16 @@ export function StyleModeProvider({
   defaultMode = "neo" 
 }: StyleModeProviderProps) {
   const [styleMode, setStyleModeState] = React.useState<StyleMode>(defaultMode)
-  const [mounted, setMounted] = React.useState(false)
 
-  // Load from localStorage on mount
-  React.useEffect(() => {
-    setMounted(true)
+  // Sync React state from localStorage before the browser paints.
+  // The DOM attribute is already set correctly by the synchronous <Script>
+  // in layout.tsx, so we only need to align the React state here.
+  React.useLayoutEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY) as StyleMode | null
     if (stored && (stored === "neo" || stored === "clean")) {
       setStyleModeState(stored)
-      document.documentElement.setAttribute("data-style", stored)
-    } else {
-      document.documentElement.setAttribute("data-style", defaultMode)
     }
-  }, [defaultMode])
+  }, [])
 
   // Update localStorage and DOM when styleMode changes
   const setStyleMode = React.useCallback((mode: StyleMode) => {
@@ -49,13 +46,6 @@ export function StyleModeProvider({
     const newMode = styleMode === "neo" ? "clean" : "neo"
     setStyleMode(newMode)
   }, [styleMode, setStyleMode])
-
-  // Prevent hydration mismatch by setting initial attribute
-  React.useEffect(() => {
-    if (!mounted) {
-      document.documentElement.setAttribute("data-style", defaultMode)
-    }
-  }, [mounted, defaultMode])
 
   const value = React.useMemo(
     () => ({

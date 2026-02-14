@@ -122,9 +122,12 @@ export async function PUT(
     if (typeof body.receiptEmail !== "string") {
       return new Response("'receiptEmail' must be a string", { status: 422 });
     }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(body.receiptEmail)) {
-      return new Response("'receiptEmail' must be a valid email address", { status: 422 });
+    // Allow empty string (no additional recipient) or a valid email
+    if (body.receiptEmail !== "") {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(body.receiptEmail)) {
+        return new Response("'receiptEmail' must be a valid email address", { status: 422 });
+      }
     }
     updateData.receiptEmail = body.receiptEmail;
   }

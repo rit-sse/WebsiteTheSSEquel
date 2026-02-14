@@ -17,8 +17,6 @@ import { ArrowLeft, Send, Loader2, Calendar, Lock } from "lucide-react"
 
 // Required email recipient that is always included
 const REQUIRED_RECIPIENT = "softwareengineering@rit.edu";
-import GmailAuthModal from "@/components/GmailAuthModal"
-import { useGmailAuth } from "@/lib/hooks/useGmailAuth"
 
 const COMMITTEES = [
   "Mentoring",
@@ -37,6 +35,12 @@ interface EventOption {
   attendanceEnabled: boolean
 }
 
+interface OfficerLookup {
+  is_active: boolean
+  position: { title: string }
+  user: { email: string }
+}
+
 interface CheckoutFormProps {
   userName: string
   onClose: () => void
@@ -46,8 +50,6 @@ interface CheckoutFormProps {
 export default function CheckoutForm({ userName, onClose, onSuccess }: CheckoutFormProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const gmailAuth = useGmailAuth()
-  
   // Form state
   const [name, setName] = useState(userName)
   const [committee, setCommittee] = useState("")
@@ -58,6 +60,7 @@ export default function CheckoutForm({ userName, onClose, onSuccess }: CheckoutF
   const [selectedEventId, setSelectedEventId] = useState<string>("")
   const [events, setEvents] = useState<EventOption[]>([])
   const [loadingEvents, setLoadingEvents] = useState(true)
+  const [treasurerEmail, setTreasurerEmail] = useState("treasurer's email")
 
   // Fetch events with attendance enabled
   useEffect(() => {
@@ -81,6 +84,25 @@ export default function CheckoutForm({ userName, onClose, onSuccess }: CheckoutF
       }
     }
     fetchEvents()
+  }, [])
+
+  useEffect(() => {
+    const loadTreasurerEmail = async () => {
+      try {
+        const response = await fetch("/api/officer")
+        if (!response.ok) return
+        const officers = (await response.json()) as OfficerLookup[]
+        const treasurer = officers.find(
+          (officer) => officer.is_active && officer.position.title === "Treasurer"
+        )
+        if (treasurer?.user?.email) {
+          setTreasurerEmail(treasurer.user.email)
+        }
+      } catch (error) {
+        console.error("Failed to load treasurer email:", error)
+      }
+    }
+    loadTreasurerEmail()
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -127,15 +149,6 @@ export default function CheckoutForm({ userName, onClose, onSuccess }: CheckoutF
         })
         if (emailResponse.ok) {
           console.log("Email sent successfully")
-        } else if (emailResponse.status === 403) {
-          const data = await emailResponse.json()
-          if (data.needsGmailAuth) {
-            // Request was created but email not sent - prompt for Gmail auth
-            gmailAuth.setNeedsGmailAuth("/purchasing", data.message)
-            // Still call onSuccess since the request was created
-            onSuccess()
-            return
-          }
         } else {
           const emailError = await emailResponse.text()
           console.error("Email API error:", emailError)
@@ -287,7 +300,7 @@ export default function CheckoutForm({ userName, onClose, onSuccess }: CheckoutF
                     type="email"
                     value={notifyEmail}
                     onChange={(e) => setNotifyEmail(e.target.value)}
-                    placeholder="treasurer@sse.rit.edu"
+                    placeholder={treasurerEmail}
                     className="mt-1"
                   />
                 </div>
@@ -318,14 +331,6 @@ export default function CheckoutForm({ userName, onClose, onSuccess }: CheckoutF
           </CardContent>
         </Card>
       </div>
-
-      <GmailAuthModal
-        open={gmailAuth.needsAuth}
-        onOpenChange={(open) => !open && gmailAuth.clearAuthState()}
-        onAuthorize={gmailAuth.startGmailAuth}
-        isLoading={gmailAuth.isLoading}
-        message={gmailAuth.message}
-      />
     </>
   )
 }

@@ -11,7 +11,7 @@ interface EmptyOfficerCardProps {
 
 export default function EmptyOfficerCard({ position, children }: EmptyOfficerCardProps) {
   return (
-    <Card depth={3} className="w-full max-w-[280px] p-5 flex flex-col items-center text-center h-full">
+    <Card depth={2} className="w-full max-w-[280px] p-5 flex flex-col items-center text-center h-full">
       {/* Placeholder Avatar */}
       <div className="mb-3 w-24 h-24 rounded-full bg-surface-4 flex items-center justify-center">
         <UserPlus className="w-10 h-10 text-muted-foreground" />

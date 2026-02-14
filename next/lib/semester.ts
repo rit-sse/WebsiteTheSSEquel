@@ -1,33 +1,30 @@
 /**
  * Utility functions for semester-based grouping and sorting
  */
+import { formatAcademicTerm, getAcademicTermFromDate } from "@/lib/academicTerm"
 
 export interface SemesterInfo {
   label: string
   sortKey: string
 }
 
-/**
- * Get semester label and sort key from a date string
- * - Fall: August - December
- * - Spring: January - May
- * - Summer: June - July
- */
 export function getSemester(dateString: string): SemesterInfo {
   const date = new Date(dateString)
-  const month = date.getMonth() + 1 // 1-12
   const year = date.getFullYear()
-
-  if (month >= 8 && month <= 12) {
-    // August - December = Fall
-    return { label: `Fall ${year}`, sortKey: `${year}-2` }
-  } else if (month >= 1 && month <= 5) {
-    // January - May = Spring
-    return { label: `Spring ${year}`, sortKey: `${year}-1` }
-  } else {
-    // June - July = Summer
-    return { label: `Summer ${year}`, sortKey: `${year}-0` }
+  const term = getAcademicTermFromDate(date)
+  const rank = term === "FALL" ? 2 : term === "SPRING" ? 1 : 0
+  return {
+    label: formatAcademicTerm(term, year),
+    sortKey: `${year}-${rank}`,
   }
+}
+
+/**
+ * Get the current semester based on today's date
+ * Useful for auto-detecting which semester to use for recruitment, etc.
+ */
+export function getCurrentSemester(): SemesterInfo {
+  return getSemester(new Date().toISOString())
 }
 
 export interface SemesterGroup<T> {

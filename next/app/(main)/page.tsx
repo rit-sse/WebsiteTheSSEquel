@@ -10,7 +10,6 @@ import { Sponsor } from '@/components/common/Sponsor';
 import { HeroCTA } from '../HeroCTA';
 import { HeroImage } from '../HeroImage';
 import { NeoCard } from "@/components/ui/neo-card";
-import { Card } from "@/components/ui/card";
 import prisma from '@/lib/prisma';
 
 interface SponsorData {
@@ -80,7 +79,7 @@ export default async function Home() {
             </NeoCard>
             
             {/* Upcoming Events */}
-            <Card className="w-full p-6 md:p-10">
+            <NeoCard className="w-full p-6 md:p-10">
               <h2 className='mb-6 text-3xl font-bold font-display'>Upcoming Events</h2>
               <div className='flex flex-row justify-center items-center'>
                 {events && events.length > 0 ? (
@@ -96,13 +95,13 @@ export default async function Home() {
                     <p className="text-gray-500">No events available.</p>
                 )}
               </div>
-            </Card>
+            </NeoCard>
 
             {/* Sponsors */}
             {sponsors.length > 0 && (
-                <Card className="w-full p-6 md:p-10">
+                <NeoCard className="w-full p-6 md:p-10">
                     <h2 className='mb-6 text-3xl font-bold font-display'>Sponsors</h2>
-                    <div className='flex flex-wrap justify-center items-stretch gap-6'>
+                    <div className='grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-full'>
                         {sponsors.map(sponsor => (
                             <Sponsor
                                 key={sponsor.url}
@@ -113,7 +112,7 @@ export default async function Home() {
                             />
                         ))}
                     </div>
-                </Card>
+                </NeoCard>
             )}
         </div>
     );
