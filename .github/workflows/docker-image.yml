@@ -17,6 +17,9 @@ jobs:
         working-directory: ./next
         run: |
           docker build \
+            --build-arg NEXTAUTH_URL=https://ssedev.se.rit.edu \
+            --build-arg NEXT_PUBLIC_ENV=dev \
+            --build-arg GIT_COMMIT=${{ github.sha }} \
             -t sse-web:test \
             -f Dockerfile .
   push-image:
