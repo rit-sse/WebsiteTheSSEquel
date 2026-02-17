@@ -6,6 +6,12 @@ FROM base AS deps
 
 WORKDIR /app
 
+ARG NEXTAUTH_URL
+ARG NEXT_PUBLIC_ENV
+
+ENV NEXTAUTH_URL=$NEXTAUTH_URL
+ENV NEXT_PUBLIC_ENV=$NEXT_PUBLIC_ENV
+
 # Install dependencies based on the preferred package manager
 COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
 RUN \
