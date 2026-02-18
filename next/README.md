@@ -26,7 +26,7 @@ STAGING_PROXY_AUTH=true
 STAGING_PROXY_AUTH_SECRET=<strong-random-secret> # Use 'openssl rand -base64 32' to generate
 ```
 
-Your ingress/proxy must forward:
+Ingress/Proxy will forward, this must be present in requests made (if testing locally):
 
 - `X-Auth-Request-Email` with the authenticated user email
 - `X-Internal-Proxy-Auth` with the secret value above
