@@ -144,7 +144,7 @@ export default function MentoringDashboardPage() {
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-5">
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-2">
               <TabsList className="inline-flex w-auto gap-1">
                 <TabsTrigger value="schedule" className="flex items-center gap-1.5 text-xs sm:text-sm px-2.5 sm:px-3">
                   <Calendar className="h-3.5 w-3.5" />
@@ -173,7 +173,7 @@ export default function MentoringDashboardPage() {
               </TabsList>
 
               {/* Schedule toolbar buttons get portaled here */}
-              <div ref={toolbarRef} className="flex items-center gap-1.5 ml-auto" />
+              <div ref={toolbarRef} className="flex flex-wrap items-center gap-1.5 sm:ml-auto" />
             </div>
 
             <TabsContent value="schedule">

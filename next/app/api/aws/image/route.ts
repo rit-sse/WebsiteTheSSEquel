@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPublicS3Url } from "@/lib/s3Utils";
 import prisma from "@/lib/prisma";
+import { getSessionToken } from "@/lib/sessionToken";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +18,7 @@ export const dynamic = "force-dynamic";
  */
 export async function GET(req: NextRequest) {
   // ── Auth ──────────────────────────────────────────────────────────
-  const authToken = req.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
+  const authToken = getSessionToken(req);
   if (!authToken) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { getSessionToken } from "@/lib/sessionToken";
 import { NextRequest } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -10,7 +11,7 @@ export const dynamic = "force-dynamic";
  */
 export async function GET(request: NextRequest) {
   // Get the logged-in user's session token
-  const authToken = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
+  const authToken = getSessionToken(request);
 
   // Find the logged-in user
   let loggedInUser = null;

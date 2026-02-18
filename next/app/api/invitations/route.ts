@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { getSessionToken } from "@/lib/sessionToken";
 import { sendEmail, isEmailConfigured } from "@/lib/email";
 import { NextRequest } from "next/server";
 
@@ -50,7 +51,7 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   // Get the logged-in user's session token
-  const authToken = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
+  const authToken = getSessionToken(request);
 
   // Find the logged-in user (for sending email and tracking who invited)
   let loggedInUser = null;
@@ -227,7 +228,11 @@ export async function POST(request: NextRequest) {
 
   // Send invitation email
   if (isEmailConfigured()) {
-    const baseUrl = process.env.NEXTAUTH_URL || process.env.VERCEL_URL || "http://localhost:3000";
+    const baseUrl =
+      request.nextUrl.origin ||
+      process.env.NEXTAUTH_URL ||
+      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined) ||
+      "http://localhost:3000";
     const acceptUrl = `${baseUrl}/accept-invitation`;
 
     try {
