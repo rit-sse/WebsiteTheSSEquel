@@ -90,6 +90,7 @@ export async function PUT(
     eventDate?: Date | null;
     attendanceData?: string | null;
     attendanceImage?: string | null;
+    eventId?: string | null;
   } = {};
 
   // Validate and set optional fields
@@ -158,6 +159,19 @@ export async function PUT(
       return new Response("'attendanceImage' must be a string (base64) or null", { status: 422 });
     }
     updateData.attendanceImage = body.attendanceImage;
+  }
+
+  if ("eventId" in body) {
+    if (body.eventId !== null && typeof body.eventId !== "string") {
+      return new Response("'eventId' must be a string or null", { status: 422 });
+    }
+    if (body.eventId) {
+      const eventExists = await prisma.event.findUnique({ where: { id: body.eventId } });
+      if (!eventExists) {
+        return new Response("Event not found", { status: 404 });
+      }
+    }
+    updateData.eventId = body.eventId || null;
   }
 
   try {

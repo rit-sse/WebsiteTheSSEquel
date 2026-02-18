@@ -5,15 +5,17 @@ import { useSession } from "next-auth/react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
 import { Modal, ModalFooter } from "@/components/ui/modal"
-import { Plus, Clock, CheckCircle, ArrowRight, ChevronDown, CreditCard, Link2, Trash2, Loader2 } from "lucide-react"
+import { Plus, Clock, CheckCircle, ArrowRight, ChevronDown, CreditCard, Link2, Unlink, Trash2, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { toast } from "sonner"
 import CheckoutForm from "./CheckoutForm"
 import ReceiptForm from "./ReceiptForm"
 
@@ -55,6 +57,12 @@ function groupRequestsBySemester(requests: PurchaseRequest[]): SemesterGroup<Pur
   return groupBySemester(requests, (r) => r.createdAt)
 }
 
+interface SimpleEvent {
+  id: string
+  title: string
+  date: string
+}
+
 export default function PurchasingPage() {
   const { data: session } = useSession()
   const [requests, setRequests] = useState<PurchaseRequest[]>([])
@@ -64,6 +72,12 @@ export default function PurchasingPage() {
   const [isOfficer, setIsOfficer] = useState(false)
   const [deleteModalRequest, setDeleteModalRequest] = useState<PurchaseRequest | null>(null)
   const [deleting, setDeleting] = useState(false)
+
+  // Link-to-event modal state
+  const [linkModalRequest, setLinkModalRequest] = useState<PurchaseRequest | null>(null)
+  const [events, setEvents] = useState<SimpleEvent[]>([])
+  const [eventSearch, setEventSearch] = useState("")
+  const [isLinkingEvent, setIsLinkingEvent] = useState(false)
 
   const fetchRequests = async () => {
     try {
@@ -104,6 +118,65 @@ export default function PurchasingPage() {
       console.error("Error deleting request:", error)
     } finally {
       setDeleting(false)
+    }
+  }
+
+  const openLinkModal = async (request: PurchaseRequest) => {
+    setLinkModalRequest(request)
+    setEventSearch("")
+    if (events.length === 0) {
+      try {
+        const res = await fetch("/api/event")
+        if (res.ok) {
+          const data = await res.json()
+          setEvents(data.sort((a: SimpleEvent, b: SimpleEvent) =>
+            new Date(b.date).getTime() - new Date(a.date).getTime()
+          ))
+        }
+      } catch {
+        toast.error("Failed to load events")
+      }
+    }
+  }
+
+  const handleLinkEvent = async (eventId: string) => {
+    if (!linkModalRequest) return
+    setIsLinkingEvent(true)
+    try {
+      const res = await fetch(`/api/purchasing/${linkModalRequest.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ eventId }),
+      })
+      if (res.ok) {
+        toast.success("Purchase request linked to event")
+        setLinkModalRequest(null)
+        fetchRequests()
+      } else {
+        toast.error("Failed to link event")
+      }
+    } catch {
+      toast.error("Failed to link event")
+    } finally {
+      setIsLinkingEvent(false)
+    }
+  }
+
+  const handleUnlinkEvent = async (request: PurchaseRequest) => {
+    try {
+      const res = await fetch(`/api/purchasing/${request.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ eventId: null }),
+      })
+      if (res.ok) {
+        toast.success("Event unlinked")
+        fetchRequests()
+      } else {
+        toast.error("Failed to unlink event")
+      }
+    } catch {
+      toast.error("Failed to unlink event")
     }
   }
 
@@ -255,6 +328,8 @@ export default function PurchasingPage() {
                     onSubmitReceipt={setSelectedRequest}
                     isOfficer={isOfficer}
                     onDelete={setDeleteModalRequest}
+                    onLinkToEvent={openLinkModal}
+                    onUnlinkEvent={handleUnlinkEvent}
                   />
                 ))}
               </div>
@@ -262,6 +337,51 @@ export default function PurchasingPage() {
           </div>
         </div>
       </Card>
+
+      {/* Link to Event Modal */}
+      <Modal
+        open={!!linkModalRequest}
+        onOpenChange={(open) => !open && setLinkModalRequest(null)}
+        title="Link to Event"
+        description="Select an event to associate with this purchase request"
+        className="max-w-lg"
+      >
+        <div className="space-y-3">
+          <Input
+            placeholder="Search events..."
+            value={eventSearch}
+            onChange={(e) => setEventSearch(e.target.value)}
+          />
+          <div className="max-h-72 overflow-y-auto space-y-1 border rounded-md">
+            {events
+              .filter((e) =>
+                e.title.toLowerCase().includes(eventSearch.toLowerCase())
+              )
+              .map((event) => (
+                <button
+                  key={event.id}
+                  type="button"
+                  disabled={isLinkingEvent}
+                  onClick={() => handleLinkEvent(event.id)}
+                  className="w-full text-left px-3 py-2 text-sm hover:bg-muted/50 transition-colors flex items-center justify-between gap-2"
+                >
+                  <span className="font-medium truncate">{event.title}</span>
+                  <span className="text-xs text-muted-foreground shrink-0">
+                    {new Date(event.date).toLocaleDateString()}
+                  </span>
+                </button>
+              ))}
+            {events.filter((e) => e.title.toLowerCase().includes(eventSearch.toLowerCase())).length === 0 && (
+              <p className="text-sm text-muted-foreground text-center py-4">No events found</p>
+            )}
+          </div>
+        </div>
+        <ModalFooter>
+          <Button variant="outline" onClick={() => setLinkModalRequest(null)}>
+            Cancel
+          </Button>
+        </ModalFooter>
+      </Modal>
 
       {/* Delete Confirmation Modal */}
       <Modal
@@ -312,6 +432,8 @@ function SemesterAccordion({
   onSubmitReceipt,
   isOfficer,
   onDelete,
+  onLinkToEvent,
+  onUnlinkEvent,
 }: {
   label: string
   requests: PurchaseRequest[]
@@ -320,6 +442,8 @@ function SemesterAccordion({
   onSubmitReceipt: (request: PurchaseRequest) => void
   isOfficer: boolean
   onDelete: (request: PurchaseRequest) => void
+  onLinkToEvent: (request: PurchaseRequest) => void
+  onUnlinkEvent: (request: PurchaseRequest) => void
 }) {
   const [isOpen, setIsOpen] = useState(defaultOpen)
   const pendingCount = requests.filter(r => r.status !== "returned").length
@@ -386,7 +510,7 @@ function SemesterAccordion({
 
                 {/* Actions */}
                 {(request.status !== "returned" || isOfficer) && (
-                  <div className="border-t border-border/50 pt-2 flex gap-2">
+                  <div className="border-t border-border/50 pt-2 flex flex-wrap gap-2">
                     {request.status !== "returned" && (
                       <Button
                         size="sm"
@@ -395,6 +519,28 @@ function SemesterAccordion({
                         onClick={() => onSubmitReceipt(request)}
                       >
                         Submit Receipt
+                      </Button>
+                    )}
+                    {isOfficer && !request.eventId && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => onLinkToEvent(request)}
+                        className="gap-1"
+                      >
+                        <Link2 className="h-3.5 w-3.5" />
+                        Link Event
+                      </Button>
+                    )}
+                    {isOfficer && request.eventId && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => onUnlinkEvent(request)}
+                        className="gap-1 text-muted-foreground"
+                        title={`Unlink from "${request.event?.title}"`}
+                      >
+                        <Unlink className="h-3.5 w-3.5" />
                       </Button>
                     )}
                     {isOfficer && (
@@ -462,6 +608,28 @@ function SemesterAccordion({
                             onClick={() => onSubmitReceipt(request)}
                           >
                             Submit Receipt
+                          </Button>
+                        )}
+                        {isOfficer && !request.eventId && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => onLinkToEvent(request)}
+                            className="gap-1"
+                          >
+                            <Link2 className="h-3.5 w-3.5" />
+                            Link Event
+                          </Button>
+                        )}
+                        {isOfficer && request.eventId && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => onUnlinkEvent(request)}
+                            className="gap-1 text-muted-foreground"
+                            title={`Unlink from "${request.event?.title}"`}
+                          >
+                            <Unlink className="h-3.5 w-3.5" />
                           </Button>
                         )}
                         {isOfficer && (

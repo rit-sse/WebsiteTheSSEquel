@@ -21,9 +21,12 @@ const authVerifierFactory = (
   return async (request: NextRequest) => {
     // get the token from the cookie
     const token = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
+    // Derive the base URL from the incoming request so this works on any
+    // host/IP (e.g. phone testing via a LAN IP, not just localhost).
+    const baseUrl = request.nextUrl.origin || process.env.INTERNAL_API_URL || "http://localhost:3000";
     // fetch permissions from the API
     const permissions = await fetch(
-      process.env.INTERNAL_API_URL + "/api/authLevel",
+      baseUrl + "/api/authLevel",
       {
         body: JSON.stringify({ token }),
         method: "PUT",

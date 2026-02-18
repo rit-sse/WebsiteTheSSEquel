@@ -92,6 +92,7 @@ export default function MentorApplyPage() {
   const [activeSemester, setActiveSemester] = useState<MentorSemester | null>(null)
   const [existingApplication, setExistingApplication] = useState<ExistingApplication | null>(null)
   const [previousApplication, setPreviousApplication] = useState<ExistingApplication | null>(null)
+  const [isActiveMentor, setIsActiveMentor] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [hasAutofilled, setHasAutofilled] = useState(false)
@@ -126,12 +127,15 @@ export default function MentorApplyPage() {
           }
         }
 
-        // Check for existing applications if logged in
+        // Check for existing applications and mentor status if logged in
         if (session?.user) {
-          const appRes = await fetch("/api/mentor-application?my=true")
+          const [appRes, mentorRes] = await Promise.all([
+            fetch("/api/mentor-application?my=true"),
+            fetch("/api/mentor"),
+          ])
+
           if (appRes.ok) {
             const applications = await appRes.json()
-            // Find application for active semester
             const existing = applications.find(
               (app: ExistingApplication) => app.semester.isActive
             )
@@ -143,6 +147,20 @@ export default function MentorApplyPage() {
             )
             if (previous) {
               setPreviousApplication(previous)
+            }
+          }
+
+          if (mentorRes.ok) {
+            const mentors = await mentorRes.json()
+            const now = new Date()
+            const activeMentor = mentors.find(
+              (m: { user: { email: string }; isActive: boolean; expirationDate: string }) =>
+                m.user.email === session.user?.email &&
+                m.isActive &&
+                new Date(m.expirationDate) >= now
+            )
+            if (activeMentor) {
+              setIsActiveMentor(true)
             }
           }
         }
@@ -322,7 +340,7 @@ export default function MentorApplyPage() {
   // Not logged in
   if (!session) {
     return (
-      <div className="min-h-screen py-12 px-4">
+      <div className="min-h-screen py-6 sm:py-12 px-4">
         <div className="max-w-2xl mx-auto">
           <Card>
             <CardHeader className="text-center">
@@ -350,7 +368,7 @@ export default function MentorApplyPage() {
   // No active semester
   if (!activeSemester) {
     return (
-      <div className="min-h-screen py-12 px-4">
+      <div className="min-h-screen py-6 sm:py-12 px-4">
         <div className="max-w-2xl mx-auto">
           <Card>
             <CardHeader className="text-center">
@@ -379,7 +397,7 @@ export default function MentorApplyPage() {
 
   if (isBeforeOpen) {
     return (
-      <div className="min-h-screen py-12 px-4">
+      <div className="min-h-screen py-6 sm:py-12 px-4">
         <div className="max-w-2xl mx-auto">
           <Card>
             <CardHeader className="text-center">
@@ -408,7 +426,7 @@ export default function MentorApplyPage() {
 
   if (isAfterClose) {
     return (
-      <div className="min-h-screen py-12 px-4">
+      <div className="min-h-screen py-6 sm:py-12 px-4">
         <div className="max-w-2xl mx-auto">
           <Card>
             <CardHeader className="text-center">
@@ -435,10 +453,38 @@ export default function MentorApplyPage() {
     )
   }
 
+  // Already an active mentor
+  if (isActiveMentor) {
+    return (
+      <div className="min-h-screen py-6 sm:py-12 px-4">
+        <div className="max-w-2xl mx-auto">
+          <Card>
+            <CardHeader className="text-center">
+              <CheckCircle2 className="h-12 w-12 mx-auto text-green-500 mb-4" />
+              <CardTitle>You&apos;re already an SSE Mentor!</CardTitle>
+              <CardDescription>
+                You have an active mentor position this semester
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="text-center space-y-4">
+              <p className="text-muted-foreground">
+                There&apos;s no need to apply — you&apos;re already on the team.
+                Check the mentor schedule or reach out to the mentoring head if you have questions.
+              </p>
+              <Button asChild variant="outline">
+                <a href="/mentoring/schedule">View Mentor Schedule</a>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
+  }
+
   // Already applied
   if (existingApplication) {
     return (
-      <div className="min-h-screen py-12 px-4">
+      <div className="min-h-screen py-6 sm:py-12 px-4">
         <div className="max-w-2xl mx-auto">
           <Card>
             <CardHeader className="text-center">
@@ -482,7 +528,7 @@ export default function MentorApplyPage() {
 
   // Application form
   return (
-    <div className="min-h-screen py-12 px-4">
+    <div className="min-h-screen py-6 sm:py-12 px-4">
       <div className="max-w-3xl mx-auto">
         <Card>
           <CardHeader>
@@ -544,7 +590,7 @@ export default function MentorApplyPage() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Name and Email (from account) */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Name</Label>
                   <Input value={session.user?.name || ""} disabled />
@@ -755,7 +801,7 @@ export default function MentorApplyPage() {
                   Select all time slots when you could be available to help in the SSE lab.
                   This helps us create a schedule that works for everyone.
                 </p>
-                <div className="border rounded-lg p-4 bg-muted/20">
+                <div className="border rounded-lg p-2 sm:p-4 bg-muted/20">
                   <AvailabilityGrid
                     value={availabilitySlots}
                     onChange={setAvailabilitySlots}

@@ -330,10 +330,11 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
   }
 
   const getTrafficLevel = (averagePeopleInLab: number) => {
-    if (averagePeopleInLab < 6) return { label: "Quiet", value: 20, cellTint: "bg-blue-500/10" }
-    if (averagePeopleInLab < 10) return { label: "Steady", value: 45, cellTint: "bg-blue-500/25" }
-    if (averagePeopleInLab < 20) return { label: "Packed", value: 70, cellTint: "bg-blue-500/40" }
-    return { label: "Peak", value: 95, cellTint: "bg-blue-500/60" }
+    if (averagePeopleInLab < 6)  return { label: "<6",    value: 15, cellTint: "bg-blue-500/10" }
+    if (averagePeopleInLab < 10) return { label: "6–10",  value: 33, cellTint: "bg-blue-500/22" }
+    if (averagePeopleInLab < 16) return { label: "10–16", value: 55, cellTint: "bg-blue-500/35" }
+    if (averagePeopleInLab < 20) return { label: "16–20", value: 75, cellTint: "bg-blue-500/50" }
+    return                               { label: "20+",   value: 95, cellTint: "bg-blue-500/65" }
   }
 
   const getTrafficCellClass = (weekday: number, hour: number) => {
@@ -902,7 +903,8 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
             {/* Main grid: calendar + sidebar, sidebar constrained to calendar height */}
             <div className="grid gap-4 xl:grid-cols-[1fr_280px]" style={{ alignItems: "start" }}>
               <div className="flex flex-col gap-3">
-                <div className="overflow-hidden border rounded-lg bg-card">
+                {/* Desktop table view */}
+                <div className="hidden md:block overflow-hidden border rounded-lg bg-card">
                   <Table className="table-fixed">
                     <TableHeader className="sticky top-0 z-10">
                       <TableRow className="border-b-2 border-border bg-primary/10 hover:bg-primary/10">
@@ -985,15 +987,99 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                   </Table>
                 </div>
 
+                {/* Mobile card view — one card per day, time slots within */}
+                <div className="md:hidden space-y-2">
+                  {DAYS.map((day, dayIndex) => {
+                    const weekday = dayIndex + 1
+                    return (
+                      <Card key={day} depth={3} className="neo:border-0 overflow-hidden">
+                        <CardHeader className="py-2 px-3 bg-primary/5 border-b border-border">
+                          <CardTitle className="text-sm font-semibold flex items-center gap-1.5">
+                            <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                            {day}
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                          <div className="divide-y divide-border">
+                            {HOURS.map(({ hour, label }) => {
+                              const slotBlocks = getBlocksForSlot(weekday, hour)
+                              const mappedAvailable = getMappedAvailableMentors(weekday, hour)
+                              const availableNames = getWhen2MeetAvailability(weekday, hour)
+                              return (
+                                <div
+                                  key={hour}
+                                  className={cn(
+                                    "flex items-center gap-2 px-3 py-2",
+                                    getTrafficCellClass(weekday, hour),
+                                  )}
+                                >
+                                  <span className="text-xs text-muted-foreground w-24 shrink-0">
+                                    {label}
+                                  </span>
+                                  <div className="flex-1 min-w-0 overflow-hidden space-y-0.5">
+                                    <div className="flex flex-wrap gap-1">
+                                      {slotBlocks.length > 0 ? slotBlocks.map((block) => (
+                                        <button
+                                          key={block.id}
+                                          type="button"
+                                          onClick={() => handleOpenDetail(weekday, hour)}
+                                          className="flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium border max-w-full"
+                                          style={{
+                                            backgroundColor: getMentorColor(block.mentor.id).fill,
+                                            color: getMentorColor(block.mentor.id).foreground,
+                                            borderColor: getMentorColor(block.mentor.id).fill,
+                                          }}
+                                          title={block.mentor.name}
+                                        >
+                                          {block.mentor.image ? (
+                                            <img
+                                              src={block.mentor.image}
+                                              alt=""
+                                              className="h-4 w-4 rounded-full object-cover shrink-0"
+                                            />
+                                          ) : null}
+                                          <span className="truncate">{block.mentor.name.split(" ")[0]}</span>
+                                        </button>
+                                      )) : (
+                                        <span className="text-xs text-muted-foreground/40">—</span>
+                                      )}
+                                    </div>
+                                    {showAvailability && (mappedAvailable.length > 0 || availableNames.length > 0) && (
+                                      <div className="text-[10px] text-muted-foreground truncate">
+                                        {mappedAvailable.length > 0
+                                          ? mappedAvailable.map((m) => m.user.name.split(" ")[0]).join(", ")
+                                          : `${availableNames.length} avail.`}
+                                      </div>
+                                    )}
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenAssignModal(weekday, hour)}
+                                    className="text-xs text-muted-foreground hover:text-foreground shrink-0 px-1"
+                                    title="Add mentor"
+                                  >
+                                    +
+                                  </button>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )
+                  })}
+                </div>
+
                 {/* Traffic legend + assigned mentors below the calendar */}
                 <div className="flex flex-wrap items-center justify-between gap-2 px-1">
                   {showTraffic && trafficData.length > 0 && (
                     <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
                       <span className="font-medium">Traffic:</span>
-                      <span className="flex items-center gap-1"><span className="h-2.5 w-5 rounded-sm bg-blue-500/10 border border-blue-500/20" /> &lt;6 Quiet</span>
-                      <span className="flex items-center gap-1"><span className="h-2.5 w-5 rounded-sm bg-blue-500/25 border border-blue-500/35" /> 6-10 Steady</span>
-                      <span className="flex items-center gap-1"><span className="h-2.5 w-5 rounded-sm bg-blue-500/40 border border-blue-500/50" /> 10-20 Packed</span>
-                      <span className="flex items-center gap-1"><span className="h-2.5 w-5 rounded-sm bg-blue-500/60 border border-blue-500/70" /> 20+ Peak</span>
+                      <span className="flex items-center gap-1"><span className="h-2.5 w-5 rounded-sm bg-blue-500/10 border border-blue-500/20" /> &lt;6</span>
+                      <span className="flex items-center gap-1"><span className="h-2.5 w-5 rounded-sm bg-blue-500/22 border border-blue-500/32" /> 6–10</span>
+                      <span className="flex items-center gap-1"><span className="h-2.5 w-5 rounded-sm bg-blue-500/35 border border-blue-500/45" /> 10–16</span>
+                      <span className="flex items-center gap-1"><span className="h-2.5 w-5 rounded-sm bg-blue-500/50 border border-blue-500/60" /> 16–20</span>
+                      <span className="flex items-center gap-1"><span className="h-2.5 w-5 rounded-sm bg-blue-500/65 border border-blue-500/75" /> 20+</span>
                     </div>
                   )}
                   {blocks.length > 0 && (
@@ -1099,7 +1185,7 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                   const level = getTrafficLevel(traffic.averagePeopleInLab)
                   return (
                     <span className="text-xs text-muted-foreground">
-                      {level.label} · {traffic.averagePeopleInLab.toFixed(1)} avg
+                      {level.label} · avg {traffic.averagePeopleInLab.toFixed(1)}
                     </span>
                   )
                 })()}
