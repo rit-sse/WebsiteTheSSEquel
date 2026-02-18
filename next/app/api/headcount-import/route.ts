@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth/next"
-import { authOptions } from "@/lib/authOptions"
 import prisma from "@/lib/prisma"
-import { MENTOR_HEAD_TITLE } from "@/lib/utils"
+import { getGatewayAuthLevel } from "@/lib/authGateway"
 
 export const dynamic = "force-dynamic"
 
@@ -17,31 +15,9 @@ interface ImportRow {
   otherClassText?: string | null
 }
 
-async function canManageMentors(userEmail: string): Promise<boolean> {
-  const user = await prisma.user.findFirst({
-    where: { email: userEmail },
-    select: {
-      officers: {
-        where: { is_active: true },
-        select: {
-          position: {
-            select: {
-              title: true,
-              is_primary: true,
-            },
-          },
-        },
-      },
-    },
-  })
-
-  if (!user) return false
-
-  return user.officers.some(
-    (officer) =>
-      officer.position.title === MENTOR_HEAD_TITLE ||
-      officer.position.is_primary
-  )
+async function canManageMentors(request: NextRequest): Promise<boolean> {
+  const authLevel = await getGatewayAuthLevel(request)
+  return authLevel.isMentoringHead || authLevel.isPrimary
 }
 
 function normalizeKey(value: string) {
@@ -54,12 +30,7 @@ function normalizeCourseCode(value: string) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    const canManage = await canManageMentors(session.user.email)
+    const canManage = await canManageMentors(request)
     if (!canManage) {
       return NextResponse.json(
         { error: "Only Mentoring Head or Primary Officers can import headcount data" },

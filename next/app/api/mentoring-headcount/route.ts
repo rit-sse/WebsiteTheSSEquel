@@ -1,42 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/authOptions";
 import prisma from "@/lib/prisma";
-import { MENTOR_HEAD_TITLE } from "@/lib/utils";
+import { getGatewayAuthLevel } from "@/lib/authGateway";
 
 export const dynamic = "force-dynamic";
 
-async function canSubmitHeadcount(userEmail: string): Promise<boolean> {
-  const user = await prisma.user.findUnique({
-    where: { email: userEmail },
-    select: {
-      mentor: {
-        where: {
-          isActive: true,
-          expirationDate: { gte: new Date() },
-        },
-        select: { id: true },
-      },
-      officers: {
-        where: { is_active: true },
-        select: {
-          position: {
-            select: { title: true, is_primary: true },
-          },
-        },
-      },
-    },
-  });
-
-  if (!user) return false;
-
-  const isOfficer = user.officers.some(
-    (officer) =>
-      officer.position.title === MENTOR_HEAD_TITLE ||
-      officer.position.is_primary
-  );
-
-  return user.mentor.length > 0 || isOfficer;
+async function canSubmitHeadcount(request: NextRequest): Promise<boolean> {
+  const authLevel = await getGatewayAuthLevel(request);
+  return authLevel.isMentor || authLevel.isOfficer;
 }
 
 function getWeekdayHour(date: Date) {
@@ -109,12 +79,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.email) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  if (!(await canSubmitHeadcount(session.user.email))) {
+  if (!(await canSubmitHeadcount(request))) {
     return NextResponse.json({ error: "Access denied" }, { status: 403 });
   }
 

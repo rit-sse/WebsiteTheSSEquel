@@ -3,6 +3,8 @@ import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/authOptions"
 import prisma from "@/lib/prisma"
 import { sendEmail, isEmailConfigured } from "@/lib/email"
+import { getGatewayAuthLevel } from "@/lib/authGateway"
+import { getProxyEmail } from "@/lib/proxyAuth"
 
 export const dynamic = "force-dynamic"
 
@@ -13,30 +15,26 @@ interface SwipeAccessPerson {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    const loggedInUser = await prisma.user.findFirst({
-      where: { email: session.user.email },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        officers: {
-          where: { is_active: true },
-          select: { id: true },
-        },
-      },
-    })
-
-    if (!loggedInUser || loggedInUser.officers.length === 0) {
+    const authLevel = await getGatewayAuthLevel(request)
+    if (!authLevel.isOfficer) {
       return NextResponse.json(
         { error: "Only active officers can request swipe access" },
         { status: 403 }
       )
     }
+
+    const session = await getServerSession(authOptions)
+    const requestEmail = session?.user?.email ?? getProxyEmail(request)
+    const loggedInUser = requestEmail
+      ? await prisma.user.findFirst({
+          where: { email: requestEmail },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        })
+      : null
 
     const body = await request.json()
     const { people, context } = body as {
@@ -78,11 +76,11 @@ export async function POST(request: NextRequest) {
             ${peopleList}
           </div>
           <p style="color: #666; font-size: 12px;">
-            Sent by ${loggedInUser.name} via the SSE website.
+            Sent by ${loggedInUser?.name ?? requestEmail} via the SSE website.
           </p>
         </div>
       `,
-      text: `Swipe Access Request\n\nPlease add swipe access for the following people:\n${textList}\n\nSent by ${loggedInUser.name} via the SSE website.`,
+      text: `Swipe Access Request\n\nPlease add swipe access for the following people:\n${textList}\n\nSent by ${loggedInUser?.name ?? requestEmail ?? "SSE Officer"} via the SSE website.`,
     })
 
     return NextResponse.json({ success: true })

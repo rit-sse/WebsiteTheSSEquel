@@ -1,7 +1,7 @@
-import { MENTOR_HEAD_TITLE } from "@/lib/utils";
 import prisma from "@/lib/prisma";
 import { NextRequest } from "next/server";
 import { resolveUserImage } from "@/lib/s3Utils";
+import { getGatewayAuthLevel } from "@/lib/authGateway";
 
 export const dynamic = "force-dynamic";
 
@@ -28,39 +28,9 @@ function parseCourses(coursesJson: string | null | undefined): string[] {
 /**
  * Check if user can manage mentors (Mentoring Head or Primary Officer)
  */
-async function canManageMentors(sessionToken: string | undefined): Promise<boolean> {
-  if (!sessionToken) return false;
-
-  const user = await prisma.user.findFirst({
-    where: {
-      session: {
-        some: {
-          sessionToken,
-        },
-      },
-    },
-    select: {
-      officers: {
-        where: { is_active: true },
-        select: {
-          position: {
-            select: {
-              title: true,
-              is_primary: true,
-            },
-          },
-        },
-      },
-    },
-  });
-
-  if (!user) return false;
-
-  return user.officers.some(
-    (officer) =>
-      officer.position.title === MENTOR_HEAD_TITLE ||
-      officer.position.is_primary
-  );
+async function canManageMentors(request: NextRequest): Promise<boolean> {
+  const authLevel = await getGatewayAuthLevel(request);
+  return authLevel.isMentoringHead || authLevel.isPrimary;
 }
 
 /**
@@ -231,8 +201,7 @@ export async function POST(request: NextRequest) {
   const user_Id = body.userId;
 
   // Only Mentoring Head or Primary Officers may modify mentors
-  const sessionToken = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
-  if (!(await canManageMentors(sessionToken))) {
+  if (!(await canManageMentors(request))) {
     return new Response("Only the Mentoring Head or Primary Officers may modify mentorships", {
       status: 403,
     });
@@ -272,8 +241,7 @@ export async function DELETE(request: NextRequest) {
   const id = body.id;
 
   // Only Mentoring Head or Primary Officers may modify mentors
-  const sessionToken = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
-  if (!(await canManageMentors(sessionToken))) {
+  if (!(await canManageMentors(request))) {
     return new Response("Only the Mentoring Head or Primary Officers may modify mentorships", {
       status: 403,
     });
@@ -326,8 +294,7 @@ export async function PUT(request: NextRequest) {
   const id = body.id;
 
   // Only Mentoring Head or Primary Officers may modify mentors
-  const sessionToken = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
-  if (!(await canManageMentors(sessionToken))) {
+  if (!(await canManageMentors(request))) {
     return new Response("Only the Mentoring Head or Primary Officers may modify mentorships", {
       status: 403,
     });

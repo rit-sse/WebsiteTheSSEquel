@@ -1,8 +1,13 @@
-import { MENTOR_HEAD_TITLE } from "@/lib/utils";
 import prisma from "@/lib/prisma";
 import { NextRequest } from "next/server";
+import { getGatewayAuthLevel } from "@/lib/authGateway";
 
 export const dynamic = "force-dynamic";
+
+async function canManageMentorSchedule(request: NextRequest): Promise<boolean> {
+  const authLevel = await getGatewayAuthLevel(request);
+  return authLevel.isMentoringHead || authLevel.isPrimary;
+}
 
 /**
  * HTTP GET request to /api/hourBlocks
@@ -42,25 +47,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Only the mentor head may modify the mentors' schedule
-  if (
-    (await prisma.user.findFirst({
-      where: {
-        session: {
-          some: {
-            sessionToken: request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value,
-          },
-        },
-        officers: {
-          some: {
-            position: {
-              title: MENTOR_HEAD_TITLE,
-            },
-            is_active: true,
-          },
-        },
-      },
-    })) == null
-  ) {
+  if (!(await canManageMentorSchedule(request))) {
     return new Response(
       "Only the mentoring head may modify the mentoring schedule",
       {
@@ -108,25 +95,7 @@ export async function PUT(request: NextRequest) {
   const id = body.id;
 
   // Only the mentor head may modify the mentors' schedule
-  if (
-    (await prisma.user.findFirst({
-      where: {
-        session: {
-          some: {
-            sessionToken: request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value,
-          },
-        },
-        officers: {
-          some: {
-            position: {
-              title: MENTOR_HEAD_TITLE,
-            },
-            is_active: true,
-          },
-        },
-      },
-    })) == null
-  ) {
+  if (!(await canManageMentorSchedule(request))) {
     return new Response(
       "Only the mentoring head may modify the mentoring schedule",
       { status: 403 }
@@ -177,25 +146,7 @@ export async function DELETE(request: NextRequest) {
   }
 
   // Only the mentor head may modify the mentors' schedule
-  if (
-    (await prisma.user.findFirst({
-      where: {
-        session: {
-          some: {
-            sessionToken: request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value,
-          },
-        },
-        officers: {
-          some: {
-            position: {
-              title: MENTOR_HEAD_TITLE,
-            },
-            is_active: true,
-          },
-        },
-      },
-    })) == null
-  ) {
+  if (!(await canManageMentorSchedule(request))) {
     return new Response(
       "Only the mentoring head may modify the mentoring schedule",
       { status: 403 }
