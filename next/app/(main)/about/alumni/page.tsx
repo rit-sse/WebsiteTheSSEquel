@@ -11,7 +11,8 @@ import EditAlumniForm from "./EditAlumniForm";
 import CreateAlumniButton from "./MakeNewAlumni";
 import DeleteAlumniButton from "./DeleteAlumni";
 import RequestAlumniForm from "./RequestAlumniForm";
-import AlumniEmailModal from "./AlumniEmailModal";
+import EmailComposerModal, { EmailComposerSendPayload } from "@/app/(main)/components/EmailComposerModal";
+import { Mail, Users, AlertCircle } from "lucide-react";
 
 function useAuthLevel() {
 	const [authLevel, setAuthLevel] = useState<{ isPrimary: boolean }>({ isPrimary: false });
@@ -39,6 +40,8 @@ export default function Alumni() {
 	// States to manage opening/closing of modals
 	const [deleteOpen, setDeleteOpen] = useState(false);
 	const [editOpen, setEditOpen] = useState(false);
+	const [emailOpen, setEmailOpen] = useState(false);
+	const [optedInCount, setOptedInCount] = useState<number | null>(null);
 	// State of the current selected alumni (being edited / replaced / viewed)
 	const [selectedAlumni, setSelectedAlumni] = useState<AlumniMember>();
 	const [expandedIds, setExpandedIds] = useState<string[]>([]);
@@ -97,6 +100,54 @@ export default function Alumni() {
 		);
 	};
 
+	useEffect(() => {
+		if (emailOpen && optedInCount === null) {
+			fetch("/api/alumni/email")
+				.then((r) => (r.ok ? r.json() : null))
+				.then((data) => { if (data) setOptedInCount(data.optedInCount); })
+				.catch(() => {});
+		}
+	}, [emailOpen, optedInCount]);
+
+	const handleAlumniSend = async (payload: EmailComposerSendPayload) => {
+		const res = await fetch("/api/alumni/email", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				subject: payload.subject,
+				message: payload.message,
+				...(payload.attachments.length > 0 ? { attachments: payload.attachments } : {}),
+			}),
+		});
+		if (!res.ok) {
+			const text = await res.text();
+			throw new Error(text || "Failed to send emails");
+		}
+		return res.json();
+	};
+
+	const alumniRecipientSummary = (
+		<div className="space-y-2">
+			<div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 p-3 rounded-md">
+				<Users className="h-4 w-4 shrink-0" />
+				{optedInCount !== null ? (
+					<span>
+						Sent from <strong className="text-foreground">no-reply@sse.rit.edu</strong> to{" "}
+						<strong className="text-foreground">{optedInCount}</strong> alumni who opted in.
+					</span>
+				) : (
+					<span>Loading recipient count...</span>
+				)}
+			</div>
+			{optedInCount === 0 && (
+				<div className="flex items-center gap-2 text-sm text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/20 p-3 rounded-md border border-amber-200 dark:border-amber-800/30">
+					<AlertCircle className="h-4 w-4 shrink-0" />
+					<span>No alumni have opted in to receive emails yet. Emails won&apos;t be sent.</span>
+				</div>
+			)}
+		</div>
+	);
+
 	return (
 		<section className="w-full mt-16 pb-16">
 			{/* Modals for editing and deleting alumni */}
@@ -123,8 +174,23 @@ export default function Alumni() {
 							<RequestAlumniForm />
 							{/* Direct add - officer only (handled inside component) */}
 							<CreateAlumniButton fetchData={getAlumni} />
-							{/* Mass email - primary officers only */}
-							<AlumniEmailModal isPrimary={isPrimary} />
+						{/* Mass email - primary officers only */}
+						{isPrimary && (
+							<button
+								onClick={() => setEmailOpen(true)}
+								className="inline-flex items-center gap-2 px-4 py-2 bg-background text-foreground border-2 border-border rounded-lg font-medium hover:bg-muted transition-colors"
+							>
+								<Mail size={18} />
+								Email Alumni
+							</button>
+						)}
+						<EmailComposerModal
+							open={emailOpen}
+							onClose={() => setEmailOpen(false)}
+							title="Email Opted-In Alumni"
+							onSend={handleAlumniSend}
+							recipientSummary={alumniRecipientSummary}
+						/>
 						</div>
 					</div>
 					

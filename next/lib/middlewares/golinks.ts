@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isUrlValid } from "../utils";
 
-const getDestinationUrl = async (goUrl: string) => {
-  const response = await fetch(process.env.INTERNAL_API_URL + "/api/go/" + goUrl);
+const getDestinationUrl = async (request: NextRequest, goUrl: string) => {
+  const baseUrl = request.nextUrl.origin || process.env.INTERNAL_API_URL || "http://localhost:3000";
+  const response = await fetch(baseUrl + "/api/go/" + goUrl);
   if (response.ok) {
     const url = await response.text();
     return url.startsWith("http") ? url : "https://" + url;
@@ -31,7 +32,7 @@ export const golinksMiddleware = async (request: NextRequest) => {
   // Only run golinks middleware logic for paths starting with "/go/"
   if (pathname.startsWith('/go/')) {
     const goLink = pathname.split('/go/')[1];
-    const destination = await getDestinationUrl(goLink); // this would be replaced with a database lookup
+    const destination = await getDestinationUrl(request, goLink); // this would be replaced with a database lookup
     // If the destination exists and is valid, redirect to it
     if (destination && isUrlValid(destination)) {
       // check if the url is a live site

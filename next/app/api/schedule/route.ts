@@ -1,5 +1,6 @@
 import { MENTOR_HEAD_TITLE } from "@/lib/utils";
 import prisma from "@/lib/prisma";
+import { getSessionToken } from "@/lib/sessionToken";
 import { NextRequest } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -56,7 +57,7 @@ export async function POST(request: NextRequest) {
       where: {
         session: {
           some: {
-            sessionToken: request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value,
+            sessionToken: getSessionToken(request),
           },
         },
         officers: {
@@ -120,7 +121,7 @@ export async function PUT(request: NextRequest) {
       where: {
         session: {
           some: {
-            sessionToken: request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value,
+            sessionToken: getSessionToken(request),
           },
         },
         officers: {
@@ -182,7 +183,7 @@ export async function DELETE(request: NextRequest) {
       where: {
         session: {
           some: {
-            sessionToken: request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value,
+            sessionToken: getSessionToken(request),
           },
         },
         officers: {

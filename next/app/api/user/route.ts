@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { getSessionToken } from "@/lib/sessionToken";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { NextRequest } from "next/server";
@@ -191,7 +192,7 @@ export async function PUT(request: NextRequest) {
 
   if (!isOwner) {
     // Check if the caller is an officer
-    const authToken = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
+    const authToken = getSessionToken(request);
     const callerUser = authToken ? await prisma.user.findFirst({
       where: { session: { some: { sessionToken: authToken } } },
       select: { officers: { where: { is_active: true }, select: { id: true } } },

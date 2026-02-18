@@ -1,11 +1,12 @@
 import prisma from "@/lib/prisma";
+import { getSessionToken } from "@/lib/sessionToken";
 import { NextRequest, NextResponse } from "next/server";
 
 /**
  * Helper function to get user from session token
  */
 async function getUserFromSession(request: NextRequest) {
-  const authToken = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
+  const authToken = getSessionToken(request);
   
   if (!authToken) {
     return null;

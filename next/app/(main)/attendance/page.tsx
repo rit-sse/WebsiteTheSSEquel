@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/collapsible"
 import {
   Users,
-  Download,
   Calendar,
   MapPin,
   ExternalLink,
@@ -24,10 +23,13 @@ import {
   ChevronDown,
   Repeat,
   Trash2,
+  Mail,
 } from "lucide-react"
+import { toast } from "sonner"
 import AddEventForm from "@/app/(main)/events/calendar/AddEventForm"
 import { Event } from "@/app/(main)/events/event"
 import { groupBySemester } from "@/lib/semester"
+import EmailComposerModal from "@/app/(main)/components/EmailComposerModal"
 
 interface Attendee {
   id: number
@@ -70,6 +72,7 @@ export default function AttendancePage() {
   const [deletingAttendeeId, setDeletingAttendeeId] = useState<number | null>(null)
   const [deleteEventModal, setDeleteEventModal] = useState<EventWithAttendance | null>(null)
   const [deletingEvent, setDeletingEvent] = useState(false)
+  const [emailModalOpen, setEmailModalOpen] = useState(false)
 
   const fetchEvents = useCallback(async () => {
     try {
@@ -205,8 +208,8 @@ export default function AttendancePage() {
     }
   }
 
-  const downloadFlyer = (eventId: string) => {
-    window.open(`/api/event/${eventId}/flyer`, "_blank")
+  const openFlyerPage = (eventId: string) => {
+    window.open(`/events/${eventId}/flyer`, "_blank")
   }
 
   const openAttendancePage = (eventId: string) => {
@@ -242,7 +245,7 @@ export default function AttendancePage() {
             <div>
               <h1 className="text-3xl font-bold mb-2">Attendance Lists</h1>
               <p className="text-muted-foreground text-base">
-                View and manage event attendance, download QR flyers, and link to purchase requests
+                View and manage event attendance, sign-in codes, and linked purchase requests
               </p>
             </div>
             <Button onClick={() => setShowAddEventModal(true)} className="shrink-0">
@@ -272,7 +275,7 @@ export default function AttendancePage() {
                   defaultOpen={index === 0}
                   formatDate={formatDate}
                   onViewAttendees={viewAttendees}
-                  onDownloadFlyer={downloadFlyer}
+                  onDownloadFlyer={openFlyerPage}
                   onOpenAttendancePage={openAttendancePage}
                   onDeleteEvent={setDeleteEventModal}
                 />
@@ -347,21 +350,39 @@ export default function AttendancePage() {
         ) : null}
         
         <ModalFooter>
-          <Button variant="outline" onClick={closeModal}>
-            Close
-          </Button>
+          {attendanceData && attendanceData.attendees.length > 0 && (
+            <Button
+              variant="outline"
+              onClick={() => setEmailModalOpen(true)}
+              className="gap-1"
+            >
+              <Mail className="h-4 w-4" />
+              Send Email
+            </Button>
+          )}
           {selectedEvent && (
             <Button
               variant="outline"
-              onClick={() => downloadFlyer(selectedEvent.id)}
+              onClick={() => openFlyerPage(selectedEvent.id)}
               className="gap-1"
             >
               <QrCode className="h-4 w-4" />
-              Download QR Flyer
+              Sign-in Code
             </Button>
           )}
         </ModalFooter>
       </Modal>
+
+      {/* Email Composer Modal */}
+      {attendanceData && (
+        <EmailComposerModal
+          open={emailModalOpen}
+          onClose={() => setEmailModalOpen(false)}
+          recipients={attendanceData.attendees.map((a) => ({ email: a.email, name: a.name }))}
+          defaultSubject={selectedEvent ? `Re: ${selectedEvent.title}` : ""}
+          title={`Email Attendees — ${selectedEvent?.title ?? ""}`}
+        />
+      )}
 
       {/* Add Event Modal */}
       <Modal
@@ -693,8 +714,8 @@ function EventCard({
             onClick={() => onDownloadFlyer(event.id)}
             className="gap-1"
           >
-            <Download className="h-4 w-4" />
-            Flyer
+            <QrCode className="h-4 w-4" />
+            Sign-in Code
           </Button>
           <Button
             variant="outline"

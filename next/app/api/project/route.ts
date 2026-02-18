@@ -1,5 +1,6 @@
 import { PROJECTS_HEAD_TITLE } from "@/lib/utils";
 import prisma from "@/lib/prisma";
+import { getSessionToken } from "@/lib/sessionToken";
 import { NextRequest } from "next/server";
 
 async function isProjectsHead(sessionToken: string) {
@@ -29,7 +30,7 @@ export async function POST(request: NextRequest) {
 
   if (
     !isProjectsHead(
-      request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value ?? "NO TOKEN"
+      getSessionToken(request) ?? "NO TOKEN"
     )
   ) {
     return new Response("Only the projects head may modify projects", {
@@ -143,7 +144,7 @@ export async function PUT(request: NextRequest) {
 
   if (
     !isProjectsHead(
-      request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value ?? "NO TOKEN"
+      getSessionToken(request) ?? "NO TOKEN"
     )
   ) {
     return new Response("Only the projects head may modify projects", {
@@ -252,7 +253,7 @@ export async function DELETE(request: NextRequest) {
 
   if (
     !isProjectsHead(
-      request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value ?? "NO TOKEN"
+      getSessionToken(request) ?? "NO TOKEN"
     )
   ) {
     return new Response("Only the projects head may modify projects", {

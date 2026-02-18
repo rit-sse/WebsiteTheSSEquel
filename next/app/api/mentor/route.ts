@@ -1,5 +1,6 @@
 import { MENTOR_HEAD_TITLE } from "@/lib/utils";
 import prisma from "@/lib/prisma";
+import { getSessionToken } from "@/lib/sessionToken";
 import { NextRequest } from "next/server";
 import { resolveUserImage } from "@/lib/s3Utils";
 
@@ -231,7 +232,7 @@ export async function POST(request: NextRequest) {
   const user_Id = body.userId;
 
   // Only Mentoring Head or Primary Officers may modify mentors
-  const sessionToken = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
+  const sessionToken = getSessionToken(request);
   if (!(await canManageMentors(sessionToken))) {
     return new Response("Only the Mentoring Head or Primary Officers may modify mentorships", {
       status: 403,
@@ -272,7 +273,7 @@ export async function DELETE(request: NextRequest) {
   const id = body.id;
 
   // Only Mentoring Head or Primary Officers may modify mentors
-  const sessionToken = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
+  const sessionToken = getSessionToken(request);
   if (!(await canManageMentors(sessionToken))) {
     return new Response("Only the Mentoring Head or Primary Officers may modify mentorships", {
       status: 403,
@@ -326,7 +327,7 @@ export async function PUT(request: NextRequest) {
   const id = body.id;
 
   // Only Mentoring Head or Primary Officers may modify mentors
-  const sessionToken = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
+  const sessionToken = getSessionToken(request);
   if (!(await canManageMentors(sessionToken))) {
     return new Response("Only the Mentoring Head or Primary Officers may modify mentorships", {
       status: 403,

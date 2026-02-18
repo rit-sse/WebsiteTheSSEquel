@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { MENTOR_HEAD_TITLE } from "@/lib/utils";
+import { getSessionToken } from "@/lib/sessionToken";
 
 export const dynamic = 'force-dynamic'
 
@@ -94,7 +95,7 @@ export async function PUT(request: Request) {
  * HTTP GET request to /api/authLevel/
  */
 export async function GET(request: NextRequest) {
-  const authToken = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
+  const authToken = getSessionToken(request);
 
   const authLevel: {
     userId: number | null;
