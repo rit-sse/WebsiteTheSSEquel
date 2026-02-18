@@ -1,8 +1,21 @@
 import prisma from "@/lib/prisma";
-import { getSessionToken } from "@/lib/sessionToken";
 import { NextRequest } from "next/server";
+import { getGatewayAuthLevel } from "@/lib/authGateway";
 
 export const dynamic = "force-dynamic";
+
+async function canModifyMentorRecord(request: NextRequest, mentorId: number): Promise<boolean> {
+  const authLevel = await getGatewayAuthLevel(request);
+  if (authLevel.isOfficer) return true;
+  if (!authLevel.userId) return false;
+
+  const mentor = await prisma.mentor.findUnique({
+    where: { id: mentorId },
+    select: { user_Id: true },
+  });
+
+  return mentor?.user_Id === authLevel.userId;
+}
 
 /**
  * HTTP GET request to /api/courseTaken
@@ -58,18 +71,7 @@ export async function POST(request: NextRequest) {
   }
 
   // A mentor may only modify their own courses taken
-  if (
-    (await prisma.user.findFirst({
-      where: {
-        session: {
-          some: {
-            sessionToken: getSessionToken(request),
-          },
-        },
-        id: body.mentorId,
-      },
-    })) == null
-  ) {
+  if (!(await canModifyMentorRecord(request, body.mentorId))) {
     return new Response("Must be signed in to modify your courses taken", {
       status: 403,
     });
@@ -108,19 +110,15 @@ export async function PUT(request: NextRequest) {
     return new Response("id must be in body", { status: 422 });
   }
 
-  // A mentor may only modify their own courses taken
-  if (
-    (await prisma.user.findFirst({
-      where: {
-        session: {
-          some: {
-            sessionToken: getSessionToken(request),
-          },
-        },
-        id: body.mentorId,
-      },
-    })) == null
-  ) {
+  const targetMentorId =
+    body.mentorId ??
+    (
+      await prisma.courseTaken.findUnique({
+        where: { id: body.id },
+        select: { mentorId: true },
+      })
+    )?.mentorId;
+  if (!targetMentorId || !(await canModifyMentorRecord(request, targetMentorId))) {
     return new Response("Must be signed in to modify your courses taken", {
       status: 403,
     });
@@ -160,19 +158,15 @@ export async function DELETE(request: NextRequest) {
     return new Response("id must be in body", { status: 422 });
   }
 
-  // A mentor may only modify their own courses taken
-  if (
-    (await prisma.user.findFirst({
-      where: {
-        session: {
-          some: {
-            sessionToken: getSessionToken(request),
-          },
-        },
-        id: body.mentorId,
-      },
-    })) == null
-  ) {
+  const targetMentorId =
+    body.mentorId ??
+    (
+      await prisma.courseTaken.findUnique({
+        where: { id: body.id },
+        select: { mentorId: true },
+      })
+    )?.mentorId;
+  if (!targetMentorId || !(await canModifyMentorRecord(request, targetMentorId))) {
     return new Response("Must be signed in to modify your courses taken", {
       status: 403,
     });

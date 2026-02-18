@@ -1,5 +1,4 @@
 import prisma from "@/lib/prisma";
-import { getSessionToken } from "@/lib/sessionToken";
 import { sendEmail, isEmailConfigured, EmailAttachment } from "@/lib/email";
 import { NextRequest } from "next/server";
 import { remark } from "remark";
@@ -7,6 +6,7 @@ import remarkGfm from "remark-gfm";
 import remarkRehype from "remark-rehype";
 import rehypeSanitize from "rehype-sanitize";
 import rehypeStringify from "rehype-stringify";
+import { getGatewayAuthLevel } from "@/lib/authGateway";
 
 export const dynamic = "force-dynamic";
 
@@ -53,40 +53,8 @@ function markdownToPlainText(md: string): string {
  * }
  */
 export async function POST(request: NextRequest) {
-  // Verify the user is a primary officer
-  const authToken = getSessionToken(request);
-
-  if (!authToken) {
-    return new Response("Unauthorized", { status: 401 });
-  }
-
-  const user = await prisma.user.findFirst({
-    where: {
-      session: {
-        some: { sessionToken: authToken },
-      },
-    },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      officers: {
-        where: { is_active: true },
-        select: {
-          position: {
-            select: { is_primary: true },
-          },
-        },
-      },
-    },
-  });
-
-  if (!user) {
-    return new Response("Unauthorized", { status: 401 });
-  }
-
-  const isPrimary = user.officers.some((o) => o.position.is_primary);
-  if (!isPrimary) {
+  const authLevel = await getGatewayAuthLevel(request);
+  if (!authLevel.isPrimary) {
     return new Response("Only primary officers can send alumni emails", { status: 403 });
   }
 
@@ -198,29 +166,8 @@ export async function POST(request: NextRequest) {
  * Only accessible by primary officers.
  */
 export async function GET(request: NextRequest) {
-  const authToken = getSessionToken(request);
-
-  if (!authToken) {
-    return new Response("Unauthorized", { status: 401 });
-  }
-
-  const user = await prisma.user.findFirst({
-    where: {
-      session: {
-        some: { sessionToken: authToken },
-      },
-    },
-    select: {
-      officers: {
-        where: { is_active: true },
-        select: {
-          position: { select: { is_primary: true } },
-        },
-      },
-    },
-  });
-
-  if (!user || !user.officers.some((o) => o.position.is_primary)) {
+  const authLevel = await getGatewayAuthLevel(request);
+  if (!authLevel.isPrimary) {
     return new Response("Forbidden", { status: 403 });
   }
 

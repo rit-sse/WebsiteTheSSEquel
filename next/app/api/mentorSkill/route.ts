@@ -1,8 +1,21 @@
 import prisma from "@/lib/prisma";
-import { getSessionToken } from "@/lib/sessionToken";
 import { NextRequest } from "next/server";
+import { getGatewayAuthLevel } from "@/lib/authGateway";
 
 export const dynamic = "force-dynamic";
+
+async function canModifyMentorRecord(request: NextRequest, mentorId: number): Promise<boolean> {
+  const authLevel = await getGatewayAuthLevel(request);
+  if (authLevel.isOfficer) return true;
+  if (!authLevel.userId) return false;
+
+  const mentor = await prisma.mentor.findUnique({
+    where: { id: mentorId },
+    select: { user_Id: true },
+  });
+
+  return mentor?.user_Id === authLevel.userId;
+}
 
 export async function GET() {
   const mentorSkill = await prisma.mentorSkill.findMany({
@@ -47,18 +60,7 @@ export async function POST(request: NextRequest) {
   }
 
   // A mentor may only modify their own skills
-  if (
-    (await prisma.user.findFirst({
-      where: {
-        session: {
-          some: {
-            sessionToken: getSessionToken(request),
-          },
-        },
-        id: body.mentorId,
-      },
-    })) == null
-  ) {
+  if (!(await canModifyMentorRecord(request, body.mentor_Id))) {
     return new Response("Must be signed in to modify your skills", {
       status: 403,
     });
@@ -85,19 +87,15 @@ export async function PUT(request: NextRequest) {
     return new Response("'id' must be in body", { status: 400 });
   }
 
-  // A mentor may only modify their own skills
-  if (
-    (await prisma.user.findFirst({
-      where: {
-        session: {
-          some: {
-            sessionToken: getSessionToken(request),
-          },
-        },
-        id: body.mentorId,
-      },
-    })) == null
-  ) {
+  const targetMentorId =
+    body.mentor_Id ??
+    (
+      await prisma.mentorSkill.findUnique({
+        where: { id: body.id },
+        select: { mentor_Id: true },
+      })
+    )?.mentor_Id;
+  if (!targetMentorId || !(await canModifyMentorRecord(request, targetMentorId))) {
     return new Response("Must be signed in to modify your skills", {
       status: 403,
     });
@@ -159,19 +157,15 @@ export async function DELETE(request: NextRequest) {
     return new Response("", { status: 0 });
   }
 
-  // A mentor may only modify their own skills
-  if (
-    (await prisma.user.findFirst({
-      where: {
-        session: {
-          some: {
-            sessionToken: getSessionToken(request),
-          },
-        },
-        id: body.mentorId,
-      },
-    })) == null
-  ) {
+  const targetMentorId =
+    body.mentor_Id ??
+    (
+      await prisma.mentorSkill.findUnique({
+        where: { id: body.id },
+        select: { mentor_Id: true },
+      })
+    )?.mentor_Id;
+  if (!targetMentorId || !(await canModifyMentorRecord(request, targetMentorId))) {
     return new Response("Must be signed in to modify your skills", {
       status: 403,
     });

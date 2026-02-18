@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSessionToken } from "@/lib/sessionToken";
+import { getGatewayAuthLevel } from "@/lib/authGateway";
 
 /**
  * A function to verify if a request should be let through. This function should handle the required authLevel
@@ -20,19 +20,7 @@ const authVerifierFactory = (
   verifier: (permissions: any) => AuthOutput
 ): AuthVerifier => {
   return async (request: NextRequest) => {
-    // get the token from the cookie
-    const token = getSessionToken(request);
-    // Derive the base URL from the incoming request so this works on any
-    // host/IP (e.g. phone testing via a LAN IP, not just localhost).
-    const baseUrl = request.nextUrl.origin || process.env.INTERNAL_API_URL || "http://localhost:3000";
-    // fetch permissions from the API
-    const permissions = await fetch(
-      baseUrl + "/api/authLevel",
-      {
-        body: JSON.stringify({ token }),
-        method: "PUT",
-      }
-    ).then(async (res) => await res.json());
+    const permissions = await getGatewayAuthLevel(request);
     return verifier(permissions);
   };
 };

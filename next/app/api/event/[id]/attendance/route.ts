@@ -1,18 +1,18 @@
 import prisma from "@/lib/prisma";
-import { getSessionToken } from "@/lib/sessionToken";
-import { NextRequest, NextResponse } from "next/server";
+import {NextRequest, NextResponse} from "next/server";
+import {getGatewayAuthLevel} from "@/lib/authGateway";
 
 /**
  * Helper function to get user from session token
  */
 async function getUserFromSession(request: NextRequest) {
-  const authToken = getSessionToken(request);
+  const authToken = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
   
   if (!authToken) {
     return null;
   }
 
-  const user = await prisma.user.findFirst({
+  return prisma.user.findFirst({
     where: {
       session: {
         some: {
@@ -25,13 +25,11 @@ async function getUserFromSession(request: NextRequest) {
       name: true,
       email: true,
       officers: {
-        where: { is_active: true },
-        select: { id: true },
+        where: {is_active: true},
+        select: {id: true},
       },
     },
   });
-
-  return user;
 }
 
 /**
@@ -274,7 +272,8 @@ export async function DELETE(
     body = {};
   }
 
-  const isOfficer = user.officers.length > 0;
+  const authLevel = await getGatewayAuthLevel(request);
+  const isOfficer = authLevel.isOfficer || user.officers.length > 0;
   const targetUserId = body.userId || user.id;
 
   // Non-officers can only remove their own attendance
