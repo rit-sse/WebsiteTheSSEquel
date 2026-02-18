@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { getSessionToken } from "@/lib/sessionToken";
 import { NextRequest } from "next/server";
 
 export const dynamic = 'force-dynamic'
@@ -17,7 +18,7 @@ export async function GET(
     return new Response("Invalid ID", { status: 400 });
   }
 
-  const authToken = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
+  const authToken = getSessionToken(request);
 
   if (!authToken) {
     return new Response("Unauthorized", { status: 401 });
@@ -58,7 +59,7 @@ export async function PUT(
     return new Response("Invalid ID", { status: 400 });
   }
 
-  const authToken = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
+  const authToken = getSessionToken(request);
 
   if (!authToken) {
     return new Response("Unauthorized", { status: 401 });
@@ -205,7 +206,7 @@ export async function DELETE(
     return new Response("Invalid ID", { status: 400 });
   }
 
-  const authToken = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
+  const authToken = getSessionToken(request);
 
   if (!authToken) {
     return new Response("Unauthorized", { status: 401 });

@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { getSessionToken } from "@/lib/sessionToken";
 import { sendEmail, isEmailConfigured, EmailAttachment } from "@/lib/email";
 import { NextRequest } from "next/server";
 import { remark } from "remark";
@@ -53,7 +54,7 @@ function markdownToPlainText(md: string): string {
  */
 export async function POST(request: NextRequest) {
   // Verify the user is a primary officer
-  const authToken = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
+  const authToken = getSessionToken(request);
 
   if (!authToken) {
     return new Response("Unauthorized", { status: 401 });
@@ -197,7 +198,7 @@ export async function POST(request: NextRequest) {
  * Only accessible by primary officers.
  */
 export async function GET(request: NextRequest) {
-  const authToken = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
+  const authToken = getSessionToken(request);
 
   if (!authToken) {
     return new Response("Unauthorized", { status: 401 });
