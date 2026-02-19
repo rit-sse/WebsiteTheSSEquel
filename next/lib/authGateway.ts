@@ -1,19 +1,10 @@
 import { NextRequest } from "next/server";
 import { PROXY_EMAIL_HEADER, PROXY_SECRET_HEADER } from "@/lib/proxyAuth";
+import { AuthLevel } from "@/lib/authLevel";
 
-export type GatewayAuthLevel = {
-  userId: number | null;
-  isUser: boolean;
-  isMember: boolean;
-  membershipCount: number;
-  isMentor: boolean;
-  isOfficer: boolean;
-  isMentoringHead: boolean;
-  isProjectsHead: boolean;
-  isPrimary: boolean;
-};
+export type GatewayAuthLevel = AuthLevel;
 
-const DEFAULT_AUTH_LEVEL: GatewayAuthLevel = {
+const DEFAULT_GATEWAY_AUTH_LEVEL: GatewayAuthLevel = {
   userId: null,
   isUser: false,
   isMember: false,
@@ -91,15 +82,15 @@ export async function getGatewayAuthLevel(request: Request): Promise<GatewayAuth
     });
 
     if (!response.ok) {
-      return { ...DEFAULT_AUTH_LEVEL };
+      return { ...DEFAULT_GATEWAY_AUTH_LEVEL };
     }
 
     const data = (await response.json()) as Partial<GatewayAuthLevel>;
     return {
-      ...DEFAULT_AUTH_LEVEL,
+      ...DEFAULT_GATEWAY_AUTH_LEVEL,
       ...data,
     };
   } catch {
-    return { ...DEFAULT_AUTH_LEVEL };
+    return { ...DEFAULT_GATEWAY_AUTH_LEVEL };
   }
 }
