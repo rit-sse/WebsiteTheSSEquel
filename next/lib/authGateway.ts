@@ -83,6 +83,20 @@ function buildGatewayHeaders(request: Request): HeadersInit {
 
 export async function getGatewayAuthLevel(request: Request): Promise<GatewayAuthLevel> {
   try {
+    // Middleware runs on the edge runtime where Prisma is unavailable.
+    // Keep the internal API call there, but use direct resolver in Node runtime.
+    const isEdgeRuntime =
+      typeof (globalThis as { EdgeRuntime?: string }).EdgeRuntime === "string";
+
+    if (!isEdgeRuntime) {
+      const { resolveAuthLevelFromRequest } = await import("@/lib/authLevelResolver");
+      const data = await resolveAuthLevelFromRequest(request);
+      return {
+        ...DEFAULT_GATEWAY_AUTH_LEVEL,
+        ...data,
+      };
+    }
+
     const token = getSessionTokenFromRequest(request);
     const baseUrl = resolveInternalApiBase(request);
     const response = await fetch(`${baseUrl}/api/authLevel`, {
