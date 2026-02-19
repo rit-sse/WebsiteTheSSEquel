@@ -1,28 +1,8 @@
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
-
-export interface AuthLevel {
-  userId: number | null;
-  isUser: boolean;
-  isMember: boolean;
-  membershipCount: number;
-  isMentor: boolean;
-  isOfficer: boolean;
-  isPrimary: boolean;
-  profileComplete: boolean;
-}
-
-const DEFAULTS: AuthLevel = {
-  userId: null,
-  isUser: false,
-  isMember: false,
-  membershipCount: 0,
-  isMentor: false,
-  isOfficer: false,
-  isPrimary: false,
-  profileComplete: true,
-};
+import { AuthLevel } from "@/lib/authLevel";
+import { MENTOR_HEAD_TITLE, PROJECTS_HEAD_TITLE } from "@/lib/utils";
 
 /**
  * Resolve auth level for the current user.
@@ -30,9 +10,22 @@ const DEFAULTS: AuthLevel = {
  * Uses getServerSession (no HTTP round-trip).
  */
 export async function getAuthLevel(): Promise<AuthLevel> {
+  const defaults: AuthLevel = {
+    userId: null,
+    isUser: false,
+    isMember: false,
+    membershipCount: 0,
+    isMentor: false,
+    isOfficer: false,
+    isMentoringHead: false,
+    isProjectsHead: false,
+    isPrimary: false,
+    profileComplete: true,
+  };
+
   const session = await getServerSession(authOptions);
   const email = session?.user?.email;
-  if (!email) return { ...DEFAULTS };
+  if (!email) return { ...defaults };
 
   const user = await prisma.user.findFirst({
     where: { email },
@@ -52,7 +45,7 @@ export async function getAuthLevel(): Promise<AuthLevel> {
         select: {
           id: true,
           position: {
-            select: { is_primary: true },
+            select: { is_primary: true, title: true },
           },
         },
       },
@@ -62,7 +55,7 @@ export async function getAuthLevel(): Promise<AuthLevel> {
     },
   });
 
-  if (!user) return { ...DEFAULTS };
+  if (!user) return { ...defaults };
 
   const membershipCount = user._count.Memberships;
   return {
@@ -72,6 +65,8 @@ export async function getAuthLevel(): Promise<AuthLevel> {
     isMember: membershipCount >= 1,
     isMentor: user.mentor.length > 0,
     isOfficer: user.officers.length > 0,
+    isMentoringHead: user.officers.some((o) => o.position.title === MENTOR_HEAD_TITLE),
+    isProjectsHead: user.officers.some((o) => o.position.title === PROJECTS_HEAD_TITLE),
     isPrimary: user.officers.some((o) => o.position.is_primary),
     profileComplete: !!(
       user.graduationTerm &&

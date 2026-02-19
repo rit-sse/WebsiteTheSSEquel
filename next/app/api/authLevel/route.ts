@@ -2,21 +2,9 @@ import prisma from "@/lib/prisma";
 import { NextRequest } from "next/server";
 import { MENTOR_HEAD_TITLE, PROJECTS_HEAD_TITLE } from "@/lib/utils";
 import { getProxyEmail, hasStagingElevatedAccess } from "@/lib/proxyAuth";
+import { AuthLevel } from "@/lib/authLevel";
 
 export const dynamic = 'force-dynamic'
-
-type AuthLevel = {
-  userId: number | null;
-  isUser: boolean;
-  isMember: boolean;
-  membershipCount: number;
-  isMentor: boolean;
-  isOfficer: boolean;
-  isMentoringHead: boolean;
-  isProjectsHead: boolean;
-  isPrimary: boolean;
-  profileComplete?: boolean;
-};
 
 async function applyStagingProxyAccess(request: Request, authLevel: AuthLevel): Promise<boolean> {
   if (!hasStagingElevatedAccess(request)) {
