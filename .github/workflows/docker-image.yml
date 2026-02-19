@@ -25,14 +25,14 @@ jobs:
             echo "NEXT_PUBLIC_ENV=prod" >> $GITHUB_ENV
             echo "DEPLOY_PATH=/home/sse-deploy/deploy" >> $GITHUB_ENV
             echo "DEPLOY_SERVICE=website" >> $GITHUB_ENV
-            echo "GIT_COMMIT=v${GITHUB_SHA::7}" >> $GITHUB_ENV
+            echo "GIT_COMMIT=${GITHUB_SHA::7}" >> $GITHUB_ENV
           else
             echo "IMAGE_TAG=dev" >> $GITHUB_ENV
             echo "NEXTAUTH_URL=https://ssedev.se.rit.edu" >> $GITHUB_ENV
             echo "NEXT_PUBLIC_ENV=dev" >> $GITHUB_ENV
             echo "DEPLOY_PATH=/home/sse-deploy/deploy" >> $GITHUB_ENV
             echo "DEPLOY_SERVICE=website-dev" >> $GITHUB_ENV
-            echo "GIT_COMMIT=v${GITHUB_SHA::7}-dev" >> $GITHUB_ENV
+            echo "GIT_COMMIT=${GITHUB_SHA::7}" >> $GITHUB_ENV
           fi
 
       - name: Build image
