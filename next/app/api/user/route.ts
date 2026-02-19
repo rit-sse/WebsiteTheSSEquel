@@ -6,6 +6,7 @@ import { resolveUserImage, getKeyFromS3Url, isS3Key, normalizeToS3Key } from "@/
 import { s3Service } from "@/lib/services/s3Service";
 import { maybeGrantProfileCompletionMembership } from "@/lib/services/profileCompletionService";
 import { maybeCreateAlumniCandidate } from "@/lib/services/alumniCandidateService";
+import { getGatewayAuthLevel } from "@/lib/authGateway";
 
 export const dynamic = 'force-dynamic'
 
@@ -21,21 +22,6 @@ function isOwnedProfileImageKey(key: string, userId: number): boolean {
  * - Unauthenticated: limited public fields only.
  */
 export async function GET() {
-  const session = await getServerSession(authOptions);
-  const sessionEmail = session?.user?.email ?? null;
-
-  const isOfficer = sessionEmail
-    ? !!(await prisma.user.findFirst({
-        where: {
-          email: sessionEmail,
-          officers: {
-            some: { is_active: true },
-          },
-        },
-        select: { id: true },
-      }))
-    : false;
-
   const users = await prisma.user.findMany({
     select: {
       id: true,
@@ -190,15 +176,8 @@ export async function PUT(request: NextRequest) {
   const isOwner = session.user.email === targetUser.email;
 
   if (!isOwner) {
-    // Check if the caller is an officer
-    const authToken = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
-    const callerUser = authToken ? await prisma.user.findFirst({
-      where: { session: { some: { sessionToken: authToken } } },
-      select: { officers: { where: { is_active: true }, select: { id: true } } },
-    }) : null;
-
-    const isOfficer = (callerUser?.officers?.length ?? 0) > 0;
-    if (!isOfficer) {
+    const authLevel = await getGatewayAuthLevel(request);
+    if (!authLevel.isOfficer) {
       return new Response("You can only edit your own profile", { status: 403 });
     }
   }

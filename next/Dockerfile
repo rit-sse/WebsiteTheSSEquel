@@ -6,6 +6,11 @@ FROM base AS deps
 
 WORKDIR /app
 
+ARG NEXTAUTH_URL
+ARG NEXT_PUBLIC_ENV
+
+ENV NEXTAUTH_URL=$NEXTAUTH_URL
+ENV NEXT_PUBLIC_ENV=$NEXT_PUBLIC_ENV
 
 # Install dependencies based on the preferred package manager
 COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
@@ -21,17 +26,15 @@ RUN \
 FROM base AS builder
 WORKDIR /app
 
-ARG NEXTAUTH_URL
-ARG NEXT_PUBLIC_ENV
 ARG GIT_COMMIT
-
-
-ENV NEXTAUTH_URL=$NEXTAUTH_URL
-ENV NEXT_PUBLIC_ENV=$NEXT_PUBLIC_ENV
-ENV NEXT_PUBLIC_COMMIT_HASH=$GIT_COMMIT
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+
+# Use commit hash passed from CI for accurate branch-specific build metadata.
+RUN COMMIT_HASH="${GIT_COMMIT:-dev}" && \
+    echo "COMMIT_HASH=$COMMIT_HASH" && \
+    echo "$COMMIT_HASH" > /tmp/commit_hash
 
 RUN npx prisma generate
 
@@ -41,10 +44,10 @@ RUN npx prisma generate
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # Set the commit hash as a build-time env var for Next.js
-RUN \
-  if [ -f yarn.lock ]; then yarn build; \
-  elif [ -f package-lock.json ]; then npm run build; \
-  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm run build; \
+RUN COMMIT_HASH=$(cat /tmp/commit_hash) && \
+  if [ -f yarn.lock ]; then NEXT_PUBLIC_COMMIT_HASH=$COMMIT_HASH yarn run build; \
+  elif [ -f package-lock.json ]; then NEXT_PUBLIC_COMMIT_HASH=$COMMIT_HASH npm run build; \
+  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && NEXT_PUBLIC_COMMIT_HASH=$COMMIT_HASH pnpm run build; \
   else echo "Lockfile not found." && exit 1; \
   fi
 
@@ -56,7 +59,7 @@ ENV NODE_ENV=production
 # Uncomment the following line in case you want to disable telemetry during runtime.
 ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
+RUN addgroup --system --gid 1001 nodejs&& adduser --system --uid 1001 nextjs
 
 COPY --from=builder /app/public ./public
 

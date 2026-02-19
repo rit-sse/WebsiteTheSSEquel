@@ -3,8 +3,8 @@ import { getServerSession } from "next-auth/next"
 import { Prisma } from "@prisma/client"
 import { authOptions } from "@/lib/authOptions"
 import prisma from "@/lib/prisma"
-import { MENTOR_HEAD_TITLE } from "@/lib/utils"
 import { resolveUserImage } from "@/lib/s3Utils"
+import { getGatewayAuthLevel } from "@/lib/authGateway"
 
 export const dynamic = "force-dynamic"
 
@@ -12,31 +12,9 @@ export const dynamic = "force-dynamic"
  * Check if the current user can manage mentor applications
  * (Must be Mentoring Head or Primary Officer)
  */
-async function canManageApplications(userEmail: string): Promise<boolean> {
-  const user = await prisma.user.findFirst({
-    where: { email: userEmail },
-    select: {
-      officers: {
-        where: { is_active: true },
-        select: {
-          position: {
-            select: {
-              title: true,
-              is_primary: true,
-            },
-          },
-        },
-      },
-    },
-  })
-
-  if (!user) return false
-
-  return user.officers.some(
-    (officer) =>
-      officer.position.title === MENTOR_HEAD_TITLE ||
-      officer.position.is_primary
-  )
+async function canManageApplications(request: NextRequest): Promise<boolean> {
+  const authLevel = await getGatewayAuthLevel(request)
+  return authLevel.isMentoringHead || authLevel.isPrimary
 }
 
 /**
@@ -113,16 +91,16 @@ export async function GET(request: NextRequest) {
       }
 
       // Check if user owns this application or can manage
+      const canManage = await canManageApplications(request)
       if (session?.user?.email) {
         const user = await prisma.user.findUnique({
           where: { email: session.user.email },
         })
-        const canManage = await canManageApplications(session.user.email)
-        
+
         if (!canManage && user?.id !== application.userId) {
           return NextResponse.json({ error: "Access denied" }, { status: 403 })
         }
-      } else {
+      } else if (!canManage) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
       }
 
@@ -141,11 +119,10 @@ export async function GET(request: NextRequest) {
     }
 
     // For listing applications (requires management permission)
-    if (!session?.user?.email) {
+    const canManage = await canManageApplications(request)
+    if (!session?.user?.email && !canManage) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
-
-    const canManage = await canManageApplications(session.user.email)
     if (!canManage) {
       return NextResponse.json(
         { error: "Only Mentoring Head or Primary Officers can view all applications" },
@@ -376,12 +353,7 @@ export async function POST(request: NextRequest) {
  */
 export async function PUT(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    const canManage = await canManageApplications(session.user.email)
+    const canManage = await canManageApplications(request)
     if (!canManage) {
       return NextResponse.json(
         { error: "Only Mentoring Head or Primary Officers can update applications" },
@@ -574,24 +546,11 @@ export async function PATCH(request: NextRequest) {
  */
 export async function DELETE(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
     const body = await request.json()
     const { id } = body
 
     if (!id) {
       return NextResponse.json({ error: "Application ID is required" }, { status: 400 })
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    })
-
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 })
     }
 
     // Check if application exists
@@ -604,8 +563,21 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Users can only delete their own pending applications
-    const canManage = await canManageApplications(session.user.email)
+    const canManage = await canManageApplications(request)
     if (!canManage) {
+      const session = await getServerSession(authOptions)
+      if (!session?.user?.email) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      }
+
+      const user = await prisma.user.findUnique({
+        where: { email: session.user.email },
+      })
+
+      if (!user) {
+        return NextResponse.json({ error: "User not found" }, { status: 404 })
+      }
+
       if (existingApplication.userId !== user.id) {
         return NextResponse.json({ error: "Access denied" }, { status: 403 })
       }

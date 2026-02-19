@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { resolveUserImage } from "@/lib/s3Utils";
 import { MENTOR_HEAD_TITLE } from "@/lib/utils";
+import { getGatewayAuthLevel } from "@/lib/authGateway";
 
 export const dynamic = "force-dynamic";
 
@@ -152,19 +153,8 @@ export async function GET(
   // Email remains private unless owner or active officer.
   const session = await getServerSession(authOptions);
   const isOwner = session?.user?.email === user.email;
-  const isOfficer = session?.user?.email
-    ? await prisma.user.findFirst({
-        where: {
-          email: session.user.email,
-          officers: {
-            some: {
-              is_active: true,
-            },
-          },
-        },
-        select: { id: true },
-      })
-    : null;
+  const authLevel = await getGatewayAuthLevel(request as Request);
+  const isOfficer = authLevel.isOfficer;
 
   const projects = user.projectContributions.map((pc) => pc.project);
   const mentoringHead = await prisma.officer.findFirst({
@@ -207,7 +197,7 @@ export async function GET(
   return Response.json({
     id: user.id,
     name: user.name,
-    email: isOwner || !!isOfficer ? user.email : undefined,
+    email: isOwner || isOfficer ? user.email : undefined,
     image: resolveUserImage(user.profileImageKey, user.googleImageURL),
     profileImageKey: user.profileImageKey ?? null,
     linkedIn: user.linkedIn,

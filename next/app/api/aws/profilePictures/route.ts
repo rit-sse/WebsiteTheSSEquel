@@ -1,12 +1,13 @@
 import { s3Service } from "@/lib/services/s3Service";
 import prisma from "@/lib/prisma";
+import { getSessionToken } from "@/lib/sessionToken";
 import { NextRequest, NextResponse } from "next/server";
 import { normalizeToS3Key } from "@/lib/s3Utils";
 
 export async function POST(req: NextRequest) {
   try {
     // Get user from session
-    const authToken = req.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
+    const authToken = getSessionToken(req);
 
     if (!authToken) {
       return NextResponse.json(
@@ -93,7 +94,7 @@ export async function POST(req: NextRequest) {
 
 export async function PUT(req: NextRequest) {
   try {
-    const authToken = req.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
+    const authToken = getSessionToken(req);
 
     if (!authToken) {
       return NextResponse.json(

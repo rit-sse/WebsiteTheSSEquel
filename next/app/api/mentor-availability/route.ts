@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/authOptions"
 import prisma from "@/lib/prisma"
-import { MENTOR_HEAD_TITLE } from "@/lib/utils"
+import { getGatewayAuthLevel } from "@/lib/authGateway"
 import { resolveUserImage } from "@/lib/s3Utils"
 import { recordMentorAvailabilityEvent } from "@/lib/mentorAvailabilityEvents"
 
@@ -17,31 +17,9 @@ interface AvailabilitySlot {
  * Check if the current user can manage all availability
  * (Must be Mentoring Head or Primary Officer)
  */
-async function canManageAllAvailability(userEmail: string): Promise<boolean> {
-  const user = await prisma.user.findFirst({
-    where: { email: userEmail },
-    select: {
-      officers: {
-        where: { is_active: true },
-        select: {
-          position: {
-            select: {
-              title: true,
-              is_primary: true,
-            },
-          },
-        },
-      },
-    },
-  })
-
-  if (!user) return false
-
-  return user.officers.some(
-    (officer) =>
-      officer.position.title === MENTOR_HEAD_TITLE ||
-      officer.position.is_primary
-  )
+async function canManageAllAvailability(request: NextRequest): Promise<boolean> {
+  const authLevel = await getGatewayAuthLevel(request)
+  return authLevel.isMentoringHead || authLevel.isPrimary
 }
 
 /**
@@ -320,7 +298,7 @@ export async function DELETE(request: NextRequest) {
       }
 
       // Check permissions
-      const canManage = await canManageAllAvailability(session.user.email)
+      const canManage = await canManageAllAvailability(request)
       if (!canManage && existing.userId !== user.id) {
         return NextResponse.json({ error: "Access denied" }, { status: 403 })
       }

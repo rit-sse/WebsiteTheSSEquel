@@ -1,13 +1,47 @@
 import prisma from "@/lib/prisma";
-import { NextRequest, NextResponse } from "next/server";
-import { MENTOR_HEAD_TITLE } from "@/lib/utils";
+import { NextRequest } from "next/server";
+import { MENTOR_HEAD_TITLE, PROJECTS_HEAD_TITLE } from "@/lib/utils";
+import { getProxyEmail, hasStagingElevatedAccess } from "@/lib/proxyAuth";
+import { AuthLevel } from "@/lib/authLevel";
 
 export const dynamic = 'force-dynamic'
 
+async function applyStagingProxyAccess(request: Request, authLevel: AuthLevel): Promise<boolean> {
+  if (!hasStagingElevatedAccess(request)) {
+    return false;
+  }
+
+  const proxyEmail = getProxyEmail(request);
+  const user = proxyEmail
+    ? await prisma.user.findUnique({
+        where: { email: proxyEmail },
+        select: { id: true, _count: { select: { Memberships: true } } },
+      })
+    : null;
+
+  authLevel.userId = user?.id ?? null;
+  authLevel.isUser = !!proxyEmail;
+  authLevel.membershipCount = user?._count.Memberships ?? 0;
+  authLevel.isMember = authLevel.membershipCount >= 1;
+  authLevel.isMentor = true;
+  authLevel.isOfficer = true;
+  authLevel.isMentoringHead = true;
+  authLevel.isProjectsHead = true;
+  authLevel.isPrimary = true;
+
+  return true;
+}
+
 /**
- * HTTP PUT request to /api/authLevel/
+ * Handles a PUT request to update or retrieve authorization level details for a user.
+ * Processes the incoming request, validates the JSON body, and determines the user's
+ * authorization level based on the provided token.
+ *
+ * @param {Request} request - The HTTP request object containing the details of the PUT request.
+ * @return {Promise<Response>} A Promise resolving to an HTTP Response object containing the
+ *                             authorization level or an error message if the JSON body is invalid.
  */
-export async function PUT(request: Request) {
+export async function PUT(request: Request): Promise<Response> {
   let body;
   try {
     body = await request.json();
@@ -15,16 +49,7 @@ export async function PUT(request: Request) {
     return new Response("Invalid JSON", { status: 422 });
   }
 
-  const authLevel: {
-    userId: number | null;
-    isUser: boolean;
-    isMember: boolean;
-    membershipCount: number;
-    isMentor: boolean;
-    isOfficer: boolean;
-    isMentoringHead: boolean;
-    isPrimary: boolean;
-  } = {
+  const authLevel: AuthLevel = {
     userId: null,
     isUser: false,
     isMember: false,
@@ -32,8 +57,13 @@ export async function PUT(request: Request) {
     isMentor: false,
     isOfficer: false,
     isMentoringHead: false,
+    isProjectsHead: false,
     isPrimary: false,
   };
+
+  if (await applyStagingProxyAccess(request, authLevel)) {
+    return Response.json(authLevel);
+  }
 
   if (body.token == null) {
     return Response.json(authLevel);
@@ -82,6 +112,9 @@ export async function PUT(request: Request) {
     authLevel.isMentoringHead = user.officers.some(
       (officer) => officer.position.title === MENTOR_HEAD_TITLE
     );
+    authLevel.isProjectsHead = user.officers.some(
+      (officer) => officer.position.title === PROJECTS_HEAD_TITLE
+    );
     authLevel.isPrimary = user.officers.some(
       (officer) => officer.position.is_primary
     );
@@ -96,17 +129,7 @@ export async function PUT(request: Request) {
 export async function GET(request: NextRequest) {
   const authToken = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
 
-  const authLevel: {
-    userId: number | null;
-    isUser: boolean;
-    isMember: boolean;
-    membershipCount: number;
-    isMentor: boolean;
-    isOfficer: boolean;
-    isMentoringHead: boolean;
-    isPrimary: boolean;
-    profileComplete: boolean;
-  } = {
+  const authLevel: AuthLevel = {
     userId: null,
     isUser: false,
     isMember: false,
@@ -114,9 +137,15 @@ export async function GET(request: NextRequest) {
     isMentor: false,
     isOfficer: false,
     isMentoringHead: false,
+    isProjectsHead: false,
     isPrimary: false,
     profileComplete: true,
   };
+
+  if (await applyStagingProxyAccess(request, authLevel)) {
+    authLevel.profileComplete = true;
+    return Response.json(authLevel);
+  }
 
   if (authToken == null) {
     return Response.json(authLevel);
@@ -169,6 +198,9 @@ export async function GET(request: NextRequest) {
     authLevel.isOfficer = user.officers.length > 0;
     authLevel.isMentoringHead = user.officers.some(
       (officer) => officer.position.title === MENTOR_HEAD_TITLE
+    );
+    authLevel.isProjectsHead = user.officers.some(
+      (officer) => officer.position.title === PROJECTS_HEAD_TITLE
     );
     authLevel.isPrimary = user.officers.some((officer) => officer.position.is_primary);
     authLevel.profileComplete = !!(

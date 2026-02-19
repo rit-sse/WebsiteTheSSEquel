@@ -17,6 +17,7 @@ const inter = Inter({
 const rethinkSans = Rethink_Sans({
     subsets: ['latin'],
     variable: '--font-rethink',
+    adjustFontFallback: false,
 });
 
 const ptSerif = PT_Serif({
