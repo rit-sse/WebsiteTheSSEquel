@@ -28,7 +28,6 @@ STAGING_PROXY_AUTH=true
 Proxy will forward the following, this must be present in requests made (if testing locally):
 
 - `X-Auth-Request-Email` with the authenticated user email
-- `X-Auth-Request-Groups` containing `tech-committee` 
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 

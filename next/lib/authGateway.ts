@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
-import { PROXY_EMAIL_HEADER, PROXY_GROUPS_HEADER } from "@/lib/proxyAuth";
+import { PROXY_EMAIL_HEADER, PROXY_GROUPS_HEADER, PROXY_USER_HEADER } from "@/lib/proxyAuth";
 import { AuthLevel } from "@/lib/authLevel";
+import { getSessionToken } from "@/lib/sessionToken";
 
 export type GatewayAuthLevel = AuthLevel;
 
@@ -16,28 +17,34 @@ const DEFAULT_GATEWAY_AUTH_LEVEL: GatewayAuthLevel = {
   isPrimary: false,
 };
 
-function getCookieValue(cookieHeader: string | null, cookieName: string): string | null {
-  if (!cookieHeader) return null;
-  const parts = cookieHeader.split(";").map((part) => part.trim());
-  for (const part of parts) {
-    const [key, ...valueParts] = part.split("=");
-    if (key === cookieName) {
-      return decodeURIComponent(valueParts.join("="));
-    }
-  }
-  return null;
-}
-
 function getSessionTokenFromRequest(request: Request): string | null {
-  const cookieName = process.env.SESSION_COOKIE_NAME;
-  if (!cookieName) return null;
-
   if ("cookies" in request) {
     const nextRequest = request as NextRequest;
-    return nextRequest.cookies.get(cookieName)?.value ?? null;
+    return getSessionToken(nextRequest) ?? null;
   }
 
-  return getCookieValue(request.headers.get("cookie"), cookieName);
+  const cookieHeader = request.headers.get("cookie");
+  if (!cookieHeader) return null;
+
+  const cookieMap = new Map<string, string>();
+  for (const part of cookieHeader.split(";")) {
+    const [rawKey, ...rawValue] = part.trim().split("=");
+    if (!rawKey) continue;
+    cookieMap.set(rawKey, decodeURIComponent(rawValue.join("=")));
+  }
+
+  const cookieNames = [
+    process.env.SESSION_COOKIE_NAME,
+    "__Secure-next-auth.session-token",
+    "next-auth.session-token",
+  ].filter((name): name is string => !!name);
+
+  for (const name of cookieNames) {
+    const value = cookieMap.get(name);
+    if (value) return value;
+  }
+
+  return null;
 }
 
 function resolveInternalApiBase(request: Request): string {
@@ -59,12 +66,16 @@ function buildGatewayHeaders(request: Request): HeadersInit {
 
   const proxyEmail = request.headers.get(PROXY_EMAIL_HEADER);
   const proxyGroups = request.headers.get(PROXY_GROUPS_HEADER);
+  const proxyUser = request.headers.get(PROXY_USER_HEADER);
 
   if (proxyEmail) {
     headers[PROXY_EMAIL_HEADER] = proxyEmail;
   }
   if (proxyGroups) {
     headers[PROXY_GROUPS_HEADER] = proxyGroups;
+  }
+  if (proxyUser) {
+    headers[PROXY_USER_HEADER] = proxyUser;
   }
 
   return headers;

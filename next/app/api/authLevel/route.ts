@@ -1,8 +1,9 @@
 import prisma from "@/lib/prisma";
 import { NextRequest } from "next/server";
 import { MENTOR_HEAD_TITLE, PROJECTS_HEAD_TITLE } from "@/lib/utils";
-import { getProxyEmail, hasStagingElevatedAccess } from "@/lib/proxyAuth";
+import { hasStagingElevatedAccess } from "@/lib/proxyAuth";
 import { AuthLevel } from "@/lib/authLevel";
+import { getSessionToken } from "@/lib/sessionToken";
 
 export const dynamic = 'force-dynamic'
 
@@ -11,18 +12,7 @@ async function applyStagingProxyAccess(request: Request, authLevel: AuthLevel): 
     return false;
   }
 
-  const proxyEmail = getProxyEmail(request);
-  const user = proxyEmail
-    ? await prisma.user.findFirst({
-        where: { email: { equals: proxyEmail, mode: "insensitive" } },
-        select: { id: true, _count: { select: { Memberships: true } } },
-      })
-    : null;
-
-  authLevel.userId = user?.id ?? null;
-  authLevel.isUser = !!proxyEmail;
-  authLevel.membershipCount = user?._count.Memberships ?? 0;
-  authLevel.isMember = authLevel.membershipCount >= 1;
+  // Staging proxy only elevates permissions; user identity comes from NextAuth session lookup.
   authLevel.isMentor = true;
   authLevel.isOfficer = true;
   authLevel.isMentoringHead = true;
@@ -139,7 +129,7 @@ export async function GET(request: NextRequest) {
     proxyGroups: request.headers.get("x-auth-request-groups"),
   });
 
-  const authToken = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
+  const authToken = getSessionToken(request);
 
   const authLevel: AuthLevel = {
     userId: null,
