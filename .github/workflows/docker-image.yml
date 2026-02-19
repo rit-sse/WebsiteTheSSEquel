@@ -23,14 +23,14 @@ jobs:
             echo "IMAGE_TAG=prod" >> $GITHUB_ENV
             echo "NEXTAUTH_URL=https://sse.rit.edu" >> $GITHUB_ENV
             echo "NEXT_PUBLIC_ENV=prod" >> $GITHUB_ENV
-            echo "DEPLOY_PATH=/root/docker/" >> $GITHUB_ENV
+            echo "DEPLOY_PATH=/root/deploy/" >> $GITHUB_ENV
             echo "DEPLOY_SERVICE=website" >> $GITHUB_ENV
             echo "GIT_COMMIT_SUFFIX=" >> $GITHUB_ENV
           else
             echo "IMAGE_TAG=dev" >> $GITHUB_ENV
             echo "NEXTAUTH_URL=https://ssedev.se.rit.edu" >> $GITHUB_ENV
             echo "NEXT_PUBLIC_ENV=dev" >> $GITHUB_ENV
-            echo "DEPLOY_PATH=/root/docker/" >> $GITHUB_ENV
+            echo "DEPLOY_PATH=/root/deploy/" >> $GITHUB_ENV
             echo "DEPLOY_SERVICE=website-dev" >> $GITHUB_ENV
             echo "GIT_COMMIT_SUFFIX=-dev" >> $GITHUB_ENV
           fi
