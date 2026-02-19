@@ -26,14 +26,13 @@ RUN \
 FROM base AS builder
 WORKDIR /app
 
-# Install git to fetch commit hash from remote
-RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+ARG GIT_COMMIT
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Get commit hash from GitHub remote (works without local .git folder)
-RUN COMMIT_HASH=$(git ls-remote https://github.com/rit-sse/WebsiteTheSSEquel.git main | head -c 7) && \
+# Use commit hash passed from CI for accurate branch-specific build metadata.
+RUN COMMIT_HASH="${GIT_COMMIT:-dev}" && \
     echo "COMMIT_HASH=$COMMIT_HASH" && \
     echo "$COMMIT_HASH" > /tmp/commit_hash
 
