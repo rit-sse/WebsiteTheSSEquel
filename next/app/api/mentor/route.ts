@@ -253,21 +253,52 @@ export async function DELETE(request: NextRequest) {
     return new Response(`Couldn't find mentor ID ${id}`, { status: 404 });
   }
   
-  // Delete related records
-  await prisma.courseTaken.deleteMany({
-    where: { mentorId: id },
-  });
-  await prisma.mentorSkill.deleteMany({
-    where: { mentor_Id: id },
-  });
-  await prisma.schedule.deleteMany({
-    where: { mentorId: id },
-  });
-  await prisma.scheduleBlock.deleteMany({
-    where: { mentorId: id },
-  });
+  const mentor = await prisma.$transaction(async (tx) => {
+    const mentorRecord = await tx.mentor.findUnique({
+      where: { id },
+      select: { user_Id: true },
+    });
 
-  const mentor = await prisma.mentor.delete({ where: { id: id } });
+    if (!mentorRecord) {
+      throw new Error(`Couldn't find mentor ID ${id}`);
+    }
+
+    // Delete related records
+    await tx.courseTaken.deleteMany({
+      where: { mentorId: id },
+    });
+    await tx.mentorSkill.deleteMany({
+      where: { mentor_Id: id },
+    });
+    await tx.schedule.deleteMany({
+      where: { mentorId: id },
+    });
+    await tx.scheduleBlock.deleteMany({
+      where: { mentorId: id },
+    });
+
+    // Remove the mentor's applications when they are removed from roster.
+    const applicationIds = await tx.mentorApplication.findMany({
+      where: { userId: mentorRecord.user_Id },
+      select: { id: true },
+    });
+
+    if (applicationIds.length > 0) {
+      await tx.invitation.deleteMany({
+        where: {
+          applicationId: {
+            in: applicationIds.map((application) => application.id),
+          },
+        },
+      });
+
+      await tx.mentorApplication.deleteMany({
+        where: { userId: mentorRecord.user_Id },
+      });
+    }
+
+    return tx.mentor.delete({ where: { id } });
+  });
   return Response.json(mentor);
 }
 

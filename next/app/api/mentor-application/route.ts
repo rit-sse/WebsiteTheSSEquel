@@ -542,7 +542,7 @@ export async function PATCH(request: NextRequest) {
 
 /**
  * HTTP DELETE request to /api/mentor-application
- * Delete an application (user can delete their own pending application)
+ * Delete an application (owners can delete their own application in any status)
  */
 export async function DELETE(request: NextRequest) {
   try {
@@ -562,7 +562,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "Application not found" }, { status: 404 })
     }
 
-    // Users can only delete their own pending applications
+    // Users can delete their own applications; managers can delete any application.
     const canManage = await canManageApplications(request)
     if (!canManage) {
       const session = await getServerSession(authOptions)
@@ -581,16 +581,17 @@ export async function DELETE(request: NextRequest) {
       if (existingApplication.userId !== user.id) {
         return NextResponse.json({ error: "Access denied" }, { status: 403 })
       }
-      if (existingApplication.status !== "pending") {
-        return NextResponse.json(
-          { error: "Can only withdraw pending applications" },
-          { status: 400 }
-        )
-      }
     }
 
-    await prisma.mentorApplication.delete({
-      where: { id },
+    await prisma.$transaction(async (tx) => {
+      // Revoke any pending invitation tied to this application so it can no longer be accepted.
+      await tx.invitation.deleteMany({
+        where: { applicationId: id },
+      })
+
+      await tx.mentorApplication.delete({
+        where: { id },
+      })
     })
 
     return NextResponse.json({ success: true })

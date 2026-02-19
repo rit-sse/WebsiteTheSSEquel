@@ -86,6 +86,15 @@ export async function POST(request: NextRequest) {
     return new Response("Invitation not found", { status: 404 });
   }
 
+  // If a mentor invitation was tied to an application that has since been deleted,
+  // revoke the stale invitation so it cannot still be accepted.
+  if (invitation.type === "mentor" && invitation.applicationId && !invitation.application) {
+    await prisma.invitation.delete({
+      where: { id: invitationId },
+    });
+    return new Response("This invitation is no longer valid", { status: 410 });
+  }
+
   // Verify the invitation email matches the logged-in user's email
   if (invitation.invitedEmail !== loggedInUser.email) {
     return new Response(

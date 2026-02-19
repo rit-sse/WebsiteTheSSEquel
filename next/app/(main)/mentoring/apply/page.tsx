@@ -528,20 +528,20 @@ export default function MentorApplyPage() {
 
   // Application form
   return (
-    <div className="min-h-screen py-6 sm:py-12 px-4">
+    <div className="min-h-screen overflow-x-hidden py-6 sm:py-12 px-3 sm:px-4">
       <div className="max-w-3xl mx-auto">
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl">
+            <CardTitle className="text-xl sm:text-2xl break-words">
               {activeSemester.name} Mentor Interest Form
             </CardTitle>
             <CardDescription className="space-y-4">
-              <p>
+              <p className="break-words">
                 Hello Potential Future Mentors! Thank you for your interest in becoming a Mentor.
                 This is not a &quot;sign up&quot; form, but an interest form. Please fill out the information
                 below to tell us about yourself, your skills, and why you want to become a mentor.
               </p>
-              <p>
+              <p className="break-words">
                 If you are selected, we will be sending out a When2Meet to get everyone&apos;s availability
                 so we can find the best mentoring times for you!
               </p>
@@ -561,7 +561,7 @@ export default function MentorApplyPage() {
               )}
               <div className="bg-muted p-3 rounded-md text-sm">
                 <p className="font-medium mb-2">Important Info:</p>
-                <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                <ul className="list-disc list-inside space-y-1 text-muted-foreground break-words">
                   <li>This is an unpaid position</li>
                   <li>Mentors receive 24/7 swipe access to the SSE Lab (GOL-1670)</li>
                   <li>End of semester dinner/gift from the SE department</li>
@@ -587,7 +587,7 @@ export default function MentorApplyPage() {
               )}
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-4 sm:px-6">
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Name and Email (from account) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -699,15 +699,16 @@ export default function MentorApplyPage() {
                 </Label>
                 <div className="grid grid-cols-1 gap-2 max-h-[300px] overflow-y-auto border rounded-md p-3">
                   {COURSES.map((course) => (
-                    <div key={course.id} className="flex items-center space-x-2">
+                    <div key={course.id} className="flex items-start space-x-2">
                       <Checkbox
                         id={course.id}
                         checked={selectedCourses.includes(course.id)}
                         onCheckedChange={() => handleCourseToggle(course.id)}
+                        className="mt-0.5 shrink-0"
                       />
                       <label
                         htmlFor={course.id}
-                        className="text-sm cursor-pointer"
+                        className="text-sm cursor-pointer break-words"
                       >
                         {course.label}
                       </label>
@@ -805,6 +806,7 @@ export default function MentorApplyPage() {
                   <AvailabilityGrid
                     value={availabilitySlots}
                     onChange={setAvailabilitySlots}
+                    className="max-w-full"
                   />
                 </div>
               </div>
