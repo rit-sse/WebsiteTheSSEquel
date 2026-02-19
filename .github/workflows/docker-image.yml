@@ -34,18 +34,6 @@ jobs:
             echo "DEPLOY_SERVICE=website-dev" >> $GITHUB_ENV
             echo "GIT_COMMIT_SUFFIX=-dev" >> $GITHUB_ENV
           fi
-      # Purely for debugging (will be removed)
-      - name: Show resolved build/deploy vars
-        run: |
-          echo "GITHUB_REF_NAME=${GITHUB_REF_NAME}"
-          echo "GITHUB_SHA=${GITHUB_SHA}"
-          echo "GITHUB_SHA_SHORT=${GITHUB_SHA::7}"
-          echo "IMAGE_TAG=${IMAGE_TAG}"
-          echo "NEXTAUTH_URL=${NEXTAUTH_URL}"
-          echo "NEXT_PUBLIC_ENV=${NEXT_PUBLIC_ENV}"
-          echo "DEPLOY_PATH=${DEPLOY_PATH}"
-          echo "DEPLOY_SERVICE=${DEPLOY_SERVICE}"
-          echo "GIT_COMMIT_SUFFIX=${GIT_COMMIT_SUFFIX}"
 
       - name: Build image
         working-directory: ./next

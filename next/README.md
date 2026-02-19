@@ -23,13 +23,12 @@ Set:
 
 ```bash
 STAGING_PROXY_AUTH=true
-STAGING_PROXY_AUTH_SECRET=<strong-random-secret> # Use 'openssl rand -base64 32' to generate
 ```
 
 Ingress/Proxy will forward, this must be present in requests made (if testing locally):
 
 - `X-Auth-Request-Email` with the authenticated user email
-- `X-Internal-Proxy-Auth` with the secret value above
+- `X-Auth-Request-Groups` containing `tech-committee` (or an org-scoped value like `rit-sse:tech-committee`)
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 

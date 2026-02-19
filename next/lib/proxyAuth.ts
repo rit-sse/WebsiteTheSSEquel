@@ -1,7 +1,8 @@
 type HeaderCarrier = { headers: Headers };
 
 export const PROXY_EMAIL_HEADER = "x-auth-request-email";
-export const PROXY_SECRET_HEADER = "x-internal-proxy-auth";
+export const PROXY_GROUPS_HEADER = "x-auth-request-groups";
+const REQUIRED_TECH_COMMITTEE_GROUP = "tech-committee";
 
 function parseBoolean(value: string | undefined): boolean {
   if (!value) return false;
@@ -18,16 +19,27 @@ export function getProxyEmail(source: HeaderCarrier): string | null {
   return value || null;
 }
 
-export function isTrustedProxyRequest(source: HeaderCarrier): boolean {
-  if (!isStagingProxyAuthEnabled()) return false;
+function getProxyGroups(source: HeaderCarrier): string[] {
+  const rawGroups = source.headers.get(PROXY_GROUPS_HEADER)?.trim();
+  if (!rawGroups) return [];
+  return rawGroups
+    .split(",")
+    .map((group) => group.trim().toLowerCase())
+    .filter(Boolean);
+}
 
-  const expectedSecret = process.env.STAGING_PROXY_AUTH_SECRET?.trim();
-  if (!expectedSecret) return false;
-
-  const providedSecret = source.headers.get(PROXY_SECRET_HEADER)?.trim();
-  return !!providedSecret && providedSecret === expectedSecret;
+function isInTechCommitteeGroup(source: HeaderCarrier): boolean {
+  return getProxyGroups(source).some((group) => {
+    return (
+      group.endsWith(`:${REQUIRED_TECH_COMMITTEE_GROUP}`)
+    );
+  });
 }
 
 export function hasStagingElevatedAccess(source: HeaderCarrier): boolean {
-  return isTrustedProxyRequest(source) && !!getProxyEmail(source);
+  return (
+    isStagingProxyAuthEnabled() &&
+    !!getProxyEmail(source) &&
+    isInTechCommitteeGroup(source)
+  );
 }

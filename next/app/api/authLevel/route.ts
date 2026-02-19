@@ -42,6 +42,12 @@ async function applyStagingProxyAccess(request: Request, authLevel: AuthLevel): 
  *                             authorization level or an error message if the JSON body is invalid.
  */
 export async function PUT(request: Request): Promise<Response> {
+  console.log("[authLevel][PUT] staging proxy debug", {
+    stagingEnabled: process.env.STAGING_PROXY_AUTH,
+    proxyEmail: request.headers.get("x-auth-request-email"),
+    proxyGroups: request.headers.get("x-auth-request-groups"),
+  });
+
   let body;
   try {
     body = await request.json();
@@ -127,6 +133,12 @@ export async function PUT(request: Request): Promise<Response> {
  * HTTP GET request to /api/authLevel/
  */
 export async function GET(request: NextRequest) {
+  console.log("[authLevel][GET] staging proxy debug", {
+    stagingEnabled: process.env.STAGING_PROXY_AUTH,
+    proxyEmail: request.headers.get("x-auth-request-email"),
+    proxyGroups: request.headers.get("x-auth-request-groups"),
+  });
+
   const authToken = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
 
   const authLevel: AuthLevel = {
