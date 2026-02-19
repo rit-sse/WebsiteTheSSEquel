@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { PROXY_EMAIL_HEADER } from "@/lib/proxyAuth";
+import { PROXY_EMAIL_HEADER, PROXY_GROUPS_HEADER } from "@/lib/proxyAuth";
 import { AuthLevel } from "@/lib/authLevel";
 
 export type GatewayAuthLevel = AuthLevel;
@@ -58,9 +58,13 @@ function buildGatewayHeaders(request: Request): HeadersInit {
   };
 
   const proxyEmail = request.headers.get(PROXY_EMAIL_HEADER);
+  const proxyGroups = request.headers.get(PROXY_GROUPS_HEADER);
 
   if (proxyEmail) {
     headers[PROXY_EMAIL_HEADER] = proxyEmail;
+  }
+  if (proxyGroups) {
+    headers[PROXY_GROUPS_HEADER] = proxyGroups;
   }
 
   return headers;

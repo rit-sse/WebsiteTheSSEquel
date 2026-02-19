@@ -13,8 +13,8 @@ async function applyStagingProxyAccess(request: Request, authLevel: AuthLevel): 
 
   const proxyEmail = getProxyEmail(request);
   const user = proxyEmail
-    ? await prisma.user.findUnique({
-        where: { email: proxyEmail },
+    ? await prisma.user.findFirst({
+        where: { email: { equals: proxyEmail, mode: "insensitive" } },
         select: { id: true, _count: { select: { Memberships: true } } },
       })
     : null;
@@ -67,9 +67,7 @@ export async function PUT(request: Request): Promise<Response> {
     isPrimary: false,
   };
 
-  if (await applyStagingProxyAccess(request, authLevel)) {
-    return Response.json(authLevel);
-  }
+  const hasStagingAccess = await applyStagingProxyAccess(request, authLevel);
 
   if (body.token == null) {
     return Response.json(authLevel);
@@ -113,17 +111,19 @@ export async function PUT(request: Request): Promise<Response> {
     authLevel.isUser = true;
     authLevel.membershipCount = membershipCount;
     authLevel.isMember = membershipCount >= 1;
-    authLevel.isMentor = user.mentor.length > 0;
-    authLevel.isOfficer = user.officers.length > 0;
-    authLevel.isMentoringHead = user.officers.some(
-      (officer) => officer.position.title === MENTOR_HEAD_TITLE
-    );
-    authLevel.isProjectsHead = user.officers.some(
-      (officer) => officer.position.title === PROJECTS_HEAD_TITLE
-    );
-    authLevel.isPrimary = user.officers.some(
-      (officer) => officer.position.is_primary
-    );
+    if (!hasStagingAccess) {
+      authLevel.isMentor = user.mentor.length > 0;
+      authLevel.isOfficer = user.officers.length > 0;
+      authLevel.isMentoringHead = user.officers.some(
+        (officer) => officer.position.title === MENTOR_HEAD_TITLE
+      );
+      authLevel.isProjectsHead = user.officers.some(
+        (officer) => officer.position.title === PROJECTS_HEAD_TITLE
+      );
+      authLevel.isPrimary = user.officers.some(
+        (officer) => officer.position.is_primary
+      );
+    }
   }
 
   return Response.json(authLevel);
@@ -154,10 +154,7 @@ export async function GET(request: NextRequest) {
     profileComplete: true,
   };
 
-  if (await applyStagingProxyAccess(request, authLevel)) {
-    authLevel.profileComplete = true;
-    return Response.json(authLevel);
-  }
+  const hasStagingAccess = await applyStagingProxyAccess(request, authLevel);
 
   if (authToken == null) {
     return Response.json(authLevel);
@@ -206,15 +203,17 @@ export async function GET(request: NextRequest) {
     authLevel.isUser = true;
     authLevel.membershipCount = membershipCount;
     authLevel.isMember = membershipCount >= 1;
-    authLevel.isMentor = user.mentor.length > 0;
-    authLevel.isOfficer = user.officers.length > 0;
-    authLevel.isMentoringHead = user.officers.some(
-      (officer) => officer.position.title === MENTOR_HEAD_TITLE
-    );
-    authLevel.isProjectsHead = user.officers.some(
-      (officer) => officer.position.title === PROJECTS_HEAD_TITLE
-    );
-    authLevel.isPrimary = user.officers.some((officer) => officer.position.is_primary);
+    if (!hasStagingAccess) {
+      authLevel.isMentor = user.mentor.length > 0;
+      authLevel.isOfficer = user.officers.length > 0;
+      authLevel.isMentoringHead = user.officers.some(
+        (officer) => officer.position.title === MENTOR_HEAD_TITLE
+      );
+      authLevel.isProjectsHead = user.officers.some(
+        (officer) => officer.position.title === PROJECTS_HEAD_TITLE
+      );
+      authLevel.isPrimary = user.officers.some((officer) => officer.position.is_primary);
+    }
     authLevel.profileComplete = !!(
       user.graduationTerm &&
       user.graduationYear &&
