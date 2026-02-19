@@ -2,18 +2,61 @@ name: Docker Image CI
 
 on:
   push:
-    branches: [ "main"]
+    branches: ["main", "development"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main", "development"]
 
 jobs:
-
-  build:
-
+  build-test:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Build the Docker image
-      working-directory: ./next
-      run: docker build . --file Dockerfile --tag sse-web:$(date +%s)
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image (test only)
+        working-directory: ./next
+        run: |
+          docker build \
+            --build-arg NEXTAUTH_URL=https://ssedev.se.rit.edu \
+            --build-arg NEXT_PUBLIC_ENV=dev \
+            --build-arg GIT_COMMIT=${{ github.sha }} \
+            -t sse-web:test \
+            -f Dockerfile .
+  push-image:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Set environment per branch
+        run: |
+          if [ "${GITHUB_REF_NAME}" = "main" ]; then
+            echo "IMAGE_TAG=prod" >> $GITHUB_ENV
+            echo "NEXTAUTH_URL=https://sse.rit.edu" >> $GITHUB_ENV
+            echo "NEXT_PUBLIC_ENV=prod" >> $GITHUB_ENV
+          else
+            echo "IMAGE_TAG=dev" >> $GITHUB_ENV
+            echo "NEXTAUTH_URL=https://ssedev.se.rit.edu" >> $GITHUB_ENV
+            echo "NEXT_PUBLIC_ENV=dev" >> $GITHUB_ENV
+          fi
+
+      - name: Build image
+        working-directory: ./next
+        run: |
+          docker build \
+            --build-arg NEXTAUTH_URL=${NEXTAUTH_URL} \
+            --build-arg NEXT_PUBLIC_ENV=${NEXT_PUBLIC_ENV} \
+            --build-arg GIT_COMMIT=${{ github.sha }} \
+            -t ghcr.io/${{ github.repository_owner }}/sse-web:${IMAGE_TAG} \
+            -f Dockerfile .
+
+      - name: Push image
+        run: docker push ghcr.io/${{ github.repository_owner }}/sse-web:${IMAGE_TAG}
