@@ -19,10 +19,11 @@ export function getProxyEmail(source: HeaderCarrier): string | null {
   return value || null;
 }
 
-export function getProxyUsername(source: HeaderCarrier): string | null {
-  const value = source.headers.get(PROXY_USER_HEADER)?.trim();
-  return value || null;
-}
+// Dead code, may remove if not used later
+// export function getProxyUsername(source: HeaderCarrier): string | null {
+//   const value = source.headers.get(PROXY_USER_HEADER)?.trim();
+//   return value || null;
+// }
 
 export function hasStagingElevatedAccess(source: HeaderCarrier): boolean {
   return isStagingProxyAuthEnabled();
