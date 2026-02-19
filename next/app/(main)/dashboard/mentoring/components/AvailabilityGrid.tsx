@@ -176,7 +176,7 @@ export default function AvailabilityGrid({
                     className={cn(
                       "rounded-md border px-2 py-2 text-xs text-left transition-colors",
                       selected
-                        ? "border-green-600 bg-green-500/15 text-foreground"
+                        ? "border-green-600 bg-green-500/70 text-foreground"
                         : "border-border bg-background text-muted-foreground"
                     )}
                     onClick={() => toggleSlot(day.value, hour.value)}
