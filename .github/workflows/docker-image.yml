@@ -1,4 +1,4 @@
-name: Docker Image CI
+name: Docker CI
 
 on:
   push:
@@ -7,25 +7,7 @@ on:
     branches: ["main", "development"]
 
 jobs:
-  build-test:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Build Docker image (test only)
-        working-directory: ./next
-        run: |
-          docker build \
-            --build-arg NEXTAUTH_URL=https://ssedev.se.rit.edu \
-            --build-arg NEXT_PUBLIC_ENV=dev \
-            --build-arg GITHUB_SHA=${{ github.sha }} \
-            --build-arg GIT_COMMIT=${GITHUB_SHA::7} \
-            -t sse-web:test \
-            -f Dockerfile .
-
-  push-image:
-    if: github.event_name == 'push'
+  build:
     runs-on: ubuntu-latest
 
     permissions:
@@ -35,24 +17,51 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Log in to GHCR
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
-      - name: Set tag based on branch
+      - name: Set branch variables
         run: |
           if [ "${GITHUB_REF_NAME}" = "main" ]; then
             echo "IMAGE_TAG=prod" >> $GITHUB_ENV
+            echo "NEXTAUTH_URL=https://sse.rit.edu" >> $GITHUB_ENV
+            echo "NEXT_PUBLIC_ENV=prod" >> $GITHUB_ENV
+            echo "DEPLOY_PATH=/root/docker/" >> $GITHUB_ENV
+            echo "DEPLOY_SERVICE=website" >> $GITHUB_ENV
+            echo "GIT_COMMIT_SUFFIX=" >> $GITHUB_ENV
           else
             echo "IMAGE_TAG=dev" >> $GITHUB_ENV
+            echo "NEXTAUTH_URL=https://ssedev.se.rit.edu" >> $GITHUB_ENV
+            echo "NEXT_PUBLIC_ENV=dev" >> $GITHUB_ENV
+            echo "DEPLOY_PATH=/root/docker/" >> $GITHUB_ENV
+            echo "DEPLOY_SERVICE=website-dev" >> $GITHUB_ENV
+            echo "GIT_COMMIT_SUFFIX=-dev" >> $GITHUB_ENV
           fi
 
       - name: Build image
         working-directory: ./next
         run: |
           docker build \
+            --build-arg NEXTAUTH_URL=${NEXTAUTH_URL} \
+            --build-arg NEXT_PUBLIC_ENV=${NEXT_PUBLIC_ENV} \
+            --build-arg GITHUB_SHA=${{ github.sha }} \
+            --build-arg GIT_COMMIT=${GITHUB_SHA::7}${GIT_COMMIT_SUFFIX} \
             -t ghcr.io/${{ github.repository_owner }}/sse-web:${IMAGE_TAG} \
             -f Dockerfile .
 
+      - name: Log in to GHCR
+        if: github.event_name == 'push'
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
       - name: Push image
-        run: |
-          docker push ghcr.io/${{ github.repository_owner }}/sse-web:${IMAGE_TAG}
+        if: github.event_name == 'push'
+        run: docker push ghcr.io/${{ github.repository_owner }}/sse-web:${IMAGE_TAG}
+
+      - name: Deploy to server
+        if: github.event_name == 'push'
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSE_DEPLOY_KEY }}
+          script: |
+            cd ${{ env.DEPLOY_PATH }}
+            docker compose pull ${{ env.DEPLOY_SERVICE }}
+            docker compose up -d ${{ env.DEPLOY_SERVICE }}
