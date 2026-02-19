@@ -25,5 +25,5 @@ export function getProxyUsername(source: HeaderCarrier): string | null {
 }
 
 export function hasStagingElevatedAccess(source: HeaderCarrier): boolean {
-  return isStagingProxyAuthEnabled() && !!getProxyEmail(source);
+  return isStagingProxyAuthEnabled();
 }
