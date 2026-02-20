@@ -31,7 +31,11 @@ export function FontModeProvider({
   React.useLayoutEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY) as FontMode | null
     if (stored && (stored === "rethink" || stored === "pt-serif")) {
+      // Sync both React state AND the DOM attribute — the init script in
+      // layout.tsx handles the common case, but this closes the gap if
+      // React state and the DOM attribute ever drift apart.
       setFontModeState(stored)
+      document.documentElement.setAttribute("data-font", stored)
     }
   }, [])
 
