@@ -54,7 +54,6 @@ export async function POST(request: NextRequest) {
 
     const targetSemesterId = semesterId ?? null
     const mentors = await prisma.mentor.findMany({
-      where: { isActive: true },
       select: {
         id: true,
         user: { select: { name: true, email: true } },
@@ -86,6 +85,7 @@ export async function POST(request: NextRequest) {
 
     let created = 0
     let skipped = 0
+    let duplicates = 0
     const errors: string[] = []
 
     for (let index = 0; index < rows.length; index++) {
@@ -104,12 +104,6 @@ export async function POST(request: NextRequest) {
         })
         .filter((id): id is number => !!id)
 
-      if (mentorIds.length === 0) {
-        skipped += 1
-        errors.push(`Row ${index + 1}: no matching mentors`)
-        continue
-      }
-
       if (type === "mentor") {
         if (typeof row.peopleInLab !== "number" || !row.feeling) {
           skipped += 1
@@ -117,21 +111,34 @@ export async function POST(request: NextRequest) {
           continue
         }
 
-        const entry = await prisma.mentorHeadcountEntry.create({
+        const existing = await prisma.mentorHeadcountEntry.findFirst({
+          where: {
+            createdAt,
+            peopleInLab: row.peopleInLab,
+            feeling: row.feeling,
+            semesterId: targetSemesterId,
+          },
+        })
+        if (existing) {
+          duplicates += 1
+          continue
+        }
+
+        await prisma.mentorHeadcountEntry.create({
           data: {
             semesterId: targetSemesterId,
             peopleInLab: row.peopleInLab,
             feeling: row.feeling,
             createdAt,
-            mentors: {
+            mentors: mentorIds.length > 0 ? {
               createMany: {
                 data: mentorIds.map((mentorId) => ({ mentorId })),
               },
-            },
+            } : undefined,
           },
         })
 
-        if (entry) created += 1
+        created += 1
       } else {
         if (
           typeof row.studentsMentoredCount !== "number" ||
@@ -142,18 +149,31 @@ export async function POST(request: NextRequest) {
           continue
         }
 
-        const entry = await prisma.menteeHeadcountEntry.create({
+        const existing = await prisma.menteeHeadcountEntry.findFirst({
+          where: {
+            createdAt,
+            studentsMentoredCount: row.studentsMentoredCount,
+            testsCheckedOutCount: row.testsCheckedOutCount,
+            semesterId: targetSemesterId,
+          },
+        })
+        if (existing) {
+          duplicates += 1
+          continue
+        }
+
+        await prisma.menteeHeadcountEntry.create({
           data: {
             semesterId: targetSemesterId,
             studentsMentoredCount: row.studentsMentoredCount,
             testsCheckedOutCount: row.testsCheckedOutCount,
             otherClassText: row.otherClassText ?? null,
             createdAt,
-            mentors: {
+            mentors: mentorIds.length > 0 ? {
               createMany: {
                 data: mentorIds.map((mentorId) => ({ mentorId })),
               },
-            },
+            } : undefined,
             classes: row.classes && row.classes.length > 0 ? {
               createMany: {
                 data: row.classes
@@ -166,7 +186,7 @@ export async function POST(request: NextRequest) {
           },
         })
 
-        if (entry) created += 1
+        created += 1
       }
     }
 
@@ -174,6 +194,7 @@ export async function POST(request: NextRequest) {
       success: true,
       created,
       skipped,
+      duplicates,
       errors: errors.slice(0, 10),
     })
   } catch (error) {

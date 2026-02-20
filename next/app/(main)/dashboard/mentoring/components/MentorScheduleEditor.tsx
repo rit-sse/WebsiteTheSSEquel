@@ -168,6 +168,7 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
   const [importResult, setImportResult] = useState<{
     created: number
     skipped: number
+    duplicates: number
     errors: string[]
   } | null>(null)
   const [isImporting, setIsImporting] = useState(false)
@@ -810,6 +811,7 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
         setImportResult({
           created: data.created,
           skipped: data.skipped,
+          duplicates: data.duplicates ?? 0,
           errors: data.errors || [],
         })
         toast.success("Headcount import completed")
@@ -1631,6 +1633,7 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
           {importResult && (
             <div className="rounded-md border bg-muted/40 p-3 text-sm">
               <div>Created: {importResult.created}</div>
+              <div>Duplicates (already existed): {importResult.duplicates}</div>
               <div>Skipped: {importResult.skipped}</div>
               {importResult.errors.length > 0 && (
                 <div className="text-xs text-muted-foreground">
