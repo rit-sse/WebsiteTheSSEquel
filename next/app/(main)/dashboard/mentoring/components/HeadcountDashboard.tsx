@@ -671,7 +671,7 @@ export default function HeadcountDashboard() {
                     <BarChart data={dayAverages} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
                       <XAxis dataKey="day" tick={{ fontSize: 10 }} />
                       <YAxis tick={{ fontSize: 10 }} />
-                      <Tooltip contentStyle={{ fontSize: 11 }} formatter={(v: number) => [v, "Avg people"]} />
+                      <Tooltip contentStyle={{ fontSize: 11 }} formatter={(v) => [v ?? 0, "Avg people"]} />
                       <Bar dataKey="avg" name="Avg people" fill="#3b82f6" radius={[3, 3, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
