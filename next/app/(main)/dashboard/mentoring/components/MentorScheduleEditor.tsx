@@ -169,6 +169,7 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
     created: number
     skipped: number
     duplicates: number
+    semestersUsed: string[]
     errors: string[]
   } | null>(null)
   const [isImporting, setIsImporting] = useState(false)
@@ -801,7 +802,6 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           type: importType,
-          semesterId: activeSemester?.id,
           rows: buildImportPayload(),
         }),
       })
@@ -812,6 +812,7 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
           created: data.created,
           skipped: data.skipped,
           duplicates: data.duplicates ?? 0,
+          semestersUsed: data.semestersUsed ?? [],
           errors: data.errors || [],
         })
         toast.success("Headcount import completed")
@@ -1635,6 +1636,11 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
               <div>Created: {importResult.created}</div>
               <div>Duplicates (already existed): {importResult.duplicates}</div>
               <div>Skipped: {importResult.skipped}</div>
+              {importResult.semestersUsed.length > 0 && (
+                <div className="text-xs text-muted-foreground mt-1">
+                  Semesters: {importResult.semestersUsed.join(", ")}
+                </div>
+              )}
               {importResult.errors.length > 0 && (
                 <div className="text-xs text-muted-foreground">
                   {importResult.errors.join(" • ")}
@@ -1643,13 +1649,37 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
             </div>
           )}
         </div>
-        <ModalFooter>
-          <Button variant="ghost" onClick={() => setImportModalOpen(false)}>
-            Close
+        <ModalFooter className="flex justify-between">
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={async () => {
+              if (!confirm("Delete ALL headcount entries across every semester? This cannot be undone.")) return
+              try {
+                const res = await fetch("/api/headcount-import", { method: "DELETE" })
+                const data = await res.json()
+                if (res.ok) {
+                  toast.success(`Cleared ${data.deleted.mentorEntries} mentor + ${data.deleted.menteeEntries} mentee entries`)
+                  setImportResult(null)
+                  fetchTraffic()
+                } else {
+                  toast.error(data.error || "Failed to clear data")
+                }
+              } catch {
+                toast.error("Failed to clear headcount data")
+              }
+            }}
+          >
+            Clear All Headcount Data
           </Button>
-          <Button onClick={handleRunImport} disabled={isImporting || importRows.length === 0}>
-            {isImporting ? "Importing..." : "Run Import"}
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="ghost" onClick={() => setImportModalOpen(false)}>
+              Close
+            </Button>
+            <Button onClick={handleRunImport} disabled={isImporting || importRows.length === 0}>
+              {isImporting ? "Importing..." : "Run Import"}
+            </Button>
+          </div>
         </ModalFooter>
       </Modal>
 

@@ -7,6 +7,7 @@ export const dynamic = "force-dynamic"
 export interface SemesterTrend {
   semesterId: number | null
   semesterName: string
+  chronologicalIndex: number
   // mentor headcount (30-min form)
   mentorSubmissions: number
   avgPeopleInLab: number
@@ -103,8 +104,9 @@ export async function GET() {
   ])
 
   const trends: SemesterTrend[] = []
+  let chronoIdx = 0
 
-  // First emit known semesters in creation order (so charts are chronological)
+  // First emit known semesters in chronological order
   for (const s of semesters) {
     if (!allKeys.has(s.id)) continue
     allKeys.delete(s.id)
@@ -115,6 +117,7 @@ export async function GET() {
     trends.push({
       semesterId: s.id,
       semesterName: s.name,
+      chronologicalIndex: chronoIdx++,
       mentorSubmissions: m?.count ?? 0,
       avgPeopleInLab: m ? Math.round((m.totalPeople / m.count) * 10) / 10 : 0,
       menteeSubmissions: me?.count ?? 0,
@@ -132,6 +135,7 @@ export async function GET() {
     trends.push({
       semesterId: key,
       semesterName: semesterNames.get(key) ?? "Unassigned",
+      chronologicalIndex: chronoIdx++,
       mentorSubmissions: m?.count ?? 0,
       avgPeopleInLab: m ? Math.round((m.totalPeople / m.count) * 10) / 10 : 0,
       menteeSubmissions: me?.count ?? 0,

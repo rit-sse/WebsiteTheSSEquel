@@ -189,7 +189,7 @@ export default function HeadcountDashboard() {
   const [menteeEntries, setMenteeEntries] = useState<MenteeEntry[]>([])
 
   // Sort state for comparison table
-  const [sortKey, setSortKey] = useState<keyof SemesterTrend>("semesterId")
+  const [sortKey, setSortKey] = useState<keyof SemesterTrend>("chronologicalIndex")
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc")
 
   // ── Fetch semesters once ────────────────────────────────────────────────────
