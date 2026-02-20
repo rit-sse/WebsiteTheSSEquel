@@ -120,6 +120,9 @@ export default function Leaderboard() {
                     addLabel="Add Membership"
                     isLoading={isLoading}
                     emptyMessage="No memberships yet"
+                    enablePagination
+                    pageSizeOptions={[10, 25, 50, 100]}
+                    defaultPageSize={25}
                 />
                 {isOfficer && (
                     <AddMembershipModal open={open} onOpenChange={setOpen} onCreated={load} />
