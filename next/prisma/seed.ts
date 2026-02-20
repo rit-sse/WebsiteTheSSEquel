@@ -35,8 +35,7 @@ async function seedUser() {
 		update: {},
 		create: {
 			name: "Jane Doe",
-			email: "janedoe@rit.edu",
-			gitHub: "github.com/Clarifie",
+			email: "janedoe@rit.edu"
 		},
 	});
 	const johnsmith = await prisma.user.upsert({
@@ -44,8 +43,7 @@ async function seedUser() {
 		update: {},
 		create: {
 			name: "John Smith",
-			email: "johnsmith@rit.edu",
-			gitHub: "github.com/pybash",
+			email: "johnsmith@rit.edu"
 		},
 	});
 	console.log({ johndoe, janedoe, johnsmith });

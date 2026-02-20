@@ -2,6 +2,7 @@ import { Github, Linkedin, Mail } from "lucide-react";
 import { TeamMember } from "./team";
 import Avatar from "boring-avatars";
 import { Card } from "@/components/ui/card";
+import { ensureGithubUrl, ensureLinkedinUrl } from "@/lib/utils";
 
 function getOfficerPhoto(teamMember: TeamMember) {
   // Image URL is already resolved by the API via resolveUserImage()
@@ -9,18 +10,6 @@ function getOfficerPhoto(teamMember: TeamMember) {
     return teamMember.image;
   }
   return null;
-}
-
-function ensureGithubUrl(val: string): string {
-  if (val.startsWith("https://") || val.startsWith("http://")) return val;
-  if (val.includes("github.com")) return `https://${val}`;
-  return `https://github.com/${val}`;
-}
-
-function ensureLinkedinUrl(val: string): string {
-  if (val.startsWith("https://") || val.startsWith("http://")) return val;
-  if (val.includes("linkedin.com")) return `https://${val}`;
-  return `https://linkedin.com/in/${val}`;
 }
 
 interface OfficerCardProps {
