@@ -47,16 +47,19 @@ function getSessionTokenFromRequest(request: Request): string | null {
   return null;
 }
 
-function resolveInternalApiBase(request: Request): string {
+function resolveInternalApiBase(request: Request, preferRequestOrigin = false): string {
+  const requestOrigin =
+    "nextUrl" in request ? (request as NextRequest).nextUrl.origin : new URL(request.url).origin;
+
+  if (preferRequestOrigin) {
+    return requestOrigin;
+  }
+
   if (process.env.INTERNAL_API_URL) {
     return process.env.INTERNAL_API_URL.replace(/\/$/, "");
   }
 
-  if ("nextUrl" in request) {
-    return (request as NextRequest).nextUrl.origin;
-  }
-
-  return new URL(request.url).origin;
+  return requestOrigin;
 }
 
 function buildGatewayHeaders(request: Request): HeadersInit {
@@ -98,7 +101,8 @@ export async function getGatewayAuthLevel(request: Request): Promise<GatewayAuth
     }
 
     const token = getSessionTokenFromRequest(request);
-    const baseUrl = resolveInternalApiBase(request);
+    // In edge middleware, prefer same-origin to avoid cross-network INTERNAL_API_URL latency/failures.
+    const baseUrl = resolveInternalApiBase(request, true);
     const response = await fetch(`${baseUrl}/api/authLevel`, {
       method: "PUT",
       headers: buildGatewayHeaders(request),
