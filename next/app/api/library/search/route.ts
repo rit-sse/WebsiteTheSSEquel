@@ -36,6 +36,6 @@ export async function GET(request: NextRequest) {
         return new Response(JSON.stringify(results), { status: 200 });
     } catch (e) {
         console.error("Error searching for books:", e);
-        return new Response(JSON.stringify({ error: `Failed to search for books: ${e}` }), { status: 500 });
+        return new Response(JSON.stringify({ error: "Failed to search for books" }), { status: 500 });
     }
 }

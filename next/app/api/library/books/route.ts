@@ -74,6 +74,6 @@ export async function GET(request: NextRequest) {
         return new Response(JSON.stringify(book), { status: 200 });
     } catch (e) {
         console.error("Error fetching book:", e);
-        return new Response(JSON.stringify({ error: `Failed to fetch book: ${e}` }), { status: 500 });
+        return new Response(JSON.stringify({ error: `Failed to fetch book` }), { status: 500 });
     }
 }

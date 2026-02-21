@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
         return new Response(JSON.stringify(copies), { status: 200 });
     } catch (e) {
         console.error("Error fetching copies:", e);
-        return new Response(JSON.stringify({ error: `Failed to fetch copies: ${e}` }), { status: 500 });
+        return new Response(JSON.stringify({ error: "Failed to fetch copies" }), { status: 500 });
     }
 }
 
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
         return new Response(JSON.stringify(bookData), { status: 200 });
     } catch (e) {
         console.error("Error creating copy:", e);
-        return new Response(JSON.stringify({ error: `Failed to create copy: ${e}` }), { status: 500 });
+        return new Response(JSON.stringify({ error: "Failed to create copy" }), { status: 500 });
     }
 }
 
@@ -90,6 +90,6 @@ export async function PUT(request: NextRequest) {
         return new Response(JSON.stringify(updatedCopy), { status: 200 });
     } catch (e) {
         console.error("Error updating copy:", e);
-        return new Response(JSON.stringify({ error: `Failed to update copy: ${e}` }), { status: 500 });
+        return new Response(JSON.stringify({ error: "Failed to update copy" }), { status: 500 });
     }
 }

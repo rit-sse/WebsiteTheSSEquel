@@ -79,7 +79,7 @@ export async function GET(request: NextRequest) {
         return new Response(JSON.stringify(response), { status: 200 });
     } catch (e) {
         console.error("Error fetching categories:", e);
-        return new Response(JSON.stringify({ error: `Failed to fetch categories: ${e}` }), { status: 500 });
+        return new Response(JSON.stringify({ error: "Failed to fetch categories" }), { status: 500 });
 
     }
 }
@@ -120,7 +120,7 @@ export async function PUT(request: NextRequest) {
         return new Response(JSON.stringify(updatedCategory), { status: 200 });
     } catch (e) {
         console.error("Error updating category:", e);
-        return new Response(JSON.stringify({ error: `Failed to update category: ${e}` }), { status: 500 });
+        return new Response(JSON.stringify({ error: "Failed to update category" }), { status: 500 });
     }
 }
 
@@ -158,7 +158,7 @@ export async function POST(request: NextRequest) {
         return new Response(JSON.stringify(newCategory), { status: 200 });
     } catch (e) {
         console.error("Error creating category:", e);
-        return new Response(JSON.stringify({ error: `Failed to create category: ${e}` }), { status: 500 });
+        return new Response(JSON.stringify({ error: "Failed to create category" }), { status: 500 });
     }
 }
 
@@ -181,6 +181,6 @@ export async function DELETE(request: NextRequest) {
         return new Response(JSON.stringify(deletedCategory), { status: 200 });
     } catch (e) {
         console.error("Error deleting category:", e);
-        return new Response(JSON.stringify({ error: `Failed to delete category: ${e}` }), { status: 500 });
+        return new Response(JSON.stringify({ error: "Failed to delete category" }), { status: 500 });
     }
 }

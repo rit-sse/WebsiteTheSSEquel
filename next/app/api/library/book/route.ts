@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
         }), { status: 404 });
     } catch (e) {
         console.error("Error fetching book:", e);
-        return new Response(JSON.stringify({ error: `Failed to fetch book: ${e}` }), { status: 500 });
+        return new Response(JSON.stringify({ error: "Failed to fetch book" }), { status: 500 });
     }
 
 }
@@ -128,11 +128,11 @@ export async function POST(request: NextRequest) {
             return new Response(JSON.stringify(newBook), { status: 200 });
         } catch (e) {
             console.error("Error creating book:", e);
-            return new Response(JSON.stringify({ error: `Failed to create book: ${e}` }), { status: 500 });
+            return new Response(JSON.stringify({ error: "Failed to create book" }), { status: 500 });
         }
     } catch (e) {
         console.error("Error processing request:", e);
-        return new Response(JSON.stringify({ error: `Failed to process request: ${e}` }), { status: 500 });
+        return new Response(JSON.stringify({ error: "Failed to process request" }), { status: 500 });
     }
 }
 export async function PUT(request: NextRequest) {
@@ -192,11 +192,11 @@ export async function PUT(request: NextRequest) {
             return new Response(JSON.stringify(updatedBook), { status: 200 });
         } catch (e) {
             console.error("Error updating/creating book:", e);
-            return new Response(`Failed to update/create book: ${e}`, { status: 500 });
+            return new Response("Failed to update/create book", { status: 500 });
         }
     } catch (e) {
         console.error("Error processing request:", e);
-        return new Response(`Failed to process request: ${e}`, { status: 500 });
+        return new Response("Failed to process request", { status: 500 });
     }
 }
 
@@ -240,10 +240,10 @@ export async function DELETE(request: NextRequest) {
             return new Response(JSON.stringify({ message: "Book deleted successfully" }), { status: 200 });
         } catch (e) {
             console.error("Error deleting book:", e);
-            return new Response(JSON.stringify({ error: `Failed to delete book: ${e}` }), { status: 500 });
+            return new Response(JSON.stringify({ error: "Failed to delete book" }), { status: 500 });
         }
     } catch (e) {
         console.error("Error processing request:", e);
-        return new Response(JSON.stringify({ error: `Failed to process request: ${e}` }), { status: 500 });
+        return new Response(JSON.stringify({ error: `Failed to process request.` }), { status: 500 });
     }
 }

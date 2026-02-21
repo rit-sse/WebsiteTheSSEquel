@@ -37,7 +37,8 @@ export async function POST(request: NextRequest) {
         writeFileSync(imagePath, buffer);
         return Response.json({ message: "Image uploaded successfully" });
     } catch (e) {
-        return new Response(`Failed to upload image: ${e}`, { status: 500 });
+        console.error("Error uploading image:", e);
+        return new Response("Failed to upload image", { status: 500 });
     }
 
 }
@@ -79,7 +80,8 @@ export async function PUT(request: NextRequest) {
         writeFileSync(imagePath, buffer);
         return Response.json({ message: "Image uploaded successfully", imageUrl: `/library-assets/${ISBN}.jpg` });
     } catch (e) {
-        return new Response(`Failed to upload image: ${e}`, { status: 500 });
+        console.error("Error uploading image:", e);
+        return new Response("Failed to upload image", { status: 500 });
     }
 
 }

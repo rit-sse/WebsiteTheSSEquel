@@ -19,6 +19,6 @@ export async function GET() {
         });
     } catch (e) {
         console.error("Error fetching statistics:", e);
-        return new Response(JSON.stringify({ error: `Failed to fetch statistics: ${e}` }), { status: 500 });
+        return new Response(JSON.stringify({ error: "Failed to fetch statistics" }), { status: 500 });
     }
 }

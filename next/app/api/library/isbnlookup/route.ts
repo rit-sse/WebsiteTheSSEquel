@@ -33,11 +33,12 @@ export async function GET(params: NextRequest) {
             bookData["publisher"] = jsonRes["publishers"].join(", ") ?? ""
             bookData["yearPublished"] = (new Date(jsonRes.publish_date).getFullYear()) ?? 0;
         } catch (e) {
-            return new Response(JSON.stringify({ "error": e }), { status: 500 });
+            console.error("Error fetching external book data:", e);
+            return new Response(JSON.stringify({ error: "Failed to fetch book data" }), { status: 500 });
         }
         return new Response(JSON.stringify(bookData), { status: 200 });
     } catch (e) {
         console.error("Error fetching book data:", e);
-        return new Response(JSON.stringify({ error: `Failed to fetch book data: ${e}` }), { status: 500 });
+        return new Response(JSON.stringify({ error: "Failed to fetch book data" }), { status: 500 });
     }
 }
