@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
         let id = request.nextUrl.searchParams.get("id") || "";
         let simple = request.nextUrl.searchParams.get("simple") === "true"; // If true, only return ISBN and id for copies, and do not return id for book details.
 
-        if (isbn || isbn.trim() !== "") {
+        if (isbn && isbn.trim() !== "") {
             
             const book = await prisma.textbookCopies.findMany({
                 where: {
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
             return new Response(JSON.stringify(book), { status: 200 });
         }
 
-        if (id || id.trim() !== "") {
+        if (id && id.trim() !== "") {
             const book = await prisma.textbooks.findFirst({
                 where: {
                     id: parseInt(id),

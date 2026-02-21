@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
         let id = request.nextUrl.searchParams.get("id") || "";
         let getCount = request.nextUrl.searchParams.get("count") === "true";
 
-        if (isbn || isbn.trim() !== "") {
+        if (isbn && isbn.trim() !== "") {
             // Get book details by ISBN
             const book = await prisma.textbooks.findFirst({
                 where: {

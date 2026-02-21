@@ -32,7 +32,7 @@ export default function MentorPortal() {
                 </span>
 
                 <hr className="my-3"/>
-                <p className="italic font-serif text-[15px] w-[100%] text-right">Last Updated: Feburary 6, 2026</p>
+                <p className="italic font-serif text-[15px] w-[100%] text-right">Last Updated: February 21, 2026</p>
             </div>
         </>
     );
