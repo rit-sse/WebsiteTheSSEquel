@@ -118,6 +118,10 @@ export async function POST(request: NextRequest) {
                 },
             });
 
+            if (!/^[\d-]+$/.test(ISBN)) {
+                return new Response("Invalid ISBN Format", { status: 400 });
+            }
+
             // Save the uploaded image to the public directory with the filename as the ISBN
             writeFileSync(`./public/library-assets/${ISBN}.jpg`, Buffer.from(await image.arrayBuffer()));
 
@@ -151,6 +155,10 @@ export async function PUT(request: NextRequest) {
 
         if (!ISBN || !name || !authors) {
             return new Response('"ISBN", "name", and "authors" are required', { status: 400 });
+        }
+
+        if (!/^[\d-]+$/.test(ISBN)) {
+            return new Response("Invalid ISBN Format", { status: 400 });
         }
 
         try {
@@ -214,6 +222,9 @@ export async function DELETE(request: NextRequest) {
         // If ISBN is not provided, return an error
         if (!ISBN) {
             return new Response('"ISBN" is required', { status: 400 });
+        }
+        if (!/^[\d-]+$/.test(ISBN)) {
+            return new Response("Invalid ISBN Format", { status: 400 });
         }
 
         try {

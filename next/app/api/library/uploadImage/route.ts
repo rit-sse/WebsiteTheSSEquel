@@ -26,6 +26,10 @@ export async function POST(request: NextRequest) {
         return new Response('"imageData" is required', { status: 400 });
     }
 
+    if(!/^[\d-]+$/.test(ISBN)) {
+        return new Response("Invalid ISBN Format", { status: 400 });
+    }
+
     try {
         const base64Data = imageData.replace(/^data:image\/\w+;base64,/, "");
         const buffer = Buffer.from(base64Data, 'base64');
@@ -62,6 +66,10 @@ export async function PUT(request: NextRequest) {
     }
     if (!ISBN) {
         return new Response('"ISBN" is required for updating image', { status: 400 });
+    }
+
+    if(!/^[\d-]+$/.test(ISBN)) {
+        return new Response("Invalid ISBN Format", { status: 400 });
     }
 
     try {
