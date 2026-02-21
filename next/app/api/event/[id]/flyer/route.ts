@@ -35,9 +35,12 @@ export async function GET(
       );
     }
 
-    const host = request.headers.get("host") || "localhost:3000";
-    const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
-    const attendanceUrl = `${protocol}://${host}/events/${eventId}/attend`;
+    const baseUrl =
+      request.nextUrl.origin ||
+      process.env.NEXTAUTH_URL ||
+      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined) ||
+      "http://localhost:3000";
+    const attendanceUrl = `${baseUrl}/events/${eventId}/attend`;
 
     // Generate QR code as SVG string
     const qrCodeSvg = await QRCode.toString(attendanceUrl, {

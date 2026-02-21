@@ -1,7 +1,7 @@
-import { MENTOR_HEAD_TITLE } from "@/lib/utils";
 import prisma from "@/lib/prisma";
 import { NextRequest } from "next/server";
 import { resolveUserImage } from "@/lib/s3Utils";
+import { getGatewayAuthLevel } from "@/lib/authGateway";
 
 export const dynamic = "force-dynamic";
 
@@ -28,39 +28,9 @@ function parseCourses(coursesJson: string | null | undefined): string[] {
 /**
  * Check if user can manage mentors (Mentoring Head or Primary Officer)
  */
-async function canManageMentors(sessionToken: string | undefined): Promise<boolean> {
-  if (!sessionToken) return false;
-
-  const user = await prisma.user.findFirst({
-    where: {
-      session: {
-        some: {
-          sessionToken,
-        },
-      },
-    },
-    select: {
-      officers: {
-        where: { is_active: true },
-        select: {
-          position: {
-            select: {
-              title: true,
-              is_primary: true,
-            },
-          },
-        },
-      },
-    },
-  });
-
-  if (!user) return false;
-
-  return user.officers.some(
-    (officer) =>
-      officer.position.title === MENTOR_HEAD_TITLE ||
-      officer.position.is_primary
-  );
+async function canManageMentors(request: NextRequest): Promise<boolean> {
+  const authLevel = await getGatewayAuthLevel(request);
+  return authLevel.isMentoringHead || authLevel.isPrimary;
 }
 
 /**
@@ -231,8 +201,7 @@ export async function POST(request: NextRequest) {
   const user_Id = body.userId;
 
   // Only Mentoring Head or Primary Officers may modify mentors
-  const sessionToken = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
-  if (!(await canManageMentors(sessionToken))) {
+  if (!(await canManageMentors(request))) {
     return new Response("Only the Mentoring Head or Primary Officers may modify mentorships", {
       status: 403,
     });
@@ -272,8 +241,7 @@ export async function DELETE(request: NextRequest) {
   const id = body.id;
 
   // Only Mentoring Head or Primary Officers may modify mentors
-  const sessionToken = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
-  if (!(await canManageMentors(sessionToken))) {
+  if (!(await canManageMentors(request))) {
     return new Response("Only the Mentoring Head or Primary Officers may modify mentorships", {
       status: 403,
     });
@@ -285,21 +253,52 @@ export async function DELETE(request: NextRequest) {
     return new Response(`Couldn't find mentor ID ${id}`, { status: 404 });
   }
   
-  // Delete related records
-  await prisma.courseTaken.deleteMany({
-    where: { mentorId: id },
-  });
-  await prisma.mentorSkill.deleteMany({
-    where: { mentor_Id: id },
-  });
-  await prisma.schedule.deleteMany({
-    where: { mentorId: id },
-  });
-  await prisma.scheduleBlock.deleteMany({
-    where: { mentorId: id },
-  });
+  const mentor = await prisma.$transaction(async (tx) => {
+    const mentorRecord = await tx.mentor.findUnique({
+      where: { id },
+      select: { user_Id: true },
+    });
 
-  const mentor = await prisma.mentor.delete({ where: { id: id } });
+    if (!mentorRecord) {
+      throw new Error(`Couldn't find mentor ID ${id}`);
+    }
+
+    // Delete related records
+    await tx.courseTaken.deleteMany({
+      where: { mentorId: id },
+    });
+    await tx.mentorSkill.deleteMany({
+      where: { mentor_Id: id },
+    });
+    await tx.schedule.deleteMany({
+      where: { mentorId: id },
+    });
+    await tx.scheduleBlock.deleteMany({
+      where: { mentorId: id },
+    });
+
+    // Remove the mentor's applications when they are removed from roster.
+    const applicationIds = await tx.mentorApplication.findMany({
+      where: { userId: mentorRecord.user_Id },
+      select: { id: true },
+    });
+
+    if (applicationIds.length > 0) {
+      await tx.invitation.deleteMany({
+        where: {
+          applicationId: {
+            in: applicationIds.map((application) => application.id),
+          },
+        },
+      });
+
+      await tx.mentorApplication.deleteMany({
+        where: { userId: mentorRecord.user_Id },
+      });
+    }
+
+    return tx.mentor.delete({ where: { id } });
+  });
   return Response.json(mentor);
 }
 
@@ -326,8 +325,7 @@ export async function PUT(request: NextRequest) {
   const id = body.id;
 
   // Only Mentoring Head or Primary Officers may modify mentors
-  const sessionToken = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
-  if (!(await canManageMentors(sessionToken))) {
+  if (!(await canManageMentors(request))) {
     return new Response("Only the Mentoring Head or Primary Officers may modify mentorships", {
       status: 403,
     });

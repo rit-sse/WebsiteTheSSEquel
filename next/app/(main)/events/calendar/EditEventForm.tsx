@@ -8,7 +8,25 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Loader2, Calendar, MapPin, Image as ImageIcon, Users } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { toast } from "sonner"
+import { Loader2, Calendar, MapPin, Image as ImageIcon, Users, Link2, Unlink, CreditCard } from "lucide-react"
+
+interface LinkedPurchaseRequest {
+  id: number
+  description: string
+  estimatedCost: string
+  status: string
+}
+
+interface AvailablePurchaseRequest {
+  id: number
+  name: string
+  description: string
+  estimatedCost: string
+  status: string
+  eventId: string | null
+}
 
 interface FormProps {
   isOpen: boolean
@@ -31,6 +49,13 @@ export default function EditEventForm({
 }: FormProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Purchase request linking state
+  const [linkedPurchases, setLinkedPurchases] = useState<LinkedPurchaseRequest[]>([])
+  const [availablePurchases, setAvailablePurchases] = useState<AvailablePurchaseRequest[]>([])
+  const [showLinkSelect, setShowLinkSelect] = useState(false)
+  const [purchaseSearch, setPurchaseSearch] = useState("")
+  const [isLinkingPurchase, setIsLinkingPurchase] = useState(false)
 
   // Form state
   const [eventName, setEventName] = useState("")
@@ -57,8 +82,72 @@ export default function EditEventForm({
       setGrantsMembership(event.grantsMembership ?? false)
       setModalEvent(false)
       setError(null)
+      setShowLinkSelect(false)
+      setPurchaseSearch("")
+
+      // Fetch linked and available purchase requests
+      if (event.id) {
+        fetch(`/api/event/${event.id}/purchases`)
+          .then((r) => r.ok ? r.json() : [])
+          .then((data: LinkedPurchaseRequest[]) => setLinkedPurchases(Array.isArray(data) ? data : []))
+          .catch(() => {})
+
+        fetch("/api/purchasing")
+          .then((r) => r.ok ? r.json() : [])
+          .then((data: AvailablePurchaseRequest[]) =>
+            setAvailablePurchases(data.filter((p) => !p.eventId || p.eventId === event.id))
+          )
+          .catch(() => {})
+      }
     }
   }, [isOpen, event, setModalEvent])
+
+  const handleLinkPurchase = async (purchaseId: number) => {
+    if (!event?.id) return
+    setIsLinkingPurchase(true)
+    try {
+      const res = await fetch(`/api/purchasing/${purchaseId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ eventId: event.id }),
+      })
+      if (res.ok) {
+        toast.success("Purchase request linked")
+        const found = availablePurchases.find((p) => p.id === purchaseId)
+        if (found) setLinkedPurchases((prev) => [...prev, { id: found.id, description: found.description, estimatedCost: found.estimatedCost, status: found.status }])
+        setAvailablePurchases((prev) => prev.map((p) => p.id === purchaseId ? { ...p, eventId: event.id ?? null } : p))
+        setShowLinkSelect(false)
+      } else {
+        toast.error("Failed to link purchase request")
+      }
+    } catch {
+      toast.error("Failed to link purchase request")
+    } finally {
+      setIsLinkingPurchase(false)
+    }
+  }
+
+  const handleUnlinkPurchase = async (purchaseId: number) => {
+    setIsLinkingPurchase(true)
+    try {
+      const res = await fetch(`/api/purchasing/${purchaseId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ eventId: null }),
+      })
+      if (res.ok) {
+        toast.success("Purchase request unlinked")
+        setLinkedPurchases((prev) => prev.filter((p) => p.id !== purchaseId))
+        setAvailablePurchases((prev) => prev.map((p) => p.id === purchaseId ? { ...p, eventId: null } : p))
+      } else {
+        toast.error("Failed to unlink purchase request")
+      }
+    } catch {
+      toast.error("Failed to unlink purchase request")
+    } finally {
+      setIsLinkingPurchase(false)
+    }
+  }
 
   const onSave = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -250,6 +339,96 @@ export default function EditEventForm({
             <Label htmlFor="grantsMembership" className="text-sm font-normal cursor-pointer">
               Grant membership to attendees
             </Label>
+          </div>
+        )}
+      </div>
+
+      {/* P-Card Request Linking */}
+      <div className="space-y-3 p-4 bg-surface-2 rounded-lg border">
+        <Label className="flex items-center gap-2 font-medium">
+          <CreditCard className="h-4 w-4" />
+          Linked Purchase Requests
+        </Label>
+
+        {linkedPurchases.length > 0 ? (
+          <div className="space-y-1.5">
+            {linkedPurchases.map((p) => (
+              <div key={p.id} className="flex items-center justify-between gap-2 text-sm">
+                <div className="flex items-center gap-2 min-w-0">
+                  <Link2 className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                  <span className="truncate">{p.description.substring(0, 40)}{p.description.length > 40 ? "..." : ""}</span>
+                  <Badge variant="outline" className="text-xs shrink-0">${parseFloat(p.estimatedCost).toFixed(2)}</Badge>
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => handleUnlinkPurchase(p.id)}
+                  disabled={isLinkingPurchase}
+                  className="text-muted-foreground hover:text-destructive shrink-0 h-7 w-7 p-0"
+                  title="Unlink"
+                >
+                  <Unlink className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">No purchase requests linked</p>
+        )}
+
+        {!showLinkSelect ? (
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => setShowLinkSelect(true)}
+            className="gap-1.5"
+          >
+            <Link2 className="h-3.5 w-3.5" />
+            Link a purchase request
+          </Button>
+        ) : (
+          <div className="space-y-2">
+            <Input
+              placeholder="Search purchase requests..."
+              value={purchaseSearch}
+              onChange={(e) => setPurchaseSearch(e.target.value)}
+              autoFocus
+            />
+            <div className="max-h-48 overflow-y-auto border rounded-md space-y-0.5">
+              {availablePurchases
+                .filter((p) => !p.eventId || p.eventId === event?.id)
+                .filter((p) => !linkedPurchases.some((l) => l.id === p.id))
+                .filter((p) =>
+                  p.description.toLowerCase().includes(purchaseSearch.toLowerCase()) ||
+                  p.name.toLowerCase().includes(purchaseSearch.toLowerCase())
+                )
+                .map((p) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    disabled={isLinkingPurchase}
+                    onClick={() => handleLinkPurchase(p.id)}
+                    className="w-full text-left px-3 py-2 text-sm hover:bg-muted/50 transition-colors flex items-center justify-between gap-2"
+                  >
+                    <span className="truncate">{p.description.substring(0, 45)}</span>
+                    <span className="text-xs text-muted-foreground shrink-0">${parseFloat(p.estimatedCost).toFixed(2)}</span>
+                  </button>
+                ))}
+              {availablePurchases.filter((p) => !linkedPurchases.some((l) => l.id === p.id)).length === 0 && (
+                <p className="text-sm text-muted-foreground text-center py-3">No unlinked purchase requests found</p>
+              )}
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={() => setShowLinkSelect(false)}
+              className="text-muted-foreground"
+            >
+              Cancel
+            </Button>
           </div>
         )}
       </div>

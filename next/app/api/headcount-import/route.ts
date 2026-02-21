@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth/next"
-import { authOptions } from "@/lib/authOptions"
 import prisma from "@/lib/prisma"
-import { MENTOR_HEAD_TITLE } from "@/lib/utils"
+import { getGatewayAuthLevel } from "@/lib/authGateway"
+import { getAcademicTermFromDate, formatAcademicTerm } from "@/lib/academicTerm"
 
 export const dynamic = "force-dynamic"
 
@@ -17,31 +16,9 @@ interface ImportRow {
   otherClassText?: string | null
 }
 
-async function canManageMentors(userEmail: string): Promise<boolean> {
-  const user = await prisma.user.findFirst({
-    where: { email: userEmail },
-    select: {
-      officers: {
-        where: { is_active: true },
-        select: {
-          position: {
-            select: {
-              title: true,
-              is_primary: true,
-            },
-          },
-        },
-      },
-    },
-  })
-
-  if (!user) return false
-
-  return user.officers.some(
-    (officer) =>
-      officer.position.title === MENTOR_HEAD_TITLE ||
-      officer.position.is_primary
-  )
+async function canManageMentors(request: NextRequest): Promise<boolean> {
+  const authLevel = await getGatewayAuthLevel(request)
+  return authLevel.isMentoringHead || authLevel.isPrimary
 }
 
 function normalizeKey(value: string) {
@@ -52,14 +29,40 @@ function normalizeCourseCode(value: string) {
   return value.toUpperCase().replace(/[^A-Z0-9]/g, "")
 }
 
+/**
+ * Resolve (or create) the MentorSemester that corresponds to a given date.
+ * Uses an in-memory cache so we only hit the DB once per unique term label.
+ */
+async function resolveSemesterId(
+  date: Date,
+  cache: Map<string, number>
+): Promise<number> {
+  const term = getAcademicTermFromDate(date)
+  const year = date.getFullYear()
+  const label = formatAcademicTerm(term, year)
+
+  const cached = cache.get(label)
+  if (cached !== undefined) return cached
+
+  let semester = await prisma.mentorSemester.findFirst({
+    where: { name: label },
+    select: { id: true },
+  })
+
+  if (!semester) {
+    semester = await prisma.mentorSemester.create({
+      data: { name: label, isActive: false },
+      select: { id: true },
+    })
+  }
+
+  cache.set(label, semester.id)
+  return semester.id
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    const canManage = await canManageMentors(session.user.email)
+    const canManage = await canManageMentors(request)
     if (!canManage) {
       return NextResponse.json(
         { error: "Only Mentoring Head or Primary Officers can import headcount data" },
@@ -68,10 +71,9 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { type, rows, semesterId } = body as {
+    const { type, rows } = body as {
       type?: "mentor" | "mentee"
       rows?: ImportRow[]
-      semesterId?: number
     }
 
     if (!type || !rows || !Array.isArray(rows)) {
@@ -81,9 +83,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const targetSemesterId = semesterId ?? null
     const mentors = await prisma.mentor.findMany({
-      where: { isActive: true },
       select: {
         id: true,
         user: { select: { name: true, email: true } },
@@ -115,6 +115,8 @@ export async function POST(request: NextRequest) {
 
     let created = 0
     let skipped = 0
+    let duplicates = 0
+    const semesterCache = new Map<string, number>()
     const errors: string[] = []
 
     for (let index = 0; index < rows.length; index++) {
@@ -126,18 +128,14 @@ export async function POST(request: NextRequest) {
         continue
       }
 
+      const semesterId = await resolveSemesterId(createdAt, semesterCache)
+
       const mentorIds = row.mentors
         .map((mentor) => {
           const emailKey = mentor.toLowerCase()
           return mentorByEmail.get(emailKey) ?? mentorByName.get(normalizeKey(mentor))
         })
         .filter((id): id is number => !!id)
-
-      if (mentorIds.length === 0) {
-        skipped += 1
-        errors.push(`Row ${index + 1}: no matching mentors`)
-        continue
-      }
 
       if (type === "mentor") {
         if (typeof row.peopleInLab !== "number" || !row.feeling) {
@@ -146,21 +144,34 @@ export async function POST(request: NextRequest) {
           continue
         }
 
-        const entry = await prisma.mentorHeadcountEntry.create({
+        const existing = await prisma.mentorHeadcountEntry.findFirst({
+          where: {
+            createdAt,
+            peopleInLab: row.peopleInLab,
+            feeling: row.feeling,
+            semesterId,
+          },
+        })
+        if (existing) {
+          duplicates += 1
+          continue
+        }
+
+        await prisma.mentorHeadcountEntry.create({
           data: {
-            semesterId: targetSemesterId,
+            semesterId,
             peopleInLab: row.peopleInLab,
             feeling: row.feeling,
             createdAt,
-            mentors: {
+            mentors: mentorIds.length > 0 ? {
               createMany: {
                 data: mentorIds.map((mentorId) => ({ mentorId })),
               },
-            },
+            } : undefined,
           },
         })
 
-        if (entry) created += 1
+        created += 1
       } else {
         if (
           typeof row.studentsMentoredCount !== "number" ||
@@ -171,18 +182,31 @@ export async function POST(request: NextRequest) {
           continue
         }
 
-        const entry = await prisma.menteeHeadcountEntry.create({
+        const existing = await prisma.menteeHeadcountEntry.findFirst({
+          where: {
+            createdAt,
+            studentsMentoredCount: row.studentsMentoredCount,
+            testsCheckedOutCount: row.testsCheckedOutCount,
+            semesterId,
+          },
+        })
+        if (existing) {
+          duplicates += 1
+          continue
+        }
+
+        await prisma.menteeHeadcountEntry.create({
           data: {
-            semesterId: targetSemesterId,
+            semesterId,
             studentsMentoredCount: row.studentsMentoredCount,
             testsCheckedOutCount: row.testsCheckedOutCount,
             otherClassText: row.otherClassText ?? null,
             createdAt,
-            mentors: {
+            mentors: mentorIds.length > 0 ? {
               createMany: {
                 data: mentorIds.map((mentorId) => ({ mentorId })),
               },
-            },
+            } : undefined,
             classes: row.classes && row.classes.length > 0 ? {
               createMany: {
                 data: row.classes
@@ -195,20 +219,57 @@ export async function POST(request: NextRequest) {
           },
         })
 
-        if (entry) created += 1
+        created += 1
       }
     }
+
+    const semestersUsed = [...semesterCache.keys()].sort()
 
     return NextResponse.json({
       success: true,
       created,
       skipped,
+      duplicates,
+      semestersUsed,
       errors: errors.slice(0, 10),
     })
   } catch (error) {
     console.error("Error importing headcount data:", error)
     return NextResponse.json(
       { error: "Failed to import headcount data" },
+      { status: 500 }
+    )
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const canManage = await canManageMentors(request)
+    if (!canManage) {
+      return NextResponse.json(
+        { error: "Only Mentoring Head or Primary Officers can clear headcount data" },
+        { status: 403 }
+      )
+    }
+
+    const deleted = await prisma.$transaction(async (tx) => {
+      const mentorMentors = await tx.mentorHeadcountMentor.deleteMany()
+      const menteeMentors = await tx.menteeHeadcountMentor.deleteMany()
+      const menteeCourses = await tx.menteeHeadcountCourse.deleteMany()
+      const mentorEntries = await tx.mentorHeadcountEntry.deleteMany()
+      const menteeEntries = await tx.menteeHeadcountEntry.deleteMany()
+      return {
+        mentorEntries: mentorEntries.count,
+        menteeEntries: menteeEntries.count,
+        joinRecords: mentorMentors.count + menteeMentors.count + menteeCourses.count,
+      }
+    })
+
+    return NextResponse.json({ success: true, deleted })
+  } catch (error) {
+    console.error("Error clearing headcount data:", error)
+    return NextResponse.json(
+      { error: "Failed to clear headcount data" },
       { status: 500 }
     )
   }

@@ -120,7 +120,72 @@ export default function PublicMentorSchedulePage() {
             <p className="text-xs text-muted-foreground">Click any filled time slot to view mentor skills.</p>
           </div>
           <div className="p-3 sm:p-4">
-            <div className="overflow-x-auto rounded-lg border border-border/70 bg-card">
+            <div className="md:hidden space-y-2">
+              {DAYS.map((day, dayIndex) => {
+                const weekday = dayIndex + 1
+                return (
+                  <Card key={day} depth={3} className="neo:border-0 overflow-hidden">
+                    <div className="px-3 py-2 border-b border-border bg-muted/20">
+                      <h3 className="text-sm font-semibold">{day}</h3>
+                    </div>
+                    <CardContent className="p-0">
+                      <div className="divide-y divide-border">
+                        {HOURS.map(({ hour, label }) => {
+                          const slotBlocks = getBlocksForSlot(weekday, hour)
+                          const clickable = slotBlocks.length > 0
+                          return (
+                            <button
+                              key={`${weekday}-${hour}`}
+                              type="button"
+                              onClick={() => openSlotDetails(weekday, hour, label)}
+                              disabled={!clickable}
+                              className={`w-full text-left px-3 py-2 flex items-start gap-2 ${
+                                clickable ? "hover:bg-muted/40" : "cursor-default"
+                              }`}
+                            >
+                              <span className="text-xs text-muted-foreground w-24 shrink-0 pt-0.5">
+                                {label}
+                              </span>
+                              <div className="flex-1 min-w-0">
+                                {slotBlocks.length > 0 ? (
+                                  <div className="flex flex-wrap gap-1">
+                                    {slotBlocks.map((block) => (
+                                      <div
+                                        key={block.id}
+                                        className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs border max-w-full"
+                                        style={{
+                                          backgroundColor: getCategoricalColorFromSeed(block.mentor.id).fill,
+                                          color: getCategoricalColorFromSeed(block.mentor.id).foreground,
+                                          borderColor: getCategoricalColorFromSeed(block.mentor.id).fill,
+                                        }}
+                                      >
+                                        <Avatar className="h-4 w-4 shrink-0">
+                                          {block.mentor.image ? (
+                                            <AvatarImage src={block.mentor.image} alt={block.mentor.name} />
+                                          ) : null}
+                                          <AvatarFallback className="text-[8px] bg-black/10 text-inherit">
+                                            {getInitials(block.mentor.name)}
+                                          </AvatarFallback>
+                                        </Avatar>
+                                        <span className="truncate">{block.mentor.name.split(" ")[0]}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <span className="text-xs text-muted-foreground/40">—</span>
+                                )}
+                              </div>
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
+              })}
+            </div>
+
+            <div className="hidden md:block overflow-x-auto rounded-lg border border-border/70 bg-card">
               <table className="w-full table-fixed border-collapse">
                 <thead>
                   <tr className="border-b border-border bg-muted/40">

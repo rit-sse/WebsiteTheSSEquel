@@ -2,6 +2,7 @@ import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { resolveUserImage } from "@/lib/s3Utils";
+import { getGatewayAuthLevel } from "@/lib/authGateway";
 
 /**
  * HTTP GET request to /api/user/[id]
@@ -35,17 +36,8 @@ export async function GET(
     const session = await getServerSession(authOptions);
     const sessionEmail = session?.user?.email ?? null;
 
-    const isOfficer = sessionEmail
-      ? !!(await prisma.user.findFirst({
-          where: {
-            email: sessionEmail,
-            officers: {
-              some: { is_active: true },
-            },
-          },
-          select: { id: true },
-        }))
-      : false;
+    const authLevel = await getGatewayAuthLevel(request as Request);
+    const isOfficer = authLevel.isOfficer;
 
     const isOwner = !!sessionEmail && sessionEmail === user.email;
 

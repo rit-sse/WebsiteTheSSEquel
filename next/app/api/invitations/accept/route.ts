@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { getSessionToken } from "@/lib/sessionToken";
 import { NextRequest } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -34,7 +35,7 @@ function getDepartmentAliases(department: string): string[] {
  */
 export async function POST(request: NextRequest) {
   // Get the logged-in user's session token
-  const authToken = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
+  const authToken = getSessionToken(request);
 
   // Find the logged-in user
   let loggedInUser = null;
@@ -83,6 +84,15 @@ export async function POST(request: NextRequest) {
 
   if (!invitation) {
     return new Response("Invitation not found", { status: 404 });
+  }
+
+  // If a mentor invitation was tied to an application that has since been deleted,
+  // revoke the stale invitation so it cannot still be accepted.
+  if (invitation.type === "mentor" && invitation.applicationId && !invitation.application) {
+    await prisma.invitation.delete({
+      where: { id: invitationId },
+    });
+    return new Response("This invitation is no longer valid", { status: 410 });
   }
 
   // Verify the invitation email matches the logged-in user's email

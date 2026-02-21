@@ -40,6 +40,9 @@ interface DataTableProps<T> {
   isLoading?: boolean
   emptyMessage?: string
   expandedContent?: (item: T) => React.ReactNode
+  enablePagination?: boolean
+  pageSizeOptions?: number[]
+  defaultPageSize?: number
 }
 
 export function DataTable<T extends Record<string, any>>({
@@ -54,11 +57,16 @@ export function DataTable<T extends Record<string, any>>({
   addLabel = "Add New",
   isLoading = false,
   emptyMessage = "No data found",
-  expandedContent
+  expandedContent,
+  enablePagination = false,
+  pageSizeOptions = [10, 25, 50, 100],
+  defaultPageSize = 25
 }: DataTableProps<T>) {
   const [searchQuery, setSearchQuery] = React.useState("")
   const [sortKey, setSortKey] = React.useState<string | null>(null)
   const [sortDirection, setSortDirection] = React.useState<"asc" | "desc">("asc")
+  const [page, setPage] = React.useState(1)
+  const [pageSize, setPageSize] = React.useState(defaultPageSize)
   const isMobile = useIsMobile()
 
   // Filter data based on search query
@@ -99,6 +107,28 @@ export function DataTable<T extends Record<string, any>>({
       return 0
     })
   }, [filteredData, sortKey, sortDirection])
+
+  React.useEffect(() => {
+    setPage(1)
+  }, [searchQuery, sortKey, sortDirection, pageSize, data.length])
+
+  React.useEffect(() => {
+    if (!enablePagination) return
+    const totalPages = Math.max(1, Math.ceil(sortedData.length / pageSize))
+    if (page > totalPages) {
+      setPage(totalPages)
+    }
+  }, [enablePagination, page, pageSize, sortedData.length])
+
+  const totalPages = enablePagination
+    ? Math.max(1, Math.ceil(sortedData.length / pageSize))
+    : 1
+  const startIdx = enablePagination ? (page - 1) * pageSize : 0
+  const paginatedData = enablePagination
+    ? sortedData.slice(startIdx, startIdx + pageSize)
+    : sortedData
+  const startCount = sortedData.length === 0 ? 0 : startIdx + 1
+  const endCount = sortedData.length === 0 ? 0 : Math.min(startIdx + paginatedData.length, sortedData.length)
 
   const handleSort = (key: string) => {
     if (sortKey === key) {
@@ -154,10 +184,10 @@ export function DataTable<T extends Record<string, any>>({
           <div className="space-y-3">
             {isLoading ? (
               <div className="text-center py-8 text-muted-foreground text-sm">Loading...</div>
-            ) : sortedData.length === 0 ? (
+            ) : paginatedData.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground text-sm">{emptyMessage}</div>
             ) : (
-              sortedData.map((item) => (
+              paginatedData.map((item) => (
                 <div
                   key={String(item[keyField])}
                   className="rounded-lg border border-border bg-surface-3 p-3 space-y-2"
@@ -233,14 +263,14 @@ export function DataTable<T extends Record<string, any>>({
                       <div className="text-muted-foreground text-sm">Loading...</div>
                     </TableCell>
                   </TableRow>
-                ) : sortedData.length === 0 ? (
+                ) : paginatedData.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={columns.length} className="text-center py-8">
                       <div className="text-muted-foreground text-sm">{emptyMessage}</div>
                     </TableCell>
                   </TableRow>
                 ) : (
-                  sortedData.map((item) => {
+                  paginatedData.map((item) => {
                     const expanded = expandedContent ? expandedContent(item) : null
                     return (
                       <React.Fragment key={String(item[keyField])}>
@@ -270,9 +300,54 @@ export function DataTable<T extends Record<string, any>>({
         )}
 
         {/* Footer with count */}
-        <div className="mt-3 text-xs sm:text-sm text-muted-foreground">
-          {sortedData.length} of {data.length} items
-          {searchQuery && ` (filtered)`}
+        <div className="mt-3 flex flex-col gap-2 text-xs sm:flex-row sm:items-center sm:justify-between sm:text-sm text-muted-foreground">
+          <div>
+            {startCount}-{endCount} of {sortedData.length} items
+            {searchQuery && ` (filtered from ${data.length})`}
+          </div>
+          {enablePagination && (
+            <div className="flex flex-wrap items-center gap-2">
+              <label className="flex items-center gap-1">
+                <span>Rows:</span>
+                <select
+                  value={pageSize}
+                  onChange={(e) => {
+                    const nextPageSize = Number(e.target.value)
+                    setPageSize(nextPageSize)
+                    setPage(1)
+                  }}
+                  className="h-8 min-w-[4.5rem] rounded-md border border-border bg-background pl-2 pr-7 text-xs sm:text-sm"
+                >
+                  {pageSizeOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                disabled={page <= 1}
+                className="h-8 px-2"
+              >
+                Prev
+              </Button>
+              <span>
+                Page {page} / {totalPages}
+              </span>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+                disabled={page >= totalPages}
+                className="h-8 px-2"
+              >
+                Next
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </Card>

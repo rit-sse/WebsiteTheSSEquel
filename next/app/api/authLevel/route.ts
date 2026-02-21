@@ -1,92 +1,28 @@
-import prisma from "@/lib/prisma";
-import { NextRequest, NextResponse } from "next/server";
-import { MENTOR_HEAD_TITLE } from "@/lib/utils";
+import { NextRequest } from "next/server";
+import { hasStagingElevatedAccess } from "@/lib/proxyAuth";
+import { resolveAuthLevelFromRequest, resolveAuthLevelFromToken } from "@/lib/authLevelResolver";
 
 export const dynamic = 'force-dynamic'
 
 /**
- * HTTP PUT request to /api/authLevel/
+ * Handles a PUT request to update or retrieve authorization level details for a user.
+ * Processes the incoming request, validates the JSON body, and determines the user's
+ * authorization level based on the provided token.
+ *
+ * @param {Request} request - The HTTP request object containing the details of the PUT request.
+ * @return {Promise<Response>} A Promise resolving to an HTTP Response object containing the
+ *                             authorization level or an error message if the JSON body is invalid.
  */
-export async function PUT(request: Request) {
+export async function PUT(request: Request): Promise<Response> {
   let body;
   try {
     body = await request.json();
   } catch {
     return new Response("Invalid JSON", { status: 422 });
   }
-
-  const authLevel: {
-    userId: number | null;
-    isUser: boolean;
-    isMember: boolean;
-    membershipCount: number;
-    isMentor: boolean;
-    isOfficer: boolean;
-    isMentoringHead: boolean;
-    isPrimary: boolean;
-  } = {
-    userId: null,
-    isUser: false,
-    isMember: false,
-    membershipCount: 0,
-    isMentor: false,
-    isOfficer: false,
-    isMentoringHead: false,
-    isPrimary: false,
-  };
-
-  if (body.token == null) {
-    return Response.json(authLevel);
-  }
-
-  const user = await prisma.user.findFirst({
-    where: {
-      session: {
-        some: {
-          sessionToken: body.token,
-        },
-      },
-    },
-    select: {
-      id: true,
-      mentor: {
-        where: { isActive: true },
-        select: { id: true },
-      },
-      officers: {
-        where: { is_active: true },
-        select: {
-          id: true,
-          position: {
-            select: {
-              title: true,
-              is_primary: true,
-            },
-          },
-        },
-      },
-      _count: {
-        select: { Memberships: true },
-      },
-    },
+  const authLevel = await resolveAuthLevelFromToken(body.token ?? null, {
+    stagingElevated: hasStagingElevatedAccess(request),
   });
-
-  if (user != null) {
-    const membershipCount = user._count.Memberships;
-    authLevel.userId = user.id;
-    authLevel.isUser = true;
-    authLevel.membershipCount = membershipCount;
-    authLevel.isMember = membershipCount >= 1;
-    authLevel.isMentor = user.mentor.length > 0;
-    authLevel.isOfficer = user.officers.length > 0;
-    authLevel.isMentoringHead = user.officers.some(
-      (officer) => officer.position.title === MENTOR_HEAD_TITLE
-    );
-    authLevel.isPrimary = user.officers.some(
-      (officer) => officer.position.is_primary
-    );
-  }
-
   return Response.json(authLevel);
 }
 
@@ -94,91 +30,8 @@ export async function PUT(request: Request) {
  * HTTP GET request to /api/authLevel/
  */
 export async function GET(request: NextRequest) {
-  const authToken = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
-
-  const authLevel: {
-    userId: number | null;
-    isUser: boolean;
-    isMember: boolean;
-    membershipCount: number;
-    isMentor: boolean;
-    isOfficer: boolean;
-    isMentoringHead: boolean;
-    isPrimary: boolean;
-    profileComplete: boolean;
-  } = {
-    userId: null,
-    isUser: false,
-    isMember: false,
-    membershipCount: 0,
-    isMentor: false,
-    isOfficer: false,
-    isMentoringHead: false,
-    isPrimary: false,
-    profileComplete: true,
-  };
-
-  if (authToken == null) {
-    return Response.json(authLevel);
-  }
-
-  const user = await prisma.user.findFirst({
-    where: {
-      session: {
-        some: {
-          sessionToken: authToken,
-        },
-      },
-    },
-    select: {
-      id: true,
-      graduationTerm: true,
-      graduationYear: true,
-      major: true,
-      gitHub: true,
-      linkedIn: true,
-      mentor: {
-        where: { isActive: true },
-        select: { id: true },
-      },
-      officers: {
-        where: { is_active: true },
-        select: {
-          id: true,
-          position: {
-            select: {
-              title: true,
-              is_primary: true,
-            },
-          },
-        },
-      },
-      _count: {
-        select: { Memberships: true },
-      },
-    },
+  const authLevel = await resolveAuthLevelFromRequest(request, {
+    includeProfileComplete: true,
   });
-
-  if (user != null) {
-    const membershipCount = user._count.Memberships;
-    authLevel.userId = user.id;
-    authLevel.isUser = true;
-    authLevel.membershipCount = membershipCount;
-    authLevel.isMember = membershipCount >= 1;
-    authLevel.isMentor = user.mentor.length > 0;
-    authLevel.isOfficer = user.officers.length > 0;
-    authLevel.isMentoringHead = user.officers.some(
-      (officer) => officer.position.title === MENTOR_HEAD_TITLE
-    );
-    authLevel.isPrimary = user.officers.some((officer) => officer.position.is_primary);
-    authLevel.profileComplete = !!(
-      user.graduationTerm &&
-      user.graduationYear &&
-      user.major?.trim() &&
-      user.gitHub?.trim() &&
-      user.linkedIn?.trim()
-    );
-  }
-
   return Response.json(authLevel);
 }

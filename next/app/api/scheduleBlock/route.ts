@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth/next"
-import { authOptions } from "@/lib/authOptions"
 import prisma from "@/lib/prisma"
-import { MENTOR_HEAD_TITLE } from "@/lib/utils"
+import { getGatewayAuthLevel } from "@/lib/authGateway"
 import { resolveUserImage } from "@/lib/s3Utils"
 
 export const dynamic = "force-dynamic"
@@ -11,31 +9,9 @@ export const dynamic = "force-dynamic"
  * Check if the current user can manage mentor schedules
  * (Must be Mentoring Head or Primary Officer)
  */
-async function canManageSchedules(userEmail: string): Promise<boolean> {
-  const user = await prisma.user.findFirst({
-    where: { email: userEmail },
-    select: {
-      officers: {
-        where: { is_active: true },
-        select: {
-          position: {
-            select: {
-              title: true,
-              is_primary: true,
-            },
-          },
-        },
-      },
-    },
-  })
-
-  if (!user) return false
-
-  return user.officers.some(
-    (officer) =>
-      officer.position.title === MENTOR_HEAD_TITLE ||
-      officer.position.is_primary
-  )
+async function canManageSchedules(request: NextRequest): Promise<boolean> {
+  const authLevel = await getGatewayAuthLevel(request)
+  return authLevel.isMentoringHead || authLevel.isPrimary
 }
 
 /**
@@ -177,12 +153,7 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    const canManage = await canManageSchedules(session.user.email)
+    const canManage = await canManageSchedules(request)
     if (!canManage) {
       return NextResponse.json(
         { error: "Only Mentoring Head or Primary Officers can manage schedules" },
@@ -313,12 +284,7 @@ export async function POST(request: NextRequest) {
  */
 export async function DELETE(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    const canManage = await canManageSchedules(session.user.email)
+    const canManage = await canManageSchedules(request)
     if (!canManage) {
       return NextResponse.json(
         { error: "Only Mentoring Head or Primary Officers can manage schedules" },
@@ -385,12 +351,7 @@ export async function DELETE(request: NextRequest) {
  */
 export async function PUT(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    const canManage = await canManageSchedules(session.user.email)
+    const canManage = await canManageSchedules(request)
     if (!canManage) {
       return NextResponse.json(
         { error: "Only Mentoring Head or Primary Officers can manage schedules" },

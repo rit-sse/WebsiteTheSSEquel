@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { getSessionToken } from "@/lib/sessionToken";
 import { NextRequest } from "next/server";
 import { sendEmail } from "@/lib/email";
 
@@ -21,7 +22,7 @@ export async function POST(
     return new Response("Invalid ID", { status: 400 });
   }
 
-  const authToken = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
+  const authToken = getSessionToken(request);
 
   if (!authToken) {
     return new Response("Unauthorized", { status: 401 });

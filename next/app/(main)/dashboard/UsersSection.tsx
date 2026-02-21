@@ -293,6 +293,9 @@ export default function UsersSection() {
         addLabel="Invite User"
         isLoading={isLoading}
         emptyMessage="No users found"
+        enablePagination
+        pageSizeOptions={[10, 25, 50, 100]}
+        defaultPageSize={25}
       />
 
       {/* Invite Modal */}
