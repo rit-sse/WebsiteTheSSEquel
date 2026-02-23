@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import {
   ResponsiveContainer,
   LineChart,
@@ -16,8 +16,15 @@ import {
 } from "recharts"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import {
   Select,
   SelectContent,
@@ -34,7 +41,11 @@ import {
   FlaskConical,
   Activity,
   Clock,
+  Copy,
+  Check,
+  Expand,
 } from "lucide-react"
+import { toast } from "sonner"
 import type { SemesterTrend } from "@/app/api/headcount-trends/route"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -83,10 +94,11 @@ function formatHour(h: number) {
 }
 
 function heatColor(avg: number) {
-  if (avg < 6) return "bg-blue-500/10 text-foreground"
-  if (avg < 10) return "bg-blue-500/25 text-foreground"
-  if (avg < 20) return "bg-blue-500/45 text-foreground"
-  return "bg-blue-500/65 text-white"
+  if (avg <= 6) return "bg-blue-200 text-foreground"
+  if (avg <= 10) return "bg-blue-300 text-foreground"
+  if (avg <= 15) return "bg-blue-400 text-foreground"
+  if (avg <= 20) return "bg-blue-500 text-white"
+  return "bg-blue-600 text-white"
 }
 
 function shortLabel(name: string): string {
@@ -173,6 +185,39 @@ const ChartTooltip = ({
   )
 }
 
+function CheckInCard({ entry, copiedId, onCopy }: { entry: MentorEntry; copiedId: number | null; onCopy: (e: MentorEntry) => void }) {
+  return (
+    <Card depth={3} className="neo:border-0 hover:bg-muted/30 group">
+      <CardContent className="p-2.5 space-y-0.5">
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-[11px] text-muted-foreground">
+            {new Date(entry.createdAt).toLocaleString("en-US", {
+              month: "short", day: "numeric", hour: "numeric", minute: "2-digit",
+            })}
+          </span>
+          <div className="flex items-center gap-1.5">
+            <Badge variant="outline" className="text-[10px] tabular-nums h-5 px-1.5">
+              {entry.peopleInLab} in lab
+            </Badge>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100"
+              onClick={(e) => { e.stopPropagation(); onCopy(entry) }}
+            >
+              {copiedId === entry.id ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+            </Button>
+          </div>
+        </div>
+        <div className="text-xs font-medium leading-snug text-foreground">{entry.feeling}</div>
+        <div className="text-[11px] text-muted-foreground">
+          {entry.mentors.map((m) => m.mentor.user.name.split(" ")[0]).join(", ")}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function HeadcountDashboard() {
@@ -188,9 +233,15 @@ export default function HeadcountDashboard() {
   const [mentorEntries, setMentorEntries] = useState<MentorEntry[]>([])
   const [menteeEntries, setMenteeEntries] = useState<MenteeEntry[]>([])
 
+  // Check-ins modal
+  const [checkInsOpen, setCheckInsOpen] = useState(false)
+  const [allMentorEntries, setAllMentorEntries] = useState<MentorEntry[]>([])
+  const [loadingAll, setLoadingAll] = useState(false)
+  const [copiedId, setCopiedId] = useState<number | null>(null)
+
   // Sort state for comparison table
   const [sortKey, setSortKey] = useState<keyof SemesterTrend>("chronologicalIndex")
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc")
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc")
 
   // ── Fetch semesters once ────────────────────────────────────────────────────
   useEffect(() => {
@@ -229,6 +280,29 @@ export default function HeadcountDashboard() {
       })
       .catch(() => {})
   }, [selectedId])
+
+  const openAllCheckIns = useCallback(() => {
+    setCheckInsOpen(true)
+    setLoadingAll(true)
+    const param = selectedId !== "all" ? `&semesterId=${selectedId}` : ""
+    fetch(`/api/mentoring-headcount?limit=500${param}`)
+      .then((r) => (r.ok ? r.json() : []))
+      .then(setAllMentorEntries)
+      .catch(() => {})
+      .finally(() => setLoadingAll(false))
+  }, [selectedId])
+
+  const copyCheckIn = useCallback((entry: MentorEntry) => {
+    const date = new Date(entry.createdAt).toLocaleString("en-US", {
+      month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit",
+    })
+    const mentors = entry.mentors.map((m) => m.mentor.user.name).join(", ")
+    const text = `${date} — ${entry.peopleInLab} in lab — "${entry.feeling}" — Mentors: ${mentors}`
+    navigator.clipboard.writeText(text)
+    setCopiedId(entry.id)
+    toast.success("Copied to clipboard")
+    setTimeout(() => setCopiedId(null), 1500)
+  }, [])
 
   // ── Derived: heatmap lookup ─────────────────────────────────────────────────
   const heatmapLookup = useMemo(() => {
@@ -621,11 +695,12 @@ export default function HeadcountDashboard() {
                     </tbody>
                   </table>
                 </div>
-                <div className="flex items-center gap-3 mt-3 text-[10px] text-muted-foreground justify-end">
-                  <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-blue-500/10 border border-blue-500/20" /> &lt;6</span>
-                  <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-blue-500/25 border border-blue-500/35" /> 6–10</span>
-                  <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-blue-500/45 border border-blue-500/55" /> 10–20</span>
-                  <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-blue-500/65 border border-blue-500/75" /> 20+</span>
+                <div className="flex flex-wrap items-center gap-3 mt-3 text-[10px] text-muted-foreground justify-end">
+                  <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-sm bg-blue-200" /> ≤6</span>
+                  <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-sm bg-blue-300" /> 7–10</span>
+                  <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-sm bg-blue-400" /> 11–15</span>
+                  <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-sm bg-blue-500" /> 16–20</span>
+                  <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-sm bg-blue-600" /> 20+</span>
                 </div>
               </CardContent>
             </Card>
@@ -720,38 +795,44 @@ export default function HeadcountDashboard() {
 
             {/* Recent check-ins */}
             <Card depth={2} className="lg:sticky lg:top-4 neo:border-0">
-              <CardHeader className="pb-2 px-5 pt-5">
+              <CardHeader className="pb-2 px-5 pt-5 flex flex-row items-center justify-between">
                 <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
                   Recent Check-ins
                 </CardTitle>
+                {mentorEntries.length > 0 && (
+                  <Button variant="ghost" size="sm" className="h-7 px-2 text-xs gap-1" onClick={openAllCheckIns}>
+                    <Expand className="h-3.5 w-3.5" />
+                    View All
+                  </Button>
+                )}
               </CardHeader>
               <CardContent className="px-3 pb-3">
                 <div className="space-y-1.5 max-h-[520px] overflow-y-auto pr-1">
                   {mentorEntries.length === 0 ? (
                     <p className="text-sm text-muted-foreground py-4 text-center">No entries yet.</p>
                   ) : mentorEntries.map((entry) => (
-                    <Card key={entry.id} depth={3} className="neo:border-0 hover:bg-muted/30 transition-colors">
-                      <CardContent className="p-2.5 space-y-0.5">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[11px] text-muted-foreground">
-                            {new Date(entry.createdAt).toLocaleString("en-US", {
-                              month: "short", day: "numeric", hour: "numeric", minute: "2-digit",
-                            })}
-                          </span>
-                          <Badge variant="outline" className="text-[10px] tabular-nums h-5 px-1.5">
-                            {entry.peopleInLab} in lab
-                          </Badge>
-                        </div>
-                        <div className="text-xs font-medium leading-snug text-foreground">{entry.feeling}</div>
-                        <div className="text-[11px] text-muted-foreground">
-                          {entry.mentors.map((m) => m.mentor.user.name.split(" ")[0]).join(", ")}
-                        </div>
-                      </CardContent>
-                    </Card>
+                    <CheckInCard key={entry.id} entry={entry} copiedId={copiedId} onCopy={copyCheckIn} />
                   ))}
                 </div>
               </CardContent>
             </Card>
+
+            <Dialog open={checkInsOpen} onOpenChange={setCheckInsOpen}>
+              <DialogContent className="max-w-lg max-h-[80vh] flex flex-col">
+                <DialogHeader>
+                  <DialogTitle>All Check-ins</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-1.5 overflow-y-auto flex-1 pr-1">
+                  {loadingAll ? (
+                    <p className="text-sm text-muted-foreground py-8 text-center">Loading...</p>
+                  ) : allMentorEntries.length === 0 ? (
+                    <p className="text-sm text-muted-foreground py-8 text-center">No entries found.</p>
+                  ) : allMentorEntries.map((entry) => (
+                    <CheckInCard key={entry.id} entry={entry} copiedId={copiedId} onCopy={copyCheckIn} />
+                  ))}
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </TabsContent>
 
