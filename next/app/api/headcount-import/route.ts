@@ -119,8 +119,18 @@ export async function POST(request: NextRequest) {
     const semesterCache = new Map<string, number>()
     const errors: string[] = []
 
+    // ── Phase 1: validate rows and resolve semesters ────────────────
+    interface ValidatedRow {
+      index: number
+      row: ImportRow
+      createdAt: Date
+      semesterId: number
+      mentorIds: number[]
+    }
+    const validated: ValidatedRow[] = []
+
     for (let index = 0; index < rows.length; index++) {
-      const row = rows[index];
+      const row = rows[index]
       const createdAt = new Date(row.createdAt)
       if (Number.isNaN(createdAt.getTime())) {
         skipped += 1
@@ -128,50 +138,12 @@ export async function POST(request: NextRequest) {
         continue
       }
 
-      const semesterId = await resolveSemesterId(createdAt, semesterCache)
-
-      const mentorIds = row.mentors
-        .map((mentor) => {
-          const emailKey = mentor.toLowerCase()
-          return mentorByEmail.get(emailKey) ?? mentorByName.get(normalizeKey(mentor))
-        })
-        .filter((id): id is number => !!id)
-
       if (type === "mentor") {
         if (typeof row.peopleInLab !== "number" || !row.feeling) {
           skipped += 1
           errors.push(`Row ${index + 1}: missing peopleInLab or feeling`)
           continue
         }
-
-        const existing = await prisma.mentorHeadcountEntry.findFirst({
-          where: {
-            createdAt,
-            peopleInLab: row.peopleInLab,
-            feeling: row.feeling,
-            semesterId,
-          },
-        })
-        if (existing) {
-          duplicates += 1
-          continue
-        }
-
-        await prisma.mentorHeadcountEntry.create({
-          data: {
-            semesterId,
-            peopleInLab: row.peopleInLab,
-            feeling: row.feeling,
-            createdAt,
-            mentors: mentorIds.length > 0 ? {
-              createMany: {
-                data: mentorIds.map((mentorId) => ({ mentorId })),
-              },
-            } : undefined,
-          },
-        })
-
-        created += 1
       } else {
         if (
           typeof row.studentsMentoredCount !== "number" ||
@@ -181,35 +153,88 @@ export async function POST(request: NextRequest) {
           errors.push(`Row ${index + 1}: missing student/test counts`)
           continue
         }
+      }
 
-        const existing = await prisma.menteeHeadcountEntry.findFirst({
-          where: {
-            createdAt,
-            studentsMentoredCount: row.studentsMentoredCount,
-            testsCheckedOutCount: row.testsCheckedOutCount,
-            semesterId,
+      const semesterId = await resolveSemesterId(createdAt, semesterCache)
+      const mentorIds = row.mentors
+        .map((mentor) => {
+          const emailKey = mentor.toLowerCase()
+          return mentorByEmail.get(emailKey) ?? mentorByName.get(normalizeKey(mentor))
+        })
+        .filter((id): id is number => !!id)
+
+      validated.push({ index, row, createdAt, semesterId, mentorIds })
+    }
+
+    // ── Phase 2: batch duplicate check ──────────────────────────────
+    // Fetch all existing entries that could match the validated rows in
+    // a single query per type, instead of one query per row.
+    const toInsert: ValidatedRow[] = []
+
+    if (type === "mentor" && validated.length > 0) {
+      const timestamps = validated.map((v) => v.createdAt)
+      const existing = await prisma.mentorHeadcountEntry.findMany({
+        where: { createdAt: { in: timestamps } },
+        select: { createdAt: true, peopleInLab: true, feeling: true, semesterId: true },
+      })
+      const existingSet = new Set(
+        existing.map((e) => `${e.createdAt.toISOString()}|${e.peopleInLab}|${e.feeling}|${e.semesterId}`)
+      )
+      for (const v of validated) {
+        const key = `${v.createdAt.toISOString()}|${v.row.peopleInLab}|${v.row.feeling}|${v.semesterId}`
+        if (existingSet.has(key)) {
+          duplicates += 1
+        } else {
+          toInsert.push(v)
+        }
+      }
+    } else if (type === "mentee" && validated.length > 0) {
+      const timestamps = validated.map((v) => v.createdAt)
+      const existing = await prisma.menteeHeadcountEntry.findMany({
+        where: { createdAt: { in: timestamps } },
+        select: { createdAt: true, studentsMentoredCount: true, testsCheckedOutCount: true, semesterId: true },
+      })
+      const existingSet = new Set(
+        existing.map((e) => `${e.createdAt.toISOString()}|${e.studentsMentoredCount}|${e.testsCheckedOutCount}|${e.semesterId}`)
+      )
+      for (const v of validated) {
+        const key = `${v.createdAt.toISOString()}|${v.row.studentsMentoredCount}|${v.row.testsCheckedOutCount}|${v.semesterId}`
+        if (existingSet.has(key)) {
+          duplicates += 1
+        } else {
+          toInsert.push(v)
+        }
+      }
+    }
+
+    // ── Phase 3: insert non-duplicate rows ──────────────────────────
+    for (const v of toInsert) {
+      if (type === "mentor") {
+        await prisma.mentorHeadcountEntry.create({
+          data: {
+            semesterId: v.semesterId,
+            peopleInLab: v.row.peopleInLab!,
+            feeling: v.row.feeling!,
+            createdAt: v.createdAt,
+            mentors: v.mentorIds.length > 0 ? {
+              createMany: { data: v.mentorIds.map((mentorId) => ({ mentorId })) },
+            } : undefined,
           },
         })
-        if (existing) {
-          duplicates += 1
-          continue
-        }
-
+      } else {
         await prisma.menteeHeadcountEntry.create({
           data: {
-            semesterId,
-            studentsMentoredCount: row.studentsMentoredCount,
-            testsCheckedOutCount: row.testsCheckedOutCount,
-            otherClassText: row.otherClassText ?? null,
-            createdAt,
-            mentors: mentorIds.length > 0 ? {
-              createMany: {
-                data: mentorIds.map((mentorId) => ({ mentorId })),
-              },
+            semesterId: v.semesterId,
+            studentsMentoredCount: v.row.studentsMentoredCount!,
+            testsCheckedOutCount: v.row.testsCheckedOutCount!,
+            otherClassText: v.row.otherClassText ?? null,
+            createdAt: v.createdAt,
+            mentors: v.mentorIds.length > 0 ? {
+              createMany: { data: v.mentorIds.map((mentorId) => ({ mentorId })) },
             } : undefined,
-            classes: row.classes && row.classes.length > 0 ? {
+            classes: v.row.classes && v.row.classes.length > 0 ? {
               createMany: {
-                data: row.classes
+                data: v.row.classes
                   .map((value) => normalizeCourseCode(value))
                   .map((key) => courseMap.get(key))
                   .filter((id): id is number => !!id)
@@ -218,9 +243,8 @@ export async function POST(request: NextRequest) {
             } : undefined,
           },
         })
-
-        created += 1
       }
+      created += 1
     }
 
     const semestersUsed = [...semesterCache.keys()].sort()

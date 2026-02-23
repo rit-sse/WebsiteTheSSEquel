@@ -1,7 +1,10 @@
 import prisma from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import {NextRequest, NextResponse} from "next/server";
 import {getGatewayAuthLevel} from "@/lib/authGateway";
 import { getSessionToken } from "@/lib/sessionToken";
+
+export const dynamic = "force-dynamic";
 
 /**
  * Helper function to get user from session token
@@ -102,25 +105,28 @@ export async function GET(
 
 /**
  * If the event grants membership, ensure the user has a membership record.
- * Returns true if a membership was created (or already existed).
+ * Returns { granted: true, created: true } when a new membership was created,
+ * { granted: true, created: false } when one already existed.
  */
 async function ensureMembership(
-  tx: Parameters<Parameters<typeof prisma.$transaction>[0]>[0],
+  db: Prisma.TransactionClient,
   userId: number,
   eventTitle: string
-): Promise<boolean> {
+): Promise<{ granted: true; created: boolean }> {
   const reason = `Attended event: ${eventTitle}`;
-  const existing = await tx.memberships.findFirst({
+  const existing = await db.memberships.findFirst({
     where: { userId, reason },
   });
 
-  if (!existing) {
-    await tx.memberships.create({
-      data: { userId, reason, dateGiven: new Date() },
-    });
+  if (existing) {
+    return { granted: true, created: false };
   }
 
-  return true;
+  await db.memberships.create({
+    data: { userId, reason, dateGiven: new Date() },
+  });
+  console.log(`Membership created for user ${userId}: "${reason}"`);
+  return { granted: true, created: true };
 }
 
 /**
@@ -207,12 +213,13 @@ export async function POST(
     });
 
     if (existingAttendance) {
-      // Already attended — but membership may have been missed on a prior
-      // failed attempt. Ensure it exists before returning 409.
       let membershipGranted = false;
       if (event.grantsMembership) {
         try {
-          membershipGranted = await ensureMembership(prisma, user.id, event.title);
+          const result = await prisma.$transaction(async (tx) =>
+            ensureMembership(tx, user.id, event.title)
+          );
+          membershipGranted = result.granted;
         } catch (err) {
           console.error("Failed to back-fill membership on 409 path:", err);
         }
@@ -223,13 +230,12 @@ export async function POST(
           error: "You have already marked attendance for this event",
           alreadyAttended: true,
           membershipGranted,
+          eventGrantsMembership: event.grantsMembership,
         },
         { status: 409 }
       );
     }
 
-    // Attendance + membership created atomically so a crash between the two
-    // can never leave the user without the membership they earned.
     let membershipGranted = false;
     const attendance = await prisma.$transaction(async (tx) => {
       const record = await tx.eventAttendance.create({
@@ -237,7 +243,8 @@ export async function POST(
       });
 
       if (event.grantsMembership) {
-        membershipGranted = await ensureMembership(tx, user.id, event.title);
+        const result = await ensureMembership(tx, user.id, event.title);
+        membershipGranted = result.granted;
       }
 
       return record;
@@ -246,6 +253,10 @@ export async function POST(
     // Purchase-request updates are best-effort and non-blocking.
     updatePurchaseRequestAttendance(event.purchaseRequests, user).catch((err) =>
       console.error("Background purchase-request attendance update failed:", err)
+    );
+
+    console.log(
+      `Attendance recorded: user=${user.id}, event=${eventId}, grantsMembership=${event.grantsMembership}, membershipGranted=${membershipGranted}`
     );
 
     return NextResponse.json({
@@ -258,6 +269,7 @@ export async function POST(
         createdAt: attendance.createdAt,
       },
       membershipGranted,
+      eventGrantsMembership: event.grantsMembership,
     }, { status: 201 });
   } catch (error) {
     console.error("Error marking attendance:", error);

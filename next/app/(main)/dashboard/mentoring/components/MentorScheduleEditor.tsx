@@ -778,7 +778,8 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
     })
   }
 
-  const CHUNK_SIZE = 100
+  const CHUNK_SIZE = 20
+  const CHUNK_TIMEOUT_MS = 120_000
 
   const handleRunImport = async () => {
     if (!importRows.length) {
@@ -806,15 +807,33 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
       let duplicates = 0
       const semestersUsed = new Set<string>()
       const errors: string[] = []
+      let aborted = false
 
       for (let i = 0; i < totalChunks; i++) {
         const chunk = allRows.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE)
 
-        const response = await fetch("/api/headcount-import", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ type: importType, rows: chunk }),
-        })
+        const controller = new AbortController()
+        const timer = setTimeout(() => controller.abort(), CHUNK_TIMEOUT_MS)
+
+        let response: Response
+        try {
+          response = await fetch("/api/headcount-import", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ type: importType, rows: chunk }),
+            signal: controller.signal,
+          })
+        } catch (fetchErr: any) {
+          clearTimeout(timer)
+          const isTimeout = fetchErr?.name === "AbortError"
+          toast.error(
+            `Chunk ${i + 1}/${totalChunks}: ${isTimeout ? "Request timed out — the server may still be processing" : "Network error"}`
+          )
+          aborted = true
+          break
+        } finally {
+          clearTimeout(timer)
+        }
 
         if (!response.ok) {
           let message = "Failed to import headcount data"
@@ -829,6 +848,7 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
             } catch { /* use default */ }
           }
           toast.error(`Chunk ${i + 1}/${totalChunks}: ${message}`)
+          aborted = true
           break
         }
 
@@ -847,7 +867,11 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
         semestersUsed: [...semestersUsed].sort(),
         errors: errors.slice(0, 20),
       })
-      toast.success("Headcount import completed")
+      if (aborted) {
+        toast.warning(`Import partially completed: ${created} created, ${skipped} skipped, ${duplicates} duplicates`)
+      } else {
+        toast.success("Headcount import completed")
+      }
       fetchTraffic()
     } catch (error) {
       console.error("Failed to import headcount data:", error)

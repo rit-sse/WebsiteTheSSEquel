@@ -149,38 +149,27 @@ export async function GET(
     return new Response(`User ${id} not found`, { status: 404 });
   }
 
-  // Public profile route: anyone can view profile fields.
-  // Email remains private unless owner or active officer.
-  const session = await getServerSession(authOptions);
+  // Run independent queries in parallel to cut load time.
+  const [session, authLevel, mentoringHead, activeSemester] = await Promise.all([
+    getServerSession(authOptions),
+    getGatewayAuthLevel(request as Request),
+    prisma.officer.findFirst({
+      where: { is_active: true, position: { title: MENTOR_HEAD_TITLE } },
+      select: { user: { select: { id: true, name: true, email: true } } },
+    }),
+    prisma.mentorSemester.findFirst({
+      where: { isActive: true },
+      select: { id: true },
+      orderBy: { updatedAt: "desc" },
+    }),
+  ]);
+
   const isOwner = session?.user?.email === user.email;
-  const authLevel = await getGatewayAuthLevel(request as Request);
   const isOfficer = authLevel.isOfficer;
 
   const projects = user.projectContributions.map((pc) => pc.project);
-  const mentoringHead = await prisma.officer.findFirst({
-    where: {
-      is_active: true,
-      position: {
-        title: MENTOR_HEAD_TITLE,
-      },
-    },
-    select: {
-      user: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-        },
-      },
-    },
-  });
-
   const latestMentorApplication = user.mentorApplications[0];
-  const activeSemester = await prisma.mentorSemester.findFirst({
-    where: { isActive: true },
-    select: { id: true },
-    orderBy: { updatedAt: "desc" },
-  });
+
   const mentorAvailability = activeSemester
     ? await prisma.mentorAvailability.findUnique({
         where: {

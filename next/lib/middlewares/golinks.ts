@@ -3,19 +3,18 @@ import { isUrlValid } from "../utils";
 import { getInternalApiBase } from "@/lib/baseUrl";
 
 const getDestinationUrl = async (request: NextRequest, goUrl: string) => {
-  const baseUrl = getInternalApiBase(request);
-  const response = await fetch(baseUrl + "/api/go/" + goUrl);
-  if (response.ok) {
-    const url = await response.text();
-    return url.startsWith("http") ? url : "https://" + url;
-  } else {
+  try {
+    const baseUrl = getInternalApiBase(request);
+    const response = await fetch(baseUrl + "/api/go/" + goUrl);
+    if (response.ok) {
+      const url = await response.text();
+      return url.startsWith("http") ? url : "https://" + url;
+    }
+    return null;
+  } catch (err) {
+    console.error("golinks: failed to resolve destination for", goUrl, err);
     return null;
   }
-  // for (let goLink of goLinkData) {
-  //     if (goLink.goUrl === goUrl) {
-  //         return goLink.url;
-  //     }
-  // }
 };
 
 /** Middleware to handle golinks.

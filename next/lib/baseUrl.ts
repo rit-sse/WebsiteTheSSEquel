@@ -35,18 +35,33 @@ export function getPublicBaseUrl(request: NextRequest): string {
 }
 
 /**
- * Resolve an internal API base URL for server-to-server calls (e.g. from middleware).
- * Prefers INTERNAL_API_URL when set, otherwise falls back to the request origin.
+ * Resolve an internal API base URL for server-to-server calls (e.g. from
+ * middleware calling its own API routes).  These calls must always use plain
+ * HTTP to localhost — never the external hostname or HTTPS — because:
+ *   • The app server has no TLS (HTTPS would fail with ERR_SSL_WRONG_VERSION_NUMBER).
+ *   • 0.0.0.0 is a bind address, not a connectable one.
+ *   • Going through the external hostname adds a needless proxy round-trip.
  */
 export function getInternalApiBase(request: Request): string {
   if (process.env.INTERNAL_API_URL) {
     return process.env.INTERNAL_API_URL.replace(/\/+$/, "");
   }
 
+  const port = process.env.PORT || "3000";
+
   const origin =
     "nextUrl" in request
       ? (request as NextRequest).nextUrl.origin
       : new URL(request.url).origin;
 
-  return origin;
+  // If the origin already points to a plain-HTTP localhost, use it as-is.
+  if (
+    origin.startsWith("http://localhost") ||
+    origin.startsWith("http://127.0.0.1")
+  ) {
+    return origin;
+  }
+
+  // Everything else (0.0.0.0, external hostname, https, etc.) → localhost.
+  return `http://localhost:${port}`;
 }

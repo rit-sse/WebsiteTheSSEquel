@@ -73,12 +73,10 @@ export default function AttendEventPage() {
 
       if (response.ok) {
         setAttended(true);
-        setMembershipGranted(data.membershipGranted);
+        setMembershipGranted(!!data.membershipGranted);
       } else if (response.status === 409 && data.alreadyAttended) {
         setAttended(true);
-        if (data.membershipGranted) {
-          setMembershipGranted(true);
-        }
+        setMembershipGranted(!!data.membershipGranted);
       } else {
         setError(data.error || "Failed to mark attendance");
       }

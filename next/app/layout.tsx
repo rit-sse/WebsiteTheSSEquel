@@ -29,7 +29,7 @@ const ptSerif = PT_Serif({
 export const metadata: Metadata = {
     title: 'Society of Software Engineers',
     description: 'The Society of Software Engineers (SSE) is an academic organization at the Rochester Institute of Technology (RIT) that provides mentoring and support for students in the Golisano College for Computing and Information Sciences (GCCIS).',
-    icons: ["./icon.png"],
+    icons: ["/icon.png"],
 };
 
 export default async function RootLayout({
