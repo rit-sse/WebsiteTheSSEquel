@@ -304,21 +304,10 @@
   color: hsl(var(--primary-foreground));
 }
 
-/* Global scrollbar styling */
-html,
-body {
-  /*
-   * Prefer overlay scrollbars so they float above content
-   * instead of taking layout width and shifting content.
-   */
-  overflow-y: overlay;
-}
-
-@supports not (overflow: overlay) {
-  html {
-    /* Fallback: reserve gutter to prevent left/right layout jump. */
-    scrollbar-gutter: stable;
-  }
+/* Global scrollbar styling – reserve gutter space so the scrollbar
+   never shifts page content when it appears or disappears. */
+html {
+  scrollbar-gutter: stable;
 }
 
 * {
