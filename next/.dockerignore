@@ -1,0 +1,16 @@
+.git
+.github
+node_modules
+.next
+.swc
+coverage
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.DS_Store
+.env
+.env.*
+Dockerfile*
+README.md
+__tests__

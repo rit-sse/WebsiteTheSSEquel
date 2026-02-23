@@ -1,4 +1,4 @@
-FROM node:20 AS base
+FROM node:20-bookworm-slim AS base
 
 # Install dependencies only when needed
 FROM base AS deps
@@ -72,9 +72,6 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs&& adduser --system --uid 1001 nextjs
 
 COPY --from=builder /app/public ./public
-
-RUN npm i -g prisma@5.22.0
-COPY --from=builder /app/prisma/ /app/prisma/
 
 # Set the correct permission for prerender cache
 RUN mkdir .next&& chown nextjs:nodejs .next

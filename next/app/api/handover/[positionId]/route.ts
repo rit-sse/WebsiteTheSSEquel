@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { resolveAuthLevelFromRequest } from "@/lib/authLevelResolver";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +14,13 @@ interface RouteParams {
  * @returns { id: number, positionId: number, content: string, updatedAt: string, position: { title: string } }
  */
 export async function GET(request: Request, { params }: RouteParams) {
+  const authLevel = await resolveAuthLevelFromRequest(request);
+  if (!authLevel.isOfficer) {
+    return new Response("Access Denied; need to be Officer to access", {
+      status: 403,
+    });
+  }
+
   const { positionId } = await params;
   const positionIdNum = parseInt(positionId, 10);
 
@@ -70,6 +78,13 @@ export async function GET(request: Request, { params }: RouteParams) {
  * @returns updated handover document
  */
 export async function PUT(request: Request, { params }: RouteParams) {
+  const authLevel = await resolveAuthLevelFromRequest(request);
+  if (!authLevel.isOfficer) {
+    return new Response("Access Denied; need to be Officer to access", {
+      status: 403,
+    });
+  }
+
   const { positionId } = await params;
   const positionIdNum = parseInt(positionId, 10);
 

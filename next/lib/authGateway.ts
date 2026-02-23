@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { PROXY_EMAIL_HEADER, PROXY_GROUPS_HEADER, PROXY_USER_HEADER } from "@/lib/proxyAuth";
 import { AuthLevel } from "@/lib/authLevel";
 import { getSessionToken } from "@/lib/sessionToken";
-import { getInternalApiBase } from "@/lib/baseUrl";
+import { getInternalApiBase, getPublicBaseUrl } from "@/lib/baseUrl";
 
 export type GatewayAuthLevel = AuthLevel;
 
@@ -52,6 +52,15 @@ function resolveInternalApiBase(request: Request): string {
   return getInternalApiBase(request);
 }
 
+function resolveEdgeApiBase(request: Request): string {
+  if ("nextUrl" in request) {
+    return getPublicBaseUrl(request as NextRequest);
+  }
+
+  // Fallback for non-NextRequest inputs.
+  return new URL(request.url).origin;
+}
+
 function buildGatewayHeaders(request: Request): HeadersInit {
   const headers: Record<string, string> = {
     "content-type": "application/json",
@@ -91,13 +100,25 @@ export async function getGatewayAuthLevel(request: Request): Promise<GatewayAuth
     }
 
     const token = getSessionTokenFromRequest(request);
-    const baseUrl = resolveInternalApiBase(request);
-    const response = await fetch(`${baseUrl}/api/authLevel`, {
-      method: "PUT",
-      headers: buildGatewayHeaders(request),
-      body: JSON.stringify({ token }),
-      cache: "no-store",
-    });
+    const baseUrl = isEdgeRuntime
+      ? resolveEdgeApiBase(request)
+      : resolveInternalApiBase(request);
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 3000);
+
+    let response: Response;
+    try {
+      response = await fetch(`${baseUrl}/api/authLevel`, {
+        method: "PUT",
+        headers: buildGatewayHeaders(request),
+        body: JSON.stringify({ token }),
+        cache: "no-store",
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
 
     if (!response.ok) {
       return { ...DEFAULT_GATEWAY_AUTH_LEVEL };
