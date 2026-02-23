@@ -1,7 +1,9 @@
 import prisma from "@/lib/prisma";
+import { getSessionToken } from "@/lib/sessionToken";
 import { sendEmail, isEmailConfigured } from "@/lib/email";
 import { NextRequest } from "next/server";
 import { resolveUserImage } from "@/lib/s3Utils";
+import { getPublicBaseUrl } from "@/lib/baseUrl";
 
 export const dynamic = "force-dynamic";
 
@@ -59,7 +61,7 @@ export async function GET() {
  */
 export async function POST(request: NextRequest) {
   // Get the logged-in user's session token
-  const authToken = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
+  const authToken = getSessionToken(request);
   
   // Find the logged-in user (for sending email)
   let loggedInUser = null;
@@ -140,7 +142,7 @@ export async function POST(request: NextRequest) {
   
   // Send notification email to the new officer
   if (isEmailConfigured() && loggedInUser) {
-    const baseUrl = process.env.NEXTAUTH_URL || process.env.VERCEL_URL || 'http://localhost:3000';
+    const baseUrl = getPublicBaseUrl(request);
     const handoverUrl = `${baseUrl}/dashboard/positions/${positionRecord.id}/handover`;
 
     try {

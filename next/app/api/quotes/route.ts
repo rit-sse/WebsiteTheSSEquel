@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { getSessionToken } from "@/lib/sessionToken";
 import { getSession } from "next-auth/react";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -89,7 +90,7 @@ export async function PUT(request: NextRequest) {
         id: body.userId,
         session: {
           some: {
-            sessionToken: request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value,
+            sessionToken: getSessionToken(request),
           },
         },
       },
@@ -159,7 +160,7 @@ export async function DELETE(request: NextRequest) {
         id: body.userId,
         session: {
           some: {
-            sessionToken: request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value,
+            sessionToken: getSessionToken(request),
           },
         },
       },

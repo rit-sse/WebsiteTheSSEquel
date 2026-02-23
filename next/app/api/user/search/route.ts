@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
+import { getGatewayAuthLevel } from "@/lib/authGateway";
 
 /**
  * Handles GET requests to search for users by name or email.
@@ -19,15 +20,8 @@ export async function GET(req: Request) {
     return new Response("Unauthorized", { status: 401 });
   }
 
-  const isOfficer = !!(await prisma.user.findFirst({
-    where: {
-      email: sessionEmail,
-      officers: {
-        some: { is_active: true },
-      },
-    },
-    select: { id: true },
-  }));
+  const authLevel = await getGatewayAuthLevel(req as Request);
+  const isOfficer = authLevel.isOfficer;
 
   const url = new URL(req.url);
   const query = (url.searchParams.get("q") || "").trim();

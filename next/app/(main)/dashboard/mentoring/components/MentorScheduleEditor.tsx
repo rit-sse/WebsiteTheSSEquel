@@ -168,6 +168,8 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
   const [importResult, setImportResult] = useState<{
     created: number
     skipped: number
+    duplicates: number
+    semestersUsed: string[]
     errors: string[]
   } | null>(null)
   const [isImporting, setIsImporting] = useState(false)
@@ -330,10 +332,11 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
   }
 
   const getTrafficLevel = (averagePeopleInLab: number) => {
-    if (averagePeopleInLab < 6) return { label: "Quiet", value: 20, cellTint: "bg-blue-500/10" }
-    if (averagePeopleInLab < 10) return { label: "Steady", value: 45, cellTint: "bg-blue-500/25" }
-    if (averagePeopleInLab < 20) return { label: "Packed", value: 70, cellTint: "bg-blue-500/40" }
-    return { label: "Peak", value: 95, cellTint: "bg-blue-500/60" }
+    if (averagePeopleInLab <= 6)  return { label: "≤6",    value: 12, cellTint: "bg-blue-200" }
+    if (averagePeopleInLab <= 10) return { label: "7–10",  value: 30, cellTint: "bg-blue-300" }
+    if (averagePeopleInLab <= 15) return { label: "11–15", value: 50, cellTint: "bg-blue-400" }
+    if (averagePeopleInLab <= 20) return { label: "16–20", value: 75, cellTint: "bg-blue-500" }
+    return                                { label: "21+",   value: 95, cellTint: "bg-blue-600" }
   }
 
   const getTrafficCellClass = (weekday: number, hour: number) => {
@@ -775,6 +778,9 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
     })
   }
 
+  const CHUNK_SIZE = 20
+  const CHUNK_TIMEOUT_MS = 120_000
+
   const handleRunImport = async () => {
     if (!importRows.length) {
       toast.error("No CSV rows to import")
@@ -794,31 +800,82 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
 
     setIsImporting(true)
     try {
-      const response = await fetch("/api/headcount-import", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type: importType,
-          semesterId: activeSemester?.id,
-          rows: buildImportPayload(),
-        }),
-      })
+      const allRows = buildImportPayload()
+      const totalChunks = Math.ceil(allRows.length / CHUNK_SIZE)
+      let created = 0
+      let skipped = 0
+      let duplicates = 0
+      const semestersUsed = new Set<string>()
+      const errors: string[] = []
+      let aborted = false
 
-      const data = await response.json()
-      if (response.ok) {
-        setImportResult({
-          created: data.created,
-          skipped: data.skipped,
-          errors: data.errors || [],
-        })
-        toast.success("Headcount import completed")
-        fetchTraffic()
-      } else {
-        toast.error(data.error || "Failed to import headcount data")
+      for (let i = 0; i < totalChunks; i++) {
+        const chunk = allRows.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE)
+
+        const controller = new AbortController()
+        const timer = setTimeout(() => controller.abort(), CHUNK_TIMEOUT_MS)
+
+        let response: Response
+        try {
+          response = await fetch("/api/headcount-import", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ type: importType, rows: chunk }),
+            signal: controller.signal,
+          })
+        } catch (fetchErr: any) {
+          clearTimeout(timer)
+          const isTimeout = fetchErr?.name === "AbortError"
+          toast.error(
+            `Chunk ${i + 1}/${totalChunks}: ${isTimeout ? "Request timed out — the server may still be processing" : "Network error"}`
+          )
+          aborted = true
+          break
+        } finally {
+          clearTimeout(timer)
+        }
+
+        if (!response.ok) {
+          let message = "Failed to import headcount data"
+          if (response.status === 413) {
+            message = "Request too large — try a smaller CSV file"
+          } else if (response.status === 403) {
+            message = "You don't have permission to import headcount data"
+          } else {
+            try {
+              const errData = await response.json()
+              message = errData.error || message
+            } catch { /* use default */ }
+          }
+          toast.error(`Chunk ${i + 1}/${totalChunks}: ${message}`)
+          aborted = true
+          break
+        }
+
+        const data = await response.json()
+        created += data.created ?? 0
+        skipped += data.skipped ?? 0
+        duplicates += data.duplicates ?? 0
+        for (const s of data.semestersUsed ?? []) semestersUsed.add(s)
+        errors.push(...(data.errors || []))
       }
+
+      setImportResult({
+        created,
+        skipped,
+        duplicates,
+        semestersUsed: [...semestersUsed].sort(),
+        errors: errors.slice(0, 20),
+      })
+      if (aborted) {
+        toast.warning(`Import partially completed: ${created} created, ${skipped} skipped, ${duplicates} duplicates`)
+      } else {
+        toast.success("Headcount import completed")
+      }
+      fetchTraffic()
     } catch (error) {
       console.error("Failed to import headcount data:", error)
-      toast.error("An error occurred during import")
+      toast.error("An error occurred during import. Check your connection and try again.")
     } finally {
       setIsImporting(false)
     }
@@ -902,7 +959,8 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
             {/* Main grid: calendar + sidebar, sidebar constrained to calendar height */}
             <div className="grid gap-4 xl:grid-cols-[1fr_280px]" style={{ alignItems: "start" }}>
               <div className="flex flex-col gap-3">
-                <div className="overflow-hidden border rounded-lg bg-card">
+                {/* Desktop table view */}
+                <div className="hidden md:block overflow-hidden border rounded-lg bg-card">
                   <Table className="table-fixed">
                     <TableHeader className="sticky top-0 z-10">
                       <TableRow className="border-b-2 border-border bg-primary/10 hover:bg-primary/10">
@@ -985,15 +1043,99 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                   </Table>
                 </div>
 
+                {/* Mobile card view — one card per day, time slots within */}
+                <div className="md:hidden space-y-2">
+                  {DAYS.map((day, dayIndex) => {
+                    const weekday = dayIndex + 1
+                    return (
+                      <Card key={day} depth={3} className="neo:border-0 overflow-hidden">
+                        <CardHeader className="py-2 px-3 bg-primary/5 border-b border-border">
+                          <CardTitle className="text-sm font-semibold flex items-center gap-1.5">
+                            <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                            {day}
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                          <div className="divide-y divide-border">
+                            {HOURS.map(({ hour, label }) => {
+                              const slotBlocks = getBlocksForSlot(weekday, hour)
+                              const mappedAvailable = getMappedAvailableMentors(weekday, hour)
+                              const availableNames = getWhen2MeetAvailability(weekday, hour)
+                              return (
+                                <div
+                                  key={hour}
+                                  className={cn(
+                                    "flex items-center gap-2 px-3 py-2",
+                                    getTrafficCellClass(weekday, hour),
+                                  )}
+                                >
+                                  <span className="text-xs text-muted-foreground w-24 shrink-0">
+                                    {label}
+                                  </span>
+                                  <div className="flex-1 min-w-0 overflow-hidden space-y-0.5">
+                                    <div className="flex flex-wrap gap-1">
+                                      {slotBlocks.length > 0 ? slotBlocks.map((block) => (
+                                        <button
+                                          key={block.id}
+                                          type="button"
+                                          onClick={() => handleOpenDetail(weekday, hour)}
+                                          className="flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium border max-w-full"
+                                          style={{
+                                            backgroundColor: getMentorColor(block.mentor.id).fill,
+                                            color: getMentorColor(block.mentor.id).foreground,
+                                            borderColor: getMentorColor(block.mentor.id).fill,
+                                          }}
+                                          title={block.mentor.name}
+                                        >
+                                          {block.mentor.image ? (
+                                            <img
+                                              src={block.mentor.image}
+                                              alt=""
+                                              className="h-4 w-4 rounded-full object-cover shrink-0"
+                                            />
+                                          ) : null}
+                                          <span className="truncate">{block.mentor.name.split(" ")[0]}</span>
+                                        </button>
+                                      )) : (
+                                        <span className="text-xs text-muted-foreground/40">—</span>
+                                      )}
+                                    </div>
+                                    {showAvailability && (mappedAvailable.length > 0 || availableNames.length > 0) && (
+                                      <div className="text-[10px] text-muted-foreground truncate">
+                                        {mappedAvailable.length > 0
+                                          ? mappedAvailable.map((m) => m.user.name.split(" ")[0]).join(", ")
+                                          : `${availableNames.length} avail.`}
+                                      </div>
+                                    )}
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenAssignModal(weekday, hour)}
+                                    className="text-xs text-muted-foreground hover:text-foreground shrink-0 px-1"
+                                    title="Add mentor"
+                                  >
+                                    +
+                                  </button>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )
+                  })}
+                </div>
+
                 {/* Traffic legend + assigned mentors below the calendar */}
                 <div className="flex flex-wrap items-center justify-between gap-2 px-1">
                   {showTraffic && trafficData.length > 0 && (
                     <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
                       <span className="font-medium">Traffic:</span>
-                      <span className="flex items-center gap-1"><span className="h-2.5 w-5 rounded-sm bg-blue-500/10 border border-blue-500/20" /> &lt;6 Quiet</span>
-                      <span className="flex items-center gap-1"><span className="h-2.5 w-5 rounded-sm bg-blue-500/25 border border-blue-500/35" /> 6-10 Steady</span>
-                      <span className="flex items-center gap-1"><span className="h-2.5 w-5 rounded-sm bg-blue-500/40 border border-blue-500/50" /> 10-20 Packed</span>
-                      <span className="flex items-center gap-1"><span className="h-2.5 w-5 rounded-sm bg-blue-500/60 border border-blue-500/70" /> 20+ Peak</span>
+                      <span className="flex items-center gap-1"><span className="h-3 w-5 rounded-sm bg-blue-200" /> ≤6</span>
+                      <span className="flex items-center gap-1"><span className="h-3 w-5 rounded-sm bg-blue-300" /> 7–10</span>
+                      <span className="flex items-center gap-1"><span className="h-3 w-5 rounded-sm bg-blue-400" /> 11–15</span>
+                      <span className="flex items-center gap-1"><span className="h-3 w-5 rounded-sm bg-blue-500" /> 16–20</span>
+                      <span className="flex items-center gap-1"><span className="h-3 w-5 rounded-sm bg-blue-600" /> 21+</span>
                     </div>
                   )}
                   {blocks.length > 0 && (
@@ -1099,7 +1241,7 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                   const level = getTrafficLevel(traffic.averagePeopleInLab)
                   return (
                     <span className="text-xs text-muted-foreground">
-                      {level.label} · {traffic.averagePeopleInLab.toFixed(1)} avg
+                      {level.label} · avg {traffic.averagePeopleInLab.toFixed(1)}
                     </span>
                   )
                 })()}
@@ -1545,7 +1687,13 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
           {importResult && (
             <div className="rounded-md border bg-muted/40 p-3 text-sm">
               <div>Created: {importResult.created}</div>
+              <div>Duplicates (already existed): {importResult.duplicates}</div>
               <div>Skipped: {importResult.skipped}</div>
+              {importResult.semestersUsed.length > 0 && (
+                <div className="text-xs text-muted-foreground mt-1">
+                  Semesters: {importResult.semestersUsed.join(", ")}
+                </div>
+              )}
               {importResult.errors.length > 0 && (
                 <div className="text-xs text-muted-foreground">
                   {importResult.errors.join(" • ")}
@@ -1554,13 +1702,37 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
             </div>
           )}
         </div>
-        <ModalFooter>
-          <Button variant="ghost" onClick={() => setImportModalOpen(false)}>
-            Close
+        <ModalFooter className="flex justify-between">
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={async () => {
+              if (!confirm("Delete ALL headcount entries across every semester? This cannot be undone.")) return
+              try {
+                const res = await fetch("/api/headcount-import", { method: "DELETE" })
+                const data = await res.json()
+                if (res.ok) {
+                  toast.success(`Cleared ${data.deleted.mentorEntries} mentor + ${data.deleted.menteeEntries} mentee entries`)
+                  setImportResult(null)
+                  fetchTraffic()
+                } else {
+                  toast.error(data.error || "Failed to clear data")
+                }
+              } catch {
+                toast.error("Failed to clear headcount data")
+              }
+            }}
+          >
+            Clear All Headcount Data
           </Button>
-          <Button onClick={handleRunImport} disabled={isImporting || importRows.length === 0}>
-            {isImporting ? "Importing..." : "Run Import"}
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="ghost" onClick={() => setImportModalOpen(false)}>
+              Close
+            </Button>
+            <Button onClick={handleRunImport} disabled={isImporting || importRows.length === 0}>
+              {isImporting ? "Importing..." : "Run Import"}
+            </Button>
+          </div>
         </ModalFooter>
       </Modal>
 

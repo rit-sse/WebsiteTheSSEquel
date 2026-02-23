@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { getSessionToken } from "@/lib/sessionToken";
 import { NextRequest } from "next/server";
 
 export const dynamic = 'force-dynamic'
@@ -17,7 +18,7 @@ export async function GET(
     return new Response("Invalid ID", { status: 400 });
   }
 
-  const authToken = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
+  const authToken = getSessionToken(request);
 
   if (!authToken) {
     return new Response("Unauthorized", { status: 401 });
@@ -58,7 +59,7 @@ export async function PUT(
     return new Response("Invalid ID", { status: 400 });
   }
 
-  const authToken = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
+  const authToken = getSessionToken(request);
 
   if (!authToken) {
     return new Response("Unauthorized", { status: 401 });
@@ -90,6 +91,7 @@ export async function PUT(
     eventDate?: Date | null;
     attendanceData?: string | null;
     attendanceImage?: string | null;
+    eventId?: string | null;
   } = {};
 
   // Validate and set optional fields
@@ -160,6 +162,19 @@ export async function PUT(
     updateData.attendanceImage = body.attendanceImage;
   }
 
+  if ("eventId" in body) {
+    if (body.eventId !== null && typeof body.eventId !== "string") {
+      return new Response("'eventId' must be a string or null", { status: 422 });
+    }
+    if (body.eventId) {
+      const eventExists = await prisma.event.findUnique({ where: { id: body.eventId } });
+      if (!eventExists) {
+        return new Response("Event not found", { status: 404 });
+      }
+    }
+    updateData.eventId = body.eventId || null;
+  }
+
   try {
     const purchaseRequest = await prisma.purchaseRequest.update({
       where: { id: requestId },
@@ -191,7 +206,7 @@ export async function DELETE(
     return new Response("Invalid ID", { status: 400 });
   }
 
-  const authToken = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
+  const authToken = getSessionToken(request);
 
   if (!authToken) {
     return new Response("Unauthorized", { status: 401 });

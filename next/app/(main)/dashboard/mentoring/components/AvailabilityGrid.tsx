@@ -155,12 +155,44 @@ export default function AvailabilityGrid({
 
   return (
     <div className={cn("space-y-2", className)}>
-      <div className="flex items-center justify-between text-sm text-muted-foreground">
-        <span>Click and drag to select your available times</span>
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between text-sm text-muted-foreground">
+        <span className="sm:hidden">Tap time slots to set availability</span>
+        <span className="hidden sm:inline">Click and drag to select your available times</span>
         <span>{selectedCount} / {totalSlots} slots selected</span>
       </div>
 
-      <div className="overflow-x-auto">
+      {/* Mobile-friendly selector */}
+      <div className="sm:hidden space-y-3">
+        {WEEKDAYS.map((day) => (
+          <div key={`mobile-${day.value}`} className="rounded-md border border-border/60 p-3">
+            <p className="mb-2 text-sm font-medium">{day.label}</p>
+            <div className="grid grid-cols-2 gap-2">
+              {HOURS.map((hour) => {
+                const selected = isSelected(day.value, hour.value)
+                return (
+                  <button
+                    key={`mobile-${day.value}-${hour.value}`}
+                    type="button"
+                    className={cn(
+                      "rounded-md border px-2 py-2 text-xs text-left transition-colors",
+                      selected
+                        ? "border-green-600 bg-green-500/70 text-foreground"
+                        : "border-border bg-background text-muted-foreground"
+                    )}
+                    onClick={() => toggleSlot(day.value, hour.value)}
+                    disabled={readOnly}
+                    aria-pressed={selected}
+                  >
+                    {hour.label}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="hidden sm:block overflow-x-auto">
         <table
           ref={gridRef}
           className="w-full border-collapse select-none"
@@ -227,7 +259,8 @@ export default function AvailabilityGrid({
 
       {!readOnly && (
         <p className="text-xs text-muted-foreground">
-          Tip: Click and drag to quickly select multiple time slots
+          <span className="sm:hidden">Tip: Tap a slot to toggle it on or off</span>
+          <span className="hidden sm:inline">Tip: Click and drag to quickly select multiple time slots</span>
         </p>
       )}
     </div>

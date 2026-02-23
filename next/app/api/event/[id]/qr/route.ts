@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import QRCode from "qrcode";
+import { getPublicBaseUrl } from "@/lib/baseUrl";
 
 /**
  * HTTP GET request to /api/event/[id]/qr
@@ -37,10 +38,8 @@ export async function GET(
       );
     }
 
-    // Get the base URL from the request or use environment variable
-    const host = request.headers.get("host") || "localhost:3000";
-    const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
-    const attendanceUrl = `${protocol}://${host}/events/${eventId}/attend`;
+    const baseUrl = getPublicBaseUrl(request);
+    const attendanceUrl = `${baseUrl}/events/${eventId}/attend`;
 
     // Generate QR code as PNG buffer
     const qrCodeBuffer = await QRCode.toBuffer(attendanceUrl, {

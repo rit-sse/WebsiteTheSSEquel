@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { resolveUserImage } from "@/lib/s3Utils";
 import { MENTOR_HEAD_TITLE } from "@/lib/utils";
+import { getGatewayAuthLevel } from "@/lib/authGateway";
 
 export const dynamic = "force-dynamic";
 
@@ -148,49 +149,27 @@ export async function GET(
     return new Response(`User ${id} not found`, { status: 404 });
   }
 
-  // Public profile route: anyone can view profile fields.
-  // Email remains private unless owner or active officer.
-  const session = await getServerSession(authOptions);
+  // Run independent queries in parallel to cut load time.
+  const [session, authLevel, mentoringHead, activeSemester] = await Promise.all([
+    getServerSession(authOptions),
+    getGatewayAuthLevel(request as Request),
+    prisma.officer.findFirst({
+      where: { is_active: true, position: { title: MENTOR_HEAD_TITLE } },
+      select: { user: { select: { id: true, name: true, email: true } } },
+    }),
+    prisma.mentorSemester.findFirst({
+      where: { isActive: true },
+      select: { id: true },
+      orderBy: { updatedAt: "desc" },
+    }),
+  ]);
+
   const isOwner = session?.user?.email === user.email;
-  const isOfficer = session?.user?.email
-    ? await prisma.user.findFirst({
-        where: {
-          email: session.user.email,
-          officers: {
-            some: {
-              is_active: true,
-            },
-          },
-        },
-        select: { id: true },
-      })
-    : null;
+  const isOfficer = authLevel.isOfficer;
 
   const projects = user.projectContributions.map((pc) => pc.project);
-  const mentoringHead = await prisma.officer.findFirst({
-    where: {
-      is_active: true,
-      position: {
-        title: MENTOR_HEAD_TITLE,
-      },
-    },
-    select: {
-      user: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-        },
-      },
-    },
-  });
-
   const latestMentorApplication = user.mentorApplications[0];
-  const activeSemester = await prisma.mentorSemester.findFirst({
-    where: { isActive: true },
-    select: { id: true },
-    orderBy: { updatedAt: "desc" },
-  });
+
   const mentorAvailability = activeSemester
     ? await prisma.mentorAvailability.findUnique({
         where: {
@@ -207,7 +186,7 @@ export async function GET(
   return Response.json({
     id: user.id,
     name: user.name,
-    email: isOwner || !!isOfficer ? user.email : undefined,
+    email: isOwner || isOfficer ? user.email : undefined,
     image: resolveUserImage(user.profileImageKey, user.googleImageURL),
     profileImageKey: user.profileImageKey ?? null,
     linkedIn: user.linkedIn,

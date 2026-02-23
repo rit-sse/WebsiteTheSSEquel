@@ -14,6 +14,21 @@ pnpm dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Staging Proxy Auth
+
+For staging deployments behind an auth proxy, API authorization can be sourced from
+the shared auth gateway (`/api/authLevel`) using trusted proxy headers.
+
+Set:
+
+```bash
+STAGING_PROXY_AUTH=true
+```
+
+Proxy will forward the following, this must be present in requests made (if testing locally):
+
+- `X-Auth-Request-Email` with the authenticated user email
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.

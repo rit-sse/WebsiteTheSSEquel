@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { getSessionToken } from "@/lib/sessionToken";
 import { NextRequest } from "next/server";
 
 export const dynamic = 'force-dynamic'
@@ -7,7 +8,7 @@ export const dynamic = 'force-dynamic'
  * GET /api/purchasing - List all purchase requests (visible to all officers)
  */
 export async function GET(request: NextRequest) {
-  const authToken = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
+  const authToken = getSessionToken(request);
 
   if (!authToken) {
     return new Response("Unauthorized", { status: 401 });
@@ -58,7 +59,7 @@ export async function GET(request: NextRequest) {
  * POST /api/purchasing - Create a new purchase request
  */
 export async function POST(request: NextRequest) {
-  const authToken = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
+  const authToken = getSessionToken(request);
 
   if (!authToken) {
     return new Response("Unauthorized", { status: 401 });

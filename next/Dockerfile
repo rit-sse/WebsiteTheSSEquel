@@ -6,6 +6,12 @@ FROM base AS deps
 
 WORKDIR /app
 
+ARG NEXTAUTH_URL
+ARG NEXT_PUBLIC_ENV
+
+ENV NEXTAUTH_URL=$NEXTAUTH_URL
+ENV NEXT_PUBLIC_ENV=$NEXT_PUBLIC_ENV
+
 # Install dependencies based on the preferred package manager
 COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
 RUN \
@@ -20,14 +26,18 @@ RUN \
 FROM base AS builder
 WORKDIR /app
 
-# Install git to fetch commit hash from remote
-RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+ARG GIT_COMMIT
+ARG NEXTAUTH_URL
+ARG NEXT_PUBLIC_ENV
+
+ENV NEXTAUTH_URL=$NEXTAUTH_URL
+ENV NEXT_PUBLIC_ENV=$NEXT_PUBLIC_ENV
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Get commit hash from GitHub remote (works without local .git folder)
-RUN COMMIT_HASH=$(git ls-remote https://github.com/rit-sse/WebsiteTheSSEquel.git main | head -c 7) && \
+# Use commit hash passed from CI for accurate branch-specific build metadata.
+RUN COMMIT_HASH="${GIT_COMMIT:-dev}" && \
     echo "COMMIT_HASH=$COMMIT_HASH" && \
     echo "$COMMIT_HASH" > /tmp/commit_hash
 
@@ -50,7 +60,12 @@ RUN COMMIT_HASH=$(cat /tmp/commit_hash) && \
 FROM base AS runner
 WORKDIR /app
 
+ARG NEXTAUTH_URL
+ARG NEXT_PUBLIC_ENV
+
 ENV NODE_ENV=production
+ENV NEXTAUTH_URL=$NEXTAUTH_URL
+ENV NEXT_PUBLIC_ENV=$NEXT_PUBLIC_ENV
 # Uncomment the following line in case you want to disable telemetry during runtime.
 ENV NEXT_TELEMETRY_DISABLED=1
 

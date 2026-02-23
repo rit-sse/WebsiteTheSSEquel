@@ -1,17 +1,10 @@
-import { PROJECTS_HEAD_TITLE } from "@/lib/utils";
 import prisma from "@/lib/prisma";
 import { NextRequest } from "next/server";
+import { getGatewayAuthLevel } from "@/lib/authGateway";
 
-async function isProjectsHead(sessionToken: string) {
-  const officerPosition = await prisma.user.findFirst({
-    where: {
-      session: { some: { sessionToken } },
-      officers: {
-        some: { is_active: true, position: { title: PROJECTS_HEAD_TITLE } },
-      },
-    },
-  });
-  return officerPosition !== null;
+async function isProjectsHead(request: NextRequest) {
+  const authLevel = await getGatewayAuthLevel(request);
+  return authLevel.isProjectsHead || authLevel.isPrimary;
 }
 
 export async function GET(request: Request) {
@@ -27,11 +20,7 @@ export async function POST(request: NextRequest) {
     return new Response("Invalid JSON", { status: 422 });
   }
 
-  if (
-    !isProjectsHead(
-      request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value ?? "NO TOKEN"
-    )
-  ) {
+  if (!(await isProjectsHead(request))) {
     return new Response("Only the projects head may modify projects", {
       status: 403,
     });
@@ -141,11 +130,7 @@ export async function PUT(request: NextRequest) {
     return new Response("'id' must be an integer", { status: 422 });
   }
 
-  if (
-    !isProjectsHead(
-      request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value ?? "NO TOKEN"
-    )
-  ) {
+  if (!(await isProjectsHead(request))) {
     return new Response("Only the projects head may modify projects", {
       status: 403,
     });
@@ -250,11 +235,7 @@ export async function DELETE(request: NextRequest) {
     return new Response("'id' must be an integer", { status: 422 });
   }
 
-  if (
-    !isProjectsHead(
-      request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value ?? "NO TOKEN"
-    )
-  ) {
+  if (!(await isProjectsHead(request))) {
     return new Response("Only the projects head may modify projects", {
       status: 403,
     });

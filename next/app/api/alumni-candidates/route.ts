@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { getSessionToken } from "@/lib/sessionToken";
 import { NextRequest } from "next/server";
 import { AlumniCandidateStatus, AlumniSource } from "@prisma/client";
 import { formatAcademicTerm } from "@/lib/academicTerm";
@@ -6,7 +7,7 @@ import { formatAcademicTerm } from "@/lib/academicTerm";
 export const dynamic = "force-dynamic";
 
 async function requireOfficer(request: NextRequest) {
-  const authToken = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
+  const authToken = getSessionToken(request);
   if (!authToken) return null;
 
   return prisma.user.findFirst({

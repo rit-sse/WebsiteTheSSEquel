@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
 import {
-  Download,
   Users,
   ExternalLink,
   Trash2,
@@ -17,6 +16,7 @@ import {
   MapPin,
   Award,
   Loader2,
+  QrCode,
 } from "lucide-react"
 
 interface Attendee {
@@ -76,9 +76,9 @@ export default function EventForm({
     }
   }, [isOpen, event.attendanceEnabled, fetchAttendance])
 
-  const downloadFlyer = () => {
+  const openFlyerPage = () => {
     if (!event.id) return
-    window.open(`/api/event/${event.id}/flyer`, "_blank")
+    window.open(`/events/${event.id}/flyer`, "_blank")
   }
 
   const openAttendancePage = () => {
@@ -250,9 +250,9 @@ export default function EventForm({
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <Button variant="outline" size="sm" onClick={downloadFlyer}>
-              <Download className="h-4 w-4" />
-              Download Flyer
+            <Button variant="outline" size="sm" onClick={openFlyerPage}>
+              <QrCode className="h-4 w-4" />
+              Sign-in Code
             </Button>
             <Button variant="outline" size="sm" onClick={openAttendancePage}>
               <ExternalLink className="h-4 w-4" />

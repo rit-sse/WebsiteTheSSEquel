@@ -1,12 +1,13 @@
 import { s3Service } from "@/lib/services/s3Service";
 import prisma from "@/lib/prisma";
+import { getSessionToken } from "@/lib/sessionToken";
 import { NextRequest, NextResponse } from "next/server";
 import { normalizeToS3Key } from "@/lib/s3Utils";
 
 export async function POST(req: NextRequest) {
   try {
     // Get user from session
-    const authToken = req.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
+    const authToken = getSessionToken(req);
 
     if (!authToken) {
       return NextResponse.json(
@@ -93,7 +94,7 @@ export async function POST(req: NextRequest) {
 
 export async function PUT(req: NextRequest) {
   try {
-    const authToken = req.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
+    const authToken = getSessionToken(req);
 
     if (!authToken) {
       return NextResponse.json(
@@ -162,13 +163,11 @@ export async function PUT(req: NextRequest) {
       }
     }
 
-    // Save the new key to the database and clear googleImageURL
+    // Save the new key; keep googleImageURL as a fallback if S3 ever fails.
+    // resolveUserImage() already prefers profileImageKey over googleImageURL.
     await prisma.user.update({
       where: { id: user.id },
-      data: {
-        profileImageKey: key,
-        googleImageURL: null,
-      },
+      data: { profileImageKey: key },
     });
 
     return NextResponse.json({
