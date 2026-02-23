@@ -2,8 +2,20 @@ import prisma from "@/lib/prisma";
 import { getSessionToken } from "@/lib/sessionToken";
 import { sendEmail, isEmailConfigured } from "@/lib/email";
 import { NextRequest } from "next/server";
+import { getPublicBaseUrl } from "@/lib/baseUrl";
+import { resolveAuthLevelFromRequest } from "@/lib/authLevelResolver";
 
 export const dynamic = "force-dynamic";
+
+async function requireOfficer(request: Request): Promise<Response | null> {
+  const authLevel = await resolveAuthLevelFromRequest(request);
+  if (!authLevel.isOfficer) {
+    return new Response("Access Denied; need to be Officer to access", {
+      status: 403,
+    });
+  }
+  return null;
+}
 
 /**
  * HTTP GET request to /api/invitations
@@ -12,6 +24,9 @@ export const dynamic = "force-dynamic";
  * @returns Array of invitation objects with related data
  */
 export async function GET(request: NextRequest) {
+  const denied = await requireOfficer(request);
+  if (denied) return denied;
+
   const { searchParams } = new URL(request.url);
   const type = searchParams.get("type");
 
@@ -50,6 +65,9 @@ export async function GET(request: NextRequest) {
  * @param request {email: string, type: "officer" | "user", positionId?: number, startDate?: DateTime, endDate?: DateTime}
  */
 export async function POST(request: NextRequest) {
+  const denied = await requireOfficer(request);
+  if (denied) return denied;
+
   // Get the logged-in user's session token
   const authToken = getSessionToken(request);
 
@@ -228,11 +246,7 @@ export async function POST(request: NextRequest) {
 
   // Send invitation email
   if (isEmailConfigured()) {
-    const baseUrl =
-      request.nextUrl.origin ||
-      process.env.NEXTAUTH_URL ||
-      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined) ||
-      "http://localhost:3000";
+    const baseUrl = getPublicBaseUrl(request);
     const acceptUrl = `${baseUrl}/accept-invitation`;
 
     try {
@@ -339,7 +353,10 @@ export async function POST(request: NextRequest) {
  * Cancel/revoke an invitation
  * @param request {id: number}
  */
-export async function DELETE(request: Request) {
+export async function DELETE(request: NextRequest) {
+  const denied = await requireOfficer(request);
+  if (denied) return denied;
+
   let body;
   try {
     body = await request.json();

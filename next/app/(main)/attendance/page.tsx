@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Modal, ModalFooter } from "@/components/ui/modal"
@@ -20,7 +20,7 @@ import {
   Loader2,
   Link as LinkIcon,
   Plus,
-  ChevronDown,
+  ChevronRight,
   Repeat,
   Trash2,
   Mail,
@@ -76,26 +76,22 @@ export default function AttendancePage() {
 
   const fetchEvents = useCallback(async () => {
     try {
-      // Fetch all events
       const response = await fetch("/api/event")
       if (!response.ok) throw new Error("Failed to fetch events")
-      
+
       const fetchedEvents = await response.json()
       setAllEvents(fetchedEvents)
-      
-      // Filter to events with attendance enabled and fetch attendance counts
+
       const eventsWithAttendance: EventWithAttendance[] = []
-      
+
       for (const event of fetchedEvents) {
         if (event.attendanceEnabled) {
-          // Fetch attendance data for each event
           const attendanceResponse = await fetch(`/api/event/${event.id}/attendance`)
           const attendanceData = attendanceResponse.ok ? await attendanceResponse.json() : { count: 0 }
-          
-          // Fetch linked purchase requests
+
           const purchaseResponse = await fetch(`/api/event/${event.id}/purchases`)
           const purchaseData = purchaseResponse.ok ? await purchaseResponse.json() : []
-          
+
           eventsWithAttendance.push({
             ...event,
             attendeeCount: attendanceData.count || 0,
@@ -103,10 +99,8 @@ export default function AttendancePage() {
           })
         }
       }
-      
-      // Sort by date descending (most recent first)
+
       eventsWithAttendance.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      
       setEvents(eventsWithAttendance)
     } catch (error) {
       console.error("Error fetching events:", error)
@@ -115,10 +109,8 @@ export default function AttendancePage() {
     }
   }, [])
 
-  // Handler for when events are updated (from AddEventForm)
   const handleEventsUpdate = (updatedEvents: Event[]) => {
     setAllEvents(updatedEvents)
-    // Refetch to get attendance counts
     fetchEvents()
   }
 
@@ -129,7 +121,7 @@ export default function AttendancePage() {
   const viewAttendees = async (event: EventWithAttendance) => {
     setSelectedEvent(event)
     setLoadingAttendance(true)
-    
+
     try {
       const response = await fetch(`/api/event/${event.id}/attendance`)
       if (response.ok) {
@@ -157,15 +149,13 @@ export default function AttendancePage() {
         body: JSON.stringify({ userId }),
       })
       if (response.ok && attendanceData) {
-        // Remove attendee from local state
         setAttendanceData({
           ...attendanceData,
           attendees: attendanceData.attendees.filter(a => a.userId !== userId),
           count: attendanceData.count - 1,
         })
-        // Update the event's attendee count in the events list
-        setEvents(events.map(e => 
-          e.id === eventId 
+        setEvents(events.map(e =>
+          e.id === eventId
             ? { ...e, attendeeCount: e.attendeeCount - 1 }
             : e
         ))
@@ -181,22 +171,19 @@ export default function AttendancePage() {
     if (!deleteEventModal) return
     setDeletingEvent(true)
     try {
-      // Delete from Prisma
       const response = await fetch("/api/event", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: deleteEventModal.id }),
       })
-      
+
       if (response.ok) {
-        // Also try to delete from Google Calendar (don't fail if this fails)
         await fetch("/api/calendar", {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ id: deleteEventModal.id }),
         }).catch(console.warn)
-        
-        // Remove from local state
+
         setEvents(events.filter(e => e.id !== deleteEventModal.id))
         setAllEvents(allEvents.filter(e => e.id !== deleteEventModal.id))
         setDeleteEventModal(null)
@@ -266,9 +253,9 @@ export default function AttendancePage() {
               </p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-6">
               {groupBySemester(events, (e) => e.date).map((group, index) => (
-                <SemesterAccordion
+                <SemesterSection
                   key={group.label}
                   label={group.label}
                   events={group.items}
@@ -289,7 +276,7 @@ export default function AttendancePage() {
       <Modal
         open={!!selectedEvent}
         onOpenChange={(open) => !open && closeModal()}
-        title={selectedEvent ? `Attendees - ${selectedEvent.title}` : "Attendees"}
+        title={selectedEvent ? `Attendees — ${selectedEvent.title}` : "Attendees"}
         className="max-w-2xl"
       >
         {loadingAttendance ? (
@@ -309,7 +296,7 @@ export default function AttendancePage() {
                 </Badge>
               )}
             </div>
-            
+
             {attendanceData.attendees.length === 0 ? (
               <p className="text-center py-8 text-muted-foreground">
                 No attendees yet
@@ -348,7 +335,7 @@ export default function AttendancePage() {
             )}
           </div>
         ) : null}
-        
+
         <ModalFooter>
           {attendanceData && attendanceData.attendees.length > 0 && (
             <Button
@@ -441,7 +428,8 @@ export default function AttendancePage() {
   )
 }
 
-// Group events into recurring series and single events
+/* ─── Grouping logic ─── */
+
 interface EventGroup {
   type: "recurring" | "single"
   title: string
@@ -450,7 +438,6 @@ interface EventGroup {
 }
 
 function groupEventsForDisplay(events: EventWithAttendance[]): EventGroup[] {
-  // Group by title to find recurring series
   const byTitle = new Map<string, EventWithAttendance[]>()
   for (const event of events) {
     const existing = byTitle.get(event.title) || []
@@ -461,7 +448,6 @@ function groupEventsForDisplay(events: EventWithAttendance[]): EventGroup[] {
   const groups: EventGroup[] = []
   const processedTitles = new Set<string>()
 
-  // Sort events by date to maintain order
   const sortedEvents = [...events].sort(
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
   )
@@ -471,7 +457,6 @@ function groupEventsForDisplay(events: EventWithAttendance[]): EventGroup[] {
     processedTitles.add(event.title)
 
     const seriesEvents = byTitle.get(event.title) || []
-    // Sort series events by date (earliest first)
     seriesEvents.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 
     if (seriesEvents.length > 1) {
@@ -494,8 +479,9 @@ function groupEventsForDisplay(events: EventWithAttendance[]): EventGroup[] {
   return groups
 }
 
-// Semester accordion component for grouping events
-function SemesterAccordion({
+/* ─── Semester section ─── */
+
+function SemesterSection({
   label,
   events,
   defaultOpen,
@@ -515,28 +501,24 @@ function SemesterAccordion({
   onDeleteEvent: (event: EventWithAttendance) => void
 }) {
   const [isOpen, setIsOpen] = useState(defaultOpen)
-
-  // Group events
   const eventGroups = groupEventsForDisplay(events)
-
-  // Count totals
   const totalAttendees = events.reduce((sum, e) => sum + e.attendeeCount, 0)
   const recurringSeriesCount = eventGroups.filter((g) => g.type === "recurring").length
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <CollapsibleTrigger className="flex items-center justify-between w-full p-3 bg-muted/50 hover:bg-muted rounded-lg transition-colors">
-        <div className="flex flex-wrap items-center gap-2">
-          <ChevronDown
-            className={`h-5 w-5 shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
-          />
-          <span className="font-semibold">{label}</span>
-          <Badge variant="secondary" className="text-xs">
+      <CollapsibleTrigger className="flex flex-wrap items-center gap-x-3 gap-y-1 w-full p-4 rounded-lg bg-primary/5 hover:bg-primary/10 border border-primary/10">
+        <ChevronRight
+          className={`h-5 w-5 shrink-0 text-primary transition-transform duration-200 ${isOpen ? "rotate-90" : ""}`}
+        />
+        <h2 className="font-bold text-lg">{label}</h2>
+        <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
+          <Badge variant="secondary" className="text-xs font-medium">
             {events.length} event{events.length !== 1 ? "s" : ""}
           </Badge>
           <Badge variant="outline" className="text-xs gap-1">
             <Users className="h-3 w-3" />
-            {totalAttendees} attendees
+            {totalAttendees}
           </Badge>
           {recurringSeriesCount > 0 && (
             <Badge variant="outline" className="text-xs gap-1">
@@ -546,10 +528,11 @@ function SemesterAccordion({
           )}
         </div>
       </CollapsibleTrigger>
-      <CollapsibleContent className="pt-3 space-y-3">
+
+      <CollapsibleContent className="pt-3 pl-1 sm:pl-4 space-y-3">
         {eventGroups.map((group) =>
           group.type === "recurring" ? (
-            <RecurringSeriesAccordion
+            <RecurringSeries
               key={group.title}
               title={group.title}
               events={group.events}
@@ -561,7 +544,7 @@ function SemesterAccordion({
               onDeleteEvent={onDeleteEvent}
             />
           ) : (
-            <EventCard
+            <SingleEventRow
               key={group.events[0].id}
               event={group.events[0]}
               formatDate={formatDate}
@@ -569,7 +552,6 @@ function SemesterAccordion({
               onDownloadFlyer={onDownloadFlyer}
               onOpenAttendancePage={onOpenAttendancePage}
               onDeleteEvent={onDeleteEvent}
-              showTitle
             />
           )
         )}
@@ -578,8 +560,9 @@ function SemesterAccordion({
   )
 }
 
-// Recurring series accordion
-function RecurringSeriesAccordion({
+/* ─── Recurring series ─── */
+
+function RecurringSeries({
   title,
   events,
   totalAttendees,
@@ -599,52 +582,63 @@ function RecurringSeriesAccordion({
   onDeleteEvent: (event: EventWithAttendance) => void
 }) {
   const [isOpen, setIsOpen] = useState(false)
+  const anyGrantsMembership = events.some((e) => e.grantsMembership)
 
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <CollapsibleTrigger className="flex items-center justify-between w-full p-3 bg-muted/30 hover:bg-muted/50 rounded-lg transition-colors">
-        <div className="flex flex-wrap items-center gap-2">
-          <ChevronDown
-            className={`h-4 w-4 shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+    <Card depth={2} className="overflow-hidden">
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <CollapsibleTrigger className="flex flex-wrap items-center gap-x-3 gap-y-1 w-full px-4 py-3 hover:bg-muted/50">
+          <ChevronRight
+            className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 ${isOpen ? "rotate-90" : ""}`}
           />
           <Repeat className="h-4 w-4 shrink-0 text-muted-foreground" />
-          <span className="font-medium">{title}</span>
-          <Badge variant="secondary" className="text-xs">
-            {events.length} occurrences
-          </Badge>
-          <Badge variant="outline" className="text-xs gap-1">
-            <Users className="h-3 w-3" />
-            {totalAttendees} attendees
-          </Badge>
-        </div>
-      </CollapsibleTrigger>
-      <CollapsibleContent className="pt-3 space-y-3">
-        {events.map((event) => (
-          <EventCard
-            key={event.id}
-            event={event}
-            formatDate={formatDate}
-            onViewAttendees={onViewAttendees}
-            onDownloadFlyer={onDownloadFlyer}
-            onOpenAttendancePage={onOpenAttendancePage}
-            onDeleteEvent={onDeleteEvent}
-            showTitle={false}
-          />
-        ))}
-      </CollapsibleContent>
-    </Collapsible>
+          <span className="font-semibold text-base">{title}</span>
+          <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
+            {anyGrantsMembership && (
+              <Badge variant="default" className="gap-1 text-xs">
+                <Award className="h-3 w-3" />
+                Membership
+              </Badge>
+            )}
+            <Badge variant="outline" className="text-xs">
+              {events.length} dates
+            </Badge>
+            <Badge variant="outline" className="text-xs gap-1">
+              <Users className="h-3 w-3" />
+              {totalAttendees}
+            </Badge>
+          </div>
+        </CollapsibleTrigger>
+
+        <CollapsibleContent>
+          <div className="border-t divide-y">
+            {events.map((event) => (
+              <OccurrenceRow
+                key={event.id}
+                event={event}
+                formatDate={formatDate}
+                onViewAttendees={onViewAttendees}
+                onDownloadFlyer={onDownloadFlyer}
+                onOpenAttendancePage={onOpenAttendancePage}
+                onDeleteEvent={onDeleteEvent}
+              />
+            ))}
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+    </Card>
   )
 }
 
-// Single event card
-function EventCard({
+/* ─── Occurrence row (inside a recurring series) ─── */
+
+function OccurrenceRow({
   event,
   formatDate,
   onViewAttendees,
   onDownloadFlyer,
   onOpenAttendancePage,
   onDeleteEvent,
-  showTitle,
 }: {
   event: EventWithAttendance
   formatDate: (date: string) => string
@@ -652,45 +646,96 @@ function EventCard({
   onDownloadFlyer: (eventId: string) => void
   onOpenAttendancePage: (eventId: string) => void
   onDeleteEvent: (event: EventWithAttendance) => void
-  showTitle: boolean
 }) {
   return (
-    <Card depth={2} className="p-4">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 py-2.5 hover:bg-muted">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 min-w-0">
+        <span className="text-sm font-semibold">{event.title}</span>
+        <Calendar className="h-4 w-4 shrink-0 text-muted-foreground" />
+        <span className="text-sm font-medium">{formatDate(event.date)}</span>
+        {event.location && (
+          <span className="text-xs text-muted-foreground flex items-center gap-1 shrink-0">
+            <MapPin className="h-3 w-3" />
+            {event.location}
+          </span>
+        )}
+        <span className="text-xs text-muted-foreground flex items-center gap-1 shrink-0">
+          <Users className="h-3 w-3" />
+          {event.attendeeCount}
+        </span>
+      </div>
+
+      <div className="flex items-center gap-1 shrink-0">
+        <Button variant="ghost" size="sm" onClick={() => onViewAttendees(event)} className="h-8 w-8 p-0">
+          <Users className="h-4 w-4" />
+        </Button>
+        <Button variant="ghost" size="sm" onClick={() => onDownloadFlyer(event.id)} className="h-8 w-8 p-0">
+          <QrCode className="h-4 w-4" />
+        </Button>
+        <Button variant="ghost" size="sm" onClick={() => onOpenAttendancePage(event.id)} className="h-8 w-8 p-0">
+          <ExternalLink className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => onDeleteEvent(event)}
+          className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+/* ─── Single (non-recurring) event ─── */
+
+function SingleEventRow({
+  event,
+  formatDate,
+  onViewAttendees,
+  onDownloadFlyer,
+  onOpenAttendancePage,
+  onDeleteEvent,
+}: {
+  event: EventWithAttendance
+  formatDate: (date: string) => string
+  onViewAttendees: (event: EventWithAttendance) => void
+  onDownloadFlyer: (eventId: string) => void
+  onOpenAttendancePage: (eventId: string) => void
+  onDeleteEvent: (event: EventWithAttendance) => void
+}) {
+  return (
+    <Card depth={2} className="px-4 py-3">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <div className="flex flex-wrap items-center gap-2 mb-1">
-            {showTitle ? (
-              <h3 className="text-lg font-semibold truncate">{event.title}</h3>
-            ) : (
-              <span className="font-medium">{formatDate(event.date)}</span>
-            )}
+          <div className="flex flex-wrap items-center gap-2 mb-0.5">
+            <h3 className="font-semibold text-base truncate">{event.title}</h3>
             {event.grantsMembership && (
-              <Badge variant="default" className="gap-1 shrink-0">
+              <Badge variant="default" className="gap-1 text-xs">
                 <Award className="h-3 w-3" />
-                Grants Membership
+                Membership
               </Badge>
             )}
           </div>
           <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-            {showTitle && (
-              <span className="flex items-center gap-1">
-                <Calendar className="h-4 w-4" />
-                {formatDate(event.date)}
-              </span>
-            )}
+            <span className="flex items-center gap-1">
+              <Calendar className="h-3.5 w-3.5" />
+              {formatDate(event.date)}
+            </span>
             {event.location && (
               <span className="flex items-center gap-1">
-                <MapPin className="h-4 w-4" />
+                <MapPin className="h-3.5 w-3.5" />
                 {event.location}
               </span>
             )}
             <span className="flex items-center gap-1">
-              <Users className="h-4 w-4" />
+              <Users className="h-3.5 w-3.5" />
               {event.attendeeCount} attendee{event.attendeeCount !== 1 ? "s" : ""}
             </span>
             {event.linkedPurchaseRequests.length > 0 && (
               <span className="flex items-center gap-1">
-                <LinkIcon className="h-4 w-4" />
+                <LinkIcon className="h-3.5 w-3.5" />
                 {event.linkedPurchaseRequests.length} purchase request
                 {event.linkedPurchaseRequests.length !== 1 ? "s" : ""}
               </span>
@@ -698,41 +743,26 @@ function EventCard({
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onViewAttendees(event)}
-            className="gap-1"
-          >
-            <Users className="h-4 w-4" />
+        <div className="flex flex-wrap gap-1.5 shrink-0">
+          <Button variant="outline" size="sm" onClick={() => onViewAttendees(event)} className="gap-1 h-8 text-xs">
+            <Users className="h-3.5 w-3.5" />
             View
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onDownloadFlyer(event.id)}
-            className="gap-1"
-          >
-            <QrCode className="h-4 w-4" />
-            Sign-in Code
+          <Button variant="outline" size="sm" onClick={() => onDownloadFlyer(event.id)} className="gap-1 h-8 text-xs">
+            <QrCode className="h-3.5 w-3.5" />
+            QR
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onOpenAttendancePage(event.id)}
-            className="gap-1"
-          >
-            <ExternalLink className="h-4 w-4" />
+          <Button variant="outline" size="sm" onClick={() => onOpenAttendancePage(event.id)} className="gap-1 h-8 text-xs">
+            <ExternalLink className="h-3.5 w-3.5" />
             Check-in
           </Button>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => onDeleteEvent(event)}
-            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+            className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
           >
-            <Trash2 className="h-4 w-4" />
+            <Trash2 className="h-3.5 w-3.5" />
           </Button>
         </div>
       </div>

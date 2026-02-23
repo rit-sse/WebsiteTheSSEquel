@@ -5,6 +5,18 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+export function ensureGithubUrl(val: string): string {
+  if (val.startsWith("https://") || val.startsWith("http://")) return val;
+  if (val.includes("github.com")) return `https://${val}`;
+  return `https://github.com/${val}`;
+}
+
+export function ensureLinkedinUrl(val: string): string {
+  if (val.startsWith("https://") || val.startsWith("http://")) return val;
+  if (val.includes("linkedin.com")) return `https://${val}`;
+  return `https://linkedin.com/in/${val}`;
+}
+
 export const isUrlValid = (str: string) => {
   const pattern = new RegExp(
     "^(https?:\\/\\/)?" + // protocol

@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import QRCode from "qrcode";
+import { getPublicBaseUrl } from "@/lib/baseUrl";
 
 /**
  * HTTP GET request to /api/event/[id]/flyer
@@ -8,9 +9,9 @@ import QRCode from "qrcode";
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id: eventId } = params;
+  const { id: eventId } = await params;
 
   try {
     const event = await prisma.event.findUnique({
@@ -35,11 +36,7 @@ export async function GET(
       );
     }
 
-    const baseUrl =
-      request.nextUrl.origin ||
-      process.env.NEXTAUTH_URL ||
-      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined) ||
-      "http://localhost:3000";
+    const baseUrl = getPublicBaseUrl(request);
     const attendanceUrl = `${baseUrl}/events/${eventId}/attend`;
 
     // Generate QR code as SVG string

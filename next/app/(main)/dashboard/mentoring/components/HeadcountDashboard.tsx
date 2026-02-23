@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import {
   ResponsiveContainer,
   LineChart,
@@ -16,8 +16,15 @@ import {
 } from "recharts"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import {
   Select,
   SelectContent,
@@ -34,7 +41,11 @@ import {
   FlaskConical,
   Activity,
   Clock,
+  Copy,
+  Check,
+  Expand,
 } from "lucide-react"
+import { toast } from "sonner"
 import type { SemesterTrend } from "@/app/api/headcount-trends/route"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -83,10 +94,11 @@ function formatHour(h: number) {
 }
 
 function heatColor(avg: number) {
-  if (avg < 6) return "bg-blue-500/10 text-foreground"
-  if (avg < 10) return "bg-blue-500/25 text-foreground"
-  if (avg < 20) return "bg-blue-500/45 text-foreground"
-  return "bg-blue-500/65 text-white"
+  if (avg <= 6) return "bg-blue-200 text-foreground"
+  if (avg <= 10) return "bg-blue-300 text-foreground"
+  if (avg <= 15) return "bg-blue-400 text-foreground"
+  if (avg <= 20) return "bg-blue-500 text-white"
+  return "bg-blue-600 text-white"
 }
 
 function shortLabel(name: string): string {
@@ -94,6 +106,13 @@ function shortLabel(name: string): string {
   if (!m) return name.slice(0, 7)
   const abbr: Record<string, string> = { spring: "Sp", fall: "Fa", summer: "Su", winter: "Wi" }
   return `${abbr[m[1].toLowerCase()] ?? m[1].slice(0, 2)} '${m[2].slice(2)}`
+}
+
+function semesterSortKey(name: string): string {
+  const m = name.match(/^(Spring|Fall|Summer|Winter)\s+(\d{4})$/i)
+  if (!m) return name
+  const termRank: Record<string, number> = { spring: 1, summer: 0, fall: 2, winter: 3 }
+  return `${m[2]}-${termRank[m[1].toLowerCase()] ?? 0}`
 }
 
 function pct(current: number, previous: number): number | null {
@@ -127,8 +146,10 @@ interface StatCardProps {
   delta?: number | null
   accent: string
   sub?: string
+  prevValue?: string | number
+  prevLabel?: string
 }
-function StatCard({ icon, label, value, delta, accent, sub }: StatCardProps) {
+function StatCard({ icon, label, value, delta, accent, sub, prevValue, prevLabel }: StatCardProps) {
   return (
     <Card depth={2} className="neo:border-0">
       <CardContent className="p-4">
@@ -142,6 +163,11 @@ function StatCard({ icon, label, value, delta, accent, sub }: StatCardProps) {
           <div className="text-2xl font-bold tabular-nums tracking-tight">{value}</div>
           <div className="text-xs text-muted-foreground mt-0.5 font-medium uppercase tracking-wide">{label}</div>
           {sub && <div className="text-xs text-muted-foreground mt-1">{sub}</div>}
+          {prevValue !== undefined && (
+            <div className="text-sm text-muted-foreground mt-1.5 tabular-nums">
+              {prevLabel ?? "prev"}: <span className="font-medium text-foreground/70">{prevValue}</span>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
@@ -173,12 +199,57 @@ const ChartTooltip = ({
   )
 }
 
+function CheckInCard({ entry, copiedId, onCopy, onClick }: {
+  entry: MentorEntry; copiedId: number | null; onCopy: (e: MentorEntry) => void; onClick?: (e: MentorEntry) => void
+}) {
+  return (
+    <Card depth={3} className="neo:border-0 hover:bg-muted/30 group cursor-pointer" onClick={() => onClick?.(entry)}>
+      <CardContent className="p-2.5 space-y-1">
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-[11px] text-muted-foreground">
+            {new Date(entry.createdAt).toLocaleString("en-US", {
+              month: "short", day: "numeric", hour: "numeric", minute: "2-digit",
+            })}
+          </span>
+          <div className="flex items-center gap-1.5">
+            <Badge variant="outline" className="text-[10px] tabular-nums h-5 px-1.5">
+              {entry.peopleInLab} in lab
+            </Badge>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100"
+              onClick={(e) => { e.stopPropagation(); onCopy(entry) }}
+            >
+              {copiedId === entry.id ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+            </Button>
+          </div>
+        </div>
+        <div className="text-xs font-semibold text-foreground">
+          {entry.mentors.map((m) => m.mentor.user.name).join(", ")}
+        </div>
+        <div className="text-xs leading-snug text-muted-foreground">{entry.feeling}</div>
+      </CardContent>
+    </Card>
+  )
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export default function HeadcountDashboard() {
+interface HeadcountDashboardProps {
+  ToolbarPortal?: React.ComponentType<{ target: HTMLElement | null; children: React.ReactNode }>
+  toolbarNode?: HTMLElement | null
+}
+
+export default function HeadcountDashboard({ ToolbarPortal, toolbarNode }: HeadcountDashboardProps) {
   // Semesters & selection
   const [semesters, setSemesters] = useState<MentorSemester[]>([])
   const [selectedId, setSelectedId] = useState<string>("all")
+
+  const sortedSemesters = useMemo(
+    () => [...semesters].sort((a, b) => semesterSortKey(b.name).localeCompare(semesterSortKey(a.name))),
+    [semesters]
+  )
 
   // All-time trends (used by All Time + Past Semesters tabs)
   const [trends, setTrends] = useState<SemesterTrend[]>([])
@@ -188,9 +259,16 @@ export default function HeadcountDashboard() {
   const [mentorEntries, setMentorEntries] = useState<MentorEntry[]>([])
   const [menteeEntries, setMenteeEntries] = useState<MenteeEntry[]>([])
 
+  // Check-ins modal
+  const [checkInsOpen, setCheckInsOpen] = useState(false)
+  const [allMentorEntries, setAllMentorEntries] = useState<MentorEntry[]>([])
+  const [loadingAll, setLoadingAll] = useState(false)
+  const [copiedId, setCopiedId] = useState<number | null>(null)
+  const [selectedEntry, setSelectedEntry] = useState<MentorEntry | null>(null)
+
   // Sort state for comparison table
   const [sortKey, setSortKey] = useState<keyof SemesterTrend>("chronologicalIndex")
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc")
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc")
 
   // ── Fetch semesters once ────────────────────────────────────────────────────
   useEffect(() => {
@@ -200,8 +278,9 @@ export default function HeadcountDashboard() {
         setSemesters(data)
         const active = data.find((s) => s.isActive)
         if (active) setSelectedId(String(active.id))
+        setSemestersLoaded(true)
       })
-      .catch(() => {})
+      .catch(() => setSemestersLoaded(true))
   }, [])
 
   // ── Fetch all-time trends once ──────────────────────────────────────────────
@@ -213,7 +292,12 @@ export default function HeadcountDashboard() {
   }, [])
 
   // ── Fetch semester-specific data when selection changes ─────────────────────
+  // Wait for semesters to load before fetching so we default to the active
+  // semester instead of accidentally fetching all-time data.
+  const [semestersLoaded, setSemestersLoaded] = useState(false)
+
   useEffect(() => {
+    if (!semestersLoaded) return
     const param = selectedId !== "all" ? `&semesterId=${selectedId}` : ""
     Promise.all([
       fetch(`/api/mentoring-headcount?traffic=true${param}`).then((r) => (r.ok ? r.json() : [])),
@@ -228,7 +312,30 @@ export default function HeadcountDashboard() {
         setMenteeEntries(mentee)
       })
       .catch(() => {})
+  }, [selectedId, semestersLoaded])
+
+  const openAllCheckIns = useCallback(() => {
+    setCheckInsOpen(true)
+    setLoadingAll(true)
+    const param = selectedId !== "all" ? `&semesterId=${selectedId}` : ""
+    fetch(`/api/mentoring-headcount?limit=500${param}`)
+      .then((r) => (r.ok ? r.json() : []))
+      .then(setAllMentorEntries)
+      .catch(() => {})
+      .finally(() => setLoadingAll(false))
   }, [selectedId])
+
+  const copyCheckIn = useCallback((entry: MentorEntry) => {
+    const date = new Date(entry.createdAt).toLocaleString("en-US", {
+      month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit",
+    })
+    const mentors = entry.mentors.map((m) => m.mentor.user.name).join(", ")
+    const text = `${date} — Submitted by: ${mentors} — ${entry.peopleInLab} in lab — "${entry.feeling}"`
+    navigator.clipboard.writeText(text)
+    setCopiedId(entry.id)
+    toast.success("Copied to clipboard")
+    setTimeout(() => setCopiedId(null), 1500)
+  }, [])
 
   // ── Derived: heatmap lookup ─────────────────────────────────────────────────
   const heatmapLookup = useMemo(() => {
@@ -311,6 +418,27 @@ export default function HeadcountDashboard() {
     return { curr, prev }
   }, [trends, selectedId])
 
+  // ── Derived: semester progress for pace annotations ──────────────────────────
+  const semesterPace = useMemo(() => {
+    if (!currentTrend) return null
+    const { curr, prev } = currentTrend
+    if (!curr.isActive || !curr.semesterStart || !curr.semesterEnd) return null
+    const start = new Date(curr.semesterStart).getTime()
+    const end = new Date(curr.semesterEnd).getTime()
+    if (end <= start) return null
+    const progress = Math.max(0, Math.min(1, (Date.now() - start) / (end - start)))
+    const pctStr = `${Math.round(progress * 100)}%`
+    const note = (prevTotal: number | undefined) => {
+      if (prevTotal == null) return undefined
+      return `${pctStr} through · prev had ~${Math.round(prevTotal * progress)}`
+    }
+    const prevAtPace = (prevTotal: number | undefined): number | undefined => {
+      if (prevTotal == null) return undefined
+      return Math.round(prevTotal * progress)
+    }
+    return { progress, pctStr, note, prevAtPace }
+  }, [currentTrend])
+
   // ── Derived: chart data for all-time tabs ──────────────────────────────────
   const chartData = useMemo(
     () =>
@@ -364,40 +492,30 @@ export default function HeadcountDashboard() {
   // Render
   // ─────────────────────────────────────────────────────────────────────────
 
+  const toolbarContent = (
+    <TabsList className="inline-flex w-auto">
+      <TabsTrigger value="all-time" className="text-xs sm:text-sm">
+        All Time
+      </TabsTrigger>
+      <TabsTrigger value="semester" className="text-xs sm:text-sm">
+        By Semester
+      </TabsTrigger>
+      <TabsTrigger value="compare" className="text-xs sm:text-sm">
+        Compare
+      </TabsTrigger>
+    </TabsList>
+  )
+
   return (
     <div className="space-y-0">
       <Tabs defaultValue="semester">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-5">
-          <TabsList className="inline-flex w-auto">
-            <TabsTrigger value="all-time" className="text-xs sm:text-sm">
-              All Time
-            </TabsTrigger>
-            <TabsTrigger value="semester" className="text-xs sm:text-sm">
-              This Semester
-            </TabsTrigger>
-            <TabsTrigger value="compare" className="text-xs sm:text-sm">
-              Compare
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Semester picker — shown on "This Semester" tab context */}
-          <div className="flex items-center gap-2 sm:ml-auto">
-            <span className="text-xs text-muted-foreground hidden sm:inline">Semester:</span>
-            <Select value={selectedId} onValueChange={setSelectedId}>
-              <SelectTrigger className="w-44 h-8 text-xs">
-                <SelectValue placeholder="Select semester" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all" className="text-xs">All time</SelectItem>
-                {semesters.map((s) => (
-                  <SelectItem key={s.id} value={String(s.id)} className="text-xs">
-                    {s.name}{s.isActive ? " (active)" : ""}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        {ToolbarPortal ? (
+          <ToolbarPortal target={toolbarNode ?? null}>{toolbarContent}</ToolbarPortal>
+        ) : (
+          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-2 mb-5">
+            {toolbarContent}
           </div>
-        </div>
+        )}
 
         {/* ═══════════════════════════════════════════════════════════════════
             TAB 1 — ALL TIME
@@ -520,19 +638,35 @@ export default function HeadcountDashboard() {
         </TabsContent>
 
         {/* ═══════════════════════════════════════════════════════════════════
-            TAB 2 — THIS SEMESTER
+            TAB 2 — BY SEMESTER
         ═══════════════════════════════════════════════════════════════════ */}
         <TabsContent value="semester" className="space-y-5">
-          {/* Delta stat row */}
+          {/* Semester picker + delta stat row */}
           <div>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                {selectedId === "all"
-                  ? "All Semesters Combined"
-                  : (semesters.find((s) => String(s.id) === selectedId)?.name ?? "Selected Semester")}
-              </h3>
-              {currentTrend?.prev && (
-                <span className="text-xs text-muted-foreground">vs {shortLabel(currentTrend.prev.semesterName)}</span>
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+              <div className="flex flex-wrap items-center gap-3">
+                <Select value={selectedId} onValueChange={setSelectedId}>
+                  <SelectTrigger className="w-48 h-8 text-xs">
+                    <SelectValue placeholder="Select semester" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all" className="text-xs">All time</SelectItem>
+                    {sortedSemesters.map((s) => (
+                      <SelectItem key={s.id} value={String(s.id)} className="text-xs">
+                        {s.name}{s.isActive ? " (active)" : ""}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {currentTrend?.prev && (
+                  <span className="text-xs text-muted-foreground">vs {shortLabel(currentTrend.prev.semesterName)}</span>
+                )}
+              </div>
+              {semesterPace && (
+                <div className="flex items-center gap-2">
+                  <Progress value={Math.round(semesterPace.progress * 100)} className="w-20 h-1.5" />
+                  <span className="text-xs font-medium text-muted-foreground tabular-nums">{semesterPace.pctStr}</span>
+                </div>
               )}
             </div>
             <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
@@ -542,6 +676,8 @@ export default function HeadcountDashboard() {
                 value={currentTrend ? currentTrend.curr.mentorSubmissions : mentorEntries.length}
                 delta={currentTrend?.prev ? pct(currentTrend.curr.mentorSubmissions, currentTrend.prev.mentorSubmissions) : undefined}
                 accent="bg-amber-500/10"
+                prevValue={semesterPace?.prevAtPace(currentTrend?.prev?.mentorSubmissions) != null ? `~${semesterPace.prevAtPace(currentTrend?.prev?.mentorSubmissions)}` : undefined}
+                prevLabel="prev at this point"
               />
               <StatCard
                 icon={<Users className="h-4 w-4 text-blue-600 dark:text-blue-400" />}
@@ -549,6 +685,8 @@ export default function HeadcountDashboard() {
                 value={currentTrend ? currentTrend.curr.avgPeopleInLab : avgPeopleInLab.toFixed(1)}
                 delta={currentTrend?.prev ? pct(currentTrend.curr.avgPeopleInLab, currentTrend.prev.avgPeopleInLab) : undefined}
                 accent="bg-blue-500/10"
+                prevValue={currentTrend?.prev ? currentTrend.prev.avgPeopleInLab.toFixed(1) : undefined}
+                prevLabel="prev semester avg"
               />
               <StatCard
                 icon={<Clock className="h-4 w-4 text-sky-600 dark:text-sky-400" />}
@@ -556,6 +694,8 @@ export default function HeadcountDashboard() {
                 value={currentTrend ? currentTrend.curr.menteeSubmissions : menteeEntries.length}
                 delta={currentTrend?.prev ? pct(currentTrend.curr.menteeSubmissions, currentTrend.prev.menteeSubmissions) : undefined}
                 accent="bg-sky-500/10"
+                prevValue={semesterPace?.prevAtPace(currentTrend?.prev?.menteeSubmissions) != null ? `~${semesterPace.prevAtPace(currentTrend?.prev?.menteeSubmissions)}` : undefined}
+                prevLabel="prev at this point"
               />
               <StatCard
                 icon={<BookOpen className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />}
@@ -563,6 +703,8 @@ export default function HeadcountDashboard() {
                 value={currentTrend ? currentTrend.curr.totalStudentsMentored : menteeStats.totalStudents}
                 delta={currentTrend?.prev ? pct(currentTrend.curr.totalStudentsMentored, currentTrend.prev.totalStudentsMentored) : undefined}
                 accent="bg-emerald-500/10"
+                prevValue={semesterPace?.prevAtPace(currentTrend?.prev?.totalStudentsMentored) != null ? `~${semesterPace.prevAtPace(currentTrend?.prev?.totalStudentsMentored)}` : undefined}
+                prevLabel="prev at this point"
               />
               <StatCard
                 icon={<FlaskConical className="h-4 w-4 text-violet-600 dark:text-violet-400" />}
@@ -570,6 +712,8 @@ export default function HeadcountDashboard() {
                 value={currentTrend ? currentTrend.curr.totalTestsCheckedOut : menteeStats.totalTests}
                 delta={currentTrend?.prev ? pct(currentTrend.curr.totalTestsCheckedOut, currentTrend.prev.totalTestsCheckedOut) : undefined}
                 accent="bg-violet-500/10"
+                prevValue={semesterPace?.prevAtPace(currentTrend?.prev?.totalTestsCheckedOut) != null ? `~${semesterPace.prevAtPace(currentTrend?.prev?.totalTestsCheckedOut)}` : undefined}
+                prevLabel="prev at this point"
               />
             </div>
           </div>
@@ -621,11 +765,12 @@ export default function HeadcountDashboard() {
                     </tbody>
                   </table>
                 </div>
-                <div className="flex items-center gap-3 mt-3 text-[10px] text-muted-foreground justify-end">
-                  <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-blue-500/10 border border-blue-500/20" /> &lt;6</span>
-                  <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-blue-500/25 border border-blue-500/35" /> 6–10</span>
-                  <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-blue-500/45 border border-blue-500/55" /> 10–20</span>
-                  <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-blue-500/65 border border-blue-500/75" /> 20+</span>
+                <div className="flex flex-wrap items-center gap-3 mt-3 text-[10px] text-muted-foreground justify-end">
+                  <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-sm bg-blue-200" /> ≤6</span>
+                  <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-sm bg-blue-300" /> 7–10</span>
+                  <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-sm bg-blue-400" /> 11–15</span>
+                  <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-sm bg-blue-500" /> 16–20</span>
+                  <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-sm bg-blue-600" /> 21+</span>
                 </div>
               </CardContent>
             </Card>
@@ -720,38 +865,90 @@ export default function HeadcountDashboard() {
 
             {/* Recent check-ins */}
             <Card depth={2} className="lg:sticky lg:top-4 neo:border-0">
-              <CardHeader className="pb-2 px-5 pt-5">
+              <CardHeader className="pb-2 px-5 pt-5 flex flex-row items-center justify-between">
                 <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
                   Recent Check-ins
                 </CardTitle>
+                {mentorEntries.length > 0 && (
+                  <Button variant="ghost" size="sm" className="h-7 px-2 text-xs gap-1" onClick={openAllCheckIns}>
+                    <Expand className="h-3.5 w-3.5" />
+                    View All
+                  </Button>
+                )}
               </CardHeader>
               <CardContent className="px-3 pb-3">
                 <div className="space-y-1.5 max-h-[520px] overflow-y-auto pr-1">
                   {mentorEntries.length === 0 ? (
                     <p className="text-sm text-muted-foreground py-4 text-center">No entries yet.</p>
                   ) : mentorEntries.map((entry) => (
-                    <Card key={entry.id} depth={3} className="neo:border-0 hover:bg-muted/30 transition-colors">
-                      <CardContent className="p-2.5 space-y-0.5">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[11px] text-muted-foreground">
-                            {new Date(entry.createdAt).toLocaleString("en-US", {
-                              month: "short", day: "numeric", hour: "numeric", minute: "2-digit",
-                            })}
-                          </span>
-                          <Badge variant="outline" className="text-[10px] tabular-nums h-5 px-1.5">
-                            {entry.peopleInLab} in lab
-                          </Badge>
-                        </div>
-                        <div className="text-xs font-medium leading-snug text-foreground">{entry.feeling}</div>
-                        <div className="text-[11px] text-muted-foreground">
-                          {entry.mentors.map((m) => m.mentor.user.name.split(" ")[0]).join(", ")}
-                        </div>
-                      </CardContent>
-                    </Card>
+                    <CheckInCard key={entry.id} entry={entry} copiedId={copiedId} onCopy={copyCheckIn} onClick={setSelectedEntry} />
                   ))}
                 </div>
               </CardContent>
             </Card>
+
+            <Dialog open={checkInsOpen} onOpenChange={setCheckInsOpen}>
+              <DialogContent className="max-w-lg max-h-[80vh] flex flex-col">
+                <DialogHeader>
+                  <DialogTitle>All Check-ins</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-1.5 overflow-y-auto flex-1 pr-1">
+                  {loadingAll ? (
+                    <p className="text-sm text-muted-foreground py-8 text-center">Loading...</p>
+                  ) : allMentorEntries.length === 0 ? (
+                    <p className="text-sm text-muted-foreground py-8 text-center">No entries found.</p>
+                  ) : allMentorEntries.map((entry) => (
+                    <CheckInCard key={entry.id} entry={entry} copiedId={copiedId} onCopy={copyCheckIn} onClick={setSelectedEntry} />
+                  ))}
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            <Dialog open={selectedEntry !== null} onOpenChange={(open) => { if (!open) setSelectedEntry(null) }}>
+              <DialogContent className="max-w-sm">
+                {selectedEntry && (
+                  <>
+                    <DialogHeader>
+                      <DialogTitle>Check-in Details</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div className="space-y-3">
+                        <div>
+                          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Date & Time</div>
+                          <div className="text-sm">
+                            {new Date(selectedEntry.createdAt).toLocaleString("en-US", {
+                              weekday: "long", month: "long", day: "numeric", year: "numeric",
+                              hour: "numeric", minute: "2-digit",
+                            })}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Mentors on Duty</div>
+                          <div className="text-sm font-medium">{selectedEntry.mentors.map((m) => m.mentor.user.name).join(", ")}</div>
+                        </div>
+                        <div>
+                          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">People in Lab</div>
+                          <div className="text-2xl font-bold tabular-nums">{selectedEntry.peopleInLab}</div>
+                        </div>
+                        <div>
+                          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">How are you feeling?</div>
+                          <div className="text-sm leading-relaxed">{selectedEntry.feeling}</div>
+                        </div>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full gap-1.5"
+                        onClick={() => copyCheckIn(selectedEntry)}
+                      >
+                        {copiedId === selectedEntry.id ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
+                        {copiedId === selectedEntry.id ? "Copied" : "Copy to clipboard"}
+                      </Button>
+                    </div>
+                  </>
+                )}
+              </DialogContent>
+            </Dialog>
           </div>
         </TabsContent>
 
@@ -804,10 +1001,25 @@ export default function HeadcountDashboard() {
                   </thead>
                   <tbody>
                     {sortedTrends.map((row, i) => {
-                      const isActive = semesters.find((s) => s.id === row.semesterId)?.isActive
-                      // Trend delta vs previous semester in original (chronological) order
-                      const origIdx = trends.findIndex((t) => t.semesterId === row.semesterId)
-                      const prevRow = origIdx > 0 ? trends[origIdx - 1] : null
+                      const isActive = row.isActive
+                      const prevRow = i < sortedTrends.length - 1 ? sortedTrends[i + 1] : null
+
+                      let progress: number | null = null
+                      if (isActive && row.semesterStart && row.semesterEnd) {
+                        const start = new Date(row.semesterStart).getTime()
+                        const end = new Date(row.semesterEnd).getTime()
+                        const now = Date.now()
+                        if (end > start) {
+                          progress = Math.max(0, Math.min(1, (now - start) / (end - start)))
+                        }
+                      }
+
+                      const paceNote = (prevTotal: number | undefined) => {
+                        if (progress == null || prevTotal == null) return undefined
+                        const pctStr = `${Math.round(progress * 100)}%`
+                        const prevAtPace = Math.round(prevTotal * progress)
+                        return `${pctStr} through · prev had ~${prevAtPace}`
+                      }
 
                       return (
                         <tr
@@ -820,13 +1032,13 @@ export default function HeadcountDashboard() {
                               <Badge variant="outline" className="ml-2 text-[9px] h-4 px-1">active</Badge>
                             )}
                           </td>
-                          <CompareCell value={row.mentorSubmissions} prev={prevRow?.mentorSubmissions} />
+                          <CompareCell value={row.mentorSubmissions} prev={prevRow?.mentorSubmissions} paceNote={paceNote(prevRow?.mentorSubmissions)} />
                           <CompareCell value={row.avgPeopleInLab} prev={prevRow?.avgPeopleInLab} decimals={1} />
-                          <CompareCell value={row.menteeSubmissions} prev={prevRow?.menteeSubmissions} />
+                          <CompareCell value={row.menteeSubmissions} prev={prevRow?.menteeSubmissions} paceNote={paceNote(prevRow?.menteeSubmissions)} />
                           <CompareCell value={row.avgStudentsMentored} prev={prevRow?.avgStudentsMentored} decimals={1} />
-                          <CompareCell value={row.totalStudentsMentored} prev={prevRow?.totalStudentsMentored} highlight />
+                          <CompareCell value={row.totalStudentsMentored} prev={prevRow?.totalStudentsMentored} highlight paceNote={paceNote(prevRow?.totalStudentsMentored)} />
                           <CompareCell value={row.avgTestsCheckedOut} prev={prevRow?.avgTestsCheckedOut} decimals={1} />
-                          <CompareCell value={row.totalTestsCheckedOut} prev={prevRow?.totalTestsCheckedOut} highlight />
+                          <CompareCell value={row.totalTestsCheckedOut} prev={prevRow?.totalTestsCheckedOut} highlight paceNote={paceNote(prevRow?.totalTestsCheckedOut)} />
                         </tr>
                       )
                     })}
@@ -892,11 +1104,13 @@ function CompareCell({
   prev,
   decimals = 0,
   highlight = false,
+  paceNote,
 }: {
   value: number
   prev?: number
   decimals?: number
   highlight?: boolean
+  paceNote?: string
 }) {
   const delta = prev !== undefined ? pct(value, prev) : null
   const formatted = decimals ? value.toFixed(decimals) : value.toLocaleString()
@@ -909,6 +1123,9 @@ function CompareCell({
           <Delta value={delta} />
         )}
       </div>
+      {paceNote && (
+        <div className="text-[10px] text-muted-foreground mt-0.5 leading-tight">{paceNote}</div>
+      )}
     </td>
   )
 }

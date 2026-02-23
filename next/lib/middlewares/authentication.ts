@@ -69,23 +69,6 @@ const goLinkVerifier = async (request: NextRequest) => {
 };
 
 /**
- * Auth verifier for invitations:
- * - officer required for invitation management endpoints
- * - invitee endpoints rely on route-level ownership checks
- */
-const invitationsVerifier: AuthVerifier = async (request: NextRequest) => {
-  const pathname = request.nextUrl.pathname;
-  if (
-    pathname.startsWith("/api/invitations/accept") ||
-    pathname.startsWith("/api/invitations/decline") ||
-    pathname.startsWith("/api/invitations/pending")
-  ) {
-    return { isAllowed: true, authType: "None" };
-  }
-  return officerVerifier(request);
-};
-
-/**
  * Auth verifier for events:
  * - GET remains public
  * - attendance mutation endpoints keep their route-level auth logic
@@ -154,9 +137,7 @@ const ROUTES: { [key: string]: AuthVerifier } = {
   departments: nonGetOfficerVerifier,
   event: eventVerifier,
   golinks: goLinkVerifier,
-  handover: officerVerifier, // All handover document routes require officer auth
   hourBlocks: nonGetOfficerVerifier,
-  invitations: invitationsVerifier,
   memberships: nonGetOfficerVerifier,
   mentor: nonGetOfficerVerifier,
   mentorSkill: nonGetMentorVerifier,
@@ -173,10 +154,14 @@ const ROUTES: { [key: string]: AuthVerifier } = {
   userProject: nonGetOfficerVerifier,
 };
 
-const accessDenied = (authType: string) => {
-  return new NextResponse(`Access Denied; need to be ${authType} to access`, {
+const accessDenied = (authType: string, request: NextRequest) => {
+  const { pathname } = request.nextUrl;
+  return new NextResponse(
+    `Access Denied; need to be ${authType} to access ${request.method} ${pathname}`,
+    {
     status: 403,
-  });
+    }
+  );
 };
 
 export const authMiddleware = async (request: NextRequest) => {
@@ -193,5 +178,5 @@ export const authMiddleware = async (request: NextRequest) => {
   if (isAllowed) {
     return NextResponse.next();
   }
-  return accessDenied(authType);
+  return accessDenied(authType, request);
 };

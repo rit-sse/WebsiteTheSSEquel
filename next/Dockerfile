@@ -1,4 +1,8 @@
-FROM node:20 AS base
+FROM node:20-bookworm-slim AS base
+
+RUN apt-get update -y && \
+    apt-get install -y --no-install-recommends openssl && \
+    rm -rf /var/lib/apt/lists/*
 
 # Install dependencies only when needed
 FROM base AS deps
@@ -27,6 +31,11 @@ FROM base AS builder
 WORKDIR /app
 
 ARG GIT_COMMIT
+ARG NEXTAUTH_URL
+ARG NEXT_PUBLIC_ENV
+
+ENV NEXTAUTH_URL=$NEXTAUTH_URL
+ENV NEXT_PUBLIC_ENV=$NEXT_PUBLIC_ENV
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -55,16 +64,18 @@ RUN COMMIT_HASH=$(cat /tmp/commit_hash) && \
 FROM base AS runner
 WORKDIR /app
 
+ARG NEXTAUTH_URL
+ARG NEXT_PUBLIC_ENV
+
 ENV NODE_ENV=production
+ENV NEXTAUTH_URL=$NEXTAUTH_URL
+ENV NEXT_PUBLIC_ENV=$NEXT_PUBLIC_ENV
 # Uncomment the following line in case you want to disable telemetry during runtime.
 ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN addgroup --system --gid 1001 nodejs&& adduser --system --uid 1001 nextjs
 
 COPY --from=builder /app/public ./public
-
-RUN npm i -g prisma@5.22.0
-COPY --from=builder /app/prisma/ /app/prisma/
 
 # Set the correct permission for prerender cache
 RUN mkdir .next&& chown nextjs:nodejs .next

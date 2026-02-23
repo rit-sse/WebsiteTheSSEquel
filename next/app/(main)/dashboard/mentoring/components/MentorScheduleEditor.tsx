@@ -332,11 +332,11 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
   }
 
   const getTrafficLevel = (averagePeopleInLab: number) => {
-    if (averagePeopleInLab < 6)  return { label: "<6",    value: 15, cellTint: "bg-blue-500/10" }
-    if (averagePeopleInLab < 10) return { label: "6–10",  value: 33, cellTint: "bg-blue-500/22" }
-    if (averagePeopleInLab < 16) return { label: "10–16", value: 55, cellTint: "bg-blue-500/35" }
-    if (averagePeopleInLab < 20) return { label: "16–20", value: 75, cellTint: "bg-blue-500/50" }
-    return                               { label: "20+",   value: 95, cellTint: "bg-blue-500/65" }
+    if (averagePeopleInLab <= 6)  return { label: "≤6",    value: 12, cellTint: "bg-blue-200" }
+    if (averagePeopleInLab <= 10) return { label: "7–10",  value: 30, cellTint: "bg-blue-300" }
+    if (averagePeopleInLab <= 15) return { label: "11–15", value: 50, cellTint: "bg-blue-400" }
+    if (averagePeopleInLab <= 20) return { label: "16–20", value: 75, cellTint: "bg-blue-500" }
+    return                                { label: "21+",   value: 95, cellTint: "bg-blue-600" }
   }
 
   const getTrafficCellClass = (weekday: number, hour: number) => {
@@ -778,6 +778,9 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
     })
   }
 
+  const CHUNK_SIZE = 20
+  const CHUNK_TIMEOUT_MS = 120_000
+
   const handleRunImport = async () => {
     if (!importRows.length) {
       toast.error("No CSV rows to import")
@@ -797,32 +800,82 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
 
     setIsImporting(true)
     try {
-      const response = await fetch("/api/headcount-import", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type: importType,
-          rows: buildImportPayload(),
-        }),
-      })
+      const allRows = buildImportPayload()
+      const totalChunks = Math.ceil(allRows.length / CHUNK_SIZE)
+      let created = 0
+      let skipped = 0
+      let duplicates = 0
+      const semestersUsed = new Set<string>()
+      const errors: string[] = []
+      let aborted = false
 
-      const data = await response.json()
-      if (response.ok) {
-        setImportResult({
-          created: data.created,
-          skipped: data.skipped,
-          duplicates: data.duplicates ?? 0,
-          semestersUsed: data.semestersUsed ?? [],
-          errors: data.errors || [],
-        })
-        toast.success("Headcount import completed")
-        fetchTraffic()
-      } else {
-        toast.error(data.error || "Failed to import headcount data")
+      for (let i = 0; i < totalChunks; i++) {
+        const chunk = allRows.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE)
+
+        const controller = new AbortController()
+        const timer = setTimeout(() => controller.abort(), CHUNK_TIMEOUT_MS)
+
+        let response: Response
+        try {
+          response = await fetch("/api/headcount-import", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ type: importType, rows: chunk }),
+            signal: controller.signal,
+          })
+        } catch (fetchErr: any) {
+          clearTimeout(timer)
+          const isTimeout = fetchErr?.name === "AbortError"
+          toast.error(
+            `Chunk ${i + 1}/${totalChunks}: ${isTimeout ? "Request timed out — the server may still be processing" : "Network error"}`
+          )
+          aborted = true
+          break
+        } finally {
+          clearTimeout(timer)
+        }
+
+        if (!response.ok) {
+          let message = "Failed to import headcount data"
+          if (response.status === 413) {
+            message = "Request too large — try a smaller CSV file"
+          } else if (response.status === 403) {
+            message = "You don't have permission to import headcount data"
+          } else {
+            try {
+              const errData = await response.json()
+              message = errData.error || message
+            } catch { /* use default */ }
+          }
+          toast.error(`Chunk ${i + 1}/${totalChunks}: ${message}`)
+          aborted = true
+          break
+        }
+
+        const data = await response.json()
+        created += data.created ?? 0
+        skipped += data.skipped ?? 0
+        duplicates += data.duplicates ?? 0
+        for (const s of data.semestersUsed ?? []) semestersUsed.add(s)
+        errors.push(...(data.errors || []))
       }
+
+      setImportResult({
+        created,
+        skipped,
+        duplicates,
+        semestersUsed: [...semestersUsed].sort(),
+        errors: errors.slice(0, 20),
+      })
+      if (aborted) {
+        toast.warning(`Import partially completed: ${created} created, ${skipped} skipped, ${duplicates} duplicates`)
+      } else {
+        toast.success("Headcount import completed")
+      }
+      fetchTraffic()
     } catch (error) {
       console.error("Failed to import headcount data:", error)
-      toast.error("An error occurred during import")
+      toast.error("An error occurred during import. Check your connection and try again.")
     } finally {
       setIsImporting(false)
     }
@@ -1078,11 +1131,11 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                   {showTraffic && trafficData.length > 0 && (
                     <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
                       <span className="font-medium">Traffic:</span>
-                      <span className="flex items-center gap-1"><span className="h-2.5 w-5 rounded-sm bg-blue-500/10 border border-blue-500/20" /> &lt;6</span>
-                      <span className="flex items-center gap-1"><span className="h-2.5 w-5 rounded-sm bg-blue-500/22 border border-blue-500/32" /> 6–10</span>
-                      <span className="flex items-center gap-1"><span className="h-2.5 w-5 rounded-sm bg-blue-500/35 border border-blue-500/45" /> 10–16</span>
-                      <span className="flex items-center gap-1"><span className="h-2.5 w-5 rounded-sm bg-blue-500/50 border border-blue-500/60" /> 16–20</span>
-                      <span className="flex items-center gap-1"><span className="h-2.5 w-5 rounded-sm bg-blue-500/65 border border-blue-500/75" /> 20+</span>
+                      <span className="flex items-center gap-1"><span className="h-3 w-5 rounded-sm bg-blue-200" /> ≤6</span>
+                      <span className="flex items-center gap-1"><span className="h-3 w-5 rounded-sm bg-blue-300" /> 7–10</span>
+                      <span className="flex items-center gap-1"><span className="h-3 w-5 rounded-sm bg-blue-400" /> 11–15</span>
+                      <span className="flex items-center gap-1"><span className="h-3 w-5 rounded-sm bg-blue-500" /> 16–20</span>
+                      <span className="flex items-center gap-1"><span className="h-3 w-5 rounded-sm bg-blue-600" /> 21+</span>
                     </div>
                   )}
                   {blocks.length > 0 && (

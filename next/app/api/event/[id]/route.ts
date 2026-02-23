@@ -8,11 +8,11 @@ import prisma from "@/lib/prisma";
  */
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   // make sure the provided ID is a valid integer
   try {
-    const id = params.id;
+    const { id } = await params;
     const event = await prisma.event.findUnique({
       where: {
         id,

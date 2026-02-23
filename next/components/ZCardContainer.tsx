@@ -20,7 +20,7 @@ const ZCardContainer: React.FC<{
                                 height='400'
                                 className="w-full h-auto rounded-md"
                             />
-                            {slot.toContent()({})}
+                            {slot.toContent()()}
                         </ZCard>
                     </Card>
                 </RevealOnScroll>

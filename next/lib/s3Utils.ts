@@ -81,7 +81,8 @@ export function resolveUserImage(
   profileImageKey: string | null | undefined,
   googleImageURL: string | null | undefined,
 ): string | null {
-  const raw = profileImageKey ?? googleImageURL ?? null;
+  // Use || so empty strings are treated as missing and the chain falls through.
+  const raw = profileImageKey || googleImageURL || null;
   if (!raw) return null;
   return getImageUrl(raw);
 }

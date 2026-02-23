@@ -1,7 +1,4 @@
-import { NextRequest } from "next/server";
-import { PROXY_EMAIL_HEADER, PROXY_GROUPS_HEADER, PROXY_USER_HEADER } from "@/lib/proxyAuth";
 import { AuthLevel } from "@/lib/authLevel";
-import { getSessionToken } from "@/lib/sessionToken";
 
 export type GatewayAuthLevel = AuthLevel;
 
@@ -17,108 +14,11 @@ const DEFAULT_GATEWAY_AUTH_LEVEL: GatewayAuthLevel = {
   isPrimary: false,
 };
 
-function getSessionTokenFromRequest(request: Request): string | null {
-  if ("cookies" in request) {
-    const nextRequest = request as NextRequest;
-    return getSessionToken(nextRequest) ?? null;
-  }
-
-  const cookieHeader = request.headers.get("cookie");
-  if (!cookieHeader) return null;
-
-  const cookieMap = new Map<string, string>();
-  for (const part of cookieHeader.split(";")) {
-    const [rawKey, ...rawValue] = part.trim().split("=");
-    if (!rawKey) continue;
-    cookieMap.set(rawKey, decodeURIComponent(rawValue.join("=")));
-  }
-
-  const cookieNames = [
-    process.env.SESSION_COOKIE_NAME,
-    "__Secure-next-auth.session-token",
-    "next-auth.session-token",
-  ].filter((name): name is string => !!name);
-
-  for (const name of cookieNames) {
-    const value = cookieMap.get(name);
-    if (value) return value;
-  }
-
-  return null;
-}
-
-function resolveInternalApiBase(request: Request, preferRequestOrigin = false): string {
-  const requestOrigin =
-    "nextUrl" in request ? (request as NextRequest).nextUrl.origin : new URL(request.url).origin;
-
-  if (preferRequestOrigin) {
-    return requestOrigin;
-  }
-
-  if (process.env.INTERNAL_API_URL) {
-    return process.env.INTERNAL_API_URL.replace(/\/$/, "");
-  }
-
-  return requestOrigin;
-}
-
-function buildGatewayHeaders(request: Request): HeadersInit {
-  const headers: Record<string, string> = {
-    "content-type": "application/json",
-  };
-
-  const proxyEmail = request.headers.get(PROXY_EMAIL_HEADER);
-  const proxyGroups = request.headers.get(PROXY_GROUPS_HEADER);
-  const proxyUser = request.headers.get(PROXY_USER_HEADER);
-
-  if (proxyEmail) {
-    headers[PROXY_EMAIL_HEADER] = proxyEmail;
-  }
-  if (proxyGroups) {
-    headers[PROXY_GROUPS_HEADER] = proxyGroups;
-  }
-  if (proxyUser) {
-    headers[PROXY_USER_HEADER] = proxyUser;
-  }
-
-  return headers;
-}
-
 export async function getGatewayAuthLevel(request: Request): Promise<GatewayAuthLevel> {
   try {
-    // Middleware runs on the edge runtime where Prisma is unavailable.
-    // Keep the internal API call there, but use direct resolver in Node runtime.
-    const isEdgeRuntime =
-      typeof (globalThis as { EdgeRuntime?: string }).EdgeRuntime === "string";
-
-    if (!isEdgeRuntime) {
-      const { resolveAuthLevelFromRequest } = await import("@/lib/authLevelResolver");
-      const data = await resolveAuthLevelFromRequest(request);
-      return {
-        ...DEFAULT_GATEWAY_AUTH_LEVEL,
-        ...data,
-      };
-    }
-
-    const token = getSessionTokenFromRequest(request);
-    // In edge middleware, prefer same-origin to avoid cross-network INTERNAL_API_URL latency/failures.
-    const baseUrl = resolveInternalApiBase(request, true);
-    const response = await fetch(`${baseUrl}/api/authLevel`, {
-      method: "PUT",
-      headers: buildGatewayHeaders(request),
-      body: JSON.stringify({ token }),
-      cache: "no-store",
-    });
-
-    if (!response.ok) {
-      return { ...DEFAULT_GATEWAY_AUTH_LEVEL };
-    }
-
-    const data = (await response.json()) as Partial<GatewayAuthLevel>;
-    return {
-      ...DEFAULT_GATEWAY_AUTH_LEVEL,
-      ...data,
-    };
+    const { resolveAuthLevelFromRequest } = await import("@/lib/authLevelResolver");
+    const data = await resolveAuthLevelFromRequest(request);
+    return { ...DEFAULT_GATEWAY_AUTH_LEVEL, ...data };
   } catch {
     return { ...DEFAULT_GATEWAY_AUTH_LEVEL };
   }

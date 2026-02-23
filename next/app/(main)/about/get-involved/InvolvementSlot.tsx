@@ -1,6 +1,4 @@
 import { ZCardContent } from "@/types/ZCardContent";
-import { FC } from "react";
-
 export class InvolvementSlot implements ZCardContent {
     imageSrc: string;
     title: string;
@@ -20,7 +18,7 @@ export class InvolvementSlot implements ZCardContent {
         return "Image of " + this.title;
     }
 
-    toContent(): FC<{}> {
+    toContent(): () => React.ReactNode {
         const title = this.title;
         const body = this.body;
         return function slotData() {       

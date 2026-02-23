@@ -1,6 +1,4 @@
 import { ZCardContent } from "@/types/ZCardContent";
-import { FC } from "react";
-
 export class AboutUsSlot implements ZCardContent {
     constructor(
         private readonly imageSrc: string,
@@ -16,7 +14,7 @@ export class AboutUsSlot implements ZCardContent {
 
     getAlt = () => this.alt;
 
-    toContent(): FC {
+    toContent(): () => React.ReactNode {
         const name = this.name;
         const description = this.description;
         return function slotContent() {

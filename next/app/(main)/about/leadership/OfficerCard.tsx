@@ -1,27 +1,12 @@
+"use client";
+
+import { useState } from "react";
 import { Github, Linkedin, Mail } from "lucide-react";
 import { TeamMember } from "./team";
 import Avatar from "boring-avatars";
 import { Card } from "@/components/ui/card";
+import { ensureGithubUrl, ensureLinkedinUrl } from "@/lib/utils";
 
-function getOfficerPhoto(teamMember: TeamMember) {
-  // Image URL is already resolved by the API via resolveUserImage()
-  if (teamMember.image) {
-    return teamMember.image;
-  }
-  return null;
-}
-
-function ensureGithubUrl(val: string): string {
-  if (val.startsWith("https://") || val.startsWith("http://")) return val;
-  if (val.includes("github.com")) return `https://${val}`;
-  return `https://github.com/${val}`;
-}
-
-function ensureLinkedinUrl(val: string): string {
-  if (val.startsWith("https://") || val.startsWith("http://")) return val;
-  if (val.includes("linkedin.com")) return `https://${val}`;
-  return `https://linkedin.com/in/${val}`;
-}
 
 interface OfficerCardProps {
   teamMember: TeamMember;
@@ -29,20 +14,19 @@ interface OfficerCardProps {
 }
 
 export default function OfficerCard({ teamMember, children }: OfficerCardProps) {
-  const officerImage = getOfficerPhoto(teamMember);
+  const officerImage = teamMember.image || null;
+  const [imgFailed, setImgFailed] = useState(false);
 
   return (
     <Card depth={2} className="w-full max-w-[280px] p-5 flex flex-col items-center text-center h-full">
       <div className="mb-3">
-        {officerImage ? (
+        {officerImage && !imgFailed ? (
           <img
             src={officerImage}
             alt={`Photo of ${teamMember.name}`}
             className="rounded-full object-cover w-24 h-24"
-            onError={(e) => {
-              console.log("[OfficerCard] failed src:", officerImage);
-              (e.currentTarget as HTMLImageElement).style.display = "none";
-            }}
+            referrerPolicy="no-referrer"
+            onError={() => setImgFailed(true)}
           />
         ) : (
           <Avatar

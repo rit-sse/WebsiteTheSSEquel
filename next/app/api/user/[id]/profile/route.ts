@@ -1,6 +1,4 @@
 import prisma from "@/lib/prisma";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
 import { resolveUserImage } from "@/lib/s3Utils";
 import { MENTOR_HEAD_TITLE } from "@/lib/utils";
 import { getGatewayAuthLevel } from "@/lib/authGateway";
@@ -38,10 +36,11 @@ function parseAvailability(slotsJson: string | null | undefined): Array<{ weekda
  */
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
-  const id = parseInt(params.id);
+  const { id: rawId } = await params;
+  const id = parseInt(rawId);
   if (isNaN(id)) {
     return new Response("Invalid User ID", { status: 422 });
   }
@@ -149,38 +148,26 @@ export async function GET(
     return new Response(`User ${id} not found`, { status: 404 });
   }
 
-  // Public profile route: anyone can view profile fields.
-  // Email remains private unless owner or active officer.
-  const session = await getServerSession(authOptions);
-  const isOwner = session?.user?.email === user.email;
-  const authLevel = await getGatewayAuthLevel(request as Request);
+  // Run independent queries in parallel to cut load time.
+  const [authLevel, mentoringHead, activeSemester] = await Promise.all([
+    getGatewayAuthLevel(request as Request),
+    prisma.officer.findFirst({
+      where: { is_active: true, position: { title: MENTOR_HEAD_TITLE } },
+      select: { user: { select: { id: true, name: true, email: true } } },
+    }),
+    prisma.mentorSemester.findFirst({
+      where: { isActive: true },
+      select: { id: true },
+      orderBy: { updatedAt: "desc" },
+    }),
+  ]);
+
+  const isOwner = authLevel.userId === user.id;
   const isOfficer = authLevel.isOfficer;
 
   const projects = user.projectContributions.map((pc) => pc.project);
-  const mentoringHead = await prisma.officer.findFirst({
-    where: {
-      is_active: true,
-      position: {
-        title: MENTOR_HEAD_TITLE,
-      },
-    },
-    select: {
-      user: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-        },
-      },
-    },
-  });
-
   const latestMentorApplication = user.mentorApplications[0];
-  const activeSemester = await prisma.mentorSemester.findFirst({
-    where: { isActive: true },
-    select: { id: true },
-    orderBy: { updatedAt: "desc" },
-  });
+
   const mentorAvailability = activeSemester
     ? await prisma.mentorAvailability.findUnique({
         where: {

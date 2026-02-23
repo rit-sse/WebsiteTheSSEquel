@@ -3,6 +3,10 @@ import {NextRequest, NextResponse} from "next/server";
 import {getGatewayAuthLevel} from "@/lib/authGateway";
 import { getSessionToken } from "@/lib/sessionToken";
 
+type TxClient = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
+
+export const dynamic = "force-dynamic";
+
 /**
  * Helper function to get user from session token
  */
@@ -39,9 +43,9 @@ async function getUserFromSession(request: NextRequest) {
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id: eventId } = params;
+  const { id: eventId } = await params;
 
   try {
     // Check if event exists
@@ -101,16 +105,74 @@ export async function GET(
 }
 
 /**
+ * If the event grants membership, ensure the user has a membership record.
+ * Returns { granted: true, created: true } when a new membership was created,
+ * { granted: true, created: false } when one already existed.
+ */
+async function ensureMembership(
+  db: TxClient,
+  userId: number,
+  eventId: string,
+  eventTitle: string
+): Promise<{ granted: true; created: boolean }> {
+  const reason = `Attended event: ${eventTitle} [${eventId}]`;
+  const existing = await db.memberships.findFirst({
+    where: { userId, reason },
+  });
+
+  if (existing) {
+    return { granted: true, created: false };
+  }
+
+  await db.memberships.create({
+    data: { userId, reason, dateGiven: new Date() },
+  });
+  return { granted: true, created: true };
+}
+
+/**
+ * Best-effort update of purchase request attendance data.
+ * Runs outside the main transaction so failures here never block check-in.
+ */
+async function updatePurchaseRequestAttendance(
+  purchaseRequests: { id: number; attendanceData: string | null }[],
+  user: { name: string; email: string }
+) {
+  for (const pr of purchaseRequests) {
+    try {
+      const existingData = pr.attendanceData ? JSON.parse(pr.attendanceData) : [];
+
+      const alreadyPresent = existingData.some(
+        (attendee: { email: string }) => attendee.email === user.email
+      );
+      if (alreadyPresent) continue;
+
+      const nameParts = (user.name || "").split(" ");
+      const firstName = nameParts[0] || "";
+      const lastName = nameParts.slice(1).join(" ");
+
+      existingData.push({ firstName, lastName, email: user.email });
+
+      await prisma.purchaseRequest.update({
+        where: { id: pr.id },
+        data: { attendanceData: JSON.stringify(existingData) },
+      });
+    } catch (err) {
+      console.error(`Failed to update purchase request ${pr.id} attendance data:`, err);
+    }
+  }
+}
+
+/**
  * HTTP POST request to /api/event/[id]/attendance
  * Mark current user as attended
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id: eventId } = params;
+  const { id: eventId } = await params;
 
-  // Get current user from session
   const user = await getUserFromSession(request);
   if (!user) {
     return NextResponse.json(
@@ -120,7 +182,6 @@ export async function POST(
   }
 
   try {
-    // Check if event exists and has attendance enabled
     const event = await prisma.event.findUnique({
       where: { id: eventId },
       select: {
@@ -129,10 +190,7 @@ export async function POST(
         attendanceEnabled: true,
         grantsMembership: true,
         purchaseRequests: {
-          select: {
-            id: true,
-            attendanceData: true,
-          },
+          select: { id: true, attendanceData: true },
         },
       },
     });
@@ -151,79 +209,52 @@ export async function POST(
       );
     }
 
-    // Check if user already attended
     const existingAttendance = await prisma.eventAttendance.findUnique({
-      where: {
-        eventId_userId: {
-          eventId,
-          userId: user.id,
-        },
-      },
+      where: { eventId_userId: { eventId, userId: user.id } },
     });
 
     if (existingAttendance) {
+      let membershipGranted = false;
+      if (event.grantsMembership) {
+        try {
+          const result = await prisma.$transaction(async (tx: TxClient) =>
+            ensureMembership(tx, user.id, eventId, event.title)
+          );
+          membershipGranted = result.granted;
+        } catch (err) {
+          console.error("Failed to back-fill membership on 409 path:", err);
+        }
+      }
+
       return NextResponse.json(
-        { error: "You have already marked attendance for this event", alreadyAttended: true },
+        {
+          error: "You have already marked attendance for this event",
+          alreadyAttended: true,
+          membershipGranted,
+          eventGrantsMembership: event.grantsMembership,
+        },
         { status: 409 }
       );
     }
 
-    // Create attendance record
-    const attendance = await prisma.eventAttendance.create({
-      data: {
-        eventId,
-        userId: user.id,
-      },
-    });
-
-    // If event grants membership, create a membership record
-    if (event.grantsMembership) {
-      // Check if user already has a membership for this event
-      const existingMembership = await prisma.memberships.findFirst({
-        where: {
-          userId: user.id,
-          reason: `Attended event: ${event.title}`,
-        },
+    let membershipGranted = false;
+    const attendance = await prisma.$transaction(async (tx: TxClient) => {
+      const record = await tx.eventAttendance.create({
+        data: { eventId, userId: user.id },
       });
 
-      if (!existingMembership) {
-        await prisma.memberships.create({
-          data: {
-            userId: user.id,
-            reason: `Attended event: ${event.title}`,
-            dateGiven: new Date(),
-          },
-        });
+      if (event.grantsMembership) {
+        const result = await ensureMembership(tx, user.id, eventId, event.title);
+        membershipGranted = result.granted;
       }
-    }
 
-    // If event has linked purchase requests, append user to attendanceData
-    for (const pr of event.purchaseRequests) {
-      const existingData = pr.attendanceData ? JSON.parse(pr.attendanceData) : [];
-      
-      // Check if user is already in the attendance data
-      const userAlreadyInData = existingData.some(
-        (attendee: { email: string }) => attendee.email === user.email
-      );
+      return record;
+    });
 
-      if (!userAlreadyInData) {
-        const [firstName, ...lastNameParts] = user.name.split(" ");
-        const lastName = lastNameParts.join(" ");
-        
-        existingData.push({
-          firstName,
-          lastName,
-          email: user.email,
-        });
-
-        await prisma.purchaseRequest.update({
-          where: { id: pr.id },
-          data: {
-            attendanceData: JSON.stringify(existingData),
-          },
-        });
-      }
-    }
+    // Purchase-request updates are best-effort and non-blocking.
+    updatePurchaseRequestAttendance(event.purchaseRequests, user).catch((err) =>
+      console.error("Background purchase-request attendance update failed:", err)
+    );
 
     return NextResponse.json({
       success: true,
@@ -234,7 +265,8 @@ export async function POST(
         userId: attendance.userId,
         createdAt: attendance.createdAt,
       },
-      membershipGranted: event.grantsMembership,
+      membershipGranted,
+      eventGrantsMembership: event.grantsMembership,
     }, { status: 201 });
   } catch (error) {
     console.error("Error marking attendance:", error);
@@ -252,9 +284,9 @@ export async function POST(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id: eventId } = params;
+  const { id: eventId } = await params;
 
   // Get current user from session
   const user = await getUserFromSession(request);

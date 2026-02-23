@@ -3,6 +3,7 @@ import { getSessionToken } from "@/lib/sessionToken";
 import { sendEmail, isEmailConfigured } from "@/lib/email";
 import { NextRequest } from "next/server";
 import { resolveUserImage } from "@/lib/s3Utils";
+import { getPublicBaseUrl } from "@/lib/baseUrl";
 
 export const dynamic = "force-dynamic";
 
@@ -141,11 +142,7 @@ export async function POST(request: NextRequest) {
   
   // Send notification email to the new officer
   if (isEmailConfigured() && loggedInUser) {
-    const baseUrl =
-      request.nextUrl.origin ||
-      process.env.NEXTAUTH_URL ||
-      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined) ||
-      "http://localhost:3000";
+    const baseUrl = getPublicBaseUrl(request);
     const handoverUrl = `${baseUrl}/dashboard/positions/${positionRecord.id}/handover`;
 
     try {

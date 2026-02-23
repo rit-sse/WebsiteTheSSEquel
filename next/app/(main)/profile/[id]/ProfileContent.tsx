@@ -178,7 +178,9 @@ function parseMembershipReason(reason: string): { label: string; detail: string 
     if (rest.length === 0) {
         return { label: "Membership", detail: reason.trim() };
     }
-    const detail = rest.join(":").trim();
+    let detail = rest.join(":").trim();
+    // Strip internal event-ID suffix like " [abc123]"
+    detail = detail.replace(/\s*\[[^\]]+\]$/, "");
     return { label: first.trim() || "Membership", detail: detail || reason.trim() };
 }
 
@@ -402,22 +404,24 @@ export default function ProfileContent({ userId, children }: ProfileContentProps
             setProfile(data);
             populateEditFields(data);
 
-            // Fetch handover docs for active officer roles
-            const activePositionIds = data.officerRoles
-                .filter((r) => r.is_active)
-                .map((r) => r.position_id);
+            // Only fetch handover docs when viewing your own profile (requires officer auth)
+            if (data.isOwner) {
+                const activePositionIds = data.officerRoles
+                    .filter((r) => r.is_active)
+                    .map((r) => r.position_id);
 
-            if (activePositionIds.length > 0) {
-                const docs = await Promise.all(
-                    activePositionIds.map(async (pid) => {
-                        try {
-                            const r = await fetch(`/api/handover/${pid}`);
-                            if (r.ok) return (await r.json()) as HandoverDoc;
-                        } catch { /* ignore */ }
-                        return null;
-                    })
-                );
-                setHandoverDocs(docs.filter((d): d is HandoverDoc => d !== null));
+                if (activePositionIds.length > 0) {
+                    const docs = await Promise.all(
+                        activePositionIds.map(async (pid) => {
+                            try {
+                                const r = await fetch(`/api/handover/${pid}`);
+                                if (r.ok) return (await r.json()) as HandoverDoc;
+                            } catch { /* ignore */ }
+                            return null;
+                        })
+                    );
+                    setHandoverDocs(docs.filter((d): d is HandoverDoc => d !== null));
+                }
             }
         } catch {
             setError("Failed to load profile.");

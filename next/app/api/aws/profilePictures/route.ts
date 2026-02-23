@@ -163,13 +163,11 @@ export async function PUT(req: NextRequest) {
       }
     }
 
-    // Save the new key to the database and clear googleImageURL
+    // Save the new key; keep googleImageURL as a fallback if S3 ever fails.
+    // resolveUserImage() already prefers profileImageKey over googleImageURL.
     await prisma.user.update({
       where: { id: user.id },
-      data: {
-        profileImageKey: key,
-        googleImageURL: null,
-      },
+      data: { profileImageKey: key },
     });
 
     return NextResponse.json({
