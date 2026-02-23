@@ -19,4 +19,7 @@ export async function middleware(request: NextRequest) {
   if (response.headers.get("x-middleware-next") != "1") {
     return response;
   }
+
+  // Both middleware layers allowed the request, so continue the chain.
+  return NextResponse.next();
 }

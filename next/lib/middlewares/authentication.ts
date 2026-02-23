@@ -173,10 +173,14 @@ const ROUTES: { [key: string]: AuthVerifier } = {
   userProject: nonGetOfficerVerifier,
 };
 
-const accessDenied = (authType: string) => {
-  return new NextResponse(`Access Denied; need to be ${authType} to access`, {
+const accessDenied = (authType: string, request: NextRequest) => {
+  const { pathname } = request.nextUrl;
+  return new NextResponse(
+    `Access Denied; need to be ${authType} to access ${request.method} ${pathname}`,
+    {
     status: 403,
-  });
+    }
+  );
 };
 
 export const authMiddleware = async (request: NextRequest) => {
@@ -193,5 +197,5 @@ export const authMiddleware = async (request: NextRequest) => {
   if (isAllowed) {
     return NextResponse.next();
   }
-  return accessDenied(authType);
+  return accessDenied(authType, request);
 };
