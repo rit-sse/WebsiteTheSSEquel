@@ -316,7 +316,7 @@ export function DataTable<T extends Record<string, any>>({
                     setPageSize(nextPageSize)
                     setPage(1)
                   }}
-                  className="h-10 min-w-[4.5rem] rounded-md border border-border bg-background pl-2 pr-7 text-xs sm:text-sm"
+                  className="h-9 min-w-[4.5rem] rounded-md border border-border bg-background pl-2 pr-7 text-xs sm:text-sm"
                 >
                   {pageSizeOptions.map((option) => (
                     <option key={option} value={option}>
