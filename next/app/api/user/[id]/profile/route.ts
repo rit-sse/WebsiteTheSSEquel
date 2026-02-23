@@ -1,6 +1,4 @@
 import prisma from "@/lib/prisma";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
 import { resolveUserImage } from "@/lib/s3Utils";
 import { MENTOR_HEAD_TITLE } from "@/lib/utils";
 import { getGatewayAuthLevel } from "@/lib/authGateway";
@@ -150,8 +148,7 @@ export async function GET(
   }
 
   // Run independent queries in parallel to cut load time.
-  const [session, authLevel, mentoringHead, activeSemester] = await Promise.all([
-    getServerSession(authOptions),
+  const [authLevel, mentoringHead, activeSemester] = await Promise.all([
     getGatewayAuthLevel(request as Request),
     prisma.officer.findFirst({
       where: { is_active: true, position: { title: MENTOR_HEAD_TITLE } },
@@ -164,7 +161,7 @@ export async function GET(
     }),
   ]);
 
-  const isOwner = session?.user?.email === user.email;
+  const isOwner = authLevel.userId === user.id;
   const isOfficer = authLevel.isOfficer;
 
   const projects = user.projectContributions.map((pc) => pc.project);
