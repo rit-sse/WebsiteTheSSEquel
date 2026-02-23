@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { CheckCircle, Calendar, MapPin, Loader2, LogIn, AlertCircle } from "lucide-react";
+import { toast } from "sonner";
 
 interface EventDetails {
   id: string;
@@ -74,6 +75,9 @@ export default function AttendEventPage() {
       if (response.ok) {
         setAttended(true);
         setMembershipGranted(!!data.membershipGranted);
+        if (data.membershipGranted) {
+          toast.success("Membership added to your account!");
+        }
       } else if (response.status === 409 && data.alreadyAttended) {
         setAttended(true);
         setMembershipGranted(!!data.membershipGranted);

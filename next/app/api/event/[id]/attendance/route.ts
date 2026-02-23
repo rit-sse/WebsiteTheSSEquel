@@ -1,8 +1,9 @@
 import prisma from "@/lib/prisma";
-import { Prisma } from "@prisma/client";
 import {NextRequest, NextResponse} from "next/server";
 import {getGatewayAuthLevel} from "@/lib/authGateway";
 import { getSessionToken } from "@/lib/sessionToken";
+
+type TxClient = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
 
 export const dynamic = "force-dynamic";
 
@@ -109,11 +110,12 @@ export async function GET(
  * { granted: true, created: false } when one already existed.
  */
 async function ensureMembership(
-  db: Prisma.TransactionClient,
+  db: TxClient,
   userId: number,
+  eventId: string,
   eventTitle: string
 ): Promise<{ granted: true; created: boolean }> {
-  const reason = `Attended event: ${eventTitle}`;
+  const reason = `Attended event: ${eventTitle} [${eventId}]`;
   const existing = await db.memberships.findFirst({
     where: { userId, reason },
   });
@@ -125,7 +127,6 @@ async function ensureMembership(
   await db.memberships.create({
     data: { userId, reason, dateGiven: new Date() },
   });
-  console.log(`Membership created for user ${userId}: "${reason}"`);
   return { granted: true, created: true };
 }
 
@@ -216,8 +217,8 @@ export async function POST(
       let membershipGranted = false;
       if (event.grantsMembership) {
         try {
-          const result = await prisma.$transaction(async (tx) =>
-            ensureMembership(tx, user.id, event.title)
+          const result = await prisma.$transaction(async (tx: TxClient) =>
+            ensureMembership(tx, user.id, eventId, event.title)
           );
           membershipGranted = result.granted;
         } catch (err) {
@@ -237,13 +238,13 @@ export async function POST(
     }
 
     let membershipGranted = false;
-    const attendance = await prisma.$transaction(async (tx) => {
+    const attendance = await prisma.$transaction(async (tx: TxClient) => {
       const record = await tx.eventAttendance.create({
         data: { eventId, userId: user.id },
       });
 
       if (event.grantsMembership) {
-        const result = await ensureMembership(tx, user.id, event.title);
+        const result = await ensureMembership(tx, user.id, eventId, event.title);
         membershipGranted = result.granted;
       }
 
@@ -253,10 +254,6 @@ export async function POST(
     // Purchase-request updates are best-effort and non-blocking.
     updatePurchaseRequestAttendance(event.purchaseRequests, user).catch((err) =>
       console.error("Background purchase-request attendance update failed:", err)
-    );
-
-    console.log(
-      `Attendance recorded: user=${user.id}, event=${eventId}, grantsMembership=${event.grantsMembership}, membershipGranted=${membershipGranted}`
     );
 
     return NextResponse.json({

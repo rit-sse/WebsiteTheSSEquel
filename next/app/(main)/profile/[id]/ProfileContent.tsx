@@ -178,7 +178,9 @@ function parseMembershipReason(reason: string): { label: string; detail: string 
     if (rest.length === 0) {
         return { label: "Membership", detail: reason.trim() };
     }
-    const detail = rest.join(":").trim();
+    let detail = rest.join(":").trim();
+    // Strip internal event-ID suffix like " [abc123]"
+    detail = detail.replace(/\s*\[[^\]]+\]$/, "");
     return { label: first.trim() || "Membership", detail: detail || reason.trim() };
 }
 
