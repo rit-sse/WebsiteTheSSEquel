@@ -10,11 +10,12 @@ export const dynamic = 'force-dynamic'
  */
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   // make sure the provided ID is a valid integer
   try {
-    const id = parseInt(params.id);
+    const { id: rawId } = await params;
+    const id = parseInt(rawId);
     const course = await prisma.schedule.findUnique({
       where: {
         id,

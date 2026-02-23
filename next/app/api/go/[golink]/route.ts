@@ -12,8 +12,9 @@ export const dynamic = 'force-dynamic'
  */
 export async function GET(
   request: Request,
-  { params: { golink } }: { params: { golink: string } }
+  { params }: { params: Promise<{ golink: string }> }
 ) {
+  const { golink } = await params;
   const redirect = await prisma.goLinks.findFirst({
     where: {
       golink,

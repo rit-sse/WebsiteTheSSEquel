@@ -1,6 +1,4 @@
 import { ZCardContent } from "@/types/ZCardContent";
-import { FC } from "react";
-
 export class CommitteeSlot implements ZCardContent {
     imageSrc: string;
     name: string;
@@ -20,7 +18,7 @@ export class CommitteeSlot implements ZCardContent {
         return "Image of " + this.name;
     }
 
-    toContent(): FC<{}> {
+    toContent(): () => React.ReactNode {
         const name = this.name;
         const description = this.description;
         return function slotContent() {

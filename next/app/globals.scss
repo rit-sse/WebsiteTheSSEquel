@@ -304,21 +304,11 @@
   color: hsl(var(--primary-foreground));
 }
 
-/* Global scrollbar styling */
-html,
+/* Global scrollbar styling – overlay scrollbar that takes no layout space.
+   100vw includes the scrollbar gutter, so the body extends behind it
+   and the scrollbar floats over content instead of pushing it. */
 body {
-  /*
-   * Prefer overlay scrollbars so they float above content
-   * instead of taking layout width and shifting content.
-   */
-  overflow-y: overlay;
-}
-
-@supports not (overflow: overlay) {
-  html {
-    /* Fallback: reserve gutter to prevent left/right layout jump. */
-    scrollbar-gutter: stable;
-  }
+  width: 100vw;
 }
 
 * {
