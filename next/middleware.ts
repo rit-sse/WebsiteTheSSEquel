@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { golinksMiddleware } from "./lib/middlewares/golinks";
 import { authMiddleware } from "./lib/middlewares/authentication";
 
-export const config = { runtime: "nodejs" };
-
 export async function middleware(request: NextRequest) {
   console.log("Middleware is running on", request.url);
   // Run the authentication middleware logic
