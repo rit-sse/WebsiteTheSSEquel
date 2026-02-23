@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import QRCode from "qrcode";
+import { getPublicBaseUrl } from "@/lib/baseUrl";
 
 /**
  * HTTP GET request to /api/event/[id]/flyer
@@ -35,11 +36,7 @@ export async function GET(
       );
     }
 
-    const baseUrl =
-      request.nextUrl.origin ||
-      process.env.NEXTAUTH_URL ||
-      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined) ||
-      "http://localhost:3000";
+    const baseUrl = getPublicBaseUrl(request);
     const attendanceUrl = `${baseUrl}/events/${eventId}/attend`;
 
     // Generate QR code as SVG string

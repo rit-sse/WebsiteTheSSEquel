@@ -778,6 +778,8 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
     })
   }
 
+  const CHUNK_SIZE = 100
+
   const handleRunImport = async () => {
     if (!importRows.length) {
       toast.error("No CSV rows to import")
@@ -797,32 +799,59 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
 
     setIsImporting(true)
     try {
-      const response = await fetch("/api/headcount-import", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type: importType,
-          rows: buildImportPayload(),
-        }),
-      })
+      const allRows = buildImportPayload()
+      const totalChunks = Math.ceil(allRows.length / CHUNK_SIZE)
+      let created = 0
+      let skipped = 0
+      let duplicates = 0
+      const semestersUsed = new Set<string>()
+      const errors: string[] = []
 
-      const data = await response.json()
-      if (response.ok) {
-        setImportResult({
-          created: data.created,
-          skipped: data.skipped,
-          duplicates: data.duplicates ?? 0,
-          semestersUsed: data.semestersUsed ?? [],
-          errors: data.errors || [],
+      for (let i = 0; i < totalChunks; i++) {
+        const chunk = allRows.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE)
+
+        const response = await fetch("/api/headcount-import", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type: importType, rows: chunk }),
         })
-        toast.success("Headcount import completed")
-        fetchTraffic()
-      } else {
-        toast.error(data.error || "Failed to import headcount data")
+
+        if (!response.ok) {
+          let message = "Failed to import headcount data"
+          if (response.status === 413) {
+            message = "Request too large — try a smaller CSV file"
+          } else if (response.status === 403) {
+            message = "You don't have permission to import headcount data"
+          } else {
+            try {
+              const errData = await response.json()
+              message = errData.error || message
+            } catch { /* use default */ }
+          }
+          toast.error(`Chunk ${i + 1}/${totalChunks}: ${message}`)
+          break
+        }
+
+        const data = await response.json()
+        created += data.created ?? 0
+        skipped += data.skipped ?? 0
+        duplicates += data.duplicates ?? 0
+        for (const s of data.semestersUsed ?? []) semestersUsed.add(s)
+        errors.push(...(data.errors || []))
       }
+
+      setImportResult({
+        created,
+        skipped,
+        duplicates,
+        semestersUsed: [...semestersUsed].sort(),
+        errors: errors.slice(0, 20),
+      })
+      toast.success("Headcount import completed")
+      fetchTraffic()
     } catch (error) {
       console.error("Failed to import headcount data:", error)
-      toast.error("An error occurred during import")
+      toast.error("An error occurred during import. Check your connection and try again.")
     } finally {
       setIsImporting(false)
     }

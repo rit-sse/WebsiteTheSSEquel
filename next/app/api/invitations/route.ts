@@ -2,6 +2,7 @@ import prisma from "@/lib/prisma";
 import { getSessionToken } from "@/lib/sessionToken";
 import { sendEmail, isEmailConfigured } from "@/lib/email";
 import { NextRequest } from "next/server";
+import { getPublicBaseUrl } from "@/lib/baseUrl";
 
 export const dynamic = "force-dynamic";
 
@@ -228,11 +229,7 @@ export async function POST(request: NextRequest) {
 
   // Send invitation email
   if (isEmailConfigured()) {
-    const baseUrl =
-      request.nextUrl.origin ||
-      process.env.NEXTAUTH_URL ||
-      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined) ||
-      "http://localhost:3000";
+    const baseUrl = getPublicBaseUrl(request);
     const acceptUrl = `${baseUrl}/accept-invitation`;
 
     try {

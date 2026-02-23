@@ -27,6 +27,11 @@ FROM base AS builder
 WORKDIR /app
 
 ARG GIT_COMMIT
+ARG NEXTAUTH_URL
+ARG NEXT_PUBLIC_ENV
+
+ENV NEXTAUTH_URL=$NEXTAUTH_URL
+ENV NEXT_PUBLIC_ENV=$NEXT_PUBLIC_ENV
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -55,7 +60,12 @@ RUN COMMIT_HASH=$(cat /tmp/commit_hash) && \
 FROM base AS runner
 WORKDIR /app
 
+ARG NEXTAUTH_URL
+ARG NEXT_PUBLIC_ENV
+
 ENV NODE_ENV=production
+ENV NEXTAUTH_URL=$NEXTAUTH_URL
+ENV NEXT_PUBLIC_ENV=$NEXT_PUBLIC_ENV
 # Uncomment the following line in case you want to disable telemetry during runtime.
 ENV NEXT_TELEMETRY_DISABLED=1
 

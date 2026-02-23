@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { PROXY_EMAIL_HEADER, PROXY_GROUPS_HEADER, PROXY_USER_HEADER } from "@/lib/proxyAuth";
 import { AuthLevel } from "@/lib/authLevel";
 import { getSessionToken } from "@/lib/sessionToken";
+import { getInternalApiBase } from "@/lib/baseUrl";
 
 export type GatewayAuthLevel = AuthLevel;
 
@@ -47,19 +48,8 @@ function getSessionTokenFromRequest(request: Request): string | null {
   return null;
 }
 
-function resolveInternalApiBase(request: Request, preferRequestOrigin = false): string {
-  const requestOrigin =
-    "nextUrl" in request ? (request as NextRequest).nextUrl.origin : new URL(request.url).origin;
-
-  if (preferRequestOrigin) {
-    return requestOrigin;
-  }
-
-  if (process.env.INTERNAL_API_URL) {
-    return process.env.INTERNAL_API_URL.replace(/\/$/, "");
-  }
-
-  return requestOrigin;
+function resolveInternalApiBase(request: Request): string {
+  return getInternalApiBase(request);
 }
 
 function buildGatewayHeaders(request: Request): HeadersInit {
@@ -101,8 +91,7 @@ export async function getGatewayAuthLevel(request: Request): Promise<GatewayAuth
     }
 
     const token = getSessionTokenFromRequest(request);
-    // In edge middleware, prefer same-origin to avoid cross-network INTERNAL_API_URL latency/failures.
-    const baseUrl = resolveInternalApiBase(request, true);
+    const baseUrl = resolveInternalApiBase(request);
     const response = await fetch(`${baseUrl}/api/authLevel`, {
       method: "PUT",
       headers: buildGatewayHeaders(request),

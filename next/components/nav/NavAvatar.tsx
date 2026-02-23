@@ -29,6 +29,10 @@ function getInitials(name: string): string {
 const NavAvatar = React.forwardRef<HTMLDivElement, NavAvatarProps>(
   ({ src, name, className }, ref) => {
     const initials = getInitials(name || "?");
+    const [imgFailed, setImgFailed] = React.useState(false);
+
+    // Reset failure state when src changes (e.g. after upload)
+    React.useEffect(() => { setImgFailed(false); }, [src]);
 
     return (
       <div
@@ -38,18 +42,17 @@ const NavAvatar = React.forwardRef<HTMLDivElement, NavAvatarProps>(
           className
         )}
       >
-        {/* Fallback — always in the DOM, visible when image hasn't loaded */}
         <span className="select-none text-[10px] font-medium text-muted-foreground">
           {initials}
         </span>
 
-        {/* Image — positioned on top, covers fallback as soon as the browser renders it */}
-        {src && (
+        {src && !imgFailed && (
           <img
             src={src}
             alt={name}
             className="absolute inset-0 h-full w-full object-cover"
             referrerPolicy="no-referrer"
+            onError={() => setImgFailed(true)}
           />
         )}
       </div>

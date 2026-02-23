@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isUrlValid } from "../utils";
+import { getInternalApiBase } from "@/lib/baseUrl";
 
 const getDestinationUrl = async (request: NextRequest, goUrl: string) => {
-  const baseUrl = request.nextUrl.origin || process.env.INTERNAL_API_URL || "http://localhost:3000";
+  const baseUrl = getInternalApiBase(request);
   const response = await fetch(baseUrl + "/api/go/" + goUrl);
   if (response.ok) {
     const url = await response.text();
