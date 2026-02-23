@@ -193,7 +193,7 @@ export default function MentoringDashboardPage() {
             </TabsContent>
 
             <TabsContent value="headcount">
-              <HeadcountDashboard />
+              <HeadcountDashboard ToolbarPortal={ToolbarPortal} toolbarNode={toolbarNode} />
             </TabsContent>
           </Tabs>
         </CardContent>

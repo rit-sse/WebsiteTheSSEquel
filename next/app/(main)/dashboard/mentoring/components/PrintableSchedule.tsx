@@ -133,9 +133,9 @@ export default function PrintableSchedule({ scheduleId }: PrintableScheduleProps
       <div data-theme="light" data-style="neo" className="min-h-screen bg-white text-black">
         <div id="printable-schedule" className="p-4 print:p-0 w-full mx-auto print:h-screen print:flex print:flex-col">
         {/* Header */}
-        <div className="text-center mb-4 print:mb-1">
-          <h1 className="text-2xl font-bold print:text-lg print:leading-tight">SSE Mentor Schedule</h1>
-          <p className="text-muted-foreground text-base print:text-xs print:leading-tight">{schedule.name}</p>
+        <div className="text-center mb-4 print:mb-0.5">
+          <h1 className="text-2xl font-bold print:text-base print:leading-tight">SSE Mentor Schedule</h1>
+          <p className="text-muted-foreground text-base print:text-[10px] print:leading-tight">{schedule.name}</p>
         </div>
 
         {/* Schedule grid */}
@@ -216,7 +216,7 @@ export default function PrintableSchedule({ scheduleId }: PrintableScheduleProps
         </div>
 
         {/* Footer */}
-        <div className="mt-3 print:mt-1 text-center text-xs print:text-[10px] text-muted-foreground">
+        <div className="mt-3 print:mt-0.5 text-center text-xs print:text-[9px] text-muted-foreground">
           <p className="font-medium">Society of Software Engineers • Golisano Hall • sse.rit.edu</p>
         </div>
 
@@ -247,7 +247,7 @@ export default function PrintableSchedule({ scheduleId }: PrintableScheduleProps
           
           @page {
             size: portrait;
-            margin: 0.15in 0.4in 0.15in 0.4in;
+            margin: 0.25in 0.4in 0.2in 0.4in;
           }
           
           /* Hide buttons when printing */
@@ -277,9 +277,9 @@ export default function PrintableSchedule({ scheduleId }: PrintableScheduleProps
             height: 100% !important;
           }
 
-          /* Distribute row height evenly across the page */
+          /* Distribute row height evenly — account for header (~2.5rem), thead (~2rem), footer (~1.5rem) */
           .print-row {
-            height: calc((100vh - 4.5rem) / 8);
+            height: calc((100vh - 6.5rem) / 8);
           }
 
           .print-row td {

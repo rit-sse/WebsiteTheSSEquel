@@ -8,6 +8,9 @@ export interface SemesterTrend {
   semesterId: number | null
   semesterName: string
   chronologicalIndex: number
+  isActive: boolean
+  semesterStart: string | null
+  semesterEnd: string | null
   // mentor headcount (30-min form)
   mentorSubmissions: number
   avgPeopleInLab: number
@@ -37,7 +40,7 @@ export async function GET() {
       },
     }),
     prisma.mentorSemester.findMany({
-      select: { id: true, name: true },
+      select: { id: true, name: true, isActive: true, semesterStart: true, semesterEnd: true },
     }),
   ])
 
@@ -106,6 +109,8 @@ export async function GET() {
   const trends: SemesterTrend[] = []
   let chronoIdx = 0
 
+  const semesterMeta = new Map(semesters.map((s) => [s.id, s]))
+
   // First emit known semesters in chronological order
   for (const s of semesters) {
     if (!allKeys.has(s.id)) continue
@@ -118,6 +123,9 @@ export async function GET() {
       semesterId: s.id,
       semesterName: s.name,
       chronologicalIndex: chronoIdx++,
+      isActive: s.isActive,
+      semesterStart: s.semesterStart?.toISOString() ?? null,
+      semesterEnd: s.semesterEnd?.toISOString() ?? null,
       mentorSubmissions: m?.count ?? 0,
       avgPeopleInLab: m ? Math.round((m.totalPeople / m.count) * 10) / 10 : 0,
       menteeSubmissions: me?.count ?? 0,
@@ -132,10 +140,14 @@ export async function GET() {
   for (const key of allKeys) {
     const m = mentorMap.get(key)
     const me = menteeMap.get(key)
+    const meta = key != null ? semesterMeta.get(key) : null
     trends.push({
       semesterId: key,
       semesterName: semesterNames.get(key) ?? "Unassigned",
       chronologicalIndex: chronoIdx++,
+      isActive: meta?.isActive ?? false,
+      semesterStart: meta?.semesterStart?.toISOString() ?? null,
+      semesterEnd: meta?.semesterEnd?.toISOString() ?? null,
       mentorSubmissions: m?.count ?? 0,
       avgPeopleInLab: m ? Math.round((m.totalPeople / m.count) * 10) / 10 : 0,
       menteeSubmissions: me?.count ?? 0,

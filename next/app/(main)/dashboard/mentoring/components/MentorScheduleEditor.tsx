@@ -336,7 +336,7 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
     if (averagePeopleInLab <= 10) return { label: "7–10",  value: 30, cellTint: "bg-blue-300" }
     if (averagePeopleInLab <= 15) return { label: "11–15", value: 50, cellTint: "bg-blue-400" }
     if (averagePeopleInLab <= 20) return { label: "16–20", value: 75, cellTint: "bg-blue-500" }
-    return                                { label: "20+",   value: 95, cellTint: "bg-blue-600" }
+    return                                { label: "21+",   value: 95, cellTint: "bg-blue-600" }
   }
 
   const getTrafficCellClass = (weekday: number, hour: number) => {
@@ -1135,7 +1135,7 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                       <span className="flex items-center gap-1"><span className="h-3 w-5 rounded-sm bg-blue-300" /> 7–10</span>
                       <span className="flex items-center gap-1"><span className="h-3 w-5 rounded-sm bg-blue-400" /> 11–15</span>
                       <span className="flex items-center gap-1"><span className="h-3 w-5 rounded-sm bg-blue-500" /> 16–20</span>
-                      <span className="flex items-center gap-1"><span className="h-3 w-5 rounded-sm bg-blue-600" /> 20+</span>
+                      <span className="flex items-center gap-1"><span className="h-3 w-5 rounded-sm bg-blue-600" /> 21+</span>
                     </div>
                   )}
                   {blocks.length > 0 && (
