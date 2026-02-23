@@ -2,6 +2,8 @@ import { getSSEMembers } from "@/lib/github/search";
 import MemberCard from "./MemberCard";
 import { Card } from "@/components/ui/card";
 
+export const dynamic = "force-dynamic";
+
 export default async function Credits() {
   const members = await getSSEMembers();
   return (
