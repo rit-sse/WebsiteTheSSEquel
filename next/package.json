@@ -6,7 +6,7 @@
     "dev": "cross-env INTERNAL_API_URL=\"http://localhost:3000\" SESSION_COOKIE_NAME=\"next-auth.session-token\" next dev",
     "build": "next build",
     "start": "next start",
-    "start:standalone": "mkdir -p .next/standalone/next/.next && cp -r .next/static .next/standalone/next/.next/static && cp -r public .next/standalone/next/public && INTERNAL_API_URL=\"http://localhost:3000\" SESSION_COOKIE_NAME=\"next-auth.session-token\" node .next/standalone/next/server.js",
+    "start:standalone": "mkdir -p .next/standalone/.next && cp -r .next/static .next/standalone/.next/static && cp -r public .next/standalone/public && INTERNAL_API_URL=\"http://localhost:3000\" SESSION_COOKIE_NAME=\"next-auth.session-token\" node .next/standalone/server.js",
     "lint": "next lint",
     "test": "jest"
   },
