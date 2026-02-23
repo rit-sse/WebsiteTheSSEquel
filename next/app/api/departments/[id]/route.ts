@@ -10,11 +10,12 @@ export const dynamic = 'force-dynamic'
  */
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id: idStr } = await params;
   // make sure the provided ID is a valid integer
   try {
-    const id = parseInt(params.id);
+    const id = parseInt(idStr);
     const dept = await prisma.department.findUnique({
       where: {
         id,
