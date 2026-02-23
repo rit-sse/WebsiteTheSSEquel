@@ -19,6 +19,7 @@ GOOGLE_CLIENT_SECRET="google cloud OAuth client secret"
 
 NEXTAUTH_URL="http://localhost:3000"
 NEXTAUTH_SECRET="random string of characters used for encryption -- feel free to make this up or use openssl to generate one"
+GITHUB_PAT="server-side GitHub PAT for constitution amendments"
 
 GCAL_CLIENT_EMAIL="gcal client email"
 GCAL_PRIVATE_KEY="gcal private key"
@@ -42,6 +43,23 @@ The above is just a placeholder, you'll need to fill in each entry with the appr
 4. Create a new database by right clicking on `Databases` and selecting `Create > Database...`. Name the database something like `ssequel-dev` and click `Save`.
 
 5. Now that you have a database, you can fill in the `DATABASE_URL` entry in the `.env` file. The `DATABASE_URL` should be in the following format: `postgresql://<username>:<password>@localhost:5432/<database name>`, where `<username>` is the username of the database superuser, `<password>` is the password you set for the database superuser, and `<database name>` is the name of the database you created in step 4. The default username for the database superuser is `postgres`.
+
+### Amendment feature setup
+
+If you are using the constitution amendment workflow:
+
+- Create a server-side GitHub PAT with `repo` scope for write access to `rit-sse/governing-docs`.
+- Set `GITHUB_PAT` in the runtime environment for the Next.js container.
+- Keep this token out of source control and never expose it in client-side code.
+
+Example compose-style deployment snippet:
+
+```yaml
+services:
+  website:
+    environment:
+      GITHUB_PAT: ${GITHUB_PAT}
+```
 
 ## Setting up Google OAuth
 

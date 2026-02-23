@@ -27,6 +27,16 @@ enum AlumniCandidateStatus {
   rejected
 }
 
+enum AmendmentStatus {
+  DRAFT
+  OPEN
+  VOTING
+  APPROVED
+  REJECTED
+  MERGED
+  WITHDRAWN
+}
+
 model User {
   //Store an automatically generated unique int for id
   id Int @id @default(autoincrement())
@@ -72,6 +82,9 @@ model User {
   alumni                   Alumni?
   alumniCandidates         AlumniCandidate[] @relation("AlumniCandidateOwner")
   reviewedAlumniCandidates AlumniCandidate[] @relation("AlumniCandidateReviewer")
+  amendments               Amendment[]
+  amendmentVotes           AmendmentVote[]
+  amendmentComments        AmendmentComment[]
 }
 
 model Alumni {
@@ -790,6 +803,53 @@ model Memberships {
 
   // Relational Fields
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Amendment {
+  id               Int             @id @default(autoincrement())
+  title            String
+  description      String          @db.Text
+  authorId         Int
+  status           AmendmentStatus @default(DRAFT)
+  githubPrNumber   Int?
+  githubBranch     String?
+  originalContent  String          @db.Text
+  proposedContent  String          @db.Text
+  publishedAt      DateTime?
+  votingOpenedAt   DateTime?
+  votingClosedAt   DateTime?
+  isSemanticChange Boolean         @default(true)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  author   User            @relation(fields: [authorId], references: [id])
+  votes    AmendmentVote[]
+  comments AmendmentComment[]
+}
+
+model AmendmentVote {
+  id          Int      @id @default(autoincrement())
+  amendmentId Int
+  userId      Int
+  approve     Boolean
+  createdAt   DateTime @default(now())
+
+  amendment Amendment @relation(fields: [amendmentId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id])
+
+  @@unique([amendmentId, userId])
+}
+
+model AmendmentComment {
+  id          Int      @id @default(autoincrement())
+  amendmentId Int
+  authorId    Int
+  content     String   @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  amendment Amendment @relation(fields: [amendmentId], references: [id], onDelete: Cascade)
+  author    User      @relation(fields: [authorId], references: [id])
 }
 
 model Sponsor {
