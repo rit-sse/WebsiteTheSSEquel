@@ -3,11 +3,12 @@
 import { useEffect, useState } from "react";
 import OfficerCard from "./OfficerCard";
 import EmptyOfficerCard from "./EmptyOfficerCard";
-import { Team, TeamMember, OfficerPosition, PositionWithOfficer } from "./team";
+import { Team, TeamMember, OfficerPosition, PositionWithOfficer, HistoricalYear, HistoricalOfficer } from "./team";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Settings } from "lucide-react";
 import Link from "next/link";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 import { Card } from "@/components/ui/card";
 
@@ -67,11 +68,40 @@ function ManageLink({ isOfficer }: { isOfficer: boolean }) {
 	);
 }
 
+/** Render a grid of officers from the history endpoint */
+function HistoricalOfficerGrid({ officers }: { officers: HistoricalOfficer[] }) {
+	if (officers.length === 0) return null;
+
+	return (
+		<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 justify-items-center">
+			{officers.map((officer) => (
+				<OfficerCard
+					key={officer.id}
+					teamMember={{
+						officer_id: String(officer.id),
+						user_id: String(officer.user.id),
+						name: officer.user.name,
+						image: officer.user.image ?? "",
+						title: officer.position.title,
+						email: officer.user.email,
+						desc: officer.user.description ?? undefined,
+						linkedin: officer.user.linkedIn ?? undefined,
+						github: officer.user.gitHub ?? undefined,
+					}}
+				/>
+			))}
+		</div>
+	);
+}
+
 export default function Leadership() {
 	// State list of all positions with their officers
 	const [teamData, setTeamData] = useState<Team>({ primary_officers: [], committee_heads: [] });
-	// Loading state
+	// Historical years data
+	const [historyYears, setHistoryYears] = useState<HistoricalYear[]>([]);
+	// Loading states
 	const [isLoading, setIsLoading] = useState(true);
+	const [isHistoryLoading, setIsHistoryLoading] = useState(true);
 	// Auth level to determine if unfilled positions should be shown
 	const { isOfficer, isMentor } = useAuthLevel();
 	// Only mentors and officers can see unfilled positions
@@ -80,12 +110,13 @@ export default function Leadership() {
 	// Get all positions and officers when page opens
 	useEffect(() => {
 		getOfficers();
+		getHistory();
 	}, []);
 
 	const getOfficers = async () => {
 		setIsLoading(true);
 		const team: Team = { primary_officers: [], committee_heads: [] };
-		
+
 		try {
 			// Fetch all positions and active officers in parallel
 			const [positionsResponse, officersResponse] = await Promise.all([
@@ -142,6 +173,22 @@ export default function Leadership() {
 		setIsLoading(false);
 	};
 
+	const getHistory = async () => {
+		setIsHistoryLoading(true);
+		try {
+			const response = await fetch("/api/officer/history");
+			if (response.ok) {
+				const data: HistoricalYear[] = await response.json();
+				setHistoryYears(data);
+			}
+		} catch (error) {
+			console.error("Error fetching officer history:", error);
+		}
+		setIsHistoryLoading(false);
+	};
+
+	const hasHistory = historyYears.length > 0;
+
 	return (
 		<section className="mt-16 pb-16">
 			<div className="max-w-screen-xl mx-auto px-4 md:px-8">
@@ -160,57 +207,160 @@ export default function Leadership() {
 						</div>
 					</div>
 
-				{/* Primary Officers */}
-				<div className="mb-10">
-					<h2 className="text-center text-primary mb-6">
-						Primary Officers
-					</h2>
-					<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 justify-items-center">
-						{isLoading ? (
-							<>
-								<OfficerCardSkeleton />
-								<OfficerCardSkeleton />
-								<OfficerCardSkeleton />
-								<OfficerCardSkeleton />
-							</>
-						) : (
-							teamData.primary_officers.map((item, idx) => (
-								item.officer ? (
-									<OfficerCard key={idx} teamMember={item.officer} />
-								) : canSeeUnfilledPositions ? (
-									<EmptyOfficerCard key={idx} position={item.position} />
-								) : null
-							))
-						)}
-					</div>
-				</div>
+				{/* Tabs: Current + historical years */}
+				{(hasHistory || !isHistoryLoading) ? (
+					<Tabs defaultValue="current">
+						<div className="flex justify-center mb-6">
+							<TabsList className="flex-wrap">
+								<TabsTrigger value="current">Current</TabsTrigger>
+								{historyYears.map((hy) => (
+									<TabsTrigger key={hy.year} value={hy.year}>
+										{hy.year}
+									</TabsTrigger>
+								))}
+							</TabsList>
+						</div>
 
-				{/* Committee Heads */}
-				<div>
-					<h2 className="text-center text-primary mb-6">
-						Committee Heads
-					</h2>
-					<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 justify-items-center">
-						{isLoading ? (
-							<>
-								<OfficerCardSkeleton />
-								<OfficerCardSkeleton />
-								<OfficerCardSkeleton />
-								<OfficerCardSkeleton />
-								<OfficerCardSkeleton />
-								<OfficerCardSkeleton />
-							</>
-						) : (
-							teamData.committee_heads.map((item, idx) => (
-								item.officer ? (
-									<OfficerCard key={idx} teamMember={item.officer} />
-								) : canSeeUnfilledPositions ? (
-									<EmptyOfficerCard key={idx} position={item.position} />
-								) : null
-							))
-						)}
-					</div>
-				</div>
+						{/* ── Current tab ── */}
+						<TabsContent value="current">
+							{/* Primary Officers */}
+							<div className="mb-10">
+								<h2 className="text-center text-primary mb-6">
+									Primary Officers
+								</h2>
+								<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 justify-items-center">
+									{isLoading ? (
+										<>
+											<OfficerCardSkeleton />
+											<OfficerCardSkeleton />
+											<OfficerCardSkeleton />
+											<OfficerCardSkeleton />
+										</>
+									) : (
+										teamData.primary_officers.map((item, idx) => (
+											item.officer ? (
+												<OfficerCard key={idx} teamMember={item.officer} />
+											) : canSeeUnfilledPositions ? (
+												<EmptyOfficerCard key={idx} position={item.position} />
+											) : null
+										))
+									)}
+								</div>
+							</div>
+
+							{/* Committee Heads */}
+							<div>
+								<h2 className="text-center text-primary mb-6">
+									Committee Heads
+								</h2>
+								<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 justify-items-center">
+									{isLoading ? (
+										<>
+											<OfficerCardSkeleton />
+											<OfficerCardSkeleton />
+											<OfficerCardSkeleton />
+											<OfficerCardSkeleton />
+											<OfficerCardSkeleton />
+											<OfficerCardSkeleton />
+										</>
+									) : (
+										teamData.committee_heads.map((item, idx) => (
+											item.officer ? (
+												<OfficerCard key={idx} teamMember={item.officer} />
+											) : canSeeUnfilledPositions ? (
+												<EmptyOfficerCard key={idx} position={item.position} />
+											) : null
+										))
+									)}
+								</div>
+							</div>
+						</TabsContent>
+
+						{/* ── Historical year tabs ── */}
+						{historyYears.map((hy) => (
+							<TabsContent key={hy.year} value={hy.year}>
+								{hy.primary_officers.length > 0 && (
+									<div className="mb-10">
+										<h2 className="text-center text-primary mb-6">
+											Primary Officers
+										</h2>
+										<HistoricalOfficerGrid officers={hy.primary_officers} />
+									</div>
+								)}
+
+								{hy.committee_heads.length > 0 && (
+									<div>
+										<h2 className="text-center text-primary mb-6">
+											Committee Heads
+										</h2>
+										<HistoricalOfficerGrid officers={hy.committee_heads} />
+									</div>
+								)}
+
+								{hy.primary_officers.length === 0 && hy.committee_heads.length === 0 && (
+									<p className="text-center text-muted-foreground py-12">
+										No officer records found for {hy.year}.
+									</p>
+								)}
+							</TabsContent>
+						))}
+					</Tabs>
+				) : (
+					/* Show current officers without tabs while history is loading */
+					<>
+						{/* Primary Officers */}
+						<div className="mb-10">
+							<h2 className="text-center text-primary mb-6">
+								Primary Officers
+							</h2>
+							<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 justify-items-center">
+								{isLoading ? (
+									<>
+										<OfficerCardSkeleton />
+										<OfficerCardSkeleton />
+										<OfficerCardSkeleton />
+										<OfficerCardSkeleton />
+									</>
+								) : (
+									teamData.primary_officers.map((item, idx) => (
+										item.officer ? (
+											<OfficerCard key={idx} teamMember={item.officer} />
+										) : canSeeUnfilledPositions ? (
+											<EmptyOfficerCard key={idx} position={item.position} />
+										) : null
+									))
+								)}
+							</div>
+						</div>
+
+						{/* Committee Heads */}
+						<div>
+							<h2 className="text-center text-primary mb-6">
+								Committee Heads
+							</h2>
+							<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 justify-items-center">
+								{isLoading ? (
+									<>
+										<OfficerCardSkeleton />
+										<OfficerCardSkeleton />
+										<OfficerCardSkeleton />
+										<OfficerCardSkeleton />
+										<OfficerCardSkeleton />
+										<OfficerCardSkeleton />
+									</>
+								) : (
+									teamData.committee_heads.map((item, idx) => (
+										item.officer ? (
+											<OfficerCard key={idx} teamMember={item.officer} />
+										) : canSeeUnfilledPositions ? (
+											<EmptyOfficerCard key={idx} position={item.position} />
+										) : null
+									))
+								)}
+							</div>
+						</div>
+					</>
+				)}
 				</Card>
 			</div>
 		</section>

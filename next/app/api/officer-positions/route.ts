@@ -11,6 +11,7 @@ export const dynamic = "force-dynamic";
  */
 export async function GET() {
   const positions = await prisma.officerPosition.findMany({
+    where: { is_defunct: false },
     select: {
       id: true,
       title: true,

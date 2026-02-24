@@ -110,6 +110,11 @@ const dashboardItems = [
         href: "/dashboard/alumni",
         description: "Review alumni requests and auto-generated candidates.",
     },
+    {
+        title: "Announcements",
+        href: "/dashboard/announcements",
+        description: "Manage site-wide announcement banners.",
+    },
 ];
 
 interface NavbarProps {

@@ -54,6 +54,10 @@ model User {
 
   emailVerified DateTime?
 
+  // Legacy import flag — true for stub users created from old DB import.
+  // Cleared on first real Google sign-in when name is filled from OAuth.
+  isImported Boolean @default(false)
+
   // relational fields
   mentor               Mentor[]
   quotes               Quote[]
@@ -194,15 +198,15 @@ model Quote {
   //Store quote as a String
   quote String @db.VarChar(255)
 
-  //References userId of person who submitted the quote
-  user_id Int
+  //References userId of person who submitted the quote (optional for legacy imports)
+  user_id Int?
 
   //Store author, person who said the qoute, as a String, default to anonymous
   author String @default("Anonymous")
 
   //Relational fields
   //Refrences user_id
-  user User @relation(fields: [user_id], references: [id])
+  user User? @relation(fields: [user_id], references: [id])
 }
 
 model OfficerPosition {
@@ -217,6 +221,9 @@ model OfficerPosition {
 
   //Store position alias email (e.g., sse-president@rit.edu)
   email String @unique
+
+  //Whether this position no longer exists (historical only, not fillable)
+  is_defunct Boolean @default(false)
 
   //Relational fields
   officers         Officer[]
@@ -659,6 +666,7 @@ model Event {
 
   title       String
   date        DateTime @db.Timestamptz(3)
+  endDate     DateTime? @db.Timestamptz(3)
   location    String?
   image       String?
   description String
@@ -903,4 +911,13 @@ model Invitation {
 
   // Unique constraint: one pending invitation per email per type
   @@unique([invitedEmail, type])
+}
+
+model Announcement {
+  id        Int      @id @default(autoincrement())
+  message   String
+  category  String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

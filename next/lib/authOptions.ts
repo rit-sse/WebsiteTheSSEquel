@@ -96,6 +96,26 @@ export const authOptions: AuthOptions = {
         } catch (err) {
           console.error("Error creating alumni candidate on sign-in:", err);
         }
+
+        // Upgrade legacy-imported stub users with real Google name
+        try {
+          const stub = await prisma.user.findUnique({
+            where: { email: user.email },
+            select: { isImported: true },
+          });
+          if (stub?.isImported && (profile as any)?.name) {
+            await prisma.user.update({
+              where: { email: user.email },
+              data: {
+                name: (profile as any).name,
+                isImported: false,
+              },
+            });
+            console.log(`Upgraded legacy import user: ${user.email}`);
+          }
+        } catch (err) {
+          console.error("Error upgrading legacy import user:", err);
+        }
       }
 
       // Check for pending invitations
