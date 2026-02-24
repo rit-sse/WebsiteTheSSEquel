@@ -62,6 +62,7 @@ model User {
   session              Session[]
   projectContributions ProjectContributor[]
   projects             Project[]
+  textbookCopies            TextbookCopies[]
 
   Memberships              Memberships[]
   purchaseRequests         PurchaseRequest[]
@@ -903,4 +904,46 @@ model Invitation {
 
   // Unique constraint: one pending invitation per email per type
   @@unique([invitedEmail, type])
+}
+
+// Library Database
+
+// This will show on the home page, this is where books can be categorized!
+model BookCategory {
+  id              Int @id @default(autoincrement())
+
+  categoryName    String
+  books           Int[]
+}
+
+model Textbooks {
+  // Textbook id for our internal reasons. This is NOT the ISBN!
+  id              Int @id @default(autoincrement())
+
+  name            String  // Book title
+  authors         String  // Author(s) separated by commas
+  image           String  // Book Image
+  description     String  // Book description
+  publisher       String  // Publisher
+  edition         String  // Edition
+  ISBN            String  @unique // ISBN-13 of the textbook
+  keyWords        String  // Any keywords that could be of interest
+  classInterest   String  // Each course separated by commas (i.e SWEN-256, SWEN-261, SWEN-262, CSCI-331, etc.)
+  yearPublished   String  // Publishing date
+
+  copies          TextbookCopies[]
+}
+
+model TextbookCopies {
+  id            Int @id @default(autoincrement())
+
+  ISBN          String
+
+  // No checkout feature as of yet, but here just in case.
+  checkedOut      Boolean
+  user_id         Int?
+
+  // Relations
+  user User? @relation(fields: [user_id], references: [id])
+  textbook Textbooks @relation(fields: [ISBN], references: [ISBN])
 }
