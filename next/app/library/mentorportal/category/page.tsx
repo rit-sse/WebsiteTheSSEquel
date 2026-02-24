@@ -11,10 +11,20 @@ export default function MentorPortal() {
     const [finishedLoading, setFinishedLoading] = useState(false);
 
     useEffect(() => {
-        fetch("/api/library/categories?simple=true").then(res => res.json()).then(data => {
-            setCategories(data);
-            setFinishedLoading(true);
-        });
+        fetch("/api/library/categories?simple=true")
+            .then(res => {
+                if (!res.ok) throw new Error(`API returned ${res.status}`);
+                return res.json();
+            })
+            .then(data => {
+                setCategories(data);
+            })
+            .catch(err => {
+                console.error("Failed to load categories:", err);
+            })
+            .finally(() => {
+                setFinishedLoading(true);
+            });
     }, [])
 
     return (
