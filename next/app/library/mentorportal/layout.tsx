@@ -1,9 +1,9 @@
 "use client"
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, type ReactElement } from "react";
 import Image from "next/image";
 
-const TopbarIcon = (props: { iconUrl: string}): JSX.Element => {
+const TopbarIcon = (props: { iconUrl: string}): ReactElement => {
     return(
         <Image src={props.iconUrl} alt="Icon" className="w-4 h-4 inline" width={16} height={16} />
     )
