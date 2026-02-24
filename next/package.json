@@ -6,6 +6,7 @@
     "dev": "cross-env INTERNAL_API_URL=\"http://localhost:3000\" SESSION_COOKIE_NAME=\"next-auth.session-token\" next dev",
     "build": "next build",
     "start": "next start",
+    "migrate:deploy": "prisma migrate deploy",
     "start:standalone": "mkdir -p .next/standalone/.next && cp -r .next/static .next/standalone/.next/static && cp -r public .next/standalone/public && INTERNAL_API_URL=\"http://localhost:3000\" SESSION_COOKIE_NAME=\"next-auth.session-token\" node .next/standalone/server.js",
     "lint": "next lint",
     "test": "jest"
