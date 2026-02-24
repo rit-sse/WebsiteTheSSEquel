@@ -3,6 +3,7 @@ import Image from "next/image";
 import { Book } from "../Book";
 
 export function FeaturedContainer({ props }: { props: { books: Book[], header: string } }) {
+    const books = Array.isArray(props.books) ? props.books : [];
 
     function onClickBook(book: Book) {
         // Placeholder for future functionality when a book is clicked
@@ -13,7 +14,7 @@ export function FeaturedContainer({ props }: { props: { books: Book[], header: s
         <div className="w-full flex flex-col items-center mt-[15px] px-2 md:px-4 lg:px-6 ">
             <h2 className="w-full text-3xl font-normal font-sans mb-6">{props.header}</h2>
             <div className="flex flex-row items-top  w-[100%] overflow-x-scroll justify-start scrollbar-hide">
-                {props.books.map((book) => (
+                {books.map((book) => (
                     <div
                         key={book.ISBN}
                         className="flex-none w-[180px] mr-4 last:mr-0 cursor-pointer z-5"

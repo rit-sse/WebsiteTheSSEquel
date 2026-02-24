@@ -15,7 +15,19 @@ export default function LibraryHome() {
     const [categories, setCategories] = useState<{ [key: string]: { books: any[] } }>({});
 
     useEffect(() => {
-        fetch((process.env.INTERNAL_API_URL ? process.env.INTERNAL_API_URL : "") + "/api/library/categories").then(resp => resp.json()).then(categoriesData => { setCategories(categoriesData); });
+        fetch((process.env.INTERNAL_API_URL ? process.env.INTERNAL_API_URL : "") + "/api/library/categories")
+            .then((resp) => {
+                if (!resp.ok) return {};
+                return resp.json();
+            })
+            .then((categoriesData) => {
+                if (!categoriesData || typeof categoriesData !== "object" || Array.isArray(categoriesData)) {
+                    setCategories({});
+                    return;
+                }
+                setCategories(categoriesData as { [key: string]: { books: any[] } });
+            })
+            .catch(() => setCategories({}));
     }, []);
 
     return (
@@ -29,7 +41,13 @@ export default function LibraryHome() {
                     </div>
                 ) : (
                     Object.keys(categories).map((categoryKey) => (
-                        <FeaturedContainer key={categoryKey} props={{ books: categories[categoryKey].books, header: categoryKey }} />
+                        <FeaturedContainer
+                            key={categoryKey}
+                            props={{
+                                books: Array.isArray(categories[categoryKey]?.books) ? categories[categoryKey].books : [],
+                                header: categoryKey
+                            }}
+                        />
                     ))
                 )
             }

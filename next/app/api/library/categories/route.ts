@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
         });
 
         if (!categories || categories.length === 0) {
-            return new Response(JSON.stringify({ error: "Not found" }), { status: 404 });
+            return new Response(JSON.stringify({}), { status: 200 });
         }
 
         for (const category of categories) {
