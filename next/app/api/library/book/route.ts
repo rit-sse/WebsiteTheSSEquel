@@ -2,6 +2,7 @@ import prisma from "@/lib/prisma";
 import { NextRequest } from "next/server";
 import { getAuth, getSessionCookie } from "../authTools";
 import { writeFileSync } from "fs";
+import { resolveAuthLevelFromRequest } from "@/lib/authLevelResolver";
 
 export async function GET(request: NextRequest) {
     try {
@@ -83,8 +84,9 @@ export async function POST(request: NextRequest) {
     console.log("POST /api/library/[isbn]");
     try {
         // Authentication check
-        const authToken = await getSessionCookie(request);
-        const auth = await getAuth(authToken);
+        const auth = await resolveAuthLevelFromRequest(request, {
+            includeProfileComplete: true,
+        });
         if (!auth.isOfficer && !auth.isMentor) {
             return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
         }
@@ -139,8 +141,9 @@ export async function PUT(request: NextRequest) {
     console.log("PUT /api/library/[isbn]");
     try {
         // Authentication check
-        const authToken = await getSessionCookie(request);
-        const authLevel = await getAuth(authToken);
+        const authLevel = await resolveAuthLevelFromRequest(request, {
+            includeProfileComplete: true,
+        });
         if (!authLevel.isOfficer && !authLevel.isMentor) {
             return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
         }
@@ -204,8 +207,9 @@ export async function DELETE(request: NextRequest) {
     console.log("DELETE /api/library/[isbn]");
     try {
         // Authentication check
-        const authToken = await getSessionCookie(request);
-        const authLevel = await getAuth(authToken);
+        const authLevel = await resolveAuthLevelFromRequest(request, {
+            includeProfileComplete: true,
+        });
         if (!authLevel.isOfficer && !authLevel.isMentor) {
             return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
         }
