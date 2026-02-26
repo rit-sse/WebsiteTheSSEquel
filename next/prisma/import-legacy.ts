@@ -73,19 +73,21 @@ const TITLE_MAP: Record<string, string> = {
   "Marketing Head":       "Marketing Head",
   "Marketing":            "Marketing Head",
 
-  // ── Defunct positions (no longer in current org) ──
-  "Events":                   "Events Head",
-  "Events Head":              "Events Head",
+  // ── Active committee heads (exist in current system) ──
+  "Events":                     "Events",
+  "Events Head":                "Events",
 
-  "Laboratory Operations":      "Lab Operations Head",
-  "Laboratory Operations Head": "Lab Operations Head",
-  "Lab Operations":             "Lab Operations Head",
-  "Lab Operations Head":        "Lab Operations Head",
-  "Lab Ops":                    "Lab Operations Head",
+  "Laboratory Operations":      "Laboratory Operations",
+  "Laboratory Operations Head": "Laboratory Operations",
+  "Lab Operations":             "Laboratory Operations",
+  "Lab Operations Head":        "Laboratory Operations",
+  "Lab Ops":                    "Laboratory Operations",
 
   "Tech Head":            "Tech Head",
   "Technology":           "Tech Head",
   "Technology Head":      "Tech Head",
+
+  // ── Defunct positions (no longer in current org) ──
   "Tech Head Apprentice": "Tech Head Apprentice",
 
   "Historian":            "Historian",
@@ -107,9 +109,6 @@ const TITLE_MAP: Record<string, string> = {
 
 /** Canonical titles that should be marked is_defunct */
 const DEFUNCT_TITLES = new Set([
-  "Events Head",
-  "Lab Operations Head",
-  "Tech Head",
   "Tech Head Apprentice",
   "Historian",
   "Branding Head",

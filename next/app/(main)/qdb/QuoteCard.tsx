@@ -1,6 +1,6 @@
 'use client';
 
-import { Settings, Trash2 } from "lucide-react";
+import { Settings, Trash2, Calendar } from "lucide-react";
 import { Quote } from "./Quotes";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -8,6 +8,19 @@ import { Modal, ModalFooter } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+
+function formatDate(dateStr: string): string {
+    if (!dateStr) return "";
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return "";
+    return d.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+    });
+}
 
 export const QuoteCard = (quote: Quote) => {
     const [editOpen, setEditOpen] = useState(false);
@@ -154,102 +167,124 @@ export const QuoteCard = (quote: Quote) => {
                 if (start !== -1 && end !== -1 && end > start) {
                     const author = line.substring(start + 1, end).trim();
                     const quoteText = line.substring(end + 1).trim();
-                    return `${author}: ${quoteText}`;
+                    return { author, text: quoteText };
                 }
-                return line.trim();
+                return { author: null, text: line.trim() };
             });
     };
 
-    if (isOfficer) {
-        return (
-            <>
-                <div className="border-l-8 border-primary rounded-lg bg-background w-11/12 py-5 px-12 mx-auto items-center content-center gap-10 my-4">
-                    {formatQuote(quote.quote).map((line, index) => (
-                        <p className="" key={index}>{line}</p>
-                    ))}
-                    <br />
-                    <p>{quote.tags}</p>
-
-                    <button 
-                        onClick={openEditModal}
-                        aria-label="Edit quote"
-                        className="hover:scale-110 transition-transform inline-flex"
-                    >
-                        <Settings className="h-6 w-6" />
-                    </button>
-
-                    <button 
-                        onClick={() => setDeleteOpen(true)}
-                        aria-label="Delete quote"
-                        className="hover:scale-110 transition-transform text-destructive inline-flex ml-2"
-                    >
-                        <Trash2 className="h-6 w-6" />
-                    </button>
-                </div>
-
-                {/* Edit Modal */}
-                <Modal open={editOpen} onOpenChange={setEditOpen} title="Edit Quote" className="max-w-xl">
-                    <div className="space-y-4 max-h-[60vh] overflow-y-auto">
-                        {editableQuotes.map((entry, index) => (
-                            <div key={index} className="space-y-2 p-3 border border-border rounded-base">
-                                <div className="space-y-1">
-                                    <Label htmlFor={`edit-quote-${quote.id}-${index}`}>Quote</Label>
-                                    <Input
-                                        id={`edit-quote-${quote.id}-${index}`}
-                                        placeholder="Enter quote"
-                                        value={entry.quote}
-                                        onChange={(e) => updateEditableQuoteField(index, "quote", e.target.value)}
-                                    />
-                                </div>
-                                <div className="space-y-1">
-                                    <Label htmlFor={`edit-author-${quote.id}-${index}`}>Author</Label>
-                                    <Input
-                                        id={`edit-author-${quote.id}-${index}`}
-                                        placeholder="Enter author (optional)"
-                                        value={entry.author}
-                                        onChange={(e) => updateEditableQuoteField(index, "author", e.target.value)}
-                                    />
-                                </div>
-                                {editableQuotes.length > 1 && (
-                                    <Button
-                                        variant="neutral"
-                                        size="sm"
-                                        onClick={() => removeQuoteField(index)}
-                                    >
-                                        Remove
-                                    </Button>
-                                )}
-                            </div>
-                        ))}
-
-                        <Button variant="neutral" onClick={addQuoteField}>
-                            + Add another section
-                        </Button>
-                    </div>
-
-                    <ModalFooter>
-                        <Button variant="neutral" onClick={() => setEditOpen(false)}>Cancel</Button>
-                        <Button onClick={handleSave}>Save</Button>
-                    </ModalFooter>
-                </Modal>
-
-                {/* Delete Confirmation Modal */}
-                <Modal open={deleteOpen} onOpenChange={setDeleteOpen} title="Delete Quote">
-                    <p className="text-foreground">Are you sure you want to delete this quote?</p>
-                    <ModalFooter>
-                        <Button variant="neutral" onClick={() => setDeleteOpen(false)}>No</Button>
-                        <Button onClick={handleDelete}>Yes</Button>
-                    </ModalFooter>
-                </Modal>
-            </>
-        );
-    }
+    const dateStr = formatDate(quote.date);
 
     return (
-        <div className="border-l-8 border-primary rounded-lg bg-background w-11/12 py-5 px-12 mx-auto items-center content-center gap-10 my-4">
-            {formatQuote(quote.quote).map((line, index) => (
-                <p key={index}>{line}</p>
-            ))}
-        </div>
+        <>
+            <Card depth={2} className="p-5 transition-colors hover:bg-surface-3/50">
+                {/* Quote content */}
+                <div className="space-y-1.5">
+                    {formatQuote(quote.quote).map((line, index) => (
+                        <p key={index} className="text-foreground leading-relaxed">
+                            {line.author ? (
+                                <>
+                                    <span className="font-semibold text-primary">{line.author}:</span>{" "}
+                                    <span>{line.text}</span>
+                                </>
+                            ) : (
+                                <span>{line.text}</span>
+                            )}
+                        </p>
+                    ))}
+                </div>
+
+                {/* Footer: date + tags + actions */}
+                <div className="flex items-center justify-between mt-4 pt-3 border-t border-border/50">
+                    <div className="flex items-center gap-3 flex-wrap">
+                        {dateStr && (
+                            <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                <Calendar className="h-3 w-3" />
+                                {dateStr}
+                            </span>
+                        )}
+                        {quote.tags && quote.tags.map((tag, i) => (
+                            <Badge key={i} variant="secondary" className="text-xs">
+                                {tag}
+                            </Badge>
+                        ))}
+                    </div>
+
+                    {isOfficer && (
+                        <div className="flex items-center gap-1">
+                            <button
+                                onClick={openEditModal}
+                                aria-label="Edit quote"
+                                className="p-1.5 rounded-md hover:bg-surface-3 transition-colors"
+                            >
+                                <Settings className="h-4 w-4 text-muted-foreground" />
+                            </button>
+                            <button
+                                onClick={() => setDeleteOpen(true)}
+                                aria-label="Delete quote"
+                                className="p-1.5 rounded-md hover:bg-destructive/10 transition-colors"
+                            >
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                            </button>
+                        </div>
+                    )}
+                </div>
+            </Card>
+
+            {/* Edit Modal */}
+            <Modal open={editOpen} onOpenChange={setEditOpen} title="Edit Quote" className="max-w-xl">
+                <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+                    {editableQuotes.map((entry, index) => (
+                        <div key={index} className="space-y-2 p-3 border border-border rounded-base">
+                            <div className="space-y-1">
+                                <Label htmlFor={`edit-quote-${quote.id}-${index}`}>Quote</Label>
+                                <Input
+                                    id={`edit-quote-${quote.id}-${index}`}
+                                    placeholder="Enter quote"
+                                    value={entry.quote}
+                                    onChange={(e) => updateEditableQuoteField(index, "quote", e.target.value)}
+                                />
+                            </div>
+                            <div className="space-y-1">
+                                <Label htmlFor={`edit-author-${quote.id}-${index}`}>Author</Label>
+                                <Input
+                                    id={`edit-author-${quote.id}-${index}`}
+                                    placeholder="Enter author (optional)"
+                                    value={entry.author}
+                                    onChange={(e) => updateEditableQuoteField(index, "author", e.target.value)}
+                                />
+                            </div>
+                            {editableQuotes.length > 1 && (
+                                <Button
+                                    variant="neutral"
+                                    size="sm"
+                                    onClick={() => removeQuoteField(index)}
+                                >
+                                    Remove
+                                </Button>
+                            )}
+                        </div>
+                    ))}
+
+                    <Button variant="neutral" onClick={addQuoteField}>
+                        + Add another section
+                    </Button>
+                </div>
+
+                <ModalFooter>
+                    <Button variant="neutral" onClick={() => setEditOpen(false)}>Cancel</Button>
+                    <Button onClick={handleSave}>Save</Button>
+                </ModalFooter>
+            </Modal>
+
+            {/* Delete Confirmation Modal */}
+            <Modal open={deleteOpen} onOpenChange={setDeleteOpen} title="Delete Quote">
+                <p className="text-foreground">Are you sure you want to delete this quote?</p>
+                <ModalFooter>
+                    <Button variant="neutral" onClick={() => setDeleteOpen(false)}>No</Button>
+                    <Button onClick={handleDelete}>Yes</Button>
+                </ModalFooter>
+            </Modal>
+        </>
     );
 };

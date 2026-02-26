@@ -1,6 +1,7 @@
 export interface Quote {
     id: number,
     quote: string,
+    date: string,
     description: string,
     tags: string[],
 }
