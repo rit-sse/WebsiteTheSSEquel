@@ -59,6 +59,30 @@ The above is just a placeholder, you'll need to fill in each entry with the appr
 
 ## Setting up a local database
 
+### Option A (Recommended): Docker Compose local services
+
+You do **not** need PostgreSQL installed directly on your computer if you use Docker.
+
+**Ensure you have docker installed if you use this option**
+
+1. Start local services from the repo root:
+   - `docker compose -f docker-compose.dev.yml up -d`
+2. Use this `DATABASE_URL` in `next/.env`:
+   - `postgresql://postgres:postgres@localhost:5432/ssequel_dev`
+3. (Optional) Use MailHog UI for local email testing:
+   - `http://localhost:8025`
+4. If you want to inspect the DB with pgAdmin, connect to:
+   - Host: `localhost`
+   - Port: `5432`
+   - User: `postgres`
+   - Password: `postgres`
+   - Database: `ssequel_dev`
+   
+     1. If port `5432` is already used on your machine, update `docker-compose.dev.yml` to map another host port (for example `5433:5432`) and update `DATABASE_URL` accordingly.*
+5. When finished, in the repo root run the following to shut down services when not needed:
+   - `docker compose down`
+### Option B: Native PostgreSQL install
+
 1. Download and install [PostgreSQL](https://www.postgresql.org/download/) 14. *Make sure you're installing 14, not any higher versions!* This is the database management system we are using for the project. When you visit the downloads page, click on your operating system and look for the following in the subsequent page: [![PostgreSQL 14 Download Page](https://i.imgur.com/VlfCWO6.png)](https://www.postgresql.org/download/)
 
 2. Run the installer and follow the instructions to install PostgreSQL. Make sure you remember the password you set for the database superuser.
@@ -67,7 +91,7 @@ The above is just a placeholder, you'll need to fill in each entry with the appr
 
 4. Create a new database by right clicking on `Databases` and selecting `Create > Database...`. Name the database something like `ssequel-dev` and click `Save`.
 
-5. Now that you have a database, you can fill in the `DATABASE_URL` entry in the `.env` file. The `DATABASE_URL` should be in the following format: `postgresql://<username>:<password>@localhost:5432/<database name>`, where `<username>` is the username of the database superuser, `<password>` is the password you set for the database superuser, and `<database name>` is the name of the database you created in step 4. The default username for the database superuser is `postgres`.
+5. Fill in the `DATABASE_URL` entry in `.env`. The `DATABASE_URL` format is: `postgresql://<username>:<password>@localhost:5432/<database name>`.
 
 ## Setting up Google OAuth
 
@@ -123,6 +147,14 @@ Optional env vars:
 
 - `SMTP_PORT`: SMTP port (defaults to `587`)
 - `SMTP_SECURE`: set to `true` for implicit TLS (typically port `465`), otherwise `false`
+
+If you are using `docker-compose.dev.yml` with MailHog, set:
+
+- `SMTP_HOST=localhost`
+- `SMTP_PORT=1025`
+- `SMTP_SECURE=false`
+- `SMTP_USER=dev`
+- `SMTP_PASS=dev`
 
 How to configure:
 
