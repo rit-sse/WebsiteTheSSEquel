@@ -7,6 +7,9 @@ assignees: ""
 
 ---
 
+> [!NOTE]
+> A Spike in agile development is a time-boxed research or prototyping activity aimed at answering a particular question, reducing technical uncertainty, or exploring a potential solution. It is a way to reduce risk and ensure that you are making informed decisions.
+
 # Spike Question
 
 [What specific unknown are we trying to answer?]
