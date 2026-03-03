@@ -8,7 +8,7 @@
     "start": "next start",
     "migrate:deploy": "prisma migrate deploy",
     "start:standalone": "mkdir -p .next/standalone/.next && cp -r .next/static .next/standalone/.next/static && cp -r public .next/standalone/public && INTERNAL_API_URL=\"http://localhost:3000\" SESSION_COOKIE_NAME=\"next-auth.session-token\" node .next/standalone/server.js",
-    "lint": "next lint",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx --ignore-pattern .next",
     "test": "jest"
   },
   "prisma": {
@@ -51,8 +51,8 @@
     "date-fns": "^3.6.0",
     "diff": "^4.0.4",
     "embla-carousel-react": "^8.6.0",
-    "eslint": "8.48.0",
-    "eslint-config-next": "13.4.19",
+    "eslint": "^9.39.3",
+    "eslint-config-next": "^16.1.6",
     "form-data": "^4.0.4",
     "googleapis": "^105.0.0",
     "jsonwebtoken": "^9.0.2",
