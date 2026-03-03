@@ -1,5 +1,25 @@
 # Environment Setup
 
+This guide should mirror what is needed to safely run and validate changes before merging into `dev`.
+
+## Local-Prod Parity Policy
+
+- Local setup should reflect production-relevant dependencies and configuration as closely as practical.
+- If you add/change infrastructure assumptions (env vars, integrations, runtime requirements), update this document in the same PR.
+- Do not merge setup-affecting changes without verifying local behavior end to end.
+
+## Pre-Merge Validation (Required)
+
+Before requesting review, validate from the `next/` directory:
+
+1. `npm run lint`
+2. `npm run test`
+3. `npm run build`
+4. `npx prisma migrate dev` (if schema changed)
+5. `npx prisma db seed` (if your change requires seeded test data)
+
+If any step fails, fix or document why it is intentionally skipped.
+
 1. Make sure you have node installed. You can check this by running `node -v` in your terminal. If you don't have node installed, you can download it [here](https://nodejs.org/en/download/).
 
 2. Clone or fork this repository. You can do this by running `git clone https://github.com/rit-sse/WebsiteTheSSEquel.git` in your terminal in the directory you want to clone the repository to.
@@ -27,6 +47,12 @@ AWS_S3_BUCKET_NAME="s3 bucket name"
 AWS_S3_REGION="s3 region (for example us-east-1)"
 AWS_ACCESS_KEY_ID="aws access key"
 AWS_SECRET_ACCESS_KEY="aws secret key"
+
+SMTP_HOST="smtp hostname"
+SMTP_PORT="587"
+SMTP_SECURE="false"
+SMTP_USER="smtp username"
+SMTP_PASS="smtp password"
 ```
 
 The above is just a placeholder, you'll need to fill in each entry with the appropriate information. First, let's step through setting up a local database.
@@ -83,6 +109,37 @@ The `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` can be found again later by go
 
 6. Copy the `client_email` from this file to the `GCAL_CLIENT_EMAIL` entry in the `.env` file. Copy the `private_key` to the `GCAL_PRIVATE_KEY` entry.
 
+## Setting up the email service (SMTP)
+
+The app sends transactional emails (for example alumni mail and purchasing emails) through SMTP.
+
+Required env vars:
+
+- `SMTP_HOST`: SMTP server hostname
+- `SMTP_USER`: SMTP username/login
+- `SMTP_PASS`: SMTP password
+
+Optional env vars:
+
+- `SMTP_PORT`: SMTP port (defaults to `587`)
+- `SMTP_SECURE`: set to `true` for implicit TLS (typically port `465`), otherwise `false`
+
+How to configure:
+
+1. Create or obtain SMTP credentials from the team-approved provider.
+2. Add the SMTP values to your `next/.env`.
+3. Restart `npm run dev` after changing `.env`.
+
+Local verification checklist:
+
+1. Confirm app boots with SMTP values present.
+2. Use a feature that sends mail:
+   - Alumni page mass email flow (`/api/alumni/email`)
+   - Purchasing request email flow (`/api/purchasing/[id]/email`)
+3. Confirm mail is delivered in your provider inbox/logs (or sandbox inbox, if using a test provider).
+
+If SMTP is missing or invalid, email endpoints will fail with configuration/authentication errors.
+
 ## Building the Local Database
 
 If you run the project now, you'll encounter schema errors. This is because the local database hasn't been built. We use Prisma for managing the Postgres database, so we'll use [Prisma's migrate command](https://www.prisma.io/docs/concepts/components/prisma-migrate/migrate-development-production) to build the db tables using the schema defined in the [schema.prisma](../next/prisma/schema.prisma) file.
@@ -90,6 +147,17 @@ If you run the project now, you'll encounter schema errors. This is because the 
 In the /next/ directory, run `npx prisma migrate dev`. Then run `npx prisma db seed` to populate the database with test data.
 
 That's it! You should now be able to run `npm run dev` and view the website at `localhost:3000` with authentication and access to your local database instance. Try logging in with your RIT email.
+
+## Keeping This Guide Accurate
+
+Update this document whenever you change:
+
+- Required environment variables
+- Third-party credentials or setup steps
+- Database setup and migration flow
+- Local commands required for test/build validation
+
+Any PR that changes setup without updating this file should be considered incomplete.
 
 ## Alumni lifecycle migrations
 
