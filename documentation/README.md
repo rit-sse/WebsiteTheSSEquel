@@ -7,11 +7,13 @@ Use this folder as the source of truth for onboarding, architecture context, and
 1. [Vision and Scope](./VisionAndScope.md)
 2. [Environment Setup](./EnvironmentSetup.md)
 3. [Contributing Guide](../CONTRIBUTING.md)
+4. [Coding Style Guide](./CodingStyle.md)
 
 ## Documents in This Folder
 
 - `VisionAndScope.md`: product goals, scope boundaries, and project intent.
 - `EnvironmentSetup.md`: local environment setup, required secrets, and local parity workflow.
+- `CodingStyle.md`: coding conventions for TypeScript, React/Next, API routes, and testing.
 - `ArchivedSchema.sql`: historical schema snapshot.
 - Diagram/image files: ERD/domain model references.
 

@@ -7,6 +7,7 @@ This document defines how we plan, build, and merge work so new contributors can
 - Read [Vision and Scope](./documentation/VisionAndScope.md) for project intent.
 - Use the GitHub Project storyboard as the source of truth for work: <https://github.com/orgs/rit-sse/projects/2/views/10>.
 - Follow the local setup guide: [Environment Setup](./documentation/EnvironmentSetup.md).
+- Follow implementation conventions in [Coding Style Guide](./documentation/CodingStyle.md).
 
 ## Required Workflow
 
@@ -97,5 +98,6 @@ Work is done when:
 If your change affects setup, deployment assumptions, dependencies, env vars, or team process:
 
 - Update [Environment Setup](./documentation/EnvironmentSetup.md) in the same PR.
+- Update [Coding Style Guide](./documentation/CodingStyle.md) when coding conventions change.
 - Update [documentation/README.md](./documentation/README.md) if docs structure changed.
 - Call out the docs change in the PR description.

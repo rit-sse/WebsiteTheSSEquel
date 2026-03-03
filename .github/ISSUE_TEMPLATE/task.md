@@ -1,39 +1,37 @@
 ---
 name: Task
-about: Create a task
-title: 'Task: NAME'
-labels: ''
-assignees: ''
+about: Track a concrete implementation task
+title: "Task: "
+labels: "task"
+assignees: ""
 
 ---
 
-# Template Instructions
+# Task Summary
 
-Use this template to create a new task item.
+[Describe the task in one or two sentences]
 
-1. Copy this template and paste it into a new item project item under backlog.
-2. Fill in the placeholders with your own information.
-3. Remove these instructions from the item (the horizontal line and above)
-4. Add any additional details or context that may be helpful.
-5. Assign the issue to a team member or yourself.
-6. Use the checkboxes to track progress and ensure all requirements are met before marking the issue as complete.
+## Context
 
----
+[Why this task is needed]
 
-# <Task Title>
+## Scope
 
-## Description
+- In scope:
+- Out of scope:
 
-[Add description of the task here]
+## Acceptance Criteria
 
-## Subtasks
+- [ ] [Criterion 1]
+- [ ] [Criterion 2]
+
+## Subtasks / Checklist
 
 - [ ] [Subtask 1]
 - [ ] [Subtask 2]
 - [ ] [Subtask 3]
 
-## Acceptance Criteria
+## Validation
 
-- [ ] [Acceptance Criteria 1]
-- [ ] [Acceptance Criteria 2]
-- [ ] [Acceptance Criteria 3]
+- [ ] Manual verification steps listed
+- [ ] Tests added/updated where applicable
