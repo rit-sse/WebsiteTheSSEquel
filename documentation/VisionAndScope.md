@@ -73,30 +73,30 @@ By addressing these issues, the new website will not only better serve the SSE's
 - [x] Responsive navigation bar with the following main navigation items:
       - [x] ~~Home~~  
       - [x] ~~About (dropdown: About Us, Leadership, Constitution, Primary Officer's Policy, Committees, Historians)~~  
-      - [ ] Mentoring  
-      - [ ] Events (dropdown: View All, Spring Fling or Winter Ball, depending on the semester)  
+      - [x] Mentoring  
+      - [x] Events (dropdown: View All, Spring Fling or Winter Ball, depending on the semester)  
       - [x] Projects  
       - [x] ~~Go Links. (dropdown: View All, and pinned Go Links)~~  
 - [x] ~~For logged-out users, a Login button on the right side of the navigation bar.~~  
-- [ ] For logged-in users, a profile icon with a dropdown menu of options including profile and logout.
+- [x] For logged-in users, a profile icon with a dropdown menu of options including profile and logout.
 
 #### Homepage Features
 
 - [x] ~~Hero section/banner with a call to action (Slack link)~~  
 - [x] ~~Weekly meeting time, lab location~~  
-- [ ] Upcoming events highlights.  
-- [ ] Recent project updates.
+- [x] Upcoming events highlights.  
+- [x] Recent project updates.
 
 #### About Pages
 
 - [x] ~~General SSE information on an About Us page.~~  
 - [x] ~~Getting Involved page detailing ways a student can get involved with the organization.~~  
-- [ ] Leadership Page  
-      - [ ] Presenting current and past leadership details, including position, photo, one-sentence biographies, and social links.  
-      - [ ] Officers separated into primary positions, and committee heads  
+- [x] Leadership Page  
+      - [x] Presenting current and past leadership details, including position, photo, one-sentence biographies, and social links.  
+      - [x] Officers separated into primary positions, and committee heads  
       - [ ] Scrollspy-esque with navlinks to previous year's officer positions and smooth scrolling  
 - [x] Separate pages for the constitution and primary officer's policy
-      - [ ] Scrollspy-esque navigation and smooth scrolling  
+      - [x] Scrollspy-esque navigation and smooth scrolling  
 - [x] Committees page for information about each of the SSE's committees, and their purposes.  
 - [ ] Historians page with photo galleries of past events. \[ENHANCEMENT\] (See Historians section below)
 
@@ -122,11 +122,11 @@ By addressing these issues, the new website will not only better serve the SSE's
 
 #### Quotes
 
-- [ ] A dedicated page for quotes, accessible only via direct URL.  
-- [ ] List of all quotes, with a search bar to search for specific quotes.  
-- [ ] Button for users to submit a new quote for review by an officer before being added.  
-- [ ] Logged-in officers can approve quote submissions and manage existing quotes.  
-- [ ] Rotating carousel of ‘safe’ quotes on the homepage
+- [x] A dedicated page for quotes, accessible only via direct URL.  
+- [x] List of all quotes, with a search bar to search for specific quotes.  
+- [x] Button for users to submit a new quote for review by an officer before being added.  
+- [x] Logged-in officers can approve quote submissions and manage existing quotes.  
+- [x] Rotating carousel of ‘safe’ quotes on the homepage
 
 #### Project Information
 
@@ -136,48 +136,48 @@ By addressing these issues, the new website will not only better serve the SSE's
 
 #### Membership Management
 
-- [ ] Officer view of membership data, including search, sorting, and filtering options.  
-- [ ] Adding and editing memberships.  
-- [ ] Users can view their own membership data on their profile page.
+- [x] Officer view of membership data, including search, sorting, and filtering options.  
+- [x] Adding and editing memberships.  
+- [x] Users can view their own membership data on their profile page.
 
 #### Mentor Management
 
-- [ ] Mentor schedule management for Mentor Head.  
-- [ ] Adding and removing mentors.  
-- [ ] Public mentor schedule view and mentor details.  
-- [ ] Mentor-specific information in user profiles, such as shift info and data on completed courses and skills.  
-- [ ] Mentors should be able to select courses they’ve taken and their skills.  
-- [ ] Search by course or skill, highlighting hour blocks that match the filter.
+- [x] Mentor schedule management for Mentor Head.  
+- [x] Adding and removing mentors.  
+- [x] Public mentor schedule view and mentor details.  
+- [x] Mentor-specific information in user profiles, such as shift info and data on completed courses and skills.  
+- [x] Mentors should be able to select courses they’ve taken and their skills.  
+- [x] Search by course or skill, highlighting hour blocks that match the filter.
 
 ### Nice-to-Have Features [ENHANCEMENT]
 
 #### User Profile
 
-- [ ] Users should be able to view their profile.  
-- [ ] User profiles, including personal information, membership data, and mentor-specific information.  
-- [ ] Profiles should show information about the user’s name, profile picture, their memberships, and officer position.
-- [ ] Projects the user is involved in would be nice to see here too.
+- [x] Users should be able to view their profile.  
+- [x] User profiles, including personal information, membership data, and mentor-specific information.  
+- [x] Profiles should show information about the user’s name, profile picture, their memberships, and officer position.
+- [x] Projects the user is involved in would be nice to see here too.
 
 #### Project Updates
 
 Project updates serve to give each project a blogging platform to report on progress and keep stakeholders informed.  
 
-- [ ] Dedicated page for each project, with title, project lead info, team members, and project description, as well as project updates.
-- [ ] The projects head should be able to submit a project update which would be posted to the project's updates section (and saved to the database)  
-- [ ] A project update should behave as a form with a title and body, and optionally a photo.
+- [x] Dedicated page for each project, with title, project lead info, team members, and project description, as well as project updates.
+- [x] The projects head should be able to submit a project update which would be posted to the project's updates section (and saved to the database)  
+- [x] A project update should behave as a form with a title and body, and optionally a photo.
 - [ ] Project stats from GitHub API (enhancement)
 - [ ] Display recent project updates on the homepage [ENHANCEMENT]
 
 #### Officer Dashboard
 
-- [ ] For logged in officers, an Officer Dashboard navigation item in the navbar.  
-- [ ] Authenticated access granted to officer roles only.  
-- [ ] Centralized access to officer-only functionality (go links, mentor management, membership management, project management).
+- [x] For logged in officers, an Officer Dashboard navigation item in the navbar.  
+- [x] Authenticated access granted to officer roles only.  
+- [x] Centralized access to officer-only functionality (go links, mentor management, membership management, project management).
 
 #### Credits Page
 
-- [ ] A dedicated page for contributors to the website  
-- [ ] Mentions name, semester active, role, and their specific contributions (which pages they contributed to/worked on)  
+- [x] A dedicated page for contributors to the website  
+- [x] Mentions name, semester active, role, and their specific contributions (which pages they contributed to/worked on)  
 - [ ] Also links to User Profile
 
 #### Historians Page (Photo Gallery)
@@ -200,17 +200,17 @@ Project updates serve to give each project a blogging platform to report on prog
 
 #### Advanced Events Page
 
-- [ ] Display upcoming events on the homepage  
-- [ ] Custom events display calendar using GCal API  
-- [ ] Event registration and Google Calendar integrated event creation form.
+- [x] Display upcoming events on the homepage  
+- [x] Custom events display calendar using GCal API  
+- [x] Event registration and Google Calendar integrated event creation form.
 
 #### Alumni Page
 
-- [ ] A dedicated page for alumni of the SSE  
-- [ ] Organized by graduating year  
-- [ ] Each alumni listed can have a photo of choice, a quote, old roles and which year they fulfilled them, maybe a thing about what they’re up to now (like where they work)  
-- [ ] Optional contact information for networking purposes  
-- [ ] Alumni can *choose* to be on this page but are not added automatically
+- [x] A dedicated page for alumni of the SSE  
+- [x] Organized by graduating year  
+- [x] Each alumni listed can have a photo of choice, a quote, old roles and which year they fulfilled them, maybe a thing about what they’re up to now (like where they work)  
+- [x] Optional contact information for networking purposes  
+- [x] Alumni can *choose* to be on this page but are not added automatically
 
 #### Coding Challenge Page
 
