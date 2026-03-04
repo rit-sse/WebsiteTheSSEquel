@@ -53,6 +53,16 @@ This guide defines coding conventions for this repository so contributions stay 
 - Mock external dependencies (SMTP, S3, third-party APIs) in tests.
 - Place tests under `next/__tests__/` and use `*.test.ts` naming.
 
+### Conversational Test Writing
+
+It's almost like a conversation.
+
+"describe() how the mentor api should work."
+
+"welllll, it() should <behavior 1>
+it() should <behavior 2>
+..."
+
 ## Before Opening a PR
 
 From `next/`, run:
