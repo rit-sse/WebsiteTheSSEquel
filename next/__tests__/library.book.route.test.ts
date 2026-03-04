@@ -1,8 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const {
-  mockGetAuth,
-  mockGetSessionCookie,
+  mockResolveAuthLevelFromRequest,
   mockWriteFileSync,
   mockTextbooksFindFirst,
   mockTextbooksCreate,
@@ -11,8 +10,7 @@ const {
   mockCopiesCount,
   mockCopiesDeleteMany,
 } = vi.hoisted(() => ({
-  mockGetAuth: vi.fn(),
-  mockGetSessionCookie: vi.fn(),
+  mockResolveAuthLevelFromRequest: vi.fn(),
   mockWriteFileSync: vi.fn(),
   mockTextbooksFindFirst: vi.fn(),
   mockTextbooksCreate: vi.fn(),
@@ -22,9 +20,8 @@ const {
   mockCopiesDeleteMany: vi.fn(),
 }));
 
-vi.mock("@/app/api/library/authTools", () => ({
-  getAuth: mockGetAuth,
-  getSessionCookie: mockGetSessionCookie,
+vi.mock("@/lib/authLevelResolver", () => ({
+  resolveAuthLevelFromRequest: mockResolveAuthLevelFromRequest,
 }));
 
 vi.mock("fs", () => ({
@@ -55,8 +52,7 @@ function req(url: string) {
 describe("/api/library/book route", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockGetSessionCookie.mockResolvedValue(null);
-    mockGetAuth.mockResolvedValue({ isOfficer: false, isMentor: false });
+    mockResolveAuthLevelFromRequest.mockResolvedValue({ isOfficer: false, isMentor: false });
   });
 
   it("GET returns 404 when isbn/id query is missing", async () => {
@@ -87,7 +83,7 @@ describe("/api/library/book route", () => {
   });
 
   it("PUT validates ISBN format", async () => {
-    mockGetAuth.mockResolvedValue({ isOfficer: true, isMentor: false });
+    mockResolveAuthLevelFromRequest.mockResolvedValue({ isOfficer: true, isMentor: false });
     const request = {
       json: vi.fn().mockResolvedValue({ ISBN: "bad_isbn", name: "Book", authors: "A" }),
     } as any;
@@ -97,7 +93,7 @@ describe("/api/library/book route", () => {
   });
 
   it("DELETE validates ISBN format", async () => {
-    mockGetAuth.mockResolvedValue({ isOfficer: true, isMentor: false });
+    mockResolveAuthLevelFromRequest.mockResolvedValue({ isOfficer: true, isMentor: false });
     const request = {
       json: vi.fn().mockResolvedValue({ ISBN: "bad_isbn" }),
     } as any;
