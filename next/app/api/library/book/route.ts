@@ -3,6 +3,10 @@ import { NextRequest } from "next/server";
 import { getAuth, getSessionCookie } from "../authTools";
 import { writeFileSync } from "fs";
 
+function hasPrivilegedAccess(auth: any): boolean {
+    return Boolean(auth?.isOfficer || auth?.isMentor);
+}
+
 export async function GET(request: NextRequest) {
     try {
         console.log("GET /api/library/[isbn]");
@@ -85,7 +89,7 @@ export async function POST(request: NextRequest) {
         // Authentication check
         const authToken = await getSessionCookie(request);
         const auth = await getAuth(authToken);
-        if (!auth.isOfficer && !auth.isMentor) {
+        if (!hasPrivilegedAccess(auth)) {
             return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
         }
 
@@ -103,6 +107,10 @@ export async function POST(request: NextRequest) {
 
 
         try {
+            if (!/^[\d-]+$/.test(ISBN)) {
+                return new Response("Invalid ISBN Format", { status: 400 });
+            }
+
             const newBook = await prisma.textbooks.create({
                 data: {
                     "ISBN": ISBN,
@@ -118,12 +126,10 @@ export async function POST(request: NextRequest) {
                 },
             });
 
-            if (!/^[\d-]+$/.test(ISBN)) {
-                return new Response("Invalid ISBN Format", { status: 400 });
-            }
-
             // Save the uploaded image to the public directory with the filename as the ISBN
-            writeFileSync(`./public/library-assets/${ISBN}.jpg`, Buffer.from(await image.arrayBuffer()));
+            if (image) {
+                writeFileSync(`./public/library-assets/${ISBN}.jpg`, Buffer.from(await image.arrayBuffer()));
+            }
 
             return new Response(JSON.stringify(newBook), { status: 200 });
         } catch (e) {
@@ -141,7 +147,7 @@ export async function PUT(request: NextRequest) {
         // Authentication check
         const authToken = await getSessionCookie(request);
         const authLevel = await getAuth(authToken);
-        if (!authLevel.isOfficer && !authLevel.isMentor) {
+        if (!hasPrivilegedAccess(authLevel)) {
             return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
         }
         let body;
@@ -206,7 +212,7 @@ export async function DELETE(request: NextRequest) {
         // Authentication check
         const authToken = await getSessionCookie(request);
         const authLevel = await getAuth(authToken);
-        if (!authLevel.isOfficer && !authLevel.isMentor) {
+        if (!hasPrivilegedAccess(authLevel)) {
             return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
         }
         let body;
