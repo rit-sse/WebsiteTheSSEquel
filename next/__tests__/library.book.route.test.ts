@@ -55,6 +55,7 @@ function req(url: string) {
 describe("/api/library/book route", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockGetSessionCookie.mockResolvedValue(null);
     mockGetAuth.mockResolvedValue({ isOfficer: false, isMentor: false });
   });
 
