@@ -1,3 +1,4 @@
+const {resolve} = require("path");
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     images: {
@@ -25,6 +26,9 @@ const nextConfig = {
         ],
     },
     output: "standalone",
+    turbopack: {
+        root: resolve(__dirname, ".."),
+    }
 }
 
-module.exports = nextConfig
+module.exports = nextConfig;

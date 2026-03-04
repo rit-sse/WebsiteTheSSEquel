@@ -1,0 +1,46 @@
+name: Test
+
+on:
+  pull_request:
+    branches: [main, development]
+    paths:
+      - "next/**"
+      - ".github/workflows/**"
+      - "package.json"
+      - "next/package.json"
+      - "next/package-lock.json"
+  push:
+    branches: [main, development]
+    paths:
+      - "next/**"
+      - ".github/workflows/**"
+      - "package.json"
+      - "next/package.json"
+      - "next/package-lock.json"
+
+concurrency:
+  group: test-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: next/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./next
+        run: npm ci
+
+      - name: Run tests
+        working-directory: ./next
+        run: npm run test

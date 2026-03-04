@@ -1,85 +1,99 @@
-import { GET } from '../app/api/mentor/route';
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// Mock Prisma client
-jest.mock('@prisma/client', () => {
-    const mockPrisma = {
-        mentor: {
-            findMany: jest.fn(),
-        },
-    };
+const { mockFindMany, PrismaClientMock } = vi.hoisted(() => ({
+  mockFindMany: vi.fn(),
+  PrismaClientMock: vi.fn(function PrismaClientMockImpl(this: unknown) {
     return {
-        PrismaClient: jest.fn(() => mockPrisma),
+      mentor: {
+        findMany: mockFindMany,
+      },
     };
+  }),
+}));
+
+vi.mock("@prisma/client", () => {
+  return {
+    PrismaClient: PrismaClientMock,
+  };
 });
 
-// Get the mocked Prisma instance
-import { PrismaClient } from '@prisma/client';
-const prisma = new PrismaClient();
+import { GET } from "../app/api/mentor/route";
 
-describe('Mentor API Test', () => {
-    beforeEach(() => {
-        jest.clearAllMocks();
-    });
+describe("Mentor API Test", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
 
-    it('GET /api/mentor returns list of mentors', async () => {
-        // Mock data that Prisma would return
-        const mockMentors = [
-            {
-                id: 1,
-                isActive: true,
-                expirationDate: '2025-12-31T00:00:00.000Z',
-                user: {
-                    id: 1,
-                    name: 'John Doe',
-                    email: 'john@example.com',
-                },
-            },
-            {
-                id: 2,
-                isActive: false,
-                expirationDate: '2024-06-30T00:00:00.000Z',
-                user: {
-                    id: 2,
-                    name: 'Jane Smith',
-                    email: 'jane@example.com',
-                },
-            },
-        ];
+  it("GET /api/mentor returns list of mentors", async () => {
+    const mockMentors = [
+      {
+        id: 1,
+        isActive: true,
+        expirationDate: new Date("2025-12-31T00:00:00.000Z"),
+        user: {
+          id: 1,
+          name: "John Doe",
+          email: "john@example.com",
+          profileImageKey: null,
+          googleImageURL: "https://example.com/john.png",
+          description: "Mentor",
+          linkedIn: "john-linkedin",
+          gitHub: "john-github",
+        },
+      },
+      {
+        id: 2,
+        isActive: false,
+        expirationDate: new Date("2024-06-30T00:00:00.000Z"),
+        user: {
+          id: 2,
+          name: "Jane Smith",
+          email: "jane@example.com",
+          profileImageKey: null,
+          googleImageURL: null,
+          description: "Mentor",
+          linkedIn: "jane-linkedin",
+          gitHub: "jane-github",
+        },
+      },
+    ];
 
-        // Setup the mock to return our test data
-        (prisma.mentor.findMany as jest.Mock).mockResolvedValue(mockMentors);
+    mockFindMany.mockResolvedValue(mockMentors);
 
-        // Call the route handler directly
-        const response = await GET();
+    const request = {
+      nextUrl: new URL("http://localhost:3000/api/mentor"),
+    } as any;
+    const response = await GET(request);
 
-        // Verify the response
-        expect(response.status).toBe(200);
-        
-        const body = await response.json();
-        expect(body).toEqual(mockMentors);
-        expect(body).toHaveLength(2);
-        expect(body[0]).toEqual(expect.objectContaining({
-            id: expect.any(Number),
-            isActive: expect.any(Boolean),
-            expirationDate: expect.any(String),
-            user: expect.objectContaining({
-                id: expect.any(Number),
-                name: expect.any(String),
-                email: expect.any(String),
-            }),
-        }));
-    });
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body).toHaveLength(2);
+    expect(body[0]).toEqual(
+      expect.objectContaining({
+        id: 1,
+        isActive: true,
+        applicationCourseCount: 0,
+        latestMentorApplication: null,
+        user: expect.objectContaining({
+          id: 1,
+          name: "John Doe",
+          email: "john@example.com",
+          image: "https://example.com/john.png",
+        }),
+      })
+    );
+  });
 
-    it('GET /api/mentor returns empty array when no mentors exist', async () => {
-        // Setup the mock to return empty array
-        (prisma.mentor.findMany as jest.Mock).mockResolvedValue([]);
+  it("GET /api/mentor returns empty array when no mentors exist", async () => {
+    mockFindMany.mockResolvedValue([]);
 
-        const response = await GET();
+    const request = {
+      nextUrl: new URL("http://localhost:3000/api/mentor"),
+    } as any;
+    const response = await GET(request);
 
-        expect(response.status).toBe(200);
-        
-        const body = await response.json();
-        expect(body).toEqual([]);
-        expect(body).toHaveLength(0);
-    });
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body).toEqual([]);
+  });
 });

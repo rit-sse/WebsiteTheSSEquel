@@ -1,52 +1,103 @@
 # Contributing to WebsiteTheSSEquel
 
-Thank you for considering contributing to this project! We welcome contributions from everyone. Please follow the guidelines below to ensure a smooth contribution process.
+This document defines how we plan, build, and merge work so new contributors can onboard quickly and safely.
 
-## Understanding the Project
+## Start Here
 
-- To understand the project's goals and scope, please refer to the [Vision and Scope Document](./documentation/VisionAndScope.md).
-- Check the [GitHub Project Backlog](https://github.com/orgs/rit-sse/projects/2/views/10) for open issues and tasks to work on.
+- Read [Vision and Scope](./documentation/VisionAndScope.md) for project intent.
+- Use the GitHub Project storyboard as the source of truth for work: <https://github.com/orgs/rit-sse/projects/2/views/10>.
+- Follow the local setup guide: [Environment Setup](./documentation/EnvironmentSetup.md).
+- Follow implementation conventions in [Coding Style Guide](./documentation/CodingStyle.md).
 
-## How to Contribute
+## Required Workflow
 
-1. Fork the repository and clone it to your local machine.
-2. Create a new branch for your feature or bug fix: `git checkout -b my-feature`.
-3. Make your changes and test them thoroughly.
-4. Commit your changes with a clear and descriptive commit message.
-5. Push your branch to your forked repository: `git push origin my-feature`.
-6. Open a pull request to the main repository.
+Every change follows this flow:
 
-## Reporting Issues
+1. Create or find a story/ticket in GitHub Projects.
+2. Assign yourself to that story before starting work.
+3. Create a branch from the story.
+4. Implement and test locally.
+5. Open a pull request linked to the story.
+6. Merge only after review and passing checks.
 
-If you encounter any issues or have suggestions for improvements, please open an issue in the [Issues](https://github.com/your-repo/issues) section. Provide as much detail as possible, including steps to reproduce the issue if applicable.
+Do not start or merge undocumented work. If it is not tracked in a story, create one first.
 
-## Submitting Pull Requests
+## Branch Naming Convention
 
-- Ensure your code adheres to the project's coding standards.
-- Include relevant tests for your changes.
-- Update documentation if necessary.
-- Link the pull request to the corresponding issue if applicable.
+Branch names must follow:
 
-## Development Setup
+`<type>/<story-id>-<short-kebab-summary>`
 
-To set up your development environment, please refer to the [Environment Setup Guide](./documentation/EnvironmentSetup.md). This guide provides detailed instructions on installing dependencies, setting up the database, and configuring the environment variables.
+Allowed `type` values:
 
-## Testing
+- `feat`
+- `fix`
+- `docs`
+- `refactor`
+- `test`
+- `hotfix`
+- `dev`
 
-- Run tests using the command: `npm run test`.
-- Ensure all tests pass before submitting a pull request.
-- Add new tests for any new features or bug fixes.
+Examples:
 
-## Coding Style
+- `feat/142-add-alumni-request-approval`
+- `fix/315-handle-null-sponsor-logo`
+- `docs/402-update-environment-setup`
 
-- Follow the existing code style and structure.
-- Use meaningful variable and function names.
-- Run the linter before committing: `npm run lint`.
+## Stories and Tickets
 
-## Code of Conduct
+Create a ticket/story for every idea, feature, bug, refactor, or docs change.
 
-This project adheres to a [Code of Conduct](https://github.com/your-repo/CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to [email@example.com].
+Each story should include:
 
-## License
+- Problem or goal
+- Scope (what is in/out)
+- Acceptance criteria
+- Any dependencies or blockers
+- Validation notes (how to verify it works)
 
-By contributing, you agree that your contributions will be licensed under the same license as the project.
+Project board expectations:
+
+- Move cards as work progresses (`Backlog` -> `Ready` -> `In Progress` -> `In Review` -> `Done`).
+- Keep assignee current (assign yourself when you pick up work).
+- Link the PR to the story so status is traceable.
+
+## Pull Request Requirements
+
+Before opening a PR:
+
+1. Rebase or merge latest `dev` into your branch.
+2. Run local checks from `next/`:
+   - `npm run lint`
+   - `npm run test`
+   - `npm run build`
+3. Run database migration/seed commands if schema changed:
+   - `npx prisma migrate dev`
+   - `npx prisma db seed` (only when needed for test data validation)
+
+PR description must include:
+
+- Linked story/ticket
+- Summary of behavior changes
+- Testing completed
+- Screenshots for UI changes (if applicable)
+- Docs updates made (or reason none were needed)
+
+## Definition of Done
+
+Work is done when:
+
+- Story acceptance criteria are met
+- Code review feedback is addressed
+- Checks pass
+- Documentation is updated
+- Story is moved to `Done`
+
+## Documentation Expectations
+
+If your change affects setup, deployment assumptions, dependencies, env vars, or team process:
+
+- Update [Environment Setup](./documentation/EnvironmentSetup.md) in the same PR.
+- Update [Coding Style Guide](./documentation/CodingStyle.md) when coding conventions change.
+- Update [documentation/README.md](./documentation/README.md) if docs structure changed.
+- Call out the docs change in the PR description.

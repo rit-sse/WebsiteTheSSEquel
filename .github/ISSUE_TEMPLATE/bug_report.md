@@ -1,38 +1,46 @@
 ---
 name: Bug report
-about: Create a report to help us improve
-title: ''
-labels: ''
-assignees: ''
+about: Report a defect with clear repro and impact
+title: "Bug: "
+labels: "bug"
+assignees: ""
 
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+## Summary
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+[What is broken?]
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+## Impact
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+- Severity: [low/medium/high]
+- Affected users/surfaces:
 
-**Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
+## Steps to Reproduce
 
-**Smartphone (please complete the following information):**
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - Browser [e.g. stock browser, safari]
- - Version [e.g. 22]
+1. [Step 1]
+2. [Step 2]
+3. [Step 3]
 
-**Additional context**
-Add any other context about the problem here.
+## Actual Result
+
+[What currently happens]
+
+## Expected Result
+
+[What should happen]
+
+## Environment
+
+- Environment: [local/dev/staging/prod]
+- Browser/OS:
+- Commit/branch:
+
+## Evidence
+
+- Logs:
+- Screenshots/video:
+
+## Proposed Fix (Optional)
+
+[Notes if known]
