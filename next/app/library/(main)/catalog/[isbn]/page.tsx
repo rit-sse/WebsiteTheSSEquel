@@ -1,9 +1,11 @@
 "use client"
 
-import { useEffect, useState } from "react";
+import React, { Usable, useEffect, useState } from "react";
 import Image from "next/image";
 
-export default function BookPage({ params }: { params: { isbn: string } }) {
+export default function BookPage({ params }: { params: Usable<{ isbn: string }> }) {
+
+    const {isbn} = React.use<{isbn: string}>(params);
 
     const [bookData, setBookData] = useState<{
         ISBN: string;
@@ -33,14 +35,14 @@ export default function BookPage({ params }: { params: { isbn: string } }) {
     const [loaded, setLoaded] = useState(false);
     const [simpleData, setSimpleData] = useState<{ id: number, checkedOut: boolean }[]>([]);
     useEffect(() => {
-        fetch((process.env.INTERNAL_API_URL ? process.env.INTERNAL_API_URL : "") + "/api/library/book?count=true&isbn=" + params.isbn).then(resp => resp.json()).then(data => {
+        fetch((process.env.INTERNAL_API_URL ? process.env.INTERNAL_API_URL : "") + "/api/library/book?count=true&isbn=" + isbn).then(resp => resp.json()).then(data => {
             setBookData(data);
             setLoaded(true);
         });
-        fetch((process.env.INTERNAL_API_URL ? process.env.INTERNAL_API_URL : "") + "/api/library/books?simple=true&isbn=" + params.isbn).then(resp => resp.json()).then(data => {
+        fetch((process.env.INTERNAL_API_URL ? process.env.INTERNAL_API_URL : "") + "/api/library/books?simple=true&isbn=" + isbn).then(resp => resp.json()).then(data => {
             setSimpleData(data);
         });
-    }, [params.isbn]);
+    }, [isbn]);
 
     return (
         <div className="p-4 w-[80%]">
@@ -63,7 +65,7 @@ export default function BookPage({ params }: { params: { isbn: string } }) {
                         type="button"
                         className="mt-3 w-full py-2.5 px-3 rounded-md border border-gray-200 bg-white text-left flex items-center gap-2.5 cursor-pointer hover:bg-gray-300 duration-200"
                         aria-label="ISBN Lookup"
-                        onClick={() => { window.location.href = "https://isbnsearch.org/isbn/" + params.isbn; }}
+                        onClick={() => { window.location.href = "https://isbnsearch.org/isbn/" +isbn; }}
                     >
                         <span className="text-gray-800">ISBN Search</span>
                     </button>
@@ -77,7 +79,7 @@ export default function BookPage({ params }: { params: { isbn: string } }) {
                             <>
                                 <h1 className="text-[44px] leading-[1.05] mb-1">{bookData.name}</h1>
                                 <p className="mt-1 text-[18px] text-gray-900">By {bookData.authors}</p>
-                                <p className="mt-2 text-gray-400">ISBN: {params.isbn}</p>
+                                <p className="mt-2 text-gray-400">ISBN: {isbn}</p>
 
                                 <div className="mt-4 text-gray-800 leading-6">
                                     {bookData.description}
@@ -87,7 +89,7 @@ export default function BookPage({ params }: { params: { isbn: string } }) {
                                         <strong>Affiliated Courses:</strong> <span className="ml-1">{bookData.classInterest ?? "No class specified"}</span>
                                     </div>
                                     <div className="mb-1">
-                                        <strong>ISBN:</strong> <span className="ml-1">{params.isbn}</span>
+                                        <strong>ISBN:</strong> <span className="ml-1">{isbn}</span>
                                     </div>
                                     <div className="mb-1">
                                         <strong>Author(s):</strong> <span className="ml-1">{bookData.authors ?? "Unknown"}</span>
@@ -106,10 +108,13 @@ export default function BookPage({ params }: { params: { isbn: string } }) {
                                     </div>
                                 </div>
                                 <table className="w-full border-collapse border border-black mt-[5px] [&_td]:px-[5px] [&_td]:py-[3px] ">
+                                    <thead>
                                     <tr className="mt-6 text-lg font-semibold ">
                                         <td className="bg-gray-200 border-x border-black">Book Id</td>
                                         <td className="bg-gray-200 border-x border-black text-right">Checked Out Status</td>
                                     </tr>
+                                    </thead>
+                                    <tbody>
                                     {
                                         simpleData.map((copy) => (
                                             <tr key={copy.id} className="text-base">
@@ -118,6 +123,7 @@ export default function BookPage({ params }: { params: { isbn: string } }) {
                                             </tr>
                                         ))
                                     }
+                                    </tbody>
                                 </table>
                             </>
                         ) : (
@@ -125,7 +131,7 @@ export default function BookPage({ params }: { params: { isbn: string } }) {
                                 <div className="h-[45px] w-[100%] bg-gray-200 rounded mb-2 animate-pulse"></div>
                                 <div className="h-[25px] w-[30%] bg-gray-200 rounded mb-2 animate-pulse" />
 
-                                <p className="mt-2 text-gray-400">ISBN: {params.isbn}</p>
+                                <p className="mt-2 text-gray-400">ISBN: {isbn}</p>
 
                                 <div className="h-5 w-[100%] bg-gray-200 rounded mt-[12px] mb-2 animate-pulse" />
                                 <div className="h-5 w-[100%] bg-gray-200 rounded mb-2 animate-pulse" />

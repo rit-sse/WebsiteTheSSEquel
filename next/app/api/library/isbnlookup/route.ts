@@ -3,8 +3,7 @@ import { getAuth, getSessionCookie } from "../authTools";
 
 export async function GET(params: NextRequest) {
     try {
-        const cookie = await getSessionCookie(params);
-        const auth = await getAuth(cookie);
+        const auth = await getAuth(params);
 
         if (!auth.isMentor && !auth.isOfficer) {
             return new Response("Unauthorized", { status: 401 });

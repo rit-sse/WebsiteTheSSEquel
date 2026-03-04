@@ -16,6 +16,14 @@ const nextConfig = {
                 hostname: "*.s3.amazonaws.com",
             },
         ],
+        localPatterns: [
+            {
+                pathname: "/library-assets/**",
+            },
+            {
+                pathname: "/images/**"
+            }
+        ],
     },
     output: "standalone",
     turbopack: {

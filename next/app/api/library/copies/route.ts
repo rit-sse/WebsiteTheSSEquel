@@ -6,8 +6,7 @@ export async function GET(request: NextRequest) {
     console.log("GET /api/library/copies");
     try {
         // Authentication check
-        let cookie = await getSessionCookie(request);
-        let auth = await getAuth(cookie);
+        let auth = await getAuth(request);
         if (!auth.isMentor && !auth.isOfficer) {
             return new Response("Unauthorized", { status: 401 });
         }
@@ -70,8 +69,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
     console.log("PUT /api/library/copies");
     try {
-        const authToken = await getSessionCookie(request);
-        const auth = await getAuth(authToken);
+        const auth = await getAuth(request);
         if (!auth.isMentor && !auth.isOfficer) {
             return new Response("Unauthorized", { status: 401 });
         }

@@ -5,11 +5,7 @@ import { writeFileSync, readFileSync, existsSync } from "fs";
 export async function POST(request: NextRequest) {
     console.log("POST /api/library/uploadImage");
 
-    const authToken = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
-    if (!authToken) {
-        return new Response("Unauthorized", { status: 401 });
-    }
-    const auth = await getAuth(authToken);
+    const auth = await getAuth(request);
     if (!auth.isOfficer && !auth.isMentor) {
         return new Response("Unauthorized", { status: 401 });
     }
@@ -45,11 +41,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
     console.log("PUT /api/library/uploadImage");
 
-    const authToken = request.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
-    if (!authToken) {
-        return new Response("Unauthorized", { status: 401 });
-    }
-    const auth = await getAuth(authToken);
+    const auth = await getAuth(request);
     if (!auth.isOfficer && !auth.isMentor) {
         return new Response("Unauthorized", { status: 401 });
     }
