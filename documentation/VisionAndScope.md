@@ -39,7 +39,7 @@ The website rebuild has three main objectives:
 
 | ID | Stakeholder Name | Role/Title | Interest in Project | Power | Communication Requirements | Engagement Strategy |
 | :---- | :---- | :---- | :---- | :---- | :---- | :---- |
-| S1 | Tess Hacker | Tech Head | Project leadership, quality | High | Weekly status updates | Leadership, close collaboration, technical support |
+| S1 | Cayden Tisdale | Tech Head | Project leadership, quality | High | Weekly status updates | Leadership, close collaboration, technical support |
 | S2 | Vacant | Tech Apprentice | Project leadership, learning | High | Weekly status updates | Mentoring, collaborative work |
 | S3 | Student Tech Committee Members | Tech Committee Member | Technical input, collaboration, learning | Medium | Weekly Meetings | Inclusion in decision-making, code contribution |
 | S4 | SSE Primary Officers | SSE Primary Officers | Project oversight, funding | High | Weekly progress reports | Regular meetings, updates |
