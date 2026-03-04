@@ -1,5 +1,5 @@
 import { CommitteeMemberProp } from "./member";
-import { ensureGithubUrl } from "@/lib/utils";
+import { ensureGithubUrl, ensureLinkedinUrl } from "@/lib/utils";
 import { Linkedin, Github, Mail } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import Image from "next/image";
@@ -57,7 +57,7 @@ export default async function MemberCard({ member }: CommitteeMemberProp) {
       <div className="flex gap-3 pt-2 border-t border-border w-full justify-center mt-auto">
         {member.linkedIn && (
           <a
-            href={ensureGithubUrl(member.linkedIn)}
+            href={ensureLinkedinUrl(member.linkedIn)}
             target="_blank"
             rel="noopener noreferrer"
             className="text-muted-foreground hover:text-primary transition-colors"
