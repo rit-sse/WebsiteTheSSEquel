@@ -32,6 +32,7 @@ export default function AttendEventPage() {
   const [attending, setAttending] = useState(false);
   const [attended, setAttended] = useState(false);
   const [membershipGranted, setMembershipGranted] = useState(false);
+  const [membershipPending, setMembershipPending] = useState(false);
 
   const fetchEvent = useCallback(async () => {
     try {
@@ -75,12 +76,21 @@ export default function AttendEventPage() {
       if (response.ok) {
         setAttended(true);
         setMembershipGranted(!!data.membershipGranted);
+        setMembershipPending(!!data.membershipPending);
         if (data.membershipGranted) {
           toast.success("Membership added to your account!");
+        } else if (data.membershipPending) {
+          toast.info("Check-in recorded. Membership will be awarded after the event ends.");
         }
       } else if (response.status === 409 && data.alreadyAttended) {
         setAttended(true);
         setMembershipGranted(!!data.membershipGranted);
+        setMembershipPending(!!data.membershipPending);
+      } else if (response.status === 403 && data.earlyCheckin) {
+        const openAt = data.checkinOpensAt
+          ? new Date(data.checkinOpensAt).toLocaleString("en-US", { timeZone: "America/New_York" })
+          : null;
+        setError(openAt ? `Check-in opens at ${openAt} ET.` : "Check-in is not open yet for this event.");
       } else {
         setError(data.error || "Failed to mark attendance");
       }
@@ -197,6 +207,11 @@ export default function AttendEventPage() {
               {membershipGranted && (
                 <p className="text-sm text-primary">
                   A membership has been added to your account.
+                </p>
+              )}
+              {membershipPending && !membershipGranted && (
+                <p className="text-sm text-muted-foreground">
+                  Check-in recorded. Membership will be added after the event ends.
                 </p>
               )}
             </div>
