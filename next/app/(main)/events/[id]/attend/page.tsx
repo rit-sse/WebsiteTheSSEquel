@@ -33,6 +33,7 @@ export default function AttendEventPage() {
   const [attended, setAttended] = useState(false);
   const [membershipGranted, setMembershipGranted] = useState(false);
   const [membershipPending, setMembershipPending] = useState(false);
+  const [nowMs, setNowMs] = useState(() => Date.now());
 
   const fetchEvent = useCallback(async () => {
     try {
@@ -58,6 +59,11 @@ export default function AttendEventPage() {
   useEffect(() => {
     fetchEvent();
   }, [fetchEvent]);
+
+  useEffect(() => {
+    const timer = setInterval(() => setNowMs(Date.now()), 30 * 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const handleAttend = async () => {
     if (!session) {
@@ -114,6 +120,24 @@ export default function AttendEventPage() {
       timeZone: "America/New_York",
     });
   };
+
+  const checkinWindow = event
+    ? {
+        opensAt: new Date(new Date(event.date).getTime() - 15 * 60 * 1000),
+      }
+    : null;
+  const isBeforeCheckinWindow = checkinWindow
+    ? nowMs < checkinWindow.opensAt.getTime()
+    : false;
+  const formatOpensAt = (date: Date) =>
+    date.toLocaleString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      timeZone: "America/New_York",
+    });
 
   if (loading) {
     return (
@@ -221,14 +245,14 @@ export default function AttendEventPage() {
               Loading...
             </Button>
           ) : !session ? (
-            <Button onClick={handleAttend} className="w-full" size="lg">
+            <Button onClick={handleAttend} disabled={isBeforeCheckinWindow} className="w-full" size="lg">
               <LogIn className="h-4 w-4 mr-2" />
-              Sign in to Mark Attendance
+              {isBeforeCheckinWindow ? "Check-in Not Open Yet" : "Sign in to Mark Attendance"}
             </Button>
           ) : (
             <Button
               onClick={handleAttend}
-              disabled={attending}
+              disabled={attending || isBeforeCheckinWindow}
               className="w-full"
               size="lg"
             >
@@ -237,10 +261,18 @@ export default function AttendEventPage() {
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
                   Checking in...
                 </>
+              ) : isBeforeCheckinWindow ? (
+                "Check-in Not Open Yet"
               ) : (
                 "Mark Attendance"
               )}
             </Button>
+          )}
+
+          {isBeforeCheckinWindow && checkinWindow && (
+            <p className="text-sm text-muted-foreground">
+              Check-in opens {formatOpensAt(checkinWindow.opensAt)} ET.
+            </p>
           )}
 
           {error && attended === false && (
