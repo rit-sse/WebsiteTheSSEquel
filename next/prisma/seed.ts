@@ -1042,9 +1042,9 @@ async function seedEvents() {
 		"4",
 		"5",
 		"6",
-		"attendance-past-grants-membership",
-		"attendance-upcoming-grants-membership",
-		"attendance-past-no-membership",
+		"7",
+		"8",
+		"9",
 	];
 
 	await prisma.event.deleteMany({
@@ -1171,6 +1171,18 @@ async function seedEvents() {
 			attendanceEnabled: true,
 			grantsMembership: false,
 		},
+	});
+
+	const seedAttendanceIds = [
+		"1",
+	];
+
+	await prisma.event.deleteMany({
+		where: {
+			id: {
+				in: seedAttendanceIds,
+			}
+		}
 	});
 
 	const attendance1 = await prisma.eventAttendance.create({
