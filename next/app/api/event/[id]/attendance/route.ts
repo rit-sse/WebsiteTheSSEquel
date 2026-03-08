@@ -71,8 +71,37 @@ async function reconcileEndedEventMemberships(
     select: { userId: true },
   });
 
-  for (const attendance of attendances) {
-    await ensureMembership(db, attendance.userId, event.id, event.title);
+  if (attendances.length === 0) {
+    return;
+  }
+
+  const marker = buildEventMembershipMarker(event.id);
+  const reason = buildEventMembershipReason(event.title, event.id);
+  const userIds = attendances.map((attendance) => attendance.userId);
+
+  const existingMemberships = await db.membership.findMany({
+    where: {
+      marker,
+      userId: { in: userIds },
+    },
+    select: { userId: true },
+  });
+
+  const existingUserIds = new Set(existingMemberships.map((m) => m.userId));
+
+  const membershipsToCreate = attendances
+    .filter((attendance) => !existingUserIds.has(attendance.userId))
+    .map((attendance) => ({
+      userId: attendance.userId,
+      reason,
+      marker,
+    }));
+
+  if (membershipsToCreate.length > 0) {
+    await db.membership.createMany({
+      data: membershipsToCreate,
+      skipDuplicates: true,
+    });
   }
 }
 
