@@ -1035,12 +1035,34 @@ async function seedProjectContributor() {
 }
 
 async function seedEvents() {
+	const seededEventIds = [
+		"1",
+		"2",
+		"3",
+		"4",
+		"5",
+		"6",
+		"7",
+		"8",
+		"9",
+	];
+
+	await prisma.event.deleteMany({
+		where: {
+			id: {
+				in: seededEventIds,
+			},
+		},
+	});
+
 	const event1 = await prisma.event.create({
 		data: {
 			id: "1",
 			title: "Keeping it Silly",
 			date: new Date("2023-11-1 12:00:00"),
 			description: "we keep it silly :3",
+			attendanceEnabled: false,
+			grantsMembership: false,
 		},
 	});
 
@@ -1052,6 +1074,8 @@ async function seedEvents() {
 			description: "Elyza will win again.",
 			image: "/images/codfather.jpg",
 			location: "none",
+			attendanceEnabled: false,
+			grantsMembership: false,
 		},
 	});
 
@@ -1063,6 +1087,8 @@ async function seedEvents() {
 			description: "ooops",
 			image: "/images/codfather.jpg",
 			location: "none",
+			attendanceEnabled: false,
+			grantsMembership: false,
 		},
 	});
 
@@ -1074,6 +1100,8 @@ async function seedEvents() {
 			description: "bing bing bing",
 			image: "/images/codfather.jpg",
 			location: "none",
+			attendanceEnabled: false,
+			grantsMembership: false,
 		},
 	});
 
@@ -1085,6 +1113,8 @@ async function seedEvents() {
 			description: "poop poop poop",
 			image: "/images/codfather.jpg",
 			location: "none",
+			attendanceEnabled: false,
+			grantsMembership: false,
 		},
 	});
 
@@ -1096,10 +1126,84 @@ async function seedEvents() {
 			description: "Spring thing",
 			image: "/images/spring-fling-2.png",
 			location: "none",
+			attendanceEnabled: false,
+			grantsMembership: false,
 		},
 	});
 
-	console.log({ event1, event2, event3, event4, event5, event6 });
+	// Purpose-built attendance/membership QA events
+	const now = Date.now();
+	const oneHour = 60 * 60 * 1000;
+
+	const event7 = await prisma.event.create({
+		data: {
+			id: "7",
+			title: "don't attend this!",
+			date: new Date(now - oneHour),
+			description:
+				"Past event with attendance + membership grant enabled for reconciliation tests.",
+			location: "GCCIS 2130",
+			attendanceEnabled: true,
+			grantsMembership: true,
+		},
+	});
+
+	const event8 = await prisma.event.create({
+		data: {
+			id: "8",
+			title: "attend this!",
+			date: new Date(now + oneHour),
+			description:
+				"Upcoming event with attendance + membership grant enabled for early check-in and pending membership tests.",
+			location: "GCCIS 2140",
+			attendanceEnabled: true,
+			grantsMembership: true,
+		},
+	});
+
+	const event9 = await prisma.event.create({
+		data: {
+			id: "9",
+			title: "Attendance QA - Past No Membership",
+			date: new Date(now - 2 * oneHour),
+			description: "Past event with attendance enabled but no membership grant.",
+			location: "GCCIS 2150",
+			attendanceEnabled: true,
+			grantsMembership: false,
+		},
+	});
+
+	const seedAttendanceIds = [
+		"1",
+	];
+
+	await prisma.event.deleteMany({
+		where: {
+			id: {
+				in: seedAttendanceIds,
+			}
+		}
+	});
+
+	const attendance1 = await prisma.eventAttendance.create({
+		data: {
+			eventId: event7.id,
+			userId: 2,
+		},
+	});
+
+	console.log({
+		event1,
+		event2,
+		event3,
+		event4,
+		event5,
+		event6,
+		event7,
+		event8,
+		event9,
+		attendance1,
+	});
 }
 
 async function seedMemberships() {
@@ -1192,6 +1296,7 @@ async function seedSponsors() {
 
 async function seedTextbooks() {
 
+	await prisma.textbookCopies.deleteMany({}); // Clear dependent copies first
 	await prisma.textbooks.deleteMany({}); // Clear existing textbooks
 	// Truncate the ID sequence to start from 1 again
 
@@ -1340,6 +1445,7 @@ async function main() {
 		await seedSponsors();
 	} catch (e) {
 		console.error(e);
+		throw e;
 	}
 }
 
