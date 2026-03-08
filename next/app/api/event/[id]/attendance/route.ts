@@ -77,30 +77,28 @@ async function reconcileEndedEventMemberships(
 
   const marker = buildEventMembershipMarker(event.id);
   const reason = buildEventMembershipReason(event.title, event.id);
-  const userIds = attendances.map((attendance) => attendance.userId);
+  const uniqueUserIds = [...new Set(attendances.map((attendance) => attendance.userId))];
 
-  const existingMemberships = await db.membership.findMany({
-    where: {
-      marker,
-      userId: { in: userIds },
-    },
-    select: { userId: true },
-  });
+  for (const userId of uniqueUserIds) {
+    const existingMembership = await db.memberships.findFirst({
+      where: {
+        userId,
+        reason: {
+          contains: marker,
+        },
+      },
+    });
 
-  const existingUserIds = new Set(existingMemberships.map((m) => m.userId));
+    if (existingMembership) {
+      continue;
+    }
 
-  const membershipsToCreate = attendances
-    .filter((attendance) => !existingUserIds.has(attendance.userId))
-    .map((attendance) => ({
-      userId: attendance.userId,
-      reason,
-      marker,
-    }));
-
-  if (membershipsToCreate.length > 0) {
-    await db.membership.createMany({
-      data: membershipsToCreate,
-      skipDuplicates: true,
+    await db.memberships.create({
+      data: {
+        userId,
+        reason,
+        dateGiven: new Date(),
+      },
     });
   }
 }
