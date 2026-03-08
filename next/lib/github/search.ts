@@ -3,8 +3,6 @@
 import prisma from "../prisma";
 import { getPublicS3Url } from "../s3Utils";
 
-const public_members_url = "https://api.github.com/orgs/rit-sse/public_members";
-
 export interface SimpleUser {
     id: number;
     name: string;
@@ -20,14 +18,26 @@ export interface SimpleUser {
 }
 
 var finalUsers: SimpleUser[] = [];
+const sse_sites = [
+    "WebsiteTheSSEquel",
+    "OneRepoToRuleThemAll"
+]
 
 export async function getSSEMembers(): Promise<SimpleUser[]> {
     if (finalUsers.length != 0) {
         return finalUsers;
     }
 
-    const response = await fetch(public_members_url);
-    const publicMembers = await response.json();
+    var publicMembers = new Set<string>();
+    for (const repo of sse_sites) {
+        const repo_url = `https://api.github.com/repos/rit-sse/${repo}/contributors`;
+        const response = await fetch(repo_url);
+        await response.json().then(json => {
+            for (const member of json) {
+                publicMembers.add(member.login);
+            }
+        });
+    }
     const users = await prisma.user.findMany({
         where: {
             gitHub: { not: null }
@@ -51,27 +61,23 @@ export async function getSSEMembers(): Promise<SimpleUser[]> {
             },
         }
     });
-
-    for (const member of publicMembers) {
-        for (const user of users) {
-            if (user.gitHub?.endsWith(member.login)) {
-                finalUsers.push({
-                    id: user.id,
-                    name: user.name,
-                    gitHub: user.gitHub,
-                    linkedIn: user.linkedIn,
-                    email: user.email,
-                    profileImageUrl: user.profileImageKey
-                        ? getPublicS3Url(user.profileImageKey)
-                        : (user.googleImageURL ?? null),
-                    description: user.description ?? null,
-                    major: user.major ?? null,
-                    graduationTerm: user.graduationTerm ?? null,
-                    graduationYear: user.graduationYear ?? null,
-                    officerTitle: user.officers[0]?.position?.title ?? null,
-                });
-                break;
-            }
+    for (const user of users) {
+        if ( user.gitHub && publicMembers.has(user.gitHub)) {
+            finalUsers.push({
+                id: user.id,
+                name: user.name,
+                gitHub: user.gitHub,
+                linkedIn: user.linkedIn,
+                email: user.email,
+                profileImageUrl: user.profileImageKey
+                    ? getPublicS3Url(user.profileImageKey)
+                    : (user.googleImageURL ?? null),
+                description: user.description ?? null,
+                major: user.major ?? null,
+                graduationTerm: user.graduationTerm ?? null,
+                graduationYear: user.graduationYear ?? null,
+                officerTitle: user.officers[0]?.position?.title ?? null,
+            });
         }
     }
     return finalUsers;
