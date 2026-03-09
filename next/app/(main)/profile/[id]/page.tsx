@@ -1,7 +1,6 @@
 import { Metadata } from "next";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
+import { getAuthLevel } from "@/lib/services/authLevelService";
 import ProfileContent from "./ProfileContent";
 
 interface ProfilePageProps {
@@ -16,9 +15,16 @@ export async function generateMetadata({ params }: ProfilePageProps): Promise<Me
 
 export default async function ProfilePage({ params }: ProfilePageProps) {
     const { id } = await params;
-    const session = await getServerSession(authOptions);
+    const authLevel = await getAuthLevel();
 
-    if (!session) {
+    // Must be signed in
+    if (!authLevel.isUser || authLevel.userId === null) {
+        redirect("/");
+    }
+
+    // Only the profile owner or an officer can view a profile
+    const isOwner = authLevel.userId === Number(id);
+    if (!isOwner && !authLevel.isOfficer) {
         redirect("/");
     }
 
