@@ -34,7 +34,7 @@ export async function getSSEMembers(): Promise<SimpleUser[]> {
         const response = await fetch(repo_url);
         await response.json().then(json => {
             for (const member of json) {
-                publicMembers.add(member.login);
+                publicMembers.add(member.login.toLowerCase());
             }
         });
     }
@@ -62,7 +62,7 @@ export async function getSSEMembers(): Promise<SimpleUser[]> {
         }
     });
     for (const user of users) {
-        if ( user.gitHub && publicMembers.has(user.gitHub)) {
+        if ( user.gitHub && publicMembers.has(user.gitHub.toLowerCase()) ) {
             finalUsers.push({
                 id: user.id,
                 name: user.name,
