@@ -1,15 +1,18 @@
-const requiredVersion = "20.20.1";
+const supportedMajors = new Set(["20", "22"]);
 const currentVersion = process.versions.node;
+const currentMajor = currentVersion.split(".")[0];
 
-if (currentVersion !== requiredVersion) {
+if (!supportedMajors.has(currentMajor)) {
   console.error(
     [
       "",
       `Unsupported Node.js version: ${currentVersion}`,
-      `This repo currently installs and validates on Node.js ${requiredVersion}.`,
-      "Run the following before npm ci:",
+      "This repo currently supports Node.js 20.x and 22.x.",
+      "CI and Docker use Node.js 20.20.1 by default.",
+      "Run one of the following before npm ci:",
       "  source \"$HOME/.nvm/nvm.sh\"",
-      `  nvm use ${requiredVersion}`,
+      "  nvm use 20.20.1",
+      "  nvm use 22",
       "",
     ].join("\n")
   );
