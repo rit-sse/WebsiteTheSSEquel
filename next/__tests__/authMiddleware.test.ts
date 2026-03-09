@@ -41,8 +41,10 @@ describe("authMiddleware", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockGetGatewayAuthLevel.mockResolvedValue({
+      isUser: false,
       isOfficer: false,
       isMentor: false,
+      isPrimary: false,
     });
   });
 
@@ -61,10 +63,27 @@ describe("authMiddleware", () => {
     expect((res as any).kind).toBe("next");
   });
 
-  it("denies protected POST when user is not officer", async () => {
+  it("allows auth level lookups without blocking anonymous users", async () => {
+    const res = await authMiddleware(req("/api/authLevel", "GET"));
+    expect((res as any).kind).toBe("next");
+  });
+
+  it("denies quote POST when user is not signed in", async () => {
     const res = await authMiddleware(req("/api/quotes", "POST"));
     expect((res as any).status).toBe(403);
-    expect((res as any).body).toContain("need to be Officer");
+    expect((res as any).body).toContain("need to be Signed-in User");
+  });
+
+  it("allows quote POST for signed-in non-officers", async () => {
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isUser: true,
+      isOfficer: false,
+      isMentor: false,
+      isPrimary: false,
+    });
+
+    const res = await authMiddleware(req("/api/quotes", "POST"));
+    expect((res as any).kind).toBe("next");
   });
 
   it("allows alumni request submissions without officer auth", async () => {
@@ -77,7 +96,20 @@ describe("authMiddleware", () => {
     expect((res as any).status).toBe(403);
   });
 
-  it("allows attendance mutation route-level path without officer", async () => {
+  it("denies attendance mutation route-level path when user is not signed in", async () => {
+    const res = await authMiddleware(req("/api/event/123/attendance", "POST"));
+    expect((res as any).status).toBe(403);
+    expect((res as any).body).toContain("need to be Signed-in User");
+  });
+
+  it("allows attendance mutation route-level path for signed-in users", async () => {
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isUser: true,
+      isOfficer: false,
+      isMentor: false,
+      isPrimary: false,
+    });
+
     const res = await authMiddleware(req("/api/event/123/attendance", "POST"));
     expect((res as any).kind).toBe("next");
   });
@@ -85,5 +117,40 @@ describe("authMiddleware", () => {
   it("denies non-attendance event mutation without officer", async () => {
     const res = await authMiddleware(req("/api/event/123", "POST"));
     expect((res as any).status).toBe(403);
+  });
+
+  it("allows public library catalog GET routes", async () => {
+    const res = await authMiddleware(req("/api/library/books", "GET"));
+    expect((res as any).kind).toBe("next");
+  });
+
+  it("denies protected library GET routes without mentor or officer access", async () => {
+    const res = await authMiddleware(req("/api/library/isbnlookup", "GET"));
+    expect((res as any).status).toBe(403);
+    expect((res as any).body).toContain("need to be Mentor or Officer");
+  });
+
+  it("allows protected library GET routes for mentors", async () => {
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isUser: true,
+      isOfficer: false,
+      isMentor: true,
+      isPrimary: false,
+    });
+
+    const res = await authMiddleware(req("/api/library/isbnlookup", "GET"));
+    expect((res as any).kind).toBe("next");
+  });
+
+  it("allows library copy creation for signed-in users", async () => {
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isUser: true,
+      isOfficer: false,
+      isMentor: false,
+      isPrimary: false,
+    });
+
+    const res = await authMiddleware(req("/api/library/copies", "POST"));
+    expect((res as any).kind).toBe("next");
   });
 });

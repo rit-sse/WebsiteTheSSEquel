@@ -9,6 +9,8 @@ type AuthVerifier = (request: NextRequest) => Promise<AuthOutput>;
 
 type AuthOutput = { isAllowed: boolean; authType: string };
 
+const publicAuthOutput: AuthOutput = { isAllowed: true, authType: "None" };
+
 /**
  * Creates an AuthVerifier that checks a property of the user's permissions. Handles the API call
  * and bearer token automatically
@@ -24,6 +26,8 @@ const authVerifierFactory = (
     return verifier(permissions);
   };
 };
+
+const allowAllVerifier: AuthVerifier = async () => publicAuthOutput;
 
 /**
  * A wrapper around another verifier that allows GET requests without verification
@@ -50,6 +54,16 @@ const officerVerifier = authVerifierFactory((permissions) => {
  */
 const mentorVerifier = authVerifierFactory((permissions) => {
   return { isAllowed: permissions.isMentor, authType: "Mentor" };
+});
+
+/**
+ * Auth verifier that makes sure the user is either a mentor or an officer
+ */
+const mentorOrOfficerVerifier = authVerifierFactory((permissions) => {
+  return {
+    isAllowed: permissions.isMentor || permissions.isOfficer,
+    authType: "Mentor or Officer",
+  };
 });
 
 /**
@@ -174,6 +188,37 @@ const mentorApplicationVerifier: AuthVerifier = async (
 };
 
 /**
+ * Auth verifier for library routes:
+ * - public GETs for catalog/search/statistics/category and book lookup routes
+ * - copy creation requires any signed-in user
+ * - other library management routes require mentor or officer access
+ */
+const libraryVerifier: AuthVerifier = async (request: NextRequest) => {
+  const pathname = request.nextUrl.pathname;
+
+  if (request.method === "GET") {
+    if (
+      /^\/api\/library\/(book|books|categories|search|statistics)$/.test(
+        pathname
+      )
+    ) {
+      return { isAllowed: true, authType: "None" };
+    }
+
+    return mentorOrOfficerVerifier(request);
+  }
+
+  if (
+    request.method === "POST" &&
+    pathname === "/api/library/copies"
+  ) {
+    return signedInVerifier(request);
+  }
+
+  return mentorOrOfficerVerifier(request);
+};
+
+/**
  * Map from API route name to authorization verifier. The verifier should be run against any request that
  * goes through that route.
  * Keys are the second element in the path segment; for example, the path "/api/golinks/officer" would
@@ -186,6 +231,8 @@ const ROUTES: { [key: string]: AuthVerifier } = {
   alumni: nonGetOfficerVerifier,
   "alumni-candidates": officerVerifier,
   "alumni-requests": alumniRequestsVerifier,
+  auth: allowAllVerifier,
+  authLevel: allowAllVerifier,
   aws: officerVerifier,
   calendar: nonGetOfficerVerifier,
   course: nonGetOfficerVerifier,
@@ -193,12 +240,14 @@ const ROUTES: { [key: string]: AuthVerifier } = {
   departments: nonGetOfficerVerifier,
   email: officerVerifier,
   event: eventVerifier,
+  go: allowAllVerifier,
   golinks: goLinkVerifier,
   handover: nonGetPrimaryOfficerVerifier,
   "headcount-import": primaryOfficerVerifier,
   "headcount-trends": officerVerifier,
   hourBlocks: nonGetOfficerVerifier,
   invitations: officerVerifier,
+  library: libraryVerifier,
   memberships: nonGetOfficerVerifier,
   "mentee-headcount": officerVerifier,
   mentor: nonGetOfficerVerifier,
