@@ -1,5 +1,7 @@
 import prisma from "@/lib/prisma";
 import { NextRequest } from "next/server";
+import { CreateSponsorSchema, UpdateSponsorSchema } from "@/lib/schemas/sponsor";
+import { ApiError } from "@/lib/apiError";
 
 export async function GET() {
   try {
@@ -9,7 +11,7 @@ export async function GET() {
     return Response.json(sponsors);
   } catch (error) {
     console.error("GET /api/sponsor error:", error);
-    return new Response(`Database error: ${error}`, { status: 500 });
+    return ApiError.internal();
   }
 }
 
@@ -18,56 +20,18 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return new Response("Invalid JSON", { status: 422 });
+    return ApiError.validationError("Invalid JSON");
   }
 
-  // Validate required fields
-  if (!("name" in body && "description" in body && "logoUrl" in body && "websiteUrl" in body)) {
-    return new Response(
-      "'name', 'description', 'logoUrl', 'websiteUrl' must be included in the body",
-      { status: 400 }
-    );
-  }
-
-  if (typeof body.name !== "string") {
-    return new Response("'name' must be a string", { status: 422 });
-  }
-  if (typeof body.description !== "string") {
-    return new Response("'description' must be a string", { status: 422 });
-  }
-  if (typeof body.logoUrl !== "string") {
-    return new Response("'logoUrl' must be a string", { status: 422 });
-  }
-  if (typeof body.websiteUrl !== "string") {
-    return new Response("'websiteUrl' must be a string", { status: 422 });
-  }
-
-  const data: {
-    name: string;
-    description: string;
-    logoUrl: string;
-    websiteUrl: string;
-    isActive?: boolean;
-  } = {
-    name: body.name,
-    description: body.description,
-    logoUrl: body.logoUrl,
-    websiteUrl: body.websiteUrl,
-  };
-
-  if ("isActive" in body) {
-    if (typeof body.isActive !== "boolean") {
-      return new Response("'isActive' must be a boolean", { status: 422 });
-    }
-    data.isActive = body.isActive;
-  }
+  const parsed = CreateSponsorSchema.safeParse(body);
+  if (!parsed.success) return ApiError.validationError("Validation failed", parsed.error.flatten());
 
   try {
-    const sponsor = await prisma.sponsor.create({ data });
+    const sponsor = await prisma.sponsor.create({ data: parsed.data });
     return Response.json(sponsor, { status: 201 });
   } catch (error) {
     console.error("POST /api/sponsor error:", error);
-    return new Response(`Database error: ${error}`, { status: 500 });
+    return ApiError.internal();
   }
 }
 
@@ -76,71 +40,24 @@ export async function PUT(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return new Response("Invalid JSON", { status: 422 });
+    return ApiError.validationError("Invalid JSON");
   }
 
-  if (!("id" in body)) {
-    return new Response("'id' must be included in the body", { status: 400 });
-  }
+  const parsed = UpdateSponsorSchema.safeParse(body);
+  if (!parsed.success) return ApiError.validationError("Validation failed", parsed.error.flatten());
 
-  if (typeof body.id !== "number") {
-    return new Response("'id' must be an integer", { status: 422 });
-  }
+  const { id, ...fields } = parsed.data;
 
-  const sponsorExists = await prisma.sponsor.findUnique({
-    where: { id: body.id },
-  });
-
+  const sponsorExists = await prisma.sponsor.findUnique({ where: { id } });
   if (!sponsorExists) {
-    return new Response(`Sponsor with 'id': ${body.id} doesn't exist`, {
-      status: 404,
-    });
+    return ApiError.notFound("Sponsor");
   }
 
-  const data: {
-    name?: string;
-    description?: string;
-    logoUrl?: string;
-    websiteUrl?: string;
-    isActive?: boolean;
-  } = {};
+  const data = Object.fromEntries(
+    Object.entries(fields).filter(([, v]) => v !== undefined)
+  );
 
-  if ("name" in body) {
-    if (typeof body.name !== "string") {
-      return new Response("'name' must be a string", { status: 422 });
-    }
-    data.name = body.name;
-  }
-  if ("description" in body) {
-    if (typeof body.description !== "string") {
-      return new Response("'description' must be a string", { status: 422 });
-    }
-    data.description = body.description;
-  }
-  if ("logoUrl" in body) {
-    if (typeof body.logoUrl !== "string") {
-      return new Response("'logoUrl' must be a string", { status: 422 });
-    }
-    data.logoUrl = body.logoUrl;
-  }
-  if ("websiteUrl" in body) {
-    if (typeof body.websiteUrl !== "string") {
-      return new Response("'websiteUrl' must be a string", { status: 422 });
-    }
-    data.websiteUrl = body.websiteUrl;
-  }
-  if ("isActive" in body) {
-    if (typeof body.isActive !== "boolean") {
-      return new Response("'isActive' must be a boolean", { status: 422 });
-    }
-    data.isActive = body.isActive;
-  }
-
-  const sponsor = await prisma.sponsor.update({
-    where: { id: body.id },
-    data,
-  });
-
+  const sponsor = await prisma.sponsor.update({ where: { id }, data });
   return Response.json(sponsor, { status: 200 });
 }
 
@@ -149,30 +66,18 @@ export async function DELETE(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return new Response("Invalid JSON", { status: 422 });
+    return ApiError.validationError("Invalid JSON");
   }
 
-  if (!("id" in body)) {
-    return new Response("'id' must be included in the body", { status: 400 });
+  if (!("id" in body) || typeof body.id !== "number") {
+    return ApiError.badRequest("'id' must be a numeric integer");
   }
 
-  if (typeof body.id !== "number") {
-    return new Response("'id' must be an integer", { status: 422 });
-  }
-
-  const sponsorExists = await prisma.sponsor.findUnique({
-    where: { id: body.id },
-  });
-
+  const sponsorExists = await prisma.sponsor.findUnique({ where: { id: body.id } });
   if (!sponsorExists) {
-    return new Response(`Sponsor with 'id': ${body.id} doesn't exist`, {
-      status: 404,
-    });
+    return ApiError.notFound("Sponsor");
   }
 
-  const sponsor = await prisma.sponsor.delete({
-    where: { id: body.id },
-  });
-
+  const sponsor = await prisma.sponsor.delete({ where: { id: body.id } });
   return Response.json(sponsor, { status: 200 });
 }

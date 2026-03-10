@@ -1,6 +1,8 @@
 import prisma from "@/lib/prisma";
 import { NextRequest } from "next/server";
 import { getGatewayAuthLevel } from "@/lib/authGateway";
+import { CreateProjectSchema, UpdateProjectSchema } from "@/lib/schemas/project";
+import { ApiError } from "@/lib/apiError";
 
 async function isProjectsHead(request: NextRequest) {
   const authLevel = await getGatewayAuthLevel(request);
@@ -17,100 +19,17 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return new Response("Invalid JSON", { status: 422 });
+    return ApiError.validationError("Invalid JSON");
   }
 
   if (!(await isProjectsHead(request))) {
-    return new Response("Only the projects head may modify projects", {
-      status: 403,
-    });
+    return ApiError.forbidden();
   }
 
-  if (
-    !(
-      "title" in body &&
-      "description" in body &&
-      "leadid" in body &&
-      "completed" in body
-    )
-  ) {
-    return new Response(
-      "'title', 'description', 'leadid', 'completed' must be included in the body",
-      {
-        status: 400,
-      }
-    );
-  }
+  const parsed = CreateProjectSchema.safeParse(body);
+  if (!parsed.success) return ApiError.validationError("Validation failed", parsed.error.flatten());
 
-  if (typeof body.title != "string") {
-    return new Response("title must be a string", { status: 422 });
-  }
-  if (typeof body.description != "string") {
-    return new Response("'description' must be a string", { status: 422 });
-  }
-  if (typeof body.leadid != "number") {
-    return new Response("'leadid' must be a number", { status: 422 });
-  }
-  if (typeof body.completed != "boolean") {
-    return new Response("'completed' must be a number", { status: 422 });
-  }
-
-  const data: {
-    title: string;
-    description: string;
-    leadid: number;
-    repoLink?: string;
-    contentURL?: string;
-    progress?: string;
-    projectImage?: string;
-    completed: boolean;
-  } = {
-    title: body.title,
-    description: body.description,
-    leadid: body.leadid,
-    completed: body.completed,
-  };
-
-  if ("repoLink" in body) {
-    if (typeof body.repoLink != "string") {
-      return new Response("'repoLink' must be a string", { status: 422 });
-    }
-    data.repoLink = body.repoLink;
-  }
-  if ("contentURL" in body) {
-    if (typeof body.contentURL != "string") {
-      return new Response("'contentURL' must be a string", { status: 422 });
-    }
-    data.contentURL = body.contentURL;
-  }
-  if ("progress" in body) {
-    if (typeof body.repoLink != "string") {
-      return new Response("'progress' must be a string", { status: 422 });
-    }
-    data.progress = body.progress;
-  }
-  if ("projectImage" in body) {
-    if (typeof body.projectImage != "string") {
-      return new Response("'projectImage' must be a string", { status: 422 });
-    }
-    data.projectImage = body.projectImage;
-  }
-  if ("completed" in body) {
-    if (typeof body.completed != "boolean") {
-      return new Response("'completed' must be a boolean", { status: 422 });
-    }
-    data.completed = body.completed;
-  }
-  if (typeof body.title != "string") {
-    return new Response("title must be a string", { status: 422 });
-  }
-  if (typeof body.description != "string") {
-    return new Response("'description' must be a string", { status: 422 });
-  }
-
-  const project = await prisma.project.create({
-    data,
-  });
+  const project = await prisma.project.create({ data: parsed.data });
   return Response.json(project, { status: 201 });
 }
 
@@ -119,147 +38,56 @@ export async function PUT(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return new Response("Invalid JSON", { status: 422 });
-  }
-
-  if (!("id" in body)) {
-    return new Response("'id' must be included in the body", { status: 400 });
-  }
-
-  if (typeof body.id != "number") {
-    return new Response("'id' must be an integer", { status: 422 });
+    return ApiError.validationError("Invalid JSON");
   }
 
   if (!(await isProjectsHead(request))) {
-    return new Response("Only the projects head may modify projects", {
-      status: 403,
-    });
-  }
-  if (typeof body.id != "number") {
-    return new Response("'id' must be an integer", { status: 422 });
+    return ApiError.forbidden();
   }
 
-  const project_exists =
-    (await prisma.project.findUnique({
-      where: { id: body.id },
-    })) !== null;
+  const parsed = UpdateProjectSchema.safeParse(body);
+  if (!parsed.success) return ApiError.validationError("Validation failed", parsed.error.flatten());
 
-  if (!project_exists) {
-    return new Response(`project of 'id': ${body.id} doesn't exist`, {
-      status: 404,
-    });
-  }
-  if (!project_exists) {
-    return new Response(`project of 'id': ${body.id} doesn't exist`, {
-      status: 404,
-    });
+  const { id, ...fields } = parsed.data;
+
+  const projectExists =
+    (await prisma.project.findUnique({ where: { id } })) !== null;
+
+  if (!projectExists) {
+    return ApiError.notFound("Project");
   }
 
-  const data: {
-    title?: string;
-    description?: string;
-    repoLink?: string;
-    contentURL?: string;
-    leadid?: number;
-    projectImage?: string;
-    completed?: boolean;
-  } = {};
-  if ("title" in body) {
-    if (typeof body.title != "string") {
-      return new Response("'title' must be a string", { status: 422 });
-    }
-    data.title = body.title;
-  }
-  if ("description" in body) {
-    if (typeof body.description != "string") {
-      return new Response("'description' must be a string", { status: 422 });
-    }
-    data.description = body.description;
-  }
-  if ("repoLink" in body) {
-    if (typeof body.repoLink != "string") {
-      return new Response("'repoLink' must be a string", { status: 422 });
-    }
-    data.repoLink = body.repoLink;
-  }
-  if ("contentURL" in body) {
-    if (typeof body.contentURL != "string") {
-      return new Response("'contentURL' must be a string", { status: 422 });
-    }
-    data.contentURL = body.contentURL;
-  }
-  if ("leadid" in body) {
-    if (typeof body.leadid != "number") {
-      return new Response("'leadid' must be a number", { status: 422 });
-    }
-    data.leadid = body.leadid;
-  }
-  if ("projectImage" in body) {
-    if (typeof body.projectImage != "string") {
-      return new Response("'projectImage' must be a string", { status: 422 });
-    }
-    data.projectImage = body.projectImage;
-  }
-  if ("completed" in body) {
-    if (typeof body.completed != "boolean") {
-      return new Response("'completed' must be a boolean", { status: 422 });
-    }
-    data.completed = body.completed;
-  }
+  const data = Object.fromEntries(
+    Object.entries(fields).filter(([, v]) => v !== undefined)
+  );
 
-  const project = await prisma.project.update({
-    where: {
-      id: body.id,
-    },
-    data,
-  });
-
+  const project = await prisma.project.update({ where: { id }, data });
   return Response.json(project, { status: 200 });
 }
+
 export async function DELETE(request: NextRequest) {
   let body;
   try {
     body = await request.json();
   } catch {
-    return new Response("Invalid JSON", { status: 422 });
+    return ApiError.validationError("Invalid JSON");
   }
 
-  if (!("id" in body)) {
-    return new Response("'id' must be included in the body", { status: 400 });
-  }
-  if (!("id" in body)) {
-    return new Response("'id' must be included in the body", { status: 400 });
-  }
-
-  if (typeof body.id != "number") {
-    return new Response("'id' must be an integer", { status: 422 });
+  if (!("id" in body) || typeof body.id !== "number") {
+    return ApiError.badRequest("'id' must be a numeric integer");
   }
 
   if (!(await isProjectsHead(request))) {
-    return new Response("Only the projects head may modify projects", {
-      status: 403,
-    });
-  }
-  if (typeof body.id != "number") {
-    return new Response("'id' must be an integer", { status: 422 });
+    return ApiError.forbidden();
   }
 
   const projectExists =
-    (await prisma.project.findUnique({
-      where: {
-        id: body.id,
-      },
-    })) != null;
+    (await prisma.project.findUnique({ where: { id: body.id } })) != null;
 
   if (!projectExists) {
-    return new Response(`project with 'id' ${body.id} doesn't exist`, {
-      status: 404,
-    });
+    return ApiError.notFound("Project");
   }
 
-  const project = await prisma.project.delete({
-    where: { id: body.id },
-  });
-
+  const project = await prisma.project.delete({ where: { id: body.id } });
   return Response.json(project, { status: 200 });
 }

@@ -20,8 +20,8 @@ export default function GeneralBookContainer({ book }: { book: Book }) {
             height={220}
         />
         <div className="w-full ml-5">
-            <h3 className="mt-2 text-lg font-medium">{book.name}</h3>
-            <p className="text-sm text-gray-600">{book.authors}</p>
+            <h3 className="mt-2 text-lg font-medium truncate">{book.name}</h3>
+            <p className="text-sm text-gray-600 line-clamp-1">{book.authors}</p>
             <p className="text-sm text-gray-500">ISBN: {book.ISBN}</p>
         </div>
     </div>)

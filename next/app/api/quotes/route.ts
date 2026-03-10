@@ -1,7 +1,8 @@
 import prisma from "@/lib/prisma";
 import { getSessionToken } from "@/lib/sessionToken";
-import { getSession } from "next-auth/react";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
+import { CreateQuoteSchema, UpdateQuoteSchema } from "@/lib/schemas/quote";
+import { ApiError } from "@/lib/apiError";
 
 export const dynamic = "force-dynamic";
 
@@ -32,17 +33,13 @@ export async function POST(req: Request) {
   try {
     body = await req.json();
   } catch {
-    return Response.json({ error: "Invalid JSON" }, { status: 422 });
+    return ApiError.validationError("Invalid JSON");
   }
 
-  const { dateAdded, quote, userId, author } = body;
+  const parsed = CreateQuoteSchema.safeParse(body);
+  if (!parsed.success) return ApiError.validationError("Validation failed", parsed.error.flatten());
 
-  if (!dateAdded || !quote || !userId) {
-    return Response.json(
-      { error: '"dateAdded", "quote", and "userId" are required' },
-      { status: 400 }
-    );
-  }
+  const { dateAdded, quote, userId, author } = parsed.data;
 
   try {
     const user = await prisma.user.findUnique({
@@ -50,7 +47,7 @@ export async function POST(req: Request) {
     });
 
     if (!user) {
-      return Response.json({ error: "User not found" }, { status: 404 });
+      return ApiError.notFound("User");
     }
 
     const newQuote = await prisma.quote.create({
@@ -65,7 +62,7 @@ export async function POST(req: Request) {
     return Response.json(newQuote, { status: 201 });
   } catch (e: any) {
     console.error("Error creating quote:", e);
-    return new Response(`Failed to create quote: ${e.message}`, { status: 500 });
+    return ApiError.internal();
   }
 }
 
@@ -80,7 +77,7 @@ export async function PUT(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return new Response("Invalid JSON", { status: 422 });
+    return ApiError.validationError("Invalid JSON");
   }
 
   //check if user_id is valid
@@ -96,47 +93,34 @@ export async function PUT(request: NextRequest) {
       },
     }) === null
   ) {
-    return new Response("Must be signed in to edit your quotes", {
-      status: 403,
-    });
+    return ApiError.forbidden();
   }
 
-  //check if id is in request
-  if (!("id" in body)) {
-    return new Response('"id" must be included in request body', {
-      status: 400,
-    });
-  }
-  const id = body.id;
+  const parsed = UpdateQuoteSchema.safeParse(body);
+  if (!parsed.success) return ApiError.validationError("Validation failed", parsed.error.flatten());
+
+  const { id, quote, author } = parsed.data;
+
   try {
     prisma.user.findUniqueOrThrow({
       where: { id: body.userId },
     });
   } catch {
-    return new Response("invalid userId value", { status: 404 });
+    return ApiError.notFound("User");
   }
 
-  const data: {
-    quote?: string;
-    author?: string;
-  } = {};
-
-  if ("quote" in body) {
-    data.quote = body.quote;
-  }
-
-  if ("author" in body) {
-    data.author = body.author;
-  }
+  const data: { quote?: string; author?: string } = {};
+  if (quote !== undefined) data.quote = quote;
+  if (author !== undefined) data.author = author;
 
   try {
-    const quote = await prisma.quote.update({
+    const updatedQuote = await prisma.quote.update({
       where: { id },
       data,
     });
-    return Response.json(quote);
+    return Response.json(updatedQuote);
   } catch (e) {
-    return new Response(`Failed to update quote: ${e}`, { status: 500 });
+    return ApiError.internal();
   }
 }
 
@@ -150,7 +134,7 @@ export async function DELETE(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return new Response("Invalid JSON", { status: 422 });
+    return ApiError.validationError("Invalid JSON");
   }
 
   //check if user_id is valid
@@ -166,27 +150,25 @@ export async function DELETE(request: NextRequest) {
       },
     }) === null
   ) {
-    return new Response("Must be signed in to edit your quotes", {
-      status: 403,
-    });
+    return ApiError.forbidden();
   }
 
   //verify id is included
   if (!("id" in body)) {
-    return new Response("id of quote must be included", { status: 422 });
+    return ApiError.badRequest("id of quote must be included");
   }
 
   const id = body.id;
   const quoteExists = prisma.quote.findUnique({ where: { id } });
 
   if (!quoteExists) {
-    return new Response("Could not find quote ID", { status: 404 });
+    return ApiError.notFound("Quote");
   }
 
   try {
     const quote = await prisma.quote.delete({ where: { id } });
     return Response.json(quote);
   } catch (e) {
-    return new Response(`Failed to delete quote: ${e}`, { status: 500 });
+    return ApiError.internal();
   }
 }

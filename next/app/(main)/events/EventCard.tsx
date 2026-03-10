@@ -30,10 +30,10 @@ export const EventCard: React.FC<Event> = (event: Event) => {
                   )}
                 </div>
               <div className="px-4 py-4">
-                <h3 className="text-lg font-display">{event.title}</h3>
+                <h3 className="text-lg font-display truncate">{event.title}</h3>
                 <p className="text-sm font-bold text-primary">{event.date}</p>
-                <p className="text-sm text-muted-foreground">{event.location}</p>
-                <p className="text-sm mt-2">{event.description}</p>
+                <p className="text-sm text-muted-foreground truncate">{event.location}</p>
+                <p className="text-sm mt-2 line-clamp-2">{event.description}</p>
               </div>
             </Card>
         </Link>
