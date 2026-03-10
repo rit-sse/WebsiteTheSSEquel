@@ -59,7 +59,7 @@ describe("/api/alumni route", () => {
     });
 
     const res = await POST(req);
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(422);
   });
 
   it("PUT requires id", async () => {

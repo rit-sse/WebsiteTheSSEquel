@@ -1,4 +1,6 @@
 import prisma from "@/lib/prisma";
+import { CreateEventSchema, UpdateEventSchema } from "@/lib/schemas/event";
+import { ApiError } from "@/lib/apiError";
 
 /**
  * HTTP GET request to /api/events/
@@ -32,62 +34,38 @@ export async function GET() {
 /**
  * Create a new event
  * HTTP POST request to /api/events/
- * @param request { title: string, description: , date: string, image?: string, location?: string }
+ * @param request { title: string, description: string, date: string, image?: string, location?: string }
  * @return event object that was created
  */
 export async function POST(request: Request) {
-  console.log("POST request recvied to /api/event/");
   let body;
   try {
     body = await request.json();
   } catch {
-    console.log("Invalid JSON in POST request to /api/event/");
-    return new Response("Invalid JSON", { status: 422 });
+    return ApiError.validationError("Invalid JSON");
   }
 
-  // make sure the required properties are included
-  if (!("title" in body && "description" in body && "date" in body && "id" in body)) {
-    return new Response(
-      '"id", "title", "description", and "date" must be included in request body',
-      { status: 422 }
-    );
-  }
-  const title = body.title;
-  const description = body.description;
-  let date = body.date;
-  const id = body.id;
-  const image = body.image;
-  const location = body.location;
+  const parsed = CreateEventSchema.safeParse(body);
+  if (!parsed.success) return ApiError.validationError("Validation failed", parsed.error.flatten());
 
-  console.log("Data being sent to Prisma:");
-  console.log("  id:", id, `(${typeof id})`);
-  console.log("  title:", title, `(${typeof title})`);
-  console.log("  description:", description, `(${typeof description})`);
-  console.log("  date (original string):", date, `(${typeof date})`); // Log the ISO string received
-  // date = new Date(date).getTime()
-  // const dateObject = new Date(date); // Create the Date object
-  // console.log("  date (JS Date object):", date); // Log the object itself
-  console.log("  location:", location, `(${typeof location})`);
-  console.log("  image:", image, `(${typeof image})`);
+  const { id, title, description, date, location, image, attendanceEnabled, grantsMembership } = parsed.data;
+
   try {
     const event = await prisma.event.create({
       data: {
-        id: body.id,
+        id,
         title,
         description,
         date,
-        location: body.location,
-        image: body.image,
-        attendanceEnabled: body.attendanceEnabled ?? false,
-        grantsMembership: body.grantsMembership ?? false,
+        location,
+        image,
+        attendanceEnabled: attendanceEnabled ?? false,
+        grantsMembership: grantsMembership ?? false,
       },
     });
     return Response.json(event, { status: 201 });
   } catch (e: any) {
-    // console.error(`Error Code: ${e.code}`);
-    // console.error(`Error Message: ${e.message}`);
-    // console.error(`Stack Trace: ${e.stack}`);
-    return new Response(`Failed to create event: ${e}`, { status: 500 });
+    return ApiError.internal();
   }
 }
 
@@ -101,12 +79,12 @@ export async function DELETE(request: Request) {
   try {
     body = await request.json();
   } catch {
-    return new Response("Invalid JSON", { status: 422 });
+    return ApiError.validationError("Invalid JSON");
   }
 
   // verify the id is included
   if (!("id" in body)) {
-    return new Response("ID must be included", { status: 422 });
+    return ApiError.badRequest("ID must be included");
   }
   const id = body.id;
 
@@ -115,14 +93,14 @@ export async function DELETE(request: Request) {
     const event = await prisma.event.delete({ where: { id } });
     return Response.json(event);
   } catch {
-    return new Response(`Couldn't find event ID ${id}`, { status: 404 });
+    return ApiError.notFound("Event");
   }
 }
 
 /**
  * Update an existing event
  * HTTP PUT request to /api/event
- * @param request { id: number, title?: string, description?: string, image?: string, date?: string, location?: string }
+ * @param request { id: string, title?: string, description?: string, image?: string, date?: string, location?: string }
  * @returns updated event object
  */
 export async function PUT(request: Request) {
@@ -130,55 +108,27 @@ export async function PUT(request: Request) {
   try {
     body = await request.json();
   } catch {
-    return new Response("Invalid JSON", { status: 422 });
+    return ApiError.validationError("Invalid JSON");
   }
 
-  // verify that the id is included in the request
-  if (!("id" in body)) {
-    return new Response("ID must be included", { status: 422 });
-  }
-  const id = body.id;
+  const parsed = UpdateEventSchema.safeParse(body);
+  if (!parsed.success) return ApiError.validationError("Validation failed", parsed.error.flatten());
 
-  // only update included fields
-  const data: {
-    title?: string;
-    description?: string;
-    image?: string;
-    date?: string;
-    location?: string;
-    attendanceEnabled?: boolean;
-    grantsMembership?: boolean;
-  } = {};
-  if ("title" in body) {
-    data.title = body.title;
-  }
-  if ("description" in body) {
-    data.description = body.description;
-  }
-  if ("image" in body) {
-    data.image = body.image;
-  }
-  if ("date" in body) {
-    data.date = body.date;
-  }
-  if ("location" in body) {
-    data.location = body.location;
-  }
-  if ("attendanceEnabled" in body) {
-    data.attendanceEnabled = body.attendanceEnabled;
-  }
-  if ("grantsMembership" in body) {
-    data.grantsMembership = body.grantsMembership;
-  }
+  const { id, ...data } = parsed.data;
+
+  // strip undefined fields so Prisma only updates what was provided
+  const updateData = Object.fromEntries(
+    Object.entries(data).filter(([, v]) => v !== undefined)
+  );
 
   try {
     const event = await prisma.event.update({
       where: { id },
-      data,
+      data: updateData,
     });
     return Response.json(event);
-  } catch (e) {
-    // make sure the selected event exists
-    return new Response(`Failed to update event: ${e}`, { status: 500 });
+  } catch (e: any) {
+    if (e?.code === "P2025") return ApiError.notFound("Event");
+    return ApiError.internal();
   }
 }

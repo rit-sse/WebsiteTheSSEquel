@@ -9,6 +9,8 @@ type AuthVerifier = (request: NextRequest) => Promise<AuthOutput>;
 
 type AuthOutput = { isAllowed: boolean; authType: string };
 
+const publicAuthOutput: AuthOutput = { isAllowed: true, authType: "None" };
+
 /**
  * Creates an AuthVerifier that checks a property of the user's permissions. Handles the API call
  * and bearer token automatically
@@ -24,6 +26,8 @@ const authVerifierFactory = (
     return verifier(permissions);
   };
 };
+
+const allowAllVerifier: AuthVerifier = async () => publicAuthOutput;
 
 /**
  * A wrapper around another verifier that allows GET requests without verification
@@ -53,6 +57,31 @@ const mentorVerifier = authVerifierFactory((permissions) => {
 });
 
 /**
+ * Auth verifier that makes sure the user is either a mentor or an officer
+ */
+const mentorOrOfficerVerifier = authVerifierFactory((permissions) => {
+  return {
+    isAllowed: permissions.isMentor || permissions.isOfficer,
+    authType: "Mentor or Officer",
+  };
+});
+
+/**
+ * Auth verifier that requires a primary officer (e.g. President, VP).
+ * Used for sensitive management operations like officer/position CRUD.
+ */
+const primaryOfficerVerifier = authVerifierFactory((permissions) => {
+  return { isAllowed: permissions.isPrimary, authType: "Primary Officer" };
+});
+
+/**
+ * Auth verifier that requires any signed-in user
+ */
+const signedInVerifier = authVerifierFactory((permissions) => {
+  return { isAllowed: permissions.isUser, authType: "Signed-in User" };
+});
+
+/**
  * Auth verifier specifically for the golinks route
  */
 const goLinkVerifier = async (request: NextRequest) => {
@@ -71,7 +100,7 @@ const goLinkVerifier = async (request: NextRequest) => {
 /**
  * Auth verifier for events:
  * - GET remains public
- * - attendance mutation endpoints keep their route-level auth logic
+ * - attendance mutation endpoints require signed-in user (route handles owner logic)
  * - all other non-GET event mutations require officer
  */
 const eventVerifier: AuthVerifier = async (request: NextRequest) => {
@@ -81,7 +110,7 @@ const eventVerifier: AuthVerifier = async (request: NextRequest) => {
   }
 
   if (/^\/api\/event\/[^/]+\/attendance$/.test(pathname)) {
-    return { isAllowed: true, authType: "None" };
+    return signedInVerifier(request);
   }
 
   return officerVerifier(request);
@@ -91,6 +120,11 @@ const eventVerifier: AuthVerifier = async (request: NextRequest) => {
  * An auth verifier that allows GET requests but makes sure all other requests are made by officers
  */
 const nonGetOfficerVerifier = nonGetVerifier(officerVerifier);
+
+/**
+ * An auth verifier that allows GET requests but requires primary officer for mutations
+ */
+const nonGetPrimaryOfficerVerifier = nonGetVerifier(primaryOfficerVerifier);
 
 /**
  * An auth verifier that allows GET requests but makes sure all other requests are made by mentors
@@ -123,35 +157,120 @@ const userVerifier: AuthVerifier = async (request: NextRequest) => {
 };
 
 /**
+ * Auth verifier for quotes:
+ * - GET is public (anyone can read quotes)
+ * - POST requires signed-in user (anyone logged in can submit)
+ * - PUT/DELETE pass through to route-level checks (self-edit with officer override)
+ */
+const quoteVerifier: AuthVerifier = async (request: NextRequest) => {
+  if (request.method === "GET") {
+    return { isAllowed: true, authType: "None" };
+  }
+  // POST, PUT, DELETE all require at least a signed-in user.
+  // PUT/DELETE route handlers enforce ownership or officer privilege.
+  return signedInVerifier(request);
+};
+
+/**
+ * Auth verifier for mentor applications:
+ * - GET passes through (route handles own-application vs manager logic)
+ * - POST requires signed-in user (anyone can apply)
+ * - PUT/PATCH/DELETE pass through (route enforces owner or mentoringHead/primary)
+ */
+const mentorApplicationVerifier: AuthVerifier = async (
+  request: NextRequest
+) => {
+  if (request.method === "GET") {
+    return { isAllowed: true, authType: "None" };
+  }
+  // All mutations require at least a signed-in user
+  return signedInVerifier(request);
+};
+
+/**
+ * Auth verifier for library routes:
+ * - public GETs for catalog/search/statistics/category and book lookup routes
+ * - copy creation requires any signed-in user
+ * - other library management routes require mentor or officer access
+ */
+const libraryVerifier: AuthVerifier = async (request: NextRequest) => {
+  const pathname = request.nextUrl.pathname;
+
+  if (request.method === "GET") {
+    if (
+      /^\/api\/library\/(book|books|categories|search|statistics)$/.test(
+        pathname
+      )
+    ) {
+      return { isAllowed: true, authType: "None" };
+    }
+
+    return mentorOrOfficerVerifier(request);
+  }
+
+  if (
+    request.method === "POST" &&
+    pathname === "/api/library/copies"
+  ) {
+    return signedInVerifier(request);
+  }
+
+  return mentorOrOfficerVerifier(request);
+};
+
+/**
  * Map from API route name to authorization verifier. The verifier should be run against any request that
  * goes through that route.
  * Keys are the second element in the path segment; for example, the path "/api/golinks/officer" would
  * correspond to the key "golinks"
+ *
+ * IMPORTANT: Every API route directory must have an entry here. Routes without an entry
+ * will pass through without any auth check.
  */
 const ROUTES: { [key: string]: AuthVerifier } = {
   alumni: nonGetOfficerVerifier,
+  "alumni-candidates": officerVerifier,
   "alumni-requests": alumniRequestsVerifier,
+  auth: allowAllVerifier,
+  authLevel: allowAllVerifier,
+  aws: officerVerifier,
   calendar: nonGetOfficerVerifier,
   course: nonGetOfficerVerifier,
   courseTaken: nonGetMentorVerifier,
   departments: nonGetOfficerVerifier,
+  email: officerVerifier,
   event: eventVerifier,
+  go: allowAllVerifier,
   golinks: goLinkVerifier,
+  handover: nonGetPrimaryOfficerVerifier,
+  "headcount-import": primaryOfficerVerifier,
+  "headcount-trends": officerVerifier,
   hourBlocks: nonGetOfficerVerifier,
+  invitations: officerVerifier,
+  library: libraryVerifier,
   memberships: nonGetOfficerVerifier,
+  "mentee-headcount": officerVerifier,
   mentor: nonGetOfficerVerifier,
+  "mentor-application": mentorApplicationVerifier,
+  "mentor-availability": nonGetMentorVerifier,
+  "mentor-semester": nonGetOfficerVerifier,
+  "mentoring-headcount": officerVerifier,
+  mentorSchedule: nonGetMentorVerifier,
   mentorSkill: nonGetMentorVerifier,
-  officer: nonGetOfficerVerifier,
-  "officer-positions": nonGetOfficerVerifier,
+  officer: nonGetPrimaryOfficerVerifier,
+  "officer-positions": nonGetPrimaryOfficerVerifier,
   project: nonGetOfficerVerifier,
   projectContributor: nonGetOfficerVerifier,
   purchasing: officerVerifier, // All purchasing routes require officer auth
-  quotes: nonGetOfficerVerifier,
+  quotes: quoteVerifier,
   schedule: nonGetMentorVerifier,
+  scheduleBlock: nonGetMentorVerifier,
   skills: nonGetOfficerVerifier,
   sponsor: nonGetOfficerVerifier,
+  "swipe-access": officerVerifier,
   user: userVerifier,
   userProject: nonGetOfficerVerifier,
+  when2meet: signedInVerifier,
 };
 
 const accessDenied = (authType: string, request: NextRequest) => {

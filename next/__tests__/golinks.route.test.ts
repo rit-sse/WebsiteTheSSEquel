@@ -23,14 +23,14 @@ describe("/api/golinks route", () => {
     vi.clearAllMocks();
   });
 
-  it("POST returns 400 when required fields are missing", async () => {
+  it("POST returns 422 when required fields are missing", async () => {
     const req = new Request("http://localhost/api/golinks", {
       method: "POST",
       body: JSON.stringify({ url: "https://example.com" }),
       headers: { "content-type": "application/json" },
     });
     const res = await POST(req);
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(422);
   });
 
   it("POST validates golink format", async () => {
@@ -49,14 +49,14 @@ describe("/api/golinks route", () => {
     expect(res.status).toBe(422);
   });
 
-  it("PUT returns 400 when id is missing", async () => {
+  it("PUT returns 422 when id is missing", async () => {
     const req = new Request("http://localhost/api/golinks", {
       method: "PUT",
       body: JSON.stringify({ golink: "abc" }),
       headers: { "content-type": "application/json" },
     });
     const res = await PUT(req);
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(422);
   });
 
   it("DELETE returns 400 when id is missing", async () => {

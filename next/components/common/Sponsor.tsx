@@ -21,8 +21,8 @@ export const Sponsor: React.FC<SponsorProps> = ({ url, imageLink, name, descript
                     />
                 </div>
                 <div>
-                    <h3 className="font-display text-lg font-bold text-foreground">{name}</h3>
-                    <p className="text-sm text-muted-foreground mt-1">{description}</p>
+                    <h3 className="font-display text-lg font-bold text-foreground truncate">{name}</h3>
+                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{description}</p>
                 </div>
             </div>
         </Card>

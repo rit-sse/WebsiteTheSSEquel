@@ -63,7 +63,7 @@ describe("/api/quotes route", () => {
     expect(await res.json()).toEqual([{ id: 1, quote: "hello" }]);
   });
 
-  it("POST returns 400 when required fields are missing", async () => {
+  it("POST returns 422 when required fields are missing", async () => {
     const req = new Request("http://localhost/api/quotes", {
       method: "POST",
       body: JSON.stringify({ quote: "x" }),
@@ -71,7 +71,7 @@ describe("/api/quotes route", () => {
     });
 
     const res = await POST(req);
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(422);
   });
 
   it("POST returns 404 when user is not found", async () => {
@@ -118,7 +118,7 @@ describe("/api/quotes route", () => {
     }) as any;
 
     const res = await PUT(req);
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(422);
   });
 
   it("DELETE requires quote id in body", async () => {
@@ -129,6 +129,6 @@ describe("/api/quotes route", () => {
     }) as any;
 
     const res = await DELETE(req);
-    expect(res.status).toBe(422);
+    expect(res.status).toBe(400);
   });
 });

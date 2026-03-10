@@ -2,7 +2,11 @@
   "name": "website-the-ssequel",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": "^20.20.1 || ^22.0.0"
+  },
   "scripts": {
+    "preinstall": "node ./scripts/check-node-version.cjs",
     "dev": "cross-env INTERNAL_API_URL=\"http://localhost:3000\" SESSION_COOKIE_NAME=\"next-auth.session-token\" next dev",
     "build": "next build",
     "start": "next start",
@@ -11,7 +15,8 @@
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx --ignore-pattern .next",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:report": "vitest run --coverage.enabled true --coverage.reporter=html && node ./scripts/openCoverageReport.mjs"
+    "test:report": "vitest run --coverage.enabled true --coverage.reporter=html && node ./scripts/openCoverageReport.mjs",
+    "typecheck": "tsc --noEmit"
   },
   "prisma": {
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
@@ -46,7 +51,6 @@
     "autoprefixer": "10.4.15",
     "boring-avatars": "^2.0.1",
     "brace-expansion": "^2.0.2",
-    "canvas": "^2.11.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cookie": "^0.7.0",

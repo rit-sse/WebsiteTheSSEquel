@@ -27,8 +27,8 @@ export function FeaturedContainer({ props }: { props: { books: Book[], header: s
                             width={180}
                             height={220}
                         />
-                        <h3 className="mt-2 text-lg font-medium">{book.name}</h3>
-                        <p className="text-sm text-gray-600">{book.authors}</p>
+                        <h3 className="mt-2 text-lg font-medium truncate">{book.name}</h3>
+                        <p className="text-sm text-gray-600 line-clamp-1">{book.authors}</p>
                         <p className="text-sm text-gray-500">ISBN: {book.ISBN}</p>
                         <p className={`mt-1 text-sm font-semibold ${book.stockNumber > 0 ? 'text-green-600' : 'text-red-600'}`}>
                             {book.stockNumber > 0 ? `(${book.stockNumber}) on shelf` : 'Out of stock'}

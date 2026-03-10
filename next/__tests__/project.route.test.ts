@@ -89,7 +89,7 @@ describe("/api/project route", () => {
     }) as any;
 
     const res = await PUT(req);
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(422);
   });
 
   it("DELETE returns 404 when project does not exist", async () => {

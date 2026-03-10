@@ -7,6 +7,8 @@ import { s3Service } from "@/lib/services/s3Service";
 import { maybeGrantProfileCompletionMembership } from "@/lib/services/profileCompletionService";
 import { maybeCreateAlumniCandidate } from "@/lib/services/alumniCandidateService";
 import { getGatewayAuthLevel } from "@/lib/authGateway";
+import { UpdateUserSchema } from "@/lib/schemas/user";
+import { ApiError } from "@/lib/apiError";
 
 export const dynamic = 'force-dynamic'
 
@@ -91,12 +93,12 @@ export async function DELETE(request: Request) {
   try {
     body = await request.json();
   } catch {
-    return new Response("Invalid JSON", { status: 422 });
+    return ApiError.validationError("Invalid JSON");
   }
 
   // verify the id is included
   if (!("id" in body)) {
-    return new Response("ID must be included", { status: 422 });
+    return ApiError.badRequest("ID must be included");
   }
   const id = body.id;
 
@@ -148,19 +150,18 @@ export async function PUT(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return new Response("Invalid JSON", { status: 422 });
+    return ApiError.validationError("Invalid JSON");
   }
 
-  // verify that the id is included in the request
-  if (!("id" in body)) {
-    return new Response("ID must be included", { status: 422 });
-  }
-  const id = body.id;
+  const parsed = UpdateUserSchema.safeParse(body);
+  if (!parsed.success) return ApiError.validationError("Validation failed", parsed.error.flatten());
+
+  const id = parsed.data.id;
 
   // Auth check: users can only edit their own profile, officers can edit anyone
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
-    return new Response("Unauthorized", { status: 401 });
+    return ApiError.unauthorized();
   }
 
   const targetUser = await prisma.user.findUnique({
@@ -169,7 +170,7 @@ export async function PUT(request: NextRequest) {
   });
 
   if (!targetUser) {
-    return new Response(`User ${id} not found`, { status: 404 });
+    return ApiError.notFound("User");
   }
   const existingProfileImageKey = normalizeToS3Key(targetUser.profileImageKey);
 
@@ -178,7 +179,7 @@ export async function PUT(request: NextRequest) {
   if (!isOwner) {
     const authLevel = await getGatewayAuthLevel(request);
     if (!authLevel.isOfficer) {
-      return new Response("You can only edit your own profile", { status: 403 });
+      return ApiError.forbidden();
     }
   }
 

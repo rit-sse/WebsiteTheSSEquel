@@ -32,25 +32,25 @@ model User {
   id Int @id @default(autoincrement())
 
   //Store first and last name as Strings
-  name String
+  name String @db.VarChar(100)
 
   //Store email as a unique String
-  email String @unique
+  email String @unique @db.VarChar(255)
 
-  linkedIn    String?
-  gitHub      String?
-  description String?
+  linkedIn    String? @db.VarChar(500)
+  gitHub      String? @db.VarChar(500)
+  description String? @db.VarChar(1000)
   graduationTerm AcademicTerm?
   graduationYear Int?
-  major          String?
-  coopSummary    String?
+  major          String? @db.VarChar(100)
+  coopSummary    String? @db.VarChar(1000)
   profileCompletionGrantedTerm AcademicTerm?
   profileCompletionGrantedYear Int?
 
   //Image will be saved
-  profileImageKey String?
-  googleImageURL String?
-  
+  profileImageKey String? @db.VarChar(500)
+  googleImageURL String? @db.VarChar(500)
+
 
   emailVerified DateTime?
 
@@ -80,17 +80,17 @@ model Alumni {
   id Int @id @default(autoincrement())
 
   //Store first and last name as Strings
-  name String
+  name String @db.VarChar(100)
 
   //Store email as a unique String
-  email String
+  email String @db.VarChar(255)
 
-  linkedIn    String?
-  gitHub      String?
-  description String?
+  linkedIn    String? @db.VarChar(500)
+  gitHub      String? @db.VarChar(500)
+  description String? @db.VarChar(1000)
 
   //Image will be saved
-  image String @default("https://source.boringavatars.com/beam/")
+  image String @default("https://source.boringavatars.com/beam/") @db.VarChar(500)
   userId Int? @unique
   source AlumniSource @default(manual)
   graduationTerm AcademicTerm?
@@ -101,8 +101,8 @@ model Alumni {
   end_date   String
 
   //Store Quote and Previous Roles
-  quote          String @default("")
-  previous_roles String @default("")
+  quote          String @default("") @db.VarChar(2000)
+  previous_roles String @default("") @db.VarChar(1000)
 
   //Whether the alumni wants their email displayed publicly
   showEmail Boolean @default(false)
@@ -119,16 +119,16 @@ model AlumniCandidate {
   id Int @id @default(autoincrement())
   userId Int
 
-  name String
-  email String
-  linkedIn String?
-  gitHub String?
-  description String?
-  imageKey String?
+  name String @db.VarChar(100)
+  email String @db.VarChar(255)
+  linkedIn String? @db.VarChar(500)
+  gitHub String? @db.VarChar(500)
+  description String? @db.VarChar(1000)
+  imageKey String? @db.VarChar(500)
   graduationTerm AcademicTerm?
   graduationYear Int?
-  major String?
-  coopSummary String?
+  major String? @db.VarChar(100)
+  coopSummary String? @db.VarChar(1000)
 
   status AlumniCandidateStatus @default(pending)
   reviewedById Int?
@@ -148,25 +148,25 @@ model AlumniRequest {
   id Int @id @default(autoincrement())
 
   //Store first and last name as Strings
-  name String
+  name String @db.VarChar(100)
 
   //Store email as a String
-  email String
+  email String @db.VarChar(255)
 
-  linkedIn    String?
-  gitHub      String?
-  description String?
+  linkedIn    String? @db.VarChar(500)
+  gitHub      String? @db.VarChar(500)
+  description String? @db.VarChar(1000)
 
   //Image will be saved
-  image String @default("https://source.boringavatars.com/beam/")
+  image String @default("https://source.boringavatars.com/beam/") @db.VarChar(500)
 
   //Store startDate and endDate as a String
   start_date String
   end_date   String
 
   //Store Quote and Previous Roles
-  quote          String @default("")
-  previous_roles String @default("")
+  quote          String @default("") @db.VarChar(2000)
+  previous_roles String @default("") @db.VarChar(1000)
 
   //Whether the alumni wants their email displayed publicly
   showEmail Boolean @default(false)
@@ -193,13 +193,13 @@ model Quote {
   date_added DateTime
 
   //Store quote as a String
-  quote String @db.VarChar(255)
+  quote String @db.VarChar(2000)
 
   //References userId of person who submitted the quote
   user_id Int
 
   //Store author, person who said the qoute, as a String, default to anonymous
-  author String @default("Anonymous")
+  author String @default("Anonymous") @db.VarChar(100)
 
   //Relational fields
   //Refrences user_id
@@ -634,13 +634,13 @@ model GoLinks {
   id Int @id @default(autoincrement())
 
   //Store short link as a String
-  golink String
+  golink String @db.VarChar(100)
 
   //Store url as a String
-  url String
+  url String @db.VarChar(500)
 
   //Description as a String
-  description String?
+  description String? @db.VarChar(500)
 
   //createdAt stored as a DateTime default to the timestamp it was created at
   createdAt DateTime @default(now())
@@ -658,11 +658,11 @@ model GoLinks {
 model Event {
   id String @id
 
-  title       String
+  title       String @db.VarChar(200)
   date        DateTime @db.Timestamptz(3)
-  location    String?
-  image       String?
-  description String
+  location    String? @db.VarChar(200)
+  image       String? @db.VarChar(500)
+  description String @db.VarChar(2000)
 
   // Attendance tracking fields
   attendanceEnabled Boolean @default(false)
@@ -740,25 +740,25 @@ model Project {
   id Int @id @default(autoincrement())
 
   // The title of the project
-  title String
+  title String @db.VarChar(200)
 
   // A short description of the project
-  description String
+  description String @db.VarChar(1000)
 
   // leader of the project
   leadid Int
 
   // details on the progress of the project
-  progress String?
+  progress String? @db.VarChar(1000)
 
   // The link to the repo hosting the project
-  repoLink String?
+  repoLink String? @db.VarChar(500)
 
   // The api route pointing to the markdown file for the content of the page.
-  contentURL String?
+  contentURL String? @db.VarChar(500)
 
   // A link to an image representing the project
-  projectImage String?
+  projectImage String? @db.VarChar(500)
 
   // Determines if the project has been completed or not
   completed Boolean @default(false)
@@ -798,16 +798,16 @@ model Sponsor {
   id Int @id @default(autoincrement())
 
   // Store sponsor name
-  name String
+  name String @db.VarChar(100)
 
   // Store sponsor description
-  description String
+  description String @db.VarChar(1000)
 
   // Store URL to sponsor logo image
-  logoUrl String
+  logoUrl String @db.VarChar(500)
 
   // Store URL to sponsor website
-  websiteUrl String
+  websiteUrl String @db.VarChar(500)
 
   // Store active status (for showing/hiding sponsors)
   isActive Boolean @default(true)
@@ -830,13 +830,13 @@ model PurchaseRequest {
   eventId String?
 
   // Name of the person making the request
-  name String
+  name String @db.VarChar(200)
 
   // Committee the purchase is for
-  committee String
+  committee String @db.VarChar(100)
 
   // Description of what is being purchased and why
-  description String
+  description String @db.VarChar(1000)
 
   // Estimated cost of the purchase
   estimatedCost Decimal @db.Decimal(10, 2)
@@ -851,12 +851,12 @@ model PurchaseRequest {
   status String @default("pending")
 
   // Email to notify for checkout request
-  notifyEmail String
+  notifyEmail String @db.VarChar(255)
 
   // Receipt fields (filled in step 2)
   receiptImage    String?   @db.Text // Base64 encoded image
-  receiptEmail    String? // Email to send receipt to
-  eventName       String?
+  receiptEmail    String? @db.VarChar(255) // Email to send receipt to
+  eventName       String? @db.VarChar(200)
   eventDate       DateTime?
   attendanceData  String?   @db.Text // JSON string of attendees
   attendanceImage String?   @db.Text // Base64 encoded sign-in sheet image

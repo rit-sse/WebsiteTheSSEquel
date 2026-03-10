@@ -1,6 +1,8 @@
 import prisma from "@/lib/prisma";
 import { getSessionToken } from "@/lib/sessionToken";
 import { NextRequest } from "next/server";
+import { CreatePurchaseRequestSchema } from "@/lib/schemas/purchasing";
+import { ApiError } from "@/lib/apiError";
 
 export const dynamic = 'force-dynamic'
 
@@ -11,7 +13,7 @@ export async function GET(request: NextRequest) {
   const authToken = getSessionToken(request);
 
   if (!authToken) {
-    return new Response("Unauthorized", { status: 401 });
+    return ApiError.unauthorized();
   }
 
   // Verify user exists
@@ -27,7 +29,7 @@ export async function GET(request: NextRequest) {
   });
 
   if (!user) {
-    return new Response("User not found", { status: 404 });
+    return ApiError.notFound("User");
   }
 
   try {
@@ -51,7 +53,7 @@ export async function GET(request: NextRequest) {
     return Response.json(requests);
   } catch (error) {
     console.error("GET /api/purchasing error:", error);
-    return new Response(`Database error: ${error}`, { status: 500 });
+    return ApiError.internal();
   }
 }
 
@@ -62,7 +64,7 @@ export async function POST(request: NextRequest) {
   const authToken = getSessionToken(request);
 
   if (!authToken) {
-    return new Response("Unauthorized", { status: 401 });
+    return ApiError.unauthorized();
   }
 
   // Get the user from the session token
@@ -78,67 +80,38 @@ export async function POST(request: NextRequest) {
   });
 
   if (!user) {
-    return new Response("User not found", { status: 404 });
+    return ApiError.notFound("User");
   }
 
   let body;
   try {
     body = await request.json();
   } catch {
-    return new Response("Invalid JSON", { status: 422 });
+    return ApiError.validationError("Invalid JSON");
   }
 
-  // Validate required fields
-  const requiredFields = ["name", "committee", "description", "estimatedCost", "plannedDate", "notifyEmail"];
-  for (const field of requiredFields) {
-    if (!(field in body)) {
-      return new Response(`'${field}' must be included in the body`, { status: 400 });
-    }
-  }
+  const parsed = CreatePurchaseRequestSchema.safeParse(body);
+  if (!parsed.success) return ApiError.validationError("Validation failed", parsed.error.flatten());
 
-  // Validate field types
-  if (typeof body.name !== "string") {
-    return new Response("'name' must be a string", { status: 422 });
-  }
-  if (typeof body.committee !== "string") {
-    return new Response("'committee' must be a string", { status: 422 });
-  }
-  if (typeof body.description !== "string") {
-    return new Response("'description' must be a string", { status: 422 });
-  }
-  if (typeof body.estimatedCost !== "number" && typeof body.estimatedCost !== "string") {
-    return new Response("'estimatedCost' must be a number", { status: 422 });
-  }
-  if (typeof body.plannedDate !== "string") {
-    return new Response("'plannedDate' must be a string (ISO date)", { status: 422 });
-  }
-  if (typeof body.notifyEmail !== "string") {
-    return new Response("'notifyEmail' must be a string", { status: 422 });
-  }
-
-  // Validate email format
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(body.notifyEmail)) {
-    return new Response("'notifyEmail' must be a valid email address", { status: 422 });
-  }
+  const { name, committee, description, estimatedCost, plannedDate, notifyEmail, eventId } = parsed.data;
 
   try {
     const purchaseRequest = await prisma.purchaseRequest.create({
       data: {
         userId: user.id,
-        name: body.name,
-        committee: body.committee,
-        description: body.description,
-        estimatedCost: parseFloat(body.estimatedCost),
-        plannedDate: new Date(body.plannedDate),
-        notifyEmail: body.notifyEmail,
+        name,
+        committee,
+        description,
+        estimatedCost,
+        plannedDate: new Date(plannedDate),
+        notifyEmail,
         status: "pending",
-        eventId: body.eventId || null,
+        eventId: eventId || null,
       },
     });
     return Response.json(purchaseRequest, { status: 201 });
   } catch (error) {
     console.error("POST /api/purchasing error:", error);
-    return new Response(`Database error: ${error}`, { status: 500 });
+    return ApiError.internal();
   }
 }

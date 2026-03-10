@@ -61,7 +61,7 @@ describe("/api/purchasing route", () => {
       headers: { "content-type": "application/json" },
     });
     const res = await POST(req as any);
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(422);
   });
 
   it("POST creates request for valid payload", async () => {
