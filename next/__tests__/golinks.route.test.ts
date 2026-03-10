@@ -59,6 +59,40 @@ describe("/api/golinks route", () => {
     expect(res.status).toBe(422);
   });
 
+  it("POST rejects javascript URLs", async () => {
+    const req = new Request("http://localhost/api/golinks", {
+      method: "POST",
+      body: JSON.stringify({
+        url: "javascript:alert(1)",
+        golink: "abc",
+        description: "desc",
+        isPinned: false,
+        isPublic: true,
+      }),
+      headers: { "content-type": "application/json" },
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(422);
+  });
+
+  it("POST rejects data URLs", async () => {
+    const req = new Request("http://localhost/api/golinks", {
+      method: "POST",
+      body: JSON.stringify({
+        url: "data:text/html,<script>alert(1)</script>",
+        golink: "abc",
+        description: "desc",
+        isPinned: false,
+        isPublic: true,
+      }),
+      headers: { "content-type": "application/json" },
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(422);
+  });
+
   it("DELETE returns 400 when id is missing", async () => {
     const req = new Request("http://localhost/api/golinks", {
       method: "DELETE",
@@ -84,5 +118,34 @@ describe("/api/golinks route", () => {
     });
     const res = await POST(req);
     expect(res.status).toBe(201);
+  });
+
+  it("POST accepts http URLs", async () => {
+    mockCreate.mockResolvedValue({ id: 11, golink: "http-link" });
+    const req = new Request("http://localhost/api/golinks", {
+      method: "POST",
+      body: JSON.stringify({
+        url: "http://example.com",
+        golink: "http-link",
+        description: "desc",
+        isPinned: false,
+        isPublic: true,
+      }),
+      headers: { "content-type": "application/json" },
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(201);
+  });
+
+  it("PUT rejects non-http URL updates", async () => {
+    const req = new Request("http://localhost/api/golinks", {
+      method: "PUT",
+      body: JSON.stringify({ id: 5, url: "ftp://example.com/file.txt" }),
+      headers: { "content-type": "application/json" },
+    });
+
+    const res = await PUT(req);
+    expect(res.status).toBe(422);
   });
 });

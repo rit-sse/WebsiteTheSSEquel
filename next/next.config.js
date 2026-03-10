@@ -1,6 +1,15 @@
 const {resolve} = require("path");
+const { getSecurityHeaders } = require("./lib/securityHeaders");
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    async headers() {
+        return [
+            {
+                source: "/:path*",
+                headers: getSecurityHeaders(),
+            },
+        ];
+    },
     images: {
         remotePatterns: [
             {
@@ -30,6 +39,6 @@ const nextConfig = {
     turbopack: {
         root: resolve(__dirname, ".."),
     }
-}
+};
 
 module.exports = nextConfig;

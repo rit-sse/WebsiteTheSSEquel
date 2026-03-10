@@ -9,7 +9,7 @@ const {
   mockAlumniFindUnique,
   mockAlumniCreate,
   mockAlumniUpdate,
-  mockExecuteRawUnsafe,
+  mockExecuteRaw,
 } = vi.hoisted(() => ({
   mockRequestFindMany: vi.fn(),
   mockRequestCreate: vi.fn(),
@@ -19,7 +19,7 @@ const {
   mockAlumniFindUnique: vi.fn(),
   mockAlumniCreate: vi.fn(),
   mockAlumniUpdate: vi.fn(),
-  mockExecuteRawUnsafe: vi.fn(),
+  mockExecuteRaw: vi.fn(),
 }));
 
 vi.mock("@/lib/prisma", () => ({
@@ -36,7 +36,7 @@ vi.mock("@/lib/prisma", () => ({
       create: mockAlumniCreate,
       update: mockAlumniUpdate,
     },
-    $executeRawUnsafe: mockExecuteRawUnsafe,
+    $executeRaw: mockExecuteRaw,
   },
 }));
 
@@ -86,5 +86,37 @@ describe("/api/alumni-requests route", () => {
 
     const res = await DELETE(req);
     expect(res.status).toBe(400);
+  });
+
+  it("PUT uses safe raw execution before creating a new approved alumni record", async () => {
+    mockRequestFindUnique.mockResolvedValue({
+      id: 1,
+      status: "pending",
+      alumniId: null,
+      name: "Alex",
+      email: "alex@example.com",
+      linkedIn: null,
+      gitHub: null,
+      description: null,
+      image: null,
+      start_date: "2020-01-01",
+      end_date: "2024-01-01",
+      quote: null,
+      previous_roles: null,
+      showEmail: false,
+      receiveEmails: false,
+    });
+    mockRequestUpdate.mockResolvedValue({ id: 1, status: "approved" });
+
+    const req = new Request("http://localhost/api/alumni-requests", {
+      method: "PUT",
+      body: JSON.stringify({ id: 1, status: "approved" }),
+      headers: { "content-type": "application/json" },
+    });
+
+    const res = await PUT(req);
+    expect(res.status).toBe(200);
+    expect(mockExecuteRaw).toHaveBeenCalledTimes(1);
+    expect(mockAlumniCreate).toHaveBeenCalledTimes(1);
   });
 });

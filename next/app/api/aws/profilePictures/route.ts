@@ -1,8 +1,15 @@
+import { randomUUID } from "node:crypto";
 import { s3Service } from "@/lib/services/s3Service";
 import prisma from "@/lib/prisma";
 import { getSessionToken } from "@/lib/sessionToken";
 import { NextRequest, NextResponse } from "next/server";
 import { normalizeToS3Key } from "@/lib/s3Utils";
+import {
+  ALLOWED_IMAGE_MIME_TYPES,
+  detectImageMimeType,
+  IMAGE_EXTENSIONS_BY_MIME,
+  MAX_PROFILE_IMAGE_SIZE_BYTES,
+} from "@/lib/uploadValidation";
 
 export async function POST(req: NextRequest) {
   try {
@@ -36,57 +43,73 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Parse request body
-    let body;
+    let formData;
     try {
-      body = await req.json();
+      formData = await req.formData();
     } catch (err) {
-      console.error("Failed to parse JSON", err);
+      console.error("Failed to parse multipart form data", err);
       return NextResponse.json(
-        { error: "Invalid JSON payload" },
+        { error: "Invalid upload payload" },
         { status: 400 }
       );
     }
 
-    const { filename, contentType } = body;
+    const file = formData.get("file");
 
-    // Validate input
-    if (!filename || !contentType) {
+    if (!(file instanceof File)) {
       return NextResponse.json(
-        { error: "filename and contentType are required" },
+        { error: "file is required" },
         { status: 400 }
       );
     }
 
-    // Validate content type is an image
-    if (!contentType.startsWith("image/")) {
+    if (file.size > MAX_PROFILE_IMAGE_SIZE_BYTES) {
       return NextResponse.json(
-        { error: "Only image files are allowed" },
-        { status: 400 }
+        { error: "Profile pictures must be 5MB or smaller" },
+        { status: 413 }
       );
     }
 
-    // Generate unique S3 key with user ID and timestamp
-    const timestamp = Date.now();
-    const sanitizedFilename = filename.replace(/[^a-zA-Z0-9.-]/g, "_");
-    const key = `uploads/profile-pictures/${user.id}/${timestamp}-${sanitizedFilename}`;
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    const detectedMimeType = detectImageMimeType(bytes);
 
-    // Generate presigned upload URL (expires in 5 minutes)
-    const uploadUrl = await s3Service.getSignedUploadUrl(
-      key,
-      contentType,
-      300
-    );
+    if (file.type === "image/svg+xml" || detectedMimeType === "image/svg+xml") {
+      return NextResponse.json(
+        { error: "SVG uploads are not allowed" },
+        { status: 415 }
+      );
+    }
 
-    return NextResponse.json({
-      uploadUrl,
-      key,
-      message: "Upload URL generated successfully",
-    });
-  } catch (error: any) {
-    console.error("Error generating upload URL:", error);
+    if (!detectedMimeType || !ALLOWED_IMAGE_MIME_TYPES.has(detectedMimeType)) {
+      return NextResponse.json(
+        { error: "Only JPEG, PNG, WEBP, and GIF images are allowed" },
+        { status: 415 }
+      );
+    }
+
+    if (!file.type || file.type !== detectedMimeType) {
+      return NextResponse.json(
+        { error: "Uploaded file type does not match file contents" },
+        { status: 415 }
+      );
+    }
+
+    const extension = IMAGE_EXTENSIONS_BY_MIME[detectedMimeType];
+    const key = `uploads/profile-pictures/${user.id}/${Date.now()}-${randomUUID()}.${extension}`;
+
+    await s3Service.putObject(key, bytes, detectedMimeType);
+
     return NextResponse.json(
-      { error: "Failed to generate upload URL", details: error.message },
+      {
+        key,
+        message: "Profile picture uploaded successfully",
+      },
+      { status: 201 }
+    );
+  } catch (error: any) {
+    console.error("Error uploading profile picture:", error);
+    return NextResponse.json(
+      { error: "Failed to upload profile picture", details: error.message },
       { status: 500 }
     );
   }

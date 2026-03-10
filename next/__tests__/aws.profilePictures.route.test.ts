@@ -3,14 +3,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const {
   mockGetSessionToken,
   mockNormalizeToS3Key,
-  mockGetSignedUploadUrl,
+  mockPutObject,
   mockDeleteObject,
   mockUserFindFirst,
   mockUserUpdate,
 } = vi.hoisted(() => ({
   mockGetSessionToken: vi.fn(),
   mockNormalizeToS3Key: vi.fn(),
-  mockGetSignedUploadUrl: vi.fn(),
+  mockPutObject: vi.fn(),
   mockDeleteObject: vi.fn(),
   mockUserFindFirst: vi.fn(),
   mockUserUpdate: vi.fn(),
@@ -30,7 +30,7 @@ vi.mock("@/lib/s3Utils", () => ({
 
 vi.mock("@/lib/services/s3Service", () => ({
   s3Service: {
-    getSignedUploadUrl: mockGetSignedUploadUrl,
+    putObject: mockPutObject,
     deleteObject: mockDeleteObject,
   },
 }));
@@ -46,6 +46,15 @@ vi.mock("@/lib/prisma", () => ({
 
 import { POST, PUT } from "@/app/api/aws/profilePictures/route";
 
+function makeUploadRequest(file: File) {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  return {
+    formData: vi.fn().mockResolvedValue(formData),
+  } as any;
+}
+
 describe("/api/aws/profilePictures route", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -60,24 +69,53 @@ describe("/api/aws/profilePictures route", () => {
     expect(res.status).toBe(401);
   });
 
-  it("POST validates image content type", async () => {
-    const req = {
-      json: vi.fn().mockResolvedValue({ filename: "file.txt", contentType: "text/plain" }),
-    } as any;
+  it("POST rejects non-image bytes even if the declared type is image/jpeg", async () => {
+    const req = makeUploadRequest(
+      new File([Buffer.from("not actually an image")], "file.jpg", {
+        type: "image/jpeg",
+      })
+    );
 
     const res = await POST(req);
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(415);
   });
 
-  it("POST returns signed upload url", async () => {
-    mockGetSignedUploadUrl.mockResolvedValue("https://signed.example.com");
-    const req = {
-      json: vi.fn().mockResolvedValue({ filename: "pic.png", contentType: "image/png" }),
-    } as any;
+  it("POST rejects SVG uploads", async () => {
+    const req = makeUploadRequest(
+      new File(['<svg xmlns="http://www.w3.org/2000/svg"></svg>'], "vector.svg", {
+        type: "image/svg+xml",
+      })
+    );
 
     const res = await POST(req);
-    expect(res.status).toBe(200);
-    expect(await res.json()).toMatchObject({ uploadUrl: "https://signed.example.com" });
+    expect(res.status).toBe(415);
+  });
+
+  it("POST rejects uploads larger than 5MB", async () => {
+    const req = makeUploadRequest(
+      new File([new Uint8Array(5 * 1024 * 1024 + 1)], "huge.png", {
+        type: "image/png",
+      })
+    );
+
+    const res = await POST(req);
+    expect(res.status).toBe(413);
+  });
+
+  it("POST uploads a valid PNG and returns a namespaced key", async () => {
+    const req = makeUploadRequest(
+      new File(
+        [Uint8Array.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00])],
+        "pic.png",
+        { type: "image/png" }
+      )
+    );
+
+    const res = await POST(req);
+    expect(res.status).toBe(201);
+    const body = await res.json();
+    expect(body.key).toMatch(/^uploads\/profile-pictures\/7\/\d+-[a-f0-9-]+\.png$/);
+    expect(mockPutObject).toHaveBeenCalledTimes(1);
   });
 
   it("PUT rejects keys outside current user namespace", async () => {
