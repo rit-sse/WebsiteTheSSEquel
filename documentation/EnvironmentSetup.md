@@ -20,7 +20,7 @@ Before requesting review, validate from the `next/` directory:
 
 If any step fails, fix or document why it is intentionally skipped.
 
-1. Make sure you have node installed. You can check this by running `node -v` in your terminal. If you don't have node installed, you can download it [here](https://nodejs.org/en/download/).
+1. Make sure you have Node.js `20.20.1` or newer on the Node 20 line installed. If you use `nvm`, run `cd next && nvm use` to match the version in [`next/.nvmrc`](../next/.nvmrc). You can check your current version with `node -v`. If you don't have Node installed, you can download it [here](https://nodejs.org/en/download/).
 
 2. Clone or fork this repository. You can do this by running `git clone https://github.com/rit-sse/WebsiteTheSSEquel.git` in your terminal in the directory you want to clone the repository to.
 
