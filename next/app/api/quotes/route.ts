@@ -81,18 +81,17 @@ export async function PUT(request: NextRequest) {
   }
 
   //check if user_id is valid
-  if (
-    prisma.user.findFirst({
-      where: {
-        id: body.userId,
-        session: {
-          some: {
-            sessionToken: getSessionToken(request),
-          },
+  const authUser = await prisma.user.findFirst({
+    where: {
+      id: body.userId,
+      session: {
+        some: {
+          sessionToken: getSessionToken(request),
         },
       },
-    }) === null
-  ) {
+    },
+  });
+  if (authUser === null) {
     return ApiError.forbidden();
   }
 
@@ -102,8 +101,8 @@ export async function PUT(request: NextRequest) {
   const { id, quote, author } = parsed.data;
 
   try {
-    prisma.user.findUniqueOrThrow({
-      where: { id: body.userId },
+    await prisma.user.findUniqueOrThrow({
+      where: { id: parsed.data.userId ?? body.userId },
     });
   } catch {
     return ApiError.notFound("User");
@@ -138,18 +137,17 @@ export async function DELETE(request: NextRequest) {
   }
 
   //check if user_id is valid
-  if (
-    prisma.user.findFirst({
-      where: {
-        id: body.userId,
-        session: {
-          some: {
-            sessionToken: getSessionToken(request),
-          },
+  const authUserDel = await prisma.user.findFirst({
+    where: {
+      id: body.userId,
+      session: {
+        some: {
+          sessionToken: getSessionToken(request),
         },
       },
-    }) === null
-  ) {
+    },
+  });
+  if (authUserDel === null) {
     return ApiError.forbidden();
   }
 
@@ -159,7 +157,7 @@ export async function DELETE(request: NextRequest) {
   }
 
   const id = body.id;
-  const quoteExists = prisma.quote.findUnique({ where: { id } });
+  const quoteExists = await prisma.quote.findUnique({ where: { id } });
 
   if (!quoteExists) {
     return ApiError.notFound("Quote");

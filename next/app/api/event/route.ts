@@ -127,7 +127,8 @@ export async function PUT(request: Request) {
       data: updateData,
     });
     return Response.json(event);
-  } catch (e) {
+  } catch (e: any) {
+    if (e?.code === "P2025") return ApiError.notFound("Event");
     return ApiError.internal();
   }
 }

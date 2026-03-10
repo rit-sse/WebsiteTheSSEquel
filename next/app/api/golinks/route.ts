@@ -104,7 +104,7 @@ export async function PUT(request: Request) {
 
   const { id, ...fields } = parsed.data;
 
-  const data: any = {};
+  const data: Prisma.GoLinksUpdateInput = {};
   let hasUpdates = false;
 
   if (fields.url !== undefined) { data.url = fields.url; hasUpdates = true; }

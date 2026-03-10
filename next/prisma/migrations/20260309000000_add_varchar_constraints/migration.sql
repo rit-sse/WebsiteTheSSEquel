@@ -1,4 +1,18 @@
 -- AddVarCharConstraints: add DB-level length limits to match Zod schemas
+--
+-- WARNING: These ALTER COLUMN statements will fail if any existing rows contain
+-- values that exceed the new length limits. Before running this migration,
+-- verify no rows are affected:
+--
+--   SELECT COUNT(*) FROM "User" WHERE length("name") > 100 OR length("email") > 255;
+--   SELECT COUNT(*) FROM "Alumni" WHERE length("name") > 100 OR length("quote") > 2000;
+--   SELECT COUNT(*) FROM "Quote" WHERE length("quote") > 2000;
+--   SELECT COUNT(*) FROM "GoLinks" WHERE length("url") > 500;
+--   SELECT COUNT(*) FROM "Event" WHERE length("title") > 200 OR length("description") > 2000;
+--   SELECT COUNT(*) FROM "Sponsor" WHERE length("name") > 100 OR length("description") > 1000;
+--   SELECT COUNT(*) FROM "PurchaseRequest" WHERE length("name") > 200;
+--
+-- Truncate or clean up any oversized values before applying this migration.
 
 -- User
 ALTER TABLE "User" ALTER COLUMN "name" TYPE VARCHAR(100);

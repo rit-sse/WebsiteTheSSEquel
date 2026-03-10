@@ -69,7 +69,7 @@ export async function DELETE(request: NextRequest) {
     return ApiError.validationError("Invalid JSON");
   }
 
-  if (!("id" in body) || typeof body.id !== "number") {
+  if (!("id" in body) || typeof body.id !== "number" || !Number.isInteger(body.id)) {
     return ApiError.badRequest("'id' must be a numeric integer");
   }
 
