@@ -9,5 +9,5 @@ export const CreatePurchaseRequestSchema = z.object({
   ),
   plannedDate: z.string().min(1),
   notifyEmail: z.string().email().max(255),
-  eventId: z.number().int().nullable().optional(),
+  eventId: z.string().nullable().optional(),
 });
