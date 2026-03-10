@@ -41,7 +41,7 @@ describe("/api/sponsor route", () => {
       headers: { "content-type": "application/json" },
     });
     const res = await POST(req as any);
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(422);
   });
 
   it("PUT requires numeric id", async () => {

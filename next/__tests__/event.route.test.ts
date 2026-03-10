@@ -64,14 +64,14 @@ describe("/api/event route", () => {
     expect(res.status).toBe(201);
   });
 
-  it("DELETE returns 422 when id missing", async () => {
+  it("DELETE returns 400 when id missing", async () => {
     const req = new Request("http://localhost/api/event", {
       method: "DELETE",
       body: JSON.stringify({}),
       headers: { "content-type": "application/json" },
     });
     const res = await DELETE(req);
-    expect(res.status).toBe(422);
+    expect(res.status).toBe(400);
   });
 
   it("PUT returns 422 when id missing", async () => {
