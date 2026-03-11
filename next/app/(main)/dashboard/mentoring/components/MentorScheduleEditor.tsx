@@ -107,6 +107,58 @@ function getInitials(name: string) {
   )
 }
 
+function getTrafficPresentation(averagePeopleInLab: number) {
+  if (averagePeopleInLab <= 6) {
+    return {
+      label: "≤6",
+      value: 12,
+      cellTint: "bg-blue-200",
+      subtextClassName: "text-slate-700",
+      metaClassName: "text-slate-800",
+      summary: "Light traffic",
+    }
+  }
+  if (averagePeopleInLab <= 10) {
+    return {
+      label: "7–10",
+      value: 30,
+      cellTint: "bg-blue-300",
+      subtextClassName: "text-slate-800",
+      metaClassName: "text-slate-900",
+      summary: "Moderate traffic",
+    }
+  }
+  if (averagePeopleInLab <= 15) {
+    return {
+      label: "11–15",
+      value: 50,
+      cellTint: "bg-blue-400",
+      subtextClassName: "text-slate-900",
+      metaClassName: "text-slate-950",
+      summary: "Busy slot",
+    }
+  }
+  if (averagePeopleInLab <= 20) {
+    return {
+      label: "16–20",
+      value: 75,
+      cellTint: "bg-blue-500",
+      subtextClassName: "text-white/90",
+      metaClassName: "text-white",
+      summary: "Heavy traffic",
+    }
+  }
+
+  return {
+    label: "21+",
+    value: 95,
+    cellTint: "bg-blue-600",
+    subtextClassName: "text-white/95",
+    metaClassName: "text-white",
+    summary: "Peak traffic",
+  }
+}
+
 interface MentorScheduleEditorProps {
   ToolbarPortal?: React.ComponentType<{ target: HTMLElement | null; children: React.ReactNode }>
   toolbarNode?: HTMLElement | null
@@ -331,19 +383,35 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
     return trafficBySlot.get(`${weekday}-${hour}`)
   }
 
-  const getTrafficLevel = (averagePeopleInLab: number) => {
-    if (averagePeopleInLab <= 6)  return { label: "≤6",    value: 12, cellTint: "bg-blue-200" }
-    if (averagePeopleInLab <= 10) return { label: "7–10",  value: 30, cellTint: "bg-blue-300" }
-    if (averagePeopleInLab <= 15) return { label: "11–15", value: 50, cellTint: "bg-blue-400" }
-    if (averagePeopleInLab <= 20) return { label: "16–20", value: 75, cellTint: "bg-blue-500" }
-    return                                { label: "21+",   value: 95, cellTint: "bg-blue-600" }
-  }
+  const getTrafficLevel = (averagePeopleInLab: number) => getTrafficPresentation(averagePeopleInLab)
 
   const getTrafficCellClass = (weekday: number, hour: number) => {
     if (!showTraffic) return ""
     const traffic = getTrafficForSlot(weekday, hour)
     if (!traffic) return ""
     return getTrafficLevel(traffic.averagePeopleInLab).cellTint
+  }
+
+  const getTrafficSubtextClass = (weekday: number, hour: number) => {
+    if (!showTraffic) return "text-muted-foreground"
+    const traffic = getTrafficForSlot(weekday, hour)
+    if (!traffic) return "text-muted-foreground"
+    return getTrafficLevel(traffic.averagePeopleInLab).subtextClassName
+  }
+
+  const getTrafficMetaClass = (weekday: number, hour: number) => {
+    if (!showTraffic) return "text-muted-foreground"
+    const traffic = getTrafficForSlot(weekday, hour)
+    if (!traffic) return "text-muted-foreground"
+    return getTrafficLevel(traffic.averagePeopleInLab).metaClassName
+  }
+
+  const getTrafficTooltip = (weekday: number, hour: number) => {
+    if (!showTraffic) return undefined
+    const traffic = getTrafficForSlot(weekday, hour)
+    if (!traffic) return undefined
+    const level = getTrafficLevel(traffic.averagePeopleInLab)
+    return `${level.summary}: avg ${traffic.averagePeopleInLab.toFixed(1)} people in lab`
   }
 
   // Handle opening assign modal
@@ -891,15 +959,6 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
 
   const toolbarButtons = activeSchedule ? (
     <>
-      <Button
-        size="sm"
-        variant="outline"
-        onClick={() => setClearModalOpen(true)}
-        className="text-muted-foreground hover:text-destructive hover:border-destructive"
-      >
-        <X className="h-3.5 w-3.5" />
-        Clear
-      </Button>
       {availabilityData.length > 0 && (
         <Button
           size="sm"
@@ -916,9 +975,11 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
           size="sm"
           variant="outline"
           onClick={() => setShowTraffic(!showTraffic)}
+          title="Shade slots by average people in lab"
+          className={showTraffic ? "bg-blue-600 hover:bg-blue-700 text-white border-blue-600" : ""}
         >
           <Activity className="h-3.5 w-3.5" />
-          Traffic
+          Traffic Shading
         </Button>
       )}
       <Button size="sm" variant="outline" onClick={() => setAutoFillOpen(true)}>
@@ -1001,7 +1062,7 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                                 )}
                                 onClick={() => handleOpenAssignModal(weekday, hour)}
                               >
-                                <div className="flex flex-col gap-0.5 min-w-0">
+                                <div className="flex flex-col gap-0.5 min-w-0" title={getTrafficTooltip(weekday, hour)}>
                                   {slotBlocks.map((block) => (
                                     <DraggableMentorChip
                                       key={block.id}
@@ -1021,7 +1082,7 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                                   <div
                                     className={cn(
                                       "text-[10px] truncate h-4 leading-4",
-                                      showAvailability ? "text-muted-foreground" : "invisible"
+                                      showAvailability ? getTrafficSubtextClass(weekday, hour) : "invisible"
                                     )}
                                     title={showAvailability && mappedAvailable.length > 0
                                       ? `Available: ${mappedAvailable.map((m) => m.user.name).join(", ")}`
@@ -1068,8 +1129,9 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                                     "flex items-center gap-2 px-3 py-2",
                                     getTrafficCellClass(weekday, hour),
                                   )}
+                                  title={getTrafficTooltip(weekday, hour)}
                                 >
-                                  <span className="text-xs text-muted-foreground w-24 shrink-0">
+                                  <span className={cn("text-xs w-24 shrink-0", getTrafficMetaClass(weekday, hour))}>
                                     {label}
                                   </span>
                                   <div className="flex-1 min-w-0 overflow-hidden space-y-0.5">
@@ -1101,7 +1163,7 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                                       )}
                                     </div>
                                     {showAvailability && (mappedAvailable.length > 0 || availableNames.length > 0) && (
-                                      <div className="text-[10px] text-muted-foreground truncate">
+                                      <div className={cn("text-[10px] truncate", getTrafficSubtextClass(weekday, hour))}>
                                         {mappedAvailable.length > 0
                                           ? mappedAvailable.map((m) => m.user.name.split(" ")[0]).join(", ")
                                           : `${availableNames.length} avail.`}
@@ -1136,6 +1198,7 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                       <span className="flex items-center gap-1"><span className="h-3 w-5 rounded-sm bg-blue-400" /> 11–15</span>
                       <span className="flex items-center gap-1"><span className="h-3 w-5 rounded-sm bg-blue-500" /> 16–20</span>
                       <span className="flex items-center gap-1"><span className="h-3 w-5 rounded-sm bg-blue-600" /> 21+</span>
+                      <span>Darker blue means more people in lab.</span>
                     </div>
                   )}
                   {blocks.length > 0 && (
@@ -1211,6 +1274,25 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                         Import historical CSV
                       </Button>
                     </div>
+                  </CardContent>
+                </Card>
+                <Card depth={3} className="neo:border-0">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg">Schedule Actions</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <p className="text-sm text-muted-foreground">
+                      Clear only when you intend to remove every mentor assignment from the active schedule.
+                    </p>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      className="w-full justify-center gap-2"
+                      onClick={() => setClearModalOpen(true)}
+                    >
+                      <X className="h-3.5 w-3.5" />
+                      Clear Schedule
+                    </Button>
                   </CardContent>
                 </Card>
               </div>

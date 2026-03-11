@@ -1,12 +1,13 @@
 import prisma from "@/lib/prisma";
 import { z } from "zod";
 import { resolveUserImage } from "@/lib/s3Utils";
+import { MANUAL_MEMBERSHIP_REASONS, normalizeMembershipDateInput } from "@/lib/membershipUtils";
 
 
 const CreateMembershipSchema = z.object({
     userId: z.number().positive(),
-    reason: z.string().min(1),
-    dateGiven: z.string().datetime(),
+    reason: z.enum(MANUAL_MEMBERSHIP_REASONS),
+    dateGiven: z.string().min(1),
 })
 
 /**
@@ -107,13 +108,23 @@ export async function POST(request: Request) {
         return new Response("Body is missing 'userId', 'reason', or 'dateGiven'.", { status: 400 });
     }
 
-    const input = CreateMembershipSchema.parse(body);
+    const parsed = CreateMembershipSchema.safeParse(body);
+    if (!parsed.success) {
+        return new Response("Invalid membership payload.", { status: 400 });
+    }
+
+    let normalizedDateGiven: string;
+    try {
+        normalizedDateGiven = normalizeMembershipDateInput(parsed.data.dateGiven);
+    } catch {
+        return new Response("Invalid membership payload.", { status: 400 });
+    }
     
     const created = await prisma.memberships.create({
         data: {
-            userId: input.userId,
-            reason: input.reason,
-            dateGiven: input.dateGiven,
+            userId: parsed.data.userId,
+            reason: parsed.data.reason,
+            dateGiven: normalizedDateGiven,
         },
         select: {id: true, userId: true, reason: true, dateGiven: true},
     });
