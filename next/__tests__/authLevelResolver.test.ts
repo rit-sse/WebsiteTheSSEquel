@@ -55,6 +55,7 @@ describe("authLevelResolver", () => {
       isOfficer: false,
       isMentoringHead: false,
       isProjectsHead: false,
+      isTechCommitteeHead: false,
       isPrimary: false,
     });
   });
@@ -65,6 +66,7 @@ describe("authLevelResolver", () => {
     expect(auth.isOfficer).toBe(true);
     expect(auth.isMentoringHead).toBe(true);
     expect(auth.isProjectsHead).toBe(true);
+    expect(auth.isTechCommitteeHead).toBe(true);
     expect(auth.isPrimary).toBe(true);
   });
 
@@ -79,7 +81,8 @@ describe("authLevelResolver", () => {
       mentor: [{ id: 1 }],
       officers: [
         { id: 1, position: { title: "Mentoring Head", is_primary: false } },
-        { id: 2, position: { title: "Projects Head", is_primary: true } },
+        { id: 2, position: { title: "Tech Head", is_primary: false } },
+        { id: 3, position: { title: "Projects Head", is_primary: true } },
       ],
       _count: { Memberships: 2 },
     });
@@ -95,6 +98,7 @@ describe("authLevelResolver", () => {
       isOfficer: true,
       isMentoringHead: true,
       isProjectsHead: true,
+      isTechCommitteeHead: true,
       isPrimary: true,
       profileComplete: true,
     });
@@ -121,6 +125,7 @@ describe("authLevelResolver", () => {
     expect(auth.userId).toBe(9);
     expect(auth.profileComplete).toBe(false);
     expect(auth.isOfficer).toBe(true);
+    expect(auth.isTechCommitteeHead).toBe(true);
     expect(auth.isPrimary).toBe(true);
   });
 });

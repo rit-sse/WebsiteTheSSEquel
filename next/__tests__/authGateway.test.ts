@@ -46,6 +46,7 @@ describe("authGateway", () => {
       isOfficer: false,
       isMentoringHead: false,
       isProjectsHead: false,
+      isTechCommitteeHead: false,
       isPrimary: false,
     });
   });

@@ -2,7 +2,11 @@ import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { AuthLevel } from "@/lib/authLevel";
-import { MENTOR_HEAD_TITLE, PROJECTS_HEAD_TITLE } from "@/lib/utils";
+import {
+  MENTOR_HEAD_TITLE,
+  PROJECTS_HEAD_TITLE,
+  TECH_COMMITTEE_HEAD_TITLE,
+} from "@/lib/utils";
 
 /**
  * Resolve auth level for the current user.
@@ -19,6 +23,7 @@ export async function getAuthLevel(): Promise<AuthLevel> {
     isOfficer: false,
     isMentoringHead: false,
     isProjectsHead: false,
+    isTechCommitteeHead: false,
     isPrimary: false,
     profileComplete: true,
   };
@@ -67,6 +72,9 @@ export async function getAuthLevel(): Promise<AuthLevel> {
     isOfficer: user.officers.length > 0,
     isMentoringHead: user.officers.some((o) => o.position.title === MENTOR_HEAD_TITLE),
     isProjectsHead: user.officers.some((o) => o.position.title === PROJECTS_HEAD_TITLE),
+    isTechCommitteeHead: user.officers.some(
+      (o) => o.position.title === TECH_COMMITTEE_HEAD_TITLE
+    ),
     isPrimary: user.officers.some((o) => o.position.is_primary),
     profileComplete: !!(
       user.graduationTerm &&

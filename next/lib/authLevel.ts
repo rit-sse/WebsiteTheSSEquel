@@ -7,6 +7,7 @@ export type AuthLevel = {
   isOfficer: boolean;
   isMentoringHead: boolean;
   isProjectsHead: boolean;
+  isTechCommitteeHead: boolean;
   isPrimary: boolean;
   profileComplete?: boolean;
 };

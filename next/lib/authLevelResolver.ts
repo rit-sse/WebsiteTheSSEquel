@@ -3,7 +3,11 @@ import { NextRequest } from "next/server";
 import { AuthLevel } from "@/lib/authLevel";
 import { hasStagingElevatedAccess } from "@/lib/proxyAuth";
 import { getSessionToken } from "@/lib/sessionToken";
-import { MENTOR_HEAD_TITLE, PROJECTS_HEAD_TITLE } from "@/lib/utils";
+import {
+  MENTOR_HEAD_TITLE,
+  PROJECTS_HEAD_TITLE,
+  TECH_COMMITTEE_HEAD_TITLE,
+} from "@/lib/utils";
 
 type ResolveOptions = {
   includeProfileComplete?: boolean;
@@ -20,6 +24,7 @@ function getDefaultAuthLevel(includeProfileComplete: boolean): AuthLevel {
     isOfficer: false,
     isMentoringHead: false,
     isProjectsHead: false,
+    isTechCommitteeHead: false,
     isPrimary: false,
   };
 
@@ -76,6 +81,7 @@ export async function resolveAuthLevelFromToken(
     authLevel.isOfficer = true;
     authLevel.isMentoringHead = true;
     authLevel.isProjectsHead = true;
+    authLevel.isTechCommitteeHead = true;
     authLevel.isPrimary = true;
   }
 
@@ -138,6 +144,9 @@ export async function resolveAuthLevelFromToken(
     );
     authLevel.isProjectsHead = user.officers.some(
       (officer) => officer.position.title === PROJECTS_HEAD_TITLE
+    );
+    authLevel.isTechCommitteeHead = user.officers.some(
+      (officer) => officer.position.title === TECH_COMMITTEE_HEAD_TITLE
     );
     authLevel.isPrimary = user.officers.some(
       (officer) => officer.position.is_primary
