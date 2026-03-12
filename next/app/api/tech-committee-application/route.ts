@@ -6,11 +6,30 @@ import prisma from "@/lib/prisma";
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
+  const statusOnly = request.nextUrl.searchParams.get("status") === "true";
   const myApplications = request.nextUrl.searchParams.get("my") === "true";
+
+  if (statusOnly) {
+    try {
+      const config = await prisma.techCommitteeApplicationConfig.findUnique({
+        where: { id: 1 },
+      });
+
+      return NextResponse.json({
+        isOpen: config?.isOpen ?? true,
+      });
+    } catch (error) {
+      console.error("Error fetching Tech Committee application status:", error);
+      return NextResponse.json(
+        { error: "Failed to fetch Tech Committee application status" },
+        { status: 500 }
+      );
+    }
+  }
 
   if (!myApplications) {
     return NextResponse.json(
-      { error: 'Only "my=true" is supported for this route right now' },
+      { error: 'Only "my=true" or "status=true" is supported for this route right now' },
       { status: 400 }
     );
   }
@@ -28,6 +47,17 @@ export async function GET(request: NextRequest) {
 
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    const config = await prisma.techCommitteeApplicationConfig.findUnique({
+      where: { id: 1 },
+    });
+
+    if (config && !config.isOpen) {
+      return NextResponse.json(
+        { error: "Tech Committee applications are currently closed" },
+        { status: 400 }
+      );
     }
 
     const applications = await prisma.techCommitteeApplication.findMany({
@@ -121,6 +151,35 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "RIT email must match your signed-in account" },
         { status: 400 }
+      );
+    }
+
+    const config = await prisma.techCommitteeApplicationConfig.findUnique({
+      where: { id: 1 },
+    });
+
+    if (config && !config.isOpen) {
+      return NextResponse.json(
+        { error: "Tech Committee applications are currently closed" },
+        { status: 400 }
+      );
+    }
+
+    const existingActiveApplication =
+      await prisma.techCommitteeApplication.findFirst({
+        where: {
+          userId: user.id,
+          status: {
+            in: ["pending", "approved", "assigned"],
+          },
+        },
+        select: { id: true },
+      });
+
+    if (existingActiveApplication) {
+      return NextResponse.json(
+        { error: "You already have an active Tech Committee application" },
+        { status: 409 }
       );
     }
 

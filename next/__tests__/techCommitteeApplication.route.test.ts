@@ -3,12 +3,16 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const {
   mockGetServerSession,
   mockUserFindUnique,
+  mockTechCommitteeApplicationConfigFindUnique,
   mockTechCommitteeApplicationFindMany,
+  mockTechCommitteeApplicationFindFirst,
   mockTechCommitteeApplicationCreate,
 } = vi.hoisted(() => ({
   mockGetServerSession: vi.fn(),
   mockUserFindUnique: vi.fn(),
+  mockTechCommitteeApplicationConfigFindUnique: vi.fn(),
   mockTechCommitteeApplicationFindMany: vi.fn(),
+  mockTechCommitteeApplicationFindFirst: vi.fn(),
   mockTechCommitteeApplicationCreate: vi.fn(),
 }));
 
@@ -23,8 +27,12 @@ vi.mock("@/lib/prisma", () => ({
     user: {
       findUnique: mockUserFindUnique,
     },
+    techCommitteeApplicationConfig: {
+      findUnique: mockTechCommitteeApplicationConfigFindUnique,
+    },
     techCommitteeApplication: {
       findMany: mockTechCommitteeApplicationFindMany,
+      findFirst: mockTechCommitteeApplicationFindFirst,
       create: mockTechCommitteeApplicationCreate,
     },
   },
@@ -44,6 +52,8 @@ describe("/api/tech-committee-application route", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockGetServerSession.mockResolvedValue(null);
+    mockTechCommitteeApplicationConfigFindUnique.mockResolvedValue({ id: 1, isOpen: true });
+    mockTechCommitteeApplicationFindFirst.mockResolvedValue(null);
   });
 
   it("GET my=true requires auth", async () => {
@@ -77,6 +87,57 @@ describe("/api/tech-committee-application route", () => {
     );
 
     expect(res.status).toBe(400);
+  });
+
+  it("POST rejects when applications are closed", async () => {
+    mockGetServerSession.mockResolvedValue({ user: { email: "student@g.rit.edu" } });
+    mockUserFindUnique.mockResolvedValue({
+      id: 1,
+      name: "Student User",
+      email: "student@g.rit.edu",
+    });
+    mockTechCommitteeApplicationConfigFindUnique.mockResolvedValue({
+      id: 1,
+      isOpen: false,
+    });
+
+    const res = await POST(
+      req("http://localhost/api/tech-committee-application", "POST", {
+        name: "Student User",
+        ritEmail: "student@g.rit.edu",
+        yearLevel: "3rd",
+        experienceText: "Built some projects",
+        whyJoin: "Interested in contributing",
+        weeklyCommitment: "4 hours",
+        preferredDivision: "Web Division",
+      })
+    );
+
+    expect(res.status).toBe(400);
+  });
+
+  it("POST rejects duplicate active applications", async () => {
+    mockGetServerSession.mockResolvedValue({ user: { email: "student@g.rit.edu" } });
+    mockUserFindUnique.mockResolvedValue({
+      id: 1,
+      name: "Student User",
+      email: "student@g.rit.edu",
+    });
+    mockTechCommitteeApplicationFindFirst.mockResolvedValue({ id: 99 });
+
+    const res = await POST(
+      req("http://localhost/api/tech-committee-application", "POST", {
+        name: "Student User",
+        ritEmail: "student@g.rit.edu",
+        yearLevel: "3rd",
+        experienceText: "Built some projects",
+        whyJoin: "Interested in contributing",
+        weeklyCommitment: "4 hours",
+        preferredDivision: "Web Division",
+      })
+    );
+
+    expect(res.status).toBe(409);
   });
 
   it("POST creates a pending Tech Committee application", async () => {

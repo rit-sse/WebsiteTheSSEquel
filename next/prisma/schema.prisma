@@ -522,6 +522,13 @@ model TechCommitteeApplication {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+model TechCommitteeApplicationConfig {
+  id Int @id
+  isOpen Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 // Mentor availability per user per semester (replaces When2Meet)
 model MentorAvailability {
   // Store an automatically generated unique int for id

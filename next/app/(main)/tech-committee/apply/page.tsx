@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { signIn, useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -58,9 +58,54 @@ export default function TechCommitteeApplyPage() {
   const [weeklyCommitment, setWeeklyCommitment] = useState("");
   const [preferredDivision, setPreferredDivision] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isApplicationOpen, setIsApplicationOpen] = useState(true);
+  const [hasActiveApplication, setHasActiveApplication] = useState(false);
+  const [isPageLoading, setIsPageLoading] = useState(true);
 
   const accountName = useMemo(() => session?.user?.name ?? "", [session]);
   const accountEmail = useMemo(() => session?.user?.email ?? "", [session]);
+
+  useEffect(() => {
+    if (status === "loading") {
+      return;
+    }
+
+    const fetchApplicationState = async () => {
+      try {
+        const statusRes = await fetch(
+          "/api/tech-committee-application?status=true"
+        );
+        if (statusRes.ok) {
+          const statusData = await statusRes.json();
+          setIsApplicationOpen(statusData.isOpen !== false);
+        }
+
+        if (session?.user) {
+          const myAppsRes = await fetch(
+            "/api/tech-committee-application?my=true"
+          );
+          if (myAppsRes.ok) {
+            const myApps = await myAppsRes.json();
+            const hasActive = myApps.some(
+              (application: { status: string }) =>
+                application.status === "pending" ||
+                application.status === "approved" ||
+                application.status === "assigned"
+            );
+            setHasActiveApplication(hasActive);
+          }
+        } else {
+          setHasActiveApplication(false);
+        }
+      } catch (error) {
+        console.error("Failed to fetch Tech Committee application state:", error);
+      } finally {
+        setIsPageLoading(false);
+      }
+    };
+
+    fetchApplicationState();
+  }, [session, status]);
 
   const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -128,13 +173,13 @@ export default function TechCommitteeApplyPage() {
     }
   };
 
-  if (status === "loading") {
+  if (status === "loading" || isPageLoading) {
     return (
       <div className="mx-auto flex w-full max-w-3xl justify-center px-4 py-12">
         <Card className="w-full">
           <CardHeader>
             <CardTitle>Loading</CardTitle>
-            <CardDescription>Checking your session.</CardDescription>
+            <CardDescription>Checking your session and application status.</CardDescription>
           </CardHeader>
         </Card>
       </div>
@@ -155,6 +200,38 @@ export default function TechCommitteeApplyPage() {
           <CardContent>
             <Button onClick={() => signIn("google")}>Sign In to Apply</Button>
           </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!isApplicationOpen) {
+    return (
+      <div className="mx-auto w-full max-w-3xl px-4 py-12">
+        <Card>
+          <CardHeader>
+            <CardTitle>Tech Committee Applications</CardTitle>
+            <CardDescription>
+              Applications are currently closed. Check back later when Tech Committee
+              applications reopen.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+    );
+  }
+
+  if (hasActiveApplication) {
+    return (
+      <div className="mx-auto w-full max-w-3xl px-4 py-12">
+        <Card>
+          <CardHeader>
+            <CardTitle>Application Already Submitted</CardTitle>
+            <CardDescription>
+              You already have an active Tech Committee application. You cannot submit
+              another one right now.
+            </CardDescription>
+          </CardHeader>
         </Card>
       </div>
     );
