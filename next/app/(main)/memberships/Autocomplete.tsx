@@ -147,7 +147,6 @@ export function UserAutocomplete({
                   }}
                 >
                   <div className="flex items-center gap-2">
-                    <span className="ml-auto text-xs opacity-60">ID: {o.id}</span>
                     <div className="flex flex-row items-center gap-2">
                       <span className="text-sm">{o.name}</span>
                       {o.email && (
