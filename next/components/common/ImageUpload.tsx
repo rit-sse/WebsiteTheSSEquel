@@ -74,37 +74,20 @@ function getCroppedImage(imageSrc: string, cropArea: Area, outputSize: number): 
  * @returns The S3 key for the uploaded image
  */
 async function uploadToS3(blob: Blob, filename: string): Promise<string> {
-    // Get presigned URL from our API
+    const formData = new FormData();
+    formData.append("file", blob, filename);
+
     const response = await fetch("/api/aws/profilePictures", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            filename,
-            contentType: blob.type,
-        }),
+        body: formData,
     });
 
     if (!response.ok) {
         const error = await response.text();
-        throw new Error(`Failed to get upload URL: ${error}`);
+        throw new Error(`Failed to upload image: ${error}`);
     }
 
-    const { uploadUrl, key } = await response.json();
-
-    // Upload directly to S3 using the presigned URL
-    const uploadResponse = await fetch(uploadUrl, {
-        method: "PUT",
-        headers: {
-            "Content-Type": blob.type,
-        },
-        body: blob,
-    });
-
-    if (!uploadResponse.ok) {
-        throw new Error(`Failed to upload to S3: ${uploadResponse.statusText}`);
-    }
-
-    // Return the S3 key (not the full URL)
+    const { key } = await response.json();
     return key;
 }
 

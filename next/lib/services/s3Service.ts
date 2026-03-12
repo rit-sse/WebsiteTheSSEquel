@@ -11,6 +11,7 @@ export interface IS3Service {
   listObjects(prefix: string): Promise<string[]>;
   getSignedDownloadUrl(key: string, expiresIn?: number): Promise<string>;
   getSignedUploadUrl(key: string, contentType: string, expiresIn?: number): Promise<string>;
+  putObject(key: string, body: Uint8Array, contentType: string): Promise<void>;
   deleteObject(key: string): Promise<void>;
 }
 
@@ -47,6 +48,21 @@ export class S3Service implements IS3Service {
       CacheControl: "no-store, max-age=0",
     });
     return getSignedUrl(this.client, command, { expiresIn });
+  }
+
+  async putObject(
+    key: string,
+    body: Uint8Array,
+    contentType: string
+  ): Promise<void> {
+    const command = new PutObjectCommand({
+      Bucket: this.bucket,
+      Key: key,
+      Body: body,
+      ContentType: contentType,
+      CacheControl: "no-store, max-age=0",
+    });
+    await this.client.send(command);
   }
 
   async deleteObject(key: string): Promise<void> {

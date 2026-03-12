@@ -54,18 +54,7 @@ export default async function RootLayout({
             <body
                 className={`min-h-screen flex flex-col bg-gradient-to-b from-background to-muted overflow-x-hidden`}
             >
-                <Script id="init-style-font" strategy="beforeInteractive">
-                    {`try {
-  var styleMode = localStorage.getItem("sse-style-mode");
-  if (styleMode === "neo" || styleMode === "clean") {
-    document.documentElement.setAttribute("data-style", styleMode);
-  }
-  var fontMode = localStorage.getItem("sse-font-mode");
-  if (fontMode === "rethink" || fontMode === "pt-serif") {
-    document.documentElement.setAttribute("data-font", fontMode);
-  }
-} catch (e) {}`}
-                </Script>
+                <Script src="/init-style-font.js" strategy="beforeInteractive" />
                 <Providers session={session}>
                     {children}
                 </Providers>
