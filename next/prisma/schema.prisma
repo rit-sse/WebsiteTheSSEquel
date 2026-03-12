@@ -69,6 +69,7 @@ model User {
   invitationsSent          Invitation[]
   eventAttendances         EventAttendance[]
   mentorApplications       MentorApplication[]
+  techCommitteeApplications TechCommitteeApplication[]
   mentorAvailability       MentorAvailability[]
   alumni                   Alumni?
   alumniCandidates         AlumniCandidate[] @relation("AlumniCandidateOwner")
@@ -500,6 +501,25 @@ model MentorApplication {
 
   // Unique constraint: one application per user per semester
   @@unique([userId, semesterId])
+}
+
+model TechCommitteeApplication {
+  id Int @id @default(autoincrement())
+
+  userId Int
+
+  yearLevel String
+  experienceText String @db.Text
+  whyJoin String @db.Text
+  weeklyCommitment String
+  preferredDivision String
+  status String @default("pending")
+  finalDivision String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 // Mentor availability per user per semester (replaces When2Meet)
