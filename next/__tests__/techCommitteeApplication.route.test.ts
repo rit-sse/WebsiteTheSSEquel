@@ -66,7 +66,7 @@ describe("/api/tech-committee-application route", () => {
 
   it("POST requires sign-in", async () => {
     const res = await POST(req("http://localhost/api/tech-committee-application", "POST", {}));
-    expect(res.status).toBe(401);
+    expect(res!.status).toBe(401);
   });
 
   it("POST rejects when submitted identity does not match account", async () => {
@@ -89,7 +89,7 @@ describe("/api/tech-committee-application route", () => {
       })
     );
 
-    expect(res.status).toBe(400);
+    expect(res!.status).toBe(400);
   });
 
   it("POST rejects when applications are closed", async () => {
@@ -116,7 +116,7 @@ describe("/api/tech-committee-application route", () => {
       })
     );
 
-    expect(res.status).toBe(400);
+    expect(res!.status).toBe(400);
   });
 
   it("POST rejects duplicate active applications", async () => {
@@ -140,7 +140,7 @@ describe("/api/tech-committee-application route", () => {
       })
     );
 
-    expect(res.status).toBe(409);
+    expect(res!.status).toBe(409);
   });
 
   it("POST creates a pending Tech Committee application", async () => {
@@ -173,7 +173,7 @@ describe("/api/tech-committee-application route", () => {
       })
     );
 
-    expect(res.status).toBe(201);
+    expect(res!.status).toBe(201);
     expect(mockTechCommitteeApplicationCreate).toHaveBeenCalledWith({
       data: {
         userId: 1,
@@ -189,7 +189,7 @@ describe("/api/tech-committee-application route", () => {
 
   it("PUT requires sign-in", async () => {
     const res = await PUT(req("http://localhost/api/tech-committee-application", "PUT", {}));
-    expect(res.status).toBe(401);
+    expect(res!.status).toBe(401);
   });
 
   it("PUT rejects when application is not found for the signed-in user", async () => {
@@ -214,7 +214,7 @@ describe("/api/tech-committee-application route", () => {
       })
     );
 
-    expect(res.status).toBe(404);
+    expect(res!.status).toBe(404);
   });
 
   it("PUT rejects when application is not pending", async () => {
@@ -242,7 +242,7 @@ describe("/api/tech-committee-application route", () => {
       })
     );
 
-    expect(res.status).toBe(409);
+    expect(res!.status).toBe(409);
   });
 
   it("PUT updates a pending application for the signed-in user", async () => {
@@ -280,7 +280,7 @@ describe("/api/tech-committee-application route", () => {
       })
     );
 
-    expect(res.status).toBe(200);
+    expect(res!.status).toBe(200);
     expect(mockTechCommitteeApplicationUpdate).toHaveBeenCalledWith({
       where: { id: 10 },
       data: {
