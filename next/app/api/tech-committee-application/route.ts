@@ -5,170 +5,194 @@ import prisma from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
+type ApplicantIdentity = {
+  id: number;
+  name: string;
+  email: string;
+};
+
+type ApplicationPayload = {
+  id?: number;
+  name?: string;
+  ritEmail?: string;
+  yearLevel?: string;
+  experienceText?: string;
+  whyJoin?: string;
+  weeklyCommitment?: string;
+  preferredDivision?: string;
+};
+
+function validationError(message: string, status = 400) {
+  return NextResponse.json({ error: message }, { status });
+}
+
+async function getSignedInApplicant(): Promise<
+  { user: ApplicantIdentity } | { response: NextResponse }
+> {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email) {
+    return {
+      response: validationError("Unauthorized - please sign in", 401),
+    };
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+    },
+  });
+
+  if (!user) {
+    return {
+      response: validationError("User not found", 404),
+    };
+  }
+
+  return { user };
+}
+
+async function getApplicationConfig() {
+  return prisma.techCommitteeApplicationConfig.findUnique({
+    where: { id: 1 },
+  });
+}
+
+async function ensureApplicationsOpen() {
+  const config = await getApplicationConfig();
+  if (config && !config.isOpen) {
+    return validationError("Tech Committee applications are currently closed");
+  }
+  return null;
+}
+
+function parseAndValidatePayload(
+  body: ApplicationPayload,
+  user: ApplicantIdentity,
+  requireId = false
+) {
+  const {
+    id,
+    name,
+    ritEmail,
+    yearLevel,
+    experienceText,
+    whyJoin,
+    weeklyCommitment,
+    preferredDivision,
+  } = body ?? {};
+
+  if (requireId && (!id || Number.isNaN(Number(id)))) {
+    return { response: validationError("Application id is required") };
+  }
+
+  if (!name?.trim()) {
+    return { response: validationError("Name is required") };
+  }
+  if (!ritEmail?.trim()) {
+    return { response: validationError("RIT email is required") };
+  }
+  if (!yearLevel?.trim()) {
+    return { response: validationError("Year level is required") };
+  }
+  if (!experienceText?.trim()) {
+    return { response: validationError("Experience is required") };
+  }
+  if (!whyJoin?.trim()) {
+    return { response: validationError("Why you want to join is required") };
+  }
+  if (!weeklyCommitment?.trim()) {
+    return { response: validationError("Weekly commitment is required") };
+  }
+  if (!preferredDivision?.trim()) {
+    return { response: validationError("Preferred division is required") };
+  }
+
+  if (name.trim() !== user.name.trim()) {
+    return {
+      response: validationError("Name must match your signed-in account"),
+    };
+  }
+
+  if (ritEmail.trim().toLowerCase() !== user.email.trim().toLowerCase()) {
+    return {
+      response: validationError(
+        "RIT email must match your signed-in account"
+      ),
+    };
+  }
+
+  return {
+    data: {
+      id: requireId ? Number(id) : undefined,
+      yearLevel: yearLevel.trim(),
+      experienceText: experienceText.trim(),
+      whyJoin: whyJoin.trim(),
+      weeklyCommitment: weeklyCommitment.trim(),
+      preferredDivision: preferredDivision.trim(),
+    },
+  };
+}
+
 export async function GET(request: NextRequest) {
   const statusOnly = request.nextUrl.searchParams.get("status") === "true";
   const myApplications = request.nextUrl.searchParams.get("my") === "true";
 
   if (statusOnly) {
     try {
-      const config = await prisma.techCommitteeApplicationConfig.findUnique({
-        where: { id: 1 },
-      });
-
+      const config = await getApplicationConfig();
       return NextResponse.json({
         isOpen: config?.isOpen ?? true,
       });
     } catch (error) {
       console.error("Error fetching Tech Committee application status:", error);
-      return NextResponse.json(
-        { error: "Failed to fetch Tech Committee application status" },
-        { status: 500 }
+      return validationError(
+        "Failed to fetch Tech Committee application status",
+        500
       );
     }
   }
 
   if (!myApplications) {
-    return NextResponse.json(
-      { error: 'Only "my=true" or "status=true" is supported for this route right now' },
-      { status: 400 }
+    return validationError(
+      'Only "my=true" or "status=true" is supported for this route right now'
     );
   }
 
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      select: { id: true },
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    const config = await prisma.techCommitteeApplicationConfig.findUnique({
-      where: { id: 1 },
-    });
-
-    if (config && !config.isOpen) {
-      return NextResponse.json(
-        { error: "Tech Committee applications are currently closed" },
-        { status: 400 }
-      );
-    }
+    const auth = await getSignedInApplicant();
+    if ("response" in auth) return auth.response;
 
     const applications = await prisma.techCommitteeApplication.findMany({
-      where: { userId: user.id },
+      where: { userId: auth.user.id },
       orderBy: { createdAt: "desc" },
     });
 
     return NextResponse.json(applications);
   } catch (error) {
     console.error("Error fetching Tech Committee applications:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch Tech Committee applications" },
-      { status: 500 }
-    );
+    return validationError("Failed to fetch Tech Committee applications", 500);
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: "Unauthorized - please sign in" },
-        { status: 401 }
-      );
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-      },
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
+    const auth = await getSignedInApplicant();
+    if ("response" in auth) return auth.response;
 
     const body = await request.json();
-    const {
-      name,
-      ritEmail,
-      yearLevel,
-      experienceText,
-      whyJoin,
-      weeklyCommitment,
-      preferredDivision,
-    } = body ?? {};
+    const validated = parseAndValidatePayload(body, auth.user);
+    if ("response" in validated) return validated.response;
 
-    if (!name?.trim()) {
-      return NextResponse.json({ error: "Name is required" }, { status: 400 });
-    }
-    if (!ritEmail?.trim()) {
-      return NextResponse.json({ error: "RIT email is required" }, { status: 400 });
-    }
-    if (!yearLevel?.trim()) {
-      return NextResponse.json({ error: "Year level is required" }, { status: 400 });
-    }
-    if (!experienceText?.trim()) {
-      return NextResponse.json({ error: "Experience is required" }, { status: 400 });
-    }
-    if (!whyJoin?.trim()) {
-      return NextResponse.json(
-        { error: "Why you want to join is required" },
-        { status: 400 }
-      );
-    }
-    if (!weeklyCommitment?.trim()) {
-      return NextResponse.json(
-        { error: "Weekly commitment is required" },
-        { status: 400 }
-      );
-    }
-    if (!preferredDivision?.trim()) {
-      return NextResponse.json(
-        { error: "Preferred division is required" },
-        { status: 400 }
-      );
-    }
-
-    if (name.trim() !== user.name.trim()) {
-      return NextResponse.json(
-        { error: "Name must match your signed-in account" },
-        { status: 400 }
-      );
-    }
-
-    if (ritEmail.trim().toLowerCase() !== user.email.trim().toLowerCase()) {
-      return NextResponse.json(
-        { error: "RIT email must match your signed-in account" },
-        { status: 400 }
-      );
-    }
-
-    const config = await prisma.techCommitteeApplicationConfig.findUnique({
-      where: { id: 1 },
-    });
-
-    if (config && !config.isOpen) {
-      return NextResponse.json(
-        { error: "Tech Committee applications are currently closed" },
-        { status: 400 }
-      );
-    }
+    const openError = await ensureApplicationsOpen();
+    if (openError) return openError;
 
     const existingActiveApplication =
       await prisma.techCommitteeApplication.findFirst({
         where: {
-          userId: user.id,
+          userId: auth.user.id,
           status: {
             in: ["pending", "approved", "assigned"],
           },
@@ -177,20 +201,20 @@ export async function POST(request: NextRequest) {
       });
 
     if (existingActiveApplication) {
-      return NextResponse.json(
-        { error: "You already have an active Tech Committee application" },
-        { status: 409 }
+      return validationError(
+        "You already have an active Tech Committee application",
+        409
       );
     }
 
     const application = await prisma.techCommitteeApplication.create({
       data: {
-        userId: user.id,
-        yearLevel: yearLevel.trim(),
-        experienceText: experienceText.trim(),
-        whyJoin: whyJoin.trim(),
-        weeklyCommitment: weeklyCommitment.trim(),
-        preferredDivision: preferredDivision.trim(),
+        userId: auth.user.id,
+        yearLevel: validated.data.yearLevel,
+        experienceText: validated.data.experienceText,
+        whyJoin: validated.data.whyJoin,
+        weeklyCommitment: validated.data.weeklyCommitment,
+        preferredDivision: validated.data.preferredDivision,
         status: "pending",
       },
     });
@@ -198,9 +222,52 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(application, { status: 201 });
   } catch (error) {
     console.error("Error creating Tech Committee application:", error);
-    return NextResponse.json(
-      { error: "Failed to submit Tech Committee application" },
-      { status: 500 }
-    );
+    return validationError("Failed to submit Tech Committee application", 500);
+  }
+}
+
+export async function PUT(request: NextRequest) {
+  try {
+    const auth = await getSignedInApplicant();
+    if ("response" in auth) return auth.response;
+
+    const body = await request.json();
+    const validated = parseAndValidatePayload(body, auth.user, true);
+    if ("response" in validated) return validated.response;
+
+    const existingApplication = await prisma.techCommitteeApplication.findFirst({
+      where: {
+        id: validated.data.id,
+        userId: auth.user.id,
+      },
+      select: {
+        id: true,
+        status: true,
+      },
+    });
+
+    if (!existingApplication) {
+      return validationError("Application not found", 404);
+    }
+
+    if (existingApplication.status !== "pending") {
+      return validationError("Only pending applications can be edited", 409);
+    }
+
+    const updatedApplication = await prisma.techCommitteeApplication.update({
+      where: { id: existingApplication.id },
+      data: {
+        yearLevel: validated.data.yearLevel,
+        experienceText: validated.data.experienceText,
+        whyJoin: validated.data.whyJoin,
+        weeklyCommitment: validated.data.weeklyCommitment,
+        preferredDivision: validated.data.preferredDivision,
+      },
+    });
+
+    return NextResponse.json(updatedApplication);
+  } catch (error) {
+    console.error("Error updating Tech Committee application:", error);
+    return validationError("Failed to update Tech Committee application", 500);
   }
 }

@@ -52,6 +52,7 @@ const DIVISIONS = [
 
 export default function TechCommitteeApplyPage() {
   const { data: session, status } = useSession();
+  const [applicationId, setApplicationId] = useState<number | null>(null);
   const [yearLevel, setYearLevel] = useState("");
   const [experienceText, setExperienceText] = useState("");
   const [whyJoin, setWhyJoin] = useState("");
@@ -60,6 +61,7 @@ export default function TechCommitteeApplyPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isApplicationOpen, setIsApplicationOpen] = useState(true);
   const [hasActiveApplication, setHasActiveApplication] = useState(false);
+  const [hasPendingApplication, setHasPendingApplication] = useState(false);
   const [isPageLoading, setIsPageLoading] = useState(true);
 
   const accountName = useMemo(() => session?.user?.name ?? "", [session]);
@@ -86,6 +88,29 @@ export default function TechCommitteeApplyPage() {
           );
           if (myAppsRes.ok) {
             const myApps = await myAppsRes.json();
+            const pendingApplication = myApps.find(
+              (application: {
+                id: number;
+                status: string;
+                yearLevel: string;
+                experienceText: string;
+                whyJoin: string;
+                weeklyCommitment: string;
+                preferredDivision: string;
+              }) => application.status === "pending"
+            );
+            if (pendingApplication) {
+              setApplicationId(pendingApplication.id);
+              setYearLevel(pendingApplication.yearLevel);
+              setExperienceText(pendingApplication.experienceText);
+              setWhyJoin(pendingApplication.whyJoin);
+              setWeeklyCommitment(pendingApplication.weeklyCommitment);
+              setPreferredDivision(pendingApplication.preferredDivision);
+              setHasPendingApplication(true);
+            } else {
+              setApplicationId(null);
+              setHasPendingApplication(false);
+            }
             const hasActive = myApps.some(
               (application: { status: string }) =>
                 application.status === "pending" ||
@@ -138,11 +163,12 @@ export default function TechCommitteeApplyPage() {
     setIsSubmitting(true);
     try {
       const response = await fetch("/api/tech-committee-application", {
-        method: "POST",
+        method: hasPendingApplication ? "PUT" : "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          id: applicationId,
           name: accountName,
           ritEmail: accountEmail,
           yearLevel,
@@ -159,12 +185,12 @@ export default function TechCommitteeApplyPage() {
         return;
       }
 
-      toast.success("Tech Committee application submitted.");
-      setYearLevel("");
-      setExperienceText("");
-      setWhyJoin("");
-      setWeeklyCommitment("");
-      setPreferredDivision("");
+      if (hasPendingApplication) {
+        toast.success("Tech Committee application updated.");
+      } else {
+        toast.success("Tech Committee application submitted.");
+        setHasActiveApplication(true);
+      }
     } catch (error) {
       console.error("Failed to submit Tech Committee application:", error);
       toast.error("Failed to submit Tech Committee application.");
@@ -221,7 +247,7 @@ export default function TechCommitteeApplyPage() {
     );
   }
 
-  if (hasActiveApplication) {
+  if (hasActiveApplication && !hasPendingApplication) {
     return (
       <div className="mx-auto w-full max-w-3xl px-4 py-12">
         <Card>
@@ -243,8 +269,9 @@ export default function TechCommitteeApplyPage() {
         <CardHeader>
           <CardTitle>Tech Committee Application</CardTitle>
           <CardDescription>
-            Submit your interest in joining Tech Committee. Your name and RIT email
-            are taken from your signed-in account.
+            {hasPendingApplication
+              ? "You have a pending application. You can keep editing it here until it is reviewed."
+              : "Submit your interest in joining Tech Committee. Your name and RIT email are taken from your signed-in account."}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -335,7 +362,13 @@ export default function TechCommitteeApplyPage() {
             </div>
 
             <Button disabled={isSubmitting} type="submit">
-              {isSubmitting ? "Submitting..." : "Submit Application"}
+              {isSubmitting
+                ? hasPendingApplication
+                  ? "Saving..."
+                  : "Submitting..."
+                : hasPendingApplication
+                  ? "Save Application"
+                  : "Submit Application"}
             </Button>
           </form>
         </CardContent>
