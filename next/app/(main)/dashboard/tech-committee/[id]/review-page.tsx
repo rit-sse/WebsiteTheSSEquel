@@ -6,6 +6,7 @@ import { ArrowLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { toast } from "sonner";
 
 type TechCommitteeApplication = {
   id: number;
@@ -50,6 +51,8 @@ export default function TechCommitteeApplicationReviewPage({
 }) {
   const [application, setApplication] =
     useState<TechCommitteeApplication | null>(null);
+  const [isApproving, setIsApproving] = useState(false);
+  const [isRejecting, setIsRejecting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -90,22 +93,109 @@ export default function TechCommitteeApplicationReviewPage({
     };
   }, [applicationId]);
 
+  const handleApprove = async () => {
+    if (!application) return;
+
+    setIsApproving(true);
+    try {
+      const response = await fetch("/api/tech-committee-application/review", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: application.id,
+          action: "approve",
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        throw new Error(data?.error || "Failed to approve application");
+      }
+
+      const updatedApplication = await response.json();
+      setApplication(updatedApplication);
+      toast.success("Application approved");
+    } catch (approveError) {
+      toast.error(
+        approveError instanceof Error
+          ? approveError.message
+          : "Failed to approve application"
+      );
+    } finally {
+      setIsApproving(false);
+    }
+  };
+
+  const handleReject = async () => {
+    if (!application) return;
+
+    setIsRejecting(true);
+    try {
+      const response = await fetch("/api/tech-committee-application/review", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: application.id,
+          action: "reject",
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        throw new Error(data?.error || "Failed to reject application");
+      }
+
+      const updatedApplication = await response.json();
+      setApplication(updatedApplication);
+      toast.success("Application rejected");
+    } catch (rejectError) {
+      toast.error(
+        rejectError instanceof Error
+          ? rejectError.message
+          : "Failed to reject application"
+      );
+    } finally {
+      setIsRejecting(false);
+    }
+  };
+
   return (
     <div className="mx-auto w-full max-w-5xl space-y-6 p-4 sm:p-6 lg:p-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Button asChild variant="outline" size="sm">
           <Link href="/dashboard/tech-committee">
             <ArrowLeft className="h-4 w-4" />
-            Back to queue
+            Back to apps
           </Link>
         </Button>
 
         <div className="flex flex-wrap gap-2">
-          <Button type="button">
-            Approve
+          <Button
+            type="button"
+            onClick={handleApprove}
+            disabled={
+              isLoading ||
+              !application ||
+              application.status !== "pending" ||
+              isApproving ||
+              isRejecting
+            }
+          >
+            {isApproving ? "Approving..." : "Approve"}
           </Button>
-          <Button type="button" variant="destructive">
-            Reject
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={handleReject}
+            disabled={
+              isLoading ||
+              !application ||
+              application.status !== "pending" ||
+              isRejecting ||
+              isApproving
+            }
+          >
+            {isRejecting ? "Rejecting..." : "Reject"}
           </Button>
         </div>
       </div>
