@@ -53,6 +53,10 @@ function getStatusClasses(status: string) {
   return STATUS_STYLES[status] ?? "border-border bg-muted text-foreground";
 }
 
+function notifyApplicationsUpdated() {
+  window.dispatchEvent(new Event("tech-committee-applications-updated"));
+}
+
 export default function TechCommitteeApplicationReviewPage({
   applicationId,
   canTakeActions,
@@ -130,6 +134,7 @@ export default function TechCommitteeApplicationReviewPage({
 
       const updatedApplication = await response.json();
       setApplication(updatedApplication);
+      notifyApplicationsUpdated();
       toast.success("Application approved");
     } catch (approveError) {
       toast.error(
@@ -163,6 +168,7 @@ export default function TechCommitteeApplicationReviewPage({
 
       const updatedApplication = await response.json();
       setApplication(updatedApplication);
+      notifyApplicationsUpdated();
       toast.success("Application rejected");
     } catch (rejectError) {
       toast.error(
@@ -197,6 +203,7 @@ export default function TechCommitteeApplicationReviewPage({
       const updatedApplication = await response.json();
       setApplication(updatedApplication);
       setSelectedDivision(updatedApplication.finalDivision ?? "");
+      notifyApplicationsUpdated();
       toast.success("Application assigned");
     } catch (assignError) {
       toast.error(

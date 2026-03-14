@@ -91,6 +91,11 @@ const dashboardItems = [
         description: "Manage mentor schedules and roster.",
     },
     {
+        title: "Tech Committee Apps",
+        href: "/dashboard/tech-committee",
+        description: "Review Tech Committee applications and manage availability.",
+    },
+    {
         title: "Positions & Officers",
         href: "/dashboard/positions",
         description: "Manage officer positions and assignments.",
@@ -133,12 +138,14 @@ const Navbar: React.FC<NavbarProps> = ({
     const [userId, setUserId] = React.useState<number | null>(serverUserId);
     const [profileComplete, setProfileComplete] = React.useState(serverProfileComplete);
     const [hasMentorAvailabilityUpdates, setHasMentorAvailabilityUpdates] = React.useState(false);
+    const [canViewTechCommitteeDashboard, setCanViewTechCommitteeDashboard] = React.useState(false);
 
     // Background refresh so dynamic changes (e.g. profile completion) still propagate
     React.useEffect(() => {
         if (!session) {
             setShowDashboard(false);
             setUserId(null);
+            setCanViewTechCommitteeDashboard(false);
             return;
         }
         
@@ -149,6 +156,13 @@ const Navbar: React.FC<NavbarProps> = ({
                 setShowDashboard(data.isOfficer || data.isMentor);
                 setUserId(data.userId ?? null);
                 setProfileComplete(data.profileComplete ?? true);
+                setCanViewTechCommitteeDashboard(
+                    !!(
+                        data.isTechCommitteeHead ||
+                        data.isPrimary ||
+                        data.isTechCommitteeDivisionManager
+                    )
+                );
                 if (data.isMentoringHead) {
                     const updatesResponse = await fetch("/api/mentor-availability/updates");
                     if (updatesResponse.ok) {
@@ -164,9 +178,19 @@ const Navbar: React.FC<NavbarProps> = ({
                 }
             } catch (error) {
                 console.error("Error checking auth level:", error);
+                setCanViewTechCommitteeDashboard(false);
             }
         })();
     }, [session]);
+
+    const visibleDashboardItems = React.useMemo(
+        () =>
+            dashboardItems.filter(
+                (item) =>
+                    item.href !== "/dashboard/tech-committee" || canViewTechCommitteeDashboard
+            ),
+        [canViewTechCommitteeDashboard]
+    );
 
     React.useEffect(() => {
         const handleMentorAvailabilitySeen = () => {
@@ -296,7 +320,7 @@ const Navbar: React.FC<NavbarProps> = ({
                                     </NavigationMenuTrigger>
                                     <NavigationMenuContent>
                                         <ul className="grid gap-3 p-4 md:w-[400px] lg:w-[500px] lg:grid-cols-2">
-                                            {dashboardItems.map((item) => (
+                                            {visibleDashboardItems.map((item) => (
                                                 <ListItem
                                                     key={item.title}
                                                     title={
@@ -386,7 +410,7 @@ const Navbar: React.FC<NavbarProps> = ({
                                             </span>
                                         }
                                     >
-                                        {dashboardItems.map((item) => (
+                                        {visibleDashboardItems.map((item) => (
                                             <MobileNavLink
                                                 key={item.title}
                                                 href={item.href}

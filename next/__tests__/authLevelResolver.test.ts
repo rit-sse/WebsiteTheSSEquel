@@ -86,7 +86,7 @@ describe("authLevelResolver", () => {
       officers: [
         { id: 1, position: { title: "Mentoring Head", is_primary: false } },
         { id: 2, position: { title: "Tech Head", is_primary: false } },
-        { id: 4, position: { title: "Lab Ops Head", is_primary: false } },
+        { id: 4, position: { title: "Lab Division Manager", is_primary: false } },
         { id: 3, position: { title: "Projects Head", is_primary: true } },
       ],
       _count: { Memberships: 2 },

@@ -11,7 +11,7 @@ export default function TechCommitteeDashboardPage() {
               Tech Committee Applications
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Review current applicants
+              Review current applicants and manage application availability.
             </p>
           </div>
 
