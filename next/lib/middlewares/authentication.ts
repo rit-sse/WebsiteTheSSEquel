@@ -188,6 +188,21 @@ const mentorApplicationVerifier: AuthVerifier = async (
 };
 
 /**
+ * Auth verifier for Tech Committee applications:
+ * - GET passes through (route handles public status, own application, and reviewer list checks)
+ * - POST/PUT require signed-in user for applicant submission/edit flows
+ */
+const techCommitteeApplicationVerifier: AuthVerifier = async (
+  request: NextRequest
+) => {
+  if (request.method === "GET") {
+    return { isAllowed: true, authType: "None" };
+  }
+
+  return signedInVerifier(request);
+};
+
+/**
  * Auth verifier for library routes:
  * - public GETs for catalog/search/statistics/category and book lookup routes
  * - copy creation requires any signed-in user
@@ -268,6 +283,7 @@ const ROUTES: { [key: string]: AuthVerifier } = {
   skills: nonGetOfficerVerifier,
   sponsor: nonGetOfficerVerifier,
   "swipe-access": officerVerifier,
+  "tech-committee-application": techCommitteeApplicationVerifier,
   user: userVerifier,
   userProject: nonGetOfficerVerifier,
   when2meet: signedInVerifier,
