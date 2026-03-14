@@ -5,6 +5,13 @@ import { useEffect, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type TechCommitteeApplication = {
   id: number;
@@ -31,6 +38,14 @@ const STATUS_STYLES: Record<string, string> = {
 };
 
 const PAGE_SIZE = 10;
+const STATUS_FILTERS = [
+  { value: "active", label: "Active Queue" },
+  { value: "all", label: "All Applications" },
+  { value: "pending", label: "Pending" },
+  { value: "approved", label: "Approved" },
+  { value: "assigned", label: "Assigned" },
+  { value: "rejected", label: "Rejected" },
+] as const;
 
 function formatDate(date: string) {
   return new Date(date).toLocaleDateString("en-US", {
@@ -48,6 +63,7 @@ export default function TechCommitteeApplicationsGrid() {
   const [applications, setApplications] = useState<TechCommitteeApplication[]>(
     []
   );
+  const [statusFilter, setStatusFilter] = useState<string>("active");
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -87,18 +103,56 @@ export default function TechCommitteeApplicationsGrid() {
     };
   }, []);
 
-  const totalPages = Math.max(1, Math.ceil(applications.length / PAGE_SIZE));
+  const filteredApplications = useMemo(() => {
+    if (statusFilter === "all") {
+      return applications;
+    }
+
+    if (statusFilter === "active") {
+      return applications.filter(
+        (application) =>
+          application.status === "pending" || application.status === "approved"
+      );
+    }
+
+    return applications.filter(
+      (application) => application.status === statusFilter
+    );
+  }, [applications, statusFilter]);
+
+  const counts = useMemo(() => {
+    return applications.reduce(
+      (acc, application) => {
+        acc[application.status] = (acc[application.status] ?? 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
+  }, [applications]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredApplications.length / PAGE_SIZE));
 
   const paginatedApplications = useMemo(() => {
     const start = (page - 1) * PAGE_SIZE;
-    return applications.slice(start, start + PAGE_SIZE);
-  }, [applications, page]);
+    return filteredApplications.slice(start, start + PAGE_SIZE);
+  }, [filteredApplications, page]);
+
+  const startCount =
+    filteredApplications.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
+  const endCount =
+    filteredApplications.length === 0
+      ? 0
+      : Math.min(page * PAGE_SIZE, filteredApplications.length);
 
   useEffect(() => {
     if (page > totalPages) {
       setPage(totalPages);
     }
   }, [page, totalPages]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [statusFilter]);
 
   if (isLoading) {
     return (
@@ -137,6 +191,41 @@ export default function TechCommitteeApplicationsGrid() {
 
   return (
     <div className="space-y-4">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div className="flex flex-wrap gap-2">
+          <Badge variant="outline" className={getStatusClasses("pending")}>
+            Pending {counts.pending ?? 0}
+          </Badge>
+          <Badge variant="outline" className={getStatusClasses("approved")}>
+            Approved {counts.approved ?? 0}
+          </Badge>
+          <Badge variant="outline" className={getStatusClasses("assigned")}>
+            Assigned {counts.assigned ?? 0}
+          </Badge>
+          <Badge variant="outline" className={getStatusClasses("rejected")}>
+            Rejected {counts.rejected ?? 0}
+          </Badge>
+        </div>
+
+        <div className="w-full max-w-xs space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            View
+          </p>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger>
+              <SelectValue placeholder="Filter applications" />
+            </SelectTrigger>
+            <SelectContent>
+              {STATUS_FILTERS.map((filter) => (
+                <SelectItem key={filter.value} value={filter.value}>
+                  {filter.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
       <div className="hidden items-center gap-4 px-4 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground md:grid md:grid-cols-[2.2fr_1.2fr_1fr_auto]">
         <p>Name</p>
         <p>Applied</p>
@@ -144,7 +233,14 @@ export default function TechCommitteeApplicationsGrid() {
         <p>Review</p>
       </div>
 
-      <div className="space-y-3">
+      {filteredApplications.length === 0 ? (
+        <Card depth={2}>
+          <CardContent className="p-6 text-sm text-muted-foreground">
+            No applications match the current filter.
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-3">
         {paginatedApplications.map((application) => (
           <Card key={application.id} depth={2}>
             <CardContent className="grid gap-4 p-5 md:grid-cols-[2.2fr_1.2fr_1fr_auto] md:items-center">
@@ -187,12 +283,12 @@ export default function TechCommitteeApplicationsGrid() {
             </CardContent>
           </Card>
         ))}
-      </div>
+        </div>
+      )}
 
       <div className="flex flex-col gap-3 border-t border-border/60 pt-4 text-sm sm:flex-row sm:items-center sm:justify-between">
         <p className="text-muted-foreground">
-          Showing {(page - 1) * PAGE_SIZE + 1}-
-          {Math.min(page * PAGE_SIZE, applications.length)} of {applications.length}
+          Showing {startCount}-{endCount} of {filteredApplications.length}
         </p>
 
         <div className="flex items-center gap-2">
@@ -201,7 +297,7 @@ export default function TechCommitteeApplicationsGrid() {
             variant="outline"
             size="sm"
             onClick={() => setPage((current) => Math.max(1, current - 1))}
-            disabled={page === 1}
+            disabled={page === 1 || filteredApplications.length === 0}
           >
             Previous
           </Button>
@@ -215,7 +311,7 @@ export default function TechCommitteeApplicationsGrid() {
             onClick={() =>
               setPage((current) => Math.min(totalPages, current + 1))
             }
-            disabled={page === totalPages}
+            disabled={page === totalPages || filteredApplications.length === 0}
           >
             Next
           </Button>

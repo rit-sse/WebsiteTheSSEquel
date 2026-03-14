@@ -34,6 +34,7 @@ describe("/api/tech-committee-application/apps/[id] route", () => {
     vi.clearAllMocks();
     mockGetGatewayAuthLevel.mockResolvedValue({
       isTechCommitteeHead: false,
+      isTechCommitteeDivisionManager: false,
       isPrimary: false,
     });
   });
@@ -49,6 +50,7 @@ describe("/api/tech-committee-application/apps/[id] route", () => {
   it("returns 404 when the application does not exist", async () => {
     mockGetGatewayAuthLevel.mockResolvedValue({
       isTechCommitteeHead: true,
+      isTechCommitteeDivisionManager: false,
       isPrimary: false,
     });
     mockTechCommitteeApplicationFindUnique.mockResolvedValue(null);
@@ -63,6 +65,7 @@ describe("/api/tech-committee-application/apps/[id] route", () => {
   it("returns the requested application for reviewers", async () => {
     mockGetGatewayAuthLevel.mockResolvedValue({
       isTechCommitteeHead: false,
+      isTechCommitteeDivisionManager: false,
       isPrimary: true,
     });
     mockTechCommitteeApplicationFindUnique.mockResolvedValue({
@@ -101,5 +104,27 @@ describe("/api/tech-committee-application/apps/[id] route", () => {
       },
     });
     expect(body.id).toBe(7);
+  });
+
+  it("returns the requested application for division managers", async () => {
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isTechCommitteeHead: false,
+      isTechCommitteeDivisionManager: true,
+      isPrimary: false,
+    });
+    mockTechCommitteeApplicationFindUnique.mockResolvedValue({
+      id: 9,
+      user: {
+        id: 15,
+        name: "Viewer User",
+        email: "viewer@g.rit.edu",
+      },
+    });
+
+    const res = await GET(req("http://localhost/api/tech-committee-application/apps/9"), {
+      params: Promise.resolve({ id: "9" }),
+    });
+
+    expect(res.status).toBe(200);
   });
 });

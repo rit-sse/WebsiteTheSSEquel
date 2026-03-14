@@ -14,7 +14,11 @@ type ReviewPayload = {
 
 async function canReviewApplications(request: NextRequest) {
   const authLevel = await getGatewayAuthLevel(request);
-  return authLevel.isTechCommitteeHead || authLevel.isPrimary;
+  return (
+    authLevel.isTechCommitteeHead ||
+    authLevel.isPrimary ||
+    authLevel.isTechCommitteeDivisionManager
+  );
 }
 
 export async function PUT(request: NextRequest) {

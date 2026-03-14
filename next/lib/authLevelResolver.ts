@@ -7,6 +7,8 @@ import {
   MENTOR_HEAD_TITLE,
   PROJECTS_HEAD_TITLE,
   TECH_COMMITTEE_HEAD_TITLE,
+  TECH_COMMITTEE_DIVISION_MANAGER_BY_TITLE,
+  TECH_COMMITTEE_DIVISION_MANAGER_TITLES,
 } from "@/lib/utils";
 
 type ResolveOptions = {
@@ -25,6 +27,8 @@ function getDefaultAuthLevel(includeProfileComplete: boolean): AuthLevel {
     isMentoringHead: false,
     isProjectsHead: false,
     isTechCommitteeHead: false,
+    isTechCommitteeDivisionManager: false,
+    techCommitteeManagedDivision: null,
     isPrimary: false,
   };
 
@@ -82,6 +86,8 @@ export async function resolveAuthLevelFromToken(
     authLevel.isMentoringHead = true;
     authLevel.isProjectsHead = true;
     authLevel.isTechCommitteeHead = true;
+    authLevel.isTechCommitteeDivisionManager = true;
+    authLevel.techCommitteeManagedDivision = "Lab Division";
     authLevel.isPrimary = true;
   }
 
@@ -148,6 +154,21 @@ export async function resolveAuthLevelFromToken(
     authLevel.isTechCommitteeHead = user.officers.some(
       (officer) => officer.position.title === TECH_COMMITTEE_HEAD_TITLE
     );
+    authLevel.isTechCommitteeDivisionManager = user.officers.some((officer) =>
+      TECH_COMMITTEE_DIVISION_MANAGER_TITLES.includes(
+        officer.position.title as (typeof TECH_COMMITTEE_DIVISION_MANAGER_TITLES)[number]
+      )
+    );
+    const managedDivisionOfficer = user.officers.find((officer) =>
+      TECH_COMMITTEE_DIVISION_MANAGER_TITLES.includes(
+        officer.position.title as (typeof TECH_COMMITTEE_DIVISION_MANAGER_TITLES)[number]
+      )
+    );
+    authLevel.techCommitteeManagedDivision = managedDivisionOfficer
+      ? TECH_COMMITTEE_DIVISION_MANAGER_BY_TITLE[
+          managedDivisionOfficer.position.title as keyof typeof TECH_COMMITTEE_DIVISION_MANAGER_BY_TITLE
+        ]
+      : null;
     authLevel.isPrimary = user.officers.some(
       (officer) => officer.position.is_primary
     );

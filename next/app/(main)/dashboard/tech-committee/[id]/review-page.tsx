@@ -55,8 +55,12 @@ function getStatusClasses(status: string) {
 
 export default function TechCommitteeApplicationReviewPage({
   applicationId,
+  canTakeActions,
+  managedDivision,
 }: {
   applicationId: string;
+  canTakeActions: boolean;
+  managedDivision: string | null;
 }) {
   const [application, setApplication] =
     useState<TechCommitteeApplication | null>(null);
@@ -221,6 +225,7 @@ export default function TechCommitteeApplicationReviewPage({
             onClick={handleApprove}
             disabled={
               isLoading ||
+              !canTakeActions ||
               application?.status !== "pending" ||
               isApproving ||
               isRejecting ||
@@ -235,6 +240,7 @@ export default function TechCommitteeApplicationReviewPage({
             onClick={handleReject}
             disabled={
               isLoading ||
+              !canTakeActions ||
               !application ||
               application.status !== "pending" ||
               isRejecting ||
@@ -327,13 +333,19 @@ export default function TechCommitteeApplicationReviewPage({
                 <Select
                   value={selectedDivision}
                   onValueChange={setSelectedDivision}
-                  disabled={application.status !== "approved" || isAssigning}
+                  disabled={
+                    application.status !== "approved" ||
+                    isAssigning ||
+                    !canTakeActions
+                  }
                 >
                   <SelectTrigger className="max-w-sm">
                     <SelectValue placeholder="Select a final division" />
                   </SelectTrigger>
                   <SelectContent>
-                    {DIVISIONS.map((division) => (
+                    {DIVISIONS.filter((division) =>
+                      managedDivision ? division === managedDivision : true
+                    ).map((division) => (
                       <SelectItem key={division} value={division}>
                         {division}
                       </SelectItem>
@@ -348,6 +360,7 @@ export default function TechCommitteeApplicationReviewPage({
                   onClick={handleAssign}
                   disabled={
                     isLoading ||
+                    !canTakeActions ||
                     !application ||
                     application.status !== "approved" ||
                     !selectedDivision ||

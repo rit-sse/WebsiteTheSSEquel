@@ -34,6 +34,7 @@ describe("/api/tech-committee-application/apps route", () => {
     vi.clearAllMocks();
     mockGetGatewayAuthLevel.mockResolvedValue({
       isTechCommitteeHead: false,
+      isTechCommitteeDivisionManager: false,
       isPrimary: false,
     });
   });
@@ -49,6 +50,7 @@ describe("/api/tech-committee-application/apps route", () => {
   it("returns applications for reviewers", async () => {
     mockGetGatewayAuthLevel.mockResolvedValue({
       isTechCommitteeHead: true,
+      isTechCommitteeDivisionManager: false,
       isPrimary: false,
     });
     mockTechCommitteeApplicationFindMany.mockResolvedValue([
@@ -98,6 +100,7 @@ describe("/api/tech-committee-application/apps route", () => {
   it("applies a status filter when provided", async () => {
     mockGetGatewayAuthLevel.mockResolvedValue({
       isTechCommitteeHead: false,
+      isTechCommitteeDivisionManager: false,
       isPrimary: true,
     });
     mockTechCommitteeApplicationFindMany.mockResolvedValue([]);
@@ -120,5 +123,20 @@ describe("/api/tech-committee-application/apps route", () => {
       },
       orderBy: { createdAt: "desc" },
     });
+  });
+
+  it("returns applications for division managers", async () => {
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isTechCommitteeHead: false,
+      isTechCommitteeDivisionManager: true,
+      isPrimary: false,
+    });
+    mockTechCommitteeApplicationFindMany.mockResolvedValue([]);
+
+    const res = await GET(
+      req("http://localhost/api/tech-committee-application/apps")
+    );
+
+    expect(res.status).toBe(200);
   });
 });

@@ -10,7 +10,11 @@ function validationError(message: string, status = 400) {
 
 async function canReviewApplications(request: NextRequest) {
   const authLevel = await getGatewayAuthLevel(request);
-  return authLevel.isTechCommitteeHead || authLevel.isPrimary;
+  return (
+    authLevel.isTechCommitteeHead ||
+    authLevel.isPrimary ||
+    authLevel.isTechCommitteeDivisionManager
+  );
 }
 
 export async function GET(request: NextRequest) {
@@ -18,7 +22,7 @@ export async function GET(request: NextRequest) {
     const canReview = await canReviewApplications(request);
     if (!canReview) {
       return validationError(
-        "Only Tech Head or Primary Officers can view Tech Committee applications",
+        "Only Tech Head, Primary Officers, or Tech Committee division managers can view Tech Committee applications",
         403
       );
     }

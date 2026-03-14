@@ -46,6 +46,8 @@ describe("/api/tech-committee-application/review route", () => {
     vi.clearAllMocks();
     mockGetGatewayAuthLevel.mockResolvedValue({
       isTechCommitteeHead: false,
+      isTechCommitteeDivisionManager: false,
+      techCommitteeManagedDivision: null,
       isPrimary: false,
     });
     mockIsEmailConfigured.mockReturnValue(true);
@@ -60,6 +62,8 @@ describe("/api/tech-committee-application/review route", () => {
   it("rejects unsupported actions", async () => {
     mockGetGatewayAuthLevel.mockResolvedValue({
       isTechCommitteeHead: true,
+      isTechCommitteeDivisionManager: false,
+      techCommitteeManagedDivision: null,
       isPrimary: false,
     });
 
@@ -70,6 +74,8 @@ describe("/api/tech-committee-application/review route", () => {
   it("returns 404 when the application does not exist", async () => {
     mockGetGatewayAuthLevel.mockResolvedValue({
       isTechCommitteeHead: false,
+      isTechCommitteeDivisionManager: false,
+      techCommitteeManagedDivision: null,
       isPrimary: true,
     });
     mockTechCommitteeApplicationFindUnique.mockResolvedValue(null);
@@ -81,6 +87,8 @@ describe("/api/tech-committee-application/review route", () => {
   it("returns conflict for non-pending applications", async () => {
     mockGetGatewayAuthLevel.mockResolvedValue({
       isTechCommitteeHead: true,
+      isTechCommitteeDivisionManager: false,
+      techCommitteeManagedDivision: null,
       isPrimary: false,
     });
     mockTechCommitteeApplicationFindUnique.mockResolvedValue({
@@ -100,6 +108,8 @@ describe("/api/tech-committee-application/review route", () => {
   it("approves a pending application for reviewers", async () => {
     mockGetGatewayAuthLevel.mockResolvedValue({
       isTechCommitteeHead: false,
+      isTechCommitteeDivisionManager: false,
+      techCommitteeManagedDivision: null,
       isPrimary: true,
     });
     mockTechCommitteeApplicationFindUnique.mockResolvedValue({
@@ -144,6 +154,8 @@ describe("/api/tech-committee-application/review route", () => {
   it("rejects a pending application and sends email", async () => {
     mockGetGatewayAuthLevel.mockResolvedValue({
       isTechCommitteeHead: true,
+      isTechCommitteeDivisionManager: false,
+      techCommitteeManagedDivision: null,
       isPrimary: false,
     });
     mockTechCommitteeApplicationFindUnique.mockResolvedValue({
@@ -189,6 +201,8 @@ describe("/api/tech-committee-application/review route", () => {
   it("returns 503 and rolls back when email is not configured for rejection", async () => {
     mockGetGatewayAuthLevel.mockResolvedValue({
       isTechCommitteeHead: false,
+      isTechCommitteeDivisionManager: false,
+      techCommitteeManagedDivision: null,
       isPrimary: true,
     });
     mockIsEmailConfigured.mockReturnValue(false);
@@ -228,6 +242,8 @@ describe("/api/tech-committee-application/review route", () => {
   it("returns 502 and rolls back when rejection email fails", async () => {
     mockGetGatewayAuthLevel.mockResolvedValue({
       isTechCommitteeHead: true,
+      isTechCommitteeDivisionManager: false,
+      techCommitteeManagedDivision: null,
       isPrimary: false,
     });
     mockSendEmail.mockRejectedValue(new Error("smtp failed"));
@@ -262,5 +278,36 @@ describe("/api/tech-committee-application/review route", () => {
       where: { id: 10 },
       data: { status: "pending" },
     });
+  });
+
+  it("allows division managers to approve pending applications", async () => {
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isTechCommitteeHead: false,
+      isTechCommitteeDivisionManager: true,
+      techCommitteeManagedDivision: "Lab Division",
+      isPrimary: false,
+    });
+    mockTechCommitteeApplicationFindUnique.mockResolvedValue({
+      id: 11,
+      status: "pending",
+      user: {
+        id: 16,
+        name: "Manager Action User",
+        email: "manager@g.rit.edu",
+      },
+    });
+    mockTechCommitteeApplicationUpdate.mockResolvedValue({
+      id: 11,
+      status: "approved",
+      user: {
+        id: 16,
+        name: "Manager Action User",
+        email: "manager@g.rit.edu",
+      },
+    });
+
+    const res = await PUT(req({ id: 11, action: "approve" }));
+
+    expect(res.status).toBe(200);
   });
 });

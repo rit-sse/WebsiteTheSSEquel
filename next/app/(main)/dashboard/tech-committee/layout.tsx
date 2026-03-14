@@ -10,7 +10,11 @@ export default async function TechCommitteeDashboardLayout({
 
   if (
     !authLevel.isUser ||
-    !(authLevel.isTechCommitteeHead || authLevel.isPrimary)
+    !(
+      authLevel.isTechCommitteeHead ||
+      authLevel.isPrimary ||
+      authLevel.isTechCommitteeDivisionManager
+    )
   ) {
     redirect("/dashboard/positions");
   }

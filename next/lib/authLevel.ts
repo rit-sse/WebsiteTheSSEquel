@@ -8,6 +8,8 @@ export type AuthLevel = {
   isMentoringHead: boolean;
   isProjectsHead: boolean;
   isTechCommitteeHead: boolean;
+  isTechCommitteeDivisionManager: boolean;
+  techCommitteeManagedDivision: string | null;
   isPrimary: boolean;
   profileComplete?: boolean;
 };

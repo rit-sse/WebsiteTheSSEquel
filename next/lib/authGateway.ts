@@ -12,6 +12,8 @@ const DEFAULT_GATEWAY_AUTH_LEVEL: GatewayAuthLevel = {
   isMentoringHead: false,
   isProjectsHead: false,
   isTechCommitteeHead: false,
+  isTechCommitteeDivisionManager: false,
+  techCommitteeManagedDivision: null,
   isPrimary: false,
 };
 

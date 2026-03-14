@@ -56,6 +56,8 @@ describe("authLevelResolver", () => {
       isMentoringHead: false,
       isProjectsHead: false,
       isTechCommitteeHead: false,
+      isTechCommitteeDivisionManager: false,
+      techCommitteeManagedDivision: null,
       isPrimary: false,
     });
   });
@@ -67,6 +69,8 @@ describe("authLevelResolver", () => {
     expect(auth.isMentoringHead).toBe(true);
     expect(auth.isProjectsHead).toBe(true);
     expect(auth.isTechCommitteeHead).toBe(true);
+    expect(auth.isTechCommitteeDivisionManager).toBe(true);
+    expect(auth.techCommitteeManagedDivision).toBe("Lab Division");
     expect(auth.isPrimary).toBe(true);
   });
 
@@ -82,6 +86,7 @@ describe("authLevelResolver", () => {
       officers: [
         { id: 1, position: { title: "Mentoring Head", is_primary: false } },
         { id: 2, position: { title: "Tech Head", is_primary: false } },
+        { id: 4, position: { title: "Lab Ops Head", is_primary: false } },
         { id: 3, position: { title: "Projects Head", is_primary: true } },
       ],
       _count: { Memberships: 2 },
@@ -99,6 +104,8 @@ describe("authLevelResolver", () => {
       isMentoringHead: true,
       isProjectsHead: true,
       isTechCommitteeHead: true,
+      isTechCommitteeDivisionManager: true,
+      techCommitteeManagedDivision: "Lab Division",
       isPrimary: true,
       profileComplete: true,
     });
@@ -126,6 +133,8 @@ describe("authLevelResolver", () => {
     expect(auth.profileComplete).toBe(false);
     expect(auth.isOfficer).toBe(true);
     expect(auth.isTechCommitteeHead).toBe(true);
+    expect(auth.isTechCommitteeDivisionManager).toBe(true);
+    expect(auth.techCommitteeManagedDivision).toBe("Lab Division");
     expect(auth.isPrimary).toBe(true);
   });
 });

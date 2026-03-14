@@ -33,3 +33,11 @@ export const isUrlValid = (str: string) => {
 export const MENTOR_HEAD_TITLE = "Mentoring Head";
 export const PROJECTS_HEAD_TITLE = "Projects Head";
 export const TECH_COMMITTEE_HEAD_TITLE = "Tech Head";
+export const TECH_COMMITTEE_DIVISION_MANAGER_BY_TITLE = {
+  "Lab Division Manager": "Lab Division",
+  "Web Division Manager": "Web Division",
+  "Services Division Manager": "Services Division",
+} as const;
+export const TECH_COMMITTEE_DIVISION_MANAGER_TITLES = Object.keys(
+  TECH_COMMITTEE_DIVISION_MANAGER_BY_TITLE
+) as Array<keyof typeof TECH_COMMITTEE_DIVISION_MANAGER_BY_TITLE>;

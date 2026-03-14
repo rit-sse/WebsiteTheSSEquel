@@ -48,6 +48,8 @@ describe("/api/tech-committee-application/assign route", () => {
     vi.clearAllMocks();
     mockGetGatewayAuthLevel.mockResolvedValue({
       isTechCommitteeHead: false,
+      isTechCommitteeDivisionManager: false,
+      techCommitteeManagedDivision: null,
       isPrimary: false,
     });
     mockIsEmailConfigured.mockReturnValue(true);
@@ -62,6 +64,8 @@ describe("/api/tech-committee-application/assign route", () => {
   it("rejects invalid divisions", async () => {
     mockGetGatewayAuthLevel.mockResolvedValue({
       isTechCommitteeHead: true,
+      isTechCommitteeDivisionManager: false,
+      techCommitteeManagedDivision: null,
       isPrimary: false,
     });
 
@@ -72,6 +76,8 @@ describe("/api/tech-committee-application/assign route", () => {
   it("returns 404 when the application does not exist", async () => {
     mockGetGatewayAuthLevel.mockResolvedValue({
       isTechCommitteeHead: false,
+      isTechCommitteeDivisionManager: false,
+      techCommitteeManagedDivision: null,
       isPrimary: true,
     });
     mockTechCommitteeApplicationFindUnique.mockResolvedValue(null);
@@ -83,6 +89,8 @@ describe("/api/tech-committee-application/assign route", () => {
   it("returns conflict for non-approved applications", async () => {
     mockGetGatewayAuthLevel.mockResolvedValue({
       isTechCommitteeHead: true,
+      isTechCommitteeDivisionManager: false,
+      techCommitteeManagedDivision: null,
       isPrimary: false,
     });
     mockTechCommitteeApplicationFindUnique.mockResolvedValue({
@@ -102,6 +110,8 @@ describe("/api/tech-committee-application/assign route", () => {
   it("assigns an approved application to a final division", async () => {
     mockGetGatewayAuthLevel.mockResolvedValue({
       isTechCommitteeHead: false,
+      isTechCommitteeDivisionManager: false,
+      techCommitteeManagedDivision: null,
       isPrimary: true,
     });
     mockTechCommitteeApplicationFindUnique.mockResolvedValue({
@@ -152,6 +162,8 @@ describe("/api/tech-committee-application/assign route", () => {
   it("returns 503 and rolls back when email is not configured for assignment", async () => {
     mockGetGatewayAuthLevel.mockResolvedValue({
       isTechCommitteeHead: true,
+      isTechCommitteeDivisionManager: false,
+      techCommitteeManagedDivision: null,
       isPrimary: false,
     });
     mockIsEmailConfigured.mockReturnValue(false);
@@ -197,6 +209,8 @@ describe("/api/tech-committee-application/assign route", () => {
   it("returns 502 and rolls back when onboarding email fails", async () => {
     mockGetGatewayAuthLevel.mockResolvedValue({
       isTechCommitteeHead: false,
+      isTechCommitteeDivisionManager: false,
+      techCommitteeManagedDivision: null,
       isPrimary: true,
     });
     mockSendEmail.mockRejectedValue(new Error("smtp failed"));
@@ -237,5 +251,51 @@ describe("/api/tech-committee-application/assign route", () => {
         finalDivision: null,
       },
     });
+  });
+
+  it("allows division managers to assign into their own division", async () => {
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isTechCommitteeHead: false,
+      isTechCommitteeDivisionManager: true,
+      techCommitteeManagedDivision: "Lab Division",
+      isPrimary: false,
+    });
+    mockTechCommitteeApplicationFindUnique.mockResolvedValue({
+      id: 10,
+      status: "approved",
+      finalDivision: null,
+      user: {
+        id: 20,
+        name: "Division Managed User",
+        email: "division@g.rit.edu",
+      },
+    });
+    mockTechCommitteeApplicationUpdate.mockResolvedValue({
+      id: 10,
+      status: "assigned",
+      finalDivision: "Lab Division",
+      user: {
+        id: 20,
+        name: "Division Managed User",
+        email: "division@g.rit.edu",
+      },
+    });
+
+    const res = await PUT(req({ id: 10, finalDivision: "Lab Division" }));
+
+    expect(res.status).toBe(200);
+  });
+
+  it("forbids division managers from assigning outside their own division", async () => {
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isTechCommitteeHead: false,
+      isTechCommitteeDivisionManager: true,
+      techCommitteeManagedDivision: "Lab Division",
+      isPrimary: false,
+    });
+
+    const res = await PUT(req({ id: 11, finalDivision: "Web Division" }));
+
+    expect(res.status).toBe(403);
   });
 });

@@ -19,14 +19,15 @@ type AssignPayload = {
   finalDivision?: string;
 };
 
-async function canAssignApplications(request: NextRequest) {
-  const authLevel = await getGatewayAuthLevel(request);
-  return authLevel.isTechCommitteeHead || authLevel.isPrimary;
-}
-
 export async function PUT(request: NextRequest) {
   try {
-    if (!(await canAssignApplications(request))) {
+    const authLevel = await getGatewayAuthLevel(request);
+    const canAssign =
+      authLevel.isTechCommitteeHead ||
+      authLevel.isPrimary ||
+      authLevel.isTechCommitteeDivisionManager;
+
+    if (!canAssign) {
       return ApiError.forbidden();
     }
 
@@ -50,6 +51,15 @@ export async function PUT(request: NextRequest) {
 
     if (!VALID_DIVISIONS.includes(finalDivision as (typeof VALID_DIVISIONS)[number])) {
       return ApiError.badRequest("Invalid final division");
+    }
+
+    if (
+      authLevel.isTechCommitteeDivisionManager &&
+      !authLevel.isTechCommitteeHead &&
+      !authLevel.isPrimary &&
+      authLevel.techCommitteeManagedDivision !== finalDivision
+    ) {
+      return ApiError.forbidden();
     }
 
     const existingApplication = await prisma.techCommitteeApplication.findUnique({

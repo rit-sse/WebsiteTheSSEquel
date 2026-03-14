@@ -47,6 +47,8 @@ describe("authGateway", () => {
       isMentoringHead: false,
       isProjectsHead: false,
       isTechCommitteeHead: false,
+      isTechCommitteeDivisionManager: false,
+      techCommitteeManagedDivision: null,
       isPrimary: false,
     });
   });
