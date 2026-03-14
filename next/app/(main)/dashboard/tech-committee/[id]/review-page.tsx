@@ -6,6 +6,13 @@ import { ArrowLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 
 type TechCommitteeApplication = {
@@ -32,6 +39,8 @@ const STATUS_STYLES: Record<string, string> = {
   assigned: "border-green-500/30 bg-green-500/10 text-green-700",
 };
 
+const DIVISIONS = ["Web Division", "Lab Division", "Services Division"] as const;
+
 function formatDate(date: string) {
   return new Date(date).toLocaleDateString("en-US", {
     month: "short",
@@ -51,8 +60,10 @@ export default function TechCommitteeApplicationReviewPage({
 }) {
   const [application, setApplication] =
     useState<TechCommitteeApplication | null>(null);
+  const [selectedDivision, setSelectedDivision] = useState<string>("");
   const [isApproving, setIsApproving] = useState(false);
   const [isRejecting, setIsRejecting] = useState(false);
+  const [isAssigning, setIsAssigning] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -72,6 +83,7 @@ export default function TechCommitteeApplicationReviewPage({
         const data = await response.json();
         if (!isMounted) return;
         setApplication(data);
+        setSelectedDivision(data.finalDivision ?? data.preferredDivision ?? "");
       } catch (fetchError) {
         if (!isMounted) return;
         setError(
@@ -159,6 +171,40 @@ export default function TechCommitteeApplicationReviewPage({
     }
   };
 
+  const handleAssign = async () => {
+    if (!application || !selectedDivision) return;
+
+    setIsAssigning(true);
+    try {
+      const response = await fetch("/api/tech-committee-application/assign", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: application.id,
+          finalDivision: selectedDivision,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        throw new Error(data?.error || "Failed to assign application");
+      }
+
+      const updatedApplication = await response.json();
+      setApplication(updatedApplication);
+      setSelectedDivision(updatedApplication.finalDivision ?? "");
+      toast.success("Application assigned");
+    } catch (assignError) {
+      toast.error(
+        assignError instanceof Error
+          ? assignError.message
+          : "Failed to assign application"
+      );
+    } finally {
+      setIsAssigning(false);
+    }
+  };
+
   return (
     <div className="mx-auto w-full max-w-5xl space-y-6 p-4 sm:p-6 lg:p-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -175,10 +221,10 @@ export default function TechCommitteeApplicationReviewPage({
             onClick={handleApprove}
             disabled={
               isLoading ||
-              !application ||
-              application.status !== "pending" ||
+              application?.status !== "pending" ||
               isApproving ||
-              isRejecting
+              isRejecting ||
+              isAssigning
             }
           >
             {isApproving ? "Approving..." : "Approve"}
@@ -192,7 +238,8 @@ export default function TechCommitteeApplicationReviewPage({
               !application ||
               application.status !== "pending" ||
               isRejecting ||
-              isApproving
+              isApproving ||
+              isAssigning
             }
           >
             {isRejecting ? "Rejecting..." : "Reject"}
@@ -264,6 +311,53 @@ export default function TechCommitteeApplicationReviewPage({
                   Weekly Commitment
                 </p>
                 <p className="mt-1 text-sm">{application.weeklyCommitment}</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card depth={1}>
+            <CardHeader>
+              <CardTitle className="text-lg">Division Assignment</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                  Final Division
+                </p>
+                <Select
+                  value={selectedDivision}
+                  onValueChange={setSelectedDivision}
+                  disabled={application.status !== "approved" || isAssigning}
+                >
+                  <SelectTrigger className="max-w-sm">
+                    <SelectValue placeholder="Select a final division" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {DIVISIONS.map((division) => (
+                      <SelectItem key={division} value={division}>
+                        {division}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex justify-end">
+                <Button
+                  type="button"
+                  onClick={handleAssign}
+                  disabled={
+                    isLoading ||
+                    !application ||
+                    application.status !== "approved" ||
+                    !selectedDivision ||
+                    isAssigning ||
+                    isApproving ||
+                    isRejecting
+                  }
+                >
+                  {isAssigning ? "Assigning..." : "Assign to Division"}
+                </Button>
               </div>
             </CardContent>
           </Card>

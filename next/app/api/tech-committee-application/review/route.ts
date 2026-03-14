@@ -3,6 +3,7 @@ import prisma from "@/lib/prisma";
 import { getGatewayAuthLevel } from "@/lib/authGateway";
 import { ApiError } from "@/lib/apiError";
 import { isEmailConfigured, sendEmail } from "@/lib/email";
+import { buildTechCommitteeRejectionEmail } from "@/lib/email/techCommittee";
 
 export const dynamic = "force-dynamic";
 
@@ -14,26 +15,6 @@ type ReviewPayload = {
 async function canReviewApplications(request: NextRequest) {
   const authLevel = await getGatewayAuthLevel(request);
   return authLevel.isTechCommitteeHead || authLevel.isPrimary;
-}
-
-function buildRejectionEmail(applicantName: string) {
-  return {
-    subject: "Update on your Tech Committee application",
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <div style="background: linear-gradient(135deg, #426E8C, #5289AF); color: white; padding: 24px 32px; border-radius: 8px 8px 0 0;">
-          <h1 style="margin: 0; font-size: 22px;">Society of Software Engineers</h1>
-        </div>
-        <div style="padding: 24px 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
-          <p>Hi ${applicantName},</p>
-          <p>Thank you for applying to join Tech Committee.</p>
-          <p>After reviewing your application, we are not moving forward with it at this time.</p>
-          <p>We appreciate your interest in contributing to SSE and encourage you to apply again in the future.</p>
-        </div>
-      </div>
-    `,
-    text: `Hi ${applicantName},\n\nThank you for applying to join Tech Committee.\n\nAfter reviewing your application, we are not moving forward with it at this time.\n\nWe appreciate your interest in contributing to SSE and encourage you to apply again in the future.`,
-  };
 }
 
 export async function PUT(request: NextRequest) {
@@ -112,7 +93,9 @@ export async function PUT(request: NextRequest) {
       }
 
       try {
-        const rejectionEmail = buildRejectionEmail(updatedApplication.user.name);
+        const rejectionEmail = buildTechCommitteeRejectionEmail(
+          updatedApplication.user.name
+        );
         await sendEmail({
           to: updatedApplication.user.email,
           subject: rejectionEmail.subject,
