@@ -1,0 +1,204 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { ArrowLeft } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+type TechCommitteeApplication = {
+  id: number;
+  yearLevel: string;
+  experienceText: string;
+  whyJoin: string;
+  weeklyCommitment: string;
+  preferredDivision: string;
+  status: string;
+  finalDivision: string | null;
+  createdAt: string;
+  user: {
+    id: number;
+    name: string;
+    email: string;
+  };
+};
+
+const STATUS_STYLES: Record<string, string> = {
+  pending: "border-yellow-500/30 bg-yellow-500/10 text-yellow-700",
+  approved: "border-blue-500/30 bg-blue-500/10 text-blue-700",
+  rejected: "border-red-500/30 bg-red-500/10 text-red-700",
+  assigned: "border-green-500/30 bg-green-500/10 text-green-700",
+};
+
+function formatDate(date: string) {
+  return new Date(date).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function getStatusClasses(status: string) {
+  return STATUS_STYLES[status] ?? "border-border bg-muted text-foreground";
+}
+
+export default function TechCommitteeApplicationReviewPage({
+  applicationId,
+}: {
+  applicationId: string;
+}) {
+  const [application, setApplication] =
+    useState<TechCommitteeApplication | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadApplication = async () => {
+      try {
+        const response = await fetch(
+          `/api/tech-committee-application/apps/${applicationId}`
+        );
+        if (!response.ok) {
+          const data = await response.json().catch(() => null);
+          throw new Error(data?.error || "Failed to load application");
+        }
+
+        const data = await response.json();
+        if (!isMounted) return;
+        setApplication(data);
+      } catch (fetchError) {
+        if (!isMounted) return;
+        setError(
+          fetchError instanceof Error
+            ? fetchError.message
+            : "Failed to load application"
+        );
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadApplication();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [applicationId]);
+
+  return (
+    <div className="mx-auto w-full max-w-5xl space-y-6 p-4 sm:p-6 lg:p-8">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Button asChild variant="outline" size="sm">
+          <Link href="/dashboard/tech-committee">
+            <ArrowLeft className="h-4 w-4" />
+            Back to queue
+          </Link>
+        </Button>
+
+        <div className="flex flex-wrap gap-2">
+          <Button type="button">
+            Approve
+          </Button>
+          <Button type="button" variant="destructive">
+            Reject
+          </Button>
+        </div>
+      </div>
+
+      {isLoading ? (
+        <Card depth={1}>
+          <CardContent className="p-6 text-sm text-muted-foreground">
+            Loading application...
+          </CardContent>
+        </Card>
+      ) : error ? (
+        <Card depth={1}>
+          <CardContent className="p-6 text-sm text-destructive">{error}</CardContent>
+        </Card>
+      ) : application ? (
+        <>
+          <Card depth={1}>
+            <CardHeader className="space-y-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <CardTitle className="text-2xl">
+                    {application.user.name}
+                  </CardTitle>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {application.user.email}
+                  </p>
+                </div>
+                <Badge
+                  variant="outline"
+                  className={getStatusClasses(application.status)}
+                >
+                  {application.status}
+                </Badge>
+              </div>
+            </CardHeader>
+
+            <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                  Applied
+                </p>
+                <p className="mt-1 text-sm">{formatDate(application.createdAt)}</p>
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                  Year Level
+                </p>
+                <p className="mt-1 text-sm">{application.yearLevel}</p>
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                  Preferred Division
+                </p>
+                <p className="mt-1 text-sm">{application.preferredDivision}</p>
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                  Final Division
+                </p>
+                <p className="mt-1 text-sm">
+                  {application.finalDivision ?? "Not assigned"}
+                </p>
+              </div>
+              <div className="sm:col-span-2 lg:col-span-4">
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                  Weekly Commitment
+                </p>
+                <p className="mt-1 text-sm">{application.weeklyCommitment}</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card depth={1}>
+            <CardHeader>
+              <CardTitle className="text-lg">Experience</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="whitespace-pre-wrap text-sm">
+                {application.experienceText}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card depth={1}>
+            <CardHeader>
+              <CardTitle className="text-lg">Why They Want to Join</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="whitespace-pre-wrap text-sm">{application.whyJoin}</p>
+            </CardContent>
+          </Card>
+        </>
+      ) : null}
+    </div>
+  );
+}

@@ -1,14 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 
 type TechCommitteeApplication = {
   id: number;
@@ -34,6 +30,8 @@ const STATUS_STYLES: Record<string, string> = {
   assigned: "border-green-500/30 bg-green-500/10 text-green-700",
 };
 
+const PAGE_SIZE = 10;
+
 function formatDate(date: string) {
   return new Date(date).toLocaleDateString("en-US", {
     month: "short",
@@ -46,15 +44,11 @@ function getStatusClasses(status: string) {
   return STATUS_STYLES[status] ?? "border-border bg-muted text-foreground";
 }
 
-function truncate(text: string, limit = 160) {
-  if (text.length <= limit) return text;
-  return `${text.slice(0, limit).trimEnd()}...`;
-}
-
 export default function TechCommitteeApplicationsGrid() {
   const [applications, setApplications] = useState<TechCommitteeApplication[]>(
     []
   );
+  const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -93,19 +87,29 @@ export default function TechCommitteeApplicationsGrid() {
     };
   }, []);
 
+  const totalPages = Math.max(1, Math.ceil(applications.length / PAGE_SIZE));
+
+  const paginatedApplications = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE;
+    return applications.slice(start, start + PAGE_SIZE);
+  }, [applications, page]);
+
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, totalPages]);
+
   if (isLoading) {
     return (
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {Array.from({ length: 3 }).map((_, index) => (
+      <div className="space-y-3">
+        {Array.from({ length: 4 }).map((_, index) => (
           <Card key={index} depth={2} className="animate-pulse">
-            <CardHeader className="space-y-3">
-              <div className="h-5 w-32 rounded bg-muted" />
-              <div className="h-4 w-48 rounded bg-muted" />
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="h-4 w-full rounded bg-muted" />
-              <div className="h-4 w-full rounded bg-muted" />
-              <div className="h-4 w-2/3 rounded bg-muted" />
+            <CardContent className="grid gap-4 p-5 md:grid-cols-[2.2fr_1.2fr_1fr_auto]">
+              <div className="h-5 w-40 rounded bg-muted" />
+              <div className="h-5 w-28 rounded bg-muted" />
+              <div className="h-5 w-24 rounded bg-muted" />
+              <div className="h-9 w-24 rounded bg-muted" />
             </CardContent>
           </Card>
         ))}
@@ -132,79 +136,91 @@ export default function TechCommitteeApplicationsGrid() {
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-      {applications.map((application) => (
-        <Card key={application.id} depth={2} className="h-full">
-          <CardHeader className="space-y-3">
-            <div className="flex items-start justify-between gap-3">
+    <div className="space-y-4">
+      <div className="hidden items-center gap-4 px-4 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground md:grid md:grid-cols-[2.2fr_1.2fr_1fr_auto]">
+        <p>Name</p>
+        <p>Applied</p>
+        <p>Status</p>
+        <p>Review</p>
+      </div>
+
+      <div className="space-y-3">
+        {paginatedApplications.map((application) => (
+          <Card key={application.id} depth={2}>
+            <CardContent className="grid gap-4 p-5 md:grid-cols-[2.2fr_1.2fr_1fr_auto] md:items-center">
               <div className="min-w-0">
-                <CardTitle className="truncate text-lg">
-                  {application.user.name}
-                </CardTitle>
-                <CardDescription className="truncate">
+                <p className="text-xs uppercase tracking-wide text-muted-foreground md:hidden">
+                  Applicant
+                </p>
+                <p className="truncate font-semibold">{application.user.name}</p>
+                <p className="truncate text-sm text-muted-foreground">
                   {application.user.email}
-                </CardDescription>
+                </p>
               </div>
-              <Badge
-                variant="outline"
-                className={getStatusClasses(application.status)}
-              >
-                {application.status}
-              </Badge>
-            </div>
-          </CardHeader>
 
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                  Year
+                <p className="text-xs uppercase tracking-wide text-muted-foreground md:hidden">
+                  Applied
                 </p>
-                <p>{application.yearLevel}</p>
+                <p className="text-sm">{formatDate(application.createdAt)}</p>
               </div>
-              <div>
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                  Submitted
-                </p>
-                <p>{formatDate(application.createdAt)}</p>
-              </div>
-              <div>
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                  Preferred
-                </p>
-                <p>{application.preferredDivision}</p>
-              </div>
-              <div>
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                  Final
-                </p>
-                <p>{application.finalDivision ?? "Not assigned"}</p>
-              </div>
-            </div>
 
-            <div className="space-y-3 text-sm">
               <div>
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                  Weekly Commitment
+                <p className="text-xs uppercase tracking-wide text-muted-foreground md:hidden">
+                  Status
                 </p>
-                <p>{application.weeklyCommitment}</p>
+                <Badge
+                  variant="outline"
+                  className={getStatusClasses(application.status)}
+                >
+                  {application.status}
+                </Badge>
               </div>
-              <div>
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                  Experience
-                </p>
-                <p>{truncate(application.experienceText)}</p>
+
+              <div className="flex justify-start md:justify-end">
+                <Button asChild size="sm">
+                  <Link href={`/dashboard/tech-committee/${application.id}`}>
+                    Review
+                  </Link>
+                </Button>
               </div>
-              <div>
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                  Why Join
-                </p>
-                <p>{truncate(application.whyJoin)}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <div className="flex flex-col gap-3 border-t border-border/60 pt-4 text-sm sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-muted-foreground">
+          Showing {(page - 1) * PAGE_SIZE + 1}-
+          {Math.min(page * PAGE_SIZE, applications.length)} of {applications.length}
+        </p>
+
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setPage((current) => Math.max(1, current - 1))}
+            disabled={page === 1}
+          >
+            Previous
+          </Button>
+          <span className="min-w-16 text-center text-sm">
+            Page {page} / {totalPages}
+          </span>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              setPage((current) => Math.min(totalPages, current + 1))
+            }
+            disabled={page === totalPages}
+          >
+            Next
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
