@@ -153,4 +153,29 @@ describe("authMiddleware", () => {
     const res = await authMiddleware(req("/api/library/copies", "POST"));
     expect((res as any).kind).toBe("next");
   });
+
+  it("allows tech committee application GET routes without blocking anonymous users", async () => {
+    const res = await authMiddleware(
+      req("/api/tech-committee-application/apps", "GET")
+    );
+    expect((res as any).kind).toBe("next");
+  });
+
+  it("denies tech committee application mutations when user is not signed in", async () => {
+    const res = await authMiddleware(req("/api/tech-committee-application", "PUT"));
+    expect((res as any).status).toBe(403);
+    expect((res as any).body).toContain("need to be Signed-in User");
+  });
+
+  it("allows tech committee application mutations for signed-in users", async () => {
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isUser: true,
+      isOfficer: false,
+      isMentor: false,
+      isPrimary: false,
+    });
+
+    const res = await authMiddleware(req("/api/tech-committee-application", "POST"));
+    expect((res as any).kind).toBe("next");
+  });
 });

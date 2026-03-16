@@ -377,7 +377,7 @@ async function seedMentorRosterAndApplications() {
 				previousSemesters: index,
 				whyMentor: "I want to help students feel confident in their coursework.",
 				comments: "Excited to mentor and learn from others!",
-				status: "pending",
+				status: "PENDING",
 			},
 			create: {
 				userId: user.id,
@@ -393,7 +393,7 @@ async function seedMentorRosterAndApplications() {
 				previousSemesters: index,
 				whyMentor: "I want to help students feel confident in their coursework.",
 				comments: "Excited to mentor and learn from others!",
-				status: "pending",
+				status: "PENDING",
 			},
 		});
 	}
@@ -401,6 +401,17 @@ async function seedMentorRosterAndApplications() {
 	console.log(
 		`Seeded ${users.length} mentor users, ${mentors.length} mentors, ${applicationUsers.length} applications`
 	);
+}
+
+async function seedTechCommitteeApplicationCycle() {
+	await prisma.techCommitteeApplicationCycle.upsert({
+		where: { name: "Spring 2026" },
+		update: { isOpen: true },
+		create: {
+			name: "Spring 2026",
+			isOpen: true,
+		},
+	});
 }
 
 async function seedMentorHeadcountData() {
@@ -1440,6 +1451,7 @@ async function main() {
 
 		await seedProject();
 		await seedProjectContributor();
+		await seedTechCommitteeApplicationCycle();
 		await seedEvents();
 		await seedMemberships();
 		await seedSponsors();
