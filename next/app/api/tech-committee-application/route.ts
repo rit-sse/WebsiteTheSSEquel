@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/authOptions";
 import prisma from "@/lib/prisma";
+import { TECH_COMMITTEE_APPLICATION_LIMITS } from "@/lib/techCommitteeApplication";
 
 export const dynamic = "force-dynamic";
 
@@ -25,6 +26,20 @@ type ApplicationPayload = {
 
 function validationError(message: string, status = 400) {
   return NextResponse.json({ error: message }, { status });
+}
+
+function validateMaxLength(
+  value: string,
+  fieldLabel: string,
+  maxLength: number
+) {
+  if (value.length > maxLength) {
+    return validationError(
+      `${fieldLabel} must be ${maxLength} characters or fewer`
+    );
+  }
+
+  return null;
 }
 
 async function getSignedInApplicant(): Promise<
@@ -110,13 +125,62 @@ function parseAndValidatePayload(
     return { response: validationError("Preferred division is required") };
   }
 
-  if (name.trim() !== user.name.trim()) {
+  const trimmedName = name.trim();
+  const trimmedEmail = ritEmail.trim();
+  const trimmedYearLevel = yearLevel.trim();
+  const trimmedExperienceText = experienceText.trim();
+  const trimmedWhyJoin = whyJoin.trim();
+  const trimmedWeeklyCommitment = weeklyCommitment.trim();
+  const trimmedPreferredDivision = preferredDivision.trim();
+
+  const lengthError =
+    validateMaxLength(
+      trimmedName,
+      "Name",
+      TECH_COMMITTEE_APPLICATION_LIMITS.name
+    ) ??
+    validateMaxLength(
+      trimmedEmail,
+      "RIT email",
+      TECH_COMMITTEE_APPLICATION_LIMITS.ritEmail
+    ) ??
+    validateMaxLength(
+      trimmedYearLevel,
+      "Year level",
+      TECH_COMMITTEE_APPLICATION_LIMITS.yearLevel
+    ) ??
+    validateMaxLength(
+      trimmedExperienceText,
+      "Experience",
+      TECH_COMMITTEE_APPLICATION_LIMITS.experienceText
+    ) ??
+    validateMaxLength(
+      trimmedWhyJoin,
+      "Why you want to join",
+      TECH_COMMITTEE_APPLICATION_LIMITS.whyJoin
+    ) ??
+    validateMaxLength(
+      trimmedWeeklyCommitment,
+      "Weekly commitment",
+      TECH_COMMITTEE_APPLICATION_LIMITS.weeklyCommitment
+    ) ??
+    validateMaxLength(
+      trimmedPreferredDivision,
+      "Preferred division",
+      TECH_COMMITTEE_APPLICATION_LIMITS.preferredDivision
+    );
+
+  if (lengthError) {
+    return { response: lengthError };
+  }
+
+  if (trimmedName !== user.name.trim()) {
     return {
       response: validationError("Name must match your signed-in account"),
     };
   }
 
-  if (ritEmail.trim().toLowerCase() !== user.email.trim().toLowerCase()) {
+  if (trimmedEmail.toLowerCase() !== user.email.trim().toLowerCase()) {
     return {
       response: validationError(
         "RIT email must match your signed-in account"
@@ -127,11 +191,11 @@ function parseAndValidatePayload(
   return {
     data: {
       id: requireId ? Number(id) : undefined,
-      yearLevel: yearLevel.trim(),
-      experienceText: experienceText.trim(),
-      whyJoin: whyJoin.trim(),
-      weeklyCommitment: weeklyCommitment.trim(),
-      preferredDivision: preferredDivision.trim(),
+      yearLevel: trimmedYearLevel,
+      experienceText: trimmedExperienceText,
+      whyJoin: trimmedWhyJoin,
+      weeklyCommitment: trimmedWeeklyCommitment,
+      preferredDivision: trimmedPreferredDivision,
     },
   };
 }

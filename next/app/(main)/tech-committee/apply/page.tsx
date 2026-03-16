@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { TECH_COMMITTEE_APPLICATION_LIMITS } from "@/lib/techCommitteeApplication";
 import { TECH_COMMITTEE_DIVISION_OPTIONS } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -294,7 +295,11 @@ export default function TechCommitteeApplyPage() {
                 onChange={(event) => setExperienceText(event.target.value)}
                 placeholder="Projects, courses, co-op experience, or other relevant technical work."
                 rows={5}
+                maxLength={TECH_COMMITTEE_APPLICATION_LIMITS.experienceText}
               />
+              <p className="text-xs text-muted-foreground">
+                {experienceText.length}/{TECH_COMMITTEE_APPLICATION_LIMITS.experienceText}
+              </p>
             </div>
 
             <div className="space-y-2">
@@ -305,7 +310,11 @@ export default function TechCommitteeApplyPage() {
                 onChange={(event) => setWhyJoin(event.target.value)}
                 placeholder="Tell us why Tech Committee is a good fit for you."
                 rows={5}
+                maxLength={TECH_COMMITTEE_APPLICATION_LIMITS.whyJoin}
               />
+              <p className="text-xs text-muted-foreground">
+                {whyJoin.length}/{TECH_COMMITTEE_APPLICATION_LIMITS.whyJoin}
+              </p>
             </div>
 
             <div className="space-y-2">
@@ -315,7 +324,11 @@ export default function TechCommitteeApplyPage() {
                 value={weeklyCommitment}
                 onChange={(event) => setWeeklyCommitment(event.target.value)}
                 placeholder="e.g. 4-6 hours per week"
+                maxLength={TECH_COMMITTEE_APPLICATION_LIMITS.weeklyCommitment}
               />
+              <p className="text-xs text-muted-foreground">
+                {weeklyCommitment.length}/{TECH_COMMITTEE_APPLICATION_LIMITS.weeklyCommitment}
+              </p>
             </div>
 
             <div className="space-y-3">

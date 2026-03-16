@@ -191,6 +191,30 @@ describe("/api/tech-committee-application route", () => {
     });
   });
 
+  it("POST rejects oversized input even if the client-side limit is bypassed", async () => {
+    mockGetServerSession.mockResolvedValue({ user: { email: "student@g.rit.edu" } });
+    mockUserFindUnique.mockResolvedValue({
+      id: 1,
+      name: "Student User",
+      email: "student@g.rit.edu",
+    });
+
+    const res = await POST(
+      req("http://localhost/api/tech-committee-application", "POST", {
+        name: "Student User",
+        ritEmail: "student@g.rit.edu",
+        yearLevel: "3rd",
+        experienceText: "x".repeat(2001),
+        whyJoin: "Interested in contributing",
+        weeklyCommitment: "4 hours",
+        preferredDivision: "Web Division",
+      })
+    );
+
+    expect(res!.status).toBe(400);
+    expect(mockTechCommitteeApplicationCreate).not.toHaveBeenCalled();
+  });
+
   it("POST returns conflict when a concurrent create hits the cycle unique constraint", async () => {
     mockGetServerSession.mockResolvedValue({ user: { email: "student@g.rit.edu" } });
     mockUserFindUnique.mockResolvedValue({
