@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { MANUAL_MEMBERSHIP_REASONS } from "@/lib/membershipUtils";
 
 const {
   mockMembershipsGroupBy,
@@ -87,7 +88,7 @@ describe("/api/memberships route", () => {
     mockMembershipsCreate.mockResolvedValue({
       id: 1,
       userId: 15,
-      reason: "Event attendance",
+      reason: "Event Attendance",
       dateGiven: "2026-02-01T00:00:00.000Z",
     });
 
@@ -95,8 +96,8 @@ describe("/api/memberships route", () => {
       method: "POST",
       body: JSON.stringify({
         userId: 15,
-        reason: "Event attendance",
-        dateGiven: "2026-02-01T00:00:00.000Z",
+        reason: "Event Attendance",
+        dateGiven: "2026-02-01",
       }),
       headers: { "content-type": "application/json" },
     });
@@ -104,12 +105,47 @@ describe("/api/memberships route", () => {
     const res = await POST(req);
 
     expect(res.status).toBe(201);
-    expect(mockMembershipsCreate).toHaveBeenCalled();
+    expect(mockMembershipsCreate).toHaveBeenCalledWith({
+      data: {
+        userId: 15,
+        reason: "Event Attendance",
+        dateGiven: "2026-02-01T00:00:00.000Z",
+      },
+      select: { id: true, userId: true, reason: true, dateGiven: true },
+    });
     expect(await res.json()).toEqual({
       id: 1,
       userId: 15,
-      reason: "Event attendance",
+      reason: "Event Attendance",
       dateGiven: "2026-02-01T00:00:00.000Z",
     });
+  });
+
+  it("POST rejects unsupported manual reasons", async () => {
+    const req = new Request("http://localhost/api/memberships", {
+      method: "POST",
+      body: JSON.stringify({
+        userId: 15,
+        reason: "Freeform Reason",
+        dateGiven: "2026-02-01",
+      }),
+      headers: { "content-type": "application/json" },
+    });
+
+    const res = await POST(req);
+
+    expect(res.status).toBe(400);
+    expect(mockMembershipsCreate).not.toHaveBeenCalled();
+  });
+
+  it("manual reason list stays stable for the memberships UI", () => {
+    expect(MANUAL_MEMBERSHIP_REASONS).toEqual([
+      "Event Attendance",
+      "Lab Cleaning",
+      "Mentoring Support",
+      "Volunteer Work",
+      "Donation",
+      "Other Approved Contribution",
+    ]);
   });
 });

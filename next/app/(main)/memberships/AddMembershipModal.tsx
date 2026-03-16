@@ -7,6 +7,12 @@ import { Modal, ModalFooter } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { MANUAL_MEMBERSHIP_REASONS, normalizeMembershipDateInput } from "@/lib/membershipUtils";
+
+function getTodayDateInputValue() {
+    return new Date().toISOString().slice(0, 10);
+}
 
 export function AddMembershipModal({
     open,
@@ -19,14 +25,14 @@ export function AddMembershipModal({
 }) {
     const [selected, setSelected] = useState<AutocompleteOption | null>(null);
     const [reason, setReason] = useState("");
-    const [dateGiven, setDateGiven] = useState<string>("");
+    const [dateGiven, setDateGiven] = useState<string>(getTodayDateInputValue());
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     const resetForm = () => {
         setSelected(null);
         setReason("");
-        setDateGiven("");
+        setDateGiven(getTodayDateInputValue());
         setError(null);
     };
 
@@ -45,7 +51,7 @@ export function AddMembershipModal({
         try {
             const body: Record<string, unknown> = { userId: selected.id, reason };
             if (dateGiven) {
-                body.dateGiven = new Date(dateGiven).toISOString();
+                body.dateGiven = normalizeMembershipDateInput(dateGiven);
             }
             const res = await fetch("/api/memberships/", {
                 method: "POST",
@@ -76,23 +82,30 @@ export function AddMembershipModal({
 
                 <div className="space-y-2">
                     <Label htmlFor="membership-reason">Reason</Label>
-                    <Input
-                        id="membership-reason"
-                        placeholder="e.g. Attended lab cleaning"
-                        value={reason}
-                        onChange={(e) => setReason(e.target.value)}
-                        required
-                    />
+                    <Select value={reason} onValueChange={setReason}>
+                        <SelectTrigger id="membership-reason">
+                            <SelectValue placeholder="Select a standardized reason" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {MANUAL_MEMBERSHIP_REASONS.map((option) => (
+                                <SelectItem key={option} value={option}>
+                                    {option}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                 </div>
 
                 <div className="space-y-2">
                     <Label htmlFor="membership-date">Date</Label>
                     <Input
                         id="membership-date"
-                        type="datetime-local"
+                        type="date"
                         value={dateGiven}
                         onChange={(e) => setDateGiven(e.target.value)}
+                        required
                     />
+                    <p className="text-sm text-muted-foreground">Saved as midnight UTC for the selected day.</p>
                 </div>
 
                 {error && <div className="text-destructive text-sm py-2">{error}</div>}

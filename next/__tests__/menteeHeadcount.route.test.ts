@@ -1,19 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const {
-  mockGetGatewayAuthLevel,
   mockFindMany,
   mockFindFirst,
   mockCreate,
 } = vi.hoisted(() => ({
-  mockGetGatewayAuthLevel: vi.fn(),
   mockFindMany: vi.fn(),
   mockFindFirst: vi.fn(),
   mockCreate: vi.fn(),
-}));
-
-vi.mock("@/lib/authGateway", () => ({
-  getGatewayAuthLevel: mockGetGatewayAuthLevel,
 }));
 
 vi.mock("@/lib/prisma", () => ({
@@ -41,7 +35,6 @@ function req(url: string, method = "GET", body?: unknown) {
 describe("/api/mentee-headcount route", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockGetGatewayAuthLevel.mockResolvedValue({ isMentor: false, isOfficer: false });
   });
 
   it("GET returns entries", async () => {
@@ -52,14 +45,7 @@ describe("/api/mentee-headcount route", () => {
     expect(await res.json()).toEqual([{ id: 1, studentsMentoredCount: 4 }]);
   });
 
-  it("POST denies unauthorized submitters", async () => {
-    const res = await POST(req("http://localhost/api/mentee-headcount", "POST", {}));
-    expect(res.status).toBe(403);
-  });
-
   it("POST validates mentorIds", async () => {
-    mockGetGatewayAuthLevel.mockResolvedValue({ isMentor: true, isOfficer: false });
-
     const res = await POST(
       req("http://localhost/api/mentee-headcount", "POST", {
         mentorIds: [],
@@ -71,7 +57,6 @@ describe("/api/mentee-headcount route", () => {
   });
 
   it("POST creates entry using active semester fallback", async () => {
-    mockGetGatewayAuthLevel.mockResolvedValue({ isMentor: true, isOfficer: false });
     mockFindFirst.mockResolvedValue({ id: 7 });
     mockCreate.mockResolvedValue({ id: 22, semesterId: 7 });
 

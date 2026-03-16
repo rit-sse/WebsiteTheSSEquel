@@ -99,7 +99,7 @@ export default function Leaderboard() {
             render: (item) => (
                 <span className="text-muted-foreground text-xs">
                     {item.lastMembershipAt 
-                        ? new Date(item.lastMembershipAt).toLocaleString() 
+                        ? new Date(item.lastMembershipAt).toLocaleDateString() 
                         : "—"}
                 </span>
             )
