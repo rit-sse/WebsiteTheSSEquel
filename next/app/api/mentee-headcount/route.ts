@@ -1,13 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { getGatewayAuthLevel } from "@/lib/authGateway";
 
 export const dynamic = "force-dynamic";
-
-async function canSubmitHeadcount(request: NextRequest): Promise<boolean> {
-  const authLevel = await getGatewayAuthLevel(request);
-  return authLevel.isMentor || authLevel.isOfficer;
-}
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -48,10 +42,6 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  if (!(await canSubmitHeadcount(request))) {
-    return NextResponse.json({ error: "Access denied" }, { status: 403 });
-  }
-
   const body = await request.json();
   const {
     mentorIds,

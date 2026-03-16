@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { DndContext, DragEndEvent, PointerSensor, useDraggable, useDroppable, useSensor, useSensors } from "@dnd-kit/core"
+import Image from "next/image"
 import { cn } from "@/lib/utils"
 import { getCategoricalColorFromSeed } from "@/lib/categoricalColors"
 import { AvailabilitySlot, aggregateAvailability, getSlotAvailability } from "./AvailabilityGrid"
@@ -1150,9 +1151,11 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                                           title={block.mentor.name}
                                         >
                                           {block.mentor.image ? (
-                                            <img
+                                            <Image
                                               src={block.mentor.image}
                                               alt=""
+                                              width={16}
+                                              height={16}
                                               className="h-4 w-4 rounded-full object-cover shrink-0"
                                             />
                                           ) : null}

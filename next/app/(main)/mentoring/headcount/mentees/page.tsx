@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { signIn, useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -59,7 +58,6 @@ const DEFAULT_COURSES = [
 ];
 
 export default function MenteeHeadcountPage() {
-  const { data: session, status } = useSession();
   const [mentors, setMentors] = useState<Mentor[]>([]);
   const [semester, setSemester] = useState<MentorSemester | null>(null);
   const [courses, setCourses] = useState<Course[]>([]);
@@ -95,8 +93,6 @@ export default function MenteeHeadcountPage() {
   }, []);
 
   useEffect(() => {
-    if (status !== "authenticated") return;
-
     const loadData = async () => {
       try {
         const [mentorRes, semesterRes, courseRes] = await Promise.all([
@@ -125,7 +121,7 @@ export default function MenteeHeadcountPage() {
     };
 
     loadData();
-  }, [status]);
+  }, []);
 
   const toggleMentor = (mentorId: number) => {
     setSelectedMentors((prev) =>
@@ -219,20 +215,6 @@ export default function MenteeHeadcountPage() {
       setIsSubmitting(false);
     }
   };
-
-  if (status === "loading") {
-    return <div className="p-8 text-muted-foreground">Loading headcount form...</div>;
-  }
-
-  if (status !== "authenticated") {
-    return (
-      <div className="p-8 text-center space-y-4">
-        <h1 className="text-2xl font-bold">Mentee Headcount</h1>
-        <p className="text-muted-foreground">Please sign in to submit headcount.</p>
-        <Button onClick={() => signIn("google")}>Sign in</Button>
-      </div>
-    );
-  }
 
   return (
     <div className="w-full max-w-3xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
