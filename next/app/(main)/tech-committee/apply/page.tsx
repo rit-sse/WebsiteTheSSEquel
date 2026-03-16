@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { TECH_COMMITTEE_DIVISION_OPTIONS } from "@/lib/utils";
 import { toast } from "sonner";
 
 const YEAR_LEVELS = [
@@ -30,24 +31,6 @@ const YEAR_LEVELS = [
   "5th (Undergrad)",
   "MS Student",
   "Other",
-];
-
-const DIVISIONS = [
-  {
-    value: "Web Division",
-    description:
-      "Builds and maintains the SSE website and related web tooling.",
-  },
-  {
-    value: "Lab Division",
-    description:
-      "Supports lab systems, devices, and operational technology used in the space.",
-  },
-  {
-    value: "Services Division",
-    description:
-      "Owns supporting technical services for the organization and our users.",
-  },
 ];
 
 export default function TechCommitteeApplyPage() {
@@ -342,7 +325,7 @@ export default function TechCommitteeApplyPage() {
                   <SelectValue placeholder="Select your preferred division" />
                 </SelectTrigger>
                 <SelectContent>
-                  {DIVISIONS.map((division) => (
+                  {TECH_COMMITTEE_DIVISION_OPTIONS.map((division) => (
                     <SelectItem key={division.value} value={division.value}>
                       {division.value}
                     </SelectItem>
@@ -350,7 +333,7 @@ export default function TechCommitteeApplyPage() {
                 </SelectContent>
               </Select>
               <div className="space-y-3 rounded-lg border p-4">
-                {DIVISIONS.map((division) => (
+                {TECH_COMMITTEE_DIVISION_OPTIONS.map((division) => (
                   <div key={division.value}>
                     <p className="font-medium">{division.value}</p>
                     <p className="text-sm text-muted-foreground">

@@ -64,12 +64,38 @@ export async function PUT(request: NextRequest) {
 
     if (existingApplication.status !== "PENDING") {
       return ApiError.conflict(
-        `Only pending applications can be ${action}d`
+        `Only pending applications can be ${action}`
       );
     }
 
-    const nextStatus = action === "approve" ? "APPROVED" : "REJECTED";
+    if (action === "reject") {
+      if (!isEmailConfigured()) {
+        return new Response(
+          JSON.stringify({ error: "Email service is not configured" }),
+          { status: 503 }
+        );
+      }
 
+      try {
+        const rejectionEmail = buildTechCommitteeRejectionEmail(
+          existingApplication.user.name
+        );
+        await sendEmail({
+          to: existingApplication.user.email,
+          subject: rejectionEmail.subject,
+          html: rejectionEmail.html,
+          text: rejectionEmail.text,
+        });
+      } catch (emailError) {
+        console.error("Failed to send Tech Committee rejection email:", emailError);
+        return new Response(
+          JSON.stringify({ error: "Failed to send rejection email" }),
+          { status: 502 }
+        );
+      }
+    }
+
+    const nextStatus = action === "approve" ? "APPROVED" : "REJECTED";
     const updatedApplication = await prisma.techCommitteeApplication.update({
       where: { id: applicationId },
       data: { status: nextStatus },
@@ -83,41 +109,6 @@ export async function PUT(request: NextRequest) {
         },
       },
     });
-
-    if (action === "reject") {
-      if (!isEmailConfigured()) {
-        await prisma.techCommitteeApplication.update({
-          where: { id: applicationId },
-          data: { status: "PENDING" },
-        });
-        return new Response(
-          JSON.stringify({ error: "Email service is not configured" }),
-          { status: 503 }
-        );
-      }
-
-      try {
-        const rejectionEmail = buildTechCommitteeRejectionEmail(
-          updatedApplication.user.name
-        );
-        await sendEmail({
-          to: updatedApplication.user.email,
-          subject: rejectionEmail.subject,
-          html: rejectionEmail.html,
-          text: rejectionEmail.text,
-        });
-      } catch (emailError) {
-        console.error("Failed to send Tech Committee rejection email:", emailError);
-        await prisma.techCommitteeApplication.update({
-          where: { id: applicationId },
-          data: { status: "PENDING" },
-        });
-        return new Response(
-          JSON.stringify({ error: "Failed to send rejection email" }),
-          { status: 502 }
-        );
-      }
-    }
 
     return NextResponse.json(updatedApplication);
   } catch (error) {

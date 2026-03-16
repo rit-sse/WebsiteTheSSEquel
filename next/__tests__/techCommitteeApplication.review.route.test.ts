@@ -198,7 +198,7 @@ describe("/api/tech-committee-application/review route", () => {
     expect(body.status).toBe("REJECTED");
   });
 
-  it("returns 503 and rolls back when email is not configured for rejection", async () => {
+  it("returns 503 without changing status when email is not configured for rejection", async () => {
     mockGetGatewayAuthLevel.mockResolvedValue({
       isTechCommitteeHead: false,
       isTechCommitteeDivisionManager: false,
@@ -215,31 +215,13 @@ describe("/api/tech-committee-application/review route", () => {
         email: "nomail@g.rit.edu",
       },
     });
-    mockTechCommitteeApplicationUpdate
-      .mockResolvedValueOnce({
-        id: 9,
-        status: "REJECTED",
-        user: {
-          id: 14,
-          name: "No Mail User",
-          email: "nomail@g.rit.edu",
-        },
-      })
-      .mockResolvedValueOnce({
-        id: 9,
-        status: "PENDING",
-      });
-
     const res = await PUT(req({ id: 9, action: "reject" }));
 
     expect(res.status).toBe(503);
-    expect(mockTechCommitteeApplicationUpdate).toHaveBeenNthCalledWith(2, {
-      where: { id: 9 },
-      data: { status: "PENDING" },
-    });
+    expect(mockTechCommitteeApplicationUpdate).not.toHaveBeenCalled();
   });
 
-  it("returns 502 and rolls back when rejection email fails", async () => {
+  it("returns 502 without changing status when rejection email fails", async () => {
     mockGetGatewayAuthLevel.mockResolvedValue({
       isTechCommitteeHead: true,
       isTechCommitteeDivisionManager: false,
@@ -256,28 +238,10 @@ describe("/api/tech-committee-application/review route", () => {
         email: "mailfail@g.rit.edu",
       },
     });
-    mockTechCommitteeApplicationUpdate
-      .mockResolvedValueOnce({
-        id: 10,
-        status: "REJECTED",
-        user: {
-          id: 15,
-          name: "Mail Fail User",
-          email: "mailfail@g.rit.edu",
-        },
-      })
-      .mockResolvedValueOnce({
-        id: 10,
-        status: "PENDING",
-      });
-
     const res = await PUT(req({ id: 10, action: "reject" }));
 
     expect(res.status).toBe(502);
-    expect(mockTechCommitteeApplicationUpdate).toHaveBeenNthCalledWith(2, {
-      where: { id: 10 },
-      data: { status: "PENDING" },
-    });
+    expect(mockTechCommitteeApplicationUpdate).not.toHaveBeenCalled();
   });
 
   it("allows division managers to approve pending applications", async () => {

@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { TECH_COMMITTEE_DIVISIONS } from "@/lib/utils";
 import { toast } from "sonner";
 
 type TechCommitteeApplication = {
@@ -38,8 +39,6 @@ const STATUS_STYLES: Record<string, string> = {
   rejected: "border-red-500/30 bg-red-500/10 text-red-700",
   assigned: "border-green-500/30 bg-green-500/10 text-green-700",
 };
-
-const DIVISIONS = ["Web Division", "Lab Division", "Services Division"] as const;
 
 function formatDate(date: string) {
   return new Date(date).toLocaleDateString("en-US", {
@@ -354,7 +353,7 @@ export default function TechCommitteeApplicationReviewPage({
                     <SelectValue placeholder="Select a final division" />
                   </SelectTrigger>
                   <SelectContent>
-                    {DIVISIONS.filter((division) =>
+                    {TECH_COMMITTEE_DIVISIONS.filter((division) =>
                       managedDivision ? division === managedDivision : true
                     ).map((division) => (
                       <SelectItem key={division} value={division}>
