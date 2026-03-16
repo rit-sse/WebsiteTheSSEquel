@@ -15,6 +15,49 @@ type RateLimitBucket = {
 
 const buckets = new Map<string, RateLimitBucket>();
 
+let lastSweepAt = 0;
+const SWEEP_INTERVAL_MS = 60_000;
+// Hard cap to prevent unbounded growth if an attacker generates many unique keys.
+// When the cap is reached we still prioritize pruning expired entries first.
+const MAX_BUCKETS = 10_000;
+
+function sweepBuckets(now: number) {
+  // Remove expired buckets (safe: a new bucket will be created on the next request).
+  for (const [key, bucket] of buckets) {
+    if (bucket.resetAt <= now) {
+      buckets.delete(key);
+    }
+  }
+
+  if (buckets.size <= MAX_BUCKETS) {
+    return;
+  }
+
+  // If we're still above the cap, drop the oldest entries.
+  const toRemove = buckets.size - MAX_BUCKETS;
+  let removed = 0;
+  for (const key of buckets.keys()) {
+    buckets.delete(key);
+    removed += 1;
+    if (removed >= toRemove) {
+      break;
+    }
+  }
+}
+
+function maybeSweepBuckets(now: number) {
+  if (buckets.size === 0) {
+    return;
+  }
+
+  if (buckets.size < MAX_BUCKETS && now - lastSweepAt < SWEEP_INTERVAL_MS) {
+    return;
+  }
+
+  lastSweepAt = now;
+  sweepBuckets(now);
+}
+
 const RATE_LIMIT_RULES: RateLimitRule[] = [
   {
     id: "auth",
@@ -99,8 +142,9 @@ export async function rateLimitMiddleware(request: NextRequest) {
   }
 
   const now = Date.now();
+  maybeSweepBuckets(now);
   const ip = resolveClientIp(request);
-  const bucketKey = `${rule.id}:${ip}:${request.method}:${request.nextUrl.pathname}`;
+  const bucketKey = `${rule.id}:${ip}:${request.method}`;
   const existing = buckets.get(bucketKey);
 
   let bucket: RateLimitBucket;
