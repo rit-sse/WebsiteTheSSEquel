@@ -11,6 +11,7 @@ import { Switch } from "@/components/ui/switch"
 import { Progress } from "@/components/ui/progress"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Tooltip } from "@/components/ui/tooltip"
 import { toast } from "sonner"
 import { X, User, Clock, Calendar, Users, Printer, Activity } from "lucide-react"
 import {
@@ -166,6 +167,55 @@ function getTrafficPresentation(averagePeopleInLab: number) {
     metaClassName: "text-white",
     summary: "Peak traffic",
   }
+}
+
+function getSlotAvailableMentorNames(mappedAvailable: Mentor[], availableNames: string[]) {
+  return Array.from(
+    new Set(
+      [...mappedAvailable.map((mentor) => mentor.user.name), ...availableNames]
+        .map((name) => name.trim())
+        .filter(Boolean)
+    )
+  )
+}
+
+function ScheduleSlotTooltipContent({
+  label,
+  traffic,
+  availableMentorNames,
+}: {
+  label: string
+  traffic?: TrafficDatum
+  availableMentorNames: string[]
+}) {
+  return (
+    <div className="space-y-2">
+      <div className="font-semibold text-foreground">{label}</div>
+      <div className="space-y-1">
+        <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+          Avg People in Lab
+        </div>
+        {traffic ? (
+          <div className="text-sm text-foreground">
+            <span className="font-semibold tabular-nums">{traffic.averagePeopleInLab.toFixed(1)}</span>
+            <span className="text-muted-foreground"> average people in the lab</span>
+          </div>
+        ) : (
+          <div className="text-sm text-muted-foreground">No traffic data yet</div>
+        )}
+      </div>
+      <div className="space-y-1">
+        <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+          Available Mentors
+        </div>
+        {availableMentorNames.length > 0 ? (
+          <div className="text-sm leading-snug text-foreground">{availableMentorNames.join(", ")}</div>
+        ) : (
+          <div className="text-sm text-muted-foreground">No mentors marked available</div>
+        )}
+      </div>
+    </div>
+  )
 }
 
 interface MentorScheduleEditorProps {
@@ -413,14 +463,6 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
     const traffic = getTrafficForSlot(weekday, hour)
     if (!traffic) return "text-muted-foreground"
     return getTrafficLevel(traffic.averagePeopleInLab).metaClassName
-  }
-
-  const getTrafficTooltip = (weekday: number, hour: number) => {
-    if (!showTraffic) return undefined
-    const traffic = getTrafficForSlot(weekday, hour)
-    if (!traffic) return undefined
-    const level = getTrafficLevel(traffic.averagePeopleInLab)
-    return `${level.summary}: avg ${traffic.averagePeopleInLab.toFixed(1)} people in lab`
   }
 
   // Handle opening assign modal
@@ -1059,6 +1101,8 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                             const slotBlocks = getBlocksForSlot(weekday, hour)
                             const availableNames = getWhen2MeetAvailability(weekday, hour)
                             const mappedAvailable = getMappedAvailableMentors(weekday, hour)
+                            const traffic = getTrafficForSlot(weekday, hour)
+                            const tooltipAvailableMentorNames = getSlotAvailableMentorNames(mappedAvailable, availableNames)
 
                             return (
                               <ScheduleSlotCell
@@ -1071,39 +1115,47 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                                 )}
                                 onClick={() => handleOpenAssignModal(weekday, hour)}
                               >
-                                <div className="flex flex-col gap-0.5 min-w-0" title={getTrafficTooltip(weekday, hour)}>
-                                  {slotBlocks.map((block) => (
-                                    <DraggableMentorChip
-                                      key={block.id}
-                                      id={`block-${block.id}`}
-                                      mentorId={block.mentor.id}
-                                      blockId={block.id}
-                                      colorToken={getMentorColor(block.mentor.id)}
-                                      label={block.mentor.name.split(" ")[0]}
-                                      fullName={block.mentor.name}
-                                      image={block.mentor.image}
-                                      onClick={() => handleOpenDetail(weekday, hour)}
-                                      title={`${block.mentor.name} - Click for details`}
-                                      fill
+                                <Tooltip
+                                  size="lg"
+                                  className="block h-full"
+                                  content={(
+                                    <ScheduleSlotTooltipContent
+                                      label={`${DAYS[dayIndex]} · ${label}`}
+                                      traffic={traffic}
+                                      availableMentorNames={tooltipAvailableMentorNames}
                                     />
-                                  ))}
-                                  {/* Always render the availability line to reserve space; hide text when off */}
-                                  <div
-                                    className={cn(
-                                      "text-[10px] truncate h-4 leading-4",
-                                      showAvailability ? getTrafficSubtextClass(weekday, hour) : "invisible"
-                                    )}
-                                    title={showAvailability && mappedAvailable.length > 0
-                                      ? `Available: ${mappedAvailable.map((m) => m.user.name).join(", ")}`
-                                      : undefined}
-                                  >
-                                    {mappedAvailable.length > 0
-                                      ? mappedAvailable.map((m) => m.user.name.split(" ")[0]).join(", ")
-                                      : availableNames.length > 0
-                                        ? `${availableNames.length} avail.`
-                                        : "\u00A0"}
+                                  )}
+                                >
+                                  <div className="flex flex-col gap-0.5 min-w-0">
+                                    {slotBlocks.map((block) => (
+                                      <DraggableMentorChip
+                                        key={block.id}
+                                        id={`block-${block.id}`}
+                                        mentorId={block.mentor.id}
+                                        blockId={block.id}
+                                        colorToken={getMentorColor(block.mentor.id)}
+                                        label={block.mentor.name.split(" ")[0]}
+                                        fullName={block.mentor.name}
+                                        image={block.mentor.image}
+                                        onClick={() => handleOpenDetail(weekday, hour)}
+                                        fill
+                                      />
+                                    ))}
+                                    {/* Always render the availability line to reserve space; hide text when off */}
+                                    <div
+                                      className={cn(
+                                        "text-[10px] truncate h-4 leading-4",
+                                        showAvailability ? getTrafficSubtextClass(weekday, hour) : "invisible"
+                                      )}
+                                    >
+                                      {mappedAvailable.length > 0
+                                        ? mappedAvailable.map((m) => m.user.name.split(" ")[0]).join(", ")
+                                        : availableNames.length > 0
+                                          ? `${availableNames.length} avail.`
+                                          : "\u00A0"}
+                                    </div>
                                   </div>
-                                </div>
+                                </Tooltip>
                               </ScheduleSlotCell>
                             )
                           })}
@@ -1131,65 +1183,77 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                               const slotBlocks = getBlocksForSlot(weekday, hour)
                               const mappedAvailable = getMappedAvailableMentors(weekday, hour)
                               const availableNames = getWhen2MeetAvailability(weekday, hour)
+                              const traffic = getTrafficForSlot(weekday, hour)
+                              const tooltipAvailableMentorNames = getSlotAvailableMentorNames(mappedAvailable, availableNames)
                               return (
-                                <div
+                                <Tooltip
                                   key={hour}
-                                  className={cn(
-                                    "flex items-center gap-2 px-3 py-2",
-                                    getTrafficCellClass(weekday, hour),
+                                  size="lg"
+                                  className="block"
+                                  content={(
+                                    <ScheduleSlotTooltipContent
+                                      label={`${day} · ${label}`}
+                                      traffic={traffic}
+                                      availableMentorNames={tooltipAvailableMentorNames}
+                                    />
                                   )}
-                                  title={getTrafficTooltip(weekday, hour)}
                                 >
-                                  <span className={cn("text-xs w-24 shrink-0", getTrafficMetaClass(weekday, hour))}>
-                                    {label}
-                                  </span>
-                                  <div className="flex-1 min-w-0 overflow-hidden space-y-0.5">
-                                    <div className="flex flex-wrap gap-1">
-                                      {slotBlocks.length > 0 ? slotBlocks.map((block) => (
-                                        <button
-                                          key={block.id}
-                                          type="button"
-                                          onClick={() => handleOpenDetail(weekday, hour)}
-                                          className="flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium border max-w-full"
-                                          style={{
-                                            backgroundColor: getMentorColor(block.mentor.id).fill,
-                                            color: getMentorColor(block.mentor.id).foreground,
-                                            borderColor: getMentorColor(block.mentor.id).fill,
-                                          }}
-                                          title={block.mentor.name}
-                                        >
-                                          {block.mentor.image ? (
-                                            <Image
-                                              src={block.mentor.image}
-                                              alt=""
-                                              width={16}
-                                              height={16}
-                                              className="h-4 w-4 rounded-full object-cover shrink-0"
-                                            />
-                                          ) : null}
-                                          <span className="truncate">{block.mentor.name.split(" ")[0]}</span>
-                                        </button>
-                                      )) : (
-                                        <span className="text-xs text-muted-foreground/40">—</span>
+                                  <div
+                                    className={cn(
+                                      "flex items-center gap-2 px-3 py-2",
+                                      getTrafficCellClass(weekday, hour),
+                                    )}
+                                  >
+                                    <span className={cn("text-xs w-24 shrink-0", getTrafficMetaClass(weekday, hour))}>
+                                      {label}
+                                    </span>
+                                    <div className="flex-1 min-w-0 overflow-hidden space-y-0.5">
+                                      <div className="flex flex-wrap gap-1">
+                                        {slotBlocks.length > 0 ? slotBlocks.map((block) => (
+                                          <button
+                                            key={block.id}
+                                            type="button"
+                                            onClick={() => handleOpenDetail(weekday, hour)}
+                                            className="flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium border max-w-full"
+                                            style={{
+                                              backgroundColor: getMentorColor(block.mentor.id).fill,
+                                              color: getMentorColor(block.mentor.id).foreground,
+                                              borderColor: getMentorColor(block.mentor.id).fill,
+                                            }}
+                                          >
+                                            {block.mentor.image ? (
+                                              <Image
+                                                src={block.mentor.image}
+                                                alt=""
+                                                width={16}
+                                                height={16}
+                                                className="h-4 w-4 rounded-full object-cover shrink-0"
+                                              />
+                                            ) : null}
+                                            <span className="truncate">{block.mentor.name.split(" ")[0]}</span>
+                                          </button>
+                                        )) : (
+                                          <span className="text-xs text-muted-foreground/40">—</span>
+                                        )}
+                                      </div>
+                                      {showAvailability && (mappedAvailable.length > 0 || availableNames.length > 0) && (
+                                        <div className={cn("text-[10px] truncate", getTrafficSubtextClass(weekday, hour))}>
+                                          {mappedAvailable.length > 0
+                                            ? mappedAvailable.map((m) => m.user.name.split(" ")[0]).join(", ")
+                                            : `${availableNames.length} avail.`}
+                                        </div>
                                       )}
                                     </div>
-                                    {showAvailability && (mappedAvailable.length > 0 || availableNames.length > 0) && (
-                                      <div className={cn("text-[10px] truncate", getTrafficSubtextClass(weekday, hour))}>
-                                        {mappedAvailable.length > 0
-                                          ? mappedAvailable.map((m) => m.user.name.split(" ")[0]).join(", ")
-                                          : `${availableNames.length} avail.`}
-                                      </div>
-                                    )}
+                                    <button
+                                      type="button"
+                                      onClick={() => handleOpenAssignModal(weekday, hour)}
+                                      className="text-xs text-muted-foreground hover:text-foreground shrink-0 px-1"
+                                      title="Add mentor"
+                                    >
+                                      +
+                                    </button>
                                   </div>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleOpenAssignModal(weekday, hour)}
-                                    className="text-xs text-muted-foreground hover:text-foreground shrink-0 px-1"
-                                    title="Add mentor"
-                                  >
-                                    +
-                                  </button>
-                                </div>
+                                </Tooltip>
                               )
                             })}
                           </div>
