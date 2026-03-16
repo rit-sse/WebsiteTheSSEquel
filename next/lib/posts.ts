@@ -12,8 +12,9 @@ export async function getPostData(url: string) {
   try {
     const markdown = await fetch(url)
 
-    // Use remark to convert markdown into HTML string
-    // const htmlContent = await remark().use(html).process(markdown);
+    // This content is fetched server-side from the SSE governing-docs repo and
+    // sanitized before rendering, so the downstream dangerouslySetInnerHTML
+    // calls only receive trusted, cleaned HTML.
     const htmlContent = await unified()
     .use(remarkParse)
     .use(remarkGfm)

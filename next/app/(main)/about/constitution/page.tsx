@@ -11,6 +11,8 @@ export default async function Constitution() {
         <Card depth={1} className="w-full p-6 md:p-8">
           <div
             className="prose prose-lg dark:prose-invert max-w-none"
+            // Safe because getPostData() fetches the governing-docs markdown on
+            // the server and sanitizes the generated HTML before render.
             dangerouslySetInnerHTML={{ __html: postData.props.htmlContent }}
           />
         </Card>

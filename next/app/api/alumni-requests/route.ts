@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -153,7 +154,9 @@ export async function PUT(request: Request) {
       } else {
         // Create new alumni record
         // Reset the Alumni sequence if it's out of sync with existing data
-        await prisma.$executeRawUnsafe(`SELECT setval('"Alumni_id_seq"', GREATEST((SELECT MAX(id) FROM "Alumni"), 1))`);
+        await prisma.$executeRaw(
+          Prisma.sql`SELECT setval('"Alumni_id_seq"', GREATEST((SELECT MAX(id) FROM "Alumni"), 1))`
+        );
         await prisma.alumni.create({ data: alumniData });
       }
     }
