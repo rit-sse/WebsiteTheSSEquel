@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getGatewayAuthLevel } from "@/lib/authGateway";
+import { Status } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,20 @@ async function canReviewApplications(request: NextRequest) {
   );
 }
 
+function validateStatus(statusParam?: string | null): Status | null {
+  if (!statusParam) {
+    return null;
+  }
+
+  const normalized = statusParam?.trim().toUpperCase();
+  const validStatuses = new Set(Object.values(Status));
+  if (validStatuses.has(normalized as Status)) {
+    return normalized as Status;
+  }
+
+  return null;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const canReview = await canReviewApplications(request);
@@ -28,7 +43,10 @@ export async function GET(request: NextRequest) {
     }
 
     const rawStatus = request.nextUrl.searchParams.get("status");
-    const status = rawStatus?.trim().toUpperCase();
+    const status = validateStatus(rawStatus);
+    if (rawStatus && !status) {
+      return validationError("Invalid status", 400);
+    }
 
     const applications = await prisma.techCommitteeApplication.findMany({
       where: status ? { status } : undefined,

@@ -50,7 +50,11 @@ function formatDate(date: string) {
 }
 
 function getStatusClasses(status: string) {
-  return STATUS_STYLES[status] ?? "border-border bg-muted text-foreground";
+  return STATUS_STYLES[status.toLowerCase()] ?? "border-border bg-muted text-foreground";
+}
+
+function normalizeStatus(status: string) {
+  return status.toLowerCase();
 }
 
 function notifyApplicationsUpdated() {
@@ -233,7 +237,7 @@ export default function TechCommitteeApplicationReviewPage({
             disabled={
               isLoading ||
               !canTakeActions ||
-              application?.status !== "pending" ||
+              normalizeStatus(application?.status ?? "") !== "pending" ||
               isApproving ||
               isRejecting ||
               isAssigning
@@ -249,7 +253,7 @@ export default function TechCommitteeApplicationReviewPage({
               isLoading ||
               !canTakeActions ||
               !application ||
-              application.status !== "pending" ||
+              normalizeStatus(application.status) !== "pending" ||
               isRejecting ||
               isApproving ||
               isAssigning
@@ -287,7 +291,7 @@ export default function TechCommitteeApplicationReviewPage({
                   variant="outline"
                   className={getStatusClasses(application.status)}
                 >
-                  {application.status}
+                  {normalizeStatus(application.status)}
                 </Badge>
               </div>
             </CardHeader>
@@ -341,7 +345,7 @@ export default function TechCommitteeApplicationReviewPage({
                   value={selectedDivision}
                   onValueChange={setSelectedDivision}
                   disabled={
-                    application.status !== "approved" ||
+                    normalizeStatus(application.status) !== "approved" ||
                     isAssigning ||
                     !canTakeActions
                   }
@@ -369,7 +373,7 @@ export default function TechCommitteeApplicationReviewPage({
                     isLoading ||
                     !canTakeActions ||
                     !application ||
-                    application.status !== "approved" ||
+                    normalizeStatus(application.status) !== "approved" ||
                     !selectedDivision ||
                     isAssigning ||
                     isApproving ||

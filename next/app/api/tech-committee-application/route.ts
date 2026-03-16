@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/authOptions";
@@ -54,18 +55,17 @@ async function getSignedInApplicant(): Promise<
   return { user };
 }
 
-async function getApplicationConfig() {
-  return prisma.techCommitteeApplicationConfig.findUnique({
-    where: { id: 1 },
+async function getCurrentApplicationCycle() {
+  return prisma.techCommitteeApplicationCycle.findFirst({
+    orderBy: { createdAt: "desc" },
   });
 }
 
-async function ensureApplicationsOpen() {
-  const config = await getApplicationConfig();
-  if (config && !config.isOpen) {
-    return validationError("Tech Committee applications are currently closed");
-  }
-  return null;
+async function getOpenApplicationCycle() {
+  return prisma.techCommitteeApplicationCycle.findFirst({
+    where: { isOpen: true },
+    orderBy: { createdAt: "desc" },
+  });
 }
 
 function parseAndValidatePayload(
@@ -142,9 +142,9 @@ export async function GET(request: NextRequest) {
 
   if (statusOnly) {
     try {
-      const config = await getApplicationConfig();
+      const cycle = await getCurrentApplicationCycle();
       return NextResponse.json({
-        isOpen: config?.isOpen ?? true,
+        isOpen: cycle?.isOpen ?? false,
       });
     } catch (error) {
       console.error("Error fetching Tech Committee application status:", error);
@@ -186,16 +186,16 @@ export async function POST(request: NextRequest) {
     const validated = parseAndValidatePayload(body, auth.user);
     if ("response" in validated) return validated.response;
 
-    const openError = await ensureApplicationsOpen();
-    if (openError) return openError;
+    const openCycle = await getOpenApplicationCycle();
+    if (!openCycle) {
+      return validationError("Tech Committee applications are currently closed");
+    }
 
     const existingActiveApplication =
       await prisma.techCommitteeApplication.findFirst({
         where: {
           userId: auth.user.id,
-          status: {
-            in: ["PENDING", "APPROVED", "ASSIGNED"],
-          },
+          cycleId: openCycle.id,
         },
         select: { id: true },
       });
@@ -210,6 +210,7 @@ export async function POST(request: NextRequest) {
     const application = await prisma.techCommitteeApplication.create({
       data: {
         userId: auth.user.id,
+        cycleId: openCycle.id,
         yearLevel: validated.data.yearLevel,
         experienceText: validated.data.experienceText,
         whyJoin: validated.data.whyJoin,
@@ -221,6 +222,15 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(application, { status: 201 });
   } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      return validationError(
+        "You already have a Tech Committee application for the current cycle",
+        409
+      );
+    }
     console.error("Error creating Tech Committee application:", error);
     return validationError("Failed to submit Tech Committee application", 500);
   }

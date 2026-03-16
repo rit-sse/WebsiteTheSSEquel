@@ -63,7 +63,11 @@ function formatDate(date: string) {
 }
 
 function getStatusClasses(status: string) {
-  return STATUS_STYLES[status] ?? "border-border bg-muted text-foreground";
+  return STATUS_STYLES[status.toLowerCase()] ?? "border-border bg-muted text-foreground";
+}
+
+function normalizeStatus(status: string) {
+  return status.toLowerCase();
 }
 
 export default function TechCommitteeApplicationsGrid() {
@@ -212,19 +216,21 @@ export default function TechCommitteeApplicationsGrid() {
     if (statusFilter === "active") {
       return applications.filter(
         (application) =>
-          application.status === "pending" || application.status === "approved"
+          normalizeStatus(application.status) === "pending" ||
+          normalizeStatus(application.status) === "approved"
       );
     }
 
     return applications.filter(
-      (application) => application.status === statusFilter
+      (application) => normalizeStatus(application.status) === statusFilter
     );
   }, [applications, statusFilter]);
 
   const counts = useMemo(() => {
     return applications.reduce(
       (acc, application) => {
-        acc[application.status] = (acc[application.status] ?? 0) + 1;
+        const status = normalizeStatus(application.status);
+        acc[status] = (acc[status] ?? 0) + 1;
         return acc;
       },
       {} as Record<string, number>
@@ -429,7 +435,7 @@ export default function TechCommitteeApplicationsGrid() {
                   variant="outline"
                   className={getStatusClasses(application.status)}
                 >
-                  {application.status}
+                  {normalizeStatus(application.status)}
                 </Badge>
               </div>
 

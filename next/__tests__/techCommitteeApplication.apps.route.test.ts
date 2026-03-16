@@ -139,4 +139,19 @@ describe("/api/tech-committee-application/apps route", () => {
 
     expect(res.status).toBe(200);
   });
+
+  it("rejects invalid status filters", async () => {
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isTechCommitteeHead: true,
+      isTechCommitteeDivisionManager: false,
+      isPrimary: false,
+    });
+
+    const res = await GET(
+      req("http://localhost/api/tech-committee-application/apps?status=bad")
+    );
+
+    expect(res.status).toBe(400);
+    expect(mockTechCommitteeApplicationFindMany).not.toHaveBeenCalled();
+  });
 });

@@ -403,6 +403,17 @@ async function seedMentorRosterAndApplications() {
 	);
 }
 
+async function seedTechCommitteeApplicationCycle() {
+	await prisma.techCommitteeApplicationCycle.upsert({
+		where: { name: "Spring 2026" },
+		update: { isOpen: true },
+		create: {
+			name: "Spring 2026",
+			isOpen: true,
+		},
+	});
+}
+
 async function seedMentorHeadcountData() {
 	const activeSemester = await prisma.mentorSemester.findFirst({
 		where: { isActive: true },
@@ -1440,6 +1451,7 @@ async function main() {
 
 		await seedProject();
 		await seedProjectContributor();
+		await seedTechCommitteeApplicationCycle();
 		await seedEvents();
 		await seedMemberships();
 		await seedSponsors();

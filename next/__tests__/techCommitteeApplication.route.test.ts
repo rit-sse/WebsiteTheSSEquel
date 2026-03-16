@@ -1,9 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { Prisma } from "@prisma/client";
 
 const {
   mockGetServerSession,
   mockUserFindUnique,
-  mockTechCommitteeApplicationConfigFindUnique,
+  mockTechCommitteeApplicationCycleFindFirst,
   mockTechCommitteeApplicationFindMany,
   mockTechCommitteeApplicationFindFirst,
   mockTechCommitteeApplicationCreate,
@@ -11,7 +12,7 @@ const {
 } = vi.hoisted(() => ({
   mockGetServerSession: vi.fn(),
   mockUserFindUnique: vi.fn(),
-  mockTechCommitteeApplicationConfigFindUnique: vi.fn(),
+  mockTechCommitteeApplicationCycleFindFirst: vi.fn(),
   mockTechCommitteeApplicationFindMany: vi.fn(),
   mockTechCommitteeApplicationFindFirst: vi.fn(),
   mockTechCommitteeApplicationCreate: vi.fn(),
@@ -29,8 +30,8 @@ vi.mock("@/lib/prisma", () => ({
     user: {
       findUnique: mockUserFindUnique,
     },
-    techCommitteeApplicationConfig: {
-      findUnique: mockTechCommitteeApplicationConfigFindUnique,
+    techCommitteeApplicationCycle: {
+      findFirst: mockTechCommitteeApplicationCycleFindFirst,
     },
     techCommitteeApplication: {
       findMany: mockTechCommitteeApplicationFindMany,
@@ -55,7 +56,11 @@ describe("/api/tech-committee-application route", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockGetServerSession.mockResolvedValue(null);
-    mockTechCommitteeApplicationConfigFindUnique.mockResolvedValue({ id: 1, isOpen: true });
+    mockTechCommitteeApplicationCycleFindFirst.mockResolvedValue({
+      id: 1,
+      name: "Spring 2026",
+      isOpen: true,
+    });
     mockTechCommitteeApplicationFindFirst.mockResolvedValue(null);
   });
 
@@ -99,10 +104,7 @@ describe("/api/tech-committee-application route", () => {
       name: "Student User",
       email: "student@g.rit.edu",
     });
-    mockTechCommitteeApplicationConfigFindUnique.mockResolvedValue({
-      id: 1,
-      isOpen: false,
-    });
+    mockTechCommitteeApplicationCycleFindFirst.mockResolvedValue(null);
 
     const res = await POST(
       req("http://localhost/api/tech-committee-application", "POST", {
@@ -159,6 +161,7 @@ describe("/api/tech-committee-application route", () => {
       weeklyCommitment: "4 hours",
       preferredDivision: "Web Division",
       status: "PENDING",
+      cycleId: 1,
     });
 
     const res = await POST(
@@ -177,6 +180,7 @@ describe("/api/tech-committee-application route", () => {
     expect(mockTechCommitteeApplicationCreate).toHaveBeenCalledWith({
       data: {
         userId: 1,
+        cycleId: 1,
         yearLevel: "3rd",
         experienceText: "Built some projects",
         whyJoin: "Interested in contributing",
@@ -185,6 +189,35 @@ describe("/api/tech-committee-application route", () => {
         status: "PENDING",
       },
     });
+  });
+
+  it("POST returns conflict when a concurrent create hits the cycle unique constraint", async () => {
+    mockGetServerSession.mockResolvedValue({ user: { email: "student@g.rit.edu" } });
+    mockUserFindUnique.mockResolvedValue({
+      id: 1,
+      name: "Student User",
+      email: "student@g.rit.edu",
+    });
+    mockTechCommitteeApplicationCreate.mockRejectedValue(
+      new Prisma.PrismaClientKnownRequestError("Unique constraint failed", {
+        code: "P2002",
+        clientVersion: "5.22.0",
+      })
+    );
+
+    const res = await POST(
+      req("http://localhost/api/tech-committee-application", "POST", {
+        name: "Student User",
+        ritEmail: "student@g.rit.edu",
+        yearLevel: "3rd",
+        experienceText: "Built some projects",
+        whyJoin: "Interested in contributing",
+        weeklyCommitment: "4 hours",
+        preferredDivision: "Web Division",
+      })
+    );
+
+    expect(res.status).toBe(409);
   });
 
   it("PUT requires sign-in", async () => {
