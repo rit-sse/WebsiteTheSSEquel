@@ -50,18 +50,24 @@ function buildContentSecurityPolicy({ production }) {
     .join("; ");
 }
 
-function getSecurityHeaders({ nodeEnv = process.env.NODE_ENV } = {}) {
-  const production = nodeEnv === "production";
+function getSecurityHeaders({
+  nodeEnv = process.env.NODE_ENV,
+  deploymentEnv = process.env.NEXT_PUBLIC_ENV,
+} = {}) {
+  const runtimeProduction = nodeEnv === "production";
+  // The development deployment runs a production build, so header enforcement
+  // must key off the deployment target rather than NODE_ENV alone.
+  const enforceCsp = deploymentEnv === "prod";
   const headers = [...COMMON_HEADERS];
 
   headers.push({
-    key: production
+    key: enforceCsp
       ? "Content-Security-Policy"
       : "Content-Security-Policy-Report-Only",
-    value: buildContentSecurityPolicy({ production }),
+    value: buildContentSecurityPolicy({ production: runtimeProduction }),
   });
 
-  if (production) {
+  if (enforceCsp) {
     headers.push({
       key: "Strict-Transport-Security",
       value: "max-age=31536000; includeSubDomains",

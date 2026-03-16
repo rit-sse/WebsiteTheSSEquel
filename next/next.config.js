@@ -6,7 +6,10 @@ const nextConfig = {
         return [
             {
                 source: "/:path*",
-                headers: getSecurityHeaders(),
+                headers: getSecurityHeaders({
+                    nodeEnv: process.env.NODE_ENV,
+                    deploymentEnv: process.env.NEXT_PUBLIC_ENV,
+                }),
             },
         ];
     },

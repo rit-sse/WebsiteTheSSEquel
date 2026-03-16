@@ -6,8 +6,11 @@ import {
 } from "@/lib/securityHeaders";
 
 describe("security headers", () => {
-  it("returns report-only CSP without HSTS outside production", () => {
-    const headers = getSecurityHeaders({ nodeEnv: "development" });
+  it("returns report-only CSP without HSTS for local development", () => {
+    const headers = getSecurityHeaders({
+      nodeEnv: "development",
+      deploymentEnv: "dev",
+    });
     const byKey = new Map(headers.map((header) => [header.key, header.value]));
 
     expect(byKey.get("Content-Security-Policy-Report-Only")).toContain("ws:");
@@ -15,8 +18,28 @@ describe("security headers", () => {
     expect(byKey.get("Strict-Transport-Security")).toBeUndefined();
   });
 
+  it("returns report-only CSP without HSTS for deployed dev", () => {
+    const headers = getSecurityHeaders({
+      nodeEnv: "production",
+      deploymentEnv: "dev",
+    });
+    const byKey = new Map(headers.map((header) => [header.key, header.value]));
+
+    expect(byKey.get("Content-Security-Policy-Report-Only")).toContain(
+      "frame-ancestors 'none'"
+    );
+    expect(byKey.get("Content-Security-Policy")).toBeUndefined();
+    expect(byKey.get("Strict-Transport-Security")).toBeUndefined();
+    expect(byKey.get("Content-Security-Policy-Report-Only")).not.toContain(
+      "ws:"
+    );
+  });
+
   it("returns enforced CSP and HSTS in production", () => {
-    const headers = getSecurityHeaders({ nodeEnv: "production" });
+    const headers = getSecurityHeaders({
+      nodeEnv: "production",
+      deploymentEnv: "prod",
+    });
     const byKey = new Map(headers.map((header) => [header.key, header.value]));
 
     expect(byKey.get("Content-Security-Policy")).toContain("frame-ancestors 'none'");
