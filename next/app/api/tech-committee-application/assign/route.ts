@@ -5,14 +5,9 @@ import { ApiError } from "@/lib/apiError";
 import { isEmailConfigured, sendEmail } from "@/lib/email";
 import { buildTechCommitteeAssignmentEmail } from "@/lib/email/techCommittee";
 import { getPublicBaseUrl } from "@/lib/baseUrl";
+import { TECH_COMMITTEE_DIVISIONS } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
-
-const VALID_DIVISIONS = [
-  "Web Division",
-  "Lab Division",
-  "Services Division",
-] as const;
 
 type AssignPayload = {
   id?: number;
@@ -49,7 +44,11 @@ export async function PUT(request: NextRequest) {
       return ApiError.badRequest("Final division is required");
     }
 
-    if (!VALID_DIVISIONS.includes(finalDivision as (typeof VALID_DIVISIONS)[number])) {
+    if (
+      !TECH_COMMITTEE_DIVISIONS.includes(
+        finalDivision as (typeof TECH_COMMITTEE_DIVISIONS)[number]
+      )
+    ) {
       return ApiError.badRequest("Invalid final division");
     }
 

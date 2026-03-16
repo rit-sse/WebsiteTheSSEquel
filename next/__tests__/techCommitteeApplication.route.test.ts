@@ -217,7 +217,7 @@ describe("/api/tech-committee-application route", () => {
       })
     );
 
-    expect(res.status).toBe(409);
+    expect(res!.status).toBe(409);
   });
 
   it("PUT requires sign-in", async () => {
