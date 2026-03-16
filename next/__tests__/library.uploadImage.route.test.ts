@@ -1,8 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { mockGetAuth, mockWriteFileSync } = vi.hoisted(() => ({
+const { mockGetAuth, mockPutObject, mockTextbooksUpdate, mockTextbooksFindUnique } = vi.hoisted(() => ({
   mockGetAuth: vi.fn(),
-  mockWriteFileSync: vi.fn(),
+  mockPutObject: vi.fn(),
+  mockTextbooksUpdate: vi.fn(),
+  mockTextbooksFindUnique: vi.fn(),
 }));
 
 vi.mock("@/app/api/library/authTools", () => ({
@@ -10,10 +12,20 @@ vi.mock("@/app/api/library/authTools", () => ({
   getSessionCookie: vi.fn(),
 }));
 
-vi.mock("fs", () => ({
-  writeFileSync: mockWriteFileSync,
-  readFileSync: vi.fn(),
-  existsSync: vi.fn(),
+vi.mock("@/lib/services/s3Service", () => ({
+  s3Service: {
+    putObject: mockPutObject,
+    deleteObject: vi.fn(),
+  },
+}));
+
+vi.mock("@/lib/prisma", () => ({
+  default: {
+    textbooks: {
+      update: mockTextbooksUpdate,
+      findUnique: mockTextbooksFindUnique,
+    },
+  },
 }));
 
 import { POST, PUT } from "@/app/api/library/uploadImage/route";
@@ -31,6 +43,9 @@ describe("/api/library/uploadImage route", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockGetAuth.mockResolvedValue({ isOfficer: false, isMentor: false });
+    mockPutObject.mockResolvedValue(undefined);
+    mockTextbooksUpdate.mockResolvedValue({});
+    mockTextbooksFindUnique.mockResolvedValue({ imageKey: null });
   });
 
   it("POST requires session cookie", async () => {
@@ -52,7 +67,7 @@ describe("/api/library/uploadImage route", () => {
     expect(res.status).toBe(400);
   });
 
-  it("PUT uploads image for valid payload", async () => {
+  it("PUT uploads image to S3 for valid payload", async () => {
     mockGetAuth.mockResolvedValue({ isOfficer: true, isMentor: false });
 
     const res = await PUT(req({
@@ -61,10 +76,16 @@ describe("/api/library/uploadImage route", () => {
     }));
 
     expect(res.status).toBe(200);
-    expect(mockWriteFileSync).toHaveBeenCalled();
-    expect(await res.json()).toEqual({
-      message: "Image uploaded successfully",
-      imageUrl: "/library-assets/123-4.jpg",
-    });
+    expect(mockPutObject).toHaveBeenCalledWith(
+      expect.stringContaining("uploads/library-books/123-4/"),
+      expect.any(Uint8Array),
+      "image/png"
+    );
+    expect(mockTextbooksUpdate).toHaveBeenCalled();
+
+    const body = await res.json();
+    expect(body.message).toBe("Image uploaded successfully");
+    expect(body.key).toMatch(/^uploads\/library-books\/123-4\//);
+    expect(body.imageUrl).toMatch(/\/api\/aws\/image\?key=/);
   });
 });

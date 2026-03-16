@@ -29,10 +29,25 @@ describe("/api/library/search route", () => {
   });
 
   it("returns matching books for valid query", async () => {
-    mockFindMany.mockResolvedValue([{ ISBN: "123", name: "Algorithms" }]);
+    mockFindMany.mockResolvedValue([
+      { ISBN: "123", name: "Algorithms", image: "/library-assets/123.jpg", imageKey: null },
+    ]);
 
     const res = await GET(req("http://localhost/api/library/search?query=algo"));
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual([{ ISBN: "123", name: "Algorithms" }]);
+    const body = await res.json();
+    expect(body).toHaveLength(1);
+    expect(body[0]).toMatchObject({ ISBN: "123", name: "Algorithms", image: "/library-assets/123.jpg" });
+  });
+
+  it("resolves S3 image when imageKey is present", async () => {
+    mockFindMany.mockResolvedValue([
+      { ISBN: "456", name: "Data Structures", image: "", imageKey: "uploads/library-books/456/cover.jpg" },
+    ]);
+
+    const res = await GET(req("http://localhost/api/library/search?query=data"));
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body[0].image).toContain("/api/aws/image?key=");
   });
 });

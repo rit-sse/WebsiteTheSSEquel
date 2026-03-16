@@ -1,5 +1,7 @@
 import { NextRequest } from "next/server";
 import prisma from "@/lib/prisma";
+import { resolveBookImage } from "@/lib/s3Utils";
+
 export async function GET(request: NextRequest) {
     console.log("GET /api/library/search");
     try {
@@ -24,6 +26,7 @@ export async function GET(request: NextRequest) {
                 name: true,
                 authors: true,
                 image: true,
+                imageKey: true,
                 description: true,
                 publisher: true,
                 edition: true,
@@ -33,7 +36,12 @@ export async function GET(request: NextRequest) {
             }
         });
 
-        return new Response(JSON.stringify(results), { status: 200 });
+        const resolved = results.map(({ imageKey, ...rest }) => ({
+            ...rest,
+            image: resolveBookImage(imageKey, rest.image) ?? rest.image,
+        }));
+
+        return new Response(JSON.stringify(resolved), { status: 200 });
     } catch (e) {
         console.error("Error searching for books:", e);
         return new Response(JSON.stringify({ error: "Failed to search for books" }), { status: 500 });

@@ -85,14 +85,14 @@ export default function EditBook() {
                         ISBN: bookData.ISBN,
                         imageData: pickedImage,
                     })
-                }).then((res) => res.json()).then((data) => {
-                    if (data.error) {
-                        setError(data.error);
+                }).then((res) => res.json()).then((imgData) => {
+                    if (imgData.error) {
+                        setError(imgData.error);
                         return;
                     }
                     setBookData({
                         ...bookData,
-                        image: data.imageUrl,
+                        image: imgData.imageUrl,
                     });
                     setShowCustomImage(false);
                     setFinishedEditing(true);
@@ -159,7 +159,16 @@ export default function EditBook() {
                 yearPublished: 0,
             });
         })
-    }   
+    }
+
+    // For S3-proxied images, cache-bust with a timestamp query param
+    const getDisplayImage = () => {
+        if (showCustomImage) return pickedImage;
+        if (!bookData.image) return "";
+        // Append cache-buster for both local and proxied images
+        const sep = bookData.image.includes("?") ? "&" : "?";
+        return bookData.image + sep + "t=" + Date.now();
+    }
 
     return (
         <>
@@ -189,7 +198,7 @@ export default function EditBook() {
                         <input type="file" id="fileUpload" ref={inputFile} className="hidden" onChange={readImage} />
                         <div className="flex flex-col items-center pointer" onClick={onImageRequestClick}>
                             {bookData.image ? (
-                                <Image src={showCustomImage ? pickedImage : bookData.image + "?" + Date.now()} alt={bookData.name} className="mt-4" width={200} height={300} />
+                                <Image src={getDisplayImage()} alt={bookData.name} className="mt-4" width={200} height={300} />
                             ) : null}
                             <div className="mt-3 flex items-center cursor-pointer">
                                 <Image src="/library-icons/openfile.png" alt="Search" className="w-[25px] h-[25px] ml-2 cursor-pointer" width={25} height={25} />

@@ -960,16 +960,17 @@ model Textbooks {
   // Textbook id for our internal reasons. This is NOT the ISBN!
   id Int @id @default(autoincrement())
 
-  name          String // Book title
-  authors       String // Author(s) separated by commas
-  image         String // Book Image
-  description   String // Book description
-  publisher     String // Publisher
-  edition       String // Edition
-  ISBN          String @unique // ISBN-13 of the textbook
-  keyWords      String // Any keywords that could be of interest
-  classInterest String // Each course separated by commas (i.e SWEN-256, SWEN-261, SWEN-262, CSCI-331, etc.)
-  yearPublished String // Publishing date
+  name            String  // Book title
+  authors         String  // Author(s) separated by commas
+  image           String  // Book Image (legacy local path, e.g. /library-assets/ISBN.jpg)
+  imageKey        String? // S3 object key for book cover image
+  description     String  // Book description
+  publisher       String  // Publisher
+  edition         String  // Edition
+  ISBN            String  @unique // ISBN-13 of the textbook
+  keyWords        String  // Any keywords that could be of interest
+  classInterest   String  // Each course separated by commas (i.e SWEN-256, SWEN-261, SWEN-262, CSCI-331, etc.)
+  yearPublished   String  // Publishing date
 
   copies TextbookCopies[]
 }

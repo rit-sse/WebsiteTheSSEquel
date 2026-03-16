@@ -102,29 +102,67 @@ export default function AddBook() {
         })
     }
 
-    const uploadBook = () => {
-        if(!newBookData.ISBN || !newBookData.name) {
+    const uploadBook = async () => {
+        if (!newBookData.ISBN || !newBookData.name) {
             setError("ISBN and Title are required");
             return;
         }
-        const formData = new FormData();
-        formData.append("ISBN", newBookData.ISBN);
-        formData.append("name", newBookData.name);
-        formData.append("authors", newBookData.authors);
-        formData.append("description", newBookData.description);
-        formData.append("publisher", newBookData.publisher);
-        formData.append("edition", newBookData.edition);
-        formData.append("keyWords", newBookData.keyWords);
-        formData.append("classInterest", newBookData.classInterest);
-        formData.append("yearPublished", newBookData.yearPublished.toString());
-        if (inputFile.current?.files && inputFile.current.files[0]) {
-            formData.append("image", inputFile.current.files[0]);
+
+        let imageKey: string | null = null;
+
+        // Upload image to S3 first if one was selected
+        const file = inputFile.current?.files?.[0];
+        if (file) {
+            try {
+                // Get presigned URL
+                const presignRes = await fetch("/api/aws/libraryBooks", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        filename: file.name,
+                        contentType: file.type,
+                        isbn: newBookData.ISBN,
+                    }),
+                });
+
+                if (!presignRes.ok) {
+                    setError("Failed to get upload URL");
+                    return;
+                }
+
+                const { uploadUrl, key } = await presignRes.json();
+
+                // Upload directly to S3
+                const uploadRes = await fetch(uploadUrl, {
+                    method: "PUT",
+                    headers: { "Content-Type": file.type },
+                    body: file,
+                });
+
+                if (!uploadRes.ok) {
+                    setError("Failed to upload image to S3");
+                    return;
+                }
+
+                imageKey = key;
+            } catch {
+                setError("Image upload failed");
+                return;
+            }
         }
 
-        fetch("/api/library/book", {
-            method: "POST",
-            body: formData,
-        }).then((res) => res.json()).then((data) => {
+        // Create the book record with the S3 key
+        try {
+            const res = await fetch("/api/library/book", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    ...newBookData,
+                    yearPublished: newBookData.yearPublished.toString(),
+                    imageKey,
+                }),
+            });
+            const data = await res.json();
             if (data.error) {
                 setError(data.error);
             } else {
@@ -137,7 +175,9 @@ export default function AddBook() {
                 setBookExists(true);
                 setRegisterNewPrompt(false);
             }
-        })
+        } catch {
+            setError("Failed to create book");
+        }
     }
 
     const lookupOnIsbnSearch = () => {

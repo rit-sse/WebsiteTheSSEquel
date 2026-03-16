@@ -71,6 +71,18 @@ export function getImageUrl(imageValue: string | null | undefined): string {
 }
 
 /**
+ * Resolves a textbook's cover image into a display-ready URL.
+ * Priority: imageKey (S3) > image (legacy local path) > null
+ */
+export function resolveBookImage(
+  imageKey: string | null | undefined,
+  image: string | null | undefined,
+): string | null {
+  if (imageKey) return getImageUrl(imageKey);
+  return image || null;
+}
+
+/**
  * Resolves a user's profile image from their DB fields into a display-ready URL.
  * Use this in API routes so clients always receive a usable image URL
  * without needing to call getImageUrl() themselves.

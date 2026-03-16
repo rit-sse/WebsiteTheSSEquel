@@ -1,5 +1,13 @@
 import prisma from "@/lib/prisma";
 import { NextRequest } from "next/server";
+import { resolveBookImage } from "@/lib/s3Utils";
+
+function resolveBooks(books: { imageKey?: string | null; image: string; [k: string]: any }[]) {
+    return books.map(({ imageKey, ...rest }) => ({
+        ...rest,
+        image: resolveBookImage(imageKey, rest.image) ?? rest.image,
+    }));
+}
 
 export async function GET(request: NextRequest) {
     console.log("GET /api/library/[isbn]");
@@ -10,7 +18,7 @@ export async function GET(request: NextRequest) {
         let simple = request.nextUrl.searchParams.get("simple") === "true"; // If true, only return ISBN and id for copies, and do not return id for book details.
 
         if (isbn && isbn.trim() !== "") {
-            
+
             const book = await prisma.textbookCopies.findMany({
                 where: {
                     ISBN: isbn,
@@ -35,6 +43,7 @@ export async function GET(request: NextRequest) {
                     name: true,
                     authors: true,
                     image: true,
+                    imageKey: true,
                     description: true,
                     publisher: true,
                     edition: true,
@@ -48,16 +57,21 @@ export async function GET(request: NextRequest) {
                 return new Response(JSON.stringify({ error: "Not found" }), { status: 404 });
             }
 
-            return new Response(JSON.stringify(book), { status: 200 });
+            const { imageKey, ...rest } = book;
+            return new Response(JSON.stringify({
+                ...rest,
+                image: resolveBookImage(imageKey, rest.image) ?? rest.image,
+            }), { status: 200 });
         }
 
 
-        const book = await prisma.textbooks.findMany({
+        const books = await prisma.textbooks.findMany({
             select: {
                 ISBN: true,
                 name: true,
                 authors: true,
                 image: true,
+                imageKey: true,
                 description: true,
                 publisher: true,
                 edition: true,
@@ -67,11 +81,11 @@ export async function GET(request: NextRequest) {
             }
         });
 
-        if (!book || book.length === 0) {
+        if (!books || books.length === 0) {
             return new Response(JSON.stringify({ error: "Not found" }), { status: 404 });
         }
 
-        return new Response(JSON.stringify(book), { status: 200 });
+        return new Response(JSON.stringify(resolveBooks(books)), { status: 200 });
     } catch (e) {
         console.error("Error fetching book:", e);
         return new Response(JSON.stringify({ error: `Failed to fetch book` }), { status: 500 });

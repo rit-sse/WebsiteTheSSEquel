@@ -1,8 +1,9 @@
 import prisma from "@/lib/prisma";
 import { NextRequest } from "next/server";
-import { getAuth, getSessionCookie } from "../authTools";
-import { writeFileSync } from "fs";
 import { resolveAuthLevelFromRequest } from "@/lib/authLevelResolver";
+import { resolveBookImage } from "@/lib/s3Utils";
+import { s3Service } from "@/lib/services/s3Service";
+import { normalizeToS3Key } from "@/lib/s3Utils";
 
 function hasPrivilegedAccess(auth: any): boolean {
     return Boolean(auth?.isOfficer || auth?.isMentor);
@@ -29,6 +30,7 @@ export async function GET(request: NextRequest) {
                     name: true,
                     authors: true,
                     image: true,
+                    imageKey: true,
                     description: true,
                     publisher: true,
                     edition: true,
@@ -42,6 +44,10 @@ export async function GET(request: NextRequest) {
             if (!book) {
                 return new Response(JSON.stringify({ error: "Not found" }), { status: 404 });
             }
+
+            const resolvedImage = resolveBookImage(book.imageKey, book.image);
+            const { imageKey, ...bookWithoutKey } = book;
+            const bookResponse = { ...bookWithoutKey, image: resolvedImage ?? book.image };
 
             // If the user requested count information, fetch the stock number and overall count
             if (getCount) {
@@ -62,7 +68,7 @@ export async function GET(request: NextRequest) {
 
                 // Combine the book details with the count information in the response
                 const response = {
-                    ...book,
+                    ...bookResponse,
                     stockNumber: stockNumber,
                     overallCount: overallCount,
                 };
@@ -71,7 +77,7 @@ export async function GET(request: NextRequest) {
             }
 
 
-            return new Response(JSON.stringify(book), { status: 200 });
+            return new Response(JSON.stringify(bookResponse), { status: 200 });
         }
 
         return new Response(JSON.stringify({
@@ -95,45 +101,44 @@ export async function POST(request: NextRequest) {
             return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
         }
 
-        const formData = await request.formData();
-        const ISBN = formData.get("ISBN") as string;
-        const name = formData.get("name") as string;
-        const authors = formData.get("authors") as string;
-        const description = formData.get("description") as string;
-        const publisher = formData.get("publisher") as string;
-        const edition = formData.get("edition") as string;
-        const keyWords = formData.get("keyWords") as string;
-        const classInterest = formData.get("classInterest") as string;
-        const yearPublished = formData.get("yearPublished") as string;
-        const image = formData.get("image") as File;
+        let body;
+        try {
+            body = await request.json();
+        } catch {
+            return new Response("Invalid JSON", { status: 422 });
+        }
 
+        const { ISBN, name, authors, description, publisher, edition, keyWords, classInterest, yearPublished, imageKey } = body;
+
+        if (!ISBN || !name) {
+            return new Response('"ISBN" and "name" are required', { status: 400 });
+        }
+
+        if (!/^[\d-]+$/.test(ISBN)) {
+            return new Response("Invalid ISBN Format", { status: 400 });
+        }
 
         try {
-            if (!/^[\d-]+$/.test(ISBN)) {
-                return new Response("Invalid ISBN Format", { status: 400 });
-            }
-
             const newBook = await prisma.textbooks.create({
                 data: {
-                    "ISBN": ISBN,
-                    "name": name,
-                    "authors": authors,
-                    "image": `/library-assets/${ISBN}.jpg`,
-                    "description": description,
-                    "publisher": publisher,
-                    "edition": edition,
-                    "keyWords": keyWords,
-                    "classInterest": classInterest,
-                    "yearPublished": yearPublished,
+                    ISBN,
+                    name,
+                    authors: authors || "",
+                    image: imageKey ? "" : `/library-assets/${ISBN}.jpg`,
+                    imageKey: imageKey || null,
+                    description: description || "",
+                    publisher: publisher || "",
+                    edition: edition || "",
+                    keyWords: keyWords || "",
+                    classInterest: classInterest || "",
+                    yearPublished: yearPublished || "",
                 },
             });
 
-            // Save the uploaded image to the public directory with the filename as the ISBN
-            if (image) {
-                writeFileSync(`./public/library-assets/${ISBN}.jpg`, Buffer.from(await image.arrayBuffer()));
-            }
+            const resolvedImage = resolveBookImage(newBook.imageKey, newBook.image);
+            const { imageKey: _key, ...bookWithoutKey } = newBook;
 
-            return new Response(JSON.stringify(newBook), { status: 200 });
+            return new Response(JSON.stringify({ ...bookWithoutKey, image: resolvedImage ?? newBook.image }), { status: 200 });
         } catch (e) {
             console.error("Error creating book:", e);
             return new Response(JSON.stringify({ error: "Failed to create book" }), { status: 500 });
@@ -160,7 +165,7 @@ export async function PUT(request: NextRequest) {
             return new Response("Invalid JSON", { status: 422 });
         }
 
-        const { ISBN, name, authors, image, description, publisher, edition, keyWords, classInterest, yearPublished } = body;
+        const { ISBN, name, authors, image, imageKey, description, publisher, edition, keyWords, classInterest, yearPublished } = body;
 
         if (!ISBN || !name || !authors) {
             return new Response('"ISBN", "name", and "authors" are required', { status: 400 });
@@ -171,34 +176,35 @@ export async function PUT(request: NextRequest) {
         }
 
         try {
+            const data: any = {
+                name,
+                authors,
+                image: image || "",
+                description,
+                publisher,
+                edition,
+                keyWords,
+                classInterest,
+                yearPublished,
+            };
+
+            if (imageKey !== undefined) {
+                data.imageKey = imageKey || null;
+            }
+
             const updatedBook = await prisma.textbooks.upsert({
                 where: { ISBN: ISBN },
-                update: {
-                    name,
-                    authors,
-                    image,
-                    description,
-                    publisher,
-                    edition,
-                    keyWords,
-                    classInterest,
-                    yearPublished,
-                },
+                update: data,
                 create: {
                     ISBN,
-                    name,
-                    authors,
-                    image,
-                    description,
-                    publisher,
-                    edition,
-                    keyWords,
-                    classInterest,
-                    yearPublished,
+                    ...data,
                 },
             });
 
-            return new Response(JSON.stringify(updatedBook), { status: 200 });
+            const resolvedImage = resolveBookImage(updatedBook.imageKey, updatedBook.image);
+            const { imageKey: _key, ...bookWithoutKey } = updatedBook;
+
+            return new Response(JSON.stringify({ ...bookWithoutKey, image: resolvedImage ?? updatedBook.image }), { status: 200 });
         } catch (e) {
             console.error("Error updating/creating book:", e);
             return new Response("Failed to update/create book", { status: 500 });
@@ -238,6 +244,12 @@ export async function DELETE(request: NextRequest) {
         }
 
         try {
+            // Look up the book to get its S3 key before deleting
+            const book = await prisma.textbooks.findUnique({
+                where: { ISBN },
+                select: { imageKey: true },
+            });
+
             // Erase all records of the book in textbookCopies and textbooks tables
             await prisma.textbookCopies.deleteMany({
                 where: { ISBN: ISBN },
@@ -246,6 +258,17 @@ export async function DELETE(request: NextRequest) {
                 where: { ISBN: ISBN },
             });
 
+            // Clean up S3 image if it exists
+            if (book?.imageKey) {
+                const s3Key = normalizeToS3Key(book.imageKey);
+                if (s3Key) {
+                    try {
+                        await s3Service.deleteObject(s3Key);
+                    } catch (err) {
+                        console.error("Failed to delete S3 book image:", err);
+                    }
+                }
+            }
 
             return new Response(JSON.stringify({ message: "Book deleted successfully" }), { status: 200 });
         } catch (e) {

@@ -4,7 +4,7 @@ import { getPublicS3Url } from "@/lib/s3Utils";
 export const dynamic = "force-dynamic";
 
 /**
- * Image proxy for S3 profile pictures.
+ * Image proxy for S3 uploads (profile pictures, library book covers, etc.).
  *
  * Security:  Only keys under the `uploads/` prefix are allowed.
  *            The raw S3 bucket URL is never exposed to the client.
