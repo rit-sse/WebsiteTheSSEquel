@@ -93,6 +93,14 @@ const HOURS = [
   { hour: 17, label: "5pm - 6pm" },
 ]
 
+const TRAFFIC_LEGEND = [
+  { label: "≤6", swatchClassName: "bg-blue-200 dark:bg-blue-950/70" },
+  { label: "7–10", swatchClassName: "bg-blue-300 dark:bg-blue-900/80" },
+  { label: "11–15", swatchClassName: "bg-blue-400 dark:bg-blue-800/85" },
+  { label: "16–20", swatchClassName: "bg-blue-500 dark:bg-blue-700/90" },
+  { label: "21+", swatchClassName: "bg-blue-600 dark:bg-blue-600" },
+]
+
 function getMentorColor(mentorId: number) {
   return getCategoricalColorFromSeed(mentorId)
 }
@@ -113,9 +121,9 @@ function getTrafficPresentation(averagePeopleInLab: number) {
     return {
       label: "≤6",
       value: 12,
-      cellTint: "bg-blue-200",
-      subtextClassName: "text-slate-700",
-      metaClassName: "text-slate-800",
+      cellTint: "bg-blue-200 dark:bg-blue-950/70",
+      subtextClassName: "text-slate-700 dark:text-blue-200",
+      metaClassName: "text-slate-800 dark:text-blue-100",
       summary: "Light traffic",
     }
   }
@@ -123,9 +131,9 @@ function getTrafficPresentation(averagePeopleInLab: number) {
     return {
       label: "7–10",
       value: 30,
-      cellTint: "bg-blue-300",
-      subtextClassName: "text-slate-800",
-      metaClassName: "text-slate-900",
+      cellTint: "bg-blue-300 dark:bg-blue-900/80",
+      subtextClassName: "text-slate-800 dark:text-blue-200",
+      metaClassName: "text-slate-900 dark:text-blue-100",
       summary: "Moderate traffic",
     }
   }
@@ -133,9 +141,9 @@ function getTrafficPresentation(averagePeopleInLab: number) {
     return {
       label: "11–15",
       value: 50,
-      cellTint: "bg-blue-400",
-      subtextClassName: "text-slate-900",
-      metaClassName: "text-slate-950",
+      cellTint: "bg-blue-400 dark:bg-blue-800/85",
+      subtextClassName: "text-slate-900 dark:text-blue-100",
+      metaClassName: "text-slate-950 dark:text-white",
       summary: "Busy slot",
     }
   }
@@ -143,7 +151,7 @@ function getTrafficPresentation(averagePeopleInLab: number) {
     return {
       label: "16–20",
       value: 75,
-      cellTint: "bg-blue-500",
+      cellTint: "bg-blue-500 dark:bg-blue-700/90",
       subtextClassName: "text-white/90",
       metaClassName: "text-white",
       summary: "Heavy traffic",
@@ -153,7 +161,7 @@ function getTrafficPresentation(averagePeopleInLab: number) {
   return {
     label: "21+",
     value: 95,
-    cellTint: "bg-blue-600",
+    cellTint: "bg-blue-600 dark:bg-blue-600",
     subtextClassName: "text-white/95",
     metaClassName: "text-white",
     summary: "Peak traffic",
@@ -1196,11 +1204,12 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                   {showTraffic && trafficData.length > 0 && (
                     <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
                       <span className="font-medium">Traffic:</span>
-                      <span className="flex items-center gap-1"><span className="h-3 w-5 rounded-sm bg-blue-200" /> ≤6</span>
-                      <span className="flex items-center gap-1"><span className="h-3 w-5 rounded-sm bg-blue-300" /> 7–10</span>
-                      <span className="flex items-center gap-1"><span className="h-3 w-5 rounded-sm bg-blue-400" /> 11–15</span>
-                      <span className="flex items-center gap-1"><span className="h-3 w-5 rounded-sm bg-blue-500" /> 16–20</span>
-                      <span className="flex items-center gap-1"><span className="h-3 w-5 rounded-sm bg-blue-600" /> 21+</span>
+                      {TRAFFIC_LEGEND.map((level) => (
+                        <span key={level.label} className="flex items-center gap-1">
+                          <span className={cn("h-3 w-5 rounded-sm", level.swatchClassName)} />
+                          {level.label}
+                        </span>
+                      ))}
                       <span>Darker blue means more people in lab.</span>
                     </div>
                   )}

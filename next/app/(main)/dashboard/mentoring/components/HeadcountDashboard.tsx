@@ -85,6 +85,13 @@ interface MentorSemester {
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri"]
 const DAY_NAMES = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
 const HOURS = [10, 11, 12, 13, 14, 15, 16, 17]
+const TRAFFIC_LEGEND = [
+  { label: "≤6", swatchClassName: "bg-blue-200 dark:bg-blue-950/70" },
+  { label: "7–10", swatchClassName: "bg-blue-300 dark:bg-blue-900/80" },
+  { label: "11–15", swatchClassName: "bg-blue-400 dark:bg-blue-800/85" },
+  { label: "16–20", swatchClassName: "bg-blue-500 dark:bg-blue-700/90" },
+  { label: "21+", swatchClassName: "bg-blue-600 dark:bg-blue-600" },
+]
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -94,11 +101,11 @@ function formatHour(h: number) {
 }
 
 function heatColor(avg: number) {
-  if (avg <= 6) return "bg-blue-200 text-foreground"
-  if (avg <= 10) return "bg-blue-300 text-foreground"
-  if (avg <= 15) return "bg-blue-400 text-foreground"
-  if (avg <= 20) return "bg-blue-500 text-white"
-  return "bg-blue-600 text-white"
+  if (avg <= 6) return "bg-blue-200 text-foreground dark:bg-blue-950/70 dark:text-blue-100"
+  if (avg <= 10) return "bg-blue-300 text-foreground dark:bg-blue-900/80 dark:text-blue-100"
+  if (avg <= 15) return "bg-blue-400 text-foreground dark:bg-blue-800/85 dark:text-blue-50"
+  if (avg <= 20) return "bg-blue-500 text-white dark:bg-blue-700/90 dark:text-white"
+  return "bg-blue-600 text-white dark:bg-blue-600 dark:text-white"
 }
 
 function shortLabel(name: string): string {
@@ -751,7 +758,9 @@ export default function HeadcountDashboard({ ToolbarPortal, toolbarNode }: Headc
                               <td key={di} className="p-0.5">
                                 <div
                                   className={`rounded p-1.5 sm:p-2 text-center font-semibold tabular-nums transition-colors ${
-                                    avg !== undefined ? heatColor(avg) : "bg-muted/20 text-muted-foreground/30"
+                                    avg !== undefined
+                                      ? heatColor(avg)
+                                      : "bg-muted/20 text-muted-foreground/30 dark:bg-muted/40 dark:text-muted-foreground/50"
                                   }`}
                                   title={avg !== undefined ? `${avg.toFixed(1)} avg` : "No data"}
                                 >
@@ -766,11 +775,12 @@ export default function HeadcountDashboard({ ToolbarPortal, toolbarNode }: Headc
                   </table>
                 </div>
                 <div className="flex flex-wrap items-center gap-3 mt-3 text-[10px] text-muted-foreground justify-end">
-                  <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-sm bg-blue-200" /> ≤6</span>
-                  <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-sm bg-blue-300" /> 7–10</span>
-                  <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-sm bg-blue-400" /> 11–15</span>
-                  <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-sm bg-blue-500" /> 16–20</span>
-                  <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-sm bg-blue-600" /> 21+</span>
+                  {TRAFFIC_LEGEND.map((level) => (
+                    <span key={level.label} className="flex items-center gap-1">
+                      <span className={`h-3 w-3 rounded-sm ${level.swatchClassName}`} />
+                      {level.label}
+                    </span>
+                  ))}
                 </div>
               </CardContent>
             </Card>
