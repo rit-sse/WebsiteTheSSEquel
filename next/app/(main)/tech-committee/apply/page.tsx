@@ -97,7 +97,7 @@ export default function TechCommitteeApplyPage() {
                 whyJoin: string;
                 weeklyCommitment: string;
                 preferredDivision: string;
-              }) => application.status === "pending"
+              }) => application.status === "PENDING"
             );
             if (pendingApplication) {
               setApplicationId(pendingApplication.id);
@@ -113,9 +113,9 @@ export default function TechCommitteeApplyPage() {
             }
             const hasActive = myApps.some(
               (application: { status: string }) =>
-                application.status === "pending" ||
-                application.status === "approved" ||
-                application.status === "assigned"
+                application.status === "PENDING" ||
+                application.status === "APPROVED" ||
+                application.status === "ASSIGNED"
             );
             setHasActiveApplication(hasActive);
           }

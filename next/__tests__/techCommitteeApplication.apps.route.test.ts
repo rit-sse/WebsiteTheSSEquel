@@ -62,7 +62,7 @@ describe("/api/tech-committee-application/apps route", () => {
         whyJoin: "Contribute to Tech Committee",
         weeklyCommitment: "4 hours",
         preferredDivision: "Web Division",
-        status: "pending",
+        status: "PENDING",
         finalDivision: null,
         createdAt: new Date("2026-03-01T12:00:00.000Z"),
         updatedAt: new Date("2026-03-01T12:00:00.000Z"),
@@ -111,7 +111,7 @@ describe("/api/tech-committee-application/apps route", () => {
 
     expect(res.status).toBe(200);
     expect(mockTechCommitteeApplicationFindMany).toHaveBeenCalledWith({
-      where: { status: "pending" },
+      where: { status: "PENDING" },
       include: {
         user: {
           select: {

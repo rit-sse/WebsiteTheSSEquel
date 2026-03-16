@@ -27,7 +27,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const status = request.nextUrl.searchParams.get("status");
+    const rawStatus = request.nextUrl.searchParams.get("status");
+    const status = rawStatus?.trim().toUpperCase();
 
     const applications = await prisma.techCommitteeApplication.findMany({
       where: status ? { status } : undefined,

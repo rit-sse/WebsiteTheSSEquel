@@ -62,13 +62,13 @@ export async function PUT(request: NextRequest) {
       return ApiError.notFound("Application");
     }
 
-    if (existingApplication.status !== "pending") {
+    if (existingApplication.status !== "PENDING") {
       return ApiError.conflict(
         `Only pending applications can be ${action}d`
       );
     }
 
-    const nextStatus = action === "approve" ? "approved" : "rejected";
+    const nextStatus = action === "approve" ? "APPROVED" : "REJECTED";
 
     const updatedApplication = await prisma.techCommitteeApplication.update({
       where: { id: applicationId },
@@ -88,7 +88,7 @@ export async function PUT(request: NextRequest) {
       if (!isEmailConfigured()) {
         await prisma.techCommitteeApplication.update({
           where: { id: applicationId },
-          data: { status: "pending" },
+          data: { status: "PENDING" },
         });
         return new Response(
           JSON.stringify({ error: "Email service is not configured" }),
@@ -110,7 +110,7 @@ export async function PUT(request: NextRequest) {
         console.error("Failed to send Tech Committee rejection email:", emailError);
         await prisma.techCommitteeApplication.update({
           where: { id: applicationId },
-          data: { status: "pending" },
+          data: { status: "PENDING" },
         });
         return new Response(
           JSON.stringify({ error: "Failed to send rejection email" }),

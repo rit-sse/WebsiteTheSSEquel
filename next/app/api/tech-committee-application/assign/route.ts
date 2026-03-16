@@ -79,7 +79,7 @@ export async function PUT(request: NextRequest) {
       return ApiError.notFound("Application");
     }
 
-    if (existingApplication.status !== "approved") {
+    if (existingApplication.status !== "APPROVED") {
       return ApiError.conflict(
         "Only approved applications can be assigned to a division"
       );
@@ -89,7 +89,7 @@ export async function PUT(request: NextRequest) {
       where: { id: applicationId },
       data: {
         finalDivision,
-        status: "assigned",
+        status: "ASSIGNED",
       },
       include: {
         user: {
@@ -106,7 +106,7 @@ export async function PUT(request: NextRequest) {
       await prisma.techCommitteeApplication.update({
         where: { id: applicationId },
         data: {
-          status: "approved",
+          status: "APPROVED",
           finalDivision: existingApplication.finalDivision,
         },
       });
@@ -130,13 +130,13 @@ export async function PUT(request: NextRequest) {
       });
     } catch (emailError) {
       console.error("Failed to send Tech Committee assignment email:", emailError);
-      await prisma.techCommitteeApplication.update({
-        where: { id: applicationId },
-        data: {
-          status: "approved",
-          finalDivision: existingApplication.finalDivision,
-        },
-      });
+        await prisma.techCommitteeApplication.update({
+          where: { id: applicationId },
+          data: {
+            status: "APPROVED",
+            finalDivision: existingApplication.finalDivision,
+          },
+        });
       return new Response(
         JSON.stringify({ error: "Failed to send onboarding email" }),
         { status: 502 }

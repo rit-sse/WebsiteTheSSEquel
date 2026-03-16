@@ -93,7 +93,7 @@ describe("/api/tech-committee-application/review route", () => {
     });
     mockTechCommitteeApplicationFindUnique.mockResolvedValue({
       id: 7,
-      status: "approved",
+      status: "APPROVED",
       user: {
         id: 12,
         name: "Student User",
@@ -114,7 +114,7 @@ describe("/api/tech-committee-application/review route", () => {
     });
     mockTechCommitteeApplicationFindUnique.mockResolvedValue({
       id: 7,
-      status: "pending",
+      status: "PENDING",
       user: {
         id: 12,
         name: "Student User",
@@ -123,7 +123,7 @@ describe("/api/tech-committee-application/review route", () => {
     });
     mockTechCommitteeApplicationUpdate.mockResolvedValue({
       id: 7,
-      status: "approved",
+      status: "APPROVED",
       user: {
         id: 12,
         name: "Student User",
@@ -137,7 +137,7 @@ describe("/api/tech-committee-application/review route", () => {
     expect(res.status).toBe(200);
     expect(mockTechCommitteeApplicationUpdate).toHaveBeenCalledWith({
       where: { id: 7 },
-      data: { status: "approved" },
+      data: { status: "APPROVED" },
       include: {
         user: {
           select: {
@@ -148,7 +148,7 @@ describe("/api/tech-committee-application/review route", () => {
         },
       },
     });
-    expect(body.status).toBe("approved");
+    expect(body.status).toBe("APPROVED");
   });
 
   it("rejects a pending application and sends email", async () => {
@@ -160,7 +160,7 @@ describe("/api/tech-committee-application/review route", () => {
     });
     mockTechCommitteeApplicationFindUnique.mockResolvedValue({
       id: 8,
-      status: "pending",
+      status: "PENDING",
       user: {
         id: 13,
         name: "Rejected User",
@@ -169,7 +169,7 @@ describe("/api/tech-committee-application/review route", () => {
     });
     mockTechCommitteeApplicationUpdate.mockResolvedValueOnce({
       id: 8,
-      status: "rejected",
+      status: "REJECTED",
       user: {
         id: 13,
         name: "Rejected User",
@@ -183,7 +183,7 @@ describe("/api/tech-committee-application/review route", () => {
     expect(res.status).toBe(200);
     expect(mockTechCommitteeApplicationUpdate).toHaveBeenCalledWith({
       where: { id: 8 },
-      data: { status: "rejected" },
+      data: { status: "REJECTED" },
       include: {
         user: {
           select: {
@@ -195,7 +195,7 @@ describe("/api/tech-committee-application/review route", () => {
       },
     });
     expect(mockSendEmail).toHaveBeenCalled();
-    expect(body.status).toBe("rejected");
+    expect(body.status).toBe("REJECTED");
   });
 
   it("returns 503 and rolls back when email is not configured for rejection", async () => {
@@ -208,7 +208,7 @@ describe("/api/tech-committee-application/review route", () => {
     mockIsEmailConfigured.mockReturnValue(false);
     mockTechCommitteeApplicationFindUnique.mockResolvedValue({
       id: 9,
-      status: "pending",
+      status: "PENDING",
       user: {
         id: 14,
         name: "No Mail User",
@@ -218,7 +218,7 @@ describe("/api/tech-committee-application/review route", () => {
     mockTechCommitteeApplicationUpdate
       .mockResolvedValueOnce({
         id: 9,
-        status: "rejected",
+        status: "REJECTED",
         user: {
           id: 14,
           name: "No Mail User",
@@ -227,7 +227,7 @@ describe("/api/tech-committee-application/review route", () => {
       })
       .mockResolvedValueOnce({
         id: 9,
-        status: "pending",
+        status: "PENDING",
       });
 
     const res = await PUT(req({ id: 9, action: "reject" }));
@@ -235,7 +235,7 @@ describe("/api/tech-committee-application/review route", () => {
     expect(res.status).toBe(503);
     expect(mockTechCommitteeApplicationUpdate).toHaveBeenNthCalledWith(2, {
       where: { id: 9 },
-      data: { status: "pending" },
+      data: { status: "PENDING" },
     });
   });
 
@@ -249,7 +249,7 @@ describe("/api/tech-committee-application/review route", () => {
     mockSendEmail.mockRejectedValue(new Error("smtp failed"));
     mockTechCommitteeApplicationFindUnique.mockResolvedValue({
       id: 10,
-      status: "pending",
+      status: "PENDING",
       user: {
         id: 15,
         name: "Mail Fail User",
@@ -259,7 +259,7 @@ describe("/api/tech-committee-application/review route", () => {
     mockTechCommitteeApplicationUpdate
       .mockResolvedValueOnce({
         id: 10,
-        status: "rejected",
+        status: "REJECTED",
         user: {
           id: 15,
           name: "Mail Fail User",
@@ -268,7 +268,7 @@ describe("/api/tech-committee-application/review route", () => {
       })
       .mockResolvedValueOnce({
         id: 10,
-        status: "pending",
+        status: "PENDING",
       });
 
     const res = await PUT(req({ id: 10, action: "reject" }));
@@ -276,7 +276,7 @@ describe("/api/tech-committee-application/review route", () => {
     expect(res.status).toBe(502);
     expect(mockTechCommitteeApplicationUpdate).toHaveBeenNthCalledWith(2, {
       where: { id: 10 },
-      data: { status: "pending" },
+      data: { status: "PENDING" },
     });
   });
 
@@ -289,7 +289,7 @@ describe("/api/tech-committee-application/review route", () => {
     });
     mockTechCommitteeApplicationFindUnique.mockResolvedValue({
       id: 11,
-      status: "pending",
+      status: "PENDING",
       user: {
         id: 16,
         name: "Manager Action User",
@@ -298,7 +298,7 @@ describe("/api/tech-committee-application/review route", () => {
     });
     mockTechCommitteeApplicationUpdate.mockResolvedValue({
       id: 11,
-      status: "approved",
+      status: "APPROVED",
       user: {
         id: 16,
         name: "Manager Action User",

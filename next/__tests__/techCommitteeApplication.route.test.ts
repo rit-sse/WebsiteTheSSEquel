@@ -158,7 +158,7 @@ describe("/api/tech-committee-application route", () => {
       whyJoin: "Interested in contributing",
       weeklyCommitment: "4 hours",
       preferredDivision: "Web Division",
-      status: "pending",
+      status: "PENDING",
     });
 
     const res = await POST(
@@ -182,7 +182,7 @@ describe("/api/tech-committee-application route", () => {
         whyJoin: "Interested in contributing",
         weeklyCommitment: "4 hours",
         preferredDivision: "Web Division",
-        status: "pending",
+        status: "PENDING",
       },
     });
   });
@@ -226,7 +226,7 @@ describe("/api/tech-committee-application route", () => {
     });
     mockTechCommitteeApplicationFindFirst.mockResolvedValue({
       id: 10,
-      status: "approved",
+      status: "APPROVED",
     });
 
     const res = await PUT(
@@ -254,7 +254,7 @@ describe("/api/tech-committee-application route", () => {
     });
     mockTechCommitteeApplicationFindFirst.mockResolvedValue({
       id: 10,
-      status: "pending",
+      status: "PENDING",
     });
     mockTechCommitteeApplicationUpdate.mockResolvedValue({
       id: 10,
@@ -264,7 +264,7 @@ describe("/api/tech-committee-application route", () => {
       whyJoin: "Updated reason",
       weeklyCommitment: "5 hours",
       preferredDivision: "Services Division",
-      status: "pending",
+      status: "PENDING",
     });
 
     const res = await PUT(

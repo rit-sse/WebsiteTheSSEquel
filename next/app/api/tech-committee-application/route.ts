@@ -194,7 +194,7 @@ export async function POST(request: NextRequest) {
         where: {
           userId: auth.user.id,
           status: {
-            in: ["pending", "approved", "assigned"],
+            in: ["PENDING", "APPROVED", "ASSIGNED"],
           },
         },
         select: { id: true },
@@ -215,7 +215,7 @@ export async function POST(request: NextRequest) {
         whyJoin: validated.data.whyJoin,
         weeklyCommitment: validated.data.weeklyCommitment,
         preferredDivision: validated.data.preferredDivision,
-        status: "pending",
+        status: "PENDING",
       },
     });
 
@@ -250,7 +250,7 @@ export async function PUT(request: NextRequest) {
       return validationError("Application not found", 404);
     }
 
-    if (existingApplication.status !== "pending") {
+    if (existingApplication.status !== "PENDING") {
       return validationError("Only pending applications can be edited", 409);
     }
 

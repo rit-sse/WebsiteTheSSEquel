@@ -76,7 +76,7 @@ describe("/api/tech-committee-application/apps/[id] route", () => {
       whyJoin: "Contribute to Tech Committee",
       weeklyCommitment: "4 hours",
       preferredDivision: "Web Division",
-      status: "pending",
+      status: "PENDING",
       finalDivision: null,
       user: {
         id: 12,

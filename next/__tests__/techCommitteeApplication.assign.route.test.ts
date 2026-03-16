@@ -95,7 +95,7 @@ describe("/api/tech-committee-application/assign route", () => {
     });
     mockTechCommitteeApplicationFindUnique.mockResolvedValue({
       id: 7,
-      status: "pending",
+      status: "PENDING",
       user: {
         id: 12,
         name: "Student User",
@@ -116,7 +116,7 @@ describe("/api/tech-committee-application/assign route", () => {
     });
     mockTechCommitteeApplicationFindUnique.mockResolvedValue({
       id: 7,
-      status: "approved",
+      status: "APPROVED",
       user: {
         id: 12,
         name: "Student User",
@@ -125,7 +125,7 @@ describe("/api/tech-committee-application/assign route", () => {
     });
     mockTechCommitteeApplicationUpdate.mockResolvedValue({
       id: 7,
-      status: "assigned",
+      status: "ASSIGNED",
       finalDivision: "Lab Division",
       user: {
         id: 12,
@@ -142,7 +142,7 @@ describe("/api/tech-committee-application/assign route", () => {
       where: { id: 7 },
       data: {
         finalDivision: "Lab Division",
-        status: "assigned",
+        status: "ASSIGNED",
       },
       include: {
         user: {
@@ -154,7 +154,7 @@ describe("/api/tech-committee-application/assign route", () => {
         },
       },
     });
-    expect(body.status).toBe("assigned");
+    expect(body.status).toBe("ASSIGNED");
     expect(body.finalDivision).toBe("Lab Division");
     expect(mockSendEmail).toHaveBeenCalled();
   });
@@ -169,7 +169,7 @@ describe("/api/tech-committee-application/assign route", () => {
     mockIsEmailConfigured.mockReturnValue(false);
     mockTechCommitteeApplicationFindUnique.mockResolvedValue({
       id: 8,
-      status: "approved",
+      status: "APPROVED",
       finalDivision: null,
       user: {
         id: 13,
@@ -180,7 +180,7 @@ describe("/api/tech-committee-application/assign route", () => {
     mockTechCommitteeApplicationUpdate
       .mockResolvedValueOnce({
         id: 8,
-        status: "assigned",
+        status: "ASSIGNED",
         finalDivision: "Web Division",
         user: {
           id: 13,
@@ -190,7 +190,7 @@ describe("/api/tech-committee-application/assign route", () => {
       })
       .mockResolvedValueOnce({
         id: 8,
-        status: "approved",
+        status: "APPROVED",
         finalDivision: null,
       });
 
@@ -200,7 +200,7 @@ describe("/api/tech-committee-application/assign route", () => {
     expect(mockTechCommitteeApplicationUpdate).toHaveBeenNthCalledWith(2, {
       where: { id: 8 },
       data: {
-        status: "approved",
+        status: "APPROVED",
         finalDivision: null,
       },
     });
@@ -216,7 +216,7 @@ describe("/api/tech-committee-application/assign route", () => {
     mockSendEmail.mockRejectedValue(new Error("smtp failed"));
     mockTechCommitteeApplicationFindUnique.mockResolvedValue({
       id: 9,
-      status: "approved",
+      status: "APPROVED",
       finalDivision: null,
       user: {
         id: 14,
@@ -227,7 +227,7 @@ describe("/api/tech-committee-application/assign route", () => {
     mockTechCommitteeApplicationUpdate
       .mockResolvedValueOnce({
         id: 9,
-        status: "assigned",
+        status: "ASSIGNED",
         finalDivision: "Services Division",
         user: {
           id: 14,
@@ -237,7 +237,7 @@ describe("/api/tech-committee-application/assign route", () => {
       })
       .mockResolvedValueOnce({
         id: 9,
-        status: "approved",
+        status: "APPROVED",
         finalDivision: null,
       });
 
@@ -247,7 +247,7 @@ describe("/api/tech-committee-application/assign route", () => {
     expect(mockTechCommitteeApplicationUpdate).toHaveBeenNthCalledWith(2, {
       where: { id: 9 },
       data: {
-        status: "approved",
+        status: "APPROVED",
         finalDivision: null,
       },
     });
@@ -262,7 +262,7 @@ describe("/api/tech-committee-application/assign route", () => {
     });
     mockTechCommitteeApplicationFindUnique.mockResolvedValue({
       id: 10,
-      status: "approved",
+      status: "APPROVED",
       finalDivision: null,
       user: {
         id: 20,
@@ -272,7 +272,7 @@ describe("/api/tech-committee-application/assign route", () => {
     });
     mockTechCommitteeApplicationUpdate.mockResolvedValue({
       id: 10,
-      status: "assigned",
+      status: "ASSIGNED",
       finalDivision: "Lab Division",
       user: {
         id: 20,

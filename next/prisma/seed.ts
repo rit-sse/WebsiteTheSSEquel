@@ -377,7 +377,7 @@ async function seedMentorRosterAndApplications() {
 				previousSemesters: index,
 				whyMentor: "I want to help students feel confident in their coursework.",
 				comments: "Excited to mentor and learn from others!",
-				status: "pending",
+				status: "PENDING",
 			},
 			create: {
 				userId: user.id,
@@ -393,7 +393,7 @@ async function seedMentorRosterAndApplications() {
 				previousSemesters: index,
 				whyMentor: "I want to help students feel confident in their coursework.",
 				comments: "Excited to mentor and learn from others!",
-				status: "pending",
+				status: "PENDING",
 			},
 		});
 	}
