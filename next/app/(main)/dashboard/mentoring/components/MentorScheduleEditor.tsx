@@ -13,7 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tooltip } from "@/components/ui/tooltip"
 import { toast } from "sonner"
-import { X, User, Clock, Calendar, Users, Printer, Activity } from "lucide-react"
+import { X, User, Clock, Calendar, Users, Printer, Activity, Check } from "lucide-react"
 import {
   Select,
   SelectContent,
@@ -94,11 +94,13 @@ const HOURS = [
   { hour: 17, label: "5pm - 6pm" },
 ]
 
+type SlotDropFeedback = "available" | "unavailable" | null
+
 const TRAFFIC_LEGEND = [
-  { label: "≤6", swatchClassName: "bg-blue-200 dark:bg-blue-950/70" },
-  { label: "7–10", swatchClassName: "bg-blue-300 dark:bg-blue-900/80" },
-  { label: "11–15", swatchClassName: "bg-blue-400 dark:bg-blue-800/85" },
-  { label: "16–20", swatchClassName: "bg-blue-500 dark:bg-blue-700/90" },
+  { label: "≤6", swatchClassName: "bg-blue-200 dark:bg-slate-950" },
+  { label: "7–10", swatchClassName: "bg-blue-300 dark:bg-blue-950" },
+  { label: "11–15", swatchClassName: "bg-blue-400 dark:bg-blue-900" },
+  { label: "16–20", swatchClassName: "bg-blue-500 dark:bg-blue-800" },
   { label: "21+", swatchClassName: "bg-blue-600 dark:bg-blue-600" },
 ]
 
@@ -122,9 +124,9 @@ function getTrafficPresentation(averagePeopleInLab: number) {
     return {
       label: "≤6",
       value: 12,
-      cellTint: "bg-blue-200 dark:bg-blue-950/70",
-      subtextClassName: "text-slate-700 dark:text-blue-200",
-      metaClassName: "text-slate-800 dark:text-blue-100",
+      cellTint: "bg-blue-200 dark:bg-slate-950",
+      subtextClassName: "text-slate-700 dark:text-blue-300",
+      metaClassName: "text-slate-800 dark:text-blue-200",
       summary: "Light traffic",
     }
   }
@@ -132,7 +134,7 @@ function getTrafficPresentation(averagePeopleInLab: number) {
     return {
       label: "7–10",
       value: 30,
-      cellTint: "bg-blue-300 dark:bg-blue-900/80",
+      cellTint: "bg-blue-300 dark:bg-blue-950",
       subtextClassName: "text-slate-800 dark:text-blue-200",
       metaClassName: "text-slate-900 dark:text-blue-100",
       summary: "Moderate traffic",
@@ -142,7 +144,7 @@ function getTrafficPresentation(averagePeopleInLab: number) {
     return {
       label: "11–15",
       value: 50,
-      cellTint: "bg-blue-400 dark:bg-blue-800/85",
+      cellTint: "bg-blue-400 dark:bg-blue-900",
       subtextClassName: "text-slate-900 dark:text-blue-100",
       metaClassName: "text-slate-950 dark:text-white",
       summary: "Busy slot",
@@ -152,7 +154,7 @@ function getTrafficPresentation(averagePeopleInLab: number) {
     return {
       label: "16–20",
       value: 75,
-      cellTint: "bg-blue-500 dark:bg-blue-700/90",
+      cellTint: "bg-blue-500 dark:bg-blue-800",
       subtextClassName: "text-white/90",
       metaClassName: "text-white",
       summary: "Heavy traffic",
@@ -177,6 +179,26 @@ function getSlotAvailableMentorNames(mappedAvailable: Mentor[], availableNames: 
         .filter(Boolean)
     )
   )
+}
+
+function getSlotKey(weekday: number, hour: number) {
+  return `${weekday}-${hour}`
+}
+
+function getDropFeedbackClass(dropFeedbackState: SlotDropFeedback, isOver: boolean, saved: boolean) {
+  if (isOver && dropFeedbackState === "available") {
+    return "bg-emerald-500/20 ring-2 ring-inset ring-emerald-500/80 shadow-[0_0_0_1px_rgba(16,185,129,0.25)] animate-heartBeat dark:bg-emerald-400/20 dark:ring-emerald-300/80"
+  }
+
+  if (isOver && dropFeedbackState === "unavailable") {
+    return "bg-rose-500/15 ring-2 ring-inset ring-rose-500/75 animate-shake dark:bg-rose-400/15 dark:ring-rose-300/80"
+  }
+
+  if (saved) {
+    return "bg-emerald-500/10 ring-2 ring-inset ring-emerald-500/60 animate-in fade-in zoom-in-95 dark:bg-emerald-400/12 dark:ring-emerald-300/70"
+  }
+
+  return ""
 }
 
 function ScheduleSlotTooltipContent({
@@ -257,6 +279,9 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
 
   // Traffic indicator state
   const [trafficData, setTrafficData] = useState<TrafficDatum[]>([])
+  const [draggedMentorId, setDraggedMentorId] = useState<number | null>(null)
+  const [savedSlotKey, setSavedSlotKey] = useState<string | null>(null)
+  const savedSlotTimerRef = useRef<number | null>(null)
 
   // Auto-fill schedule modal state
   const [autoFillOpen, setAutoFillOpen] = useState(false)
@@ -465,6 +490,26 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
     return getTrafficLevel(traffic.averagePeopleInLab).metaClassName
   }
 
+  const clearSavedSlotTimer = useCallback(() => {
+    if (savedSlotTimerRef.current !== null) {
+      window.clearTimeout(savedSlotTimerRef.current)
+      savedSlotTimerRef.current = null
+    }
+  }, [])
+
+  useEffect(() => {
+    return () => clearSavedSlotTimer()
+  }, [clearSavedSlotTimer])
+
+  const markSlotSaved = useCallback((weekday: number, hour: number) => {
+    clearSavedSlotTimer()
+    setSavedSlotKey(getSlotKey(weekday, hour))
+    savedSlotTimerRef.current = window.setTimeout(() => {
+      setSavedSlotKey(null)
+      savedSlotTimerRef.current = null
+    }, 1400)
+  }, [clearSavedSlotTimer])
+
   // Handle opening assign modal
   const handleOpenAssignModal = (weekday: number, hour: number) => {
     setAssignSlot({ weekday, hour })
@@ -595,6 +640,7 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over, delta } = event
+    setDraggedMentorId(null)
 
     // Ignore zero-distance drags (clicks)
     if (Math.abs(delta.x) < 5 && Math.abs(delta.y) < 5) return
@@ -630,6 +676,7 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
           await assignMentorToSlot(mentorId, weekday, hour)
           toast.success("Mentor assigned to time slot")
         }
+        markSlotSaved(weekday, hour)
         fetchBlocks()
       } catch (error) {
         console.error("Drag assignment failed:", error)
@@ -799,15 +846,19 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
   // Get aggregated availability for display
   const aggregatedAvailability = aggregateAvailability(availabilityData)
 
+  const getAvailabilityNamesForSlot = (weekday: number, hour: number): string[] => {
+    return getSlotAvailability(aggregatedAvailability, weekday, hour)
+  }
+
   // Get available names for a slot from built-in availability
   const getAvailabilityForSlot = (weekday: number, hour: number): string[] => {
     if (!showAvailability) return []
-    return getSlotAvailability(aggregatedAvailability, weekday, hour)
+    return getAvailabilityNamesForSlot(weekday, hour)
   }
 
   // Get mentors who are available for a slot
   const getAvailableMentorsForSlot = (weekday: number, hour: number): Mentor[] => {
-    const availableNames = getAvailabilityForSlot(weekday, hour)
+    const availableNames = getAvailabilityNamesForSlot(weekday, hour)
     // Find mentors whose names match the available names
     return mentors.filter((m) => 
       availableNames.some((name) => 
@@ -825,13 +876,21 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
 
   // Placeholder for When2Meet availability (for backward compatibility)
   const getWhen2MeetAvailability = (weekday: number, hour: number): string[] => {
-    return getAvailabilityForSlot(weekday, hour)
+    return getAvailabilityNamesForSlot(weekday, hour)
   }
 
   // Get mentors who have availability at this slot (simplified)
   const getMappedAvailableMentors = (weekday: number, hour: number): Mentor[] => {
     return getAvailableMentorsForSlot(weekday, hour)
   }
+
+  const isMentorAvailableForSlot = useCallback((mentorId: number, weekday: number, hour: number) => {
+    const mentor = mentors.find((entry) => entry.id === mentorId)
+    if (!mentor) return false
+
+    const availability = availabilityData.find((entry) => entry.userId === mentor.user.id)?.slots ?? []
+    return availability.some((slot) => slot.weekday === weekday && slot.hour === hour)
+  }, [availabilityData, mentors])
 
   const guessHeader = (headers: string[], keywords: string[]) => {
     const lowerHeaders = headers.map((header) => header.toLowerCase())
@@ -1067,7 +1126,16 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
         </Card>
       ) : (
         <>
-          <DndContext sensors={sensors} onDragEnd={handleDragEnd} autoScroll={false}>
+          <DndContext
+            sensors={sensors}
+            onDragStart={(event) => {
+              const mentorId = event.active.data.current?.mentorId as number | undefined
+              setDraggedMentorId(mentorId ?? null)
+            }}
+            onDragCancel={() => setDraggedMentorId(null)}
+            onDragEnd={handleDragEnd}
+            autoScroll={false}
+          >
             {/* Main grid: calendar + sidebar, sidebar constrained to calendar height */}
             <div className="grid gap-4 xl:grid-cols-[1fr_280px]" style={{ alignItems: "start" }}>
               <div className="flex flex-col gap-3">
@@ -1103,21 +1171,30 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                             const mappedAvailable = getMappedAvailableMentors(weekday, hour)
                             const traffic = getTrafficForSlot(weekday, hour)
                             const tooltipAvailableMentorNames = getSlotAvailableMentorNames(mappedAvailable, availableNames)
+                            const slotKey = getSlotKey(weekday, hour)
+                            const dropFeedbackState: SlotDropFeedback = draggedMentorId === null
+                              ? null
+                              : isMentorAvailableForSlot(draggedMentorId, weekday, hour)
+                                ? "available"
+                                : "unavailable"
 
                             return (
                               <ScheduleSlotCell
                                 key={dayIndex}
                                 id={`slot-${weekday}-${hour}`}
                                 className={cn(
-                                  "p-1 align-top",
+                                  "align-top p-0",
                                   dayIndex < DAYS.length - 1 && "border-r border-border",
                                   getTrafficCellClass(weekday, hour),
                                 )}
                                 onClick={() => handleOpenAssignModal(weekday, hour)}
+                                dropFeedbackState={dropFeedbackState}
+                                saved={savedSlotKey === slotKey}
                               >
                                 <Tooltip
                                   size="lg"
-                                  className="block h-full"
+                                  className="block h-full w-full p-1"
+                                  disabled={draggedMentorId !== null}
                                   content={(
                                     <ScheduleSlotTooltipContent
                                       label={`${DAYS[dayIndex]} · ${label}`}
@@ -1126,7 +1203,12 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                                     />
                                   )}
                                 >
-                                  <div className="flex flex-col gap-0.5 min-w-0">
+                                  <div className="relative flex h-full w-full flex-col gap-0.5 min-w-0">
+                                    {savedSlotKey === slotKey && (
+                                      <span className="pointer-events-none absolute right-0.5 top-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 text-white shadow-sm animate-in fade-in zoom-in-75">
+                                        <Check className="h-2.5 w-2.5" />
+                                      </span>
+                                    )}
                                     {slotBlocks.map((block) => (
                                       <DraggableMentorChip
                                         key={block.id}
@@ -1185,11 +1267,13 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                               const availableNames = getWhen2MeetAvailability(weekday, hour)
                               const traffic = getTrafficForSlot(weekday, hour)
                               const tooltipAvailableMentorNames = getSlotAvailableMentorNames(mappedAvailable, availableNames)
+                              const slotKey = getSlotKey(weekday, hour)
                               return (
                                 <Tooltip
                                   key={hour}
                                   size="lg"
-                                  className="block"
+                                  className="block w-full"
+                                  disabled={draggedMentorId !== null}
                                   content={(
                                     <ScheduleSlotTooltipContent
                                       label={`${day} · ${label}`}
@@ -1200,10 +1284,15 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                                 >
                                   <div
                                     className={cn(
-                                      "flex items-center gap-2 px-3 py-2",
+                                      "relative flex items-center gap-2 px-3 py-2",
                                       getTrafficCellClass(weekday, hour),
                                     )}
                                   >
+                                    {savedSlotKey === slotKey && (
+                                      <span className="pointer-events-none absolute right-2 top-2 inline-flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 text-white shadow-sm animate-in fade-in zoom-in-75">
+                                        <Check className="h-2.5 w-2.5" />
+                                      </span>
+                                    )}
                                     <span className={cn("text-xs w-24 shrink-0", getTrafficMetaClass(weekday, hour))}>
                                       {label}
                                     </span>
@@ -1993,18 +2082,28 @@ function ScheduleSlotCell({
   className,
   children,
   onClick,
+  dropFeedbackState = null,
+  saved = false,
 }: {
   id: string
   className?: string
   children: ReactNode
   onClick?: () => void
+  dropFeedbackState?: SlotDropFeedback
+  saved?: boolean
 }) {
   const { setNodeRef, isOver } = useDroppable({ id })
 
   return (
     <td
       ref={setNodeRef}
-      className={cn(className, isOver && "bg-accent/20", onClick && "cursor-pointer hover:bg-muted/40 transition-colors")}
+      className={cn(
+        className,
+        "transition-all duration-150",
+        getDropFeedbackClass(dropFeedbackState, isOver, saved),
+        isOver && dropFeedbackState === null && "bg-accent/20",
+        onClick && "cursor-pointer hover:bg-muted/40"
+      )}
       onClick={onClick}
     >
       {children}

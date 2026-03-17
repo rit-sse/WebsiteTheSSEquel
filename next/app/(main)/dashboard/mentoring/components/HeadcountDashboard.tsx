@@ -86,10 +86,10 @@ const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri"]
 const DAY_NAMES = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
 const HOURS = [10, 11, 12, 13, 14, 15, 16, 17]
 const TRAFFIC_LEGEND = [
-  { label: "≤6", swatchClassName: "bg-blue-200 dark:bg-blue-950/70" },
-  { label: "7–10", swatchClassName: "bg-blue-300 dark:bg-blue-900/80" },
-  { label: "11–15", swatchClassName: "bg-blue-400 dark:bg-blue-800/85" },
-  { label: "16–20", swatchClassName: "bg-blue-500 dark:bg-blue-700/90" },
+  { label: "≤6", swatchClassName: "bg-blue-200 dark:bg-slate-950" },
+  { label: "7–10", swatchClassName: "bg-blue-300 dark:bg-blue-950" },
+  { label: "11–15", swatchClassName: "bg-blue-400 dark:bg-blue-900" },
+  { label: "16–20", swatchClassName: "bg-blue-500 dark:bg-blue-800" },
   { label: "21+", swatchClassName: "bg-blue-600 dark:bg-blue-600" },
 ]
 
@@ -101,10 +101,10 @@ function formatHour(h: number) {
 }
 
 function heatColor(avg: number) {
-  if (avg <= 6) return "bg-blue-200 text-foreground dark:bg-blue-950/70 dark:text-blue-100"
-  if (avg <= 10) return "bg-blue-300 text-foreground dark:bg-blue-900/80 dark:text-blue-100"
-  if (avg <= 15) return "bg-blue-400 text-foreground dark:bg-blue-800/85 dark:text-blue-50"
-  if (avg <= 20) return "bg-blue-500 text-white dark:bg-blue-700/90 dark:text-white"
+  if (avg <= 6) return "bg-blue-200 text-foreground dark:bg-slate-950 dark:text-blue-200"
+  if (avg <= 10) return "bg-blue-300 text-foreground dark:bg-blue-950 dark:text-blue-100"
+  if (avg <= 15) return "bg-blue-400 text-foreground dark:bg-blue-900 dark:text-blue-50"
+  if (avg <= 20) return "bg-blue-500 text-white dark:bg-blue-800 dark:text-white"
   return "bg-blue-600 text-white dark:bg-blue-600 dark:text-white"
 }
 
