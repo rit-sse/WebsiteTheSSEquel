@@ -71,6 +71,7 @@ Before opening a PR:
    - Pre-commit runs staged-file checks via `lint-staged` from `next/`.
    - If hooks are not installed yet, run `npm install` in `next/`.
 3. Run local checks from `next/`:
+   - `npm run knip`
    - `npm run lint`
    - `npm run test`
    - `npm run build`
