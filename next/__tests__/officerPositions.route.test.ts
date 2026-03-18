@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const {
   mockResolveUserImage,
+  mockGetGatewayAuthLevel,
   mockPositionFindMany,
   mockPositionCreate,
   mockPositionUpdate,
@@ -10,6 +11,7 @@ const {
   mockOfficerDeleteMany,
 } = vi.hoisted(() => ({
   mockResolveUserImage: vi.fn(),
+  mockGetGatewayAuthLevel: vi.fn(),
   mockPositionFindMany: vi.fn(),
   mockPositionCreate: vi.fn(),
   mockPositionUpdate: vi.fn(),
@@ -23,6 +25,10 @@ vi.mock("@/lib/s3Utils", () => ({
   getKeyFromS3Url: vi.fn(),
   isS3Key: vi.fn(),
   normalizeToS3Key: vi.fn(),
+}));
+
+vi.mock("@/lib/authGateway", () => ({
+  getGatewayAuthLevel: mockGetGatewayAuthLevel,
 }));
 
 vi.mock("@/lib/prisma", () => ({
@@ -46,6 +52,7 @@ describe("/api/officer-positions route", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockResolveUserImage.mockReturnValue("resolved-image");
+    mockGetGatewayAuthLevel.mockResolvedValue({ isPrimary: true });
   });
 
   it("GET returns positions with filled status and transformed officer", async () => {

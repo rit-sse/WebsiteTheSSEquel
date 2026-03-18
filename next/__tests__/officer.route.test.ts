@@ -6,6 +6,7 @@ const {
   mockIsEmailConfigured,
   mockGetPublicBaseUrl,
   mockResolveUserImage,
+  mockGetGatewayAuthLevel,
   mockOfficerFindMany,
   mockOfficerDeleteMany,
   mockOfficerCreate,
@@ -22,6 +23,7 @@ const {
   mockIsEmailConfigured: vi.fn(),
   mockGetPublicBaseUrl: vi.fn(),
   mockResolveUserImage: vi.fn(),
+  mockGetGatewayAuthLevel: vi.fn(),
   mockOfficerFindMany: vi.fn(),
   mockOfficerDeleteMany: vi.fn(),
   mockOfficerCreate: vi.fn(),
@@ -49,6 +51,10 @@ vi.mock("@/lib/baseUrl", () => ({
 
 vi.mock("@/lib/s3Utils", () => ({
   resolveUserImage: mockResolveUserImage,
+}));
+
+vi.mock("@/lib/authGateway", () => ({
+  getGatewayAuthLevel: mockGetGatewayAuthLevel,
 }));
 
 vi.mock("@/lib/prisma", () => ({
@@ -82,6 +88,7 @@ describe("/api/officer route", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockResolveUserImage.mockReturnValue("resolved-image");
+    mockGetGatewayAuthLevel.mockResolvedValue({ isPrimary: true });
   });
 
   it("GET returns officers with resolved image field", async () => {
