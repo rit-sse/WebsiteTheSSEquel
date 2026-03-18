@@ -12,11 +12,12 @@ This guide should mirror what is needed to safely run and validate changes befor
 
 Before requesting review, validate from the `next/` directory:
 
-1. `npm run lint`
-2. `npm run test`
-3. `npm run build`
-4. `npx prisma migrate dev` (if schema changed)
-5. `npx prisma db seed` (if your change requires seeded test data)
+1. `npm run env:check`
+2. `npm run lint`
+3. `npm run test`
+4. `npm run build`
+5. `npx prisma migrate dev` (if schema changed)
+6. `npx prisma db seed` (if your change requires seeded test data)
 
 If any step fails, fix or document why it is intentionally skipped.
 
@@ -28,31 +29,55 @@ If any step fails, fix or document why it is intentionally skipped.
 
 4. Navigate to the directory you cloned the repository to and run `cd ./next`. This will take you to the `next` directory, which is where the Next.js application is located.
 
-5. Run `npm run dev` to start the development server. You can view the website at `localhost:3000`.
+5. Copy the environment template and fill in your local values:
 
-At this point, you should be able to explore the site without logging in or having to set up a database. In order to have authentication and access to the database, you will need to set up a `.env` file. This file is not included in the repository because it contains sensitive information. The `.env` file should be located in the `next` directory. The contents of the `.env` file should be as follows:
+   - `cp .env.example .env`
+
+6. Run `npm run env:check` to validate required environment variables before starting the app.
+
+7. Run `npm run dev` to start the development server. You can view the website at `localhost:3000`.
+
+At this point, you should be able to explore the site without logging in or having to set up a database. In order to have authentication and access to the database, you will need to set up a `.env` file. This file is not included in the repository because it contains sensitive information. Start by copying `.env.example` to `.env`, then update values for your local environment. The `.env` file should be located in the `next` directory. Use this template (matching `next/.env.example`):
 
 ```
-DATABASE_URL="database url string"
-GOOGLE_CLIENT_ID="google cloud OAuth client id"
-GOOGLE_CLIENT_SECRET="google cloud OAuth client secret"
+# Database
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/ssequel_dev"
 
+# Auth
 NEXTAUTH_URL="http://localhost:3000"
-NEXTAUTH_SECRET="random string of characters used for encryption -- feel free to make this up or use openssl to generate one"
+NEXTAUTH_SECRET="replace-with-a-long-random-secret"
+SESSION_COOKIE_NAME="next-auth.session-token"
 
-GCAL_CLIENT_EMAIL="gcal client email"
-GCAL_PRIVATE_KEY="gcal private key"
+# Google OAuth
+GOOGLE_CLIENT_ID=""
+GOOGLE_CLIENT_SECRET=""
 
-AWS_S3_BUCKET_NAME="s3 bucket name"
-AWS_S3_REGION="s3 region (for example us-east-1)"
-AWS_ACCESS_KEY_ID="aws access key"
-AWS_SECRET_ACCESS_KEY="aws secret key"
+# Google Calendar
+GCAL_CLIENT_EMAIL=""
+GCAL_PRIVATE_KEY=""
+GCAL_CAL_ID=""
 
-SMTP_HOST="smtp hostname"
-SMTP_PORT="587"
+# AWS S3
+AWS_S3_BUCKET_NAME=""
+AWS_S3_REGION="us-east-1"
+AWS_ACCESS_KEY_ID=""
+AWS_SECRET_ACCESS_KEY=""
+NEXT_PUBLIC_AWS_S3_BUCKET_NAME=""
+NEXT_PUBLIC_AWS_S3_REGION=""
+
+# SMTP
+SMTP_HOST="localhost"
+SMTP_PORT="1025"
 SMTP_SECURE="false"
-SMTP_USER="smtp username"
-SMTP_PASS="smtp password"
+SMTP_USER="dev"
+SMTP_PASS="dev"
+
+# Runtime
+INTERNAL_API_URL="http://localhost:3000"
+STAGING_PROXY_AUTH="false"
+NEXT_PUBLIC_ENV="dev"
+NEXT_PUBLIC_COMMIT_HASH="dev"
+PORT="3000"
 ```
 
 The above is just a placeholder, you'll need to fill in each entry with the appropriate information. First, let's step through setting up a local database.

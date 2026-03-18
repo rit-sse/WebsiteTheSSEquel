@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   getRateLimitRule,
@@ -22,12 +22,17 @@ describe("rateLimitMiddleware", () => {
   const originalNodeEnv = process.env.NODE_ENV;
 
   beforeEach(() => {
-    process.env.NODE_ENV = "development";
+    vi.stubEnv("NODE_ENV", "development");
     resetRateLimitBuckets();
   });
 
   afterEach(() => {
-    process.env.NODE_ENV = originalNodeEnv;
+    if (originalNodeEnv === undefined) {
+      vi.unstubAllEnvs();
+      return;
+    }
+
+    vi.stubEnv("NODE_ENV", originalNodeEnv);
   });
 
   it("uses forwarded headers to resolve the client IP", () => {
@@ -41,10 +46,12 @@ describe("rateLimitMiddleware", () => {
   });
 
   it("recognizes configured routes only", () => {
-    expect(getRateLimitRule(makeRequest("/api/quotes", { method: "POST" }))?.id).toBe(
-      "quotes-post"
-    );
-    expect(getRateLimitRule(makeRequest("/api/library/books", { method: "POST" }))).toBeNull();
+    expect(
+      getRateLimitRule(makeRequest("/api/quotes", { method: "POST" }))?.id
+    ).toBe("quotes-post");
+    expect(
+      getRateLimitRule(makeRequest("/api/library/books", { method: "POST" }))
+    ).toBeNull();
   });
 
   it("allows requests up to the threshold and then returns 429", async () => {

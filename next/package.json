@@ -7,7 +7,10 @@
   },
   "scripts": {
     "preinstall": "node ./scripts/check-node-version.cjs",
+    "prepare": "husky",
+    "env:check": "node ./scripts/validate-env.mjs",
     "dev": "cross-env INTERNAL_API_URL=\"http://localhost:3000\" SESSION_COOKIE_NAME=\"next-auth.session-token\" next dev",
+    "dev:safe": "npm run env:check && npm run dev",
     "build": "next build",
     "start": "next start",
     "migrate:deploy": "prisma migrate deploy",
@@ -15,6 +18,8 @@
     "prisma:migrate": "prisma migrate dev",
     "start:standalone": "mkdir -p .next/standalone/.next && cp -r .next/static .next/standalone/.next/static && cp -r public .next/standalone/public && INTERNAL_API_URL=\"http://localhost:3000\" SESSION_COOKIE_NAME=\"next-auth.session-token\" node .next/standalone/server.js",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx --ignore-pattern .next",
+    "lint:staged": "lint-staged",
+    "knip": "knip",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:report": "vitest run --coverage.enabled true --coverage.reporter=html && node ./scripts/openCoverageReport.mjs",
@@ -110,12 +115,24 @@
     "@types/react-dom": "^19",
     "@vitest/coverage-v8": "^4.0.18",
     "cross-env": "^10.0.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.2.10",
+    "knip": "^5.39.0",
     "prettier": "^3.8.1",
     "prisma": "5.22.0",
     "supertest": "^6.3.3",
     "ts-node": "^10.9.1",
     "typescript": "^5.2.2",
     "vitest": "^4.0.18"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix --max-warnings=0",
+      "prettier --write"
+    ],
+    "*.{json,md,css,scss,yml,yaml}": [
+      "prettier --write"
+    ]
   },
   "overrides": {
     "tar": "^7.5.7",

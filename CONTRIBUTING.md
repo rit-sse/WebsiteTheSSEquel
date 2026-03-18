@@ -67,11 +67,15 @@ Project board expectations:
 Before opening a PR:
 
 1. Rebase or merge latest `dev` into your branch.
-2. Run local checks from `next/`:
+2. Commit locally and verify pre-commit hooks run successfully.
+   - Pre-commit runs staged-file checks via `lint-staged` from `next/`.
+   - If hooks are not installed yet, run `npm install` in `next/`.
+3. Run local checks from `next/`:
+   - `npm run knip`
    - `npm run lint`
    - `npm run test`
    - `npm run build`
-3. Run database migration/seed commands if schema changed:
+4. Run database migration/seed commands if schema changed:
    - `npx prisma migrate dev`
    - `npx prisma db seed` (only when needed for test data validation)
 
