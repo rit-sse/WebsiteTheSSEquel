@@ -11,6 +11,8 @@ This repo contains the source code for the Society of Software Engineers' websit
 
 Follow our [environment setup guide](documentation/EnvironmentSetup.md) to get started with the project.
 
+After installing dependencies in `next/`, copy `.env.example` to `.env` and run `npm run env:check` before starting the dev server.
+
 ## Required VSCode Extensions
 - [Tailwind CSS IntelliSense](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss): bradlc.vscode-tailwindcss (Tailwind CSS IntelliSense)
 - [PostCSS Language Support](https://marketplace.visualstudio.com/items?itemName=csstools.postcss): csstools.postcss (required for Tailwind CSS IntelliSense)

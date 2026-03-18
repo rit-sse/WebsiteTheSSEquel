@@ -7,7 +7,9 @@
   },
   "scripts": {
     "preinstall": "node ./scripts/check-node-version.cjs",
+    "env:check": "node ./scripts/validate-env.mjs",
     "dev": "cross-env INTERNAL_API_URL=\"http://localhost:3000\" SESSION_COOKIE_NAME=\"next-auth.session-token\" next dev",
+    "dev:safe": "npm run env:check && npm run dev",
     "build": "next build",
     "start": "next start",
     "migrate:deploy": "prisma migrate deploy",
