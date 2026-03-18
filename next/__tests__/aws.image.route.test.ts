@@ -1,16 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { mockGetPublicS3Url, mockFetch } = vi.hoisted(() => ({
-  mockGetPublicS3Url: vi.fn(),
-  mockFetch: vi.fn(),
-}));
+const mockSend = vi.hoisted(() => vi.fn());
 
-vi.mock("@/lib/s3Utils", () => ({
-  getPublicS3Url: mockGetPublicS3Url,
-  resolveUserImage: vi.fn(),
-  getKeyFromS3Url: vi.fn(),
-  isS3Key: vi.fn(),
-  normalizeToS3Key: vi.fn(),
+vi.mock("@/lib/S3Client", () => ({
+  getS3Client: () => ({ send: mockSend }),
+  getBucketName: () => "test-bucket",
 }));
 
 import { GET } from "@/app/api/aws/image/route";
@@ -22,7 +16,6 @@ function req(url: string) {
 describe("/api/aws/image route", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.stubGlobal("fetch", mockFetch);
   });
 
   it("requires key query param", async () => {
@@ -35,17 +28,23 @@ describe("/api/aws/image route", () => {
     expect(res.status).toBe(403);
   });
 
-  it("proxies image when upstream fetch succeeds", async () => {
-    mockGetPublicS3Url.mockReturnValue("https://example.com/image.jpg");
-    mockFetch.mockResolvedValue({
-      ok: true,
-      status: 200,
-      body: new ReadableStream(),
-      headers: { get: () => "image/jpeg" },
+  it("proxies image when S3 fetch succeeds", async () => {
+    mockSend.mockResolvedValue({
+      Body: { transformToByteArray: () => new Uint8Array([1, 2, 3]) },
+      ContentType: "image/jpeg",
     });
 
     const res = await GET(req("http://localhost/api/aws/image?key=uploads/a.jpg"));
     expect(res.status).toBe(200);
     expect(res.headers.get("content-type")).toBe("image/jpeg");
+  });
+
+  it("returns 404 for missing S3 key", async () => {
+    const err = new Error("not found");
+    err.name = "NoSuchKey";
+    mockSend.mockRejectedValue(err);
+
+    const res = await GET(req("http://localhost/api/aws/image?key=uploads/missing.jpg"));
+    expect(res.status).toBe(404);
   });
 });
