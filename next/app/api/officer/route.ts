@@ -4,6 +4,7 @@ import { sendEmail, isEmailConfigured } from "@/lib/email";
 import { NextRequest } from "next/server";
 import { resolveUserImage } from "@/lib/s3Utils";
 import { getPublicBaseUrl } from "@/lib/baseUrl";
+import { getGatewayAuthLevel } from "@/lib/authGateway";
 
 export const dynamic = "force-dynamic";
 
@@ -60,6 +61,11 @@ export async function GET() {
  * @param request {user_email: string, start_date: date, end_date: date, position: string}
  */
 export async function POST(request: NextRequest) {
+  const authLevel = await getGatewayAuthLevel(request);
+  if (!authLevel.isPrimary) {
+    return new Response("Only primary officers can assign officers", { status: 403 });
+  }
+
   // Get the logged-in user's session token
   const authToken = getSessionToken(request);
   
@@ -190,6 +196,11 @@ export async function POST(request: NextRequest) {
  * @returns updated officer object
  */
 export async function PUT(request: Request) {
+  const authLevel = await getGatewayAuthLevel(request);
+  if (!authLevel.isPrimary) {
+    return new Response("Only primary officers can update officers", { status: 403 });
+  }
+
   let body;
   try {
     body = await request.json();
@@ -230,6 +241,11 @@ export async function PUT(request: Request) {
  * @returns deleted officer object
  */
 export async function DELETE(request: Request) {
+  const authLevel = await getGatewayAuthLevel(request);
+  if (!authLevel.isPrimary) {
+    return new Response("Only primary officers can remove officers", { status: 403 });
+  }
+
   let body;
   try {
     body = await request.json();

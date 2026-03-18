@@ -5,9 +5,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Users, GraduationCap } from "lucide-react"
 import PositionsSection from "../PositionsSection"
 import MentorSection from "../MentorSection"
+import { useDashboardAuth } from "../DashboardAuthProvider"
 
 export default function PositionsPage() {
   const [activeTab, setActiveTab] = useState("officers")
+  const { isPrimary } = useDashboardAuth()
 
   return (
     <div className="w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
@@ -23,7 +25,7 @@ export default function PositionsPage() {
           </TabsTrigger>
         </TabsList>
         <TabsContent value="officers" className="space-y-4">
-          <PositionsSection />
+          <PositionsSection readOnly={!isPrimary} />
         </TabsContent>
         <TabsContent value="mentors" className="space-y-4">
           <MentorSection />

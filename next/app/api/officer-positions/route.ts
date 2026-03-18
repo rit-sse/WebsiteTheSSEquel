@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { resolveUserImage } from "@/lib/s3Utils";
+import { getGatewayAuthLevel } from "@/lib/authGateway";
 
 export const dynamic = "force-dynamic";
 
@@ -74,6 +75,11 @@ export async function GET() {
  * @returns created position object
  */
 export async function POST(request: Request) {
+  const authLevel = await getGatewayAuthLevel(request);
+  if (!authLevel.isPrimary) {
+    return new Response("Only primary officers can create positions", { status: 403 });
+  }
+
   let body;
   try {
     body = await request.json();
@@ -114,6 +120,11 @@ export async function POST(request: Request) {
  * @returns updated position object
  */
 export async function PUT(request: Request) {
+  const authLevel = await getGatewayAuthLevel(request);
+  if (!authLevel.isPrimary) {
+    return new Response("Only primary officers can update positions", { status: 403 });
+  }
+
   let body;
   try {
     body = await request.json();
@@ -156,6 +167,11 @@ export async function PUT(request: Request) {
  * @returns deleted position object
  */
 export async function DELETE(request: Request) {
+  const authLevel = await getGatewayAuthLevel(request);
+  if (!authLevel.isPrimary) {
+    return new Response("Only primary officers can delete positions", { status: 403 });
+  }
+
   let body;
   try {
     body = await request.json();

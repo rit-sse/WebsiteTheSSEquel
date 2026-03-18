@@ -43,7 +43,11 @@ interface PendingInvitation {
   }
 }
 
-export default function PositionsSection() {
+interface PositionsSectionProps {
+  readOnly?: boolean
+}
+
+export default function PositionsSection({ readOnly = false }: PositionsSectionProps) {
   const router = useRouter()
   const [positions, setPositions] = useState<Position[]>([])
   const [pendingInvitations, setPendingInvitations] = useState<PendingInvitation[]>([])
@@ -277,6 +281,7 @@ export default function PositionsSection() {
             onInvite={() => handleInviteOfficer(position)}
             onRemove={() => setRemoveOfficerPosition(position)}
             onCancelInvitation={() => pendingInv && setCancelInvitation(pendingInv)}
+            readOnly={readOnly}
           />
         )
       }
@@ -297,12 +302,12 @@ export default function PositionsSection() {
         </Button>
       )
     },
-    {
-      key: "actions",
+    ...(!readOnly ? [{
+      key: "actions" as const,
       header: "",
       isAction: true,
       className: "w-[80px]",
-      render: (position) => (
+      render: (position: Position) => (
         <div className={`flex items-center ${isMobile ? "flex-wrap gap-2" : "gap-1"}`}>
           {isMobile && (
             <Button
@@ -330,7 +335,7 @@ export default function PositionsSection() {
             variant={isMobile ? "outline" : "destructiveGhost"}
             onClick={() => setDeletePosition(position)}
             disabled={position.isFilled || !!getPendingInvitation(position.id)}
-            title={position.isFilled ? "Cannot delete position with assigned officer" : 
+            title={position.isFilled ? "Cannot delete position with assigned officer" :
                    getPendingInvitation(position.id) ? "Cannot delete position with pending invitation" :
                    "Delete position"}
             className={isMobile ? "gap-1.5 text-destructive hover:text-destructive" : ""}
@@ -340,7 +345,7 @@ export default function PositionsSection() {
           </Button>
         </div>
       )
-    }
+    }] : [])
   ]
 
   if (isLoading) {
@@ -355,7 +360,7 @@ export default function PositionsSection() {
         columns={columns}
         keyField="id"
         title={`Primary Officers (${primaryOfficers.filter(p => p.isFilled).length}/${primaryOfficers.length} filled)`}
-        titleExtra={
+        titleExtra={!readOnly ?
           <Button
             size="sm"
             variant="outline"
@@ -369,9 +374,9 @@ export default function PositionsSection() {
             <Mail className="h-4 w-4 mr-2" />
             Request Swipe Access
           </Button>
-        }
+        : undefined}
         searchPlaceholder="Search primary officers..."
-        onAdd={handleAddPrimary}
+        onAdd={!readOnly ? handleAddPrimary : undefined}
         addLabel="Add Primary Officer"
         emptyMessage="No primary officer positions defined"
       />
@@ -382,7 +387,7 @@ export default function PositionsSection() {
         columns={columns}
         keyField="id"
         title={`Committee Heads (${committeeHeads.filter(p => p.isFilled).length}/${committeeHeads.length} filled)`}
-        titleExtra={
+        titleExtra={!readOnly ?
           <Button
             size="sm"
             variant="outline"
@@ -396,9 +401,9 @@ export default function PositionsSection() {
             <Mail className="h-4 w-4 mr-2" />
             Request Swipe Access
           </Button>
-        }
+        : undefined}
         searchPlaceholder="Search committee heads..."
-        onAdd={handleAddCommittee}
+        onAdd={!readOnly ? handleAddCommittee : undefined}
         addLabel="Add Committee Head"
         emptyMessage="No committee head positions defined"
       />
