@@ -7,7 +7,7 @@ This repo contains the source code for the Society of Software Engineers' websit
 - `next` directory holds the Next.js application bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 - `documentation` directory contains project documentation including wireframes, domain models, ERDs, etc.
 
-## Quickstart (Root-First Workflow)
+## Quickstart
 
 From the repository root:
 
