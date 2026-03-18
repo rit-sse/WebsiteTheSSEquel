@@ -8,8 +8,8 @@ export default async function MentoringDashboardLayout({
 }) {
   const authLevel = await getAuthLevel()
 
-  // Only allow Mentoring Head or Primary Officers
-  if (!authLevel.isUser || !(authLevel.isMentoringHead || authLevel.isPrimary)) {
+  // Allow any officer, mentor, or primary officer to view
+  if (!authLevel.isUser || !(authLevel.isOfficer || authLevel.isMentor || authLevel.isPrimary)) {
     redirect("/dashboard/positions")
   }
 

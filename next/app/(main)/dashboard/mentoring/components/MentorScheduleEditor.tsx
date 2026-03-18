@@ -97,11 +97,11 @@ const HOURS = [
 type SlotDropFeedback = "available" | "unavailable" | null
 
 const TRAFFIC_LEGEND = [
-  { label: "≤6", swatchClassName: "bg-blue-200 dark:bg-slate-950" },
-  { label: "7–10", swatchClassName: "bg-blue-300 dark:bg-blue-950" },
-  { label: "11–15", swatchClassName: "bg-blue-400 dark:bg-blue-900" },
-  { label: "16–20", swatchClassName: "bg-blue-500 dark:bg-blue-800" },
-  { label: "21+", swatchClassName: "bg-blue-600 dark:bg-blue-600" },
+  { label: "≤6", swatchClassName: "bg-blue-200 dark:bg-sky-950/60" },
+  { label: "7–10", swatchClassName: "bg-blue-300 dark:bg-sky-900/70" },
+  { label: "11–15", swatchClassName: "bg-blue-400 dark:bg-sky-800/75" },
+  { label: "16–20", swatchClassName: "bg-blue-500 dark:bg-sky-700/80" },
+  { label: "21+", swatchClassName: "bg-blue-600 dark:bg-sky-600/85" },
 ]
 
 function getMentorColor(mentorId: number) {
@@ -124,9 +124,9 @@ function getTrafficPresentation(averagePeopleInLab: number) {
     return {
       label: "≤6",
       value: 12,
-      cellTint: "bg-blue-200 dark:bg-slate-950",
-      subtextClassName: "text-slate-700 dark:text-blue-300",
-      metaClassName: "text-slate-800 dark:text-blue-200",
+      cellTint: "bg-sky-100 dark:bg-sky-950/50",
+      subtextClassName: "text-sky-800 dark:text-sky-300",
+      metaClassName: "text-sky-900 dark:text-sky-200",
       summary: "Light traffic",
     }
   }
@@ -134,9 +134,9 @@ function getTrafficPresentation(averagePeopleInLab: number) {
     return {
       label: "7–10",
       value: 30,
-      cellTint: "bg-blue-300 dark:bg-blue-950",
-      subtextClassName: "text-slate-800 dark:text-blue-200",
-      metaClassName: "text-slate-900 dark:text-blue-100",
+      cellTint: "bg-sky-200 dark:bg-sky-900/60",
+      subtextClassName: "text-sky-900 dark:text-sky-200",
+      metaClassName: "text-sky-950 dark:text-sky-100",
       summary: "Moderate traffic",
     }
   }
@@ -144,9 +144,9 @@ function getTrafficPresentation(averagePeopleInLab: number) {
     return {
       label: "11–15",
       value: 50,
-      cellTint: "bg-blue-400 dark:bg-blue-900",
-      subtextClassName: "text-slate-900 dark:text-blue-100",
-      metaClassName: "text-slate-950 dark:text-white",
+      cellTint: "bg-sky-300 dark:bg-sky-800/70",
+      subtextClassName: "text-sky-950 dark:text-sky-100",
+      metaClassName: "text-sky-950 dark:text-white",
       summary: "Busy slot",
     }
   }
@@ -154,9 +154,9 @@ function getTrafficPresentation(averagePeopleInLab: number) {
     return {
       label: "16–20",
       value: 75,
-      cellTint: "bg-blue-500 dark:bg-blue-800",
-      subtextClassName: "text-white/90",
-      metaClassName: "text-white",
+      cellTint: "bg-sky-400 dark:bg-sky-700/80",
+      subtextClassName: "text-white/90 dark:text-white/90",
+      metaClassName: "text-white dark:text-white",
       summary: "Heavy traffic",
     }
   }
@@ -164,9 +164,9 @@ function getTrafficPresentation(averagePeopleInLab: number) {
   return {
     label: "21+",
     value: 95,
-    cellTint: "bg-blue-600 dark:bg-blue-600",
-    subtextClassName: "text-white/95",
-    metaClassName: "text-white",
+    cellTint: "bg-sky-500 dark:bg-sky-600",
+    subtextClassName: "text-white/95 dark:text-white/95",
+    metaClassName: "text-white dark:text-white",
     summary: "Peak traffic",
   }
 }
@@ -187,15 +187,15 @@ function getSlotKey(weekday: number, hour: number) {
 
 function getDropFeedbackClass(dropFeedbackState: SlotDropFeedback, isOver: boolean, saved: boolean) {
   if (isOver && dropFeedbackState === "available") {
-    return "bg-emerald-500/20 ring-2 ring-inset ring-emerald-500/80 shadow-[0_0_0_1px_rgba(16,185,129,0.25)] animate-heartBeat dark:bg-emerald-400/20 dark:ring-emerald-300/80"
+    return "bg-emerald-500/15 ring-2 ring-inset ring-emerald-500/60 transition-colors duration-150 dark:bg-emerald-400/15 dark:ring-emerald-400/50"
   }
 
   if (isOver && dropFeedbackState === "unavailable") {
-    return "bg-rose-500/15 ring-2 ring-inset ring-rose-500/75 animate-shake dark:bg-rose-400/15 dark:ring-rose-300/80"
+    return "bg-rose-500/10 ring-2 ring-inset ring-rose-500/50 transition-colors duration-150 dark:bg-rose-400/10 dark:ring-rose-400/50"
   }
 
   if (saved) {
-    return "bg-emerald-500/10 ring-2 ring-inset ring-emerald-500/60 animate-in fade-in zoom-in-95 dark:bg-emerald-400/12 dark:ring-emerald-300/70"
+    return "bg-emerald-500/10 ring-2 ring-inset ring-emerald-500/50 animate-in fade-in duration-200 dark:bg-emerald-400/10 dark:ring-emerald-400/40"
   }
 
   return ""

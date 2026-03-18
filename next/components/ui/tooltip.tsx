@@ -1,9 +1,7 @@
 "use client"
 
-import * as PopoverPrimitive from "@radix-ui/react-popover"
 import * as React from "react"
-
-import { PopoverContent } from "@/components/ui/popover"
+import { createPortal } from "react-dom"
 import { cn } from "@/lib/utils"
 
 const SIZE_CLASS_NAMES = {
@@ -18,8 +16,8 @@ interface TooltipProps {
   children: React.ReactNode
   content: React.ReactNode
   size?: TooltipSize
-  side?: React.ComponentProps<typeof PopoverContent>["side"]
-  align?: React.ComponentProps<typeof PopoverContent>["align"]
+  side?: "top" | "bottom" | "left" | "right"
+  align?: "start" | "center" | "end"
   disabled?: boolean
   className?: string
   contentClassName?: string
@@ -29,67 +27,73 @@ function Tooltip({
   children,
   content,
   size = "md",
-  side = "top",
-  align = "center",
   disabled = false,
   className,
   contentClassName,
 }: TooltipProps) {
   const [open, setOpen] = React.useState(false)
-  const closeTimeoutRef = React.useRef<number | null>(null)
+  const coordsRef = React.useRef({ x: 0, y: 0 })
+  const [coords, setCoords] = React.useState({ x: 0, y: 0 })
+  const [mounted, setMounted] = React.useState(false)
+  const rafRef = React.useRef<number>(0)
 
-  const clearCloseTimeout = React.useCallback(() => {
-    if (closeTimeoutRef.current !== null) {
-      window.clearTimeout(closeTimeoutRef.current)
-      closeTimeoutRef.current = null
+  React.useEffect(() => {
+    setMounted(true)
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current)
     }
   }, [])
 
-  const openTooltip = React.useCallback(() => {
-    clearCloseTimeout()
+  const handlePointerMove = React.useCallback((e: React.PointerEvent) => {
+    coordsRef.current = { x: e.clientX, y: e.clientY }
+    if (!rafRef.current) {
+      rafRef.current = requestAnimationFrame(() => {
+        setCoords(coordsRef.current)
+        rafRef.current = 0
+      })
+    }
+  }, [])
+
+  const handlePointerEnter = React.useCallback((e: React.PointerEvent) => {
+    coordsRef.current = { x: e.clientX, y: e.clientY }
+    setCoords({ x: e.clientX, y: e.clientY })
     setOpen(true)
-  }, [clearCloseTimeout])
+  }, [])
 
-  const closeTooltip = React.useCallback(() => {
-    clearCloseTimeout()
-    closeTimeoutRef.current = window.setTimeout(() => {
-      setOpen(false)
-      closeTimeoutRef.current = null
-    }, 40)
-  }, [clearCloseTimeout])
-
-  React.useEffect(() => {
-    return () => clearCloseTimeout()
-  }, [clearCloseTimeout])
+  const handlePointerLeave = React.useCallback(() => {
+    setOpen(false)
+  }, [])
 
   if (disabled) return <>{children}</>
 
   return (
-    <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>
-      <PopoverPrimitive.Anchor asChild>
-        <div
-          className={cn(className)}
-          onMouseEnter={openTooltip}
-          onMouseLeave={closeTooltip}
-          onFocus={openTooltip}
-          onBlur={closeTooltip}
-        >
-          {children}
-        </div>
-      </PopoverPrimitive.Anchor>
-      <PopoverContent
-        side={side}
-        align={align}
-        sideOffset={8}
-        className={cn(
-          "pointer-events-none border-border/60 bg-background/95 px-3 py-2 text-xs text-foreground backdrop-blur-sm",
-          SIZE_CLASS_NAMES[size],
-          contentClassName,
-        )}
+    <>
+      <div
+        className={cn(className)}
+        onPointerEnter={handlePointerEnter}
+        onPointerLeave={handlePointerLeave}
+        onPointerMove={handlePointerMove}
       >
-        {content}
-      </PopoverContent>
-    </PopoverPrimitive.Root>
+        {children}
+      </div>
+      {open && mounted && createPortal(
+        <div
+          className={cn(
+            "pointer-events-none fixed z-[9999] rounded-md border border-border/60 bg-background/95 px-3 py-2 text-xs text-foreground shadow-md backdrop-blur-sm",
+            SIZE_CLASS_NAMES[size],
+            contentClassName,
+          )}
+          style={{
+            left: coords.x + 12,
+            top: coords.y - 8,
+            willChange: "left, top",
+          }}
+        >
+          {content}
+        </div>,
+        document.body,
+      )}
+    </>
   )
 }
 

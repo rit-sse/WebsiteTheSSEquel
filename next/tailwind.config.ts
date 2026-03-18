@@ -118,24 +118,24 @@ const config: Config = {
                 },
                 shake: {
                     '0%': { transform: 'translateX(0)' },
-                    '6.5%': { transform: 'translateX(-6px) rotateY(-9deg)' },
-                    '18.5%': { transform: 'translateX(5px) rotateY(7deg)' },
-                    '31.5%': { transform: 'translateX(-3px) rotateY(-5deg)' },
-                    '43.5%': { transform: 'translateX(2px) rotateY(3deg)' },
-                    '50%': { transform: 'translateX(0)' }
+                    '15%': { transform: 'translateX(-2px)' },
+                    '30%': { transform: 'translateX(2px)' },
+                    '45%': { transform: 'translateX(-1px)' },
+                    '60%': { transform: 'translateX(1px)' },
+                    '100%': { transform: 'translateX(0)' }
                 },
                 heartBeat: {
                     '0%': { transform: 'scale(1)' },
-                    '14%': { transform: 'scale(1.2)' },
-                    '28%': { transform: 'scale(1)' },
-                    '42%': { transform: 'scale(1.2)' },
-                    '70%': { transform: 'scale(1)' }
+                    '25%': { transform: 'scale(1.04)' },
+                    '50%': { transform: 'scale(1)' },
+                    '75%': { transform: 'scale(1.02)' },
+                    '100%': { transform: 'scale(1)' }
                 }
             },
             animation: {
                 wiggle: 'wiggle 1s linear infinite',
-                shake: 'shake 1s ease-in-out infinite',
-                heartBeat: 'heartBeat 1s ease-in-out infinite'
+                shake: 'shake 0.4s ease-out',
+                heartBeat: 'heartBeat 0.5s ease-out'
             },
             colors: {
                 // Custom colors
