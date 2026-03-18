@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getPublicS3Url } from "@/lib/s3Utils";
+import { GetObjectCommand } from "@aws-sdk/client-s3";
+import { getS3Client, getBucketName } from "@/lib/S3Client";
 
 export const dynamic = "force-dynamic";
 
@@ -24,21 +25,32 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Invalid key" }, { status: 403 });
   }
 
-  // ── Fetch from S3 ────────────────────────────────────────────────
-  const url = getPublicS3Url(key);
-  const upstream = await fetch(url, { cache: "no-store" });
+  // ── Fetch from S3 via SDK (bucket is not public) ───────────────
+  try {
+    const s3 = getS3Client();
+    const response = await s3.send(new GetObjectCommand({
+      Bucket: getBucketName(),
+      Key: key,
+    }));
 
-  if (!upstream.ok) {
-    return NextResponse.json({ error: "Image fetch failed" }, { status: upstream.status });
+    if (!response.Body) {
+      return NextResponse.json({ error: "Image fetch failed" }, { status: 404 });
+    }
+
+    const bytes = await response.Body.transformToByteArray();
+
+    return new NextResponse(bytes, {
+      status: 200,
+      headers: {
+        "Content-Type": response.ContentType || "application/octet-stream",
+        "Cache-Control": "public, max-age=300, stale-while-revalidate=600",
+      },
+    });
+  } catch (err: any) {
+    if (err.name === "NoSuchKey") {
+      return NextResponse.json({ error: "Image not found" }, { status: 404 });
+    }
+    console.error("S3 image fetch error:", err);
+    return NextResponse.json({ error: "Image fetch failed" }, { status: 500 });
   }
-
-  // 5 min browser cache, stale-while-revalidate for 10 more minutes.
-  // Safe because a new upload = new S3 key = new URL (old cache irrelevant).
-  return new NextResponse(upstream.body, {
-    status: 200,
-    headers: {
-      "Content-Type": upstream.headers.get("content-type") || "application/octet-stream",
-      "Cache-Control": "public, max-age=300, stale-while-revalidate=600",
-    },
-  });
 }
