@@ -33,6 +33,9 @@ const nextConfig = {
                 pathname: "/library-assets/**",
             },
             {
+                pathname: "/library-icons/**",
+            },
+            {
                 pathname: "/images/**"
             }
         ],
