@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
 
     const bytes = await response.Body.transformToByteArray();
 
-    return new NextResponse(bytes, {
+    return new NextResponse(Buffer.from(bytes), {
       status: 200,
       headers: {
         "Content-Type": response.ContentType || "application/octet-stream",
