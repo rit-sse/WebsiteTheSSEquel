@@ -36,8 +36,11 @@ const nextConfig = {
                 pathname: "/library-icons/**",
             },
             {
-                pathname: "/images/**"
-            }
+                pathname: "/images/**",
+            },
+            {
+                pathname: "/api/**",
+            },
         ],
     },
     output: "standalone",
