@@ -97,11 +97,11 @@ const HOURS = [
 type SlotDropFeedback = "available" | "unavailable" | null
 
 const TRAFFIC_LEGEND = [
-  { label: "≤6", swatchClassName: "bg-blue-200 dark:bg-sky-950/60" },
-  { label: "7–10", swatchClassName: "bg-blue-300 dark:bg-sky-900/70" },
-  { label: "11–15", swatchClassName: "bg-blue-400 dark:bg-sky-800/75" },
-  { label: "16–20", swatchClassName: "bg-blue-500 dark:bg-sky-700/80" },
-  { label: "21+", swatchClassName: "bg-blue-600 dark:bg-sky-600/85" },
+  { label: "≤6", swatchClassName: "bg-blue-200 dark:bg-indigo-900/50" },
+  { label: "7–10", swatchClassName: "bg-blue-300 dark:bg-indigo-800/60" },
+  { label: "11–15", swatchClassName: "bg-blue-400 dark:bg-indigo-700/70" },
+  { label: "16–20", swatchClassName: "bg-blue-500 dark:bg-indigo-600/80" },
+  { label: "21+", swatchClassName: "bg-blue-600 dark:bg-indigo-500/85" },
 ]
 
 function getMentorColor(mentorId: number) {
@@ -124,9 +124,9 @@ function getTrafficPresentation(averagePeopleInLab: number) {
     return {
       label: "≤6",
       value: 12,
-      cellTint: "bg-sky-100 dark:bg-sky-950/50",
-      subtextClassName: "text-sky-800 dark:text-sky-300",
-      metaClassName: "text-sky-900 dark:text-sky-200",
+      cellTint: "bg-sky-100 dark:bg-indigo-900/50",
+      subtextClassName: "text-sky-800 dark:text-indigo-200",
+      metaClassName: "text-sky-900 dark:text-indigo-100",
       summary: "Light traffic",
     }
   }
@@ -134,9 +134,9 @@ function getTrafficPresentation(averagePeopleInLab: number) {
     return {
       label: "7–10",
       value: 30,
-      cellTint: "bg-sky-200 dark:bg-sky-900/60",
-      subtextClassName: "text-sky-900 dark:text-sky-200",
-      metaClassName: "text-sky-950 dark:text-sky-100",
+      cellTint: "bg-sky-200 dark:bg-indigo-800/60",
+      subtextClassName: "text-sky-900 dark:text-indigo-100",
+      metaClassName: "text-sky-950 dark:text-indigo-50",
       summary: "Moderate traffic",
     }
   }
@@ -144,8 +144,8 @@ function getTrafficPresentation(averagePeopleInLab: number) {
     return {
       label: "11–15",
       value: 50,
-      cellTint: "bg-sky-300 dark:bg-sky-800/70",
-      subtextClassName: "text-sky-950 dark:text-sky-100",
+      cellTint: "bg-sky-300 dark:bg-indigo-700/70",
+      subtextClassName: "text-sky-950 dark:text-white/90",
       metaClassName: "text-sky-950 dark:text-white",
       summary: "Busy slot",
     }
@@ -154,7 +154,7 @@ function getTrafficPresentation(averagePeopleInLab: number) {
     return {
       label: "16–20",
       value: 75,
-      cellTint: "bg-sky-400 dark:bg-sky-700/80",
+      cellTint: "bg-sky-400 dark:bg-indigo-600/80",
       subtextClassName: "text-white/90 dark:text-white/90",
       metaClassName: "text-white dark:text-white",
       summary: "Heavy traffic",
@@ -164,7 +164,7 @@ function getTrafficPresentation(averagePeopleInLab: number) {
   return {
     label: "21+",
     value: 95,
-    cellTint: "bg-sky-500 dark:bg-sky-600",
+    cellTint: "bg-sky-500 dark:bg-indigo-500/85",
     subtextClassName: "text-white/95 dark:text-white/95",
     metaClassName: "text-white dark:text-white",
     summary: "Peak traffic",
@@ -187,15 +187,15 @@ function getSlotKey(weekday: number, hour: number) {
 
 function getDropFeedbackClass(dropFeedbackState: SlotDropFeedback, isOver: boolean, saved: boolean) {
   if (isOver && dropFeedbackState === "available") {
-    return "bg-emerald-500/15 ring-2 ring-inset ring-emerald-500/60 transition-colors duration-150 dark:bg-emerald-400/15 dark:ring-emerald-400/50"
+    return "!bg-emerald-500/15 ring-2 ring-inset ring-emerald-500/60 dark:!bg-emerald-400/15 dark:ring-emerald-400/50"
   }
 
   if (isOver && dropFeedbackState === "unavailable") {
-    return "bg-rose-500/10 ring-2 ring-inset ring-rose-500/50 transition-colors duration-150 dark:bg-rose-400/10 dark:ring-rose-400/50"
+    return "!bg-rose-500/10 ring-2 ring-inset ring-rose-500/50 dark:!bg-rose-400/10 dark:ring-rose-400/50"
   }
 
   if (saved) {
-    return "bg-emerald-500/10 ring-2 ring-inset ring-emerald-500/50 animate-in fade-in duration-200 dark:bg-emerald-400/10 dark:ring-emerald-400/40"
+    return "!bg-emerald-500/10 ring-2 ring-inset ring-emerald-500/50 dark:!bg-emerald-400/10 dark:ring-emerald-400/40"
   }
 
   return ""
@@ -211,31 +211,18 @@ function ScheduleSlotTooltipContent({
   availableMentorNames: string[]
 }) {
   return (
-    <div className="space-y-2">
-      <div className="font-semibold text-foreground">{label}</div>
-      <div className="space-y-1">
-        <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-          Avg People in Lab
+    <div className="space-y-1">
+      <div className="font-semibold text-foreground text-xs">{label}</div>
+      {traffic && (
+        <div className="text-[11px] text-muted-foreground">
+          ~<span className="font-medium text-foreground tabular-nums">{traffic.averagePeopleInLab.toFixed(0)}</span> in lab
         </div>
-        {traffic ? (
-          <div className="text-sm text-foreground">
-            <span className="font-semibold tabular-nums">{traffic.averagePeopleInLab.toFixed(1)}</span>
-            <span className="text-muted-foreground"> average people in the lab</span>
-          </div>
-        ) : (
-          <div className="text-sm text-muted-foreground">No traffic data yet</div>
-        )}
-      </div>
-      <div className="space-y-1">
-        <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-          Available Mentors
+      )}
+      {availableMentorNames.length > 0 && (
+        <div className="text-[11px] leading-snug text-muted-foreground">
+          <span className="text-foreground">{availableMentorNames.join(", ")}</span> available
         </div>
-        {availableMentorNames.length > 0 ? (
-          <div className="text-sm leading-snug text-foreground">{availableMentorNames.join(", ")}</div>
-        ) : (
-          <div className="text-sm text-muted-foreground">No mentors marked available</div>
-        )}
-      </div>
+      )}
     </div>
   )
 }
@@ -1192,7 +1179,7 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                                 saved={savedSlotKey === slotKey}
                               >
                                 <Tooltip
-                                  size="lg"
+                                  size="sm"
                                   className="block h-full w-full p-1"
                                   disabled={draggedMentorId !== null}
                                   content={(
@@ -1271,7 +1258,7 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                               return (
                                 <Tooltip
                                   key={hour}
-                                  size="lg"
+                                  size="sm"
                                   className="block w-full"
                                   disabled={draggedMentorId !== null}
                                   content={(
@@ -2099,7 +2086,8 @@ function ScheduleSlotCell({
       ref={setNodeRef}
       className={cn(
         className,
-        "transition-all duration-150",
+        "relative h-px", // h-px trick: gives td a base height so children with h-full can stretch
+        "transition-colors duration-150",
         getDropFeedbackClass(dropFeedbackState, isOver, saved),
         isOver && dropFeedbackState === null && "bg-accent/20",
         onClick && "cursor-pointer hover:bg-muted/40"

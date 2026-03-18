@@ -79,7 +79,7 @@ function Tooltip({
       {open && mounted && createPortal(
         <div
           className={cn(
-            "pointer-events-none fixed z-[9999] rounded-md border border-border/60 bg-background/95 px-3 py-2 text-xs text-foreground shadow-md backdrop-blur-sm",
+            "pointer-events-none fixed z-[9999] rounded-md border border-border/50 bg-background/95 px-2.5 py-1.5 text-xs text-foreground shadow-lg backdrop-blur-sm",
             SIZE_CLASS_NAMES[size],
             contentClassName,
           )}
