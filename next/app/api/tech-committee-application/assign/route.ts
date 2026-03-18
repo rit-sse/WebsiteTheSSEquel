@@ -6,6 +6,7 @@ import { isEmailConfigured, sendEmail } from "@/lib/email";
 import { buildTechCommitteeAssignmentEmail } from "@/lib/email/techCommittee";
 import { getPublicBaseUrl } from "@/lib/baseUrl";
 import { TECH_COMMITTEE_DIVISIONS } from "@/lib/utils";
+import { getServerSession } from "next-auth";
 
 export const dynamic = "force-dynamic";
 
@@ -61,18 +62,19 @@ export async function PUT(request: NextRequest) {
       return ApiError.forbidden();
     }
 
-    const existingApplication = await prisma.techCommitteeApplication.findUnique({
-      where: { id: applicationId },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
+    const existingApplication =
+      await prisma.techCommitteeApplication.findUnique({
+        where: { id: applicationId },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
           },
         },
-      },
-    });
+      });
 
     if (!existingApplication) {
       return ApiError.notFound("Application");
@@ -128,14 +130,17 @@ export async function PUT(request: NextRequest) {
         text: assignmentEmail.text,
       });
     } catch (emailError) {
-      console.error("Failed to send Tech Committee assignment email:", emailError);
-        await prisma.techCommitteeApplication.update({
-          where: { id: applicationId },
-          data: {
-            status: "APPROVED",
-            finalDivision: existingApplication.finalDivision,
-          },
-        });
+      console.error(
+        "Failed to send Tech Committee assignment email:",
+        emailError
+      );
+      await prisma.techCommitteeApplication.update({
+        where: { id: applicationId },
+        data: {
+          status: "APPROVED",
+          finalDivision: existingApplication.finalDivision,
+        },
+      });
       return new Response(
         JSON.stringify({ error: "Failed to send onboarding email" }),
         { status: 502 }
