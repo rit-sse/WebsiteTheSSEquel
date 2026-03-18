@@ -24,9 +24,9 @@ If any step fails, fix or document why it is intentionally skipped.
 
 2. Clone or fork this repository. You can do this by running `git clone https://github.com/rit-sse/WebsiteTheSSEquel.git` in your terminal in the directory you want to clone the repository to.
 
-3. Navigate to the directory you cloned the repository to and run `cd ./next`. This will take you to the `next` directory, which is where the Next.js application is located.
+3. Run `npm run setup:dev` to install app dependencies, start local Docker services, and run database setup commands.
 
-4. Run `npm install` to install all the dependencies for the project.
+4. Navigate to the directory you cloned the repository to and run `cd ./next`. This will take you to the `next` directory, which is where the Next.js application is located.
 
 5. Run `npm run dev` to start the development server. You can view the website at `localhost:3000`.
 
@@ -195,8 +195,7 @@ Any PR that changes setup without updating this file should be considered incomp
 
 If your branch includes alumni/profile lifecycle changes, apply migrations before running:
 
-1. `cd next`
-2. `npx prisma migrate dev`
-3. `npx prisma generate`
+1. `npm --prefix next run prisma:migrate`
+2. `npm --prefix next exec prisma generate`
 
 This ensures new academic term fields, alumni candidate queue tables, and enums are available locally.
