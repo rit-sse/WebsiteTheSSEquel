@@ -25,6 +25,14 @@ async function readErrorMessage(
   return text;
 }
 
+function normalizeYearPublished(value: unknown): number {
+  const parsed =
+    typeof value === "number"
+      ? value
+      : Number.parseInt(String(value ?? "").trim(), 10);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
 export default function AddBook() {
   const [isbnInput, setIsbnInput] = useState("");
   const [error, setError] = useState("");
@@ -127,7 +135,7 @@ export default function AddBook() {
             name: data.name,
             description: data.description,
             publisher: data.publisher,
-            yearPublished: data.yearPublished,
+            yearPublished: normalizeYearPublished(data.yearPublished),
           });
         }
       })
@@ -148,13 +156,29 @@ export default function AddBook() {
     const file = inputFile.current?.files?.[0];
     if (file) {
       try {
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("isbn", newBookData.ISBN);
-
-        const uploadRes = await fetch("/api/aws/libraryBooks", {
+        const presignRes = await fetch("/api/aws/libraryBooks", {
           method: "POST",
-          body: formData,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            filename: file.name,
+            contentType: file.type,
+            isbn: newBookData.ISBN,
+          }),
+        });
+
+        if (!presignRes.ok) {
+          setError(
+            await readErrorMessage(presignRes, "Failed to get upload URL")
+          );
+          return;
+        }
+
+        const { uploadUrl, key } = await presignRes.json();
+
+        const uploadRes = await fetch(uploadUrl, {
+          method: "PUT",
+          headers: { "Content-Type": file.type },
+          body: file,
         });
 
         if (!uploadRes.ok) {
@@ -164,7 +188,6 @@ export default function AddBook() {
           return;
         }
 
-        const { key } = await uploadRes.json();
         imageKey = key;
       } catch (error) {
         setError(
@@ -363,7 +386,7 @@ export default function AddBook() {
               onChange={(e) =>
                 setNewBookData({
                   ...newBookData,
-                  yearPublished: parseInt(e.target.value),
+                    yearPublished: normalizeYearPublished(e.target.value),
                 })
               }
             />

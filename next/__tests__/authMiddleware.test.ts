@@ -147,6 +147,22 @@ describe("authMiddleware", () => {
     expect((res as any).kind).toBe("next");
   });
 
+  it("allows anonymous mentor headcount submissions", async () => {
+    const res = await authMiddleware(req("/api/mentoring-headcount", "POST"));
+    expect((res as any).kind).toBe("next");
+  });
+
+  it("allows anonymous mentee headcount submissions", async () => {
+    const res = await authMiddleware(req("/api/mentee-headcount", "POST"));
+    expect((res as any).kind).toBe("next");
+  });
+
+  it("keeps mentor headcount GET protected", async () => {
+    const res = await authMiddleware(req("/api/mentoring-headcount", "GET"));
+    expect((res as any).status).toBe(403);
+    expect((res as any).body).toContain("need to be Officer");
+  });
+
   it("denies protected library GET routes without mentor or officer access", async () => {
     const res = await authMiddleware(req("/api/library/isbnlookup", "GET"));
     expect((res as any).status).toBe(403);
