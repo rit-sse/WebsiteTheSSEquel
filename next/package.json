@@ -61,7 +61,7 @@
     "eslint": "^9.39.3",
     "eslint-config-next": "^16.1.6",
     "jsonwebtoken": "^9.0.2",
-    "lucide-react": "^0.562.0",
+    "lucide-react": "^0.577.0",
     "motion": "^12.26.2",
     "next": "^16.1.6",
     "next-auth": "^4.24.7",
