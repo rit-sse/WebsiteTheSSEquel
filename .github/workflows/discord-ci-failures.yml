@@ -15,7 +15,6 @@ concurrency:
 
 jobs:
   notify-discord:
-    if: ${{ secrets.DISCORD_WEBHOOK_URL != '' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -63,8 +62,19 @@ jobs:
               `https://github.com/${owner}/${repo}/actions?query=branch%3A${encodeURIComponent(context.payload.workflow_run.head_branch)}`
             );
 
+      - name: Check webhook configuration
+        id: webhook
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          if [ -n "$DISCORD_WEBHOOK_URL" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Send Discord notification
-        if: ${{ steps.evaluate.outputs.should_notify == 'true' }}
+        if: ${{ steps.evaluate.outputs.should_notify == 'true' && steps.webhook.outputs.configured == 'true' }}
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           REPOSITORY: ${{ github.event.workflow_run.head_repository.full_name }}
