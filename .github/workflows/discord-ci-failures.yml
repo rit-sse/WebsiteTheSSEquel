@@ -1,0 +1,99 @@
+name: Discord CI Failures
+
+on:
+  workflow_run:
+    workflows: ["Lint", "Test", "Typecheck", "Docker CI"]
+    types: [completed]
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: discord-ci-failures-${{ github.event.workflow_run.head_repository.full_name }}-${{ github.event.workflow_run.head_branch }}
+  cancel-in-progress: false
+
+jobs:
+  notify-discord:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Evaluate workflow results
+        id: evaluate
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const expectedWorkflows = new Set(["Lint", "Test", "Typecheck", "Docker CI"]);
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const headSha = context.payload.workflow_run.head_sha;
+
+            const runs = await github.paginate(github.rest.actions.listWorkflowRunsForRepo, {
+              owner,
+              repo,
+              head_sha: headSha,
+              per_page: 100,
+            });
+
+            const ciRuns = runs.filter((run) => expectedWorkflows.has(run.name));
+            const latestByName = new Map();
+
+            for (const run of ciRuns) {
+              const previous = latestByName.get(run.name);
+              if (!previous || new Date(run.run_started_at) > new Date(previous.run_started_at)) {
+                latestByName.set(run.name, run);
+              }
+            }
+
+            const latestRuns = Array.from(latestByName.values());
+            const allCompleted = expectedWorkflows.size === latestRuns.length
+              && latestRuns.every((run) => run.status === "completed");
+
+            const failedRuns = latestRuns.filter((run) => run.conclusion === "failure");
+            const shouldNotify = allCompleted && failedRuns.length > 0;
+
+            core.setOutput("should_notify", shouldNotify ? "true" : "false");
+            core.setOutput(
+              "failed_workflows",
+              failedRuns.map((run) => `- ${run.name}`).join("\n")
+            );
+            core.setOutput(
+              "summary_url",
+              `https://github.com/${owner}/${repo}/actions?query=branch%3A${encodeURIComponent(context.payload.workflow_run.head_branch)}`
+            );
+
+      - name: Check webhook configuration
+        id: webhook
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          if [ -n "$DISCORD_WEBHOOK_URL" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Send Discord notification
+        if: ${{ steps.evaluate.outputs.should_notify == 'true' && steps.webhook.outputs.configured == 'true' }}
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          REPOSITORY: ${{ github.event.workflow_run.head_repository.full_name }}
+          BRANCH: ${{ github.event.workflow_run.head_branch }}
+          EVENT_NAME: ${{ github.event.workflow_run.event }}
+          ACTOR: ${{ github.event.workflow_run.actor.login }}
+          FAILED_WORKFLOWS: ${{ steps.evaluate.outputs.failed_workflows }}
+          SUMMARY_URL: ${{ steps.evaluate.outputs.summary_url }}
+        run: |
+          content=$(printf 'CI failed for `%s` on `%s`.\nEvent: `%s`\nActor: `%s`\nFailed workflows:\n%s\nActions: %s' \
+            "$REPOSITORY" \
+            "$BRANCH" \
+            "$EVENT_NAME" \
+            "$ACTOR" \
+            "$FAILED_WORKFLOWS" \
+            "$SUMMARY_URL")
+
+          payload=$(printf '{"content":"%s"}' "$(printf '%s' "$content" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read())[1:-1])')")
+
+          curl -fsSL -H "Content-Type: application/json" \
+            -d "$payload" \
+            "$DISCORD_WEBHOOK_URL"
