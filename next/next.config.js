@@ -9,6 +9,7 @@ const nextConfig = {
         headers: getSecurityHeaders({
           nodeEnv: process.env.NODE_ENV,
           deploymentEnv: process.env.NEXT_PUBLIC_ENV,
+          includeCsp: false,
         }),
       },
     ];

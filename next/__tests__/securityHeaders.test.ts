@@ -58,4 +58,29 @@ describe("security headers", () => {
     expect(policy).toContain("https://calendar.google.com");
     expect(policy).toContain("https://avatars.githubusercontent.com");
   });
+
+  it("adds a nonce to the script-src directive when provided", () => {
+    const policy = buildContentSecurityPolicy({
+      production: true,
+      nonce: "test-nonce",
+    });
+
+    expect(policy).toContain("script-src 'self' 'nonce-test-nonce'");
+    expect(policy).toContain("'strict-dynamic'");
+  });
+
+  it("can return only static security headers when CSP is injected elsewhere", () => {
+    const headers = getSecurityHeaders({
+      nodeEnv: "production",
+      deploymentEnv: "prod",
+      includeCsp: false,
+    });
+    const byKey = new Map(headers.map((header) => [header.key, header.value]));
+
+    expect(byKey.get("Content-Security-Policy")).toBeUndefined();
+    expect(byKey.get("Content-Security-Policy-Report-Only")).toBeUndefined();
+    expect(byKey.get("Strict-Transport-Security")).toBe(
+      "max-age=31536000; includeSubDomains"
+    );
+  });
 });

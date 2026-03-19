@@ -68,6 +68,29 @@ describe("authMiddleware", () => {
     expect((res as any).kind).toBe("next");
   });
 
+  it("allows public aws image proxy GET requests", async () => {
+    const res = await authMiddleware(req("/api/aws/image", "GET"));
+    expect((res as any).kind).toBe("next");
+  });
+
+  it("denies profile picture uploads when user is not signed in", async () => {
+    const res = await authMiddleware(req("/api/aws/profilePictures", "POST"));
+    expect((res as any).status).toBe(403);
+    expect((res as any).body).toContain("need to be Signed-in User");
+  });
+
+  it("allows profile picture uploads for signed-in users", async () => {
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isUser: true,
+      isOfficer: false,
+      isMentor: false,
+      isPrimary: false,
+    });
+
+    const res = await authMiddleware(req("/api/aws/profilePictures", "POST"));
+    expect((res as any).kind).toBe("next");
+  });
+
   it("denies quote POST when user is not signed in", async () => {
     const res = await authMiddleware(req("/api/quotes", "POST"));
     expect((res as any).status).toBe(403);
