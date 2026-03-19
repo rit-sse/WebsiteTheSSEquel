@@ -67,7 +67,7 @@ export default function CategoryRow(props: {
             <input
               value={books}
               onChange={(e) => setBooks(e.target.value)}
-              className="borde w-full"
+              className="border w-full"
             />
           </td>
         </>

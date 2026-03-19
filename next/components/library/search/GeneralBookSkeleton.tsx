@@ -1,3 +1,4 @@
+"use client";
 export default function GeneralBookContainerSkeleton() {
   return (
     <div className="flex w-[100%] mr-4 last:mr-0 cursor-pointer z-5 mt-4">

@@ -37,8 +37,13 @@ export async function GET(params: NextRequest) {
       let jsonRes = await res.json();
       bookData["name"] =
         (jsonRes.title ?? "") + ": " + (jsonRes.subtitle ?? "");
-      bookData["description"] = jsonRes["description"]?.["value"] ?? "";
-      bookData["publisher"] = jsonRes["publishers"].join(", ") ?? "";
+      bookData["description"] =
+        typeof jsonRes["description"] === "string"
+          ? jsonRes["description"]
+          : (jsonRes["description"]?.["value"] ?? "");
+      bookData["publisher"] = Array.isArray(jsonRes["publishers"])
+        ? jsonRes["publishers"].join(", ")
+        : "";
       bookData["yearPublished"] =
         new Date(jsonRes.publish_date).getFullYear() ?? 0;
     } catch (e) {

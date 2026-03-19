@@ -1,11 +1,13 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function SearchBar() {
   const [searchInput, setSearchInput] = useState("");
+  const router = useRouter();
 
   function gotoSearch() {
-    window.location.href = "/library/search?query=" + searchInput;
+    router.push("/library/search?query=" + encodeURIComponent(searchInput));
   }
 
   return (

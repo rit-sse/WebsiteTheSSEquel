@@ -10,6 +10,8 @@ export function FeaturedContainer({
 }) {
   const books = Array.isArray(props.books) ? props.books : [];
   const router = useRouter();
+  const coverClasses =
+    "w-full h-[220px] rounded-md shadow-sm bg-gray-200 flex items-center justify-center text-center text-sm font-medium text-gray-500 px-4";
 
   function onClickBook(book: Book) {
     // Placeholder for future functionality when a book is clicked
@@ -28,13 +30,17 @@ export function FeaturedContainer({
             className="flex-none w-[180px] mr-4 last:mr-0 cursor-pointer z-5"
             onClick={() => onClickBook(book)}
           >
-            <Image
-              src={book.image}
-              alt={book.name}
-              className="w-full h-[220px] object-cover rounded-md shadow-sm"
-              width={180}
-              height={220}
-            />
+            {book.image ? (
+              <Image
+                src={book.image}
+                alt={book.name}
+                className="w-full h-[220px] object-cover rounded-md shadow-sm bg-gray-200"
+                width={180}
+                height={220}
+              />
+            ) : (
+              <div className={coverClasses}>No cover available</div>
+            )}
             <h3 className="mt-2 text-lg font-medium truncate">{book.name}</h3>
             <p className="text-sm text-gray-600 line-clamp-1">{book.authors}</p>
             <p className="text-sm text-gray-500">ISBN: {book.ISBN}</p>

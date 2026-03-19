@@ -16,10 +16,7 @@ export default function TopGradient() {
   const isAtHome = pathname.endsWith("/library");
 
   useEffect(() => {
-    fetch(
-      (process.env.INTERNAL_API_URL ? process.env.INTERNAL_API_URL : "") +
-        "/api/authLevel"
-    )
+    fetch("/api/authLevel")
       .then((resp) => resp.json())
       .then((authData) => {
         setAuthLevel(authData);

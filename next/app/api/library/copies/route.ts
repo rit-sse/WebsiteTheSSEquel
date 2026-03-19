@@ -23,7 +23,11 @@ export async function GET(request: NextRequest) {
     if (isbn && isbn.trim() !== "") {
       whereSelection = { ISBN: isbn };
     } else if (id && id.trim() !== "") {
-      whereSelection = { id: parseInt(id) };
+      const parsedId = parseInt(id);
+      if (!Number.isFinite(parsedId)) {
+        return new Response('"id" must be a valid integer', { status: 400 });
+      }
+      whereSelection = { id: parsedId };
     }
 
     let copies = await prisma.textbookCopies.findMany({
@@ -47,10 +51,8 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   console.log("POST /api/library/copies");
   try {
-    const authToken = request.cookies.get(
-      process.env.SESSION_COOKIE_NAME!
-    )?.value;
-    if (!authToken) {
+    const auth = await getAuth(request);
+    if (!auth.isMentor && !auth.isOfficer) {
       return new Response("Unauthorized", { status: 401 });
     }
 

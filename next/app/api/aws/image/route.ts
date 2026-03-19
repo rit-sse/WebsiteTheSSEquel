@@ -45,9 +45,9 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const bytes = await response.Body.transformToByteArray();
+    const stream = response.Body.transformToWebStream();
 
-    return new NextResponse(Buffer.from(bytes), {
+    return new NextResponse(stream as ReadableStream, {
       status: 200,
       headers: {
         "Content-Type": response.ContentType || "application/octet-stream",
