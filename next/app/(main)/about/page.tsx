@@ -2,7 +2,7 @@
 import { Metadata } from "next";
 import slotData from "./AboutUsSlotContent";
 import ZCardContainer from "@/components/ZCardContainer";
-import {AboutUsSlot} from "@/app/(main)/about/AboutUsSlot";
+import { AboutUsSlot } from "@/app/(main)/about/AboutUsSlot";
 import { Card } from "@/components/ui/card";
 
 export const metadata: Metadata = {
@@ -19,18 +19,24 @@ const About = () => {
           <div className="text-center mb-8">
             <h1 className="text-primary">About Us</h1>
             <p className="mt-4 text-lg max-w-3xl mx-auto">
-              The Society of Software Engineers at RIT fosters a vibrant community
-              of tech enthusiasts, bridging academia with industry partnerships
-              from giants like Microsoft to Apple, ensuring our members thrive in
-              their future careers.
+              The Society of Software Engineers at RIT fosters a vibrant
+              community of tech enthusiasts, bridging academia with industry
+              partnerships from giants like Microsoft to Apple, ensuring our
+              members thrive in their future careers.
             </p>
           </div>
 
-          <ZCardContainer contentSlots={
-            slotData.map(slot => new AboutUsSlot(
-                slot.imageSrc, slot.name, slot.description, slot.alt
-            ))
-          } />
+          <ZCardContainer
+            contentSlots={slotData.map(
+              (slot) =>
+                new AboutUsSlot(
+                  slot.imageSrc,
+                  slot.name,
+                  slot.description,
+                  slot.alt
+                )
+            )}
+          />
         </Card>
       </div>
     </section>

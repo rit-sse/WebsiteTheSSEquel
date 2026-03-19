@@ -4,17 +4,14 @@ import { getGatewayAuthLevel } from "@/lib/authGateway";
 
 export const dynamic = "force-dynamic";
 
-async function canSubmitHeadcount(request: NextRequest): Promise<boolean> {
-  const authLevel = await getGatewayAuthLevel(request);
-  return authLevel.isMentor || authLevel.isOfficer;
-}
-
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const semesterId = searchParams.get("semesterId");
   const limit = searchParams.get("limit");
 
-  const whereClause = semesterId ? { semesterId: parseInt(semesterId) } : undefined;
+  const whereClause = semesterId
+    ? { semesterId: parseInt(semesterId) }
+    : undefined;
   const take = limit ? parseInt(limit) : undefined;
 
   const entries = await prisma.menteeHeadcountEntry.findMany({
@@ -48,8 +45,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  if (!(await canSubmitHeadcount(request))) {
-    return NextResponse.json({ error: "Access denied" }, { status: 403 });
+  const authLevel = await getGatewayAuthLevel(request);
+  if (!authLevel.isMentor && !authLevel.isOfficer) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const body = await request.json();
@@ -63,13 +61,22 @@ export async function POST(request: NextRequest) {
   } = body;
 
   if (!Array.isArray(mentorIds) || mentorIds.length === 0) {
-    return NextResponse.json({ error: "Mentors on duty are required" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Mentors on duty are required" },
+      { status: 400 }
+    );
   }
   if (typeof studentsMentoredCount !== "number") {
-    return NextResponse.json({ error: "Student count is required" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Student count is required" },
+      { status: 400 }
+    );
   }
   if (typeof testsCheckedOutCount !== "number") {
-    return NextResponse.json({ error: "Tests checked out count is required" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Tests checked out count is required" },
+      { status: 400 }
+    );
   }
 
   let targetSemesterId = semesterId ? parseInt(semesterId) : null;
@@ -92,11 +99,14 @@ export async function POST(request: NextRequest) {
           data: mentorIds.map((mentorId: number) => ({ mentorId })),
         },
       },
-      classes: Array.isArray(courseIds) && courseIds.length > 0 ? {
-        createMany: {
-          data: courseIds.map((courseId: number) => ({ courseId })),
-        },
-      } : undefined,
+      classes:
+        Array.isArray(courseIds) && courseIds.length > 0
+          ? {
+              createMany: {
+                data: courseIds.map((courseId: number) => ({ courseId })),
+              },
+            }
+          : undefined,
     },
   });
 

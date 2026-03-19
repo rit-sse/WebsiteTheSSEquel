@@ -1,39 +1,48 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { Event } from "../event"
-import { compareDateStrings } from "./utils"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
+import { useEffect, useState } from "react";
+import { Event } from "../event";
+import { compareDateStrings } from "./utils";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Loader2, Calendar, MapPin, Image as ImageIcon, Users, Repeat, CreditCard, Lock } from "lucide-react"
-import { getAcademicTermEndDate } from "@/lib/academicTerm"
+} from "@/components/ui/select";
+import {
+  Loader2,
+  Calendar,
+  MapPin,
+  Image as ImageIcon,
+  Users,
+  Repeat,
+  CreditCard,
+  Lock,
+} from "lucide-react";
+import { getAcademicTermEndDate } from "@/lib/academicTerm";
 
 // Required email recipient that is always included for purchase requests
 const REQUIRED_RECIPIENT = "softwareengineering@rit.edu";
 
 interface FormProps {
-  isOpen: boolean
-  onClose: () => void
-  events: Event[]
-  setEvents: (event: Event[]) => void
+  isOpen: boolean;
+  onClose: () => void;
+  events: Event[];
+  setEvents: (event: Event[]) => void;
 }
 
-type RecurrenceType = "none" | "weekly" | "biweekly"
+type RecurrenceType = "none" | "weekly" | "biweekly";
 
 interface OfficerLookup {
-  is_active: boolean
-  position: { title: string }
-  user: { email: string }
+  is_active: boolean;
+  position: { title: string };
+  user: { email: string };
 }
 
 const COMMITTEES = [
@@ -44,109 +53,117 @@ const COMMITTEES = [
   "Talks",
   "Projects",
   "Misc/Presidential",
-]
+];
 
 // Generate recurring dates within the semester
-function generateRecurringDates(startDate: Date, recurrence: RecurrenceType): Date[] {
-  if (recurrence === "none") return [startDate]
-  
-  const dates: Date[] = []
-  const endDate = getAcademicTermEndDate(startDate)
-  const intervalDays = recurrence === "weekly" ? 7 : 14
-  
-  let currentDate = new Date(startDate)
+function generateRecurringDates(
+  startDate: Date,
+  recurrence: RecurrenceType
+): Date[] {
+  if (recurrence === "none") return [startDate];
+
+  const dates: Date[] = [];
+  const endDate = getAcademicTermEndDate(startDate);
+  const intervalDays = recurrence === "weekly" ? 7 : 14;
+
+  let currentDate = new Date(startDate);
   while (currentDate <= endDate) {
-    dates.push(new Date(currentDate))
-    currentDate.setDate(currentDate.getDate() + intervalDays)
+    dates.push(new Date(currentDate));
+    currentDate.setDate(currentDate.getDate() + intervalDays);
   }
-  
-  return dates
+
+  return dates;
 }
 
-export default function AddEventForm({ isOpen, onClose, events, setEvents }: FormProps) {
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+export default function AddEventForm({
+  isOpen,
+  onClose,
+  events,
+  setEvents,
+}: FormProps) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Form state
-  const [eventName, setEventName] = useState("")
-  const [location, setLocation] = useState("")
-  const [datetime, setDatetime] = useState("")
-  const [description, setDescription] = useState("")
-  const [image, setImage] = useState("")
-  const [attendanceEnabled, setAttendanceEnabled] = useState(false)
-  const [grantsMembership, setGrantsMembership] = useState(false)
-  const [recurrence, setRecurrence] = useState<RecurrenceType>("none")
+  const [eventName, setEventName] = useState("");
+  const [location, setLocation] = useState("");
+  const [datetime, setDatetime] = useState("");
+  const [description, setDescription] = useState("");
+  const [image, setImage] = useState("");
+  const [attendanceEnabled, setAttendanceEnabled] = useState(false);
+  const [grantsMembership, setGrantsMembership] = useState(false);
+  const [recurrence, setRecurrence] = useState<RecurrenceType>("none");
 
   // PCard request state
-  const [createPurchaseRequest, setCreatePurchaseRequest] = useState(false)
-  const [purchaseCommittee, setPurchaseCommittee] = useState("")
-  const [purchaseEstimatedCost, setPurchaseEstimatedCost] = useState("")
-  const [purchaseDescription, setPurchaseDescription] = useState("")
-  const [purchaseNotifyEmail, setPurchaseNotifyEmail] = useState("")
-  const [treasurerEmail, setTreasurerEmail] = useState("treasurer's email")
+  const [createPurchaseRequest, setCreatePurchaseRequest] = useState(false);
+  const [purchaseCommittee, setPurchaseCommittee] = useState("");
+  const [purchaseEstimatedCost, setPurchaseEstimatedCost] = useState("");
+  const [purchaseDescription, setPurchaseDescription] = useState("");
+  const [purchaseNotifyEmail, setPurchaseNotifyEmail] = useState("");
+  const [treasurerEmail, setTreasurerEmail] = useState("treasurer's email");
 
   // Clear form on close
   useEffect(() => {
     if (!isOpen) {
-      clearForm()
+      clearForm();
     }
-  }, [isOpen])
+  }, [isOpen]);
 
   useEffect(() => {
     const loadTreasurerEmail = async () => {
       try {
-        const response = await fetch("/api/officer")
-        if (!response.ok) return
-        const officers = (await response.json()) as OfficerLookup[]
+        const response = await fetch("/api/officer");
+        if (!response.ok) return;
+        const officers = (await response.json()) as OfficerLookup[];
         const treasurer = officers.find(
-          (officer) => officer.is_active && officer.position.title === "Treasurer"
-        )
+          (officer) =>
+            officer.is_active && officer.position.title === "Treasurer"
+        );
         if (treasurer?.user?.email) {
-          setTreasurerEmail(treasurer.user.email)
+          setTreasurerEmail(treasurer.user.email);
         }
       } catch (error) {
-        console.error("Failed to load treasurer email:", error)
+        console.error("Failed to load treasurer email:", error);
       }
-    }
-    loadTreasurerEmail()
-  }, [])
+    };
+    loadTreasurerEmail();
+  }, []);
 
   const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
-    setLoading(true)
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
 
     if (!eventName || !datetime) {
-      setError("Event name and date/time are required")
-      setLoading(false)
-      return
+      setError("Event name and date/time are required");
+      setLoading(false);
+      return;
     }
 
     // Validate purchase request fields if enabled (notifyEmail is optional since REQUIRED_RECIPIENT is always included)
     if (createPurchaseRequest) {
       if (!purchaseCommittee || !purchaseEstimatedCost) {
-        setError("Please fill in all required PCard request fields")
-        setLoading(false)
-        return
+        setError("Please fill in all required PCard request fields");
+        setLoading(false);
+        return;
       }
     }
 
     // Reformat googledrive image link so that <img> can display it
-    const googleImageMatch = image.match(RegExp("d/([^/]+)/view"))
+    const googleImageMatch = image.match(RegExp("d/([^/]+)/view"));
     const googleImageLink = googleImageMatch
       ? `https://drive.google.com/thumbnail?id=${googleImageMatch[1]}`
-      : ""
+      : "";
 
     try {
-      const startDate = new Date(datetime)
-      const recurringDates = generateRecurringDates(startDate, recurrence)
-      const newEvents: Event[] = []
+      const startDate = new Date(datetime);
+      const recurringDates = generateRecurringDates(startDate, recurrence);
+      const newEvents: Event[] = [];
 
       for (let i = 0; i < recurringDates.length; i++) {
-        const eventDate = recurringDates[i]
-        const eventTitle = recurringDates.length > 1 
-          ? `${eventName}` 
-          : eventName
+        const eventDate = recurringDates[i];
+        const eventTitle =
+          recurringDates.length > 1 ? `${eventName}` : eventName;
 
         // Post to Google Calendar
         const gCalResponse = await fetch("/api/calendar", {
@@ -159,15 +176,19 @@ export default function AddEventForm({ isOpen, onClose, events, setEvents }: For
             start: eventDate.toISOString(),
             end: new Date(eventDate.getTime() + 60 * 60 * 1000).toISOString(),
           }),
-        })
+        });
 
         if (!gCalResponse.ok) {
           // If Google Calendar fails, create without it
-          console.warn("Google Calendar sync failed, creating event locally only")
+          console.warn(
+            "Google Calendar sync failed, creating event locally only"
+          );
         }
 
-        const gCalEvent = gCalResponse.ok ? await gCalResponse.json() : { id: `local-${Date.now()}-${i}` }
-        const gCalID = gCalEvent.id
+        const gCalEvent = gCalResponse.ok
+          ? await gCalResponse.json()
+          : { id: `local-${Date.now()}-${i}` };
+        const gCalID = gCalEvent.id;
 
         // Post to Prisma
         const prismaResponse = await fetch("/api/event", {
@@ -183,11 +204,11 @@ export default function AddEventForm({ isOpen, onClose, events, setEvents }: For
             attendanceEnabled: attendanceEnabled,
             grantsMembership: grantsMembership,
           }),
-        })
+        });
 
         if (prismaResponse.ok) {
-          const newEvent = await prismaResponse.json()
-          newEvents.push(newEvent)
+          const newEvent = await prismaResponse.json();
+          newEvents.push(newEvent);
 
           // Create linked purchase request if enabled (only for first event in recurring series)
           if (createPurchaseRequest && i === 0) {
@@ -198,30 +219,37 @@ export default function AddEventForm({ isOpen, onClose, events, setEvents }: For
                 body: JSON.stringify({
                   name: eventName,
                   committee: purchaseCommittee,
-                  description: purchaseDescription || `Purchase for event: ${eventName}`,
+                  description:
+                    purchaseDescription || `Purchase for event: ${eventName}`,
                   estimatedCost: parseFloat(purchaseEstimatedCost),
                   plannedDate: eventDate.toISOString(),
                   notifyEmail: purchaseNotifyEmail,
                   eventId: newEvent.id,
                 }),
-              })
+              });
 
               // Send notification email for the purchase request
               if (purchaseResponse.ok) {
-                const newPurchaseRequest = await purchaseResponse.json()
+                const newPurchaseRequest = await purchaseResponse.json();
                 try {
-                  await fetch(`/api/purchasing/${newPurchaseRequest.id}/email`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ type: "checkout" }),
-                  })
+                  await fetch(
+                    `/api/purchasing/${newPurchaseRequest.id}/email`,
+                    {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ type: "checkout" }),
+                    }
+                  );
                 } catch (emailError) {
-                  console.warn("Failed to send purchase request email:", emailError)
+                  console.warn(
+                    "Failed to send purchase request email:",
+                    emailError
+                  );
                   // Don't fail the whole operation if email fails
                 }
               }
             } catch (purchaseError) {
-              console.warn("Failed to create purchase request:", purchaseError)
+              console.warn("Failed to create purchase request:", purchaseError);
               // Don't fail the whole operation if purchase request fails
             }
           }
@@ -229,44 +257,46 @@ export default function AddEventForm({ isOpen, onClose, events, setEvents }: For
       }
 
       // Append new events and sort chronologically
-      const updatedEvents = [...events, ...newEvents]
-      updatedEvents.sort((event1, event2) => compareDateStrings(event1.date, event2.date))
-      setEvents(updatedEvents)
-      
-      onClose()
-      clearForm()
+      const updatedEvents = [...events, ...newEvents];
+      updatedEvents.sort((event1, event2) =>
+        compareDateStrings(event1.date, event2.date)
+      );
+      setEvents(updatedEvents);
+
+      onClose();
+      clearForm();
     } catch (err) {
-      console.error(err)
-      setError("Failed to create event. Please try again.")
+      console.error(err);
+      setError("Failed to create event. Please try again.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const clearForm = () => {
-    setEventName("")
-    setLocation("")
-    setDatetime("")
-    setDescription("")
-    setImage("")
-    setAttendanceEnabled(false)
-    setGrantsMembership(false)
-    setRecurrence("none")
-    setCreatePurchaseRequest(false)
-    setPurchaseCommittee("")
-    setPurchaseEstimatedCost("")
-    setPurchaseDescription("")
-    setPurchaseNotifyEmail("")
-    setError(null)
-  }
+    setEventName("");
+    setLocation("");
+    setDatetime("");
+    setDescription("");
+    setImage("");
+    setAttendanceEnabled(false);
+    setGrantsMembership(false);
+    setRecurrence("none");
+    setCreatePurchaseRequest(false);
+    setPurchaseCommittee("");
+    setPurchaseEstimatedCost("");
+    setPurchaseDescription("");
+    setPurchaseNotifyEmail("");
+    setError(null);
+  };
 
   // Calculate how many events will be created
   const getRecurrencePreview = () => {
-    if (!datetime || recurrence === "none") return null
-    const dates = generateRecurringDates(new Date(datetime), recurrence)
-    if (dates.length <= 1) return null
-    return `This will create ${dates.length} events through the end of the semester`
-  }
+    if (!datetime || recurrence === "none") return null;
+    const dates = generateRecurringDates(new Date(datetime), recurrence);
+    if (dates.length <= 1) return null;
+    return `This will create ${dates.length} events through the end of the semester`;
+  };
 
   return (
     <form className="space-y-4" onSubmit={onSubmit}>
@@ -322,18 +352,29 @@ export default function AddEventForm({ isOpen, onClose, events, setEvents }: For
               <Repeat className="h-4 w-4" />
               Recurrence
             </Label>
-            <Select value={recurrence} onValueChange={(val) => setRecurrence(val as RecurrenceType)}>
+            <Select
+              value={recurrence}
+              onValueChange={(val) => setRecurrence(val as RecurrenceType)}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select recurrence" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">No recurrence (single event)</SelectItem>
-                <SelectItem value="weekly">Weekly (until end of semester)</SelectItem>
-                <SelectItem value="biweekly">Bi-weekly (until end of semester)</SelectItem>
+                <SelectItem value="none">
+                  No recurrence (single event)
+                </SelectItem>
+                <SelectItem value="weekly">
+                  Weekly (until end of semester)
+                </SelectItem>
+                <SelectItem value="biweekly">
+                  Bi-weekly (until end of semester)
+                </SelectItem>
               </SelectContent>
             </Select>
             {getRecurrencePreview() && (
-              <p className="text-xs text-muted-foreground">{getRecurrencePreview()}</p>
+              <p className="text-xs text-muted-foreground">
+                {getRecurrencePreview()}
+              </p>
             )}
           </div>
 
@@ -379,13 +420,16 @@ export default function AddEventForm({ isOpen, onClose, events, setEvents }: For
                 id="attendanceEnabled"
                 checked={attendanceEnabled}
                 onCheckedChange={(checked) => {
-                  setAttendanceEnabled(checked === true)
+                  setAttendanceEnabled(checked === true);
                   if (!checked) {
-                    setGrantsMembership(false)
+                    setGrantsMembership(false);
                   }
                 }}
               />
-              <Label htmlFor="attendanceEnabled" className="text-sm font-normal cursor-pointer">
+              <Label
+                htmlFor="attendanceEnabled"
+                className="text-sm font-normal cursor-pointer"
+              >
                 Enable attendance tracking
               </Label>
             </div>
@@ -395,9 +439,14 @@ export default function AddEventForm({ isOpen, onClose, events, setEvents }: For
                 <Checkbox
                   id="grantsMembership"
                   checked={grantsMembership}
-                  onCheckedChange={(checked) => setGrantsMembership(checked === true)}
+                  onCheckedChange={(checked) =>
+                    setGrantsMembership(checked === true)
+                  }
                 />
-                <Label htmlFor="grantsMembership" className="text-sm font-normal cursor-pointer">
+                <Label
+                  htmlFor="grantsMembership"
+                  className="text-sm font-normal cursor-pointer"
+                >
                   Grant membership to attendees
                 </Label>
               </div>
@@ -415,9 +464,14 @@ export default function AddEventForm({ isOpen, onClose, events, setEvents }: For
               <Checkbox
                 id="createPurchaseRequest"
                 checked={createPurchaseRequest}
-                onCheckedChange={(checked) => setCreatePurchaseRequest(checked === true)}
+                onCheckedChange={(checked) =>
+                  setCreatePurchaseRequest(checked === true)
+                }
               />
-              <Label htmlFor="createPurchaseRequest" className="text-sm font-normal cursor-pointer">
+              <Label
+                htmlFor="createPurchaseRequest"
+                className="text-sm font-normal cursor-pointer"
+              >
                 Create a PCard request for this event
               </Label>
             </div>
@@ -425,8 +479,13 @@ export default function AddEventForm({ isOpen, onClose, events, setEvents }: For
             {createPurchaseRequest && (
               <div className="space-y-3 pt-2 border-t mt-2">
                 <div className="space-y-2">
-                  <Label htmlFor="purchaseCommittee" className="text-sm">Committee *</Label>
-                  <Select value={purchaseCommittee} onValueChange={setPurchaseCommittee}>
+                  <Label htmlFor="purchaseCommittee" className="text-sm">
+                    Committee *
+                  </Label>
+                  <Select
+                    value={purchaseCommittee}
+                    onValueChange={setPurchaseCommittee}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select a committee" />
                     </SelectTrigger>
@@ -441,9 +500,13 @@ export default function AddEventForm({ isOpen, onClose, events, setEvents }: For
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="purchaseEstimatedCost" className="text-sm">Estimated Cost *</Label>
+                  <Label htmlFor="purchaseEstimatedCost" className="text-sm">
+                    Estimated Cost *
+                  </Label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                      $
+                    </span>
                     <Input
                       id="purchaseEstimatedCost"
                       type="number"
@@ -458,7 +521,9 @@ export default function AddEventForm({ isOpen, onClose, events, setEvents }: For
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="purchaseDescription" className="text-sm">What are you purchasing?</Label>
+                  <Label htmlFor="purchaseDescription" className="text-sm">
+                    What are you purchasing?
+                  </Label>
                   <Textarea
                     id="purchaseDescription"
                     value={purchaseDescription}
@@ -473,10 +538,14 @@ export default function AddEventForm({ isOpen, onClose, events, setEvents }: For
                   <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-md border">
                     <Lock className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm">{REQUIRED_RECIPIENT}</span>
-                    <span className="text-xs text-muted-foreground">(always included)</span>
+                    <span className="text-xs text-muted-foreground">
+                      (always included)
+                    </span>
                   </div>
                   <div className="mt-2">
-                    <Label htmlFor="purchaseNotifyEmail" className="text-xs">Additional notification emails (optional)</Label>
+                    <Label htmlFor="purchaseNotifyEmail" className="text-xs">
+                      Additional notification emails (optional)
+                    </Label>
                     <Input
                       id="purchaseNotifyEmail"
                       type="email"
@@ -494,7 +563,12 @@ export default function AddEventForm({ isOpen, onClose, events, setEvents }: For
       </div>
 
       <div className="flex gap-3 pt-2">
-        <Button type="button" variant="outline" onClick={onClose} className="flex-1">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onClose}
+          className="flex-1"
+        >
           Cancel
         </Button>
         <Button type="submit" disabled={loading} className="flex-1">
@@ -509,5 +583,5 @@ export default function AddEventForm({ isOpen, onClose, events, setEvents }: For
         </Button>
       </div>
     </form>
-  )
+  );
 }

@@ -4,7 +4,10 @@ import { getGatewayAuthLevel } from "@/lib/authGateway";
 
 export const dynamic = "force-dynamic";
 
-async function canModifyMentorRecord(request: NextRequest, mentorId: number): Promise<boolean> {
+async function canModifyMentorRecord(
+  request: NextRequest,
+  mentorId: number
+): Promise<boolean> {
   const authLevel = await getGatewayAuthLevel(request);
   if (authLevel.isOfficer) return true;
   if (!authLevel.userId) return false;
@@ -95,7 +98,10 @@ export async function PUT(request: NextRequest) {
         select: { mentor_Id: true },
       })
     )?.mentor_Id;
-  if (!targetMentorId || !(await canModifyMentorRecord(request, targetMentorId))) {
+  if (
+    !targetMentorId ||
+    !(await canModifyMentorRecord(request, targetMentorId))
+  ) {
     return new Response("Must be signed in to modify your skills", {
       status: 403,
     });
@@ -165,7 +171,10 @@ export async function DELETE(request: NextRequest) {
         select: { mentor_Id: true },
       })
     )?.mentor_Id;
-  if (!targetMentorId || !(await canModifyMentorRecord(request, targetMentorId))) {
+  if (
+    !targetMentorId ||
+    !(await canModifyMentorRecord(request, targetMentorId))
+  ) {
     return new Response("Must be signed in to modify your skills", {
       status: 403,
     });

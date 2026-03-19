@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
 export default function AlumniCandidatesPage() {
-    redirect("/dashboard/alumni");
+  redirect("/dashboard/alumni");
 }

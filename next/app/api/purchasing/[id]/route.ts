@@ -2,7 +2,7 @@ import prisma from "@/lib/prisma";
 import { getSessionToken } from "@/lib/sessionToken";
 import { NextRequest } from "next/server";
 
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
 /**
  * GET /api/purchasing/[id] - Get a single purchase request
@@ -101,13 +101,19 @@ export async function PUT(
     }
     const validStatuses = ["pending", "checked_out", "returned"];
     if (!validStatuses.includes(body.status)) {
-      return new Response(`'status' must be one of: ${validStatuses.join(", ")}`, { status: 422 });
+      return new Response(
+        `'status' must be one of: ${validStatuses.join(", ")}`,
+        { status: 422 }
+      );
     }
     updateData.status = body.status;
   }
 
   if ("actualCost" in body) {
-    if (typeof body.actualCost !== "number" && typeof body.actualCost !== "string") {
+    if (
+      typeof body.actualCost !== "number" &&
+      typeof body.actualCost !== "string"
+    ) {
       return new Response("'actualCost' must be a number", { status: 422 });
     }
     updateData.actualCost = parseFloat(body.actualCost);
@@ -115,7 +121,9 @@ export async function PUT(
 
   if ("receiptImage" in body) {
     if (typeof body.receiptImage !== "string") {
-      return new Response("'receiptImage' must be a string (base64)", { status: 422 });
+      return new Response("'receiptImage' must be a string (base64)", {
+        status: 422,
+      });
     }
     updateData.receiptImage = body.receiptImage;
   }
@@ -128,7 +136,9 @@ export async function PUT(
     if (body.receiptEmail !== "") {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(body.receiptEmail)) {
-        return new Response("'receiptEmail' must be a valid email address", { status: 422 });
+        return new Response("'receiptEmail' must be a valid email address", {
+          status: 422,
+        });
       }
     }
     updateData.receiptEmail = body.receiptEmail;
@@ -136,38 +146,57 @@ export async function PUT(
 
   if ("eventName" in body) {
     if (body.eventName !== null && typeof body.eventName !== "string") {
-      return new Response("'eventName' must be a string or null", { status: 422 });
+      return new Response("'eventName' must be a string or null", {
+        status: 422,
+      });
     }
     updateData.eventName = body.eventName;
   }
 
   if ("eventDate" in body) {
     if (body.eventDate !== null && typeof body.eventDate !== "string") {
-      return new Response("'eventDate' must be a string (ISO date) or null", { status: 422 });
+      return new Response("'eventDate' must be a string (ISO date) or null", {
+        status: 422,
+      });
     }
     updateData.eventDate = body.eventDate ? new Date(body.eventDate) : null;
   }
 
   if ("attendanceData" in body) {
-    if (body.attendanceData !== null && typeof body.attendanceData !== "string") {
-      return new Response("'attendanceData' must be a JSON string or null", { status: 422 });
+    if (
+      body.attendanceData !== null &&
+      typeof body.attendanceData !== "string"
+    ) {
+      return new Response("'attendanceData' must be a JSON string or null", {
+        status: 422,
+      });
     }
     updateData.attendanceData = body.attendanceData;
   }
 
   if ("attendanceImage" in body) {
-    if (body.attendanceImage !== null && typeof body.attendanceImage !== "string") {
-      return new Response("'attendanceImage' must be a string (base64) or null", { status: 422 });
+    if (
+      body.attendanceImage !== null &&
+      typeof body.attendanceImage !== "string"
+    ) {
+      return new Response(
+        "'attendanceImage' must be a string (base64) or null",
+        { status: 422 }
+      );
     }
     updateData.attendanceImage = body.attendanceImage;
   }
 
   if ("eventId" in body) {
     if (body.eventId !== null && typeof body.eventId !== "string") {
-      return new Response("'eventId' must be a string or null", { status: 422 });
+      return new Response("'eventId' must be a string or null", {
+        status: 422,
+      });
     }
     if (body.eventId) {
-      const eventExists = await prisma.event.findUnique({ where: { id: body.eventId } });
+      const eventExists = await prisma.event.findUnique({
+        where: { id: body.eventId },
+      });
       if (!eventExists) {
         return new Response("Event not found", { status: 404 });
       }

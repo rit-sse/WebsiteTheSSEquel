@@ -32,25 +32,24 @@ model User {
   id Int @id @default(autoincrement())
 
   //Store first and last name as Strings
-  name String
+  name String @db.VarChar(100)
 
   //Store email as a unique String
-  email String @unique
+  email String @unique @db.VarChar(255)
 
-  linkedIn    String?
-  gitHub      String?
-  description String?
-  graduationTerm AcademicTerm?
-  graduationYear Int?
-  major          String?
-  coopSummary    String?
+  linkedIn                     String?       @db.VarChar(500)
+  gitHub                       String?       @db.VarChar(500)
+  description                  String?       @db.VarChar(1000)
+  graduationTerm               AcademicTerm?
+  graduationYear               Int?
+  major                        String?       @db.VarChar(100)
+  coopSummary                  String?       @db.VarChar(1000)
   profileCompletionGrantedTerm AcademicTerm?
   profileCompletionGrantedYear Int?
 
   //Image will be saved
-  profileImageKey String?
-  googleImageURL String?
-  
+  profileImageKey String? @db.VarChar(500)
+  googleImageURL  String? @db.VarChar(500)
 
   emailVerified DateTime?
 
@@ -62,16 +61,18 @@ model User {
   session              Session[]
   projectContributions ProjectContributor[]
   projects             Project[]
+  textbookCopies       TextbookCopies[]
 
-  Memberships              Memberships[]
-  purchaseRequests         PurchaseRequest[]
-  invitationsSent          Invitation[]
-  eventAttendances         EventAttendance[]
-  mentorApplications       MentorApplication[]
-  mentorAvailability       MentorAvailability[]
-  alumni                   Alumni?
-  alumniCandidates         AlumniCandidate[] @relation("AlumniCandidateOwner")
-  reviewedAlumniCandidates AlumniCandidate[] @relation("AlumniCandidateReviewer")
+  Memberships               Memberships[]
+  purchaseRequests          PurchaseRequest[]
+  invitationsSent           Invitation[]
+  eventAttendances          EventAttendance[]
+  mentorApplications        MentorApplication[]
+  techCommitteeApplications TechCommitteeApplication[]
+  mentorAvailability        MentorAvailability[]
+  alumni                    Alumni?
+  alumniCandidates          AlumniCandidate[]          @relation("AlumniCandidateOwner")
+  reviewedAlumniCandidates  AlumniCandidate[]          @relation("AlumniCandidateReviewer")
 }
 
 model Alumni {
@@ -79,19 +80,19 @@ model Alumni {
   id Int @id @default(autoincrement())
 
   //Store first and last name as Strings
-  name String
+  name String @db.VarChar(100)
 
   //Store email as a unique String
-  email String
+  email String @db.VarChar(255)
 
-  linkedIn    String?
-  gitHub      String?
-  description String?
+  linkedIn    String? @db.VarChar(500)
+  gitHub      String? @db.VarChar(500)
+  description String? @db.VarChar(1000)
 
   //Image will be saved
-  image String @default("https://source.boringavatars.com/beam/")
-  userId Int? @unique
-  source AlumniSource @default(manual)
+  image          String        @default("https://source.boringavatars.com/beam/") @db.VarChar(500)
+  userId         Int?          @unique
+  source         AlumniSource  @default(manual)
   graduationTerm AcademicTerm?
   graduationYear Int?
 
@@ -100,8 +101,8 @@ model Alumni {
   end_date   String
 
   //Store Quote and Previous Roles
-  quote          String @default("")
-  previous_roles String @default("")
+  quote          String @default("") @db.VarChar(2000)
+  previous_roles String @default("") @db.VarChar(1000)
 
   //Whether the alumni wants their email displayed publicly
   showEmail Boolean @default(false)
@@ -111,32 +112,32 @@ model Alumni {
 
   //Update requests referencing this alumni
   updateRequests AlumniRequest[]
-  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  user           User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
 }
 
 model AlumniCandidate {
-  id Int @id @default(autoincrement())
+  id     Int @id @default(autoincrement())
   userId Int
 
-  name String
-  email String
-  linkedIn String?
-  gitHub String?
-  description String?
-  imageKey String?
+  name           String        @db.VarChar(100)
+  email          String        @db.VarChar(255)
+  linkedIn       String?       @db.VarChar(500)
+  gitHub         String?       @db.VarChar(500)
+  description    String?       @db.VarChar(1000)
+  imageKey       String?       @db.VarChar(500)
   graduationTerm AcademicTerm?
   graduationYear Int?
-  major String?
-  coopSummary String?
+  major          String?       @db.VarChar(100)
+  coopSummary    String?       @db.VarChar(1000)
 
-  status AlumniCandidateStatus @default(pending)
+  status       AlumniCandidateStatus @default(pending)
   reviewedById Int?
-  reviewedAt DateTime?
-  reviewNotes String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  reviewedAt   DateTime?
+  reviewNotes  String?
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
 
-  user User @relation("AlumniCandidateOwner", fields: [userId], references: [id], onDelete: Cascade)
+  user       User  @relation("AlumniCandidateOwner", fields: [userId], references: [id], onDelete: Cascade)
   reviewedBy User? @relation("AlumniCandidateReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
 
   @@unique([userId])
@@ -147,25 +148,25 @@ model AlumniRequest {
   id Int @id @default(autoincrement())
 
   //Store first and last name as Strings
-  name String
+  name String @db.VarChar(100)
 
   //Store email as a String
-  email String
+  email String @db.VarChar(255)
 
-  linkedIn    String?
-  gitHub      String?
-  description String?
+  linkedIn    String? @db.VarChar(500)
+  gitHub      String? @db.VarChar(500)
+  description String? @db.VarChar(1000)
 
   //Image will be saved
-  image String @default("https://source.boringavatars.com/beam/")
+  image String @default("https://source.boringavatars.com/beam/") @db.VarChar(500)
 
   //Store startDate and endDate as a String
   start_date String
   end_date   String
 
   //Store Quote and Previous Roles
-  quote          String @default("")
-  previous_roles String @default("")
+  quote          String @default("") @db.VarChar(2000)
+  previous_roles String @default("") @db.VarChar(1000)
 
   //Whether the alumni wants their email displayed publicly
   showEmail Boolean @default(false)
@@ -192,13 +193,13 @@ model Quote {
   date_added DateTime
 
   //Store quote as a String
-  quote String @db.VarChar(255)
+  quote String @db.VarChar(2000)
 
   //References userId of person who submitted the quote
   user_id Int
 
   //Store author, person who said the qoute, as a String, default to anonymous
-  author String @default("Anonymous")
+  author String @default("Anonymous") @db.VarChar(100)
 
   //Relational fields
   //Refrences user_id
@@ -279,11 +280,11 @@ model Mentor {
   //Relatinal fields
   mentorSkill     MentorSkill[]
   courseTaken     CourseTaken[]
-  schedule        Schedule[]        // Legacy relation - to be deprecated
-  scheduleBlocks  ScheduleBlock[]   // New schedule system
+  schedule        Schedule[] // Legacy relation - to be deprecated
+  scheduleBlocks  ScheduleBlock[] // New schedule system
   mentorHeadcount MentorHeadcountMentor[]
   menteeHeadcount MenteeHeadcountMentor[]
-  user            User              @relation(fields: [user_Id], references: [id])
+  user            User                    @relation(fields: [user_Id], references: [id])
 }
 
 model Skill {
@@ -493,12 +494,52 @@ model MentorApplication {
   updatedAt DateTime @updatedAt
 
   // Relational fields
-  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  semester   MentorSemester  @relation(fields: [semesterId], references: [id], onDelete: Cascade)
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  semester   MentorSemester @relation(fields: [semesterId], references: [id], onDelete: Cascade)
   invitation Invitation?
 
   // Unique constraint: one application per user per semester
   @@unique([userId, semesterId])
+}
+
+enum Status {
+  PENDING
+  APPROVED
+  REJECTED
+  ASSIGNED
+}
+
+model TechCommitteeApplicationCycle {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  isOpen    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  applications TechCommitteeApplication[]
+}
+
+model TechCommitteeApplication {
+  id Int @id @default(autoincrement())
+
+  userId  Int
+  cycleId Int
+
+  yearLevel         String
+  experienceText    String  @db.Text
+  whyJoin           String  @db.Text
+  weeklyCommitment  String
+  preferredDivision String
+  status            Status  @default(PENDING)
+  finalDivision     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User                          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cycle TechCommitteeApplicationCycle @relation(fields: [cycleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, cycleId])
 }
 
 // Mentor availability per user per semester (replaces When2Meet)
@@ -542,7 +583,7 @@ model MentorHeadcountEntry {
   createdAt DateTime @default(now())
 
   // Relational fields
-  semester MentorSemester?        @relation(fields: [semesterId], references: [id], onDelete: SetNull)
+  semester MentorSemester?         @relation(fields: [semesterId], references: [id], onDelete: SetNull)
   mentors  MentorHeadcountMentor[]
 }
 
@@ -577,7 +618,7 @@ model MenteeHeadcountEntry {
   createdAt DateTime @default(now())
 
   // Relational fields
-  semester MentorSemester?        @relation(fields: [semesterId], references: [id], onDelete: SetNull)
+  semester MentorSemester?         @relation(fields: [semesterId], references: [id], onDelete: SetNull)
   mentors  MenteeHeadcountMentor[]
   classes  MenteeHeadcountCourse[]
 }
@@ -601,7 +642,7 @@ model MenteeHeadcountCourse {
   courseId Int
 
   entry  MenteeHeadcountEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
-  course Course              @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  course Course               @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   @@unique([entryId, courseId])
 }
@@ -633,13 +674,13 @@ model GoLinks {
   id Int @id @default(autoincrement())
 
   //Store short link as a String
-  golink String
+  golink String @db.VarChar(100)
 
   //Store url as a String
-  url String
+  url String @db.VarChar(500)
 
   //Description as a String
-  description String?
+  description String? @db.VarChar(500)
 
   //createdAt stored as a DateTime default to the timestamp it was created at
   createdAt DateTime @default(now())
@@ -657,11 +698,11 @@ model GoLinks {
 model Event {
   id String @id
 
-  title       String
+  title       String   @db.VarChar(200)
   date        DateTime @db.Timestamptz(3)
-  location    String?
-  image       String?
-  description String
+  location    String?  @db.VarChar(200)
+  image       String?  @db.VarChar(500)
+  description String   @db.VarChar(2000)
 
   // Attendance tracking fields
   attendanceEnabled Boolean @default(false)
@@ -739,25 +780,25 @@ model Project {
   id Int @id @default(autoincrement())
 
   // The title of the project
-  title String
+  title String @db.VarChar(200)
 
   // A short description of the project
-  description String
+  description String @db.VarChar(1000)
 
   // leader of the project
   leadid Int
 
   // details on the progress of the project
-  progress String?
+  progress String? @db.VarChar(1000)
 
   // The link to the repo hosting the project
-  repoLink String?
+  repoLink String? @db.VarChar(500)
 
   // The api route pointing to the markdown file for the content of the page.
-  contentURL String?
+  contentURL String? @db.VarChar(500)
 
   // A link to an image representing the project
-  projectImage String?
+  projectImage String? @db.VarChar(500)
 
   // Determines if the project has been completed or not
   completed Boolean @default(false)
@@ -797,16 +838,16 @@ model Sponsor {
   id Int @id @default(autoincrement())
 
   // Store sponsor name
-  name String
+  name String @db.VarChar(100)
 
   // Store sponsor description
-  description String
+  description String @db.VarChar(1000)
 
   // Store URL to sponsor logo image
-  logoUrl String
+  logoUrl String @db.VarChar(500)
 
   // Store URL to sponsor website
-  websiteUrl String
+  websiteUrl String @db.VarChar(500)
 
   // Store active status (for showing/hiding sponsors)
   isActive Boolean @default(true)
@@ -829,13 +870,13 @@ model PurchaseRequest {
   eventId String?
 
   // Name of the person making the request
-  name String
+  name String @db.VarChar(200)
 
   // Committee the purchase is for
-  committee String
+  committee String @db.VarChar(100)
 
   // Description of what is being purchased and why
-  description String
+  description String @db.VarChar(1000)
 
   // Estimated cost of the purchase
   estimatedCost Decimal @db.Decimal(10, 2)
@@ -850,12 +891,12 @@ model PurchaseRequest {
   status String @default("pending")
 
   // Email to notify for checkout request
-  notifyEmail String
+  notifyEmail String @db.VarChar(255)
 
   // Receipt fields (filled in step 2)
   receiptImage    String?   @db.Text // Base64 encoded image
-  receiptEmail    String? // Email to send receipt to
-  eventName       String?
+  receiptEmail    String?   @db.VarChar(255) // Email to send receipt to
+  eventName       String?   @db.VarChar(200)
   eventDate       DateTime?
   attendanceData  String?   @db.Text // JSON string of attendees
   attendanceImage String?   @db.Text // Base64 encoded sign-in sheet image
@@ -897,10 +938,53 @@ model Invitation {
   expiresAt DateTime // 30 days from creation
 
   // Relations
-  position    OfficerPosition?    @relation(fields: [positionId], references: [id], onDelete: Cascade)
-  inviter     User                @relation(fields: [invitedBy], references: [id])
-  application MentorApplication?  @relation(fields: [applicationId], references: [id], onDelete: SetNull)
+  position    OfficerPosition?   @relation(fields: [positionId], references: [id], onDelete: Cascade)
+  inviter     User               @relation(fields: [invitedBy], references: [id])
+  application MentorApplication? @relation(fields: [applicationId], references: [id], onDelete: SetNull)
 
   // Unique constraint: one pending invitation per email per type
   @@unique([invitedEmail, type])
+}
+
+// Library Database
+
+// This will show on the home page, this is where books can be categorized!
+model BookCategory {
+  id Int @id @default(autoincrement())
+
+  categoryName String
+  books        Int[]
+}
+
+model Textbooks {
+  // Textbook id for our internal reasons. This is NOT the ISBN!
+  id Int @id @default(autoincrement())
+
+  name            String  // Book title
+  authors         String  // Author(s) separated by commas
+  image           String  // Book Image (legacy local path, e.g. /library-assets/ISBN.jpg)
+  imageKey        String? // S3 object key for book cover image
+  description     String  // Book description
+  publisher       String  // Publisher
+  edition         String  // Edition
+  ISBN            String  @unique // ISBN-13 of the textbook
+  keyWords        String  // Any keywords that could be of interest
+  classInterest   String  // Each course separated by commas (i.e SWEN-256, SWEN-261, SWEN-262, CSCI-331, etc.)
+  yearPublished   String  // Publishing date
+
+  copies TextbookCopies[]
+}
+
+model TextbookCopies {
+  id Int @id @default(autoincrement())
+
+  ISBN String
+
+  // No checkout feature as of yet, but here just in case.
+  checkedOut Boolean
+  user_id    Int?
+
+  // Relations
+  user     User?     @relation(fields: [user_id], references: [id])
+  textbook Textbooks @relation(fields: [ISBN], references: [ISBN])
 }

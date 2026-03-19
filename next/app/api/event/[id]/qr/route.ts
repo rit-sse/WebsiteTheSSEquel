@@ -25,10 +25,7 @@ export async function GET(
     });
 
     if (!event) {
-      return NextResponse.json(
-        { error: "Event not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Event not found" }, { status: 404 });
     }
 
     if (!event.attendanceEnabled) {

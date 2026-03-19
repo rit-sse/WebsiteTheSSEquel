@@ -1,5 +1,5 @@
 export interface ZCardContent {
-    getAlt(): string,
-    getImageSrc(): string,
-    toContent(): () => React.ReactNode;
+  getAlt(): string;
+  getImageSrc(): string;
+  toContent(): () => React.ReactNode;
 }

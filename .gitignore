@@ -4,3 +4,6 @@ node_modules/
 
 # JetBrains
 .idea/
+
+# Keep local docker compose ignored
+docker-compose.dev.yml

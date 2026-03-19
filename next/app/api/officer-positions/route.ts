@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { resolveUserImage } from "@/lib/s3Utils";
+import { getGatewayAuthLevel } from "@/lib/authGateway";
 
 export const dynamic = "force-dynamic";
 
@@ -30,18 +31,15 @@ export async function GET() {
               email: true,
               profileImageKey: true,
               googleImageURL: true,
-            }
-          }
+            },
+          },
         },
-        take: 1 // Only get the first active officer (should only be one)
-      }
+        take: 1, // Only get the first active officer (should only be one)
+      },
     },
-    orderBy: [
-      { is_primary: 'desc' },
-      { title: 'asc' }
-    ]
+    orderBy: [{ is_primary: "desc" }, { title: "asc" }],
   });
-  
+
   // Transform to include filled status and current officer details
   // Note: currentOfficer.email is the user's email, pos.email is the position alias
   const positionsWithStatus = positions.map((pos: any) => {
@@ -52,18 +50,23 @@ export async function GET() {
       is_primary: pos.is_primary,
       email: pos.email, // Position alias email (e.g., sse-president@rit.edu)
       isFilled: pos.officers.length > 0,
-      currentOfficer: activeOfficer ? {
-        id: activeOfficer.id,
-        userId: activeOfficer.user.id,
-        name: activeOfficer.user.name,
-        email: activeOfficer.user.email, // User's actual email
-        image: resolveUserImage(activeOfficer.user.profileImageKey, activeOfficer.user.googleImageURL),
-        start_date: activeOfficer.start_date,
-        end_date: activeOfficer.end_date
-      } : null
+      currentOfficer: activeOfficer
+        ? {
+            id: activeOfficer.id,
+            userId: activeOfficer.user.id,
+            name: activeOfficer.user.name,
+            email: activeOfficer.user.email, // User's actual email
+            image: resolveUserImage(
+              activeOfficer.user.profileImageKey,
+              activeOfficer.user.googleImageURL
+            ),
+            start_date: activeOfficer.start_date,
+            end_date: activeOfficer.end_date,
+          }
+        : null,
     };
   });
-  
+
   return Response.json(positionsWithStatus);
 }
 
@@ -74,6 +77,13 @@ export async function GET() {
  * @returns created position object
  */
 export async function POST(request: Request) {
+  const authLevel = await getGatewayAuthLevel(request);
+  if (!authLevel.isPrimary) {
+    return new Response("Only primary officers can create positions", {
+      status: 403,
+    });
+  }
+
   let body;
   try {
     body = await request.json();
@@ -86,22 +96,30 @@ export async function POST(request: Request) {
   }
 
   const { title, is_primary } = body;
-  
+
   // Auto-generate email from title if not provided (e.g., "Vice President" -> "sse-vice-president@rit.edu")
-  const email = body.email || `sse-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}@rit.edu`;
+  const email =
+    body.email ||
+    `sse-${title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")}@rit.edu`;
 
   try {
     const position = await prisma.officerPosition.create({
       data: {
         title,
         email,
-        is_primary: is_primary ?? false
-      }
+        is_primary: is_primary ?? false,
+      },
     });
     return Response.json(position, { status: 201 });
   } catch (e: any) {
-    if (e.code === 'P2002') {
-      return new Response('A position with this title or email already exists', { status: 409 });
+    if (e.code === "P2002") {
+      return new Response(
+        "A position with this title or email already exists",
+        { status: 409 }
+      );
     }
     return new Response(`Failed to create position: ${e}`, { status: 500 });
   }
@@ -114,6 +132,13 @@ export async function POST(request: Request) {
  * @returns updated position object
  */
 export async function PUT(request: Request) {
+  const authLevel = await getGatewayAuthLevel(request);
+  if (!authLevel.isPrimary) {
+    return new Response("Only primary officers can update positions", {
+      status: 403,
+    });
+  }
+
   let body;
   try {
     body = await request.json();
@@ -135,15 +160,18 @@ export async function PUT(request: Request) {
   try {
     const position = await prisma.officerPosition.update({
       where: { id },
-      data
+      data,
     });
     return Response.json(position);
   } catch (e: any) {
-    if (e.code === 'P2025') {
-      return new Response('Position not found', { status: 404 });
+    if (e.code === "P2025") {
+      return new Response("Position not found", { status: 404 });
     }
-    if (e.code === 'P2002') {
-      return new Response('A position with this title or email already exists', { status: 409 });
+    if (e.code === "P2002") {
+      return new Response(
+        "A position with this title or email already exists",
+        { status: 409 }
+      );
     }
     return new Response(`Failed to update position: ${e}`, { status: 500 });
   }
@@ -156,6 +184,13 @@ export async function PUT(request: Request) {
  * @returns deleted position object
  */
 export async function DELETE(request: Request) {
+  const authLevel = await getGatewayAuthLevel(request);
+  if (!authLevel.isPrimary) {
+    return new Response("Only primary officers can delete positions", {
+      status: 403,
+    });
+  }
+
   let body;
   try {
     body = await request.json();
@@ -163,7 +198,7 @@ export async function DELETE(request: Request) {
     return new Response("Invalid JSON", { status: 400 });
   }
 
-  if (!("id" in body) || typeof body.id !== 'number') {
+  if (!("id" in body) || typeof body.id !== "number") {
     return new Response('A numeric "id" is required', { status: 400 });
   }
 
@@ -172,25 +207,28 @@ export async function DELETE(request: Request) {
   try {
     // Check if there are any active officers in this position
     const activeOfficers = await prisma.officer.count({
-      where: { position_id: id, is_active: true }
+      where: { position_id: id, is_active: true },
     });
 
     if (activeOfficers > 0) {
-      return new Response('Cannot delete position with active officers. Remove officers first.', { status: 409 });
+      return new Response(
+        "Cannot delete position with active officers. Remove officers first.",
+        { status: 409 }
+      );
     }
 
     // Delete any inactive officer records for this position first
     await prisma.officer.deleteMany({
-      where: { position_id: id }
+      where: { position_id: id },
     });
 
     const position = await prisma.officerPosition.delete({
-      where: { id }
+      where: { id },
     });
     return Response.json(position);
   } catch (e: any) {
-    if (e.code === 'P2025') {
-      return new Response('Position not found', { status: 404 });
+    if (e.code === "P2025") {
+      return new Response("Position not found", { status: 404 });
     }
     return new Response(`Failed to delete position: ${e}`, { status: 500 });
   }

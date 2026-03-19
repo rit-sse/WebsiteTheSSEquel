@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { ExternalLink, Star, Settings, Trash2 } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -88,16 +88,20 @@ const GoLink: React.FC<GoLinkProps> = ({
   return (
     <>
       <a href={"/go/" + goUrl} target="_blank">
-        <Card 
+        <Card
           depth={2}
           className="flex p-4 h-full transition-all hover:scale-[1.02]"
         >
           <div className="flex-grow overflow-hidden">
             <div className="flex items-center gap-2">
-              {pinned && <Star className="h-5 w-5 text-yellow-500 fill-yellow-500 flex-shrink-0" />}
+              {pinned && (
+                <Star className="h-5 w-5 text-yellow-500 fill-yellow-500 flex-shrink-0" />
+              )}
               <p className="font-bold font-display text-lg truncate">{goUrl}</p>
             </div>
-            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{description}</p>
+            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+              {description}
+            </p>
           </div>
           <div className="flex items-start ml-3 gap-1">
             <EditAndDelete
@@ -155,7 +159,9 @@ const GoLink: React.FC<GoLinkProps> = ({
               checked={newPinned}
               onCheckedChange={(checked) => setPinned(checked === true)}
             />
-            <Label htmlFor={`edit-pinned-${id}`} className="cursor-pointer">Pinned</Label>
+            <Label htmlFor={`edit-pinned-${id}`} className="cursor-pointer">
+              Pinned
+            </Label>
           </div>
 
           <div className="flex items-center gap-2">
@@ -164,21 +170,39 @@ const GoLink: React.FC<GoLinkProps> = ({
               checked={newOfficer}
               onCheckedChange={(checked) => setOfficer(checked === true)}
             />
-            <Label htmlFor={`edit-officer-${id}`} className="cursor-pointer">Officer (Won&apos;t be publicly shown)</Label>
+            <Label htmlFor={`edit-officer-${id}`} className="cursor-pointer">
+              Officer (Won&apos;t be publicly shown)
+            </Label>
           </div>
         </div>
 
         <ModalFooter>
-          <Button variant="neutral" onClick={() => { handleCancel(); setEditOpen(false); }}>Cancel</Button>
+          <Button
+            variant="neutral"
+            onClick={() => {
+              handleCancel();
+              setEditOpen(false);
+            }}
+          >
+            Cancel
+          </Button>
           <Button onClick={handleEdit}>Edit</Button>
         </ModalFooter>
       </Modal>
 
       {/* Delete Confirmation Modal */}
-      <Modal open={deleteOpen} onOpenChange={setDeleteOpen} title="Delete GoLink">
-        <p className="text-foreground">Are you sure you want to delete this GoLink?</p>
+      <Modal
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title="Delete GoLink"
+      >
+        <p className="text-foreground">
+          Are you sure you want to delete this GoLink?
+        </p>
         <ModalFooter>
-          <Button variant="neutral" onClick={() => setDeleteOpen(false)}>Cancel</Button>
+          <Button variant="neutral" onClick={() => setDeleteOpen(false)}>
+            Cancel
+          </Button>
           <Button onClick={handleDelete}>Delete</Button>
         </ModalFooter>
       </Modal>

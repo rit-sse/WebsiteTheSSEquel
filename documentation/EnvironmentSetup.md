@@ -1,37 +1,112 @@
 # Environment Setup
 
-1. Make sure you have node installed. You can check this by running `node -v` in your terminal. If you don't have node installed, you can download it [here](https://nodejs.org/en/download/).
+This guide should mirror what is needed to safely run and validate changes before merging into `dev`.
+
+## Local-Prod Parity Policy
+
+- Local setup should reflect production-relevant dependencies and configuration as closely as practical.
+- If you add/change infrastructure assumptions (env vars, integrations, runtime requirements), update this document in the same PR.
+- Do not merge setup-affecting changes without verifying local behavior end to end.
+
+## Pre-Merge Validation (Required)
+
+Before requesting review, validate from the `next/` directory:
+
+1. `npm run env:check`
+2. `npm run lint`
+3. `npm run test`
+4. `npm run build`
+5. `npx prisma migrate dev` (if schema changed)
+6. `npx prisma db seed` (if your change requires seeded test data)
+
+If any step fails, fix or document why it is intentionally skipped.
+
+1. Make sure you have Node.js `20.20.1` or newer on the Node 20 line installed. If you use `nvm`, run `cd next && nvm use` to match the version in [`next/.nvmrc`](../next/.nvmrc). You can check your current version with `node -v`. If you don't have Node installed, you can download it [here](https://nodejs.org/en/download/).
 
 2. Clone or fork this repository. You can do this by running `git clone https://github.com/rit-sse/WebsiteTheSSEquel.git` in your terminal in the directory you want to clone the repository to.
 
-3. Navigate to the directory you cloned the repository to and run `cd ./next`. This will take you to the `next` directory, which is where the Next.js application is located.
+3. Run `npm run setup:dev` to install app dependencies, start local Docker services, and run database setup commands.
 
-4. Run `npm install` to install all the dependencies for the project.
+4. Navigate to the directory you cloned the repository to and run `cd ./next`. This will take you to the `next` directory, which is where the Next.js application is located.
 
-5. Run `npm run dev` to start the development server. You can view the website at `localhost:3000`.
+5. Copy the environment template and fill in your local values:
 
-At this point, you should be able to explore the site without logging in or having to set up a database. In order to have authentication and access to the database, you will need to set up a `.env` file. This file is not included in the repository because it contains sensitive information. The `.env` file should be located in the `next` directory. The contents of the `.env` file should be as follows:
+   - `cp .env.example .env`
+
+6. Run `npm run env:check` to validate required environment variables before starting the app.
+
+7. Run `npm run dev` to start the development server. You can view the website at `localhost:3000`.
+
+At this point, you should be able to explore the site without logging in or having to set up a database. In order to have authentication and access to the database, you will need to set up a `.env` file. This file is not included in the repository because it contains sensitive information. Start by copying `.env.example` to `.env`, then update values for your local environment. The `.env` file should be located in the `next` directory. Use this template (matching `next/.env.example`):
 
 ```
-DATABASE_URL="database url string"
-GOOGLE_CLIENT_ID="google cloud OAuth client id"
-GOOGLE_CLIENT_SECRET="google cloud OAuth client secret"
+# Database
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/ssequel_dev"
 
+# Auth
 NEXTAUTH_URL="http://localhost:3000"
-NEXTAUTH_SECRET="random string of characters used for encryption -- feel free to make this up or use openssl to generate one"
+NEXTAUTH_SECRET="replace-with-a-long-random-secret"
+SESSION_COOKIE_NAME="next-auth.session-token"
 
-GCAL_CLIENT_EMAIL="gcal client email"
-GCAL_PRIVATE_KEY="gcal private key"
+# Google OAuth
+GOOGLE_CLIENT_ID=""
+GOOGLE_CLIENT_SECRET=""
 
-AWS_S3_BUCKET_NAME="s3 bucket name"
-AWS_S3_REGION="s3 region (for example us-east-1)"
-AWS_ACCESS_KEY_ID="aws access key"
-AWS_SECRET_ACCESS_KEY="aws secret key"
+# Google Calendar
+GCAL_CLIENT_EMAIL=""
+GCAL_PRIVATE_KEY=""
+GCAL_CAL_ID=""
+
+# AWS S3
+AWS_S3_BUCKET_NAME=""
+AWS_S3_REGION="us-east-1"
+AWS_ACCESS_KEY_ID=""
+AWS_SECRET_ACCESS_KEY=""
+NEXT_PUBLIC_AWS_S3_BUCKET_NAME=""
+NEXT_PUBLIC_AWS_S3_REGION=""
+
+# SMTP
+SMTP_HOST="localhost"
+SMTP_PORT="1025"
+SMTP_SECURE="false"
+SMTP_USER="dev"
+SMTP_PASS="dev"
+
+# Runtime
+INTERNAL_API_URL="http://localhost:3000"
+STAGING_PROXY_AUTH="false"
+NEXT_PUBLIC_ENV="dev"
+NEXT_PUBLIC_COMMIT_HASH="dev"
+PORT="3000"
 ```
 
 The above is just a placeholder, you'll need to fill in each entry with the appropriate information. First, let's step through setting up a local database.
 
 ## Setting up a local database
+
+### Option A (Recommended): Docker Compose local services
+
+You do **not** need PostgreSQL installed directly on your computer if you use Docker.
+
+**Ensure you have docker installed if you use this option**
+
+1. Start local services from the repo root:
+   - `docker compose -f docker-compose.dev.yml up -d`
+2. Use this `DATABASE_URL` in `next/.env`:
+   - `postgresql://postgres:postgres@localhost:5432/ssequel_dev`
+3. (Optional) Use MailHog UI for local email testing:
+   - `http://localhost:8025`
+4. If you want to inspect the DB with pgAdmin, connect to:
+   - Host: `localhost`
+   - Port: `5432`
+   - User: `postgres`
+   - Password: `postgres`
+   - Database: `ssequel_dev`
+   
+     1. If port `5432` is already used on your machine, update `docker-compose.dev.yml` to map another host port (for example `5433:5432`) and update `DATABASE_URL` accordingly.*
+5. When finished, in the repo root run the following to shut down services when not needed:
+   - `docker compose down`
+### Option B: Native PostgreSQL install
 
 1. Download and install [PostgreSQL](https://www.postgresql.org/download/) 14. *Make sure you're installing 14, not any higher versions!* This is the database management system we are using for the project. When you visit the downloads page, click on your operating system and look for the following in the subsequent page: [![PostgreSQL 14 Download Page](https://i.imgur.com/VlfCWO6.png)](https://www.postgresql.org/download/)
 
@@ -41,7 +116,7 @@ The above is just a placeholder, you'll need to fill in each entry with the appr
 
 4. Create a new database by right clicking on `Databases` and selecting `Create > Database...`. Name the database something like `ssequel-dev` and click `Save`.
 
-5. Now that you have a database, you can fill in the `DATABASE_URL` entry in the `.env` file. The `DATABASE_URL` should be in the following format: `postgresql://<username>:<password>@localhost:5432/<database name>`, where `<username>` is the username of the database superuser, `<password>` is the password you set for the database superuser, and `<database name>` is the name of the database you created in step 4. The default username for the database superuser is `postgres`.
+5. Fill in the `DATABASE_URL` entry in `.env`. The `DATABASE_URL` format is: `postgresql://<username>:<password>@localhost:5432/<database name>`.
 
 ## Setting up Google OAuth
 
@@ -83,6 +158,45 @@ The `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` can be found again later by go
 
 6. Copy the `client_email` from this file to the `GCAL_CLIENT_EMAIL` entry in the `.env` file. Copy the `private_key` to the `GCAL_PRIVATE_KEY` entry.
 
+## Setting up the email service (SMTP)
+
+The app sends transactional emails (for example alumni mail and purchasing emails) through SMTP.
+
+Required env vars:
+
+- `SMTP_HOST`: SMTP server hostname
+- `SMTP_USER`: SMTP username/login
+- `SMTP_PASS`: SMTP password
+
+Optional env vars:
+
+- `SMTP_PORT`: SMTP port (defaults to `587`)
+- `SMTP_SECURE`: set to `true` for implicit TLS (typically port `465`), otherwise `false`
+
+If you are using `docker-compose.dev.yml` with MailHog, set:
+
+- `SMTP_HOST=localhost`
+- `SMTP_PORT=1025`
+- `SMTP_SECURE=false`
+- `SMTP_USER=dev`
+- `SMTP_PASS=dev`
+
+How to configure:
+
+1. Create or obtain SMTP credentials from the team-approved provider.
+2. Add the SMTP values to your `next/.env`.
+3. Restart `npm run dev` after changing `.env`.
+
+Local verification checklist:
+
+1. Confirm app boots with SMTP values present.
+2. Use a feature that sends mail:
+   - Alumni page mass email flow (`/api/alumni/email`)
+   - Purchasing request email flow (`/api/purchasing/[id]/email`)
+3. Confirm mail is delivered in your provider inbox/logs (or sandbox inbox, if using a test provider).
+
+If SMTP is missing or invalid, email endpoints will fail with configuration/authentication errors.
+
 ## Building the Local Database
 
 If you run the project now, you'll encounter schema errors. This is because the local database hasn't been built. We use Prisma for managing the Postgres database, so we'll use [Prisma's migrate command](https://www.prisma.io/docs/concepts/components/prisma-migrate/migrate-development-production) to build the db tables using the schema defined in the [schema.prisma](../next/prisma/schema.prisma) file.
@@ -91,12 +205,22 @@ In the /next/ directory, run `npx prisma migrate dev`. Then run `npx prisma db s
 
 That's it! You should now be able to run `npm run dev` and view the website at `localhost:3000` with authentication and access to your local database instance. Try logging in with your RIT email.
 
+## Keeping This Guide Accurate
+
+Update this document whenever you change:
+
+- Required environment variables
+- Third-party credentials or setup steps
+- Database setup and migration flow
+- Local commands required for test/build validation
+
+Any PR that changes setup without updating this file should be considered incomplete.
+
 ## Alumni lifecycle migrations
 
 If your branch includes alumni/profile lifecycle changes, apply migrations before running:
 
-1. `cd next`
-2. `npx prisma migrate dev`
-3. `npx prisma generate`
+1. `npm --prefix next run prisma:migrate`
+2. `npm --prefix next exec prisma generate`
 
 This ensures new academic term fields, alumni candidate queue tables, and enums are available locally.

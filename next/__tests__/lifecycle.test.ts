@@ -1,3 +1,4 @@
+import { describe, expect, it } from "vitest";
 import { getCurrentAcademicTerm, hasTermPassed } from "@/lib/academicTerm";
 import { isProfileCompletionEligible } from "@/lib/services/profileCompletionService";
 

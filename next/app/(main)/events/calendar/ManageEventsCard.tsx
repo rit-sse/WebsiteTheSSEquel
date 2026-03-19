@@ -1,32 +1,32 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Plus } from "lucide-react"
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Plus } from "lucide-react";
 
 interface Props {
-  modalAdd: () => void
+  modalAdd: () => void;
 }
 
 const ManageEventCard = ({ modalAdd }: Props) => {
-  const [isOfficer, setIsOfficer] = useState(false)
+  const [isOfficer, setIsOfficer] = useState(false);
 
   useEffect(() => {
     const checkUserStatus = async () => {
       try {
-        const response = await fetch("/api/authLevel")
-        const userData = await response.json()
-        setIsOfficer(userData.isOfficer)
+        const response = await fetch("/api/authLevel");
+        const userData = await response.json();
+        setIsOfficer(userData.isOfficer);
       } catch (error) {
-        console.error("Error checking auth level:", error)
+        console.error("Error checking auth level:", error);
       }
-    }
-    checkUserStatus()
-  }, [])
+    };
+    checkUserStatus();
+  }, []);
 
   if (!isOfficer) {
-    return null
+    return null;
   }
 
   return (
@@ -40,7 +40,7 @@ const ManageEventCard = ({ modalAdd }: Props) => {
         Click on an event in the calendar to view or edit
       </p>
     </Card>
-  )
-}
+  );
+};
 
-export default ManageEventCard
+export default ManageEventCard;

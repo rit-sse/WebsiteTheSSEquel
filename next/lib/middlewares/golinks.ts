@@ -6,7 +6,9 @@ const getDestinationUrl = async (goUrl: string) => {
   try {
     const record = await prisma.goLinks.findFirst({ where: { golink: goUrl } });
     if (record?.url) {
-      return record.url.startsWith("http") ? record.url : "https://" + record.url;
+      return record.url.startsWith("http")
+        ? record.url
+        : "https://" + record.url;
     }
     return null;
   } catch (err) {
@@ -28,8 +30,8 @@ const getDestinationUrl = async (goUrl: string) => {
 export const golinksMiddleware = async (request: NextRequest) => {
   const { pathname } = request.nextUrl;
   // Only run golinks middleware logic for paths starting with "/go/"
-  if (pathname.startsWith('/go/')) {
-    const goLink = pathname.split('/go/')[1];
+  if (pathname.startsWith("/go/")) {
+    const goLink = pathname.split("/go/")[1];
     const destination = await getDestinationUrl(goLink);
     // If the destination exists and is valid, redirect to it
     if (destination && isUrlValid(destination)) {

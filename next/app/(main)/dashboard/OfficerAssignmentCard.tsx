@@ -32,6 +32,7 @@ interface OfficerAssignmentCardProps {
   onRemove: () => void;
   onCancelInvitation: () => void;
   disabled?: boolean;
+  readOnly?: boolean;
 }
 
 function getInitials(name: string): string {
@@ -74,6 +75,7 @@ export default function OfficerAssignmentCard({
   onRemove,
   onCancelInvitation,
   disabled = false,
+  readOnly = false,
 }: OfficerAssignmentCardProps) {
   // State 1: Officer is assigned
   if (officer) {
@@ -93,15 +95,17 @@ export default function OfficerAssignmentCard({
             {formatDate(officer.start_date)} — {formatDate(officer.end_date)}
           </div>
         </div>
-        <Button
-          size="xs"
-          variant="destructiveGhost"
-          onClick={onRemove}
-          disabled={disabled}
-          title="Remove officer"
-        >
-          <X className="h-3 w-3" />
-        </Button>
+        {!readOnly && (
+          <Button
+            size="xs"
+            variant="destructiveGhost"
+            onClick={onRemove}
+            disabled={disabled}
+            title="Remove officer"
+          >
+            <X className="h-3 w-3" />
+          </Button>
+        )}
       </div>
     );
   }
@@ -125,16 +129,18 @@ export default function OfficerAssignmentCard({
         <span className="px-2 py-0.5 rounded text-xs font-medium bg-amber-200 dark:bg-amber-800 text-amber-800 dark:text-amber-200">
           Pending
         </span>
-        <Button
-          size="xs"
-          variant="ghost"
-          onClick={onCancelInvitation}
-          disabled={disabled}
-          title="Cancel invitation"
-          className="text-amber-700 hover:text-amber-900 dark:text-amber-400 dark:hover:text-amber-200"
-        >
-          <X className="h-3 w-3" />
-        </Button>
+        {!readOnly && (
+          <Button
+            size="xs"
+            variant="ghost"
+            onClick={onCancelInvitation}
+            disabled={disabled}
+            title="Cancel invitation"
+            className="text-amber-700 hover:text-amber-900 dark:text-amber-400 dark:hover:text-amber-200"
+          >
+            <X className="h-3 w-3" />
+          </Button>
+        )}
       </div>
     );
   }
@@ -146,17 +152,21 @@ export default function OfficerAssignmentCard({
         <UserPlus className="h-4 w-4 text-muted-foreground" />
       </div>
       <div className="flex-1">
-        <span className="text-sm text-muted-foreground italic">No officer assigned</span>
+        <span className="text-sm text-muted-foreground italic">
+          No officer assigned
+        </span>
       </div>
-      <Button
-        size="xs"
-        variant="outline"
-        onClick={onInvite}
-        disabled={disabled}
-      >
-        <UserPlus className="h-3 w-3 mr-1" />
-        Invite
-      </Button>
+      {!readOnly && (
+        <Button
+          size="xs"
+          variant="outline"
+          onClick={onInvite}
+          disabled={disabled}
+        >
+          <UserPlus className="h-3 w-3 mr-1" />
+          Invite
+        </Button>
+      )}
     </div>
   );
 }

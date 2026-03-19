@@ -1,9 +1,10 @@
 import prisma from "@/lib/prisma";
-import {NextRequest, NextResponse} from "next/server";
-import {getGatewayAuthLevel} from "@/lib/authGateway";
+import { NextRequest, NextResponse } from "next/server";
+import { getGatewayAuthLevel } from "@/lib/authGateway";
 import { getSessionToken } from "@/lib/sessionToken";
 
 type TxClient = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
+const EARLY_CHECKIN_WINDOW_MINUTES = 15;
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +13,7 @@ export const dynamic = "force-dynamic";
  */
 async function getUserFromSession(request: NextRequest) {
   const authToken = getSessionToken(request);
-  
+
   if (!authToken) {
     return null;
   }
@@ -30,11 +31,80 @@ async function getUserFromSession(request: NextRequest) {
       name: true,
       email: true,
       officers: {
-        where: {is_active: true},
-        select: {id: true},
+        where: { is_active: true },
+        select: { id: true },
       },
     },
   });
+}
+
+function buildEventMembershipMarker(eventId: string) {
+  return `[${eventId}]`;
+}
+
+function buildEventMembershipReason(eventTitle: string, eventId: string) {
+  return `Attended event: ${eventTitle} ${buildEventMembershipMarker(eventId)}`;
+}
+
+function isEventEnded(eventDate: Date) {
+  return Date.now() >= new Date(eventDate).getTime();
+}
+
+function getCheckinOpensAt(eventDate: Date) {
+  return new Date(
+    new Date(eventDate).getTime() - EARLY_CHECKIN_WINDOW_MINUTES * 60 * 1000
+  );
+}
+
+function isCheckinOpen(eventDate: Date) {
+  return Date.now() >= getCheckinOpensAt(eventDate).getTime();
+}
+
+async function reconcileEndedEventMemberships(
+  db: TxClient,
+  event: { id: string; title: string; date: Date; grantsMembership: boolean }
+) {
+  if (!event.grantsMembership || !isEventEnded(event.date)) {
+    return;
+  }
+
+  const attendances = await db.eventAttendance.findMany({
+    where: { eventId: event.id },
+    select: { userId: true },
+  });
+
+  if (attendances.length === 0) {
+    return;
+  }
+
+  const marker = buildEventMembershipMarker(event.id);
+  const reason = buildEventMembershipReason(event.title, event.id);
+  const uniqueUserIds = [
+    ...new Set(attendances.map((attendance) => attendance.userId)),
+  ];
+
+  for (const userId of uniqueUserIds) {
+    const existingMembership = await db.memberships.findFirst({
+      where: {
+        userId,
+        reason: {
+          contains: marker,
+        },
+      },
+    });
+
+    if (existingMembership) {
+      continue;
+    }
+
+    await db.memberships.create({
+      data: {
+        userId,
+        reason,
+        dateGiven: new Date(),
+      },
+    });
+  }
 }
 
 /**
@@ -54,45 +124,54 @@ export async function GET(
       select: {
         id: true,
         title: true,
+        date: true,
         attendanceEnabled: true,
+        grantsMembership: true,
       },
     });
 
     if (!event) {
-      return NextResponse.json(
-        { error: "Event not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Event not found" }, { status: 404 });
     }
 
-    // Get all attendees for this event
-    const attendances = await prisma.eventAttendance.findMany({
-      where: { eventId },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
+    const attendances = await prisma.$transaction(async (tx: TxClient) => {
+      await reconcileEndedEventMemberships(tx, event);
+
+      return tx.eventAttendance.findMany({
+        where: { eventId },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
           },
         },
-      },
-      orderBy: {
-        createdAt: "asc",
-      },
+        orderBy: {
+          createdAt: "asc",
+        },
+      });
     });
 
     return NextResponse.json({
       eventId,
       eventTitle: event.title,
       attendanceEnabled: event.attendanceEnabled,
-      attendees: attendances.map((a: { id: any; user: { id: any; name: any; email: any; }; createdAt: any; }) => ({
-        id: a.id,
-        userId: a.user.id,
-        name: a.user.name,
-        email: a.user.email,
-        attendedAt: a.createdAt,
-      })),
+      eventHasEnded: isEventEnded(event.date),
+      attendees: attendances.map(
+        (a: {
+          id: any;
+          user: { id: any; name: any; email: any };
+          createdAt: any;
+        }) => ({
+          id: a.id,
+          userId: a.user.id,
+          name: a.user.name,
+          email: a.user.email,
+          attendedAt: a.createdAt,
+        })
+      ),
       count: attendances.length,
     });
   } catch (error) {
@@ -115,9 +194,15 @@ async function ensureMembership(
   eventId: string,
   eventTitle: string
 ): Promise<{ granted: true; created: boolean }> {
-  const reason = `Attended event: ${eventTitle} [${eventId}]`;
+  const reason = buildEventMembershipReason(eventTitle, eventId);
+  const marker = buildEventMembershipMarker(eventId);
   const existing = await db.memberships.findFirst({
-    where: { userId, reason },
+    where: {
+      userId,
+      reason: {
+        contains: marker,
+      },
+    },
   });
 
   if (existing) {
@@ -140,7 +225,9 @@ async function updatePurchaseRequestAttendance(
 ) {
   for (const pr of purchaseRequests) {
     try {
-      const existingData = pr.attendanceData ? JSON.parse(pr.attendanceData) : [];
+      const existingData = pr.attendanceData
+        ? JSON.parse(pr.attendanceData)
+        : [];
 
       const alreadyPresent = existingData.some(
         (attendee: { email: string }) => attendee.email === user.email
@@ -158,7 +245,10 @@ async function updatePurchaseRequestAttendance(
         data: { attendanceData: JSON.stringify(existingData) },
       });
     } catch (err) {
-      console.error(`Failed to update purchase request ${pr.id} attendance data:`, err);
+      console.error(
+        `Failed to update purchase request ${pr.id} attendance data:`,
+        err
+      );
     }
   }
 }
@@ -187,6 +277,7 @@ export async function POST(
       select: {
         id: true,
         title: true,
+        date: true,
         attendanceEnabled: true,
         grantsMembership: true,
         purchaseRequests: {
@@ -196,16 +287,24 @@ export async function POST(
     });
 
     if (!event) {
-      return NextResponse.json(
-        { error: "Event not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Event not found" }, { status: 404 });
     }
 
     if (!event.attendanceEnabled) {
       return NextResponse.json(
         { error: "Attendance tracking is not enabled for this event" },
         { status: 400 }
+      );
+    }
+    if (!isCheckinOpen(event.date)) {
+      return NextResponse.json(
+        {
+          error: "Check-in is not open yet for this event",
+          earlyCheckin: true,
+          checkinOpensAt: getCheckinOpensAt(event.date).toISOString(),
+          eventDate: new Date(event.date).toISOString(),
+        },
+        { status: 403 }
       );
     }
 
@@ -215,12 +314,20 @@ export async function POST(
 
     if (existingAttendance) {
       let membershipGranted = false;
-      if (event.grantsMembership) {
+      const membershipPending =
+        event.grantsMembership && !isEventEnded(event.date);
+      if (event.grantsMembership && isEventEnded(event.date)) {
         try {
-          const result = await prisma.$transaction(async (tx: TxClient) =>
-            ensureMembership(tx, user.id, eventId, event.title)
-          );
-          membershipGranted = result.granted;
+          await prisma.$transaction(async (tx: TxClient) => {
+            const result = await ensureMembership(
+              tx,
+              user.id,
+              eventId,
+              event.title
+            );
+            membershipGranted = result.granted;
+            await reconcileEndedEventMemberships(tx, event);
+          });
         } catch (err) {
           console.error("Failed to back-fill membership on 409 path:", err);
         }
@@ -231,6 +338,7 @@ export async function POST(
           error: "You have already marked attendance for this event",
           alreadyAttended: true,
           membershipGranted,
+          membershipPending,
           eventGrantsMembership: event.grantsMembership,
         },
         { status: 409 }
@@ -238,14 +346,22 @@ export async function POST(
     }
 
     let membershipGranted = false;
+    const membershipPending =
+      event.grantsMembership && !isEventEnded(event.date);
     const attendance = await prisma.$transaction(async (tx: TxClient) => {
       const record = await tx.eventAttendance.create({
         data: { eventId, userId: user.id },
       });
 
-      if (event.grantsMembership) {
-        const result = await ensureMembership(tx, user.id, eventId, event.title);
+      if (event.grantsMembership && isEventEnded(event.date)) {
+        const result = await ensureMembership(
+          tx,
+          user.id,
+          eventId,
+          event.title
+        );
         membershipGranted = result.granted;
+        await reconcileEndedEventMemberships(tx, event);
       }
 
       return record;
@@ -253,21 +369,28 @@ export async function POST(
 
     // Purchase-request updates are best-effort and non-blocking.
     updatePurchaseRequestAttendance(event.purchaseRequests, user).catch((err) =>
-      console.error("Background purchase-request attendance update failed:", err)
+      console.error(
+        "Background purchase-request attendance update failed:",
+        err
+      )
     );
 
-    return NextResponse.json({
-      success: true,
-      message: "Attendance marked successfully",
-      attendance: {
-        id: attendance.id,
-        eventId: attendance.eventId,
-        userId: attendance.userId,
-        createdAt: attendance.createdAt,
+    return NextResponse.json(
+      {
+        success: true,
+        message: "Attendance marked successfully",
+        attendance: {
+          id: attendance.id,
+          eventId: attendance.eventId,
+          userId: attendance.userId,
+          createdAt: attendance.createdAt,
+        },
+        membershipGranted,
+        membershipPending,
+        eventGrantsMembership: event.grantsMembership,
       },
-      membershipGranted,
-      eventGrantsMembership: event.grantsMembership,
-    }, { status: 201 });
+      { status: 201 }
+    );
   } catch (error) {
     console.error("Error marking attendance:", error);
     return NextResponse.json(
@@ -335,9 +458,20 @@ export async function DELETE(
       );
     }
 
-    // Delete the attendance record
-    await prisma.eventAttendance.delete({
-      where: { id: attendance.id },
+    // Delete attendance and any linked event-attendance memberships together.
+    await prisma.$transaction(async (tx: TxClient) => {
+      await tx.eventAttendance.delete({
+        where: { id: attendance.id },
+      });
+
+      await tx.memberships.deleteMany({
+        where: {
+          userId: targetUserId,
+          reason: {
+            contains: buildEventMembershipMarker(eventId),
+          },
+        },
+      });
     });
 
     return NextResponse.json({

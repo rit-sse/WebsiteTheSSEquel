@@ -84,7 +84,9 @@ export async function POST(request: NextRequest) {
   const isMentor = user.mentor.length > 0;
 
   if (!isOfficer && !isMentor) {
-    return new Response("Only officers and mentors can send emails", { status: 403 });
+    return new Response("Only officers and mentors can send emails", {
+      status: 403,
+    });
   }
 
   let body;
@@ -97,11 +99,15 @@ export async function POST(request: NextRequest) {
   const { subject, message, recipients, attachments: rawAttachments } = body;
 
   if (!subject || !message) {
-    return new Response('"subject" and "message" are required', { status: 400 });
+    return new Response('"subject" and "message" are required', {
+      status: 400,
+    });
   }
 
   if (!Array.isArray(recipients) || recipients.length === 0) {
-    return new Response('"recipients" must be a non-empty array', { status: 400 });
+    return new Response('"recipients" must be a non-empty array', {
+      status: 400,
+    });
   }
 
   const validRecipients = recipients.filter(
@@ -162,7 +168,9 @@ export async function POST(request: NextRequest) {
       sent++;
     } catch (err) {
       failed++;
-      errors.push(`${recipient.email}: ${err instanceof Error ? err.message : String(err)}`);
+      errors.push(
+        `${recipient.email}: ${err instanceof Error ? err.message : String(err)}`
+      );
     }
   }
 

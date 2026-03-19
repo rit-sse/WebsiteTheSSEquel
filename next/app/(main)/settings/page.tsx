@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 
 export const metadata = {
-    title: "Settings - SSE",
+  title: "Settings - SSE",
 };
 
 /**
@@ -12,22 +12,22 @@ export const metadata = {
  * where editing is done inline via the "Edit Profile" button.
  */
 export default async function SettingsPage() {
-    const session = await getServerSession(authOptions);
+  const session = await getServerSession(authOptions);
 
-    if (!session?.user?.email) {
-        redirect("/api/auth/signin");
-    }
+  if (!session?.user?.email) {
+    redirect("/api/auth/signin");
+  }
 
-    // Look up the user's numeric ID for the profile route
-    const user = await prisma.user.findUnique({
-        where: { email: session.user.email },
-        select: { id: true },
-    });
+  // Look up the user's numeric ID for the profile route
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email },
+    select: { id: true },
+  });
 
-    if (user) {
-        redirect(`/profile/${user.id}`);
-    }
+  if (user) {
+    redirect(`/profile/${user.id}`);
+  }
 
-    // Fallback if user not found (shouldn't happen for authenticated users)
-    redirect("/");
+  // Fallback if user not found (shouldn't happen for authenticated users)
+  redirect("/");
 }

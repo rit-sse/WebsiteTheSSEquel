@@ -18,6 +18,7 @@ ENV NEXT_PUBLIC_ENV=$NEXT_PUBLIC_ENV
 
 # Install dependencies based on the preferred package manager
 COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
+COPY scripts/check-node-version.cjs ./scripts/check-node-version.cjs
 RUN \
   if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
   elif [ -f package-lock.json ]; then npm ci || npm install; \
@@ -73,12 +74,18 @@ ENV NEXT_PUBLIC_ENV=$NEXT_PUBLIC_ENV
 # Uncomment the following line in case you want to disable telemetry during runtime.
 ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN addgroup --system --gid 1001 nodejs&& adduser --system --uid 1001 nextjs
+RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
 
 COPY --from=builder /app/public ./public
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY docker/entrypoint.sh /entrypoint.sh
 
 # Set the correct permission for prerender cache
-RUN mkdir .next&& chown nextjs:nodejs .next
+RUN mkdir .next && chown nextjs:nodejs .next
+RUN chmod +x /entrypoint.sh
 
 # Automatically leverage output traces to reduce image size
 # https://nextjs.org/docs/advanced-features/output-file-tracing
@@ -90,8 +97,10 @@ USER nextjs
 EXPOSE 3000
 
 ENV PORT=3000
+ENV PRISMA_MIGRATE_ON_START=true
 
 # server.js is created by next build from the standalone output
 # https://nextjs.org/docs/pages/api-reference/next-config-js/output
 ENV HOSTNAME="0.0.0.0"
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["node", "server.js"]

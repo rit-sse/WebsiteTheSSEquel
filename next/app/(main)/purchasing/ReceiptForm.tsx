@@ -1,161 +1,190 @@
-"use client"
+"use client";
 
-import { useState, useCallback, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Send, Loader2, Upload, Trash2, AlertTriangle, Calendar, Users, Link2, Lock } from "lucide-react"
+import { useState, useCallback, useEffect } from "react";
+import Image from "next/image";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import {
+  ArrowLeft,
+  Send,
+  Loader2,
+  Upload,
+  Trash2,
+  AlertTriangle,
+  Calendar,
+  Users,
+  Link2,
+  Lock,
+} from "lucide-react";
 
 // Required email recipient that is always included
 const REQUIRED_RECIPIENT = "softwareengineering@rit.edu";
-import AttendanceInput, { Attendee } from "./AttendanceInput"
+import AttendanceInput, { Attendee } from "./AttendanceInput";
 
 interface LinkedEvent {
-  id: string
-  title: string
-  date: string
-  attendanceEnabled: boolean
+  id: string;
+  title: string;
+  date: string;
+  attendanceEnabled: boolean;
 }
 
 interface PurchaseRequest {
-  id: number
-  name: string
-  committee: string
-  description: string
-  estimatedCost: string
-  plannedDate: string
-  status: string
-  notifyEmail: string
-  eventId?: string | null
-  event?: LinkedEvent | null
+  id: number;
+  name: string;
+  committee: string;
+  description: string;
+  estimatedCost: string;
+  plannedDate: string;
+  status: string;
+  notifyEmail: string;
+  eventId?: string | null;
+  event?: LinkedEvent | null;
 }
 
 interface OfficerLookup {
-  is_active: boolean
-  position: { title: string }
-  user: { email: string }
+  is_active: boolean;
+  position: { title: string };
+  user: { email: string };
 }
 
 interface ReceiptFormProps {
-  request: PurchaseRequest
-  onClose: () => void
-  onSuccess: () => void
+  request: PurchaseRequest;
+  onClose: () => void;
+  onSuccess: () => void;
 }
 
-export default function ReceiptForm({ request, onClose, onSuccess }: ReceiptFormProps) {
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+export default function ReceiptForm({
+  request,
+  onClose,
+  onSuccess,
+}: ReceiptFormProps) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   // Form state
-  const [receiptImage, setReceiptImage] = useState<string | null>(null)
-  const [actualCost, setActualCost] = useState(request.estimatedCost)
-  const [eventName, setEventName] = useState("")
-  const [eventDate, setEventDate] = useState("")
-  const [receiptEmail, setReceiptEmail] = useState("")
-  const [attendees, setAttendees] = useState<Attendee[]>([])
-  const [attendanceImage, setAttendanceImage] = useState<string | null>(null)
-  const [treasurerEmail, setTreasurerEmail] = useState("treasurer's email")
-  
+  const [receiptImage, setReceiptImage] = useState<string | null>(null);
+  const [actualCost, setActualCost] = useState(request.estimatedCost);
+  const [eventName, setEventName] = useState("");
+  const [eventDate, setEventDate] = useState("");
+  const [receiptEmail, setReceiptEmail] = useState("");
+  const [attendees, setAttendees] = useState<Attendee[]>([]);
+  const [attendanceImage, setAttendanceImage] = useState<string | null>(null);
+  const [treasurerEmail, setTreasurerEmail] = useState("treasurer's email");
+
   // Linked event state
-  const [linkedEventAttendees, setLinkedEventAttendees] = useState<Attendee[]>([])
-  const [loadingEventAttendance, setLoadingEventAttendance] = useState(false)
-  
+  const [linkedEventAttendees, setLinkedEventAttendees] = useState<Attendee[]>(
+    []
+  );
+  const [loadingEventAttendance, setLoadingEventAttendance] = useState(false);
+
   // Check if this purchase is linked to an event with attendance
-  const hasLinkedEvent = request.event && request.event.attendanceEnabled
-  
+  const hasLinkedEvent = request.event && request.event.attendanceEnabled;
+
   // Fetch event attendance if linked to an event
   useEffect(() => {
     if (hasLinkedEvent && request.eventId) {
-      setLoadingEventAttendance(true)
+      setLoadingEventAttendance(true);
       fetch(`/api/event/${request.eventId}/attendance`)
         .then((res) => res.json())
         .then((data) => {
           if (data.attendees && data.attendees.length > 0) {
-            const eventAttendees: Attendee[] = data.attendees.map((a: { name: string; email: string }) => {
-              const [firstName, ...lastNameParts] = (a.name || "").split(" ")
-              return {
-                firstName: firstName || "",
-                lastName: lastNameParts.join(" ") || "",
-                email: a.email || "",
+            const eventAttendees: Attendee[] = data.attendees.map(
+              (a: { name: string; email: string }) => {
+                const [firstName, ...lastNameParts] = (a.name || "").split(" ");
+                return {
+                  firstName: firstName || "",
+                  lastName: lastNameParts.join(" ") || "",
+                  email: a.email || "",
+                };
               }
-            })
-            setLinkedEventAttendees(eventAttendees)
-            setAttendees(eventAttendees) // Auto-fill the attendees
+            );
+            setLinkedEventAttendees(eventAttendees);
+            setAttendees(eventAttendees); // Auto-fill the attendees
           }
           // Auto-fill event name and date from linked event
           if (request.event) {
-            setEventName(request.event.title)
-            const date = new Date(request.event.date)
-            setEventDate(date.toISOString().split("T")[0])
+            setEventName(request.event.title);
+            const date = new Date(request.event.date);
+            setEventDate(date.toISOString().split("T")[0]);
           }
         })
         .catch((err) => console.error("Error fetching event attendance:", err))
-        .finally(() => setLoadingEventAttendance(false))
+        .finally(() => setLoadingEventAttendance(false));
     }
-  }, [hasLinkedEvent, request.eventId, request.event])
+  }, [hasLinkedEvent, request.eventId, request.event]);
 
   useEffect(() => {
     const loadTreasurerEmail = async () => {
       try {
-        const response = await fetch("/api/officer")
-        if (!response.ok) return
-        const officers = (await response.json()) as OfficerLookup[]
+        const response = await fetch("/api/officer");
+        if (!response.ok) return;
+        const officers = (await response.json()) as OfficerLookup[];
         const treasurer = officers.find(
-          (officer) => officer.is_active && officer.position.title === "Treasurer"
-        )
+          (officer) =>
+            officer.is_active && officer.position.title === "Treasurer"
+        );
         if (treasurer?.user?.email) {
-          setTreasurerEmail(treasurer.user.email)
+          setTreasurerEmail(treasurer.user.email);
         }
       } catch (error) {
-        console.error("Failed to load treasurer email:", error)
+        console.error("Failed to load treasurer email:", error);
       }
-    }
-    loadTreasurerEmail()
-  }, [])
+    };
+    loadTreasurerEmail();
+  }, []);
 
   // Receipt image upload handler
-  const handleReceiptUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+  const handleReceiptUpload = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
 
-    // Validate file type
-    if (!file.type.startsWith("image/")) {
-      setError("Please upload an image file")
-      return
-    }
+      // Validate file type
+      if (!file.type.startsWith("image/")) {
+        setError("Please upload an image file");
+        return;
+      }
 
-    // Convert to base64
-    const reader = new FileReader()
-    reader.onloadend = () => {
-      setReceiptImage(reader.result as string)
-      setError(null)
-    }
-    reader.readAsDataURL(file)
-  }, [])
+      // Convert to base64
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setReceiptImage(reader.result as string);
+        setError(null);
+      };
+      reader.readAsDataURL(file);
+    },
+    []
+  );
 
   const clearReceiptImage = () => {
-    setReceiptImage(null)
-  }
+    setReceiptImage(null);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
-    setLoading(true)
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
 
     // Validate required fields
     if (!receiptImage) {
-      setError("Please upload a receipt image")
-      setLoading(false)
-      return
+      setError("Please upload a receipt image");
+      setLoading(false);
+      return;
     }
 
     if (!actualCost) {
-      setError("Please enter the actual amount charged")
-      setLoading(false)
-      return
+      setError("Please enter the actual amount charged");
+      setLoading(false);
+      return;
     }
-
 
     try {
       // Update the purchase request with receipt data
@@ -169,40 +198,44 @@ export default function ReceiptForm({ request, onClose, onSuccess }: ReceiptForm
           ...(receiptEmail ? { receiptEmail } : {}),
           eventName: eventName || null,
           eventDate: eventDate ? new Date(eventDate).toISOString() : null,
-          attendanceData: attendees.length > 0 ? JSON.stringify(attendees) : null,
+          attendanceData:
+            attendees.length > 0 ? JSON.stringify(attendees) : null,
           attendanceImage: attendanceImage || null,
         }),
-      })
+      });
 
       if (!response.ok) {
-        const errorText = await response.text()
-        throw new Error(errorText)
+        const errorText = await response.text();
+        throw new Error(errorText);
       }
 
       // Send receipt email
       try {
-        const emailResponse = await fetch(`/api/purchasing/${request.id}/email`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ type: "receipt" }),
-        })
+        const emailResponse = await fetch(
+          `/api/purchasing/${request.id}/email`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ type: "receipt" }),
+          }
+        );
         if (emailResponse.ok) {
-          console.log("Receipt email sent successfully")
+          console.log("Receipt email sent successfully");
         } else {
-          console.error("Email API error:", await emailResponse.text())
+          console.error("Email API error:", await emailResponse.text());
         }
       } catch (emailError) {
-        console.error("Error sending email:", emailError)
+        console.error("Error sending email:", emailError);
         // Don't fail the whole request if email fails
       }
 
-      onSuccess()
+      onSuccess();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred")
+      setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <>
@@ -225,13 +258,16 @@ export default function ReceiptForm({ request, onClose, onSuccess }: ReceiptForm
               <h3 className="font-semibold mb-2">Original Request</h3>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div>
-                  <span className="text-muted-foreground">Committee:</span> {request.committee}
+                  <span className="text-muted-foreground">Committee:</span>{" "}
+                  {request.committee}
                 </div>
                 <div>
-                  <span className="text-muted-foreground">Est. Cost:</span> ${parseFloat(request.estimatedCost).toFixed(2)}
+                  <span className="text-muted-foreground">Est. Cost:</span> $
+                  {parseFloat(request.estimatedCost).toFixed(2)}
                 </div>
                 <div className="col-span-2">
-                  <span className="text-muted-foreground">Description:</span> {request.description}
+                  <span className="text-muted-foreground">Description:</span>{" "}
+                  {request.description}
                 </div>
               </div>
             </div>
@@ -247,19 +283,27 @@ export default function ReceiptForm({ request, onClose, onSuccess }: ReceiptForm
               <div className="space-y-2">
                 <Label>Receipt Photo *</Label>
                 <p className="text-sm text-muted-foreground">
-                  Upload a clear photo of your receipt showing items, payment method, and total
+                  Upload a clear photo of your receipt showing items, payment
+                  method, and total
                 </p>
-                
+
                 {receiptImage ? (
                   <div className="space-y-4">
-                    <div className="relative border rounded-lg overflow-hidden">
-                      <img
+                    <div className="relative border rounded-lg overflow-hidden h-64">
+                      <Image
                         src={receiptImage}
                         alt="Receipt"
-                        className="w-full max-h-64 object-contain"
+                        fill
+                        className="object-contain"
+                        unoptimized
                       />
                     </div>
-                    <Button type="button" variant="outline" onClick={clearReceiptImage} className="gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={clearReceiptImage}
+                      className="gap-2"
+                    >
                       <Trash2 className="h-4 w-4" />
                       Remove Image
                     </Button>
@@ -293,7 +337,9 @@ export default function ReceiptForm({ request, onClose, onSuccess }: ReceiptForm
               <div className="space-y-2">
                 <Label htmlFor="actualCost">Actual Amount Charged *</Label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                    $
+                  </span>
                   <Input
                     id="actualCost"
                     type="number"
@@ -314,7 +360,9 @@ export default function ReceiptForm({ request, onClose, onSuccess }: ReceiptForm
                   <div className="flex items-center gap-2 p-4 bg-primary/5 border border-primary/20 rounded-lg">
                     <Link2 className="h-5 w-5 text-primary" />
                     <div className="flex-1">
-                      <p className="font-medium text-primary">Linked to Event</p>
+                      <p className="font-medium text-primary">
+                        Linked to Event
+                      </p>
                       <p className="text-sm text-muted-foreground">
                         Attendance will be pulled from the event check-in list
                       </p>
@@ -345,10 +393,12 @@ export default function ReceiptForm({ request, onClose, onSuccess }: ReceiptForm
                         Attendance from Event
                       </Label>
                       <Badge variant="outline">
-                        {loadingEventAttendance ? "Loading..." : `${linkedEventAttendees.length} attendees`}
+                        {loadingEventAttendance
+                          ? "Loading..."
+                          : `${linkedEventAttendees.length} attendees`}
                       </Badge>
                     </div>
-                    
+
                     {loadingEventAttendance ? (
                       <div className="flex items-center justify-center p-8 border rounded-lg bg-muted/30">
                         <Loader2 className="h-5 w-5 animate-spin mr-2" />
@@ -360,8 +410,12 @@ export default function ReceiptForm({ request, onClose, onSuccess }: ReceiptForm
                           <table className="w-full text-sm">
                             <thead className="bg-muted/50 sticky top-0">
                               <tr>
-                                <th className="text-left py-2 px-3 font-medium">Name</th>
-                                <th className="text-left py-2 px-3 font-medium">Email</th>
+                                <th className="text-left py-2 px-3 font-medium">
+                                  Name
+                                </th>
+                                <th className="text-left py-2 px-3 font-medium">
+                                  Email
+                                </th>
                               </tr>
                             </thead>
                             <tbody>
@@ -382,7 +436,9 @@ export default function ReceiptForm({ request, onClose, onSuccess }: ReceiptForm
                     ) : (
                       <div className="flex flex-col items-center justify-center p-8 border rounded-lg bg-muted/30 text-center">
                         <Users className="h-8 w-8 text-muted-foreground mb-2" />
-                        <p className="text-muted-foreground">No attendees have checked in yet</p>
+                        <p className="text-muted-foreground">
+                          No attendees have checked in yet
+                        </p>
                         <p className="text-sm text-muted-foreground">
                           Share the event check-in page to collect attendance
                         </p>
@@ -431,10 +487,14 @@ export default function ReceiptForm({ request, onClose, onSuccess }: ReceiptForm
                 <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-md border">
                   <Lock className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">{REQUIRED_RECIPIENT}</span>
-                  <span className="text-xs text-muted-foreground">(always included)</span>
+                  <span className="text-xs text-muted-foreground">
+                    (always included)
+                  </span>
                 </div>
                 <div className="mt-2">
-                  <Label htmlFor="receiptEmail" className="text-sm">Additional recipient emails (optional)</Label>
+                  <Label htmlFor="receiptEmail" className="text-sm">
+                    Additional recipient emails (optional)
+                  </Label>
                   <Input
                     id="receiptEmail"
                     type="email"
@@ -458,24 +518,33 @@ export default function ReceiptForm({ request, onClose, onSuccess }: ReceiptForm
                   </p>
                   <p className="text-sm text-amber-700 dark:text-amber-500">
                     Save a copy of the receipt to the{" "}
-                    <a 
-                      href="https://drive.google.com/drive/u/1/folders/0AMM6DHs73ONAUk9PVA" 
-                      target="_blank" 
+                    <a
+                      href="https://drive.google.com/drive/u/1/folders/0AMM6DHs73ONAUk9PVA"
+                      target="_blank"
                       rel="noopener noreferrer"
                       className="font-semibold underline hover:text-amber-900 dark:hover:text-amber-300"
                     >
                       SSE Drive
-                    </a>
-                    {" "}→ Year → $$$ → Semester
+                    </a>{" "}
+                    → Year → $$$ → Semester
                   </p>
                 </div>
               </div>
 
               <div className="flex gap-4 pt-4">
-                <Button type="button" variant="outline" onClick={onClose} className="flex-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onClose}
+                  className="flex-1"
+                >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={loading} className="flex-1 gap-2">
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="flex-1 gap-2"
+                >
                   {loading ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -494,5 +563,5 @@ export default function ReceiptForm({ request, onClose, onSuccess }: ReceiptForm
         </Card>
       </div>
     </>
-  )
+  );
 }

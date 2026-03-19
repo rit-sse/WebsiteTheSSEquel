@@ -24,7 +24,7 @@ export async function GET() {
           profileImageKey: true,
           googleImageURL: true,
           gitHub: true,
-          description: true
+          description: true,
         },
       },
       position: {
@@ -37,7 +37,7 @@ export async function GET() {
   });
 
   // Transform to include resolved image URL
-  const officersWithImage = officer.map((o: typeof officer[number]) => ({
+  const officersWithImage = officer.map((o: (typeof officer)[number]) => ({
     ...o,
     user: {
       ...o.user,

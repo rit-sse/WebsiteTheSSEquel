@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import GoLink, { GoLinkProps } from "./GoLink";
+import React, { useMemo, useState } from "react";
+import GoLink from "./GoLink";
 import { GoLinksContainerProps } from "@/app/(main)/go/page";
 import { filterGoLinks } from "@/lib/filter";
 import { GoLinkButton } from "@/app/(main)/go/MakeNewGoLink";
@@ -27,40 +27,26 @@ const GoLinksContainer: React.FC<GoLinksContainerProps> = ({
   goLinkData,
   fetchData,
 }) => {
-  const pinnedGoLinks = goLinkData
-    .filter((data) => data.pinned === true)
-    .map((data, index) => (
-      <GoLink key={`pinned-${data.id}`} {...data} fetchData={fetchData} />
+  const [filter, setFilter] = useState("");
+
+  const goLinkList = useMemo(() => {
+    const filteredGoLinkData =
+      filter === "" ? goLinkData : filterGoLinks(filter, goLinkData);
+    const orderedGoLinkData =
+      filter === ""
+        ? [
+            ...filteredGoLinkData.filter((data) => data.pinned === true),
+            ...filteredGoLinkData.filter((data) => !data.pinned),
+          ]
+        : filteredGoLinkData;
+
+    return orderedGoLinkData.map((data) => (
+      <GoLink key={data.id} {...data} fetchData={fetchData} />
     ));
-
-  const unpinnedGoLinks = goLinkData
-    .filter((data) => !data.pinned)
-    .map((data, index) => (
-      <GoLink key={`unpinned-${data.id}`} {...data} fetchData={fetchData} />
-    ));
-
-  const [goLinkList, setGoLinkList] = useState<React.JSX.Element[]>([]);
-
-  const updateGoLinkList = (givenFilter: string) => {
-    if (givenFilter === "" || givenFilter === null) {
-      setGoLinkList([...pinnedGoLinks, ...unpinnedGoLinks]);
-    } else {
-      const filteredGoLinkData = filterGoLinks(givenFilter, goLinkData);
-      setGoLinkList(
-        filteredGoLinkData.map((data, index) => (
-          <GoLink key={index} {...data} fetchData={fetchData} />
-        ))
-      );
-    }
-  };
-
-  useEffect(() => {
-    updateGoLinkList("");
-  }, [goLinkData]);
+  }, [fetchData, filter, goLinkData]);
 
   const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const givenFilter = event.target.value;
-    updateGoLinkList(givenFilter);
+    setFilter(event.target.value);
   };
 
   return (
@@ -68,15 +54,14 @@ const GoLinksContainer: React.FC<GoLinksContainerProps> = ({
       <div className="max-w-screen-xl mx-auto">
         <Card depth={1} className="p-6 md:p-8">
           <div className="text-center mb-8">
-            <h1 className="text-primary">
-              Go Links
-            </h1>
+            <h1 className="text-primary">Go Links</h1>
             <p className="mt-4 text-lg text-muted-foreground max-w-3xl mx-auto">
-              GoLinks are URL shortcuts to access SSE&apos;s frequently used external websites or resources. 
-              Important golinks are marked with a gold star.
+              GoLinks are URL shortcuts to access SSE&apos;s frequently used
+              external websites or resources. Important golinks are marked with
+              a gold star.
             </p>
           </div>
-          
+
           <div className="relative w-full max-w-md mx-auto mb-6">
             <Search className="h-[18px] w-[18px] absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -104,7 +89,9 @@ const GoLinksContainer: React.FC<GoLinksContainerProps> = ({
               </div>
             )
           ) : (
-            <div className="text-center py-10 text-muted-foreground">No GoLinks available</div>
+            <div className="text-center py-10 text-muted-foreground">
+              No GoLinks available
+            </div>
           )}
         </Card>
       </div>

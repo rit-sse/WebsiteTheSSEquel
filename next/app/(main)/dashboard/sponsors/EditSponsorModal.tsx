@@ -1,61 +1,66 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { toast } from "sonner"
-import { Modal, ModalFooter } from "@/components/ui/modal"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { Sponsor } from "./SponsorCard"
+import { useState, useEffect } from "react";
+import { toast } from "sonner";
+import { Modal, ModalFooter } from "@/components/ui/modal";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Sponsor } from "./SponsorCard";
 
 interface EditSponsorModalProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  sponsor: Sponsor | null
-  onSuccess: () => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  sponsor: Sponsor | null;
+  onSuccess: () => void;
 }
 
-export default function EditSponsorModal({ open, onOpenChange, sponsor, onSuccess }: EditSponsorModalProps) {
-  const [name, setName] = useState("")
-  const [description, setDescription] = useState("")
-  const [logoUrl, setLogoUrl] = useState("")
-  const [websiteUrl, setWebsiteUrl] = useState("")
-  const [isActive, setIsActive] = useState(true)
-  const [isSubmitting, setIsSubmitting] = useState(false)
+export default function EditSponsorModal({
+  open,
+  onOpenChange,
+  sponsor,
+  onSuccess,
+}: EditSponsorModalProps) {
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [logoUrl, setLogoUrl] = useState("");
+  const [websiteUrl, setWebsiteUrl] = useState("");
+  const [isActive, setIsActive] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Populate form when sponsor changes
   useEffect(() => {
     if (sponsor) {
-      setName(sponsor.name)
-      setDescription(sponsor.description)
-      setLogoUrl(sponsor.logoUrl)
-      setWebsiteUrl(sponsor.websiteUrl)
-      setIsActive(sponsor.isActive)
+      setName(sponsor.name);
+      setDescription(sponsor.description);
+      setLogoUrl(sponsor.logoUrl);
+      setWebsiteUrl(sponsor.websiteUrl);
+      setIsActive(sponsor.isActive);
     }
-  }, [sponsor])
+  }, [sponsor]);
 
   const handleClose = () => {
-    onOpenChange(false)
-  }
+    onOpenChange(false);
+  };
 
   const handleSubmit = async () => {
-    if (!sponsor) return
+    if (!sponsor) return;
 
     // Validate required fields
-    const invalidFields = []
-    if (name.trim() === "") invalidFields.push("name")
-    if (description.trim() === "") invalidFields.push("description")
-    if (logoUrl.trim() === "") invalidFields.push("logo URL")
-    if (websiteUrl.trim() === "") invalidFields.push("website URL")
+    const invalidFields = [];
+    if (name.trim() === "") invalidFields.push("name");
+    if (description.trim() === "") invalidFields.push("description");
+    if (logoUrl.trim() === "") invalidFields.push("logo URL");
+    if (websiteUrl.trim() === "") invalidFields.push("website URL");
 
     if (invalidFields.length > 0) {
-      toast.error(`Required fields are empty: ${invalidFields.join(", ")}`)
-      return
+      toast.error(`Required fields are empty: ${invalidFields.join(", ")}`);
+      return;
     }
 
-    setIsSubmitting(true)
+    setIsSubmitting(true);
 
     try {
       const response = await fetch("/api/sponsor", {
@@ -69,26 +74,26 @@ export default function EditSponsorModal({ open, onOpenChange, sponsor, onSucces
           websiteUrl: websiteUrl.trim(),
           isActive,
         }),
-      })
+      });
 
       if (response.ok) {
-        toast.success("Sponsor updated successfully")
-        handleClose()
-        onSuccess()
+        toast.success("Sponsor updated successfully");
+        handleClose();
+        onSuccess();
       } else {
-        const errorText = await response.text()
-        console.error("API Error:", response.status, errorText)
+        const errorText = await response.text();
+        console.error("API Error:", response.status, errorText);
         toast.error(`Failed to update sponsor: ${errorText}`, {
           duration: 5000,
-        })
+        });
       }
     } catch (error) {
-      console.error("Error updating sponsor:", error)
-      toast.error("An error occurred while updating the sponsor")
+      console.error("Error updating sponsor:", error);
+      toast.error("An error occurred while updating the sponsor");
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   return (
     <Modal
@@ -128,7 +133,8 @@ export default function EditSponsorModal({ open, onOpenChange, sponsor, onSucces
             placeholder="/images/sponsors/logo.png or https://example.com/logo.png"
           />
           <p className="text-xs text-muted-foreground">
-            Enter the URL or path to the sponsor&apos;s logo image (e.g., /images/sponsors/logo.png or https://example.com/logo.png)
+            Enter the URL or path to the sponsor&apos;s logo image (e.g.,
+            /images/sponsors/logo.png or https://example.com/logo.png)
           </p>
         </div>
 
@@ -163,5 +169,5 @@ export default function EditSponsorModal({ open, onOpenChange, sponsor, onSucces
         </Button>
       </ModalFooter>
     </Modal>
-  )
+  );
 }

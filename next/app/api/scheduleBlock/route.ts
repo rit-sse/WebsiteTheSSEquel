@@ -1,17 +1,17 @@
-import { NextRequest, NextResponse } from "next/server"
-import prisma from "@/lib/prisma"
-import { getGatewayAuthLevel } from "@/lib/authGateway"
-import { resolveUserImage } from "@/lib/s3Utils"
+import { NextRequest, NextResponse } from "next/server";
+import prisma from "@/lib/prisma";
+import { getGatewayAuthLevel } from "@/lib/authGateway";
+import { resolveUserImage } from "@/lib/s3Utils";
 
-export const dynamic = "force-dynamic"
+export const dynamic = "force-dynamic";
 
 /**
  * Check if the current user can manage mentor schedules
  * (Must be Mentoring Head or Primary Officer)
  */
 async function canManageSchedules(request: NextRequest): Promise<boolean> {
-  const authLevel = await getGatewayAuthLevel(request)
-  return authLevel.isMentoringHead || authLevel.isPrimary
+  const authLevel = await getGatewayAuthLevel(request);
+  return authLevel.isMentoringHead || authLevel.isPrimary;
 }
 
 /**
@@ -19,15 +19,15 @@ async function canManageSchedules(request: NextRequest): Promise<boolean> {
  * Returns all schedule blocks for the active schedule, or a specific schedule if id provided
  */
 export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams
-  const scheduleId = searchParams.get("scheduleId")
+  const searchParams = request.nextUrl.searchParams;
+  const scheduleId = searchParams.get("scheduleId");
 
   try {
     // If scheduleId provided, get that schedule's blocks
     // Otherwise, get the active schedule's blocks
     const whereClause = scheduleId
       ? { id: parseInt(scheduleId) }
-      : { isActive: true }
+      : { isActive: true };
 
     const schedule = await prisma.mentorSchedule.findFirst({
       where: whereClause,
@@ -91,13 +91,10 @@ export async function GET(request: NextRequest) {
           orderBy: [{ weekday: "asc" }, { startHour: "asc" }],
         },
       },
-    })
+    });
 
     if (!schedule) {
-      return NextResponse.json(
-        { schedule: null, blocks: [] },
-        { status: 200 }
-      )
+      return NextResponse.json({ schedule: null, blocks: [] }, { status: 200 });
     }
 
     // Transform the data for easier consumption
@@ -128,7 +125,7 @@ export async function GET(request: NextRequest) {
           department: ct.course.department.title,
         })),
       },
-    }))
+    }));
 
     return NextResponse.json({
       schedule: {
@@ -137,13 +134,13 @@ export async function GET(request: NextRequest) {
         isActive: schedule.isActive,
       },
       blocks,
-    })
+    });
   } catch (error) {
-    console.error("Error fetching schedule blocks:", error)
+    console.error("Error fetching schedule blocks:", error);
     return NextResponse.json(
       { error: "Failed to fetch schedule blocks" },
       { status: 500 }
-    )
+    );
   }
 }
 
@@ -153,23 +150,29 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const canManage = await canManageSchedules(request)
+    const canManage = await canManageSchedules(request);
     if (!canManage) {
       return NextResponse.json(
-        { error: "Only Mentoring Head or Primary Officers can manage schedules" },
+        {
+          error: "Only Mentoring Head or Primary Officers can manage schedules",
+        },
         { status: 403 }
-      )
+      );
     }
 
-    const body = await request.json()
-    const { mentorId, weekday, startHour, scheduleId } = body
+    const body = await request.json();
+    const { mentorId, weekday, startHour, scheduleId } = body;
 
     // Validate required fields
-    if (mentorId === undefined || weekday === undefined || startHour === undefined) {
+    if (
+      mentorId === undefined ||
+      weekday === undefined ||
+      startHour === undefined
+    ) {
       return NextResponse.json(
         { error: "Missing required fields: mentorId, weekday, startHour" },
         { status: 400 }
-      )
+      );
     }
 
     // Validate weekday (1-5, Mon-Fri)
@@ -177,7 +180,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "Invalid weekday. Must be between 1 (Monday) and 5 (Friday)" },
         { status: 400 }
-      )
+      );
     }
 
     // Validate startHour (10-17, 10am-5pm)
@@ -185,33 +188,33 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "Invalid start hour. Must be between 10 (10am) and 17 (5pm)" },
         { status: 400 }
-      )
+      );
     }
 
     // Get the schedule to use (provided or active)
-    let targetScheduleId = scheduleId
+    let targetScheduleId = scheduleId;
     if (!targetScheduleId) {
       const activeSchedule = await prisma.mentorSchedule.findFirst({
         where: { isActive: true },
         select: { id: true },
-      })
+      });
       if (!activeSchedule) {
         return NextResponse.json(
           { error: "No active schedule found. Create a schedule first." },
           { status: 400 }
-        )
+        );
       }
-      targetScheduleId = activeSchedule.id
+      targetScheduleId = activeSchedule.id;
     }
 
     // Check if mentor exists and is active
     const mentor = await prisma.mentor.findUnique({
       where: { id: mentorId },
       select: { id: true, isActive: true },
-    })
+    });
 
     if (!mentor) {
-      return NextResponse.json({ error: "Mentor not found" }, { status: 404 })
+      return NextResponse.json({ error: "Mentor not found" }, { status: 404 });
     }
 
     // Check if this exact assignment already exists
@@ -222,13 +225,13 @@ export async function POST(request: NextRequest) {
         startHour,
         mentorId,
       },
-    })
+    });
 
     if (existingBlock) {
       return NextResponse.json(
         { error: "This mentor is already assigned to this time slot" },
         { status: 409 }
-      )
+      );
     }
 
     // Create the schedule block
@@ -253,7 +256,7 @@ export async function POST(request: NextRequest) {
           },
         },
       },
-    })
+    });
     const scheduleBlockWithImage = {
       ...scheduleBlock,
       mentor: {
@@ -266,15 +269,15 @@ export async function POST(request: NextRequest) {
           ),
         },
       },
-    }
+    };
 
-    return NextResponse.json(scheduleBlockWithImage, { status: 201 })
+    return NextResponse.json(scheduleBlockWithImage, { status: 201 });
   } catch (error) {
-    console.error("Error creating schedule block:", error)
+    console.error("Error creating schedule block:", error);
     return NextResponse.json(
       { error: "Failed to create schedule block" },
       { status: 500 }
-    )
+    );
   }
 }
 
@@ -284,64 +287,66 @@ export async function POST(request: NextRequest) {
  */
 export async function DELETE(request: NextRequest) {
   try {
-    const canManage = await canManageSchedules(request)
+    const canManage = await canManageSchedules(request);
     if (!canManage) {
       return NextResponse.json(
-        { error: "Only Mentoring Head or Primary Officers can manage schedules" },
+        {
+          error: "Only Mentoring Head or Primary Officers can manage schedules",
+        },
         { status: 403 }
-      )
+      );
     }
 
-    const body = await request.json()
-    const { id, scheduleId } = body
+    const body = await request.json();
+    const { id, scheduleId } = body;
 
     if (scheduleId) {
-      const targetScheduleId = parseInt(scheduleId)
+      const targetScheduleId = parseInt(scheduleId);
       if (Number.isNaN(targetScheduleId)) {
         return NextResponse.json(
           { error: "Invalid scheduleId" },
           { status: 400 }
-        )
+        );
       }
 
       await prisma.scheduleBlock.deleteMany({
         where: { scheduleId: targetScheduleId },
-      })
+      });
 
-      return NextResponse.json({ success: true }, { status: 200 })
+      return NextResponse.json({ success: true }, { status: 200 });
     }
 
     if (!id) {
       return NextResponse.json(
         { error: "Schedule block ID is required" },
         { status: 400 }
-      )
+      );
     }
 
     // Check if block exists
     const block = await prisma.scheduleBlock.findUnique({
       where: { id },
-    })
+    });
 
     if (!block) {
       return NextResponse.json(
         { error: "Schedule block not found" },
         { status: 404 }
-      )
+      );
     }
 
     // Delete the block
     await prisma.scheduleBlock.delete({
       where: { id },
-    })
+    });
 
-    return NextResponse.json({ success: true }, { status: 200 })
+    return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
-    console.error("Error deleting schedule block:", error)
+    console.error("Error deleting schedule block:", error);
     return NextResponse.json(
       { error: "Failed to delete schedule block" },
       { status: 500 }
-    )
+    );
   }
 }
 
@@ -351,29 +356,31 @@ export async function DELETE(request: NextRequest) {
  */
 export async function PUT(request: NextRequest) {
   try {
-    const canManage = await canManageSchedules(request)
+    const canManage = await canManageSchedules(request);
     if (!canManage) {
       return NextResponse.json(
-        { error: "Only Mentoring Head or Primary Officers can manage schedules" },
+        {
+          error: "Only Mentoring Head or Primary Officers can manage schedules",
+        },
         { status: 403 }
-      )
+      );
     }
 
-    const body = await request.json()
-    const { id, weekday, startHour } = body
+    const body = await request.json();
+    const { id, weekday, startHour } = body;
 
     if (!id) {
       return NextResponse.json(
         { error: "Schedule block ID is required" },
         { status: 400 }
-      )
+      );
     }
 
     if (weekday === undefined || startHour === undefined) {
       return NextResponse.json(
         { error: "weekday and startHour are required" },
         { status: 400 }
-      )
+      );
     }
 
     // Validate weekday (1-5, Mon-Fri)
@@ -381,7 +388,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json(
         { error: "Invalid weekday. Must be between 1 (Monday) and 5 (Friday)" },
         { status: 400 }
-      )
+      );
     }
 
     // Validate startHour (10-17, 10am-5pm)
@@ -389,16 +396,19 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json(
         { error: "Invalid start hour. Must be between 10 (10am) and 17 (5pm)" },
         { status: 400 }
-      )
+      );
     }
 
     const existingBlock = await prisma.scheduleBlock.findUnique({
       where: { id },
       select: { mentorId: true, scheduleId: true },
-    })
+    });
 
     if (!existingBlock) {
-      return NextResponse.json({ error: "Schedule block not found" }, { status: 404 })
+      return NextResponse.json(
+        { error: "Schedule block not found" },
+        { status: 404 }
+      );
     }
 
     // Check if this mentor is already at the target slot
@@ -409,26 +419,26 @@ export async function PUT(request: NextRequest) {
         startHour,
         mentorId: existingBlock.mentorId,
       },
-    })
+    });
 
     if (conflict && conflict.id !== id) {
       return NextResponse.json(
         { error: "This mentor is already assigned to the target slot" },
         { status: 409 }
-      )
+      );
     }
 
     const updated = await prisma.scheduleBlock.update({
       where: { id },
       data: { weekday, startHour },
-    })
+    });
 
-    return NextResponse.json(updated)
+    return NextResponse.json(updated);
   } catch (error) {
-    console.error("Error updating schedule block:", error)
+    console.error("Error updating schedule block:", error);
     return NextResponse.json(
       { error: "Failed to update schedule block" },
       { status: 500 }
-    )
+    );
   }
 }

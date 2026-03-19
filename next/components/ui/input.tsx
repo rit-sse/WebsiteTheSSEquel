@@ -1,6 +1,6 @@
-import * as React from "react"
+import * as React from "react";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 function Input({ className, type, ...props }: React.ComponentProps<"input">) {
   return (
@@ -13,11 +13,11 @@ function Input({ className, type, ...props }: React.ComponentProps<"input">) {
         "neo:rounded-base neo:border-2 neo:border-border",
         // Clean mode: thin border, softer corners
         "clean:rounded-md clean:border clean:border-border/50",
-        className,
+        className
       )}
       {...props}
     />
-  )
+  );
 }
 
-export { Input }
+export { Input };

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 interface NavAvatarProps {
@@ -32,7 +33,9 @@ const NavAvatar = React.forwardRef<HTMLDivElement, NavAvatarProps>(
     const [imgFailed, setImgFailed] = React.useState(false);
 
     // Reset failure state when src changes (e.g. after upload)
-    React.useEffect(() => { setImgFailed(false); }, [src]);
+    React.useEffect(() => {
+      setImgFailed(false);
+    }, [src]);
 
     return (
       <div
@@ -47,12 +50,14 @@ const NavAvatar = React.forwardRef<HTMLDivElement, NavAvatarProps>(
         </span>
 
         {src && !imgFailed && (
-          <img
+          <Image
             src={src}
             alt={name}
+            fill
             className="absolute inset-0 h-full w-full object-cover"
             referrerPolicy="no-referrer"
             onError={() => setImgFailed(true)}
+            unoptimized
           />
         )}
       </div>

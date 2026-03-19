@@ -9,13 +9,17 @@ function parseCourses(coursesJson: string | null | undefined): string[] {
   if (!coursesJson) return [];
   try {
     const parsed = JSON.parse(coursesJson);
-    return Array.isArray(parsed) ? parsed.filter((value) => typeof value === "string") : [];
+    return Array.isArray(parsed)
+      ? parsed.filter((value) => typeof value === "string")
+      : [];
   } catch {
     return [];
   }
 }
 
-function parseAvailability(slotsJson: string | null | undefined): Array<{ weekday: number; hour: number }> {
+function parseAvailability(
+  slotsJson: string | null | undefined
+): Array<{ weekday: number; hour: number }> {
   if (!slotsJson) return [];
   try {
     const parsed = JSON.parse(slotsJson);
