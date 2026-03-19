@@ -1,9 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { mockFindMany, mockFindFirst, mockCreate } = vi.hoisted(() => ({
-  mockFindMany: vi.fn(),
-  mockFindFirst: vi.fn(),
-  mockCreate: vi.fn(),
+const { mockGetGatewayAuthLevel, mockFindMany, mockFindFirst, mockCreate } =
+  vi.hoisted(() => ({
+    mockGetGatewayAuthLevel: vi.fn(),
+    mockFindMany: vi.fn(),
+    mockFindFirst: vi.fn(),
+    mockCreate: vi.fn(),
+  }));
+
+vi.mock("@/lib/authGateway", () => ({
+  getGatewayAuthLevel: mockGetGatewayAuthLevel,
 }));
 
 vi.mock("@/lib/prisma", () => ({
@@ -31,6 +37,10 @@ function req(url: string, method = "GET", body?: unknown) {
 describe("/api/mentee-headcount route", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isMentor: true,
+      isOfficer: false,
+    });
   });
 
   it("GET returns entries", async () => {
@@ -50,6 +60,23 @@ describe("/api/mentee-headcount route", () => {
       })
     );
     expect(res.status).toBe(400);
+  });
+
+  it("POST denies unauthorized users", async () => {
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isMentor: false,
+      isOfficer: false,
+    });
+
+    const res = await POST(
+      req("http://localhost/api/mentee-headcount", "POST", {
+        mentorIds: [1],
+        studentsMentoredCount: 5,
+        testsCheckedOutCount: 1,
+      })
+    );
+
+    expect(res.status).toBe(401);
   });
 
   it("POST creates entry using active semester fallback", async () => {

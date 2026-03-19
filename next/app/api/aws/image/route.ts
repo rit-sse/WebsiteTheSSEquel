@@ -45,7 +45,24 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const stream = response.Body.transformToWebStream();
+    const stream =
+      typeof response.Body.transformToWebStream === "function"
+        ? response.Body.transformToWebStream()
+        : typeof response.Body.transformToByteArray === "function"
+          ? new ReadableStream({
+              async start(controller) {
+                controller.enqueue(await response.Body.transformToByteArray());
+                controller.close();
+              },
+            })
+          : null;
+
+    if (!stream) {
+      return NextResponse.json(
+        { error: "Image fetch failed" },
+        { status: 500 }
+      );
+    }
 
     return new NextResponse(stream as ReadableStream, {
       status: 200,
