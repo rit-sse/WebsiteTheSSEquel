@@ -8,8 +8,27 @@ const COMMON_HEADERS = [
   },
 ];
 
+function getS3Origins() {
+  const bucketName =
+    process.env.AWS_S3_BUCKET_NAME || process.env.NEXT_PUBLIC_AWS_S3_BUCKET_NAME;
+  const region =
+    process.env.AWS_S3_REGION || process.env.NEXT_PUBLIC_AWS_S3_REGION;
+
+  const origins = new Set([
+    "https://*.s3.amazonaws.com",
+    "https://*.amazonaws.com",
+  ]);
+
+  if (bucketName && region) {
+    origins.add(`https://${bucketName}.s3.${region}.amazonaws.com`);
+  }
+
+  return Array.from(origins);
+}
+
 function buildContentSecurityPolicy({ production, nonce } = {}) {
   const scriptSrc = ["'self'"];
+  const s3Origins = getS3Origins();
   if (nonce) {
     scriptSrc.push(`'nonce-${nonce}'`, "'strict-dynamic'");
   }
@@ -25,8 +44,7 @@ function buildContentSecurityPolicy({ production, nonce } = {}) {
         "data:",
         "blob:",
         "https://lh3.googleusercontent.com",
-        "https://*.s3.amazonaws.com",
-        "https://*.s3.*.amazonaws.com",
+        ...s3Origins,
         "https://source.boringavatars.com",
         "https://dummyimage.com",
         "https://drive.google.com",
@@ -37,8 +55,8 @@ function buildContentSecurityPolicy({ production, nonce } = {}) {
     [
       "connect-src",
       production
-        ? ["'self'", "https://api.github.com"]
-        : ["'self'", "https://api.github.com", "ws:", "wss:"],
+        ? ["'self'", "https://api.github.com", ...s3Origins]
+        : ["'self'", "https://api.github.com", ...s3Origins, "ws:", "wss:"],
     ],
     ["frame-src", ["https://calendar.google.com"]],
     ["object-src", ["'none'"]],
