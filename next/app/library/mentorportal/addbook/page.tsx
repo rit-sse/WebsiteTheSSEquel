@@ -3,6 +3,28 @@
 import { useState, useRef } from "react";
 import Image from "next/image";
 
+async function readErrorMessage(
+  response: Response,
+  fallback: string
+): Promise<string> {
+  const text = await response.text();
+  if (!text) return fallback;
+
+  try {
+    const parsed = JSON.parse(text);
+    if (typeof parsed?.error === "string" && parsed.error.trim() !== "") {
+      return parsed.error;
+    }
+    if (typeof parsed?.message === "string" && parsed.message.trim() !== "") {
+      return parsed.message;
+    }
+  } catch {
+    // Ignore parse failures and fall back to the raw response body.
+  }
+
+  return text;
+}
+
 export default function AddBook() {
   const [isbnInput, setIsbnInput] = useState("");
   const [error, setError] = useState("");
@@ -88,7 +110,13 @@ export default function AddBook() {
   };
   const lookupISBN = () => {
     fetch("/api/library/isbnlookup?isbn=" + lookupISBNInput, {})
-      .then((res) => res.json())
+      .then(async (res) => {
+        if (!res.ok) {
+          throw new Error(await readErrorMessage(res, "Failed to fetch book data"));
+        }
+
+        return res.json();
+      })
       .then((data) => {
         if (data.error) {
           setError(data.error);
@@ -102,6 +130,9 @@ export default function AddBook() {
             yearPublished: data.yearPublished,
           });
         }
+      })
+      .catch((err) => {
+        setError(err instanceof Error ? err.message : "Failed to fetch book data");
       });
   };
 
@@ -117,39 +148,28 @@ export default function AddBook() {
     const file = inputFile.current?.files?.[0];
     if (file) {
       try {
-        // Get presigned URL
-        const presignRes = await fetch("/api/aws/libraryBooks", {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("isbn", newBookData.ISBN);
+
+        const uploadRes = await fetch("/api/aws/libraryBooks", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            filename: file.name,
-            contentType: file.type,
-            isbn: newBookData.ISBN,
-          }),
-        });
-
-        if (!presignRes.ok) {
-          setError("Failed to get upload URL");
-          return;
-        }
-
-        const { uploadUrl, key } = await presignRes.json();
-
-        // Upload directly to S3
-        const uploadRes = await fetch(uploadUrl, {
-          method: "PUT",
-          headers: { "Content-Type": file.type },
-          body: file,
+          body: formData,
         });
 
         if (!uploadRes.ok) {
-          setError("Failed to upload image to S3");
+          setError(
+            await readErrorMessage(uploadRes, "Failed to upload image to S3")
+          );
           return;
         }
 
+        const { key } = await uploadRes.json();
         imageKey = key;
-      } catch {
-        setError("Image upload failed");
+      } catch (error) {
+        setError(
+          error instanceof Error ? error.message : "Image upload failed"
+        );
         return;
       }
     }

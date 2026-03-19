@@ -64,4 +64,21 @@ describe("/api/library/isbnlookup route", () => {
       yearPublished: expectedYear,
     });
   });
+
+  it("returns a JSON error when openlibrary fails", async () => {
+    mockGetAuth.mockResolvedValue({ isMentor: true, isOfficer: false });
+    mockFetch.mockResolvedValue({
+      ok: false,
+      statusText: "Forbidden",
+    });
+
+    const res = await GET(
+      req("http://localhost/api/library/isbnlookup?isbn=123")
+    );
+
+    expect(res.status).toBe(500);
+    expect(await res.json()).toEqual({
+      error: "Failed to fetch book data: Forbidden",
+    });
+  });
 });
