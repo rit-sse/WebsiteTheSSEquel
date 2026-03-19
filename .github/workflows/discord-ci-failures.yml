@@ -2,7 +2,7 @@ name: Discord CI Failures
 
 on:
   workflow_run:
-    workflows: ["Lint", "Test", "Typecheck", "Docker CI"]
+    workflows: ["Lint", "Test", "Typecheck", "Knip", "Docker CI"]
     types: [completed]
 
 permissions:
@@ -23,7 +23,7 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const expectedWorkflows = new Set(["Lint", "Test", "Typecheck", "Docker CI"]);
+            const expectedWorkflows = new Set(["Lint", "Test", "Typecheck", "Knip", "Docker CI"]);
             const owner = context.repo.owner;
             const repo = context.repo.repo;
             const headSha = context.payload.workflow_run.head_sha;
