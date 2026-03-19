@@ -8,10 +8,15 @@ const COMMON_HEADERS = [
   },
 ];
 
-function buildContentSecurityPolicy({ production }) {
+function buildContentSecurityPolicy({ production, nonce } = {}) {
+  const scriptSrc = ["'self'"];
+  if (nonce) {
+    scriptSrc.push(`'nonce-${nonce}'`, "'strict-dynamic'");
+  }
+
   const directives = [
     ["default-src", ["'self'"]],
-    ["script-src", ["'self'"]],
+    ["script-src", scriptSrc],
     ["style-src", ["'self'", "'unsafe-inline'"]],
     [
       "img-src",
@@ -53,6 +58,8 @@ function buildContentSecurityPolicy({ production }) {
 function getSecurityHeaders({
   nodeEnv = process.env.NODE_ENV,
   deploymentEnv = process.env.NEXT_PUBLIC_ENV,
+  includeCsp = true,
+  nonce,
 } = {}) {
   const runtimeProduction = nodeEnv === "production";
   // The development deployment runs a production build, so header enforcement
@@ -60,12 +67,17 @@ function getSecurityHeaders({
   const enforceCsp = deploymentEnv === "prod";
   const headers = [...COMMON_HEADERS];
 
-  headers.push({
-    key: enforceCsp
-      ? "Content-Security-Policy"
-      : "Content-Security-Policy-Report-Only",
-    value: buildContentSecurityPolicy({ production: runtimeProduction }),
-  });
+  if (includeCsp) {
+    headers.push({
+      key: enforceCsp
+        ? "Content-Security-Policy"
+        : "Content-Security-Policy-Report-Only",
+      value: buildContentSecurityPolicy({
+        production: runtimeProduction,
+        nonce,
+      }),
+    });
+  }
 
   if (enforceCsp) {
     headers.push({

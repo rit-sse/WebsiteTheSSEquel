@@ -82,6 +82,31 @@ const signedInVerifier = authVerifierFactory((permissions) => {
 });
 
 /**
+ * Auth verifier for AWS-backed asset routes:
+ * - public GETs for the shared image proxy
+ * - signed-in users for profile picture upload/update
+ * - mentor/officer for library book upload/update
+ * - officer for any remaining aws routes
+ */
+const awsVerifier: AuthVerifier = async (request: NextRequest) => {
+  const pathname = request.nextUrl.pathname;
+
+  if (request.method === "GET" && pathname === "/api/aws/image") {
+    return { isAllowed: true, authType: "None" };
+  }
+
+  if (pathname === "/api/aws/profilePictures") {
+    return signedInVerifier(request);
+  }
+
+  if (pathname === "/api/aws/libraryBooks") {
+    return mentorOrOfficerVerifier(request);
+  }
+
+  return officerVerifier(request);
+};
+
+/**
  * Auth verifier specifically for the golinks route
  */
 const goLinkVerifier = async (request: NextRequest) => {
@@ -245,7 +270,7 @@ const ROUTES: { [key: string]: AuthVerifier } = {
   "alumni-requests": alumniRequestsVerifier,
   auth: allowAllVerifier,
   authLevel: allowAllVerifier,
-  aws: officerVerifier,
+  aws: awsVerifier,
   calendar: nonGetOfficerVerifier,
   course: nonGetOfficerVerifier,
   courseTaken: nonGetMentorVerifier,
