@@ -57,7 +57,10 @@ function req(url: string) {
 describe("/api/library/book route", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockResolveAuthLevelFromRequest.mockResolvedValue({ isOfficer: false, isMentor: false });
+    mockResolveAuthLevelFromRequest.mockResolvedValue({
+      isOfficer: false,
+      isMentor: false,
+    });
     mockS3DeleteObject.mockResolvedValue(undefined);
   });
 
@@ -67,10 +70,17 @@ describe("/api/library/book route", () => {
   });
 
   it("GET returns book with stock and overall counts when count=true", async () => {
-    mockTextbooksFindFirst.mockResolvedValue({ ISBN: "123", name: "Book", image: "/library-assets/123.jpg", imageKey: null });
+    mockTextbooksFindFirst.mockResolvedValue({
+      ISBN: "123",
+      name: "Book",
+      image: "/library-assets/123.jpg",
+      imageKey: null,
+    });
     mockCopiesCount.mockResolvedValueOnce(2).mockResolvedValueOnce(5);
 
-    const res = await GET(req("http://localhost/api/library/book?isbn=123&count=true"));
+    const res = await GET(
+      req("http://localhost/api/library/book?isbn=123&count=true")
+    );
     expect(res.status).toBe(200);
     expect(await res.json()).toMatchObject({
       ISBN: "123",
@@ -89,9 +99,14 @@ describe("/api/library/book route", () => {
   });
 
   it("PUT validates ISBN format", async () => {
-    mockResolveAuthLevelFromRequest.mockResolvedValue({ isOfficer: true, isMentor: false });
+    mockResolveAuthLevelFromRequest.mockResolvedValue({
+      isOfficer: true,
+      isMentor: false,
+    });
     const request = {
-      json: vi.fn().mockResolvedValue({ ISBN: "bad_isbn", name: "Book", authors: "A" }),
+      json: vi
+        .fn()
+        .mockResolvedValue({ ISBN: "bad_isbn", name: "Book", authors: "A" }),
     } as any;
 
     const res = await PUT(request);
@@ -99,7 +114,10 @@ describe("/api/library/book route", () => {
   });
 
   it("DELETE validates ISBN format", async () => {
-    mockResolveAuthLevelFromRequest.mockResolvedValue({ isOfficer: true, isMentor: false });
+    mockResolveAuthLevelFromRequest.mockResolvedValue({
+      isOfficer: true,
+      isMentor: false,
+    });
     const request = {
       json: vi.fn().mockResolvedValue({ ISBN: "bad_isbn" }),
     } as any;
@@ -109,8 +127,13 @@ describe("/api/library/book route", () => {
   });
 
   it("DELETE cleans up S3 image when book has imageKey", async () => {
-    mockResolveAuthLevelFromRequest.mockResolvedValue({ isOfficer: true, isMentor: false });
-    mockTextbooksFindUnique.mockResolvedValue({ imageKey: "uploads/library-books/123-4/cover.jpg" });
+    mockResolveAuthLevelFromRequest.mockResolvedValue({
+      isOfficer: true,
+      isMentor: false,
+    });
+    mockTextbooksFindUnique.mockResolvedValue({
+      imageKey: "uploads/library-books/123-4/cover.jpg",
+    });
     mockCopiesDeleteMany.mockResolvedValue({ count: 0 });
     mockTextbooksDelete.mockResolvedValue({});
 
@@ -120,6 +143,8 @@ describe("/api/library/book route", () => {
 
     const res = await DELETE(request);
     expect(res.status).toBe(200);
-    expect(mockS3DeleteObject).toHaveBeenCalledWith("uploads/library-books/123-4/cover.jpg");
+    expect(mockS3DeleteObject).toHaveBeenCalledWith(
+      "uploads/library-books/123-4/cover.jpg"
+    );
   });
 });

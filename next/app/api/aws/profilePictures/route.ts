@@ -57,10 +57,7 @@ export async function POST(req: NextRequest) {
     const file = formData.get("file");
 
     if (!(file instanceof File)) {
-      return NextResponse.json(
-        { error: "file is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "file is required" }, { status: 400 });
     }
 
     if (file.size > MAX_PROFILE_IMAGE_SIZE_BYTES) {
@@ -161,10 +158,7 @@ export async function PUT(req: NextRequest) {
     const { key } = body;
 
     if (!key) {
-      return NextResponse.json(
-        { error: "key is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "key is required" }, { status: 400 });
     }
 
     const requiredPrefix = `uploads/profile-pictures/${user.id}/`;

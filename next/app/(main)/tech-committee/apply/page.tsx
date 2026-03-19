@@ -107,7 +107,10 @@ export default function TechCommitteeApplyPage() {
           setHasActiveApplication(false);
         }
       } catch (error) {
-        console.error("Failed to fetch Tech Committee application state:", error);
+        console.error(
+          "Failed to fetch Tech Committee application state:",
+          error
+        );
       } finally {
         setIsPageLoading(false);
       }
@@ -165,7 +168,9 @@ export default function TechCommitteeApplyPage() {
 
       const data = await response.json();
       if (!response.ok) {
-        toast.error(data.error || "Failed to submit Tech Committee application.");
+        toast.error(
+          data.error || "Failed to submit Tech Committee application."
+        );
         return;
       }
 
@@ -189,7 +194,9 @@ export default function TechCommitteeApplyPage() {
         <Card className="w-full">
           <CardHeader>
             <CardTitle>Loading</CardTitle>
-            <CardDescription>Checking your session and application status.</CardDescription>
+            <CardDescription>
+              Checking your session and application status.
+            </CardDescription>
           </CardHeader>
         </Card>
       </div>
@@ -203,8 +210,8 @@ export default function TechCommitteeApplyPage() {
           <CardHeader>
             <CardTitle>Tech Committee Applications</CardTitle>
             <CardDescription>
-              You must be signed in to apply. This lets us attach your submission to
-              your SSE account.
+              You must be signed in to apply. This lets us attach your
+              submission to your SSE account.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -222,8 +229,8 @@ export default function TechCommitteeApplyPage() {
           <CardHeader>
             <CardTitle>Tech Committee Applications</CardTitle>
             <CardDescription>
-              Applications are currently closed. Check back later when Tech Committee
-              applications reopen.
+              Applications are currently closed. Check back later when Tech
+              Committee applications reopen.
             </CardDescription>
           </CardHeader>
         </Card>
@@ -238,8 +245,8 @@ export default function TechCommitteeApplyPage() {
           <CardHeader>
             <CardTitle>Application Already Submitted</CardTitle>
             <CardDescription>
-              You already have an active Tech Committee application. You cannot submit
-              another one right now.
+              You already have an active Tech Committee application. You cannot
+              submit another one right now.
             </CardDescription>
           </CardHeader>
         </Card>
@@ -298,7 +305,8 @@ export default function TechCommitteeApplyPage() {
                 maxLength={TECH_COMMITTEE_APPLICATION_LIMITS.experienceText}
               />
               <p className="text-xs text-muted-foreground">
-                {experienceText.length}/{TECH_COMMITTEE_APPLICATION_LIMITS.experienceText}
+                {experienceText.length}/
+                {TECH_COMMITTEE_APPLICATION_LIMITS.experienceText}
               </p>
             </div>
 
@@ -327,13 +335,17 @@ export default function TechCommitteeApplyPage() {
                 maxLength={TECH_COMMITTEE_APPLICATION_LIMITS.weeklyCommitment}
               />
               <p className="text-xs text-muted-foreground">
-                {weeklyCommitment.length}/{TECH_COMMITTEE_APPLICATION_LIMITS.weeklyCommitment}
+                {weeklyCommitment.length}/
+                {TECH_COMMITTEE_APPLICATION_LIMITS.weeklyCommitment}
               </p>
             </div>
 
             <div className="space-y-3">
               <Label htmlFor="preferred-division">Preferred Division</Label>
-              <Select value={preferredDivision} onValueChange={setPreferredDivision}>
+              <Select
+                value={preferredDivision}
+                onValueChange={setPreferredDivision}
+              >
                 <SelectTrigger id="preferred-division">
                   <SelectValue placeholder="Select your preferred division" />
                 </SelectTrigger>

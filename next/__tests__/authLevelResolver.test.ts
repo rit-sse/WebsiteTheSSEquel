@@ -1,10 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { mockFindFirst, mockHasStagingElevatedAccess, mockGetSessionToken } = vi.hoisted(() => ({
-  mockFindFirst: vi.fn(),
-  mockHasStagingElevatedAccess: vi.fn(),
-  mockGetSessionToken: vi.fn(),
-}));
+const { mockFindFirst, mockHasStagingElevatedAccess, mockGetSessionToken } =
+  vi.hoisted(() => ({
+    mockFindFirst: vi.fn(),
+    mockHasStagingElevatedAccess: vi.fn(),
+    mockGetSessionToken: vi.fn(),
+  }));
 
 vi.mock("@/lib/prisma", () => ({
   default: {
@@ -63,7 +64,9 @@ describe("authLevelResolver", () => {
   });
 
   it("returns elevated flags in staging mode even without token", async () => {
-    const auth = await resolveAuthLevelFromToken(null, { stagingElevated: true });
+    const auth = await resolveAuthLevelFromToken(null, {
+      stagingElevated: true,
+    });
     expect(auth.isMentor).toBe(true);
     expect(auth.isOfficer).toBe(true);
     expect(auth.isMentoringHead).toBe(true);
@@ -86,13 +89,18 @@ describe("authLevelResolver", () => {
       officers: [
         { id: 1, position: { title: "Mentoring Head", is_primary: false } },
         { id: 2, position: { title: "Tech Head", is_primary: false } },
-        { id: 4, position: { title: "Lab Division Manager", is_primary: false } },
+        {
+          id: 4,
+          position: { title: "Lab Division Manager", is_primary: false },
+        },
         { id: 3, position: { title: "Projects Head", is_primary: true } },
       ],
       _count: { Memberships: 2 },
     });
 
-    const auth = await resolveAuthLevelFromToken("token", { includeProfileComplete: true });
+    const auth = await resolveAuthLevelFromToken("token", {
+      includeProfileComplete: true,
+    });
 
     expect(auth).toMatchObject({
       userId: 42,
@@ -127,7 +135,9 @@ describe("authLevelResolver", () => {
     });
 
     const req = { cookies: {}, headers: new Headers() } as any;
-    const auth = await resolveAuthLevelFromRequest(req, { includeProfileComplete: true });
+    const auth = await resolveAuthLevelFromRequest(req, {
+      includeProfileComplete: true,
+    });
 
     expect(auth.userId).toBe(9);
     expect(auth.profileComplete).toBe(false);

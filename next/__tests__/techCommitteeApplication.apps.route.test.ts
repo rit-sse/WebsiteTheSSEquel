@@ -1,12 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const {
-  mockGetGatewayAuthLevel,
-  mockTechCommitteeApplicationFindMany,
-} = vi.hoisted(() => ({
-  mockGetGatewayAuthLevel: vi.fn(),
-  mockTechCommitteeApplicationFindMany: vi.fn(),
-}));
+const { mockGetGatewayAuthLevel, mockTechCommitteeApplicationFindMany } =
+  vi.hoisted(() => ({
+    mockGetGatewayAuthLevel: vi.fn(),
+    mockTechCommitteeApplicationFindMany: vi.fn(),
+  }));
 
 vi.mock("@/lib/authGateway", () => ({
   getGatewayAuthLevel: mockGetGatewayAuthLevel,

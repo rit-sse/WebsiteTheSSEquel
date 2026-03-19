@@ -14,7 +14,9 @@ interface CreateAlumniProps {
   fetchData: () => Promise<void>;
 }
 
-export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) => {
+export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({
+  fetchData,
+}) => {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [quote, setQuote] = useState("");
@@ -149,14 +151,21 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
               <Checkbox
                 id="alumni-receiveEmails"
                 checked={receiveEmails}
-                onCheckedChange={(checked) => setReceiveEmails(checked === true)}
+                onCheckedChange={(checked) =>
+                  setReceiveEmails(checked === true)
+                }
               />
               <div className="space-y-0.5 leading-none">
-                <Label htmlFor="alumni-receiveEmails" className="text-sm font-medium cursor-pointer">
+                <Label
+                  htmlFor="alumni-receiveEmails"
+                  className="text-sm font-medium cursor-pointer"
+                >
                   Receive emails from SSE officers
                 </Label>
                 <p className="text-xs text-muted-foreground">
-                  Our alumni are the most important part of this club and we&apos;re working hard to reconnect everyone. We&apos;ll only reach out sparingly — but it means a lot.
+                  Our alumni are the most important part of this club and
+                  we&apos;re working hard to reconnect everyone. We&apos;ll only
+                  reach out sparingly — but it means a lot.
                 </p>
               </div>
             </div>
@@ -167,11 +176,15 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
                 onCheckedChange={(checked) => setShowEmail(checked === true)}
               />
               <div className="space-y-0.5 leading-none">
-                <Label htmlFor="alumni-showEmail" className="text-sm font-medium cursor-pointer">
+                <Label
+                  htmlFor="alumni-showEmail"
+                  className="text-sm font-medium cursor-pointer"
+                >
                   Show email publicly on alumni card
                 </Label>
                 <p className="text-xs text-muted-foreground">
-                  Their email will be visible on their card so fellow alumni can reconnect.
+                  Their email will be visible on their card so fellow alumni can
+                  reconnect.
                 </p>
               </div>
             </div>
@@ -214,7 +227,17 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
             <ImageUpload
               value={image}
               onChange={setImage}
-              initials={name ? name.split(" ").map((n) => n[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() : "?"}
+              initials={
+                name
+                  ? name
+                      .split(" ")
+                      .map((n) => n[0])
+                      .filter(Boolean)
+                      .slice(0, 2)
+                      .join("")
+                      .toUpperCase()
+                  : "?"
+              }
               avatarSize="h-16 w-16"
               compact
               hint="JPG, PNG, or GIF up to 5 MB"
@@ -229,7 +252,9 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
               value={quote}
               onChange={(e) => setQuote(e.target.value)}
             />
-            <p className="text-xs text-muted-foreground">This will show up on their alumni card.</p>
+            <p className="text-xs text-muted-foreground">
+              This will show up on their alumni card.
+            </p>
           </div>
 
           <div className="space-y-2">
@@ -250,7 +275,10 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
 
           <div className="space-y-2 rounded-lg border border-primary/20 bg-primary/5 p-3">
             <Label htmlFor="alumni-github" className="text-sm font-medium">
-              GitHub <span className="text-xs font-normal text-primary ml-1">Highly recommended</span>
+              GitHub{" "}
+              <span className="text-xs font-normal text-primary ml-1">
+                Highly recommended
+              </span>
             </Label>
             <div className="flex">
               <span className="inline-flex items-center px-3 text-sm text-muted-foreground bg-muted neo:rounded-l-base neo:border-2 neo:border-r-0 neo:border-border clean:rounded-l-md clean:border clean:border-r-0 clean:border-border/50">
@@ -265,7 +293,9 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
               />
             </div>
             <p className="text-xs text-muted-foreground">
-              We pull their location, company, website, top repos, languages, and organizations from GitHub. Their card stays up to date automatically.
+              We pull their location, company, website, top repos, languages,
+              and organizations from GitHub. Their card stays up to date
+              automatically.
             </p>
           </div>
 
@@ -277,14 +307,20 @@ export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) =
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
-            <p className="text-xs text-muted-foreground">This may be featured on the SSE homepage.</p>
+            <p className="text-xs text-muted-foreground">
+              This may be featured on the SSE homepage.
+            </p>
           </div>
         </div>
 
         {error && <p className="text-destructive text-sm mt-2">{error}</p>}
 
         <ModalFooter>
-          <Button variant="neutral" onClick={handleCancel} disabled={isSubmitting}>
+          <Button
+            variant="neutral"
+            onClick={handleCancel}
+            disabled={isSubmitting}
+          >
             Cancel
           </Button>
           <Button onClick={handleCreate} disabled={isSubmitting}>

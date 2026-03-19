@@ -24,7 +24,9 @@ describe("/api/aws/image route", () => {
   });
 
   it("rejects non-uploads keys", async () => {
-    const res = await GET(req("http://localhost/api/aws/image?key=bad/key.jpg"));
+    const res = await GET(
+      req("http://localhost/api/aws/image?key=bad/key.jpg")
+    );
     expect(res.status).toBe(403);
   });
 
@@ -34,7 +36,9 @@ describe("/api/aws/image route", () => {
       ContentType: "image/jpeg",
     });
 
-    const res = await GET(req("http://localhost/api/aws/image?key=uploads/a.jpg"));
+    const res = await GET(
+      req("http://localhost/api/aws/image?key=uploads/a.jpg")
+    );
     expect(res.status).toBe(200);
     expect(res.headers.get("content-type")).toBe("image/jpeg");
   });
@@ -44,7 +48,9 @@ describe("/api/aws/image route", () => {
     err.name = "NoSuchKey";
     mockSend.mockRejectedValue(err);
 
-    const res = await GET(req("http://localhost/api/aws/image?key=uploads/missing.jpg"));
+    const res = await GET(
+      req("http://localhost/api/aws/image?key=uploads/missing.jpg")
+    );
     expect(res.status).toBe(404);
   });
 });

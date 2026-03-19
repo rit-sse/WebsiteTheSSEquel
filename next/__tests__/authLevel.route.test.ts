@@ -1,12 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { mockHasStagingElevatedAccess, mockResolveFromRequest, mockResolveFromToken } = vi.hoisted(
-  () => ({
-    mockHasStagingElevatedAccess: vi.fn(),
-    mockResolveFromRequest: vi.fn(),
-    mockResolveFromToken: vi.fn(),
-  })
-);
+const {
+  mockHasStagingElevatedAccess,
+  mockResolveFromRequest,
+  mockResolveFromToken,
+} = vi.hoisted(() => ({
+  mockHasStagingElevatedAccess: vi.fn(),
+  mockResolveFromRequest: vi.fn(),
+  mockResolveFromToken: vi.fn(),
+}));
 
 vi.mock("@/lib/proxyAuth", () => ({
   hasStagingElevatedAccess: mockHasStagingElevatedAccess,
@@ -53,7 +55,10 @@ describe("/api/authLevel route", () => {
   });
 
   it("GET resolves auth level with profile completion flag", async () => {
-    mockResolveFromRequest.mockResolvedValue({ isUser: true, profileComplete: true });
+    mockResolveFromRequest.mockResolvedValue({
+      isUser: true,
+      profileComplete: true,
+    });
 
     const req = new Request("http://localhost/api/authLevel", {
       method: "GET",

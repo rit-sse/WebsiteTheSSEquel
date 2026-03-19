@@ -1,12 +1,12 @@
-"use client"
+"use client";
 
-import { createContext, useContext } from "react"
+import { createContext, useContext } from "react";
 
 interface DashboardAuth {
-  isOfficer: boolean
-  isMentor: boolean
-  isPrimary: boolean
-  isMentoringHead: boolean
+  isOfficer: boolean;
+  isMentor: boolean;
+  isPrimary: boolean;
+  isMentoringHead: boolean;
 }
 
 const DashboardAuthContext = createContext<DashboardAuth>({
@@ -14,10 +14,10 @@ const DashboardAuthContext = createContext<DashboardAuth>({
   isMentor: false,
   isPrimary: false,
   isMentoringHead: false,
-})
+});
 
 export function useDashboardAuth() {
-  return useContext(DashboardAuthContext)
+  return useContext(DashboardAuthContext);
 }
 
 export function DashboardAuthProvider({
@@ -33,5 +33,5 @@ export function DashboardAuthProvider({
     >
       {children}
     </DashboardAuthContext.Provider>
-  )
+  );
 }

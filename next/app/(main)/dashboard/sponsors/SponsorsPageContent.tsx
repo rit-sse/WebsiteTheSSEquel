@@ -1,79 +1,79 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useCallback } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardHeader, CardTitle } from "@/components/ui/card"
-import { Plus } from "lucide-react"
-import { Modal, ModalFooter } from "@/components/ui/modal"
-import SponsorCard, { Sponsor } from "./SponsorCard"
-import AddSponsorModal from "./AddSponsorModal"
-import EditSponsorModal from "./EditSponsorModal"
+import { useState, useEffect, useCallback } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { Plus } from "lucide-react";
+import { Modal, ModalFooter } from "@/components/ui/modal";
+import SponsorCard, { Sponsor } from "./SponsorCard";
+import AddSponsorModal from "./AddSponsorModal";
+import EditSponsorModal from "./EditSponsorModal";
 
 export default function SponsorsPageContent() {
-  const [sponsors, setSponsors] = useState<Sponsor[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [addModalOpen, setAddModalOpen] = useState(false)
-  const [editModalOpen, setEditModalOpen] = useState(false)
-  const [editSponsor, setEditSponsor] = useState<Sponsor | null>(null)
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
-  const [sponsorToDelete, setSponsorToDelete] = useState<Sponsor | null>(null)
-  const [isDeleting, setIsDeleting] = useState(false)
+  const [sponsors, setSponsors] = useState<Sponsor[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [addModalOpen, setAddModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editSponsor, setEditSponsor] = useState<Sponsor | null>(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [sponsorToDelete, setSponsorToDelete] = useState<Sponsor | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchSponsors = useCallback(async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      const response = await fetch("/api/sponsor")
+      const response = await fetch("/api/sponsor");
       if (response.ok) {
-        const data = await response.json()
-        setSponsors(data)
+        const data = await response.json();
+        setSponsors(data);
       }
     } catch (error) {
-      console.error("Failed to fetch sponsors:", error)
+      console.error("Failed to fetch sponsors:", error);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
-    fetchSponsors()
-  }, [fetchSponsors])
+    fetchSponsors();
+  }, [fetchSponsors]);
 
   const handleEdit = (sponsor: Sponsor) => {
-    setEditSponsor(sponsor)
-    setEditModalOpen(true)
-  }
+    setEditSponsor(sponsor);
+    setEditModalOpen(true);
+  };
 
   const handleDeleteClick = (sponsor: Sponsor) => {
-    setSponsorToDelete(sponsor)
-    setDeleteModalOpen(true)
-  }
+    setSponsorToDelete(sponsor);
+    setDeleteModalOpen(true);
+  };
 
   const handleDeleteConfirm = async () => {
-    if (!sponsorToDelete) return
+    if (!sponsorToDelete) return;
 
-    setIsDeleting(true)
+    setIsDeleting(true);
     try {
       const response = await fetch("/api/sponsor", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: sponsorToDelete.id })
-      })
+        body: JSON.stringify({ id: sponsorToDelete.id }),
+      });
 
       if (response.ok) {
-        await fetchSponsors()
-        setDeleteModalOpen(false)
-        setSponsorToDelete(null)
+        await fetchSponsors();
+        setDeleteModalOpen(false);
+        setSponsorToDelete(null);
       } else {
-        const errorText = await response.text()
-        alert(`Failed to delete sponsor: ${errorText}`)
+        const errorText = await response.text();
+        alert(`Failed to delete sponsor: ${errorText}`);
       }
     } catch (error) {
-      console.error("Error deleting sponsor:", error)
-      alert("An error occurred while deleting the sponsor")
+      console.error("Error deleting sponsor:", error);
+      alert("An error occurred while deleting the sponsor");
     } finally {
-      setIsDeleting(false)
+      setIsDeleting(false);
     }
-  }
+  };
 
   return (
     <div className="w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
@@ -140,7 +140,8 @@ export default function SponsorsPageContent() {
         title="Delete Sponsor"
       >
         <p className="text-foreground">
-          Are you sure you want to delete <strong>{sponsorToDelete?.name}</strong>?
+          Are you sure you want to delete{" "}
+          <strong>{sponsorToDelete?.name}</strong>?
         </p>
         <p className="text-sm text-destructive mt-2">
           This action cannot be undone.
@@ -159,5 +160,5 @@ export default function SponsorsPageContent() {
         </ModalFooter>
       </Modal>
     </div>
-  )
+  );
 }

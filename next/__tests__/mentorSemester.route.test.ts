@@ -71,7 +71,10 @@ function req(url: string, method = "GET", body?: unknown) {
 describe("/api/mentor-semester route", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockGetGatewayAuthLevel.mockResolvedValue({ isMentoringHead: false, isPrimary: false });
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isMentoringHead: false,
+      isPrimary: false,
+    });
     mockGetCurrentSemester.mockReturnValue({ label: "Spring 2026" });
     mockParseAcademicTermLabel.mockReturnValue({ term: "SPRING", year: 2026 });
     mockGetAcademicTermDateRange.mockReturnValue({
@@ -89,31 +92,60 @@ describe("/api/mentor-semester route", () => {
   });
 
   it("POST denies unauthorized users", async () => {
-    const res = await POST(req("http://localhost/api/mentor-semester", "POST", { name: "Spring 2026" }));
+    const res = await POST(
+      req("http://localhost/api/mentor-semester", "POST", {
+        name: "Spring 2026",
+      })
+    );
     expect(res.status).toBe(403);
   });
 
   it("POST creates semester using existing active schedule", async () => {
-    mockGetGatewayAuthLevel.mockResolvedValue({ isMentoringHead: true, isPrimary: false });
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isMentoringHead: true,
+      isPrimary: false,
+    });
     mockScheduleFindFirst.mockResolvedValue({ id: 10 });
-    mockSemesterCreate.mockResolvedValue({ id: 2, name: "Spring 2026", scheduleId: 10 });
+    mockSemesterCreate.mockResolvedValue({
+      id: 2,
+      name: "Spring 2026",
+      scheduleId: 10,
+    });
 
-    const res = await POST(req("http://localhost/api/mentor-semester", "POST", { name: "Spring 2026" }));
+    const res = await POST(
+      req("http://localhost/api/mentor-semester", "POST", {
+        name: "Spring 2026",
+      })
+    );
     expect(res.status).toBe(201);
-    expect(await res.json()).toEqual({ id: 2, name: "Spring 2026", scheduleId: 10 });
+    expect(await res.json()).toEqual({
+      id: 2,
+      name: "Spring 2026",
+      scheduleId: 10,
+    });
   });
 
   it("PUT requires semester id", async () => {
-    mockGetGatewayAuthLevel.mockResolvedValue({ isMentoringHead: true, isPrimary: false });
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isMentoringHead: true,
+      isPrimary: false,
+    });
 
-    const res = await PUT(req("http://localhost/api/mentor-semester", "PUT", { name: "Fall 2026" }));
+    const res = await PUT(
+      req("http://localhost/api/mentor-semester", "PUT", { name: "Fall 2026" })
+    );
     expect(res.status).toBe(400);
   });
 
   it("DELETE requires semester id", async () => {
-    mockGetGatewayAuthLevel.mockResolvedValue({ isMentoringHead: true, isPrimary: false });
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isMentoringHead: true,
+      isPrimary: false,
+    });
 
-    const res = await DELETE(req("http://localhost/api/mentor-semester", "DELETE", {}));
+    const res = await DELETE(
+      req("http://localhost/api/mentor-semester", "DELETE", {})
+    );
     expect(res.status).toBe(400);
   });
 });

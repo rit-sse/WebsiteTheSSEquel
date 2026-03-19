@@ -2,7 +2,12 @@ import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { NextRequest } from "next/server";
-import { resolveUserImage, getKeyFromS3Url, isS3Key, normalizeToS3Key } from "@/lib/s3Utils";
+import {
+  resolveUserImage,
+  getKeyFromS3Url,
+  isS3Key,
+  normalizeToS3Key,
+} from "@/lib/s3Utils";
 import { s3Service } from "@/lib/services/s3Service";
 import { maybeGrantProfileCompletionMembership } from "@/lib/services/profileCompletionService";
 import { maybeCreateAlumniCandidate } from "@/lib/services/alumniCandidateService";
@@ -10,7 +15,7 @@ import { getGatewayAuthLevel } from "@/lib/authGateway";
 import { UpdateUserSchema } from "@/lib/schemas/user";
 import { ApiError } from "@/lib/apiError";
 
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
 function isOwnedProfileImageKey(key: string, userId: number): boolean {
   return key.startsWith(`uploads/profile-pictures/${userId}/`);
@@ -42,9 +47,9 @@ export async function GET() {
         select: { Memberships: true },
       },
     },
-    orderBy: { name: 'asc' }
+    orderBy: { name: "asc" },
   });
-  
+
   // Transform to include membershipCount and isMember (computed) for backward compatibility
   const usersWithMembershipCount = users.map((user) => ({
     id: user.id,
@@ -63,17 +68,17 @@ export async function GET() {
     membershipCount: user._count.Memberships,
     isMember: user._count.Memberships >= 1, // Computed for backward compatibility
   }));
-  
+
   return Response.json(usersWithMembershipCount);
 }
 
 /**
  * User creation is disabled - use the invitation system instead.
- * 
+ *
  * Users must be invited via /api/invitations, which sends them an email
  * to sign in with OAuth. This ensures proper Account and Session records
  * are created by NextAuth, avoiding authentication errors.
- * 
+ *
  * @see /api/invitations for creating user invitations
  */
 export async function POST() {
@@ -139,9 +144,9 @@ export async function DELETE(request: Request) {
  * @param request { id: number, name?: string, email?: string, linkedIn?: string, gitHub?: string, description?: string, image?: string }
  * @returns updated user object
  *
- * 
+ *
  * Auth: Users can update their own profile. Officers can update any user.
- * 
+ *
  * NOTE: Membership is no longer controlled via isMember boolean.
  * Use the Memberships table and /api/memberships endpoints instead.
  */
@@ -154,7 +159,11 @@ export async function PUT(request: NextRequest) {
   }
 
   const parsed = UpdateUserSchema.safeParse(body);
-  if (!parsed.success) return ApiError.validationError("Validation failed", parsed.error.flatten());
+  if (!parsed.success)
+    return ApiError.validationError(
+      "Validation failed",
+      parsed.error.flatten()
+    );
 
   const id = parsed.data.id;
 
@@ -239,7 +248,9 @@ export async function PUT(request: NextRequest) {
       data.profileImageKey = null;
     } else if (isS3Key(body.image)) {
       if (!isOwnedProfileImageKey(body.image, targetUser.id)) {
-        return new Response("Profile image key is not owned by this user", { status: 403 });
+        return new Response("Profile image key is not owned by this user", {
+          status: 403,
+        });
       }
       // User uploaded a new image -> delete old one from S3
       if (existingProfileImageKey && existingProfileImageKey !== body.image) {
@@ -256,7 +267,9 @@ export async function PUT(request: NextRequest) {
       const extracted = getKeyFromS3Url(body.image);
       if (extracted) {
         if (!isOwnedProfileImageKey(extracted, targetUser.id)) {
-          return new Response("Profile image key is not owned by this user", { status: 403 });
+          return new Response("Profile image key is not owned by this user", {
+            status: 403,
+          });
         }
         if (existingProfileImageKey && existingProfileImageKey !== extracted) {
           try {
@@ -274,11 +287,16 @@ export async function PUT(request: NextRequest) {
   // Cleanup any intermediate uploads produced during client-side recropping
   // before save (these are owned by the user but never persisted in DB).
   if (Array.isArray(body.cleanupImageKeys)) {
-    const currentBodyImage = typeof body.image === "string" ? normalizeToS3Key(body.image) : null;
+    const currentBodyImage =
+      typeof body.image === "string" ? normalizeToS3Key(body.image) : null;
     const normalizedCleanupKeys: string[] = body.cleanupImageKeys
-      .map((key: unknown) => (typeof key === "string" ? normalizeToS3Key(key) : null))
+      .map((key: unknown) =>
+        typeof key === "string" ? normalizeToS3Key(key) : null
+      )
       .filter((key: string | null): key is string => !!key);
-    const uniqueCleanupKeys: string[] = Array.from(new Set(normalizedCleanupKeys));
+    const uniqueCleanupKeys: string[] = Array.from(
+      new Set(normalizedCleanupKeys)
+    );
 
     for (const cleanupKey of uniqueCleanupKeys) {
       if (!isOwnedProfileImageKey(cleanupKey, targetUser.id)) continue;
@@ -310,7 +328,7 @@ export async function PUT(request: NextRequest) {
     });
 
     await maybeCreateAlumniCandidate(id);
-    
+
     // Transform for memberships & image based on URL
     const { profileImageKey, googleImageURL, _membershipCount, ...rest } = user;
     return Response.json({

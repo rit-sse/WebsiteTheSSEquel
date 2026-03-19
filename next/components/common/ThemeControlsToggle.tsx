@@ -1,65 +1,65 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { useTheme } from "next-themes"
-import { Moon, Sun } from "lucide-react"
-import { useFontMode } from "@/contexts/FontModeContext"
-import { useStyleMode } from "@/contexts/StyleModeContext"
-import { useIsMobile } from "@/hooks/use-mobile"
-import { cn } from "@/lib/utils"
+import * as React from "react";
+import { useTheme } from "next-themes";
+import { Moon, Sun } from "lucide-react";
+import { useFontMode } from "@/contexts/FontModeContext";
+import { useStyleMode } from "@/contexts/StyleModeContext";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 
 export default function ThemeControlsToggle() {
-  const { theme, setTheme } = useTheme()
-  const { fontMode, setFontMode } = useFontMode()
-  const { styleMode, setStyleMode } = useStyleMode()
-  const isMobile = useIsMobile()
-  const [mounted, setMounted] = React.useState(false)
-  const [isExpanded, setIsExpanded] = React.useState(false)
-  const [isNudging, setIsNudging] = React.useState(false)
-  const [hasPeeked, setHasPeeked] = React.useState(false)
+  const { theme, setTheme } = useTheme();
+  const { fontMode, setFontMode } = useFontMode();
+  const { styleMode, setStyleMode } = useStyleMode();
+  const isMobile = useIsMobile();
+  const [mounted, setMounted] = React.useState(false);
+  const [isExpanded, setIsExpanded] = React.useState(false);
+  const [isNudging, setIsNudging] = React.useState(false);
+  const [hasPeeked, setHasPeeked] = React.useState(false);
 
   React.useEffect(() => {
-    setMounted(true)
-  }, [])
+    setMounted(true);
+  }, []);
 
   React.useEffect(() => {
-    if (!mounted || hasPeeked) return
+    if (!mounted || hasPeeked) return;
 
-    setIsExpanded(true)
-    setIsNudging(true)
-    const shakeTimer = setTimeout(() => setIsNudging(false), 900)
+    setIsExpanded(true);
+    setIsNudging(true);
+    const shakeTimer = setTimeout(() => setIsNudging(false), 900);
     const collapseTimer = setTimeout(() => {
-      setIsExpanded(false)
-      setHasPeeked(true)
-    }, 1800)
+      setIsExpanded(false);
+      setHasPeeked(true);
+    }, 1800);
 
     return () => {
-      clearTimeout(shakeTimer)
-      clearTimeout(collapseTimer)
-    }
-  }, [mounted, hasPeeked])
+      clearTimeout(shakeTimer);
+      clearTimeout(collapseTimer);
+    };
+  }, [mounted, hasPeeked]);
 
   if (!mounted) {
     return (
       <div className="inline-flex h-9 items-center justify-center rounded-full border border-border/50 bg-muted px-2 text-muted-foreground">
         <div className="h-7 w-7 rounded-full bg-muted-foreground/20" />
       </div>
-    )
+    );
   }
 
   const handleThemeClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     if (isMobile && !isExpanded) {
-      event.preventDefault()
-      event.stopPropagation()
-      setIsExpanded(true)
-      return
+      event.preventDefault();
+      event.stopPropagation();
+      setIsExpanded(true);
+      return;
     }
 
-    setTheme(theme === "dark" ? "light" : "dark")
+    setTheme(theme === "dark" ? "light" : "dark");
     if (isMobile) {
-      setIsExpanded(false)
+      setIsExpanded(false);
     }
-  }
+  };
 
   return (
     <div
@@ -90,7 +90,9 @@ export default function ThemeControlsToggle() {
       <div
         className={cn(
           "inline-flex items-center gap-1 overflow-hidden transition-all duration-300 ease-out",
-          isExpanded ? "max-w-[120px] opacity-100" : "max-w-0 opacity-0 pointer-events-none"
+          isExpanded
+            ? "max-w-[120px] opacity-100"
+            : "max-w-0 opacity-0 pointer-events-none"
         )}
       >
         <button
@@ -98,8 +100,8 @@ export default function ThemeControlsToggle() {
           aria-label={`Switch to ${styleMode === "neo" ? "clean" : "neobrutalist"} style`}
           title={`Switch to ${styleMode === "neo" ? "clean" : "neobrutalist"} style`}
           onClick={() => {
-            setStyleMode(styleMode === "neo" ? "clean" : "neo")
-            if (isMobile) setIsExpanded(false)
+            setStyleMode(styleMode === "neo" ? "clean" : "neo");
+            if (isMobile) setIsExpanded(false);
           }}
           className={cn(
             "inline-flex h-7 w-7 items-center justify-center rounded-full transition-colors hover:bg-muted/60",
@@ -118,8 +120,8 @@ export default function ThemeControlsToggle() {
           aria-label={`Switch to ${fontMode === "rethink" ? "PT Serif" : "Rethink Sans"} font`}
           title={`Switch to ${fontMode === "rethink" ? "PT Serif" : "Rethink Sans"} font`}
           onClick={() => {
-            setFontMode(fontMode === "rethink" ? "pt-serif" : "rethink")
-            if (isMobile) setIsExpanded(false)
+            setFontMode(fontMode === "rethink" ? "pt-serif" : "rethink");
+            if (isMobile) setIsExpanded(false);
           }}
           className={cn(
             "inline-flex h-7 w-7 items-center justify-center rounded-full transition-colors hover:bg-muted/60",
@@ -137,5 +139,5 @@ export default function ThemeControlsToggle() {
         </button>
       </div>
     </div>
-  )
+  );
 }

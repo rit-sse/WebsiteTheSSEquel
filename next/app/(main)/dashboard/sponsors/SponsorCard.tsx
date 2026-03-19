@@ -1,29 +1,33 @@
-"use client"
+"use client";
 
-import Image from "next/image"
-import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Pencil, Trash2, ExternalLink } from "lucide-react"
+import Image from "next/image";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Pencil, Trash2, ExternalLink } from "lucide-react";
 
 export interface Sponsor {
-  id: number
-  name: string
-  description: string
-  logoUrl: string
-  websiteUrl: string
-  isActive: boolean
-  createdAt: string
-  updatedAt: string
+  id: number;
+  name: string;
+  description: string;
+  logoUrl: string;
+  websiteUrl: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface SponsorCardProps {
-  sponsor: Sponsor
-  onEdit: (sponsor: Sponsor) => void
-  onDelete: (sponsor: Sponsor) => void
+  sponsor: Sponsor;
+  onEdit: (sponsor: Sponsor) => void;
+  onDelete: (sponsor: Sponsor) => void;
 }
 
-export default function SponsorCard({ sponsor, onEdit, onDelete }: SponsorCardProps) {
+export default function SponsorCard({
+  sponsor,
+  onEdit,
+  onDelete,
+}: SponsorCardProps) {
   return (
     <Card depth={2} className="p-4 flex flex-col">
       {/* Logo */}
@@ -42,7 +46,10 @@ export default function SponsorCard({ sponsor, onEdit, onDelete }: SponsorCardPr
           <h3 className="font-display text-lg font-bold text-foreground">
             {sponsor.name}
           </h3>
-          <Badge variant={sponsor.isActive ? "default" : "outline"} className="text-xs shrink-0">
+          <Badge
+            variant={sponsor.isActive ? "default" : "outline"}
+            className="text-xs shrink-0"
+          >
             {sponsor.isActive ? "Active" : "Inactive"}
           </Badge>
         </div>
@@ -82,5 +89,5 @@ export default function SponsorCard({ sponsor, onEdit, onDelete }: SponsorCardPr
         </Button>
       </div>
     </Card>
-  )
+  );
 }

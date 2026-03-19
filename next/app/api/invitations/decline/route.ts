@@ -57,10 +57,9 @@ export async function POST(request: NextRequest) {
 
   // Verify the invitation email matches the logged-in user's email
   if (invitation.invitedEmail !== loggedInUser.email) {
-    return new Response(
-      "This invitation is for a different email address",
-      { status: 403 }
-    );
+    return new Response("This invitation is for a different email address", {
+      status: 403,
+    });
   }
 
   try {

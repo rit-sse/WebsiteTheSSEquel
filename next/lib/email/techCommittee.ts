@@ -63,8 +63,7 @@ export function buildTechCommitteeAssignmentEmail({
               <li>Complete training on lab duties, server responsibilities, and any operational procedures.</li>
             </ol>
           `,
-          text:
-            "Lab Division Next Steps:\n1. Report to the Lab Division Manager for your first onboarding conversation.\n2. Set up your server account and confirm you can access the systems you need.\n3. Complete training on lab duties, server responsibilities, and any operational procedures.",
+          text: "Lab Division Next Steps:\n1. Report to the Lab Division Manager for your first onboarding conversation.\n2. Set up your server account and confirm you can access the systems you need.\n3. Complete training on lab duties, server responsibilities, and any operational procedures.",
         }
       : finalDivision === "Web Division"
         ? {
@@ -76,8 +75,7 @@ export function buildTechCommitteeAssignmentEmail({
                 <li>Review the onboarding guide and get your local development setup working.</li>
               </ol>
             `,
-            text:
-              "Web Division Next Steps:\n1. Watch for follow-up from Tech leadership about current website work and where to start.\n2. Make sure your GitHub access is in order so you can clone the repo and contribute.\n3. Review the onboarding guide and get your local development setup working.",
+            text: "Web Division Next Steps:\n1. Watch for follow-up from Tech leadership about current website work and where to start.\n2. Make sure your GitHub access is in order so you can clone the repo and contribute.\n3. Review the onboarding guide and get your local development setup working.",
           }
         : {
             html: `
@@ -88,8 +86,7 @@ export function buildTechCommitteeAssignmentEmail({
                 <li>Review the relevant documentation and onboarding notes before your first task.</li>
               </ol>
             `,
-            text:
-              "Services Division Next Steps:\n1. Watch for follow-up from Tech leadership about the services currently owned by the division.\n2. Confirm what systems and tools you will be working with first.\n3. Review the relevant documentation and onboarding notes before your first task.",
+            text: "Services Division Next Steps:\n1. Watch for follow-up from Tech leadership about the services currently owned by the division.\n2. Confirm what systems and tools you will be working with first.\n3. Review the relevant documentation and onboarding notes before your first task.",
           };
 
   const body = `

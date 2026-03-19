@@ -117,14 +117,18 @@ export function resolveClientIp(request: Pick<NextRequest, "headers">): string {
   return "unknown";
 }
 
-export function getRateLimitRule(request: Pick<NextRequest, "method" | "nextUrl">) {
-  return RATE_LIMIT_RULES.find((rule) => {
-    if (rule.method && rule.method !== request.method) {
-      return false;
-    }
+export function getRateLimitRule(
+  request: Pick<NextRequest, "method" | "nextUrl">
+) {
+  return (
+    RATE_LIMIT_RULES.find((rule) => {
+      if (rule.method && rule.method !== request.method) {
+        return false;
+      }
 
-    return rule.pathname.test(request.nextUrl.pathname);
-  }) ?? null;
+      return rule.pathname.test(request.nextUrl.pathname);
+    }) ?? null
+  );
 }
 
 export function resetRateLimitBuckets() {
@@ -166,7 +170,10 @@ export async function rateLimitMiddleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const retryAfterSeconds = Math.max(1, Math.ceil((bucket.resetAt - now) / 1000));
+  const retryAfterSeconds = Math.max(
+    1,
+    Math.ceil((bucket.resetAt - now) / 1000)
+  );
 
   return NextResponse.json(
     { error: "Too many requests" },

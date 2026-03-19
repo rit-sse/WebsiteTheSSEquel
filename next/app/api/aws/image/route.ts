@@ -17,7 +17,10 @@ export async function GET(req: NextRequest) {
   // ── Validate key ─────────────────────────────────────────────────
   const key = req.nextUrl.searchParams.get("key");
   if (!key) {
-    return NextResponse.json({ error: "key parameter is required" }, { status: 400 });
+    return NextResponse.json(
+      { error: "key parameter is required" },
+      { status: 400 }
+    );
   }
 
   // Only allow keys under the uploads/ prefix to prevent arbitrary S3 reads
@@ -28,13 +31,18 @@ export async function GET(req: NextRequest) {
   // ── Fetch from S3 via SDK (bucket is not public) ───────────────
   try {
     const s3 = getS3Client();
-    const response = await s3.send(new GetObjectCommand({
-      Bucket: getBucketName(),
-      Key: key,
-    }));
+    const response = await s3.send(
+      new GetObjectCommand({
+        Bucket: getBucketName(),
+        Key: key,
+      })
+    );
 
     if (!response.Body) {
-      return NextResponse.json({ error: "Image fetch failed" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Image fetch failed" },
+        { status: 404 }
+      );
     }
 
     const bytes = await response.Body.transformToByteArray();

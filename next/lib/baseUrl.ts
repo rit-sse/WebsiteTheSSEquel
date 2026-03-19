@@ -22,7 +22,9 @@ export function getPublicBaseUrl(request: NextRequest): string {
 
   const host = request.headers.get("host");
   if (host && !host.startsWith("0.0.0.0") && !host.startsWith("127.0.0.1")) {
-    const proto = request.headers.get("x-forwarded-proto") || (host.includes("localhost") ? "http" : "https");
+    const proto =
+      request.headers.get("x-forwarded-proto") ||
+      (host.includes("localhost") ? "http" : "https");
     return `${proto}://${host}`;
   }
 

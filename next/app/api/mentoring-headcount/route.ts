@@ -16,7 +16,9 @@ export async function GET(request: NextRequest) {
   const traffic = searchParams.get("traffic") === "true";
   const limit = searchParams.get("limit");
 
-  const whereClause = semesterId ? { semesterId: parseInt(semesterId) } : undefined;
+  const whereClause = semesterId
+    ? { semesterId: parseInt(semesterId) }
+    : undefined;
 
   if (traffic) {
     const entries = await prisma.mentorHeadcountEntry.findMany({
@@ -24,13 +26,21 @@ export async function GET(request: NextRequest) {
       select: { peopleInLab: true, createdAt: true },
     });
 
-    const trafficMap = new Map<string, { total: number; count: number; weekday: number; hour: number }>();
+    const trafficMap = new Map<
+      string,
+      { total: number; count: number; weekday: number; hour: number }
+    >();
 
     for (const entry of entries) {
       const { weekday, hour } = getWeekdayHour(entry.createdAt);
       if (weekday < 1 || weekday > 5) continue;
       const key = `${weekday}-${hour}`;
-      const existing = trafficMap.get(key) ?? { total: 0, count: 0, weekday, hour };
+      const existing = trafficMap.get(key) ?? {
+        total: 0,
+        count: 0,
+        weekday,
+        hour,
+      };
       existing.total += entry.peopleInLab;
       existing.count += 1;
       trafficMap.set(key, existing);
@@ -77,13 +87,22 @@ export async function POST(request: NextRequest) {
   const { mentorIds, peopleInLab, feeling, semesterId } = body;
 
   if (!Array.isArray(mentorIds) || mentorIds.length === 0) {
-    return NextResponse.json({ error: "Mentors on duty are required" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Mentors on duty are required" },
+      { status: 400 }
+    );
   }
   if (typeof peopleInLab !== "number") {
-    return NextResponse.json({ error: "People in lab is required" }, { status: 400 });
+    return NextResponse.json(
+      { error: "People in lab is required" },
+      { status: 400 }
+    );
   }
   if (!feeling || typeof feeling !== "string") {
-    return NextResponse.json({ error: "Feeling response is required" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Feeling response is required" },
+      { status: 400 }
+    );
   }
 
   let targetSemesterId = semesterId ? parseInt(semesterId) : null;

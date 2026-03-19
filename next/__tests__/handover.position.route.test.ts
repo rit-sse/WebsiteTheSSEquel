@@ -60,7 +60,11 @@ describe("/api/handover/[positionId] route", () => {
   it("GET creates a default document when one does not exist", async () => {
     mockPositionFindUnique.mockResolvedValue({ id: 1, title: "President" });
     mockHandoverFindUnique.mockResolvedValue(null);
-    mockHandoverCreate.mockResolvedValue({ id: 9, positionId: 1, content: "seed" });
+    mockHandoverCreate.mockResolvedValue({
+      id: 9,
+      positionId: 1,
+      content: "seed",
+    });
 
     const res = await GET(new Request("http://localhost/api/handover/1"), {
       params: Promise.resolve({ positionId: "1" }),
@@ -87,7 +91,11 @@ describe("/api/handover/[positionId] route", () => {
 
   it("PUT upserts document when payload is valid", async () => {
     mockPositionFindUnique.mockResolvedValue({ id: 1, title: "President" });
-    mockHandoverUpsert.mockResolvedValue({ id: 2, positionId: 1, content: "updated" });
+    mockHandoverUpsert.mockResolvedValue({
+      id: 2,
+      positionId: 1,
+      content: "updated",
+    });
 
     const req = new Request("http://localhost/api/handover/1", {
       method: "PUT",
@@ -100,6 +108,10 @@ describe("/api/handover/[positionId] route", () => {
     });
 
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ id: 2, positionId: 1, content: "updated" });
+    expect(await res.json()).toEqual({
+      id: 2,
+      positionId: 1,
+      content: "updated",
+    });
   });
 });

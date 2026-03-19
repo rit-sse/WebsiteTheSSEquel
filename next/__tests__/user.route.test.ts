@@ -25,7 +25,9 @@ vi.mock("next-auth", () => ({
 }));
 
 vi.mock("@/lib/authOptions", () => ({ authOptions: {} }));
-vi.mock("@/lib/services/s3Service", () => ({ s3Service: { deleteObject: vi.fn() } }));
+vi.mock("@/lib/services/s3Service", () => ({
+  s3Service: { deleteObject: vi.fn() },
+}));
 vi.mock("@/lib/services/profileCompletionService", () => ({
   maybeGrantProfileCompletionMembership: vi.fn(),
 }));

@@ -7,8 +7,8 @@ import { ApiError } from "@/lib/apiError";
  * @returns list of department objects
  */
 export async function GET() {
-  try{
-  const allEvents = await prisma.event.findMany({
+  try {
+    const allEvents = await prisma.event.findMany({
       select: {
         id: true,
         title: true,
@@ -21,8 +21,7 @@ export async function GET() {
       },
     });
     return Response.json(allEvents);
-  }
-  catch{
+  } catch {
     // probably need to implement better error catching in the future >.<
     return Response.json(
       { error: "Failed GET request. Check your database connection." },
@@ -46,9 +45,22 @@ export async function POST(request: Request) {
   }
 
   const parsed = CreateEventSchema.safeParse(body);
-  if (!parsed.success) return ApiError.validationError("Validation failed", parsed.error.flatten());
+  if (!parsed.success)
+    return ApiError.validationError(
+      "Validation failed",
+      parsed.error.flatten()
+    );
 
-  const { id, title, description, date, location, image, attendanceEnabled, grantsMembership } = parsed.data;
+  const {
+    id,
+    title,
+    description,
+    date,
+    location,
+    image,
+    attendanceEnabled,
+    grantsMembership,
+  } = parsed.data;
 
   try {
     const event = await prisma.event.create({
@@ -112,7 +124,11 @@ export async function PUT(request: Request) {
   }
 
   const parsed = UpdateEventSchema.safeParse(body);
-  if (!parsed.success) return ApiError.validationError("Validation failed", parsed.error.flatten());
+  if (!parsed.success)
+    return ApiError.validationError(
+      "Validation failed",
+      parsed.error.flatten()
+    );
 
   const { id, ...data } = parsed.data;
 

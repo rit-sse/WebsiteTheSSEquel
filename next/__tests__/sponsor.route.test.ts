@@ -1,12 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { mockFindMany, mockCreate, mockFindUnique, mockUpdate, mockDelete } = vi.hoisted(() => ({
-  mockFindMany: vi.fn(),
-  mockCreate: vi.fn(),
-  mockFindUnique: vi.fn(),
-  mockUpdate: vi.fn(),
-  mockDelete: vi.fn(),
-}));
+const { mockFindMany, mockCreate, mockFindUnique, mockUpdate, mockDelete } =
+  vi.hoisted(() => ({
+    mockFindMany: vi.fn(),
+    mockCreate: vi.fn(),
+    mockFindUnique: vi.fn(),
+    mockUpdate: vi.fn(),
+    mockDelete: vi.fn(),
+  }));
 
 vi.mock("@/lib/prisma", () => ({
   default: {

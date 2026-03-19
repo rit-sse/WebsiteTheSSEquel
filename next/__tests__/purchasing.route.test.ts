@@ -1,11 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { mockGetSessionToken, mockFindFirst, mockFindMany, mockCreate } = vi.hoisted(() => ({
-  mockGetSessionToken: vi.fn(),
-  mockFindFirst: vi.fn(),
-  mockFindMany: vi.fn(),
-  mockCreate: vi.fn(),
-}));
+const { mockGetSessionToken, mockFindFirst, mockFindMany, mockCreate } =
+  vi.hoisted(() => ({
+    mockGetSessionToken: vi.fn(),
+    mockFindFirst: vi.fn(),
+    mockFindMany: vi.fn(),
+    mockCreate: vi.fn(),
+  }));
 
 vi.mock("@/lib/sessionToken", () => ({
   getSessionToken: mockGetSessionToken,
@@ -30,14 +31,18 @@ describe("/api/purchasing route", () => {
 
   it("GET returns 401 when unauthenticated", async () => {
     mockGetSessionToken.mockReturnValue(null);
-    const res = await GET(new Request("http://localhost/api/purchasing") as any);
+    const res = await GET(
+      new Request("http://localhost/api/purchasing") as any
+    );
     expect(res.status).toBe(401);
   });
 
   it("GET returns 404 when token has no user", async () => {
     mockGetSessionToken.mockReturnValue("token");
     mockFindFirst.mockResolvedValue(null);
-    const res = await GET(new Request("http://localhost/api/purchasing") as any);
+    const res = await GET(
+      new Request("http://localhost/api/purchasing") as any
+    );
     expect(res.status).toBe(404);
   });
 
@@ -46,7 +51,9 @@ describe("/api/purchasing route", () => {
     mockFindFirst.mockResolvedValue({ id: 1 });
     mockFindMany.mockResolvedValue([{ id: 10 }, { id: 9 }]);
 
-    const res = await GET(new Request("http://localhost/api/purchasing") as any);
+    const res = await GET(
+      new Request("http://localhost/api/purchasing") as any
+    );
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual([{ id: 10 }, { id: 9 }]);
   });

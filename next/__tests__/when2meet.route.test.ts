@@ -34,7 +34,9 @@ describe("/api/when2meet route", () => {
     mockFetch.mockResolvedValue({ ok: false, statusText: "Bad Gateway" });
 
     const req = {
-      json: vi.fn().mockResolvedValue({ url: "https://www.when2meet.com/?123-ABC" }),
+      json: vi
+        .fn()
+        .mockResolvedValue({ url: "https://www.when2meet.com/?123-ABC" }),
     } as any;
 
     const res = await POST(req);

@@ -1,127 +1,129 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useCallback } from "react"
-import { useParams } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { ArrowLeft, Save, Pencil, Eye } from "lucide-react"
-import Link from "next/link"
-import ReactMarkdown from "react-markdown"
+import { useState, useEffect, useCallback } from "react";
+import { useParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { ArrowLeft, Save, Pencil, Eye } from "lucide-react";
+import Link from "next/link";
+import ReactMarkdown from "react-markdown";
 
 interface HandoverDocument {
-  id: number
-  positionId: number
-  content: string
-  updatedAt: string
+  id: number;
+  positionId: number;
+  content: string;
+  updatedAt: string;
   position: {
-    title: string
-    is_primary: boolean
-  }
+    title: string;
+    is_primary: boolean;
+  };
 }
 
 export default function HandoverDocPage() {
-  const params = useParams()
-  const positionId = params.id as string
+  const params = useParams();
+  const positionId = params.id as string;
 
-  const [document, setDocument] = useState<HandoverDocument | null>(null)
-  const [content, setContent] = useState("")
-  const [isLoading, setIsLoading] = useState(true)
-  const [isSaving, setIsSaving] = useState(false)
-  const [error, setError] = useState("")
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
-  const [lastSaved, setLastSaved] = useState<Date | null>(null)
-  const [isEditMode, setIsEditMode] = useState(false)
+  const [document, setDocument] = useState<HandoverDocument | null>(null);
+  const [content, setContent] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [isEditMode, setIsEditMode] = useState(false);
 
   const fetchDocument = useCallback(async () => {
-    setIsLoading(true)
-    setError("")
+    setIsLoading(true);
+    setError("");
     try {
-      const response = await fetch(`/api/handover/${positionId}`)
+      const response = await fetch(`/api/handover/${positionId}`);
       if (response.ok) {
-        const data = await response.json()
-        setDocument(data)
-        setContent(data.content)
-        setLastSaved(new Date(data.updatedAt))
+        const data = await response.json();
+        setDocument(data);
+        setContent(data.content);
+        setLastSaved(new Date(data.updatedAt));
       } else if (response.status === 404) {
-        setError("Position not found")
+        setError("Position not found");
       } else {
-        setError("Failed to load document")
+        setError("Failed to load document");
       }
     } catch (err) {
-      console.error("Error fetching document:", err)
-      setError("Failed to load document")
+      console.error("Error fetching document:", err);
+      setError("Failed to load document");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }, [positionId])
+  }, [positionId]);
 
   useEffect(() => {
     if (positionId) {
-      fetchDocument()
+      fetchDocument();
     }
-  }, [positionId, fetchDocument])
+  }, [positionId, fetchDocument]);
 
   const handleContentChange = (newContent: string) => {
-    setContent(newContent)
-    setHasUnsavedChanges(newContent !== document?.content)
-  }
+    setContent(newContent);
+    setHasUnsavedChanges(newContent !== document?.content);
+  };
 
   const handleSave = async () => {
-    setIsSaving(true)
-    setError("")
+    setIsSaving(true);
+    setError("");
     try {
       const response = await fetch(`/api/handover/${positionId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content })
-      })
+        body: JSON.stringify({ content }),
+      });
 
       if (response.ok) {
-        const data = await response.json()
-        setDocument(data)
-        setLastSaved(new Date(data.updatedAt))
-        setHasUnsavedChanges(false)
+        const data = await response.json();
+        setDocument(data);
+        setLastSaved(new Date(data.updatedAt));
+        setHasUnsavedChanges(false);
       } else {
-        const errorText = await response.text()
-        setError(errorText || "Failed to save document")
+        const errorText = await response.text();
+        setError(errorText || "Failed to save document");
       }
     } catch (err) {
-      console.error("Error saving document:", err)
-      setError("Failed to save document")
+      console.error("Error saving document:", err);
+      setError("Failed to save document");
     } finally {
-      setIsSaving(false)
+      setIsSaving(false);
     }
-  }
+  };
 
   const handleToggleMode = () => {
     if (isEditMode && hasUnsavedChanges) {
       // If switching from edit to view with unsaved changes, prompt to save
       if (confirm("You have unsaved changes. Save before viewing?")) {
-        handleSave().then(() => setIsEditMode(false))
-        return
+        handleSave().then(() => setIsEditMode(false));
+        return;
       }
     }
-    setIsEditMode(!isEditMode)
-  }
+    setIsEditMode(!isEditMode);
+  };
 
   // Warn user about unsaved changes when leaving
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (hasUnsavedChanges) {
-        e.preventDefault()
-        e.returnValue = ""
+        e.preventDefault();
+        e.returnValue = "";
       }
-    }
-    window.addEventListener("beforeunload", handleBeforeUnload)
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload)
-  }, [hasUnsavedChanges])
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [hasUnsavedChanges]);
 
   if (isLoading) {
     return (
       <div className="w-full max-w-5xl mx-auto p-4 sm:p-6 lg:p-8">
-        <div className="text-muted-foreground text-center py-12">Loading...</div>
+        <div className="text-muted-foreground text-center py-12">
+          Loading...
+        </div>
       </div>
-    )
+    );
   }
 
   if (error && !document) {
@@ -139,7 +141,7 @@ export default function HandoverDocPage() {
           </div>
         </Card>
       </div>
-    )
+    );
   }
 
   return (
@@ -164,11 +166,7 @@ export default function HandoverDocPage() {
                 Last saved: {lastSaved.toLocaleString()}
               </span>
             )}
-            <Button 
-              variant="outline"
-              size="sm"
-              onClick={handleToggleMode}
-            >
+            <Button variant="outline" size="sm" onClick={handleToggleMode}>
               {isEditMode ? (
                 <>
                   <Eye className="h-4 w-4 mr-2" />
@@ -182,8 +180,8 @@ export default function HandoverDocPage() {
               )}
             </Button>
             {isEditMode && (
-              <Button 
-                onClick={handleSave} 
+              <Button
+                onClick={handleSave}
                 disabled={isSaving || !hasUnsavedChanges}
                 variant={hasUnsavedChanges ? "default" : "neutral"}
               >
@@ -229,14 +227,29 @@ export default function HandoverDocPage() {
           <div className="mt-4 text-xs text-muted-foreground">
             <p className="font-medium mb-1">Markdown tips:</p>
             <ul className="list-disc list-inside space-y-1">
-              <li>Use <code className="bg-surface-3 px-1 rounded"># Heading</code> for section titles</li>
-              <li>Use <code className="bg-surface-3 px-1 rounded">- item</code> for bullet points</li>
-              <li>Use <code className="bg-surface-3 px-1 rounded">**bold**</code> for emphasis</li>
-              <li>Use <code className="bg-surface-3 px-1 rounded">[link text](url)</code> for links</li>
+              <li>
+                Use <code className="bg-surface-3 px-1 rounded"># Heading</code>{" "}
+                for section titles
+              </li>
+              <li>
+                Use <code className="bg-surface-3 px-1 rounded">- item</code>{" "}
+                for bullet points
+              </li>
+              <li>
+                Use <code className="bg-surface-3 px-1 rounded">**bold**</code>{" "}
+                for emphasis
+              </li>
+              <li>
+                Use{" "}
+                <code className="bg-surface-3 px-1 rounded">
+                  [link text](url)
+                </code>{" "}
+                for links
+              </li>
             </ul>
           </div>
         )}
       </Card>
     </div>
-  )
+  );
 }

@@ -37,7 +37,10 @@ import { DELETE, GET, POST, PUT } from "@/app/api/hourBlocks/route";
 describe("/api/hourBlocks route", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockGetGatewayAuthLevel.mockResolvedValue({ isMentoringHead: false, isPrimary: false });
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isMentoringHead: false,
+      isPrimary: false,
+    });
     mockFindUnique.mockResolvedValue({ id: 1 });
   });
 
@@ -63,7 +66,10 @@ describe("/api/hourBlocks route", () => {
   it("POST denies unauthorized users", async () => {
     const req = new Request("http://localhost/api/hourBlocks", {
       method: "POST",
-      body: JSON.stringify({ weekday: "Monday", startTime: "2026-03-04T12:00:00.000Z" }),
+      body: JSON.stringify({
+        weekday: "Monday",
+        startTime: "2026-03-04T12:00:00.000Z",
+      }),
       headers: { "content-type": "application/json" },
     }) as any;
 
@@ -72,12 +78,18 @@ describe("/api/hourBlocks route", () => {
   });
 
   it("POST creates hour block when authorized", async () => {
-    mockGetGatewayAuthLevel.mockResolvedValue({ isMentoringHead: true, isPrimary: false });
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isMentoringHead: true,
+      isPrimary: false,
+    });
     mockCreate.mockResolvedValue({ id: 2, weekday: "Tuesday" });
 
     const req = new Request("http://localhost/api/hourBlocks", {
       method: "POST",
-      body: JSON.stringify({ weekday: "Tuesday", startTime: "2026-03-04T13:00:00.000Z" }),
+      body: JSON.stringify({
+        weekday: "Tuesday",
+        startTime: "2026-03-04T13:00:00.000Z",
+      }),
       headers: { "content-type": "application/json" },
     }) as any;
 
@@ -87,7 +99,10 @@ describe("/api/hourBlocks route", () => {
   });
 
   it("PUT requires id", async () => {
-    mockGetGatewayAuthLevel.mockResolvedValue({ isMentoringHead: true, isPrimary: false });
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isMentoringHead: true,
+      isPrimary: false,
+    });
 
     const req = new Request("http://localhost/api/hourBlocks", {
       method: "PUT",
@@ -100,7 +115,10 @@ describe("/api/hourBlocks route", () => {
   });
 
   it("DELETE requires id", async () => {
-    mockGetGatewayAuthLevel.mockResolvedValue({ isMentoringHead: true, isPrimary: false });
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isMentoringHead: true,
+      isPrimary: false,
+    });
 
     const req = new Request("http://localhost/api/hourBlocks", {
       method: "DELETE",

@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import * as CheckboxPrimitive from "@radix-ui/react-checkbox"
-import { Check } from "lucide-react"
+import * as CheckboxPrimitive from "@radix-ui/react-checkbox";
+import { Check } from "lucide-react";
 
-import * as React from "react"
+import * as React from "react";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 function Checkbox({
   className,
@@ -20,7 +20,7 @@ function Checkbox({
         "neo:rounded-base neo:border-2 neo:border-border",
         // Clean mode: thin border, softer corners
         "clean:rounded clean:border clean:border-border/50",
-        className,
+        className
       )}
       {...props}
     >
@@ -31,7 +31,7 @@ function Checkbox({
         <Check className="size-5" />
       </CheckboxPrimitive.Indicator>
     </CheckboxPrimitive.Root>
-  )
+  );
 }
 
-export { Checkbox }
+export { Checkbox };

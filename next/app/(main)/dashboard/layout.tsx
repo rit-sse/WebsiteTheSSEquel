@@ -1,17 +1,17 @@
-import { redirect } from "next/navigation"
-import { getAuthLevel } from "@/lib/services/authLevelService"
-import { DashboardAuthProvider } from "./DashboardAuthProvider"
+import { redirect } from "next/navigation";
+import { getAuthLevel } from "@/lib/services/authLevelService";
+import { DashboardAuthProvider } from "./DashboardAuthProvider";
 
 export default async function DashboardLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
-  const authLevel = await getAuthLevel()
+  const authLevel = await getAuthLevel();
 
   // Must be signed in and be either an officer or a mentor
   if (!authLevel.isUser || !(authLevel.isOfficer || authLevel.isMentor)) {
-    redirect("/")
+    redirect("/");
   }
 
   return (
@@ -23,5 +23,5 @@ export default async function DashboardLayout({
     >
       {children}
     </DashboardAuthProvider>
-  )
+  );
 }

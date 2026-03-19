@@ -1,6 +1,9 @@
 import prisma from "@/lib/prisma";
 import { NextRequest } from "next/server";
-import { CreateSponsorSchema, UpdateSponsorSchema } from "@/lib/schemas/sponsor";
+import {
+  CreateSponsorSchema,
+  UpdateSponsorSchema,
+} from "@/lib/schemas/sponsor";
 import { ApiError } from "@/lib/apiError";
 
 export async function GET() {
@@ -24,7 +27,11 @@ export async function POST(request: NextRequest) {
   }
 
   const parsed = CreateSponsorSchema.safeParse(body);
-  if (!parsed.success) return ApiError.validationError("Validation failed", parsed.error.flatten());
+  if (!parsed.success)
+    return ApiError.validationError(
+      "Validation failed",
+      parsed.error.flatten()
+    );
 
   try {
     const sponsor = await prisma.sponsor.create({ data: parsed.data });
@@ -44,7 +51,11 @@ export async function PUT(request: NextRequest) {
   }
 
   const parsed = UpdateSponsorSchema.safeParse(body);
-  if (!parsed.success) return ApiError.validationError("Validation failed", parsed.error.flatten());
+  if (!parsed.success)
+    return ApiError.validationError(
+      "Validation failed",
+      parsed.error.flatten()
+    );
 
   const { id, ...fields } = parsed.data;
 
@@ -69,11 +80,17 @@ export async function DELETE(request: NextRequest) {
     return ApiError.validationError("Invalid JSON");
   }
 
-  if (!("id" in body) || typeof body.id !== "number" || !Number.isInteger(body.id)) {
+  if (
+    !("id" in body) ||
+    typeof body.id !== "number" ||
+    !Number.isInteger(body.id)
+  ) {
     return ApiError.badRequest("'id' must be a numeric integer");
   }
 
-  const sponsorExists = await prisma.sponsor.findUnique({ where: { id: body.id } });
+  const sponsorExists = await prisma.sponsor.findUnique({
+    where: { id: body.id },
+  });
   if (!sponsorExists) {
     return ApiError.notFound("Sponsor");
   }

@@ -49,7 +49,10 @@ function formatDate(date: string) {
 }
 
 function getStatusClasses(status: string) {
-  return STATUS_STYLES[status.toLowerCase()] ?? "border-border bg-muted text-foreground";
+  return (
+    STATUS_STYLES[status.toLowerCase()] ??
+    "border-border bg-muted text-foreground"
+  );
 }
 
 function normalizeStatus(status: string) {
@@ -271,7 +274,9 @@ export default function TechCommitteeApplicationReviewPage({
         </Card>
       ) : error ? (
         <Card depth={1}>
-          <CardContent className="p-6 text-sm text-destructive">{error}</CardContent>
+          <CardContent className="p-6 text-sm text-destructive">
+            {error}
+          </CardContent>
         </Card>
       ) : application ? (
         <>
@@ -300,7 +305,9 @@ export default function TechCommitteeApplicationReviewPage({
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">
                   Applied
                 </p>
-                <p className="mt-1 text-sm">{formatDate(application.createdAt)}</p>
+                <p className="mt-1 text-sm">
+                  {formatDate(application.createdAt)}
+                </p>
               </div>
               <div>
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">
@@ -401,7 +408,9 @@ export default function TechCommitteeApplicationReviewPage({
               <CardTitle className="text-lg">Why They Want to Join</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="whitespace-pre-wrap text-sm">{application.whyJoin}</p>
+              <p className="whitespace-pre-wrap text-sm">
+                {application.whyJoin}
+              </p>
             </CardContent>
           </Card>
         </>

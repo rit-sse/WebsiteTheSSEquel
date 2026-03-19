@@ -73,22 +73,34 @@ describe("/api/mentor-application route", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockResolveUserImage.mockReturnValue("resolved-image");
-    mockGetGatewayAuthLevel.mockResolvedValue({ isMentoringHead: false, isPrimary: false });
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isMentoringHead: false,
+      isPrimary: false,
+    });
     mockGetServerSession.mockResolvedValue(null);
   });
 
   it("GET my=true requires auth", async () => {
-    const res = await GET(req("http://localhost/api/mentor-application?my=true"));
+    const res = await GET(
+      req("http://localhost/api/mentor-application?my=true")
+    );
     expect(res.status).toBe(401);
   });
 
   it("GET id denies access when user is not owner and cannot manage", async () => {
-    mockGetServerSession.mockResolvedValue({ user: { email: "viewer@g.rit.edu" } });
+    mockGetServerSession.mockResolvedValue({
+      user: { email: "viewer@g.rit.edu" },
+    });
     mockUserFindUnique.mockResolvedValue({ id: 99, email: "viewer@g.rit.edu" });
     mockMentorApplicationFindUnique.mockResolvedValue({
       id: 1,
       userId: 44,
-      user: { id: 44, name: "Applicant", profileImageKey: null, googleImageURL: null },
+      user: {
+        id: 44,
+        name: "Applicant",
+        profileImageKey: null,
+        googleImageURL: null,
+      },
       semester: { id: 2, name: "Spring" },
     });
 
@@ -97,13 +109,20 @@ describe("/api/mentor-application route", () => {
   });
 
   it("POST requires sign-in", async () => {
-    const res = await POST(req("http://localhost/api/mentor-application", "POST", {}));
+    const res = await POST(
+      req("http://localhost/api/mentor-application", "POST", {})
+    );
     expect(res.status).toBe(401);
   });
 
   it("POST returns 404 when semester does not exist", async () => {
-    mockGetServerSession.mockResolvedValue({ user: { email: "applicant@g.rit.edu" } });
-    mockUserFindUnique.mockResolvedValue({ id: 1, email: "applicant@g.rit.edu" });
+    mockGetServerSession.mockResolvedValue({
+      user: { email: "applicant@g.rit.edu" },
+    });
+    mockUserFindUnique.mockResolvedValue({
+      id: 1,
+      email: "applicant@g.rit.edu",
+    });
     mockMentorSemesterFindUnique.mockResolvedValue(null);
 
     const res = await POST(
@@ -122,13 +141,18 @@ describe("/api/mentor-application route", () => {
 
   it("PUT denies non-managers", async () => {
     const res = await PUT(
-      req("http://localhost/api/mentor-application", "PUT", { id: 1, status: "approved" })
+      req("http://localhost/api/mentor-application", "PUT", {
+        id: 1,
+        status: "approved",
+      })
     );
     expect(res.status).toBe(403);
   });
 
   it("DELETE rejects when application id is missing", async () => {
-    const res = await DELETE(req("http://localhost/api/mentor-application", "DELETE", {}));
+    const res = await DELETE(
+      req("http://localhost/api/mentor-application", "DELETE", {})
+    );
     expect(res.status).toBe(400);
   });
 });

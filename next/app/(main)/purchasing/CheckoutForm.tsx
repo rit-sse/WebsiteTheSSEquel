@@ -1,19 +1,25 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
+import { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { ArrowLeft, Send, Loader2, Calendar, Lock } from "lucide-react"
+} from "@/components/ui/select";
+import { ArrowLeft, Send, Loader2, Calendar, Lock } from "lucide-react";
 
 // Required email recipient that is always included
 const REQUIRED_RECIPIENT = "softwareengineering@rit.edu";
@@ -26,95 +32,103 @@ const COMMITTEES = [
   "Talks",
   "Projects",
   "Misc/Presidential",
-]
+];
 
 interface EventOption {
-  id: string
-  title: string
-  date: string
-  attendanceEnabled: boolean
+  id: string;
+  title: string;
+  date: string;
+  attendanceEnabled: boolean;
 }
 
 interface OfficerLookup {
-  is_active: boolean
-  position: { title: string }
-  user: { email: string }
+  is_active: boolean;
+  position: { title: string };
+  user: { email: string };
 }
 
 interface CheckoutFormProps {
-  userName: string
-  onClose: () => void
-  onSuccess: () => void
+  userName: string;
+  onClose: () => void;
+  onSuccess: () => void;
 }
 
-export default function CheckoutForm({ userName, onClose, onSuccess }: CheckoutFormProps) {
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+export default function CheckoutForm({
+  userName,
+  onClose,
+  onSuccess,
+}: CheckoutFormProps) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   // Form state
-  const [name, setName] = useState(userName)
-  const [committee, setCommittee] = useState("")
-  const [description, setDescription] = useState("")
-  const [estimatedCost, setEstimatedCost] = useState("")
-  const [plannedDate, setPlannedDate] = useState("")
-  const [notifyEmail, setNotifyEmail] = useState("")
-  const [selectedEventId, setSelectedEventId] = useState<string>("")
-  const [events, setEvents] = useState<EventOption[]>([])
-  const [loadingEvents, setLoadingEvents] = useState(true)
-  const [treasurerEmail, setTreasurerEmail] = useState("treasurer's email")
+  const [name, setName] = useState(userName);
+  const [committee, setCommittee] = useState("");
+  const [description, setDescription] = useState("");
+  const [estimatedCost, setEstimatedCost] = useState("");
+  const [plannedDate, setPlannedDate] = useState("");
+  const [notifyEmail, setNotifyEmail] = useState("");
+  const [selectedEventId, setSelectedEventId] = useState<string>("");
+  const [events, setEvents] = useState<EventOption[]>([]);
+  const [loadingEvents, setLoadingEvents] = useState(true);
+  const [treasurerEmail, setTreasurerEmail] = useState("treasurer's email");
 
   // Fetch events with attendance enabled
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await fetch("/api/event")
+        const response = await fetch("/api/event");
         if (response.ok) {
-          const allEvents = await response.json()
+          const allEvents = await response.json();
           // Filter to events with attendance enabled
-          const eventsWithAttendance = allEvents.filter((e: EventOption) => e.attendanceEnabled)
+          const eventsWithAttendance = allEvents.filter(
+            (e: EventOption) => e.attendanceEnabled
+          );
           // Sort by date descending
-          eventsWithAttendance.sort((a: EventOption, b: EventOption) => 
-            new Date(b.date).getTime() - new Date(a.date).getTime()
-          )
-          setEvents(eventsWithAttendance)
+          eventsWithAttendance.sort(
+            (a: EventOption, b: EventOption) =>
+              new Date(b.date).getTime() - new Date(a.date).getTime()
+          );
+          setEvents(eventsWithAttendance);
         }
       } catch (error) {
-        console.error("Error fetching events:", error)
+        console.error("Error fetching events:", error);
       } finally {
-        setLoadingEvents(false)
+        setLoadingEvents(false);
       }
-    }
-    fetchEvents()
-  }, [])
+    };
+    fetchEvents();
+  }, []);
 
   useEffect(() => {
     const loadTreasurerEmail = async () => {
       try {
-        const response = await fetch("/api/officer")
-        if (!response.ok) return
-        const officers = (await response.json()) as OfficerLookup[]
+        const response = await fetch("/api/officer");
+        if (!response.ok) return;
+        const officers = (await response.json()) as OfficerLookup[];
         const treasurer = officers.find(
-          (officer) => officer.is_active && officer.position.title === "Treasurer"
-        )
+          (officer) =>
+            officer.is_active && officer.position.title === "Treasurer"
+        );
         if (treasurer?.user?.email) {
-          setTreasurerEmail(treasurer.user.email)
+          setTreasurerEmail(treasurer.user.email);
         }
       } catch (error) {
-        console.error("Failed to load treasurer email:", error)
+        console.error("Failed to load treasurer email:", error);
       }
-    }
-    loadTreasurerEmail()
-  }, [])
+    };
+    loadTreasurerEmail();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
-    setLoading(true)
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
 
     // Validate required fields (notifyEmail is optional since REQUIRED_RECIPIENT is always included)
     if (!name || !committee || !description || !estimatedCost || !plannedDate) {
-      setError("Please fill in all required fields")
-      setLoading(false)
-      return
+      setError("Please fill in all required fields");
+      setLoading(false);
+      return;
     }
 
     try {
@@ -131,40 +145,43 @@ export default function CheckoutForm({ userName, onClose, onSuccess }: CheckoutF
           notifyEmail,
           eventId: selectedEventId || null,
         }),
-      })
+      });
 
       if (!response.ok) {
-        const errorText = await response.text()
-        throw new Error(errorText)
+        const errorText = await response.text();
+        throw new Error(errorText);
       }
 
-      const newRequest = await response.json()
+      const newRequest = await response.json();
 
       // Send notification email
       try {
-        const emailResponse = await fetch(`/api/purchasing/${newRequest.id}/email`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ type: "checkout" }),
-        })
+        const emailResponse = await fetch(
+          `/api/purchasing/${newRequest.id}/email`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ type: "checkout" }),
+          }
+        );
         if (emailResponse.ok) {
-          console.log("Email sent successfully")
+          console.log("Email sent successfully");
         } else {
-          const emailError = await emailResponse.text()
-          console.error("Email API error:", emailError)
+          const emailError = await emailResponse.text();
+          console.error("Email API error:", emailError);
         }
       } catch (emailError) {
-        console.error("Error sending email:", emailError)
+        console.error("Error sending email:", emailError);
         // Don't fail the whole request if email fails
       }
 
-      onSuccess()
+      onSuccess();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred")
+      setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <>
@@ -219,9 +236,20 @@ export default function CheckoutForm({ userName, onClose, onSuccess }: CheckoutF
               {/* Link to Event (Optional) */}
               <div className="space-y-2">
                 <Label htmlFor="event">Link to Event (Optional)</Label>
-                <Select value={selectedEventId || "none"} onValueChange={(val) => setSelectedEventId(val === "none" ? "" : val)}>
+                <Select
+                  value={selectedEventId || "none"}
+                  onValueChange={(val) =>
+                    setSelectedEventId(val === "none" ? "" : val)
+                  }
+                >
                   <SelectTrigger>
-                    <SelectValue placeholder={loadingEvents ? "Loading events..." : "Select an event to link"} />
+                    <SelectValue
+                      placeholder={
+                        loadingEvents
+                          ? "Loading events..."
+                          : "Select an event to link"
+                      }
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">No event linked</SelectItem>
@@ -239,12 +267,15 @@ export default function CheckoutForm({ userName, onClose, onSuccess }: CheckoutF
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">
-                  Link this purchase to an event to automatically sync attendance data
+                  Link this purchase to an event to automatically sync
+                  attendance data
                 </p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">What are you purchasing and what&apos;s it for? *</Label>
+                <Label htmlFor="description">
+                  What are you purchasing and what&apos;s it for? *
+                </Label>
                 <Textarea
                   id="description"
                   value={description}
@@ -259,7 +290,9 @@ export default function CheckoutForm({ userName, onClose, onSuccess }: CheckoutF
                 <div className="space-y-2">
                   <Label htmlFor="estimatedCost">Estimated Cost *</Label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                      $
+                    </span>
                     <Input
                       id="estimatedCost"
                       type="number"
@@ -291,10 +324,14 @@ export default function CheckoutForm({ userName, onClose, onSuccess }: CheckoutF
                 <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-md border">
                   <Lock className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">{REQUIRED_RECIPIENT}</span>
-                  <span className="text-xs text-muted-foreground">(always included)</span>
+                  <span className="text-xs text-muted-foreground">
+                    (always included)
+                  </span>
                 </div>
                 <div className="mt-2">
-                  <Label htmlFor="notifyEmail" className="text-sm">Additional notification emails (optional)</Label>
+                  <Label htmlFor="notifyEmail" className="text-sm">
+                    Additional notification emails (optional)
+                  </Label>
                   <Input
                     id="notifyEmail"
                     type="email"
@@ -305,15 +342,25 @@ export default function CheckoutForm({ userName, onClose, onSuccess }: CheckoutF
                   />
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  These emails will receive a notification about your checkout request
+                  These emails will receive a notification about your checkout
+                  request
                 </p>
               </div>
 
               <div className="flex gap-4 pt-4">
-                <Button type="button" variant="outline" onClick={onClose} className="flex-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onClose}
+                  className="flex-1"
+                >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={loading} className="flex-1 gap-2">
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="flex-1 gap-2"
+                >
                   {loading ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -332,5 +379,5 @@ export default function CheckoutForm({ userName, onClose, onSuccess }: CheckoutF
         </Card>
       </div>
     </>
-  )
+  );
 }

@@ -32,7 +32,7 @@ export async function GET(request: Request, { params }: RouteParams) {
     // Check if position exists
     const position = await prisma.officerPosition.findUnique({
       where: { id: positionIdNum },
-      select: { id: true, title: true }
+      select: { id: true, title: true },
     });
 
     if (!position) {
@@ -44,9 +44,9 @@ export async function GET(request: Request, { params }: RouteParams) {
       where: { positionId: positionIdNum },
       include: {
         position: {
-          select: { title: true, is_primary: true }
-        }
-      }
+          select: { title: true, is_primary: true },
+        },
+      },
     });
 
     // If no document exists, create an empty one
@@ -54,20 +54,22 @@ export async function GET(request: Request, { params }: RouteParams) {
       handoverDoc = await prisma.handoverDocument.create({
         data: {
           positionId: positionIdNum,
-          content: `# ${position.title} Handover Document\n\nWelcome to the ${position.title} role! This document contains important information for your position.\n\n## Responsibilities\n\n- Add your responsibilities here\n\n## Key Contacts\n\n- Add important contacts here\n\n## Resources\n\n- Add useful links and resources here\n\n## Notes for Your Successor\n\n- Add any notes for the next person in this role\n`
+          content: `# ${position.title} Handover Document\n\nWelcome to the ${position.title} role! This document contains important information for your position.\n\n## Responsibilities\n\n- Add your responsibilities here\n\n## Key Contacts\n\n- Add important contacts here\n\n## Resources\n\n- Add useful links and resources here\n\n## Notes for Your Successor\n\n- Add any notes for the next person in this role\n`,
         },
         include: {
           position: {
-            select: { title: true, is_primary: true }
-          }
-        }
+            select: { title: true, is_primary: true },
+          },
+        },
       });
     }
 
     return Response.json(handoverDoc);
   } catch (e) {
     console.error("Error fetching handover document:", e);
-    return new Response(`Failed to fetch handover document: ${e}`, { status: 500 });
+    return new Response(`Failed to fetch handover document: ${e}`, {
+      status: 500,
+    });
   }
 }
 
@@ -109,7 +111,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
     // Check if position exists
     const position = await prisma.officerPosition.findUnique({
       where: { id: positionIdNum },
-      select: { id: true, title: true }
+      select: { id: true, title: true },
     });
 
     if (!position) {
@@ -122,18 +124,20 @@ export async function PUT(request: Request, { params }: RouteParams) {
       update: { content },
       create: {
         positionId: positionIdNum,
-        content
+        content,
       },
       include: {
         position: {
-          select: { title: true, is_primary: true }
-        }
-      }
+          select: { title: true, is_primary: true },
+        },
+      },
     });
 
     return Response.json(handoverDoc);
   } catch (e) {
     console.error("Error updating handover document:", e);
-    return new Response(`Failed to update handover document: ${e}`, { status: 500 });
+    return new Response(`Failed to update handover document: ${e}`, {
+      status: 500,
+    });
   }
 }

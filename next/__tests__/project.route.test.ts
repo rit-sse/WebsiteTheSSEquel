@@ -37,7 +37,10 @@ import { DELETE, GET, POST, PUT } from "@/app/api/project/route";
 describe("/api/project route", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockGetGatewayAuthLevel.mockResolvedValue({ isProjectsHead: false, isPrimary: false });
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isProjectsHead: false,
+      isPrimary: false,
+    });
   });
 
   it("GET returns projects", async () => {
@@ -51,7 +54,12 @@ describe("/api/project route", () => {
   it("POST denies non-projects-head users", async () => {
     const req = new Request("http://localhost/api/project", {
       method: "POST",
-      body: JSON.stringify({ title: "x", description: "d", leadid: 1, completed: false }),
+      body: JSON.stringify({
+        title: "x",
+        description: "d",
+        leadid: 1,
+        completed: false,
+      }),
       headers: { "content-type": "application/json" },
     }) as any;
 
@@ -60,7 +68,10 @@ describe("/api/project route", () => {
   });
 
   it("POST creates project for authorized user with valid payload", async () => {
-    mockGetGatewayAuthLevel.mockResolvedValue({ isProjectsHead: true, isPrimary: false });
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isProjectsHead: true,
+      isPrimary: false,
+    });
     mockCreate.mockResolvedValue({ id: 2, title: "New" });
 
     const req = new Request("http://localhost/api/project", {
@@ -80,7 +91,10 @@ describe("/api/project route", () => {
   });
 
   it("PUT requires id in body", async () => {
-    mockGetGatewayAuthLevel.mockResolvedValue({ isProjectsHead: true, isPrimary: false });
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isProjectsHead: true,
+      isPrimary: false,
+    });
 
     const req = new Request("http://localhost/api/project", {
       method: "PUT",
@@ -93,7 +107,10 @@ describe("/api/project route", () => {
   });
 
   it("DELETE returns 404 when project does not exist", async () => {
-    mockGetGatewayAuthLevel.mockResolvedValue({ isProjectsHead: true, isPrimary: false });
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isProjectsHead: true,
+      isPrimary: false,
+    });
     mockFindUnique.mockResolvedValue(null);
 
     const req = new Request("http://localhost/api/project", {

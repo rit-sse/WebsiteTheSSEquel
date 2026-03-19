@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useState } from "react";
 import { PenLine } from "lucide-react";
@@ -23,7 +23,9 @@ function extractUsername(url: string | undefined, prefix: string): string {
     const parts = u.pathname.replace(/\/$/, "").split("/").filter(Boolean);
     if (prefix === "linkedin") {
       const idx = parts.indexOf("in");
-      return idx !== -1 && parts[idx + 1] ? parts[idx + 1] : parts[parts.length - 1] || url;
+      return idx !== -1 && parts[idx + 1]
+        ? parts[idx + 1]
+        : parts[parts.length - 1] || url;
     }
     return parts[0] || url;
   } catch {
@@ -31,24 +33,37 @@ function extractUsername(url: string | undefined, prefix: string): string {
   }
 }
 
-export default function UpdateAlumniForm({ alumniMember }: UpdateAlumniFormProps) {
+export default function UpdateAlumniForm({
+  alumniMember,
+}: UpdateAlumniFormProps) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(alumniMember.name);
   const [quote, setQuote] = useState(alumniMember.quote || "");
-  const [previous_roles, setPreviousRoles] = useState(alumniMember.previous_roles || "");
-  const [description, setDescription] = useState(alumniMember.description || "");
-  const [linkedin, setLinkedin] = useState(extractUsername(alumniMember.linkedin, "linkedin"));
-  const [github, setGithub] = useState(extractUsername(alumniMember.github, "github"));
+  const [previous_roles, setPreviousRoles] = useState(
+    alumniMember.previous_roles || ""
+  );
+  const [description, setDescription] = useState(
+    alumniMember.description || ""
+  );
+  const [linkedin, setLinkedin] = useState(
+    extractUsername(alumniMember.linkedin, "linkedin")
+  );
+  const [github, setGithub] = useState(
+    extractUsername(alumniMember.github, "github")
+  );
   const [email, setEmail] = useState(alumniMember.email);
   const [start_date, setStartDate] = useState(alumniMember.start_date);
   const [end_date, setEndDate] = useState(alumniMember.end_date);
   const [image, setImage] = useState<string | null>(
-    alumniMember.image && alumniMember.image !== "https://source.boringavatars.com/beam/"
+    alumniMember.image &&
+      alumniMember.image !== "https://source.boringavatars.com/beam/"
       ? alumniMember.image
       : null
   );
   const [showEmail, setShowEmail] = useState(alumniMember.showEmail ?? false);
-  const [receiveEmails, setReceiveEmails] = useState(alumniMember.receiveEmails ?? false);
+  const [receiveEmails, setReceiveEmails] = useState(
+    alumniMember.receiveEmails ?? false
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
@@ -71,8 +86,8 @@ export default function UpdateAlumniForm({ alumniMember }: UpdateAlumniFormProps
 
     try {
       const response = await fetch("/api/alumni-requests", {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name,
           email,
@@ -86,8 +101,8 @@ export default function UpdateAlumniForm({ alumniMember }: UpdateAlumniFormProps
           image: image || undefined,
           showEmail,
           receiveEmails,
-          alumniId: Number(alumniMember.alumni_id)
-        })
+          alumniId: Number(alumniMember.alumni_id),
+        }),
       });
 
       if (response.ok) {
@@ -130,7 +145,9 @@ export default function UpdateAlumniForm({ alumniMember }: UpdateAlumniFormProps
         {success ? (
           <div className="py-8 text-center">
             <div className="text-4xl mb-4">✓</div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">Update Requested!</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-2">
+              Update Requested!
+            </h3>
             <p className="text-muted-foreground">
               Your changes will be reviewed by an officer. Thank you!
             </p>
@@ -166,14 +183,21 @@ export default function UpdateAlumniForm({ alumniMember }: UpdateAlumniFormProps
                   <Checkbox
                     id="update-receiveEmails"
                     checked={receiveEmails}
-                    onCheckedChange={(checked) => setReceiveEmails(checked === true)}
+                    onCheckedChange={(checked) =>
+                      setReceiveEmails(checked === true)
+                    }
                   />
                   <div className="space-y-0.5 leading-none">
-                    <Label htmlFor="update-receiveEmails" className="text-sm font-medium cursor-pointer">
+                    <Label
+                      htmlFor="update-receiveEmails"
+                      className="text-sm font-medium cursor-pointer"
+                    >
                       Help us rebuild the alumni network
                     </Label>
                     <p className="text-xs text-muted-foreground">
-                      Our alumni are the most important part of this club and we&apos;re working hard to reconnect everyone. We&apos;ll only reach out sparingly — but it means a lot.
+                      Our alumni are the most important part of this club and
+                      we&apos;re working hard to reconnect everyone. We&apos;ll
+                      only reach out sparingly — but it means a lot.
                     </p>
                   </div>
                 </div>
@@ -181,14 +205,20 @@ export default function UpdateAlumniForm({ alumniMember }: UpdateAlumniFormProps
                   <Checkbox
                     id="update-showEmail"
                     checked={showEmail}
-                    onCheckedChange={(checked) => setShowEmail(checked === true)}
+                    onCheckedChange={(checked) =>
+                      setShowEmail(checked === true)
+                    }
                   />
                   <div className="space-y-0.5 leading-none">
-                    <Label htmlFor="update-showEmail" className="text-sm font-medium cursor-pointer">
+                    <Label
+                      htmlFor="update-showEmail"
+                      className="text-sm font-medium cursor-pointer"
+                    >
                       Let other alumni reach out to me
                     </Label>
                     <p className="text-xs text-muted-foreground">
-                      Your email will be visible on your card so fellow alumni can reconnect with you.
+                      Your email will be visible on your card so fellow alumni
+                      can reconnect with you.
                     </p>
                   </div>
                 </div>
@@ -231,7 +261,17 @@ export default function UpdateAlumniForm({ alumniMember }: UpdateAlumniFormProps
                 <ImageUpload
                   value={image}
                   onChange={setImage}
-                  initials={name ? name.split(" ").map(n => n[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() : "?"}
+                  initials={
+                    name
+                      ? name
+                          .split(" ")
+                          .map((n) => n[0])
+                          .filter(Boolean)
+                          .slice(0, 2)
+                          .join("")
+                          .toUpperCase()
+                      : "?"
+                  }
                   avatarSize="h-16 w-16"
                   compact
                   hint="JPG, PNG, or GIF up to 5 MB"
@@ -266,7 +306,10 @@ export default function UpdateAlumniForm({ alumniMember }: UpdateAlumniFormProps
 
               <div className="space-y-2 rounded-lg border border-primary/20 bg-primary/5 p-3">
                 <Label htmlFor="update-github" className="text-sm font-medium">
-                  GitHub <span className="text-xs font-normal text-primary ml-1">Highly recommended</span>
+                  GitHub{" "}
+                  <span className="text-xs font-normal text-primary ml-1">
+                    Highly recommended
+                  </span>
                 </Label>
                 <div className="flex">
                   <span className="inline-flex items-center px-3 text-sm text-muted-foreground bg-muted neo:rounded-l-base neo:border-2 neo:border-r-0 neo:border-border clean:rounded-l-md clean:border clean:border-r-0 clean:border-border/50">
@@ -281,7 +324,10 @@ export default function UpdateAlumniForm({ alumniMember }: UpdateAlumniFormProps
                   />
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Adding your GitHub makes your alumni card significantly richer — we automatically pull your company, location, website, top repos, languages, and organizations. Your card stays up to date without you ever touching it again.
+                  Adding your GitHub makes your alumni card significantly richer
+                  — we automatically pull your company, location, website, top
+                  repos, languages, and organizations. Your card stays up to
+                  date without you ever touching it again.
                 </p>
               </div>
 
@@ -296,12 +342,14 @@ export default function UpdateAlumniForm({ alumniMember }: UpdateAlumniFormProps
               </div>
             </div>
 
-            {error && (
-              <p className="text-destructive text-sm mt-2">{error}</p>
-            )}
+            {error && <p className="text-destructive text-sm mt-2">{error}</p>}
 
             <ModalFooter>
-              <Button variant="neutral" onClick={handleCancel} disabled={isSubmitting}>
+              <Button
+                variant="neutral"
+                onClick={handleCancel}
+                disabled={isSubmitting}
+              >
                 Cancel
               </Button>
               <Button onClick={handleSubmit} disabled={isSubmitting}>

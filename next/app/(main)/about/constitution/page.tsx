@@ -3,7 +3,9 @@ import { Card } from "@/components/ui/card";
 import { getPostData } from "@/lib/posts";
 
 export default async function Constitution() {
-  const postData = await getPostData("https://raw.githubusercontent.com/rit-sse/governing-docs/main/constitution.md");
+  const postData = await getPostData(
+    "https://raw.githubusercontent.com/rit-sse/governing-docs/main/constitution.md"
+  );
 
   return (
     <section>

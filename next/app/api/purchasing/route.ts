@@ -4,7 +4,7 @@ import { NextRequest } from "next/server";
 import { CreatePurchaseRequestSchema } from "@/lib/schemas/purchasing";
 import { ApiError } from "@/lib/apiError";
 
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
 /**
  * GET /api/purchasing - List all purchase requests (visible to all officers)
@@ -91,9 +91,21 @@ export async function POST(request: NextRequest) {
   }
 
   const parsed = CreatePurchaseRequestSchema.safeParse(body);
-  if (!parsed.success) return ApiError.validationError("Validation failed", parsed.error.flatten());
+  if (!parsed.success)
+    return ApiError.validationError(
+      "Validation failed",
+      parsed.error.flatten()
+    );
 
-  const { name, committee, description, estimatedCost, plannedDate, notifyEmail, eventId } = parsed.data;
+  const {
+    name,
+    committee,
+    description,
+    estimatedCost,
+    plannedDate,
+    notifyEmail,
+    eventId,
+  } = parsed.data;
 
   try {
     const purchaseRequest = await prisma.purchaseRequest.create({

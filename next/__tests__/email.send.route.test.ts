@@ -70,7 +70,11 @@ describe("/api/email/send route", () => {
 
     const req = new Request("http://localhost/api/email/send", {
       method: "POST",
-      body: JSON.stringify({ subject: "A", message: "B", recipients: [{ email: "x@g.rit.edu" }] }),
+      body: JSON.stringify({
+        subject: "A",
+        message: "B",
+        recipients: [{ email: "x@g.rit.edu" }],
+      }),
       headers: { "content-type": "application/json" },
     }) as any;
 
@@ -102,6 +106,11 @@ describe("/api/email/send route", () => {
 
     const res = await POST(req);
     expect(res.status).toBe(200);
-    expect(await res.json()).toMatchObject({ success: true, sent: 2, failed: 0, total: 2 });
+    expect(await res.json()).toMatchObject({
+      success: true,
+      sent: 2,
+      failed: 0,
+      total: 2,
+    });
   });
 });

@@ -82,14 +82,20 @@ export default function AlumniCandidatesSection() {
       render: (row) => (
         <div className="min-w-0">
           <div className="font-medium truncate">{row.name}</div>
-          <div className="text-xs text-muted-foreground truncate">{row.email}</div>
+          <div className="text-xs text-muted-foreground truncate">
+            {row.email}
+          </div>
         </div>
       ),
     },
     {
       key: "major",
       header: "Major",
-      render: (row) => <span className="text-xs text-muted-foreground">{row.major || "-"}</span>,
+      render: (row) => (
+        <span className="text-xs text-muted-foreground">
+          {row.major || "-"}
+        </span>
+      ),
     },
     {
       key: "graduation",

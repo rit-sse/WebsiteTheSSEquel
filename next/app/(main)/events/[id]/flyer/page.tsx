@@ -1,57 +1,72 @@
-"use client"
+"use client";
 
-import { useEffect, useState, useCallback } from "react"
-import { useParams } from "next/navigation"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Download, Calendar, MapPin, Loader2, AlertCircle, QrCode } from "lucide-react"
+import { useEffect, useState, useCallback } from "react";
+import { useParams } from "next/navigation";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  Download,
+  Calendar,
+  MapPin,
+  Loader2,
+  AlertCircle,
+  QrCode,
+} from "lucide-react";
 
 interface EventDetails {
-  id: string
-  title: string
-  date: string
-  location: string | null
-  attendanceEnabled: boolean
+  id: string;
+  title: string;
+  date: string;
+  location: string | null;
+  attendanceEnabled: boolean;
 }
 
 export default function FlyerPage() {
-  const params = useParams()
-  const eventId = params.id as string
+  const params = useParams();
+  const eventId = params.id as string;
 
-  const [event, setEvent] = useState<EventDetails | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [event, setEvent] = useState<EventDetails | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchEvent = useCallback(async () => {
     try {
-      const response = await fetch(`/api/event/${eventId}`)
+      const response = await fetch(`/api/event/${eventId}`);
       if (!response.ok) {
-        setError(response.status === 404 ? "Event not found" : "Failed to load event")
-        return
+        setError(
+          response.status === 404 ? "Event not found" : "Failed to load event"
+        );
+        return;
       }
-      const data = await response.json()
-      setEvent(data)
+      const data = await response.json();
+      setEvent(data);
     } catch {
-      setError("Failed to load event")
+      setError("Failed to load event");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [eventId])
+  }, [eventId]);
 
   useEffect(() => {
-    fetchEvent()
-  }, [fetchEvent])
+    fetchEvent();
+  }, [fetchEvent]);
 
   const downloadFlyer = () => {
-    window.open(`/api/event/${eventId}/flyer`, "_blank")
-  }
+    window.open(`/api/event/${eventId}/flyer`, "_blank");
+  };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
-    )
+    );
   }
 
   if (error || !event) {
@@ -60,30 +75,32 @@ export default function FlyerPage() {
         <AlertCircle className="h-10 w-10 text-destructive" />
         <p className="text-lg font-medium">{error ?? "Event not found"}</p>
       </div>
-    )
+    );
   }
 
   if (!event.attendanceEnabled) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3 text-center px-4">
         <QrCode className="h-10 w-10 text-muted-foreground" />
-        <p className="text-lg font-medium">Attendance tracking is not enabled for this event</p>
+        <p className="text-lg font-medium">
+          Attendance tracking is not enabled for this event
+        </p>
       </div>
-    )
+    );
   }
 
-  const eventDate = new Date(event.date)
+  const eventDate = new Date(event.date);
   const dateString = eventDate.toLocaleDateString("en-US", {
     weekday: "long",
     year: "numeric",
     month: "long",
     day: "numeric",
-  })
+  });
   const timeString = eventDate.toLocaleTimeString("en-US", {
     hour: "numeric",
     minute: "2-digit",
     timeZone: "America/New_York",
-  })
+  });
 
   return (
     <div className="max-w-lg mx-auto py-8 px-4 flex flex-col items-center gap-6">
@@ -124,7 +141,11 @@ export default function FlyerPage() {
         </CardContent>
       </Card>
 
-      <Button size="lg" onClick={downloadFlyer} className="gap-2 w-full max-w-xs">
+      <Button
+        size="lg"
+        onClick={downloadFlyer}
+        className="gap-2 w-full max-w-xs"
+      >
         <Download className="h-5 w-5" />
         Download Printable Sign-in Flyer
       </Button>
@@ -132,5 +153,5 @@ export default function FlyerPage() {
         Downloads a printable SVG with the QR code and event details
       </p>
     </div>
-  )
+  );
 }

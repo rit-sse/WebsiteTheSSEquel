@@ -10,7 +10,11 @@ import { getS3Client, getBucketName } from "@/lib/S3Client";
 export interface IS3Service {
   listObjects(prefix: string): Promise<string[]>;
   getSignedDownloadUrl(key: string, expiresIn?: number): Promise<string>;
-  getSignedUploadUrl(key: string, contentType: string, expiresIn?: number): Promise<string>;
+  getSignedUploadUrl(
+    key: string,
+    contentType: string,
+    expiresIn?: number
+  ): Promise<string>;
   putObject(key: string, body: Uint8Array, contentType: string): Promise<void>;
   deleteObject(key: string): Promise<void>;
 }

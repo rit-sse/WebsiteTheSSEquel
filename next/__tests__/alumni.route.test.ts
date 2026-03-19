@@ -1,18 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const {
-  mockFindMany,
-  mockCreate,
-  mockUpdate,
-  mockDelete,
-  mockGetImageUrl,
-} = vi.hoisted(() => ({
-  mockFindMany: vi.fn(),
-  mockCreate: vi.fn(),
-  mockUpdate: vi.fn(),
-  mockDelete: vi.fn(),
-  mockGetImageUrl: vi.fn(),
-}));
+const { mockFindMany, mockCreate, mockUpdate, mockDelete, mockGetImageUrl } =
+  vi.hoisted(() => ({
+    mockFindMany: vi.fn(),
+    mockCreate: vi.fn(),
+    mockUpdate: vi.fn(),
+    mockDelete: vi.fn(),
+    mockGetImageUrl: vi.fn(),
+  }));
 
 vi.mock("@/lib/s3Utils", () => ({
   getImageUrl: mockGetImageUrl,

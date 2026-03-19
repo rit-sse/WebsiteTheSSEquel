@@ -1,7 +1,10 @@
 import prisma from "@/lib/prisma";
 import { NextRequest } from "next/server";
 import { getGatewayAuthLevel } from "@/lib/authGateway";
-import { CreateProjectSchema, UpdateProjectSchema } from "@/lib/schemas/project";
+import {
+  CreateProjectSchema,
+  UpdateProjectSchema,
+} from "@/lib/schemas/project";
 import { ApiError } from "@/lib/apiError";
 
 async function isProjectsHead(request: NextRequest) {
@@ -27,7 +30,11 @@ export async function POST(request: NextRequest) {
   }
 
   const parsed = CreateProjectSchema.safeParse(body);
-  if (!parsed.success) return ApiError.validationError("Validation failed", parsed.error.flatten());
+  if (!parsed.success)
+    return ApiError.validationError(
+      "Validation failed",
+      parsed.error.flatten()
+    );
 
   const project = await prisma.project.create({ data: parsed.data });
   return Response.json(project, { status: 201 });
@@ -46,7 +53,11 @@ export async function PUT(request: NextRequest) {
   }
 
   const parsed = UpdateProjectSchema.safeParse(body);
-  if (!parsed.success) return ApiError.validationError("Validation failed", parsed.error.flatten());
+  if (!parsed.success)
+    return ApiError.validationError(
+      "Validation failed",
+      parsed.error.flatten()
+    );
 
   const { id, ...fields } = parsed.data;
 

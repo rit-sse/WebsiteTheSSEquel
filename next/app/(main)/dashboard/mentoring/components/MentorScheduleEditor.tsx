@@ -1,88 +1,124 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useCallback, useMemo, useRef, type CSSProperties, type ReactNode } from "react"
-import Papa from "papaparse"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Modal, ModalFooter } from "@/components/ui/modal"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Switch } from "@/components/ui/switch"
-import { Progress } from "@/components/ui/progress"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Tooltip } from "@/components/ui/tooltip"
-import { toast } from "sonner"
-import { X, User, Clock, Calendar, Users, Printer, Activity, Check } from "lucide-react"
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
+import Papa from "papaparse";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Modal, ModalFooter } from "@/components/ui/modal";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Switch } from "@/components/ui/switch";
+import { Progress } from "@/components/ui/progress";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Tooltip } from "@/components/ui/tooltip";
+import { toast } from "sonner";
+import {
+  X,
+  User,
+  Clock,
+  Calendar,
+  Users,
+  Printer,
+  Activity,
+  Check,
+} from "lucide-react";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { DndContext, DragEndEvent, PointerSensor, useDraggable, useDroppable, useSensor, useSensors } from "@dnd-kit/core"
-import Image from "next/image"
-import { cn } from "@/lib/utils"
-import { getCategoricalColorFromSeed } from "@/lib/categoricalColors"
-import { AvailabilitySlot, aggregateAvailability, getSlotAvailability } from "./AvailabilityGrid"
+} from "@/components/ui/select";
+import {
+  DndContext,
+  DragEndEvent,
+  PointerSensor,
+  useDraggable,
+  useDroppable,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import Image from "next/image";
+import { cn } from "@/lib/utils";
+import { getCategoricalColorFromSeed } from "@/lib/categoricalColors";
+import {
+  AvailabilitySlot,
+  aggregateAvailability,
+  getSlotAvailability,
+} from "./AvailabilityGrid";
 
 // Schedule types
 interface ScheduleBlock {
-  id: number
-  weekday: number
-  startHour: number
+  id: number;
+  weekday: number;
+  startHour: number;
   mentor: {
-    id: number
-    name: string
-    email: string
-    image: string
-    isActive: boolean
-    skills: { id: number; name: string }[]
-    courses: { id: number; title: string; code: string; department: string }[]
-  }
+    id: number;
+    name: string;
+    email: string;
+    image: string;
+    isActive: boolean;
+    skills: { id: number; name: string }[];
+    courses: { id: number; title: string; code: string; department: string }[];
+  };
 }
 
 interface MentorSchedule {
-  id: number
-  name: string
-  isActive: boolean
+  id: number;
+  name: string;
+  isActive: boolean;
 }
 
 interface Mentor {
-  id: number
+  id: number;
   user: {
-    id: number
-    name: string
-    email: string
-    image: string
-  }
-  isActive: boolean
-  expirationDate: string
+    id: number;
+    name: string;
+    email: string;
+    image: string;
+  };
+  isActive: boolean;
+  expirationDate: string;
 }
 
 // Availability data from built-in system
 interface AvailabilityData {
-  userId: number
-  user: { id: number; name: string; email: string; image: string }
-  slots: AvailabilitySlot[]
+  userId: number;
+  user: { id: number; name: string; email: string; image: string };
+  slots: AvailabilitySlot[];
 }
 
 interface MentorSemester {
-  id: number
-  name: string
-  isActive: boolean
+  id: number;
+  name: string;
+  isActive: boolean;
 }
 
 interface TrafficDatum {
-  weekday: number
-  hour: number
-  averagePeopleInLab: number
-  sampleCount: number
+  weekday: number;
+  hour: number;
+  averagePeopleInLab: number;
+  sampleCount: number;
 }
 
 // Day and hour labels
-const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 const HOURS = [
   { hour: 10, label: "10am - 11am" },
   { hour: 11, label: "11am - 12pm" },
@@ -92,9 +128,9 @@ const HOURS = [
   { hour: 15, label: "3pm - 4pm" },
   { hour: 16, label: "4pm - 5pm" },
   { hour: 17, label: "5pm - 6pm" },
-]
+];
 
-type SlotDropFeedback = "available" | "unavailable" | null
+type SlotDropFeedback = "available" | "unavailable" | null;
 
 const TRAFFIC_LEGEND = [
   { label: "≤6", swatchClassName: "bg-blue-200 dark:bg-indigo-900/50" },
@@ -102,10 +138,10 @@ const TRAFFIC_LEGEND = [
   { label: "11–15", swatchClassName: "bg-blue-400 dark:bg-indigo-700/70" },
   { label: "16–20", swatchClassName: "bg-blue-500 dark:bg-indigo-600/80" },
   { label: "21+", swatchClassName: "bg-blue-600 dark:bg-indigo-500/85" },
-]
+];
 
 function getMentorColor(mentorId: number) {
-  return getCategoricalColorFromSeed(mentorId)
+  return getCategoricalColorFromSeed(mentorId);
 }
 
 function getInitials(name: string) {
@@ -116,7 +152,7 @@ function getInitials(name: string) {
       .map((part) => part[0]?.toUpperCase() ?? "")
       .join("")
       .slice(0, 2) || "?"
-  )
+  );
 }
 
 function getTrafficPresentation(averagePeopleInLab: number) {
@@ -128,7 +164,7 @@ function getTrafficPresentation(averagePeopleInLab: number) {
       subtextClassName: "text-sky-800 dark:text-indigo-200",
       metaClassName: "text-sky-900 dark:text-indigo-100",
       summary: "Light traffic",
-    }
+    };
   }
   if (averagePeopleInLab <= 10) {
     return {
@@ -138,7 +174,7 @@ function getTrafficPresentation(averagePeopleInLab: number) {
       subtextClassName: "text-sky-900 dark:text-indigo-100",
       metaClassName: "text-sky-950 dark:text-indigo-50",
       summary: "Moderate traffic",
-    }
+    };
   }
   if (averagePeopleInLab <= 15) {
     return {
@@ -148,7 +184,7 @@ function getTrafficPresentation(averagePeopleInLab: number) {
       subtextClassName: "text-sky-950 dark:text-white/90",
       metaClassName: "text-sky-950 dark:text-white",
       summary: "Busy slot",
-    }
+    };
   }
   if (averagePeopleInLab <= 20) {
     return {
@@ -158,7 +194,7 @@ function getTrafficPresentation(averagePeopleInLab: number) {
       subtextClassName: "text-white/90 dark:text-white/90",
       metaClassName: "text-white dark:text-white",
       summary: "Heavy traffic",
-    }
+    };
   }
 
   return {
@@ -168,37 +204,44 @@ function getTrafficPresentation(averagePeopleInLab: number) {
     subtextClassName: "text-white/95 dark:text-white/95",
     metaClassName: "text-white dark:text-white",
     summary: "Peak traffic",
-  }
+  };
 }
 
-function getSlotAvailableMentorNames(mappedAvailable: Mentor[], availableNames: string[]) {
+function getSlotAvailableMentorNames(
+  mappedAvailable: Mentor[],
+  availableNames: string[]
+) {
   return Array.from(
     new Set(
       [...mappedAvailable.map((mentor) => mentor.user.name), ...availableNames]
         .map((name) => name.trim())
         .filter(Boolean)
     )
-  )
+  );
 }
 
 function getSlotKey(weekday: number, hour: number) {
-  return `${weekday}-${hour}`
+  return `${weekday}-${hour}`;
 }
 
-function getDropFeedbackClass(dropFeedbackState: SlotDropFeedback, isOver: boolean, saved: boolean) {
+function getDropFeedbackClass(
+  dropFeedbackState: SlotDropFeedback,
+  isOver: boolean,
+  saved: boolean
+) {
   if (isOver && dropFeedbackState === "available") {
-    return "!bg-emerald-500/15 ring-2 ring-inset ring-emerald-500/60 dark:!bg-emerald-400/15 dark:ring-emerald-400/50"
+    return "!bg-emerald-500/15 ring-2 ring-inset ring-emerald-500/60 dark:!bg-emerald-400/15 dark:ring-emerald-400/50";
   }
 
   if (isOver && dropFeedbackState === "unavailable") {
-    return "!bg-rose-500/10 ring-2 ring-inset ring-rose-500/50 dark:!bg-rose-400/10 dark:ring-rose-400/50"
+    return "!bg-rose-500/10 ring-2 ring-inset ring-rose-500/50 dark:!bg-rose-400/10 dark:ring-rose-400/50";
   }
 
   if (saved) {
-    return "!bg-emerald-500/10 ring-2 ring-inset ring-emerald-500/50 dark:!bg-emerald-400/10 dark:ring-emerald-400/40"
+    return "!bg-emerald-500/10 ring-2 ring-inset ring-emerald-500/50 dark:!bg-emerald-400/10 dark:ring-emerald-400/40";
   }
 
-  return ""
+  return "";
 }
 
 function ScheduleSlotTooltipContent({
@@ -206,106 +249,133 @@ function ScheduleSlotTooltipContent({
   traffic,
   availableMentorNames,
 }: {
-  label: string
-  traffic?: TrafficDatum
-  availableMentorNames: string[]
+  label: string;
+  traffic?: TrafficDatum;
+  availableMentorNames: string[];
 }) {
   return (
     <div className="space-y-1">
       <div className="font-semibold text-foreground text-xs">{label}</div>
       {traffic && (
         <div className="text-[11px] text-muted-foreground">
-          ~<span className="font-medium text-foreground tabular-nums">{traffic.averagePeopleInLab.toFixed(0)}</span> in lab
+          ~
+          <span className="font-medium text-foreground tabular-nums">
+            {traffic.averagePeopleInLab.toFixed(0)}
+          </span>{" "}
+          in lab
         </div>
       )}
       {availableMentorNames.length > 0 && (
         <div className="text-[11px] leading-snug text-muted-foreground">
-          <span className="text-foreground">{availableMentorNames.join(", ")}</span> available
+          <span className="text-foreground">
+            {availableMentorNames.join(", ")}
+          </span>{" "}
+          available
         </div>
       )}
     </div>
-  )
+  );
 }
 
 interface MentorScheduleEditorProps {
-  ToolbarPortal?: React.ComponentType<{ target: HTMLElement | null; children: React.ReactNode }>
-  toolbarNode?: HTMLElement | null
+  ToolbarPortal?: React.ComponentType<{
+    target: HTMLElement | null;
+    children: React.ReactNode;
+  }>;
+  toolbarNode?: HTMLElement | null;
 }
 
-export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: MentorScheduleEditorProps) {
+export default function MentorScheduleEditor({
+  ToolbarPortal,
+  toolbarNode,
+}: MentorScheduleEditorProps) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
-  )
-  const [activeSchedule, setActiveSchedule] = useState<MentorSchedule | null>(null)
-  const [activeSemester, setActiveSemester] = useState<MentorSemester | null>(null)
-  const [blocks, setBlocks] = useState<ScheduleBlock[]>([])
-  const [mentors, setMentors] = useState<Mentor[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  );
+  const [activeSchedule, setActiveSchedule] = useState<MentorSchedule | null>(
+    null
+  );
+  const [activeSemester, setActiveSemester] = useState<MentorSemester | null>(
+    null
+  );
+  const [blocks, setBlocks] = useState<ScheduleBlock[]>([]);
+  const [mentors, setMentors] = useState<Mentor[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Modal states
-  const [assignModalOpen, setAssignModalOpen] = useState(false)
-  const [assignSlot, setAssignSlot] = useState<{ weekday: number; hour: number } | null>(null)
-  const [selectedMentorId, setSelectedMentorId] = useState<string>("")
-  const [isAssigning, setIsAssigning] = useState(false)
+  const [assignModalOpen, setAssignModalOpen] = useState(false);
+  const [assignSlot, setAssignSlot] = useState<{
+    weekday: number;
+    hour: number;
+  } | null>(null);
+  const [selectedMentorId, setSelectedMentorId] = useState<string>("");
+  const [isAssigning, setIsAssigning] = useState(false);
 
-  const [removeModalOpen, setRemoveModalOpen] = useState(false)
-  const [removeBlock, setRemoveBlock] = useState<ScheduleBlock | null>(null)
-  const [isRemoving, setIsRemoving] = useState(false)
-  const [clearModalOpen, setClearModalOpen] = useState(false)
-  const [isClearing, setIsClearing] = useState(false)
+  const [removeModalOpen, setRemoveModalOpen] = useState(false);
+  const [removeBlock, setRemoveBlock] = useState<ScheduleBlock | null>(null);
+  const [isRemoving, setIsRemoving] = useState(false);
+  const [clearModalOpen, setClearModalOpen] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
 
   // Detail drawer state
-  const [detailSlot, setDetailSlot] = useState<{ weekday: number; hour: number } | null>(null)
-  const [detailBlocks, setDetailBlocks] = useState<ScheduleBlock[]>([])
-  const [isDetailOpen, setIsDetailOpen] = useState(false)
+  const [detailSlot, setDetailSlot] = useState<{
+    weekday: number;
+    hour: number;
+  } | null>(null);
+  const [detailBlocks, setDetailBlocks] = useState<ScheduleBlock[]>([]);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
 
   // Availability overlay state
-  const [availabilityData, setAvailabilityData] = useState<AvailabilityData[]>([])
-  const [showAvailability, setShowAvailability] = useState(false)
-  const [showTraffic, setShowTraffic] = useState(true)
+  const [availabilityData, setAvailabilityData] = useState<AvailabilityData[]>(
+    []
+  );
+  const [showAvailability, setShowAvailability] = useState(false);
+  const [showTraffic, setShowTraffic] = useState(true);
 
   // Traffic indicator state
-  const [trafficData, setTrafficData] = useState<TrafficDatum[]>([])
-  const [draggedMentorId, setDraggedMentorId] = useState<number | null>(null)
-  const [savedSlotKey, setSavedSlotKey] = useState<string | null>(null)
-  const savedSlotTimerRef = useRef<number | null>(null)
+  const [trafficData, setTrafficData] = useState<TrafficDatum[]>([]);
+  const [draggedMentorId, setDraggedMentorId] = useState<number | null>(null);
+  const [savedSlotKey, setSavedSlotKey] = useState<string | null>(null);
+  const savedSlotTimerRef = useRef<number | null>(null);
 
   // Auto-fill schedule modal state
-  const [autoFillOpen, setAutoFillOpen] = useState(false)
-  const [autoFillMaxPerSlot, setAutoFillMaxPerSlot] = useState(2)
-  const [autoFillSlotsPerMentor, setAutoFillSlotsPerMentor] = useState(4)
-  const [autoFillEmptyOnly, setAutoFillEmptyOnly] = useState(true)
+  const [autoFillOpen, setAutoFillOpen] = useState(false);
+  const [autoFillMaxPerSlot, setAutoFillMaxPerSlot] = useState(2);
+  const [autoFillSlotsPerMentor, setAutoFillSlotsPerMentor] = useState(4);
+  const [autoFillEmptyOnly, setAutoFillEmptyOnly] = useState(true);
   const [autoFillReport, setAutoFillReport] = useState<{
-    assignments: number
-    unfilledSlots: string[]
-    unassignedMentors: string[]
-  } | null>(null)
-  const [isAutoFilling, setIsAutoFilling] = useState(false)
+    assignments: number;
+    unfilledSlots: string[];
+    unassignedMentors: string[];
+  } | null>(null);
+  const [isAutoFilling, setIsAutoFilling] = useState(false);
 
   // Headcount import state
-  const [importModalOpen, setImportModalOpen] = useState(false)
-  const [importType, setImportType] = useState<"mentor" | "mentee">("mentor")
-  const [importHeaders, setImportHeaders] = useState<string[]>([])
-  const [importRows, setImportRows] = useState<Record<string, string>[]>([])
-  const [importMapping, setImportMapping] = useState<Record<string, string>>({})
+  const [importModalOpen, setImportModalOpen] = useState(false);
+  const [importType, setImportType] = useState<"mentor" | "mentee">("mentor");
+  const [importHeaders, setImportHeaders] = useState<string[]>([]);
+  const [importRows, setImportRows] = useState<Record<string, string>[]>([]);
+  const [importMapping, setImportMapping] = useState<Record<string, string>>(
+    {}
+  );
   const [importResult, setImportResult] = useState<{
-    created: number
-    skipped: number
-    duplicates: number
-    semestersUsed: string[]
-    errors: string[]
-  } | null>(null)
-  const [isImporting, setIsImporting] = useState(false)
+    created: number;
+    skipped: number;
+    duplicates: number;
+    semestersUsed: string[];
+    errors: string[];
+  } | null>(null);
+  const [isImporting, setIsImporting] = useState(false);
 
   // Fetch the canonical schedule
   const fetchSchedule = useCallback(async () => {
     try {
-      const response = await fetch("/api/mentorSchedule?activeOnly=true")
+      const response = await fetch("/api/mentorSchedule?activeOnly=true");
       if (response.ok) {
-        const data = await response.json()
+        const data = await response.json();
         if (data.length > 0) {
-          setActiveSchedule(data[0])
-          return
+          setActiveSchedule(data[0]);
+          return;
         }
       }
 
@@ -313,207 +383,220 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: "Mentor Schedule", setActive: true }),
-      })
+      });
 
       if (createResponse.ok) {
-        const created = await createResponse.json()
-        setActiveSchedule(created)
+        const created = await createResponse.json();
+        setActiveSchedule(created);
       }
     } catch (error) {
-      console.error("Failed to fetch schedule:", error)
+      console.error("Failed to fetch schedule:", error);
     }
-  }, [])
+  }, []);
 
   // Fetch active semester
   const fetchActiveSemester = useCallback(async () => {
     try {
-      const semesterRes = await fetch("/api/mentor-semester?activeOnly=true")
+      const semesterRes = await fetch("/api/mentor-semester?activeOnly=true");
       if (semesterRes.ok) {
-        const semesters = await semesterRes.json()
-        setActiveSemester(semesters[0] ?? null)
+        const semesters = await semesterRes.json();
+        setActiveSemester(semesters[0] ?? null);
       }
     } catch (error) {
-      console.error("Failed to fetch semester:", error)
+      console.error("Failed to fetch semester:", error);
     }
-  }, [])
+  }, []);
 
   // Fetch schedule blocks
   const fetchBlocks = useCallback(async () => {
     if (!activeSchedule) {
-      setBlocks([])
-      return
+      setBlocks([]);
+      return;
     }
 
     try {
-      const response = await fetch(`/api/scheduleBlock?scheduleId=${activeSchedule.id}`)
+      const response = await fetch(
+        `/api/scheduleBlock?scheduleId=${activeSchedule.id}`
+      );
       if (response.ok) {
-        const data = await response.json()
-        setBlocks(data.blocks || [])
+        const data = await response.json();
+        setBlocks(data.blocks || []);
       }
     } catch (error) {
-      console.error("Failed to fetch blocks:", error)
+      console.error("Failed to fetch blocks:", error);
     }
-  }, [activeSchedule])
+  }, [activeSchedule]);
 
   // Fetch mentors
   const fetchMentors = useCallback(async () => {
     try {
-      const response = await fetch("/api/mentor")
+      const response = await fetch("/api/mentor");
       if (response.ok) {
-        const data = await response.json()
-        const now = new Date()
+        const data = await response.json();
+        const now = new Date();
         setMentors(
           data.filter(
             (mentor: Mentor) =>
               mentor.isActive && new Date(mentor.expirationDate) >= now
           )
-        )
+        );
       }
     } catch (error) {
-      console.error("Failed to fetch mentors:", error)
+      console.error("Failed to fetch mentors:", error);
     }
-  }, [])
+  }, []);
 
   // Fetch availability data for active semester
   const fetchAvailability = useCallback(async () => {
     if (!activeSemester) {
-      setAvailabilityData([])
-      return
+      setAvailabilityData([]);
+      return;
     }
 
     try {
       const availRes = await fetch(
         `/api/mentor-availability?semesterId=${activeSemester.id}`
-      )
+      );
       if (availRes.ok) {
-        const data = await availRes.json()
-        setAvailabilityData(data)
+        const data = await availRes.json();
+        setAvailabilityData(data);
       }
     } catch (error) {
-      console.error("Failed to fetch availability:", error)
+      console.error("Failed to fetch availability:", error);
     }
-  }, [activeSemester])
+  }, [activeSemester]);
 
   const fetchTraffic = useCallback(async () => {
     if (!activeSemester) {
-      setTrafficData([])
-      return
+      setTrafficData([]);
+      return;
     }
 
     try {
       const response = await fetch(
         `/api/mentoring-headcount?traffic=true&semesterId=${activeSemester.id}`
-      )
+      );
       if (response.ok) {
-        const data = await response.json()
-        setTrafficData(data)
+        const data = await response.json();
+        setTrafficData(data);
       }
     } catch (error) {
-      console.error("Failed to fetch traffic data:", error)
+      console.error("Failed to fetch traffic data:", error);
     }
-  }, [activeSemester])
-
+  }, [activeSemester]);
 
   // Initial load
   useEffect(() => {
     const loadData = async () => {
-      setIsLoading(true)
-      await Promise.all([fetchSchedule(), fetchActiveSemester(), fetchMentors()])
-      setIsLoading(false)
-    }
-    loadData()
-  }, [fetchSchedule, fetchActiveSemester, fetchMentors])
+      setIsLoading(true);
+      await Promise.all([
+        fetchSchedule(),
+        fetchActiveSemester(),
+        fetchMentors(),
+      ]);
+      setIsLoading(false);
+    };
+    loadData();
+  }, [fetchSchedule, fetchActiveSemester, fetchMentors]);
 
   // Load blocks when active schedule changes
   useEffect(() => {
     if (activeSchedule) {
-      fetchBlocks()
+      fetchBlocks();
     }
-  }, [activeSchedule, fetchBlocks])
+  }, [activeSchedule, fetchBlocks]);
 
   // Refresh availability and traffic when semester changes
   useEffect(() => {
-    fetchAvailability()
-    fetchTraffic()
-  }, [fetchAvailability, fetchTraffic])
+    fetchAvailability();
+    fetchTraffic();
+  }, [fetchAvailability, fetchTraffic]);
 
   // Get blocks for a specific time slot
   const getBlocksForSlot = (weekday: number, hour: number): ScheduleBlock[] => {
-    return blocks.filter((b) => b.weekday === weekday && b.startHour === hour)
-  }
+    return blocks.filter((b) => b.weekday === weekday && b.startHour === hour);
+  };
 
   const trafficBySlot = useMemo(() => {
-    const map = new Map<string, TrafficDatum>()
+    const map = new Map<string, TrafficDatum>();
     trafficData.forEach((entry) => {
-      map.set(`${entry.weekday}-${entry.hour}`, entry)
-    })
-    return map
-  }, [trafficData])
+      map.set(`${entry.weekday}-${entry.hour}`, entry);
+    });
+    return map;
+  }, [trafficData]);
 
   const getTrafficForSlot = (weekday: number, hour: number) => {
-    return trafficBySlot.get(`${weekday}-${hour}`)
-  }
+    return trafficBySlot.get(`${weekday}-${hour}`);
+  };
 
-  const getTrafficLevel = (averagePeopleInLab: number) => getTrafficPresentation(averagePeopleInLab)
+  const getTrafficLevel = (averagePeopleInLab: number) =>
+    getTrafficPresentation(averagePeopleInLab);
 
   const getTrafficCellClass = (weekday: number, hour: number) => {
-    if (!showTraffic) return ""
-    const traffic = getTrafficForSlot(weekday, hour)
-    if (!traffic) return ""
-    return getTrafficLevel(traffic.averagePeopleInLab).cellTint
-  }
+    if (!showTraffic) return "";
+    const traffic = getTrafficForSlot(weekday, hour);
+    if (!traffic) return "";
+    return getTrafficLevel(traffic.averagePeopleInLab).cellTint;
+  };
 
   const getTrafficSubtextClass = (weekday: number, hour: number) => {
-    if (!showTraffic) return "text-muted-foreground"
-    const traffic = getTrafficForSlot(weekday, hour)
-    if (!traffic) return "text-muted-foreground"
-    return getTrafficLevel(traffic.averagePeopleInLab).subtextClassName
-  }
+    if (!showTraffic) return "text-muted-foreground";
+    const traffic = getTrafficForSlot(weekday, hour);
+    if (!traffic) return "text-muted-foreground";
+    return getTrafficLevel(traffic.averagePeopleInLab).subtextClassName;
+  };
 
   const getTrafficMetaClass = (weekday: number, hour: number) => {
-    if (!showTraffic) return "text-muted-foreground"
-    const traffic = getTrafficForSlot(weekday, hour)
-    if (!traffic) return "text-muted-foreground"
-    return getTrafficLevel(traffic.averagePeopleInLab).metaClassName
-  }
+    if (!showTraffic) return "text-muted-foreground";
+    const traffic = getTrafficForSlot(weekday, hour);
+    if (!traffic) return "text-muted-foreground";
+    return getTrafficLevel(traffic.averagePeopleInLab).metaClassName;
+  };
 
   const clearSavedSlotTimer = useCallback(() => {
     if (savedSlotTimerRef.current !== null) {
-      window.clearTimeout(savedSlotTimerRef.current)
-      savedSlotTimerRef.current = null
+      window.clearTimeout(savedSlotTimerRef.current);
+      savedSlotTimerRef.current = null;
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
-    return () => clearSavedSlotTimer()
-  }, [clearSavedSlotTimer])
+    return () => clearSavedSlotTimer();
+  }, [clearSavedSlotTimer]);
 
-  const markSlotSaved = useCallback((weekday: number, hour: number) => {
-    clearSavedSlotTimer()
-    setSavedSlotKey(getSlotKey(weekday, hour))
-    savedSlotTimerRef.current = window.setTimeout(() => {
-      setSavedSlotKey(null)
-      savedSlotTimerRef.current = null
-    }, 1400)
-  }, [clearSavedSlotTimer])
+  const markSlotSaved = useCallback(
+    (weekday: number, hour: number) => {
+      clearSavedSlotTimer();
+      setSavedSlotKey(getSlotKey(weekday, hour));
+      savedSlotTimerRef.current = window.setTimeout(() => {
+        setSavedSlotKey(null);
+        savedSlotTimerRef.current = null;
+      }, 1400);
+    },
+    [clearSavedSlotTimer]
+  );
 
   // Handle opening assign modal
   const handleOpenAssignModal = (weekday: number, hour: number) => {
-    setAssignSlot({ weekday, hour })
-    setSelectedMentorId("")
-    setAssignModalOpen(true)
-  }
+    setAssignSlot({ weekday, hour });
+    setSelectedMentorId("");
+    setAssignModalOpen(true);
+  };
 
   const handleOpenDetail = (weekday: number, hour: number) => {
-    const slotBlocks = getBlocksForSlot(weekday, hour)
-    if (slotBlocks.length === 0) return
-    setDetailSlot({ weekday, hour })
-    setDetailBlocks(slotBlocks)
-    setIsDetailOpen(true)
-  }
+    const slotBlocks = getBlocksForSlot(weekday, hour);
+    if (slotBlocks.length === 0) return;
+    setDetailSlot({ weekday, hour });
+    setDetailBlocks(slotBlocks);
+    setIsDetailOpen(true);
+  };
 
-  const assignMentorToSlot = async (mentorId: number, weekday: number, hour: number) => {
-    if (!activeSchedule) return
+  const assignMentorToSlot = async (
+    mentorId: number,
+    weekday: number,
+    hour: number
+  ) => {
+    if (!activeSchedule) return;
     const response = await fetch("/api/scheduleBlock", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -523,414 +606,483 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
         startHour: hour,
         scheduleId: activeSchedule.id,
       }),
-    })
+    });
 
     if (!response.ok) {
-      const data = await response.json()
-      throw new Error(data.error || "Failed to assign mentor")
+      const data = await response.json();
+      throw new Error(data.error || "Failed to assign mentor");
     }
-  }
+  };
 
-  const moveScheduleBlock = async (blockId: number, weekday: number, hour: number) => {
+  const moveScheduleBlock = async (
+    blockId: number,
+    weekday: number,
+    hour: number
+  ) => {
     const response = await fetch("/api/scheduleBlock", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: blockId, weekday, startHour: hour }),
-    })
+    });
 
     if (!response.ok) {
-      const data = await response.json()
-      throw new Error(data.error || "Failed to move mentor")
+      const data = await response.json();
+      throw new Error(data.error || "Failed to move mentor");
     }
-  }
+  };
 
   const removeScheduleBlockById = async (blockId: number) => {
     const response = await fetch("/api/scheduleBlock", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: blockId }),
-    })
+    });
 
     if (!response.ok) {
-      const data = await response.json()
-      throw new Error(data.error || "Failed to remove mentor")
+      const data = await response.json();
+      throw new Error(data.error || "Failed to remove mentor");
     }
-  }
+  };
 
   // Handle assign mentor
   const handleAssignMentor = async () => {
-    if (!assignSlot || !selectedMentorId) return
+    if (!assignSlot || !selectedMentorId) return;
 
-    setIsAssigning(true)
+    setIsAssigning(true);
     try {
       await assignMentorToSlot(
         parseInt(selectedMentorId),
         assignSlot.weekday,
         assignSlot.hour
-      )
-      toast.success("Mentor assigned to time slot")
-      fetchBlocks()
-      setAssignModalOpen(false)
+      );
+      toast.success("Mentor assigned to time slot");
+      fetchBlocks();
+      setAssignModalOpen(false);
     } catch (error) {
-      console.error("Failed to assign mentor:", error)
-      toast.error(error instanceof Error ? error.message : "An error occurred")
+      console.error("Failed to assign mentor:", error);
+      toast.error(error instanceof Error ? error.message : "An error occurred");
     } finally {
-      setIsAssigning(false)
+      setIsAssigning(false);
     }
-  }
+  };
 
   // Handle remove block
   const handleRemoveBlock = async () => {
-    if (!removeBlock) return
+    if (!removeBlock) return;
 
-    setIsRemoving(true)
+    setIsRemoving(true);
     try {
-      await removeScheduleBlockById(removeBlock.id)
-      toast.success("Mentor removed from time slot")
-      fetchBlocks()
-      setRemoveModalOpen(false)
-      setRemoveBlock(null)
+      await removeScheduleBlockById(removeBlock.id);
+      toast.success("Mentor removed from time slot");
+      fetchBlocks();
+      setRemoveModalOpen(false);
+      setRemoveBlock(null);
     } catch (error) {
-      console.error("Failed to remove mentor:", error)
-      toast.error(error instanceof Error ? error.message : "An error occurred")
+      console.error("Failed to remove mentor:", error);
+      toast.error(error instanceof Error ? error.message : "An error occurred");
     } finally {
-      setIsRemoving(false)
+      setIsRemoving(false);
     }
-  }
+  };
 
   const handleClearSchedule = async () => {
-    if (!activeSchedule) return
+    if (!activeSchedule) return;
 
-    setIsClearing(true)
+    setIsClearing(true);
     try {
       const response = await fetch("/api/scheduleBlock", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ scheduleId: activeSchedule.id }),
-      })
+      });
 
       if (response.ok) {
-        toast.success("Schedule cleared")
-        fetchBlocks()
-        setClearModalOpen(false)
+        toast.success("Schedule cleared");
+        fetchBlocks();
+        setClearModalOpen(false);
       } else {
-        const data = await response.json()
-        toast.error(data.error || "Failed to clear schedule")
+        const data = await response.json();
+        toast.error(data.error || "Failed to clear schedule");
       }
     } catch (error) {
-      console.error("Failed to clear schedule:", error)
-      toast.error("An error occurred")
+      console.error("Failed to clear schedule:", error);
+      toast.error("An error occurred");
     } finally {
-      setIsClearing(false)
+      setIsClearing(false);
     }
-  }
+  };
 
   const handleDragEnd = async (event: DragEndEvent) => {
-    const { active, over, delta } = event
-    setDraggedMentorId(null)
+    const { active, over, delta } = event;
+    setDraggedMentorId(null);
 
     // Ignore zero-distance drags (clicks)
-    if (Math.abs(delta.x) < 5 && Math.abs(delta.y) < 5) return
+    if (Math.abs(delta.x) < 5 && Math.abs(delta.y) < 5) return;
 
-    const mentorId = active.data.current?.mentorId as number | undefined
-    const blockId = active.data.current?.blockId as number | undefined
+    const mentorId = active.data.current?.mentorId as number | undefined;
+    const blockId = active.data.current?.blockId as number | undefined;
 
-    if (!mentorId) return
+    if (!mentorId) return;
 
-    const targetId = over?.id?.toString()
+    const targetId = over?.id?.toString();
 
     // If dropped on a schedule slot, assign or move
     if (targetId && targetId.startsWith("slot-")) {
-      const [weekdayString, hourString] = targetId.replace("slot-", "").split("-")
-      const weekday = parseInt(weekdayString)
-      const hour = parseInt(hourString)
+      const [weekdayString, hourString] = targetId
+        .replace("slot-", "")
+        .split("-");
+      const weekday = parseInt(weekdayString);
+      const hour = parseInt(hourString);
 
-      if (Number.isNaN(weekday) || Number.isNaN(hour)) return
+      if (Number.isNaN(weekday) || Number.isNaN(hour)) return;
 
       // If moving an existing block, check it actually changed slots
       if (blockId) {
-        const existingBlock = blocks.find((b) => b.id === blockId)
-        if (existingBlock && existingBlock.weekday === weekday && existingBlock.startHour === hour) {
-          return // Same slot, no move needed
+        const existingBlock = blocks.find((b) => b.id === blockId);
+        if (
+          existingBlock &&
+          existingBlock.weekday === weekday &&
+          existingBlock.startHour === hour
+        ) {
+          return; // Same slot, no move needed
         }
       }
 
       try {
         if (blockId) {
-          await moveScheduleBlock(blockId, weekday, hour)
-          toast.success("Mentor moved to new time slot")
+          await moveScheduleBlock(blockId, weekday, hour);
+          toast.success("Mentor moved to new time slot");
         } else {
-          await assignMentorToSlot(mentorId, weekday, hour)
-          toast.success("Mentor assigned to time slot")
+          await assignMentorToSlot(mentorId, weekday, hour);
+          toast.success("Mentor assigned to time slot");
         }
-        markSlotSaved(weekday, hour)
-        fetchBlocks()
+        markSlotSaved(weekday, hour);
+        fetchBlocks();
       } catch (error) {
-        console.error("Drag assignment failed:", error)
-        toast.error(error instanceof Error ? error.message : "Failed to update slot")
+        console.error("Drag assignment failed:", error);
+        toast.error(
+          error instanceof Error ? error.message : "Failed to update slot"
+        );
       }
-      return
+      return;
     }
 
     // Dropped anywhere else — if it was on the schedule, remove it
     if (blockId) {
       try {
-        await removeScheduleBlockById(blockId)
-        toast.success("Mentor removed from schedule")
-        fetchBlocks()
+        await removeScheduleBlockById(blockId);
+        toast.success("Mentor removed from schedule");
+        fetchBlocks();
       } catch (error) {
-        console.error("Drag removal failed:", error)
-        toast.error(error instanceof Error ? error.message : "Failed to remove mentor")
+        console.error("Drag removal failed:", error);
+        toast.error(
+          error instanceof Error ? error.message : "Failed to remove mentor"
+        );
       }
     }
-  }
+  };
 
   const runAutoFillSchedule = async () => {
     if (!activeSchedule) {
-      toast.error("No active schedule available")
-      return
+      toast.error("No active schedule available");
+      return;
     }
     if (!availabilityData.length) {
-      toast.error("No availability submissions to use")
-      return
+      toast.error("No availability submissions to use");
+      return;
     }
 
-    setIsAutoFilling(true)
-    setAutoFillReport(null)
+    setIsAutoFilling(true);
+    setAutoFillReport(null);
     try {
-      const mentorByUserId = new Map<number, Mentor>()
-      mentors.forEach((mentor) => mentorByUserId.set(mentor.user.id, mentor))
+      const mentorByUserId = new Map<number, Mentor>();
+      mentors.forEach((mentor) => mentorByUserId.set(mentor.user.id, mentor));
 
-      const mentorAvailability = new Map<number, AvailabilitySlot[]>()
+      const mentorAvailability = new Map<number, AvailabilitySlot[]>();
       availabilityData.forEach((entry) => {
-        const mentor = mentorByUserId.get(entry.userId)
-        if (!mentor) return
-        mentorAvailability.set(mentor.id, entry.slots)
-      })
+        const mentor = mentorByUserId.get(entry.userId);
+        if (!mentor) return;
+        mentorAvailability.set(mentor.id, entry.slots);
+      });
 
       const existingAssignments = new Set(
-        blocks.map((block) => `${block.mentor.id}-${block.weekday}-${block.startHour}`)
-      )
+        blocks.map(
+          (block) => `${block.mentor.id}-${block.weekday}-${block.startHour}`
+        )
+      );
 
-      const mentorAssignmentCounts = new Map<number, number>()
-      mentors.forEach((mentor) => mentorAssignmentCounts.set(mentor.id, 0))
+      const mentorAssignmentCounts = new Map<number, number>();
+      mentors.forEach((mentor) => mentorAssignmentCounts.set(mentor.id, 0));
       blocks.forEach((block) => {
         mentorAssignmentCounts.set(
           block.mentor.id,
           (mentorAssignmentCounts.get(block.mentor.id) ?? 0) + 1
-        )
-      })
+        );
+      });
 
-      const slotCounts = new Map<string, number>()
+      const slotCounts = new Map<string, number>();
       blocks.forEach((block) => {
-        const key = `${block.weekday}-${block.startHour}`
-        slotCounts.set(key, (slotCounts.get(key) ?? 0) + 1)
-      })
+        const key = `${block.weekday}-${block.startHour}`;
+        slotCounts.set(key, (slotCounts.get(key) ?? 0) + 1);
+      });
 
-      const assignments: { mentorId: number; weekday: number; hour: number }[] = []
-      const unfilledSlots: string[] = []
+      const assignments: { mentorId: number; weekday: number; hour: number }[] =
+        [];
+      const unfilledSlots: string[] = [];
 
-      type CandidateSlot = { weekday: number; hour: number; dayIndex: number; label: string }
-      const candidateSlots: CandidateSlot[] = []
+      type CandidateSlot = {
+        weekday: number;
+        hour: number;
+        dayIndex: number;
+        label: string;
+      };
+      const candidateSlots: CandidateSlot[] = [];
 
       for (const { hour, label } of HOURS) {
         for (let dayIndex = 0; dayIndex < DAYS.length; dayIndex++) {
-          const weekday = dayIndex + 1
-          const slotKey = `${weekday}-${hour}`
-          const currentCount = slotCounts.get(slotKey) ?? 0
+          const weekday = dayIndex + 1;
+          const slotKey = `${weekday}-${hour}`;
+          const currentCount = slotCounts.get(slotKey) ?? 0;
 
           // Strict mode: only touch completely empty slots.
-          if (autoFillEmptyOnly && currentCount > 0) continue
-          if (currentCount >= autoFillMaxPerSlot) continue
+          if (autoFillEmptyOnly && currentCount > 0) continue;
+          if (currentCount >= autoFillMaxPerSlot) continue;
 
-          candidateSlots.push({ weekday, hour, dayIndex, label })
+          candidateSlots.push({ weekday, hour, dayIndex, label });
         }
       }
 
       // Fill in passes so lower-coverage slots are always prioritized first:
       // pass 1 fills up to one mentor per slot, pass 2 fills up to two, etc.
-      for (let targetCoverage = 1; targetCoverage <= autoFillMaxPerSlot; targetCoverage++) {
+      for (
+        let targetCoverage = 1;
+        targetCoverage <= autoFillMaxPerSlot;
+        targetCoverage++
+      ) {
         candidateSlots.sort((a, b) => {
-          const aCount = slotCounts.get(`${a.weekday}-${a.hour}`) ?? 0
-          const bCount = slotCounts.get(`${b.weekday}-${b.hour}`) ?? 0
-          return aCount - bCount
-        })
+          const aCount = slotCounts.get(`${a.weekday}-${a.hour}`) ?? 0;
+          const bCount = slotCounts.get(`${b.weekday}-${b.hour}`) ?? 0;
+          return aCount - bCount;
+        });
 
         for (const slot of candidateSlots) {
-          const slotKey = `${slot.weekday}-${slot.hour}`
-          const currentCount = slotCounts.get(slotKey) ?? 0
-          if (currentCount >= targetCoverage) continue
-          if (currentCount >= autoFillMaxPerSlot) continue
+          const slotKey = `${slot.weekday}-${slot.hour}`;
+          const currentCount = slotCounts.get(slotKey) ?? 0;
+          if (currentCount >= targetCoverage) continue;
+          if (currentCount >= autoFillMaxPerSlot) continue;
 
           const availableMentors = mentors
             .filter((mentor) => {
-              const availability = mentorAvailability.get(mentor.id) || []
+              const availability = mentorAvailability.get(mentor.id) || [];
               const hasSlot = availability.some(
-                (entry) => entry.weekday === slot.weekday && entry.hour === slot.hour
-              )
+                (entry) =>
+                  entry.weekday === slot.weekday && entry.hour === slot.hour
+              );
               const alreadyAssigned = existingAssignments.has(
                 `${mentor.id}-${slot.weekday}-${slot.hour}`
-              )
-              const assignmentCount = mentorAssignmentCounts.get(mentor.id) ?? 0
-              return hasSlot && !alreadyAssigned && assignmentCount < autoFillSlotsPerMentor
+              );
+              const assignmentCount =
+                mentorAssignmentCounts.get(mentor.id) ?? 0;
+              return (
+                hasSlot &&
+                !alreadyAssigned &&
+                assignmentCount < autoFillSlotsPerMentor
+              );
             })
             .sort((a, b) => {
-              const aCount = mentorAssignmentCounts.get(a.id) ?? 0
-              const bCount = mentorAssignmentCounts.get(b.id) ?? 0
-              return aCount - bCount
-            })
+              const aCount = mentorAssignmentCounts.get(a.id) ?? 0;
+              const bCount = mentorAssignmentCounts.get(b.id) ?? 0;
+              return aCount - bCount;
+            });
 
-          const mentor = availableMentors[0]
-          if (!mentor) continue
+          const mentor = availableMentors[0];
+          if (!mentor) continue;
 
-          assignments.push({ mentorId: mentor.id, weekday: slot.weekday, hour: slot.hour })
+          assignments.push({
+            mentorId: mentor.id,
+            weekday: slot.weekday,
+            hour: slot.hour,
+          });
           mentorAssignmentCounts.set(
             mentor.id,
             (mentorAssignmentCounts.get(mentor.id) ?? 0) + 1
-          )
-          existingAssignments.add(`${mentor.id}-${slot.weekday}-${slot.hour}`)
-          slotCounts.set(slotKey, currentCount + 1)
+          );
+          existingAssignments.add(`${mentor.id}-${slot.weekday}-${slot.hour}`);
+          slotCounts.set(slotKey, currentCount + 1);
         }
       }
 
       for (const slot of candidateSlots) {
-        const filled = slotCounts.get(`${slot.weekday}-${slot.hour}`) ?? 0
+        const filled = slotCounts.get(`${slot.weekday}-${slot.hour}`) ?? 0;
         if (filled < autoFillMaxPerSlot) {
-          unfilledSlots.push(`${DAYS[slot.dayIndex]} ${slot.label}`)
+          unfilledSlots.push(`${DAYS[slot.dayIndex]} ${slot.label}`);
         }
       }
 
       for (const assignment of assignments) {
-        await assignMentorToSlot(assignment.mentorId, assignment.weekday, assignment.hour)
+        await assignMentorToSlot(
+          assignment.mentorId,
+          assignment.weekday,
+          assignment.hour
+        );
       }
 
       const unassignedMentors = mentors
         .filter((mentor) => (mentorAssignmentCounts.get(mentor.id) ?? 0) === 0)
-        .map((mentor) => mentor.user.name)
+        .map((mentor) => mentor.user.name);
 
       setAutoFillReport({
         assignments: assignments.length,
         unfilledSlots,
         unassignedMentors,
-      })
-      fetchBlocks()
-      toast.success(`Auto-fill completed (${assignments.length} assignments)`)
+      });
+      fetchBlocks();
+      toast.success(`Auto-fill completed (${assignments.length} assignments)`);
     } catch (error) {
-      console.error("Auto-fill failed:", error)
-      toast.error(error instanceof Error ? error.message : "Failed to auto-fill schedule")
+      console.error("Auto-fill failed:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to auto-fill schedule"
+      );
     } finally {
-      setIsAutoFilling(false)
+      setIsAutoFilling(false);
     }
-  }
-
+  };
 
   // Get mentors not already in this slot
   const getAvailableMentors = (weekday: number, hour: number) => {
-    const slotMentorIds = getBlocksForSlot(weekday, hour).map((b) => b.mentor.id)
-    return mentors.filter((m) => !slotMentorIds.includes(m.id))
-  }
+    const slotMentorIds = getBlocksForSlot(weekday, hour).map(
+      (b) => b.mentor.id
+    );
+    return mentors.filter((m) => !slotMentorIds.includes(m.id));
+  };
 
   // Get aggregated availability for display
-  const aggregatedAvailability = aggregateAvailability(availabilityData)
+  const aggregatedAvailability = aggregateAvailability(availabilityData);
 
-  const getAvailabilityNamesForSlot = (weekday: number, hour: number): string[] => {
-    return getSlotAvailability(aggregatedAvailability, weekday, hour)
-  }
+  const getAvailabilityNamesForSlot = (
+    weekday: number,
+    hour: number
+  ): string[] => {
+    return getSlotAvailability(aggregatedAvailability, weekday, hour);
+  };
 
   // Get available names for a slot from built-in availability
   const getAvailabilityForSlot = (weekday: number, hour: number): string[] => {
-    if (!showAvailability) return []
-    return getAvailabilityNamesForSlot(weekday, hour)
-  }
+    if (!showAvailability) return [];
+    return getAvailabilityNamesForSlot(weekday, hour);
+  };
 
   // Get mentors who are available for a slot
-  const getAvailableMentorsForSlot = (weekday: number, hour: number): Mentor[] => {
-    const availableNames = getAvailabilityNamesForSlot(weekday, hour)
+  const getAvailableMentorsForSlot = (
+    weekday: number,
+    hour: number
+  ): Mentor[] => {
+    const availableNames = getAvailabilityNamesForSlot(weekday, hour);
     // Find mentors whose names match the available names
-    return mentors.filter((m) => 
-      availableNames.some((name) => 
-        m.user.name.toLowerCase().includes(name.toLowerCase()) ||
-        name.toLowerCase().includes(m.user.name.toLowerCase())
+    return mentors.filter((m) =>
+      availableNames.some(
+        (name) =>
+          m.user.name.toLowerCase().includes(name.toLowerCase()) ||
+          name.toLowerCase().includes(m.user.name.toLowerCase())
       )
-    )
-  }
+    );
+  };
 
   // Handle print schedule
   const handlePrint = () => {
-    const printUrl = `/print/mentor-schedule?scheduleId=${activeSchedule?.id}`
-    window.open(printUrl, "_blank")
-  }
+    const printUrl = `/print/mentor-schedule?scheduleId=${activeSchedule?.id}`;
+    window.open(printUrl, "_blank");
+  };
 
   // Placeholder for When2Meet availability (for backward compatibility)
-  const getWhen2MeetAvailability = (weekday: number, hour: number): string[] => {
-    return getAvailabilityNamesForSlot(weekday, hour)
-  }
+  const getWhen2MeetAvailability = (
+    weekday: number,
+    hour: number
+  ): string[] => {
+    return getAvailabilityNamesForSlot(weekday, hour);
+  };
 
   // Get mentors who have availability at this slot (simplified)
-  const getMappedAvailableMentors = (weekday: number, hour: number): Mentor[] => {
-    return getAvailableMentorsForSlot(weekday, hour)
-  }
+  const getMappedAvailableMentors = (
+    weekday: number,
+    hour: number
+  ): Mentor[] => {
+    return getAvailableMentorsForSlot(weekday, hour);
+  };
 
-  const isMentorAvailableForSlot = useCallback((mentorId: number, weekday: number, hour: number) => {
-    const mentor = mentors.find((entry) => entry.id === mentorId)
-    if (!mentor) return false
+  const isMentorAvailableForSlot = useCallback(
+    (mentorId: number, weekday: number, hour: number) => {
+      const mentor = mentors.find((entry) => entry.id === mentorId);
+      if (!mentor) return false;
 
-    const availability = availabilityData.find((entry) => entry.userId === mentor.user.id)?.slots ?? []
-    return availability.some((slot) => slot.weekday === weekday && slot.hour === hour)
-  }, [availabilityData, mentors])
+      const availability =
+        availabilityData.find((entry) => entry.userId === mentor.user.id)
+          ?.slots ?? [];
+      return availability.some(
+        (slot) => slot.weekday === weekday && slot.hour === hour
+      );
+    },
+    [availabilityData, mentors]
+  );
 
   const guessHeader = (headers: string[], keywords: string[]) => {
-    const lowerHeaders = headers.map((header) => header.toLowerCase())
+    const lowerHeaders = headers.map((header) => header.toLowerCase());
     return (
       headers[
         lowerHeaders.findIndex((header) =>
           keywords.some((keyword) => header.includes(keyword))
         )
       ] || ""
-    )
-  }
+    );
+  };
 
   const handleImportFile = (file: File) => {
     Papa.parse<Record<string, string>>(file, {
       header: true,
       skipEmptyLines: true,
       complete: (results) => {
-        const headers = results.meta.fields || []
-        setImportHeaders(headers)
-        setImportRows(results.data.filter((row) => Object.keys(row).length > 0))
+        const headers = results.meta.fields || [];
+        setImportHeaders(headers);
+        setImportRows(
+          results.data.filter((row) => Object.keys(row).length > 0)
+        );
         setImportMapping({
           createdAt: guessHeader(headers, ["timestamp", "time", "date"]),
           mentors: guessHeader(headers, ["mentor", "mentors", "on duty"]),
           peopleInLab: guessHeader(headers, ["people", "lab", "headcount"]),
           feeling: guessHeader(headers, ["feeling", "mood"]),
-          studentsMentoredCount: guessHeader(headers, ["students", "mentee", "mentored"]),
+          studentsMentoredCount: guessHeader(headers, [
+            "students",
+            "mentee",
+            "mentored",
+          ]),
           testsCheckedOutCount: guessHeader(headers, ["test", "checked out"]),
           classes: guessHeader(headers, ["class", "course", "courses"]),
           otherClassText: guessHeader(headers, ["other"]),
-        })
-        setImportResult(null)
+        });
+        setImportResult(null);
       },
-    })
-  }
+    });
+  };
 
   const parseListField = (value: string) =>
     value
       .split(/[;,]/)
       .map((item) => item.trim())
-      .filter(Boolean)
+      .filter(Boolean);
 
   const buildImportPayload = () => {
     return importRows.map((row) => {
-      const getValue = (key: string) => row[importMapping[key] || ""] || ""
-      const createdAt = getValue("createdAt")
-      const mentors = parseListField(getValue("mentors"))
+      const getValue = (key: string) => row[importMapping[key] || ""] || "";
+      const createdAt = getValue("createdAt");
+      const mentors = parseListField(getValue("mentors"));
       if (importType === "mentor") {
         return {
           createdAt,
           mentors,
           peopleInLab: parseInt(getValue("peopleInLab"), 10),
           feeling: getValue("feeling"),
-        }
+        };
       }
       return {
         createdAt,
@@ -939,90 +1091,97 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
         testsCheckedOutCount: parseInt(getValue("testsCheckedOutCount"), 10),
         classes: parseListField(getValue("classes")),
         otherClassText: getValue("otherClassText") || null,
-      }
-    })
-  }
+      };
+    });
+  };
 
-  const CHUNK_SIZE = 20
-  const CHUNK_TIMEOUT_MS = 120_000
+  const CHUNK_SIZE = 20;
+  const CHUNK_TIMEOUT_MS = 120_000;
 
   const handleRunImport = async () => {
     if (!importRows.length) {
-      toast.error("No CSV rows to import")
-      return
+      toast.error("No CSV rows to import");
+      return;
     }
 
     const requiredFields =
       importType === "mentor"
         ? ["createdAt", "mentors", "peopleInLab", "feeling"]
-        : ["createdAt", "mentors", "studentsMentoredCount", "testsCheckedOutCount"]
+        : [
+            "createdAt",
+            "mentors",
+            "studentsMentoredCount",
+            "testsCheckedOutCount",
+          ];
 
-    const missing = requiredFields.filter((field) => !importMapping[field])
+    const missing = requiredFields.filter((field) => !importMapping[field]);
     if (missing.length > 0) {
-      toast.error("Please map all required fields before importing")
-      return
+      toast.error("Please map all required fields before importing");
+      return;
     }
 
-    setIsImporting(true)
+    setIsImporting(true);
     try {
-      const allRows = buildImportPayload()
-      const totalChunks = Math.ceil(allRows.length / CHUNK_SIZE)
-      let created = 0
-      let skipped = 0
-      let duplicates = 0
-      const semestersUsed = new Set<string>()
-      const errors: string[] = []
-      let aborted = false
+      const allRows = buildImportPayload();
+      const totalChunks = Math.ceil(allRows.length / CHUNK_SIZE);
+      let created = 0;
+      let skipped = 0;
+      let duplicates = 0;
+      const semestersUsed = new Set<string>();
+      const errors: string[] = [];
+      let aborted = false;
 
       for (let i = 0; i < totalChunks; i++) {
-        const chunk = allRows.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE)
+        const chunk = allRows.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE);
 
-        const controller = new AbortController()
-        const timer = setTimeout(() => controller.abort(), CHUNK_TIMEOUT_MS)
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), CHUNK_TIMEOUT_MS);
 
-        let response: Response
+        let response: Response;
         try {
           response = await fetch("/api/headcount-import", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ type: importType, rows: chunk }),
             signal: controller.signal,
-          })
+          });
         } catch (fetchErr: any) {
-          clearTimeout(timer)
-          const isTimeout = fetchErr?.name === "AbortError"
+          clearTimeout(timer);
+          const isTimeout = fetchErr?.name === "AbortError";
           toast.error(
             `Chunk ${i + 1}/${totalChunks}: ${isTimeout ? "Request timed out — the server may still be processing" : "Network error"}`
-          )
-          aborted = true
-          break
+          );
+          aborted = true;
+          break;
         } finally {
-          clearTimeout(timer)
+          clearTimeout(timer);
         }
 
         if (!response.ok) {
-          let message = "Failed to import headcount data"
+          let message = "Failed to import headcount data";
           if (response.status === 413) {
-            message = "Request too large — try a smaller CSV file"
+            message = "Request too large — try a smaller CSV file";
           } else if (response.status === 403) {
-            message = "You don't have permission to import headcount data"
+            message = "You don't have permission to import headcount data";
           } else {
             try {
-              const errData = await response.json()
-              message = errData.error || message
-            } catch { /* use default */ }
+              const errData = await response.json();
+              message = errData.error || message;
+            } catch {
+              /* use default */
+            }
           }
-          toast.error(`Chunk ${i + 1}/${totalChunks}: ${message}`)
-          aborted = true
-          break
+          toast.error(`Chunk ${i + 1}/${totalChunks}: ${message}`);
+          aborted = true;
+          break;
         }
 
-        const data = await response.json()
-        created += data.created ?? 0
-        skipped += data.skipped ?? 0
-        duplicates += data.duplicates ?? 0
-        for (const s of data.semestersUsed ?? []) semestersUsed.add(s)
-        errors.push(...(data.errors || []))
+        const data = await response.json();
+        created += data.created ?? 0;
+        skipped += data.skipped ?? 0;
+        duplicates += data.duplicates ?? 0;
+        for (const s of data.semestersUsed ?? []) semestersUsed.add(s);
+        errors.push(...(data.errors || []));
       }
 
       setImportResult({
@@ -1031,27 +1190,31 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
         duplicates,
         semestersUsed: [...semestersUsed].sort(),
         errors: errors.slice(0, 20),
-      })
+      });
       if (aborted) {
-        toast.warning(`Import partially completed: ${created} created, ${skipped} skipped, ${duplicates} duplicates`)
+        toast.warning(
+          `Import partially completed: ${created} created, ${skipped} skipped, ${duplicates} duplicates`
+        );
       } else {
-        toast.success("Headcount import completed")
+        toast.success("Headcount import completed");
       }
-      fetchTraffic()
+      fetchTraffic();
     } catch (error) {
-      console.error("Failed to import headcount data:", error)
-      toast.error("An error occurred during import. Check your connection and try again.")
+      console.error("Failed to import headcount data:", error);
+      toast.error(
+        "An error occurred during import. Check your connection and try again."
+      );
     } finally {
-      setIsImporting(false)
+      setIsImporting(false);
     }
-  }
+  };
 
   if (isLoading) {
     return (
       <div className="text-muted-foreground text-sm py-8 text-center">
         Loading schedule...
       </div>
-    )
+    );
   }
 
   const toolbarButtons = activeSchedule ? (
@@ -1061,7 +1224,11 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
           size="sm"
           variant="outline"
           onClick={() => setShowAvailability(!showAvailability)}
-          className={showAvailability ? "bg-green-600 hover:bg-green-700 text-white border-green-600" : ""}
+          className={
+            showAvailability
+              ? "bg-green-600 hover:bg-green-700 text-white border-green-600"
+              : ""
+          }
         >
           <Users className="h-3.5 w-3.5" />
           Availability
@@ -1073,7 +1240,11 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
           variant="outline"
           onClick={() => setShowTraffic(!showTraffic)}
           title="Shade slots by average people in lab"
-          className={showTraffic ? "bg-blue-600 hover:bg-blue-700 text-white border-blue-600" : ""}
+          className={
+            showTraffic
+              ? "bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
+              : ""
+          }
         >
           <Activity className="h-3.5 w-3.5" />
           Traffic Shading
@@ -1086,13 +1257,15 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
         <Printer className="h-3.5 w-3.5" />
       </Button>
     </>
-  ) : null
+  ) : null;
 
   return (
     <div className="space-y-4">
       {/* Portal toolbar buttons into the page-level tab bar when available */}
       {ToolbarPortal && toolbarButtons && (
-        <ToolbarPortal target={toolbarNode ?? null}>{toolbarButtons}</ToolbarPortal>
+        <ToolbarPortal target={toolbarNode ?? null}>
+          {toolbarButtons}
+        </ToolbarPortal>
       )}
       {/* Fallback: render inline if no portal target provided */}
       {!ToolbarPortal && toolbarButtons && (
@@ -1116,15 +1289,20 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
           <DndContext
             sensors={sensors}
             onDragStart={(event) => {
-              const mentorId = event.active.data.current?.mentorId as number | undefined
-              setDraggedMentorId(mentorId ?? null)
+              const mentorId = event.active.data.current?.mentorId as
+                | number
+                | undefined;
+              setDraggedMentorId(mentorId ?? null);
             }}
             onDragCancel={() => setDraggedMentorId(null)}
             onDragEnd={handleDragEnd}
             autoScroll={false}
           >
             {/* Main grid: calendar + sidebar, sidebar constrained to calendar height */}
-            <div className="grid gap-4 xl:grid-cols-[1fr_280px]" style={{ alignItems: "start" }}>
+            <div
+              className="grid gap-4 xl:grid-cols-[1fr_280px]"
+              style={{ alignItems: "start" }}
+            >
               <div className="flex flex-col gap-3">
                 {/* Desktop table view */}
                 <div className="hidden md:block overflow-hidden border rounded-lg bg-card">
@@ -1138,7 +1316,10 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                         {DAYS.map((day, i) => (
                           <TableHead
                             key={day}
-                            className={cn("p-2 text-center text-sm font-semibold text-foreground", i < DAYS.length - 1 && "border-r border-border")}
+                            className={cn(
+                              "p-2 text-center text-sm font-semibold text-foreground",
+                              i < DAYS.length - 1 && "border-r border-border"
+                            )}
                           >
                             {day}
                           </TableHead>
@@ -1147,23 +1328,41 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                     </TableHeader>
                     <TableBody>
                       {HOURS.map(({ hour, label }) => (
-                        <TableRow key={hour} className="border-b border-border last:border-b-0 hover:bg-transparent">
+                        <TableRow
+                          key={hour}
+                          className="border-b border-border last:border-b-0 hover:bg-transparent"
+                        >
                           <TableCell className="p-2 text-sm text-foreground font-semibold bg-primary/5 whitespace-nowrap border-r border-border">
                             {label}
                           </TableCell>
                           {DAYS.map((_, dayIndex) => {
-                            const weekday = dayIndex + 1
-                            const slotBlocks = getBlocksForSlot(weekday, hour)
-                            const availableNames = getWhen2MeetAvailability(weekday, hour)
-                            const mappedAvailable = getMappedAvailableMentors(weekday, hour)
-                            const traffic = getTrafficForSlot(weekday, hour)
-                            const tooltipAvailableMentorNames = getSlotAvailableMentorNames(mappedAvailable, availableNames)
-                            const slotKey = getSlotKey(weekday, hour)
-                            const dropFeedbackState: SlotDropFeedback = draggedMentorId === null
-                              ? null
-                              : isMentorAvailableForSlot(draggedMentorId, weekday, hour)
-                                ? "available"
-                                : "unavailable"
+                            const weekday = dayIndex + 1;
+                            const slotBlocks = getBlocksForSlot(weekday, hour);
+                            const availableNames = getWhen2MeetAvailability(
+                              weekday,
+                              hour
+                            );
+                            const mappedAvailable = getMappedAvailableMentors(
+                              weekday,
+                              hour
+                            );
+                            const traffic = getTrafficForSlot(weekday, hour);
+                            const tooltipAvailableMentorNames =
+                              getSlotAvailableMentorNames(
+                                mappedAvailable,
+                                availableNames
+                              );
+                            const slotKey = getSlotKey(weekday, hour);
+                            const dropFeedbackState: SlotDropFeedback =
+                              draggedMentorId === null
+                                ? null
+                                : isMentorAvailableForSlot(
+                                      draggedMentorId,
+                                      weekday,
+                                      hour
+                                    )
+                                  ? "available"
+                                  : "unavailable";
 
                             return (
                               <ScheduleSlotCell
@@ -1171,10 +1370,13 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                                 id={`slot-${weekday}-${hour}`}
                                 className={cn(
                                   "align-top p-0",
-                                  dayIndex < DAYS.length - 1 && "border-r border-border",
-                                  getTrafficCellClass(weekday, hour),
+                                  dayIndex < DAYS.length - 1 &&
+                                    "border-r border-border",
+                                  getTrafficCellClass(weekday, hour)
                                 )}
-                                onClick={() => handleOpenAssignModal(weekday, hour)}
+                                onClick={() =>
+                                  handleOpenAssignModal(weekday, hour)
+                                }
                                 dropFeedbackState={dropFeedbackState}
                                 saved={savedSlotKey === slotKey}
                               >
@@ -1182,13 +1384,15 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                                   size="sm"
                                   className="block h-full w-full p-1"
                                   disabled={draggedMentorId !== null}
-                                  content={(
+                                  content={
                                     <ScheduleSlotTooltipContent
                                       label={`${DAYS[dayIndex]} · ${label}`}
                                       traffic={traffic}
-                                      availableMentorNames={tooltipAvailableMentorNames}
+                                      availableMentorNames={
+                                        tooltipAvailableMentorNames
+                                      }
                                     />
-                                  )}
+                                  }
                                 >
                                   <div className="relative flex h-full w-full flex-col gap-0.5 min-w-0">
                                     {savedSlotKey === slotKey && (
@@ -1202,11 +1406,15 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                                         id={`block-${block.id}`}
                                         mentorId={block.mentor.id}
                                         blockId={block.id}
-                                        colorToken={getMentorColor(block.mentor.id)}
+                                        colorToken={getMentorColor(
+                                          block.mentor.id
+                                        )}
                                         label={block.mentor.name.split(" ")[0]}
                                         fullName={block.mentor.name}
                                         image={block.mentor.image}
-                                        onClick={() => handleOpenDetail(weekday, hour)}
+                                        onClick={() =>
+                                          handleOpenDetail(weekday, hour)
+                                        }
                                         fill
                                       />
                                     ))}
@@ -1214,11 +1422,20 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                                     <div
                                       className={cn(
                                         "text-[10px] truncate h-4 leading-4",
-                                        showAvailability ? getTrafficSubtextClass(weekday, hour) : "invisible"
+                                        showAvailability
+                                          ? getTrafficSubtextClass(
+                                              weekday,
+                                              hour
+                                            )
+                                          : "invisible"
                                       )}
                                     >
                                       {mappedAvailable.length > 0
-                                        ? mappedAvailable.map((m) => m.user.name.split(" ")[0]).join(", ")
+                                        ? mappedAvailable
+                                            .map(
+                                              (m) => m.user.name.split(" ")[0]
+                                            )
+                                            .join(", ")
                                         : availableNames.length > 0
                                           ? `${availableNames.length} avail.`
                                           : "\u00A0"}
@@ -1226,7 +1443,7 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                                   </div>
                                 </Tooltip>
                               </ScheduleSlotCell>
-                            )
+                            );
                           })}
                         </TableRow>
                       ))}
@@ -1237,9 +1454,13 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                 {/* Mobile card view — one card per day, time slots within */}
                 <div className="md:hidden space-y-2">
                   {DAYS.map((day, dayIndex) => {
-                    const weekday = dayIndex + 1
+                    const weekday = dayIndex + 1;
                     return (
-                      <Card key={day} depth={3} className="neo:border-0 overflow-hidden">
+                      <Card
+                        key={day}
+                        depth={3}
+                        className="neo:border-0 overflow-hidden"
+                      >
                         <CardHeader className="py-2 px-3 bg-primary/5 border-b border-border">
                           <CardTitle className="text-sm font-semibold flex items-center gap-1.5">
                             <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
@@ -1249,30 +1470,45 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                         <CardContent className="p-0">
                           <div className="divide-y divide-border">
                             {HOURS.map(({ hour, label }) => {
-                              const slotBlocks = getBlocksForSlot(weekday, hour)
-                              const mappedAvailable = getMappedAvailableMentors(weekday, hour)
-                              const availableNames = getWhen2MeetAvailability(weekday, hour)
-                              const traffic = getTrafficForSlot(weekday, hour)
-                              const tooltipAvailableMentorNames = getSlotAvailableMentorNames(mappedAvailable, availableNames)
-                              const slotKey = getSlotKey(weekday, hour)
+                              const slotBlocks = getBlocksForSlot(
+                                weekday,
+                                hour
+                              );
+                              const mappedAvailable = getMappedAvailableMentors(
+                                weekday,
+                                hour
+                              );
+                              const availableNames = getWhen2MeetAvailability(
+                                weekday,
+                                hour
+                              );
+                              const traffic = getTrafficForSlot(weekday, hour);
+                              const tooltipAvailableMentorNames =
+                                getSlotAvailableMentorNames(
+                                  mappedAvailable,
+                                  availableNames
+                                );
+                              const slotKey = getSlotKey(weekday, hour);
                               return (
                                 <Tooltip
                                   key={hour}
                                   size="sm"
                                   className="block w-full"
                                   disabled={draggedMentorId !== null}
-                                  content={(
+                                  content={
                                     <ScheduleSlotTooltipContent
                                       label={`${day} · ${label}`}
                                       traffic={traffic}
-                                      availableMentorNames={tooltipAvailableMentorNames}
+                                      availableMentorNames={
+                                        tooltipAvailableMentorNames
+                                      }
                                     />
-                                  )}
+                                  }
                                 >
                                   <div
                                     className={cn(
                                       "relative flex items-center gap-2 px-3 py-2",
-                                      getTrafficCellClass(weekday, hour),
+                                      getTrafficCellClass(weekday, hour)
                                     )}
                                   >
                                     {savedSlotKey === slotKey && (
@@ -1280,49 +1516,89 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                                         <Check className="h-2.5 w-2.5" />
                                       </span>
                                     )}
-                                    <span className={cn("text-xs w-24 shrink-0", getTrafficMetaClass(weekday, hour))}>
+                                    <span
+                                      className={cn(
+                                        "text-xs w-24 shrink-0",
+                                        getTrafficMetaClass(weekday, hour)
+                                      )}
+                                    >
                                       {label}
                                     </span>
                                     <div className="flex-1 min-w-0 overflow-hidden space-y-0.5">
                                       <div className="flex flex-wrap gap-1">
-                                        {slotBlocks.length > 0 ? slotBlocks.map((block) => (
-                                          <button
-                                            key={block.id}
-                                            type="button"
-                                            onClick={() => handleOpenDetail(weekday, hour)}
-                                            className="flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium border max-w-full"
-                                            style={{
-                                              backgroundColor: getMentorColor(block.mentor.id).fill,
-                                              color: getMentorColor(block.mentor.id).foreground,
-                                              borderColor: getMentorColor(block.mentor.id).fill,
-                                            }}
-                                          >
-                                            {block.mentor.image ? (
-                                              <Image
-                                                src={block.mentor.image}
-                                                alt=""
-                                                width={16}
-                                                height={16}
-                                                className="h-4 w-4 rounded-full object-cover shrink-0"
-                                              />
-                                            ) : null}
-                                            <span className="truncate">{block.mentor.name.split(" ")[0]}</span>
-                                          </button>
-                                        )) : (
-                                          <span className="text-xs text-muted-foreground/40">—</span>
+                                        {slotBlocks.length > 0 ? (
+                                          slotBlocks.map((block) => (
+                                            <button
+                                              key={block.id}
+                                              type="button"
+                                              onClick={() =>
+                                                handleOpenDetail(weekday, hour)
+                                              }
+                                              className="flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium border max-w-full"
+                                              style={{
+                                                backgroundColor: getMentorColor(
+                                                  block.mentor.id
+                                                ).fill,
+                                                color: getMentorColor(
+                                                  block.mentor.id
+                                                ).foreground,
+                                                borderColor: getMentorColor(
+                                                  block.mentor.id
+                                                ).fill,
+                                              }}
+                                            >
+                                              {block.mentor.image ? (
+                                                <Image
+                                                  src={block.mentor.image}
+                                                  alt=""
+                                                  width={16}
+                                                  height={16}
+                                                  className="h-4 w-4 rounded-full object-cover shrink-0"
+                                                />
+                                              ) : null}
+                                              <span className="truncate">
+                                                {
+                                                  block.mentor.name.split(
+                                                    " "
+                                                  )[0]
+                                                }
+                                              </span>
+                                            </button>
+                                          ))
+                                        ) : (
+                                          <span className="text-xs text-muted-foreground/40">
+                                            —
+                                          </span>
                                         )}
                                       </div>
-                                      {showAvailability && (mappedAvailable.length > 0 || availableNames.length > 0) && (
-                                        <div className={cn("text-[10px] truncate", getTrafficSubtextClass(weekday, hour))}>
-                                          {mappedAvailable.length > 0
-                                            ? mappedAvailable.map((m) => m.user.name.split(" ")[0]).join(", ")
-                                            : `${availableNames.length} avail.`}
-                                        </div>
-                                      )}
+                                      {showAvailability &&
+                                        (mappedAvailable.length > 0 ||
+                                          availableNames.length > 0) && (
+                                          <div
+                                            className={cn(
+                                              "text-[10px] truncate",
+                                              getTrafficSubtextClass(
+                                                weekday,
+                                                hour
+                                              )
+                                            )}
+                                          >
+                                            {mappedAvailable.length > 0
+                                              ? mappedAvailable
+                                                  .map(
+                                                    (m) =>
+                                                      m.user.name.split(" ")[0]
+                                                  )
+                                                  .join(", ")
+                                              : `${availableNames.length} avail.`}
+                                          </div>
+                                        )}
                                     </div>
                                     <button
                                       type="button"
-                                      onClick={() => handleOpenAssignModal(weekday, hour)}
+                                      onClick={() =>
+                                        handleOpenAssignModal(weekday, hour)
+                                      }
                                       className="text-xs text-muted-foreground hover:text-foreground shrink-0 px-1"
                                       title="Add mentor"
                                     >
@@ -1330,12 +1606,12 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                                     </button>
                                   </div>
                                 </Tooltip>
-                              )
+                              );
                             })}
                           </div>
                         </CardContent>
                       </Card>
-                    )
+                    );
                   })}
                 </div>
 
@@ -1345,8 +1621,16 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                     <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
                       <span className="font-medium">Traffic:</span>
                       {TRAFFIC_LEGEND.map((level) => (
-                        <span key={level.label} className="flex items-center gap-1">
-                          <span className={cn("h-3 w-5 rounded-sm", level.swatchClassName)} />
+                        <span
+                          key={level.label}
+                          className="flex items-center gap-1"
+                        >
+                          <span
+                            className={cn(
+                              "h-3 w-5 rounded-sm",
+                              level.swatchClassName
+                            )}
+                          />
                           {level.label}
                         </span>
                       ))}
@@ -1356,23 +1640,27 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                   {blocks.length > 0 && (
                     <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
                       <span className="font-medium mr-1">On schedule:</span>
-                      {Array.from(new Set(blocks.map((b) => b.mentor.id))).map((mentorId) => {
-                        const mentor = blocks.find((b) => b.mentor.id === mentorId)?.mentor
-                        if (!mentor) return null
-                        return (
-                          <span
-                            key={mentorId}
-                            className="px-1.5 py-0.5 rounded text-[11px] border"
-                            style={{
-                              backgroundColor: getMentorColor(mentorId).fill,
-                              color: getMentorColor(mentorId).foreground,
-                              borderColor: getMentorColor(mentorId).fill,
-                            }}
-                          >
-                            {mentor.name}
-                          </span>
-                        )
-                      })}
+                      {Array.from(new Set(blocks.map((b) => b.mentor.id))).map(
+                        (mentorId) => {
+                          const mentor = blocks.find(
+                            (b) => b.mentor.id === mentorId
+                          )?.mentor;
+                          if (!mentor) return null;
+                          return (
+                            <span
+                              key={mentorId}
+                              className="px-1.5 py-0.5 rounded text-[11px] border"
+                              style={{
+                                backgroundColor: getMentorColor(mentorId).fill,
+                                color: getMentorColor(mentorId).foreground,
+                                borderColor: getMentorColor(mentorId).fill,
+                              }}
+                            >
+                              {mentor.name}
+                            </span>
+                          );
+                        }
+                      )}
                     </div>
                   )}
                 </div>
@@ -1404,14 +1692,32 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                     <CardTitle className="text-lg">Headcount Forms</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-2">
-                    <Button asChild variant="outline" size="sm" className="w-full justify-start gap-2">
-                      <a href="/mentoring/headcount/mentors" target="_blank" rel="noreferrer">
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="sm"
+                      className="w-full justify-start gap-2"
+                    >
+                      <a
+                        href="/mentoring/headcount/mentors"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
                         <Clock className="h-3.5 w-3.5" />
                         30-min Mentor Headcount
                       </a>
                     </Button>
-                    <Button asChild variant="outline" size="sm" className="w-full justify-start gap-2">
-                      <a href="/mentoring/headcount/mentees" target="_blank" rel="noreferrer">
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="sm"
+                      className="w-full justify-start gap-2"
+                    >
+                      <a
+                        href="/mentoring/headcount/mentees"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
                         <Users className="h-3.5 w-3.5" />
                         55-min Mentee Headcount
                       </a>
@@ -1434,7 +1740,8 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                   </CardHeader>
                   <CardContent className="space-y-3">
                     <p className="text-sm text-muted-foreground">
-                      Clear only when you intend to remove every mentor assignment from the active schedule.
+                      Clear only when you intend to remove every mentor
+                      assignment from the active schedule.
                     </p>
                     <Button
                       size="sm"
@@ -1470,23 +1777,32 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Expected traffic</span>
                 {(() => {
-                  const traffic = getTrafficForSlot(detailSlot.weekday, detailSlot.hour)
-                  if (!traffic) return <span className="text-xs text-muted-foreground">No data yet</span>
-                  const level = getTrafficLevel(traffic.averagePeopleInLab)
+                  const traffic = getTrafficForSlot(
+                    detailSlot.weekday,
+                    detailSlot.hour
+                  );
+                  if (!traffic)
+                    return (
+                      <span className="text-xs text-muted-foreground">
+                        No data yet
+                      </span>
+                    );
+                  const level = getTrafficLevel(traffic.averagePeopleInLab);
                   return (
                     <span className="text-xs text-muted-foreground">
-                      {level.label} · avg {traffic.averagePeopleInLab.toFixed(1)}
+                      {level.label} · avg{" "}
+                      {traffic.averagePeopleInLab.toFixed(1)}
                     </span>
-                  )
+                  );
                 })()}
               </div>
               {(() => {
                 const traffic = detailSlot
                   ? getTrafficForSlot(detailSlot.weekday, detailSlot.hour)
-                  : null
-                if (!traffic) return null
-                const level = getTrafficLevel(traffic.averagePeopleInLab)
-                return <Progress value={level.value} />
+                  : null;
+                if (!traffic) return null;
+                const level = getTrafficLevel(traffic.averagePeopleInLab);
+                return <Progress value={level.value} />;
               })()}
             </div>
           )}
@@ -1494,7 +1810,9 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
           <div className="space-y-3">
             <h3 className="text-sm font-semibold">Assigned mentors</h3>
             {detailBlocks.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No mentors assigned yet.</p>
+              <p className="text-sm text-muted-foreground">
+                No mentors assigned yet.
+              </p>
             ) : (
               detailBlocks.map((block) => (
                 <Card key={block.id} depth={3} className="neo:border-0">
@@ -1504,15 +1822,22 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                         <div className="flex items-center gap-2">
                           <Avatar className="h-7 w-7">
                             {block.mentor.image ? (
-                              <AvatarImage src={block.mentor.image} alt={block.mentor.name} />
+                              <AvatarImage
+                                src={block.mentor.image}
+                                alt={block.mentor.name}
+                              />
                             ) : null}
                             <AvatarFallback className="text-[10px]">
                               {getInitials(block.mentor.name)}
                             </AvatarFallback>
                           </Avatar>
                           <div className="min-w-0">
-                            <div className="font-medium truncate">{block.mentor.name}</div>
-                            <div className="text-xs text-muted-foreground truncate">{block.mentor.email}</div>
+                            <div className="font-medium truncate">
+                              {block.mentor.name}
+                            </div>
+                            <div className="text-xs text-muted-foreground truncate">
+                              {block.mentor.email}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -1520,8 +1845,8 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                         variant="ghost"
                         size="sm"
                         onClick={() => {
-                          setRemoveBlock(block)
-                          setRemoveModalOpen(true)
+                          setRemoveBlock(block);
+                          setRemoveModalOpen(true);
                         }}
                       >
                         Remove
@@ -1529,7 +1854,7 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                     </div>
                     <div className="flex flex-wrap gap-1">
                       {block.mentor.skills.slice(0, 6).map((skill) => {
-                        const color = getCategoricalColorFromSeed(skill.id)
+                        const color = getCategoricalColorFromSeed(skill.id);
                         return (
                           <Badge
                             key={skill.id}
@@ -1542,15 +1867,17 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                           >
                             {skill.name}
                           </Badge>
-                        )
+                        );
                       })}
                       {block.mentor.skills.length === 0 && (
-                        <span className="text-xs text-muted-foreground">No skills listed</span>
+                        <span className="text-xs text-muted-foreground">
+                          No skills listed
+                        </span>
                       )}
                     </div>
                     <div className="flex flex-wrap gap-1">
                       {block.mentor.courses.slice(0, 6).map((course) => {
-                        const color = getCategoricalColorFromSeed(course.code)
+                        const color = getCategoricalColorFromSeed(course.code);
                         return (
                           <Badge
                             key={course.id}
@@ -1563,10 +1890,12 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                           >
                             {course.code}
                           </Badge>
-                        )
+                        );
                       })}
                       {block.mentor.courses.length === 0 && (
-                        <span className="text-xs text-muted-foreground">No courses listed</span>
+                        <span className="text-xs text-muted-foreground">
+                          No courses listed
+                        </span>
                       )}
                     </div>
                   </CardContent>
@@ -1586,8 +1915,8 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
       <Modal
         open={autoFillOpen}
         onOpenChange={(open) => {
-          setAutoFillOpen(open)
-          if (!open) setAutoFillReport(null)
+          setAutoFillOpen(open);
+          if (!open) setAutoFillReport(null);
         }}
         title="Auto-fill Schedule"
         description="Generate schedule blocks from mentor availability."
@@ -1596,23 +1925,31 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
         <div className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Max mentors per slot</label>
+              <label className="text-sm font-medium">
+                Max mentors per slot
+              </label>
               <Input
                 type="number"
                 min={1}
                 max={3}
                 value={autoFillMaxPerSlot}
-                onChange={(e) => setAutoFillMaxPerSlot(parseInt(e.target.value || "1"))}
+                onChange={(e) =>
+                  setAutoFillMaxPerSlot(parseInt(e.target.value || "1"))
+                }
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Max slots per mentor</label>
+              <label className="text-sm font-medium">
+                Max slots per mentor
+              </label>
               <Input
                 type="number"
                 min={1}
                 max={10}
                 value={autoFillSlotsPerMentor}
-                onChange={(e) => setAutoFillSlotsPerMentor(parseInt(e.target.value || "1"))}
+                onChange={(e) =>
+                  setAutoFillSlotsPerMentor(parseInt(e.target.value || "1"))
+                }
               />
             </div>
           </div>
@@ -1623,7 +1960,10 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                 Keep existing assignments and only add where capacity remains.
               </p>
             </div>
-            <Switch checked={autoFillEmptyOnly} onCheckedChange={setAutoFillEmptyOnly} />
+            <Switch
+              checked={autoFillEmptyOnly}
+              onCheckedChange={setAutoFillEmptyOnly}
+            />
           </div>
 
           {autoFillReport && (
@@ -1634,12 +1974,14 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
               </p>
               {autoFillReport.unassignedMentors.length > 0 && (
                 <div className="text-xs text-muted-foreground">
-                  Unassigned mentors: {autoFillReport.unassignedMentors.join(", ")}
+                  Unassigned mentors:{" "}
+                  {autoFillReport.unassignedMentors.join(", ")}
                 </div>
               )}
               {autoFillReport.unfilledSlots.length > 0 && (
                 <div className="text-xs text-muted-foreground">
-                  Unfilled slots: {autoFillReport.unfilledSlots.slice(0, 8).join(", ")}
+                  Unfilled slots:{" "}
+                  {autoFillReport.unfilledSlots.slice(0, 8).join(", ")}
                   {autoFillReport.unfilledSlots.length > 8 && "…"}
                 </div>
               )}
@@ -1660,9 +2002,9 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
       <Modal
         open={importModalOpen}
         onOpenChange={(open) => {
-          setImportModalOpen(open)
+          setImportModalOpen(open);
           if (!open) {
-            setImportResult(null)
+            setImportResult(null);
           }
         }}
         title="Import Headcount CSV"
@@ -1673,7 +2015,9 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
             <label className="text-sm font-medium">Import type</label>
             <Select
               value={importType}
-              onValueChange={(value) => setImportType(value as "mentor" | "mentee")}
+              onValueChange={(value) =>
+                setImportType(value as "mentor" | "mentee")
+              }
             >
               <SelectTrigger>
                 <SelectValue />
@@ -1691,9 +2035,9 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
               type="file"
               accept=".csv"
               onChange={(event) => {
-                const file = event.target.files?.[0]
+                const file = event.target.files?.[0];
                 if (file) {
-                  handleImportFile(file)
+                  handleImportFile(file);
                 }
               }}
               className="w-full text-sm"
@@ -1709,7 +2053,10 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                     <Select
                       value={importMapping.createdAt || ""}
                       onValueChange={(value) =>
-                        setImportMapping((prev) => ({ ...prev, createdAt: value }))
+                        setImportMapping((prev) => ({
+                          ...prev,
+                          createdAt: value,
+                        }))
                       }
                     >
                       <SelectTrigger>
@@ -1729,7 +2076,10 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                     <Select
                       value={importMapping.peopleInLab || ""}
                       onValueChange={(value) =>
-                        setImportMapping((prev) => ({ ...prev, peopleInLab: value }))
+                        setImportMapping((prev) => ({
+                          ...prev,
+                          peopleInLab: value,
+                        }))
                       }
                     >
                       <SelectTrigger>
@@ -1749,7 +2099,10 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                     <Select
                       value={importMapping.feeling || ""}
                       onValueChange={(value) =>
-                        setImportMapping((prev) => ({ ...prev, feeling: value }))
+                        setImportMapping((prev) => ({
+                          ...prev,
+                          feeling: value,
+                        }))
                       }
                     >
                       <SelectTrigger>
@@ -1765,11 +2118,16 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                     </Select>
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-medium">Mentors on duty</label>
+                    <label className="text-xs font-medium">
+                      Mentors on duty
+                    </label>
                     <Select
                       value={importMapping.mentors || ""}
                       onValueChange={(value) =>
-                        setImportMapping((prev) => ({ ...prev, mentors: value }))
+                        setImportMapping((prev) => ({
+                          ...prev,
+                          mentors: value,
+                        }))
                       }
                     >
                       <SelectTrigger>
@@ -1792,7 +2150,10 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                     <Select
                       value={importMapping.createdAt || ""}
                       onValueChange={(value) =>
-                        setImportMapping((prev) => ({ ...prev, createdAt: value }))
+                        setImportMapping((prev) => ({
+                          ...prev,
+                          createdAt: value,
+                        }))
                       }
                     >
                       <SelectTrigger>
@@ -1808,7 +2169,9 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                     </Select>
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-medium">Students mentored</label>
+                    <label className="text-xs font-medium">
+                      Students mentored
+                    </label>
                     <Select
                       value={importMapping.studentsMentoredCount || ""}
                       onValueChange={(value) =>
@@ -1831,7 +2194,9 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                     </Select>
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-medium">Tests checked out</label>
+                    <label className="text-xs font-medium">
+                      Tests checked out
+                    </label>
                     <Select
                       value={importMapping.testsCheckedOutCount || ""}
                       onValueChange={(value) =>
@@ -1854,11 +2219,16 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                     </Select>
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-medium">Mentors on duty</label>
+                    <label className="text-xs font-medium">
+                      Mentors on duty
+                    </label>
                     <Select
                       value={importMapping.mentors || ""}
                       onValueChange={(value) =>
-                        setImportMapping((prev) => ({ ...prev, mentors: value }))
+                        setImportMapping((prev) => ({
+                          ...prev,
+                          mentors: value,
+                        }))
                       }
                     >
                       <SelectTrigger>
@@ -1874,11 +2244,16 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                     </Select>
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-medium">Classes helped</label>
+                    <label className="text-xs font-medium">
+                      Classes helped
+                    </label>
                     <Select
                       value={importMapping.classes || ""}
                       onValueChange={(value) =>
-                        setImportMapping((prev) => ({ ...prev, classes: value }))
+                        setImportMapping((prev) => ({
+                          ...prev,
+                          classes: value,
+                        }))
                       }
                     >
                       <SelectTrigger>
@@ -1894,11 +2269,16 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
                     </Select>
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-medium">Other class (optional)</label>
+                    <label className="text-xs font-medium">
+                      Other class (optional)
+                    </label>
                     <Select
                       value={importMapping.otherClassText || ""}
                       onValueChange={(value) =>
-                        setImportMapping((prev) => ({ ...prev, otherClassText: value }))
+                        setImportMapping((prev) => ({
+                          ...prev,
+                          otherClassText: value,
+                        }))
                       }
                     >
                       <SelectTrigger>
@@ -1941,19 +2321,28 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
             variant="destructive"
             size="sm"
             onClick={async () => {
-              if (!confirm("Delete ALL headcount entries across every semester? This cannot be undone.")) return
+              if (
+                !confirm(
+                  "Delete ALL headcount entries across every semester? This cannot be undone."
+                )
+              )
+                return;
               try {
-                const res = await fetch("/api/headcount-import", { method: "DELETE" })
-                const data = await res.json()
+                const res = await fetch("/api/headcount-import", {
+                  method: "DELETE",
+                });
+                const data = await res.json();
                 if (res.ok) {
-                  toast.success(`Cleared ${data.deleted.mentorEntries} mentor + ${data.deleted.menteeEntries} mentee entries`)
-                  setImportResult(null)
-                  fetchTraffic()
+                  toast.success(
+                    `Cleared ${data.deleted.mentorEntries} mentor + ${data.deleted.menteeEntries} mentee entries`
+                  );
+                  setImportResult(null);
+                  fetchTraffic();
                 } else {
-                  toast.error(data.error || "Failed to clear data")
+                  toast.error(data.error || "Failed to clear data");
                 }
               } catch {
-                toast.error("Failed to clear headcount data")
+                toast.error("Failed to clear headcount data");
               }
             }}
           >
@@ -1963,7 +2352,10 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
             <Button variant="ghost" onClick={() => setImportModalOpen(false)}>
               Close
             </Button>
-            <Button onClick={handleRunImport} disabled={isImporting || importRows.length === 0}>
+            <Button
+              onClick={handleRunImport}
+              disabled={isImporting || importRows.length === 0}
+            >
               {isImporting ? "Importing..." : "Run Import"}
             </Button>
           </div>
@@ -1988,18 +2380,21 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
             </SelectTrigger>
             <SelectContent>
               {assignSlot &&
-                getAvailableMentors(assignSlot.weekday, assignSlot.hour).map((mentor) => (
-                  <SelectItem key={mentor.id} value={mentor.id.toString()}>
-                    <div className="flex items-center gap-2">
-                      <User className="h-4 w-4" />
-                      {mentor.user.name}
-                    </div>
-                  </SelectItem>
-                ))}
+                getAvailableMentors(assignSlot.weekday, assignSlot.hour).map(
+                  (mentor) => (
+                    <SelectItem key={mentor.id} value={mentor.id.toString()}>
+                      <div className="flex items-center gap-2">
+                        <User className="h-4 w-4" />
+                        {mentor.user.name}
+                      </div>
+                    </SelectItem>
+                  )
+                )}
             </SelectContent>
           </Select>
           {assignSlot &&
-            getAvailableMentors(assignSlot.weekday, assignSlot.hour).length === 0 && (
+            getAvailableMentors(assignSlot.weekday, assignSlot.hour).length ===
+              0 && (
               <p className="text-sm text-muted-foreground">
                 All active mentors are already assigned to this time slot.
               </p>
@@ -2009,7 +2404,10 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
           <Button variant="ghost" onClick={() => setAssignModalOpen(false)}>
             Cancel
           </Button>
-          <Button onClick={handleAssignMentor} disabled={!selectedMentorId || isAssigning}>
+          <Button
+            onClick={handleAssignMentor}
+            disabled={!selectedMentorId || isAssigning}
+          >
             {isAssigning ? "Assigning..." : "Assign Mentor"}
           </Button>
         </ModalFooter>
@@ -2026,7 +2424,8 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
           Remove <strong>{removeBlock?.mentor.name}</strong> from{" "}
           <strong>
             {removeBlock && DAYS[removeBlock.weekday - 1]} at{" "}
-            {removeBlock && HOURS.find((h) => h.hour === removeBlock.startHour)?.label}
+            {removeBlock &&
+              HOURS.find((h) => h.hour === removeBlock.startHour)?.label}
           </strong>
           ?
         </p>
@@ -2034,7 +2433,11 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
           <Button variant="ghost" onClick={() => setRemoveModalOpen(false)}>
             Cancel
           </Button>
-          <Button variant="destructive" onClick={handleRemoveBlock} disabled={isRemoving}>
+          <Button
+            variant="destructive"
+            onClick={handleRemoveBlock}
+            disabled={isRemoving}
+          >
             {isRemoving ? "Removing..." : "Remove"}
           </Button>
         </ModalFooter>
@@ -2054,14 +2457,17 @@ export default function MentorScheduleEditor({ ToolbarPortal, toolbarNode }: Men
           <Button variant="ghost" onClick={() => setClearModalOpen(false)}>
             Cancel
           </Button>
-          <Button variant="destructive" onClick={handleClearSchedule} disabled={isClearing}>
+          <Button
+            variant="destructive"
+            onClick={handleClearSchedule}
+            disabled={isClearing}
+          >
             {isClearing ? "Clearing..." : "Clear Schedule"}
           </Button>
         </ModalFooter>
       </Modal>
-
     </div>
-  )
+  );
 }
 
 function ScheduleSlotCell({
@@ -2072,14 +2478,14 @@ function ScheduleSlotCell({
   dropFeedbackState = null,
   saved = false,
 }: {
-  id: string
-  className?: string
-  children: ReactNode
-  onClick?: () => void
-  dropFeedbackState?: SlotDropFeedback
-  saved?: boolean
+  id: string;
+  className?: string;
+  children: ReactNode;
+  onClick?: () => void;
+  dropFeedbackState?: SlotDropFeedback;
+  saved?: boolean;
 }) {
-  const { setNodeRef, isOver } = useDroppable({ id })
+  const { setNodeRef, isOver } = useDroppable({ id });
 
   return (
     <td
@@ -2096,7 +2502,7 @@ function ScheduleSlotCell({
     >
       {children}
     </td>
-  )
+  );
 }
 
 function DraggableMentorChip({
@@ -2111,29 +2517,30 @@ function DraggableMentorChip({
   title,
   fill,
 }: {
-  id: string
-  mentorId: number
-  blockId?: number
-  label: string
-  fullName: string
-  image?: string | null
-  colorToken: { fill: string; foreground: string }
-  onClick?: () => void
-  title?: string
-  fill?: boolean
+  id: string;
+  mentorId: number;
+  blockId?: number;
+  label: string;
+  fullName: string;
+  image?: string | null;
+  colorToken: { fill: string; foreground: string };
+  onClick?: () => void;
+  title?: string;
+  fill?: boolean;
 }) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-    id,
-    data: { mentorId, blockId },
-  })
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({
+      id,
+      data: { mentorId, blockId },
+    });
 
-  const wasDragging = useRef(false)
+  const wasDragging = useRef(false);
 
   useEffect(() => {
     if (isDragging) {
-      wasDragging.current = true
+      wasDragging.current = true;
     }
-  }, [isDragging])
+  }, [isDragging]);
 
   const style = {
     ...(transform
@@ -2142,16 +2549,16 @@ function DraggableMentorChip({
     backgroundColor: colorToken.fill,
     color: colorToken.foreground,
     borderColor: colorToken.fill,
-  } as CSSProperties
+  } as CSSProperties;
 
   const handleClick = (e: React.MouseEvent) => {
-    e.stopPropagation()
+    e.stopPropagation();
     if (wasDragging.current) {
-      wasDragging.current = false
-      return
+      wasDragging.current = false;
+      return;
     }
-    onClick?.()
-  }
+    onClick?.();
+  };
 
   return (
     <button
@@ -2178,5 +2585,5 @@ function DraggableMentorChip({
         <span className="truncate text-left">{label}</span>
       </span>
     </button>
-  )
+  );
 }

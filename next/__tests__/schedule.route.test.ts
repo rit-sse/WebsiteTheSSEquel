@@ -34,7 +34,10 @@ import { DELETE, GET, POST, PUT } from "@/app/api/schedule/route";
 describe("/api/schedule route", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockGetGatewayAuthLevel.mockResolvedValue({ isMentoringHead: false, isPrimary: false });
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isMentoringHead: false,
+      isPrimary: false,
+    });
   });
 
   it("GET returns schedule entries", async () => {
@@ -57,7 +60,10 @@ describe("/api/schedule route", () => {
   });
 
   it("POST validates required fields", async () => {
-    mockGetGatewayAuthLevel.mockResolvedValue({ isMentoringHead: true, isPrimary: false });
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isMentoringHead: true,
+      isPrimary: false,
+    });
 
     const req = new Request("http://localhost/api/schedule", {
       method: "POST",
@@ -70,8 +76,15 @@ describe("/api/schedule route", () => {
   });
 
   it("PUT updates schedule when authorized", async () => {
-    mockGetGatewayAuthLevel.mockResolvedValue({ isMentoringHead: true, isPrimary: false });
-    mockScheduleUpdate.mockResolvedValue({ id: 3, mentorId: 9, hourBlockId: 5 });
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isMentoringHead: true,
+      isPrimary: false,
+    });
+    mockScheduleUpdate.mockResolvedValue({
+      id: 3,
+      mentorId: 9,
+      hourBlockId: 5,
+    });
 
     const req = new Request("http://localhost/api/schedule", {
       method: "PUT",
@@ -85,7 +98,10 @@ describe("/api/schedule route", () => {
   });
 
   it("DELETE returns 404 when Prisma delete fails", async () => {
-    mockGetGatewayAuthLevel.mockResolvedValue({ isMentoringHead: true, isPrimary: false });
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isMentoringHead: true,
+      isPrimary: false,
+    });
     mockScheduleDelete.mockRejectedValue(new Error("missing"));
 
     const req = new Request("http://localhost/api/schedule", {

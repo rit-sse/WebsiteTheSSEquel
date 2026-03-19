@@ -47,7 +47,9 @@ describe("/api/courseTaken route", () => {
   });
 
   it("GET returns courseTaken entries", async () => {
-    mockCourseTakenFindMany.mockResolvedValue([{ id: 1, mentorId: 2, courseId: 3 }]);
+    mockCourseTakenFindMany.mockResolvedValue([
+      { id: 1, mentorId: 2, courseId: 3 },
+    ]);
 
     const res = await GET();
     expect(res.status).toBe(200);
@@ -79,7 +81,11 @@ describe("/api/courseTaken route", () => {
   });
 
   it("POST creates record when authorized", async () => {
-    mockCourseTakenCreate.mockResolvedValue({ id: 11, mentorId: 1, courseId: 2 });
+    mockCourseTakenCreate.mockResolvedValue({
+      id: 11,
+      mentorId: 1,
+      courseId: 2,
+    });
 
     const req = new Request("http://localhost/api/courseTaken", {
       method: "POST",

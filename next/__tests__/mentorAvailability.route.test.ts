@@ -85,7 +85,9 @@ describe("/api/mentor-availability route", () => {
 
   it("GET my=true returns 401 when not logged in", async () => {
     mockGetServerSession.mockResolvedValue(null);
-    const req = new Request("http://localhost/api/mentor-availability?my=true") as any;
+    const req = new Request(
+      "http://localhost/api/mentor-availability?my=true"
+    ) as any;
     req.nextUrl = new URL("http://localhost/api/mentor-availability?my=true");
     const res = await GET(req);
     expect(res.status).toBe(401);
@@ -99,7 +101,9 @@ describe("/api/mentor-availability route", () => {
   });
 
   it("POST validates slots are an array", async () => {
-    mockGetServerSession.mockResolvedValue({ user: { email: "u@example.com" } });
+    mockGetServerSession.mockResolvedValue({
+      user: { email: "u@example.com" },
+    });
     mockUserFindUnique.mockResolvedValue({ id: 7, email: "u@example.com" });
     const req = new Request("http://localhost/api/mentor-availability", {
       method: "POST",
@@ -111,7 +115,9 @@ describe("/api/mentor-availability route", () => {
   });
 
   it("POST upserts availability and returns parsed slots", async () => {
-    mockGetServerSession.mockResolvedValue({ user: { email: "u@example.com" } });
+    mockGetServerSession.mockResolvedValue({
+      user: { email: "u@example.com" },
+    });
     mockUserFindUnique.mockResolvedValue({ id: 7, email: "u@example.com" });
     mockMentorSemesterFindUnique.mockResolvedValue({ id: 2, scheduleId: null });
     mockMentorAvailabilityUpsert.mockResolvedValue({
@@ -126,7 +132,10 @@ describe("/api/mentor-availability route", () => {
 
     const req = new Request("http://localhost/api/mentor-availability", {
       method: "POST",
-      body: JSON.stringify({ semesterId: 2, slots: [{ weekday: 1, hour: 10 }] }),
+      body: JSON.stringify({
+        semesterId: 2,
+        slots: [{ weekday: 1, hour: 10 }],
+      }),
       headers: { "content-type": "application/json" },
     }) as any;
 
@@ -138,10 +147,15 @@ describe("/api/mentor-availability route", () => {
   });
 
   it("DELETE denies deleting another user's availability without manager auth", async () => {
-    mockGetServerSession.mockResolvedValue({ user: { email: "u@example.com" } });
+    mockGetServerSession.mockResolvedValue({
+      user: { email: "u@example.com" },
+    });
     mockUserFindUnique.mockResolvedValue({ id: 7, email: "u@example.com" });
     mockMentorAvailabilityFindUnique.mockResolvedValue({ id: 99, userId: 10 });
-    mockGetGatewayAuthLevel.mockResolvedValue({ isMentoringHead: false, isPrimary: false });
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isMentoringHead: false,
+      isPrimary: false,
+    });
 
     const req = new Request("http://localhost/api/mentor-availability", {
       method: "DELETE",

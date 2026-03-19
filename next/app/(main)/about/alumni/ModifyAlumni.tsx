@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useEffect, useState } from "react";
 import { AlumniMember } from "./alumni";
@@ -11,49 +11,59 @@ import { Pencil, Trash2 } from "lucide-react";
  * setSelectedAlumni - Function to set the selectedAlumni state
  */
 interface ModifyAlumniProps {
-    alumniMember: AlumniMember,
-    openDeleteModal: () => void,
-    openEditModal: () => void,
-    setSelectedAlumni: (alumniMember: AlumniMember) => void
+  alumniMember: AlumniMember;
+  openDeleteModal: () => void;
+  openEditModal: () => void;
+  setSelectedAlumni: (alumniMember: AlumniMember) => void;
 }
 
 /**
  * Component that reveals Edit / Delete button to officers
  */
-export default function ModifyAlumni({ alumniMember, openDeleteModal, openEditModal, setSelectedAlumni }: ModifyAlumniProps) {
-    const [isOfficer, setIsOfficer] = useState(false);
-    
-    useEffect(() => {
-        userStatus();  
-    }, []);
-    
-    const userStatus = async () => {
-        const response = await fetch("/api/authLevel");
-        const userData = await response.json();
-        setIsOfficer(userData.isOfficer);
-    }
+export default function ModifyAlumni({
+  alumniMember,
+  openDeleteModal,
+  openEditModal,
+  setSelectedAlumni,
+}: ModifyAlumniProps) {
+  const [isOfficer, setIsOfficer] = useState(false);
 
-    if(isOfficer){
-        return (
-            <div className="flex gap-2 justify-center">
-                <button 
-                    className="flex items-center gap-1.5 text-xs bg-surface-2 hover:bg-surface-3 rounded-md px-2.5 py-1.5 text-foreground transition-colors" 
-                    onClick={() => {setSelectedAlumni(alumniMember); openEditModal()}}
-                >
-                    <Pencil size={12} />
-                    Edit
-                </button>
-                <button 
-                    className="flex items-center gap-1.5 text-xs bg-destructive/10 hover:bg-destructive/20 rounded-md px-2.5 py-1.5 text-destructive transition-colors" 
-                    onClick={() => {setSelectedAlumni(alumniMember); openDeleteModal()}}
-                >
-                    <Trash2 size={12} />
-                    Remove
-                </button>
-            </div>
-        )
-    }
-    else{
-        return null;
-    }
+  useEffect(() => {
+    const loadUserStatus = async () => {
+      const response = await fetch("/api/authLevel");
+      const userData = await response.json();
+      setIsOfficer(userData.isOfficer);
+    };
+
+    void loadUserStatus();
+  }, []);
+
+  if (isOfficer) {
+    return (
+      <div className="flex gap-2 justify-center">
+        <button
+          className="flex items-center gap-1.5 text-xs bg-surface-2 hover:bg-surface-3 rounded-md px-2.5 py-1.5 text-foreground transition-colors"
+          onClick={() => {
+            setSelectedAlumni(alumniMember);
+            openEditModal();
+          }}
+        >
+          <Pencil size={12} />
+          Edit
+        </button>
+        <button
+          className="flex items-center gap-1.5 text-xs bg-destructive/10 hover:bg-destructive/20 rounded-md px-2.5 py-1.5 text-destructive transition-colors"
+          onClick={() => {
+            setSelectedAlumni(alumniMember);
+            openDeleteModal();
+          }}
+        >
+          <Trash2 size={12} />
+          Remove
+        </button>
+      </div>
+    );
+  } else {
+    return null;
+  }
 }

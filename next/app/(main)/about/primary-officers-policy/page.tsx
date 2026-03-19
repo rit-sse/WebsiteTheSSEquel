@@ -2,7 +2,9 @@ import { Card } from "@/components/ui/card";
 import { getPostData } from "@/lib/posts";
 
 export default async function PrimaryOfficersPolicy() {
-  const postData = await getPostData("https://raw.githubusercontent.com/rit-sse/governing-docs/refs/heads/main/primary-officers-policy.md");
+  const postData = await getPostData(
+    "https://raw.githubusercontent.com/rit-sse/governing-docs/refs/heads/main/primary-officers-policy.md"
+  );
 
   return (
     <section>

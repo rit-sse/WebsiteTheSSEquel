@@ -1,166 +1,191 @@
-"use client"
+"use client";
 
-import React, { useEffect, useState } from "react"
-import { useSession } from "next-auth/react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
+import React, { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@/components/ui/collapsible"
-import { Modal, ModalFooter } from "@/components/ui/modal"
-import { Plus, Clock, CheckCircle, ArrowRight, ChevronDown, CreditCard, Link2, Unlink, Trash2, Loader2 } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { useIsMobile } from "@/hooks/use-mobile"
-import { toast } from "sonner"
-import CheckoutForm from "./CheckoutForm"
-import ReceiptForm from "./ReceiptForm"
+} from "@/components/ui/collapsible";
+import { Modal, ModalFooter } from "@/components/ui/modal";
+import {
+  Plus,
+  Clock,
+  CheckCircle,
+  ArrowRight,
+  ChevronDown,
+  CreditCard,
+  Link2,
+  Unlink,
+  Trash2,
+  Loader2,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { toast } from "sonner";
+import CheckoutForm from "./CheckoutForm";
+import ReceiptForm from "./ReceiptForm";
 
 interface PurchaseRequest {
-  id: number
-  name: string
-  committee: string
-  description: string
-  estimatedCost: string
-  actualCost: string | null
-  plannedDate: string
-  status: string
-  notifyEmail: string
-  receiptImage: string | null
-  receiptEmail: string | null
-  eventName: string | null
-  eventDate: string | null
-  attendanceData: string | null
-  attendanceImage: string | null
-  createdAt: string
-  updatedAt: string
+  id: number;
+  name: string;
+  committee: string;
+  description: string;
+  estimatedCost: string;
+  actualCost: string | null;
+  plannedDate: string;
+  status: string;
+  notifyEmail: string;
+  receiptImage: string | null;
+  receiptEmail: string | null;
+  eventName: string | null;
+  eventDate: string | null;
+  attendanceData: string | null;
+  attendanceImage: string | null;
+  createdAt: string;
+  updatedAt: string;
   user: {
-    name: string
-    email: string
-  }
-  eventId?: string | null
+    name: string;
+    email: string;
+  };
+  eventId?: string | null;
   event?: {
-    id: string
-    title: string
-    date: string
-    attendanceEnabled: boolean
-  } | null
+    id: string;
+    title: string;
+    date: string;
+    attendanceEnabled: boolean;
+  } | null;
 }
 
-import { groupBySemester, SemesterGroup } from "@/lib/semester"
+import { groupBySemester, SemesterGroup } from "@/lib/semester";
 
 // Helper to group purchase requests by semester
-function groupRequestsBySemester(requests: PurchaseRequest[]): SemesterGroup<PurchaseRequest>[] {
-  return groupBySemester(requests, (r) => r.createdAt)
+function groupRequestsBySemester(
+  requests: PurchaseRequest[]
+): SemesterGroup<PurchaseRequest>[] {
+  return groupBySemester(requests, (r) => r.createdAt);
 }
 
 interface SimpleEvent {
-  id: string
-  title: string
-  date: string
+  id: string;
+  title: string;
+  date: string;
 }
 
 export default function PurchasingPage() {
-  const { data: session } = useSession()
-  const [requests, setRequests] = useState<PurchaseRequest[]>([])
-  const [loading, setLoading] = useState(true)
-  const [showCheckoutForm, setShowCheckoutForm] = useState(false)
-  const [selectedRequest, setSelectedRequest] = useState<PurchaseRequest | null>(null)
-  const [isOfficer, setIsOfficer] = useState(false)
-  const [deleteModalRequest, setDeleteModalRequest] = useState<PurchaseRequest | null>(null)
-  const [deleting, setDeleting] = useState(false)
+  const { data: session } = useSession();
+  const [requests, setRequests] = useState<PurchaseRequest[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showCheckoutForm, setShowCheckoutForm] = useState(false);
+  const [selectedRequest, setSelectedRequest] =
+    useState<PurchaseRequest | null>(null);
+  const [isOfficer, setIsOfficer] = useState(false);
+  const [deleteModalRequest, setDeleteModalRequest] =
+    useState<PurchaseRequest | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   // Link-to-event modal state
-  const [linkModalRequest, setLinkModalRequest] = useState<PurchaseRequest | null>(null)
-  const [events, setEvents] = useState<SimpleEvent[]>([])
-  const [eventSearch, setEventSearch] = useState("")
-  const [isLinkingEvent, setIsLinkingEvent] = useState(false)
+  const [linkModalRequest, setLinkModalRequest] =
+    useState<PurchaseRequest | null>(null);
+  const [events, setEvents] = useState<SimpleEvent[]>([]);
+  const [eventSearch, setEventSearch] = useState("");
+  const [isLinkingEvent, setIsLinkingEvent] = useState(false);
 
   const fetchRequests = async () => {
     try {
-      const response = await fetch("/api/purchasing")
+      const response = await fetch("/api/purchasing");
       if (response.ok) {
-        const data = await response.json()
-        setRequests(data)
+        const data = await response.json();
+        setRequests(data);
       }
     } catch (error) {
-      console.error("Error fetching requests:", error)
+      console.error("Error fetching requests:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const checkAuthLevel = async () => {
     try {
-      const response = await fetch("/api/authLevel")
-      const data = await response.json()
-      setIsOfficer(data.isOfficer)
+      const response = await fetch("/api/authLevel");
+      const data = await response.json();
+      setIsOfficer(data.isOfficer);
     } catch (error) {
-      console.error("Error checking auth level:", error)
+      console.error("Error checking auth level:", error);
     }
-  }
+  };
 
   const handleDeleteRequest = async () => {
-    if (!deleteModalRequest) return
-    setDeleting(true)
+    if (!deleteModalRequest) return;
+    setDeleting(true);
     try {
       const response = await fetch(`/api/purchasing/${deleteModalRequest.id}`, {
         method: "DELETE",
-      })
+      });
       if (response.ok) {
-        setRequests(requests.filter(r => r.id !== deleteModalRequest.id))
-        setDeleteModalRequest(null)
+        setRequests(requests.filter((r) => r.id !== deleteModalRequest.id));
+        setDeleteModalRequest(null);
       }
     } catch (error) {
-      console.error("Error deleting request:", error)
+      console.error("Error deleting request:", error);
     } finally {
-      setDeleting(false)
+      setDeleting(false);
     }
-  }
+  };
 
   const openLinkModal = async (request: PurchaseRequest) => {
-    setLinkModalRequest(request)
-    setEventSearch("")
+    setLinkModalRequest(request);
+    setEventSearch("");
     if (events.length === 0) {
       try {
-        const res = await fetch("/api/event")
+        const res = await fetch("/api/event");
         if (res.ok) {
-          const data = await res.json()
-          setEvents(data.sort((a: SimpleEvent, b: SimpleEvent) =>
-            new Date(b.date).getTime() - new Date(a.date).getTime()
-          ))
+          const data = await res.json();
+          setEvents(
+            data.sort(
+              (a: SimpleEvent, b: SimpleEvent) =>
+                new Date(b.date).getTime() - new Date(a.date).getTime()
+            )
+          );
         }
       } catch {
-        toast.error("Failed to load events")
+        toast.error("Failed to load events");
       }
     }
-  }
+  };
 
   const handleLinkEvent = async (eventId: string) => {
-    if (!linkModalRequest) return
-    setIsLinkingEvent(true)
+    if (!linkModalRequest) return;
+    setIsLinkingEvent(true);
     try {
       const res = await fetch(`/api/purchasing/${linkModalRequest.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ eventId }),
-      })
+      });
       if (res.ok) {
-        toast.success("Purchase request linked to event")
-        setLinkModalRequest(null)
-        fetchRequests()
+        toast.success("Purchase request linked to event");
+        setLinkModalRequest(null);
+        fetchRequests();
       } else {
-        toast.error("Failed to link event")
+        toast.error("Failed to link event");
       }
     } catch {
-      toast.error("Failed to link event")
+      toast.error("Failed to link event");
     } finally {
-      setIsLinkingEvent(false)
+      setIsLinkingEvent(false);
     }
-  }
+  };
 
   const handleUnlinkEvent = async (request: PurchaseRequest) => {
     try {
@@ -168,45 +193,57 @@ export default function PurchasingPage() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ eventId: null }),
-      })
+      });
       if (res.ok) {
-        toast.success("Event unlinked")
-        fetchRequests()
+        toast.success("Event unlinked");
+        fetchRequests();
       } else {
-        toast.error("Failed to unlink event")
+        toast.error("Failed to unlink event");
       }
     } catch {
-      toast.error("Failed to unlink event")
+      toast.error("Failed to unlink event");
     }
-  }
+  };
 
   useEffect(() => {
-    fetchRequests()
-    checkAuthLevel()
-  }, [])
+    fetchRequests();
+    checkAuthLevel();
+  }, []);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "pending":
-        return <Badge variant="secondary" className="gap-1"><Clock className="h-3 w-3" /> Pending</Badge>
+        return (
+          <Badge variant="secondary" className="gap-1">
+            <Clock className="h-3 w-3" /> Pending
+          </Badge>
+        );
       case "checked_out":
-        return <Badge variant="default" className="gap-1"><CreditCard className="h-3 w-3" /> Checked Out</Badge>
+        return (
+          <Badge variant="default" className="gap-1">
+            <CreditCard className="h-3 w-3" /> Checked Out
+          </Badge>
+        );
       case "returned":
-        return <Badge className="gap-1 bg-green-600 hover:bg-green-700"><CheckCircle className="h-3 w-3" /> Returned</Badge>
+        return (
+          <Badge className="gap-1 bg-green-600 hover:bg-green-700">
+            <CheckCircle className="h-3 w-3" /> Returned
+          </Badge>
+        );
       default:
-        return <Badge variant="outline">{status}</Badge>
+        return <Badge variant="outline">{status}</Badge>;
     }
-  }
+  };
 
   // Show requests that don't have a receipt submitted yet (pending or checked_out)
-  const needsReceipt = requests.filter(r => r.status !== "returned")
+  const needsReceipt = requests.filter((r) => r.status !== "returned");
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-muted-foreground">Loading...</div>
       </div>
-    )
+    );
   }
 
   // Show checkout form
@@ -216,11 +253,11 @@ export default function PurchasingPage() {
         userName={session?.user?.name || ""}
         onClose={() => setShowCheckoutForm(false)}
         onSuccess={() => {
-          setShowCheckoutForm(false)
-          fetchRequests()
+          setShowCheckoutForm(false);
+          fetchRequests();
         }}
       />
-    )
+    );
   }
 
   // Show receipt form
@@ -230,11 +267,11 @@ export default function PurchasingPage() {
         request={selectedRequest}
         onClose={() => setSelectedRequest(null)}
         onSuccess={() => {
-          setSelectedRequest(null)
-          fetchRequests()
+          setSelectedRequest(null);
+          fetchRequests();
         }}
       />
-    )
+    );
   }
 
   return (
@@ -250,11 +287,12 @@ export default function PurchasingPage() {
 
           {/* Action Cards */}
           <div className="grid md:grid-cols-2 gap-6">
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer border-2" onClick={() => setShowCheckoutForm(true)}>
+            <Card
+              className="hover:shadow-lg transition-shadow cursor-pointer border-2"
+              onClick={() => setShowCheckoutForm(true)}
+            >
               <CardHeader>
-                <CardTitle>
-                  Request PCard Checkout
-                </CardTitle>
+                <CardTitle>Request PCard Checkout</CardTitle>
                 <CardDescription>
                   Fill out a form to request the PCard for a purchase
                 </CardDescription>
@@ -267,19 +305,18 @@ export default function PurchasingPage() {
               </CardContent>
             </Card>
 
-            <Card className={cn(
-              "hover:shadow-lg transition-shadow border-2",
-              needsReceipt.length === 0 && "opacity-60"
-            )}>
+            <Card
+              className={cn(
+                "hover:shadow-lg transition-shadow border-2",
+                needsReceipt.length === 0 && "opacity-60"
+              )}
+            >
               <CardHeader>
-                <CardTitle>
-                  Submit Receipt
-                </CardTitle>
+                <CardTitle>Submit Receipt</CardTitle>
                 <CardDescription>
-                  {needsReceipt.length > 0 
+                  {needsReceipt.length > 0
                     ? `${needsReceipt.length} request${needsReceipt.length > 1 ? "s" : ""} awaiting receipt`
-                    : "All receipts submitted"
-                  }
+                    : "All receipts submitted"}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -292,7 +329,9 @@ export default function PurchasingPage() {
                         className="w-full justify-between"
                         onClick={() => setSelectedRequest(request)}
                       >
-                        <span className="truncate">{request.description.substring(0, 30)}...</span>
+                        <span className="truncate">
+                          {request.description.substring(0, 30)}...
+                        </span>
                         <ArrowRight className="h-4 w-4" />
                       </Button>
                     ))}
@@ -310,11 +349,14 @@ export default function PurchasingPage() {
           <div className="space-y-4">
             <div className="px-2">
               <h2 className="text-xl font-bold">All Requests</h2>
-              <p className="text-sm text-muted-foreground">All PCard checkout requests from officers, grouped by semester</p>
+              <p className="text-sm text-muted-foreground">
+                All PCard checkout requests from officers, grouped by semester
+              </p>
             </div>
             {requests.length === 0 ? (
               <p className="text-muted-foreground text-center py-8">
-                No requests yet. Click &quot;Request PCard Checkout&quot; to get started.
+                No requests yet. Click &quot;Request PCard Checkout&quot; to get
+                started.
               </p>
             ) : (
               <div className="space-y-4">
@@ -371,8 +413,12 @@ export default function PurchasingPage() {
                   </span>
                 </button>
               ))}
-            {events.filter((e) => e.title.toLowerCase().includes(eventSearch.toLowerCase())).length === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-4">No events found</p>
+            {events.filter((e) =>
+              e.title.toLowerCase().includes(eventSearch.toLowerCase())
+            ).length === 0 && (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                No events found
+              </p>
             )}
           </div>
         </div>
@@ -388,7 +434,11 @@ export default function PurchasingPage() {
         open={!!deleteModalRequest}
         onOpenChange={(open) => !open && setDeleteModalRequest(null)}
         title="Delete Purchase Request"
-        description={deleteModalRequest ? `Are you sure you want to delete the purchase request "${deleteModalRequest.description.substring(0, 50)}${deleteModalRequest.description.length > 50 ? '...' : ''}"?` : ''}
+        description={
+          deleteModalRequest
+            ? `Are you sure you want to delete the purchase request "${deleteModalRequest.description.substring(0, 50)}${deleteModalRequest.description.length > 50 ? "..." : ""}"?`
+            : ""
+        }
       >
         <p className="text-sm text-muted-foreground">
           This action cannot be undone.
@@ -421,7 +471,7 @@ export default function PurchasingPage() {
         </ModalFooter>
       </Modal>
     </div>
-  )
+  );
 }
 
 function SemesterAccordion({
@@ -435,19 +485,19 @@ function SemesterAccordion({
   onLinkToEvent,
   onUnlinkEvent,
 }: {
-  label: string
-  requests: PurchaseRequest[]
-  defaultOpen: boolean
-  getStatusBadge: (status: string) => React.ReactNode
-  onSubmitReceipt: (request: PurchaseRequest) => void
-  isOfficer: boolean
-  onDelete: (request: PurchaseRequest) => void
-  onLinkToEvent: (request: PurchaseRequest) => void
-  onUnlinkEvent: (request: PurchaseRequest) => void
+  label: string;
+  requests: PurchaseRequest[];
+  defaultOpen: boolean;
+  getStatusBadge: (status: string) => React.ReactNode;
+  onSubmitReceipt: (request: PurchaseRequest) => void;
+  isOfficer: boolean;
+  onDelete: (request: PurchaseRequest) => void;
+  onLinkToEvent: (request: PurchaseRequest) => void;
+  onUnlinkEvent: (request: PurchaseRequest) => void;
 }) {
-  const [isOpen, setIsOpen] = useState(defaultOpen)
-  const pendingCount = requests.filter(r => r.status !== "returned").length
-  const isMobile = useIsMobile()
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+  const pendingCount = requests.filter((r) => r.status !== "returned").length;
+  const isMobile = useIsMobile();
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -472,7 +522,10 @@ function SemesterAccordion({
           /* Mobile card layout */
           <div className="space-y-3">
             {requests.map((request) => (
-              <div key={request.id} className="rounded-lg border bg-muted/20 p-3 space-y-2">
+              <div
+                key={request.id}
+                className="rounded-lg border bg-muted/20 p-3 space-y-2"
+              >
                 {/* Header: description + status */}
                 <div className="flex items-start justify-between gap-2">
                   <div className="font-medium text-sm min-w-0">
@@ -481,7 +534,8 @@ function SemesterAccordion({
                     {request.event && (
                       <Badge variant="outline" className="gap-1 text-xs ml-1">
                         <Link2 className="h-3 w-3" />
-                        {request.event.title.substring(0, 15)}{request.event.title.length > 15 ? "..." : ""}
+                        {request.event.title.substring(0, 15)}
+                        {request.event.title.length > 15 ? "..." : ""}
                       </Badge>
                     )}
                   </div>
@@ -492,7 +546,9 @@ function SemesterAccordion({
                 <div className="border-t border-border/50 pt-2 space-y-1 text-xs">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Date</span>
-                    <span>{new Date(request.createdAt).toLocaleDateString()}</span>
+                    <span>
+                      {new Date(request.createdAt).toLocaleDateString()}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Submitted By</span>
@@ -564,32 +620,50 @@ function SemesterAccordion({
             <table className="w-full">
               <thead>
                 <tr className="border-b bg-muted/30">
-                  <th className="text-left py-3 px-3 text-sm font-medium">Date</th>
-                  <th className="text-left py-3 px-3 text-sm font-medium">Submitted By</th>
-                  <th className="text-left py-3 px-3 text-sm font-medium">Description</th>
-                  <th className="text-left py-3 px-3 text-sm font-medium">Committee</th>
-                  <th className="text-left py-3 px-3 text-sm font-medium">Est. Cost</th>
-                  <th className="text-left py-3 px-3 text-sm font-medium">Status</th>
-                  <th className="text-left py-3 px-3 text-sm font-medium">Actions</th>
+                  <th className="text-left py-3 px-3 text-sm font-medium">
+                    Date
+                  </th>
+                  <th className="text-left py-3 px-3 text-sm font-medium">
+                    Submitted By
+                  </th>
+                  <th className="text-left py-3 px-3 text-sm font-medium">
+                    Description
+                  </th>
+                  <th className="text-left py-3 px-3 text-sm font-medium">
+                    Committee
+                  </th>
+                  <th className="text-left py-3 px-3 text-sm font-medium">
+                    Est. Cost
+                  </th>
+                  <th className="text-left py-3 px-3 text-sm font-medium">
+                    Status
+                  </th>
+                  <th className="text-left py-3 px-3 text-sm font-medium">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {requests.map((request) => (
-                  <tr key={request.id} className="border-b last:border-b-0 hover:bg-muted/30">
+                  <tr
+                    key={request.id}
+                    className="border-b last:border-b-0 hover:bg-muted/30"
+                  >
                     <td className="py-3 px-3 text-sm">
                       {new Date(request.createdAt).toLocaleDateString()}
                     </td>
-                    <td className="py-3 px-3 text-sm">
-                      {request.user.name}
-                    </td>
+                    <td className="py-3 px-3 text-sm">{request.user.name}</td>
                     <td className="py-3 px-3">
                       <div className="flex items-center gap-2">
-                        <span className="font-medium">{request.description.substring(0, 40)}</span>
+                        <span className="font-medium">
+                          {request.description.substring(0, 40)}
+                        </span>
                         {request.description.length > 40 && "..."}
                         {request.event && (
                           <Badge variant="outline" className="gap-1 text-xs">
                             <Link2 className="h-3 w-3" />
-                            {request.event.title.substring(0, 15)}{request.event.title.length > 15 ? "..." : ""}
+                            {request.event.title.substring(0, 15)}
+                            {request.event.title.length > 15 ? "..." : ""}
                           </Badge>
                         )}
                       </div>
@@ -598,7 +672,9 @@ function SemesterAccordion({
                     <td className="py-3 px-3 text-sm">
                       ${parseFloat(request.estimatedCost).toFixed(2)}
                     </td>
-                    <td className="py-3 px-3">{getStatusBadge(request.status)}</td>
+                    <td className="py-3 px-3">
+                      {getStatusBadge(request.status)}
+                    </td>
                     <td className="py-3 px-3">
                       <div className="flex gap-2">
                         {request.status !== "returned" && (
@@ -652,5 +728,5 @@ function SemesterAccordion({
         )}
       </CollapsibleContent>
     </Collapsible>
-  )
+  );
 }

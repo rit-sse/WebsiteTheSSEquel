@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 import { CreateGoLinkSchema, UpdateGoLinkSchema } from "@/lib/schemas/golink";
 import { ApiError } from "@/lib/apiError";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 /**
  * HTTP POST request to /api/golinks
@@ -21,30 +21,37 @@ export async function POST(request: Request) {
   }
 
   const parsed = CreateGoLinkSchema.safeParse(body);
-  if (!parsed.success) return ApiError.validationError("Validation failed", parsed.error.flatten());
+  if (!parsed.success)
+    return ApiError.validationError(
+      "Validation failed",
+      parsed.error.flatten()
+    );
 
   const { golink, url, description, isPublic, isPinned } = parsed.data;
 
   try {
     const newGolink = await prisma.goLinks.create({
-        data: {
-            golink,
-            url,
-            description,
-            isPublic,
-            isPinned,
-            updatedAt: new Date().toISOString(),
-        },
+      data: {
+        golink,
+        url,
+        description,
+        isPublic,
+        isPinned,
+        updatedAt: new Date().toISOString(),
+      },
     });
 
     return NextResponse.json(newGolink, { status: 201 });
-
   } catch (error: any) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === 'P2002' && error.meta?.target) {
-           const targetField = Array.isArray(error.meta.target) ? error.meta.target[0] : error.meta.target;
-           const failedValue = body[targetField] ?? '[unknown value]';
-           return ApiError.conflict(`The ${targetField} '${failedValue}' already exists.`);
+      if (error.code === "P2002" && error.meta?.target) {
+        const targetField = Array.isArray(error.meta.target)
+          ? error.meta.target[0]
+          : error.meta.target;
+        const failedValue = body[targetField] ?? "[unknown value]";
+        return ApiError.conflict(
+          `The ${targetField} '${failedValue}' already exists.`
+        );
       }
     }
     return ApiError.internal();
@@ -65,18 +72,19 @@ export async function DELETE(request: Request) {
     return ApiError.validationError("Invalid JSON payload");
   }
 
-  if (!("id" in body) || typeof body.id !== 'number') {
-    return ApiError.badRequest("A numeric `id` must be included in the request body");
+  if (!("id" in body) || typeof body.id !== "number") {
+    return ApiError.badRequest(
+      "A numeric `id` must be included in the request body"
+    );
   }
   const id = body.id;
 
   try {
     const deletedGoLink = await prisma.goLinks.delete({ where: { id } });
     return NextResponse.json(deletedGoLink, { status: 200 });
-
   } catch (error: any) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === 'P2025') {
+      if (error.code === "P2025") {
         return ApiError.notFound(`GoLink with ID ${id}`);
       }
     }
@@ -100,42 +108,66 @@ export async function PUT(request: Request) {
   }
 
   const parsed = UpdateGoLinkSchema.safeParse(body);
-  if (!parsed.success) return ApiError.validationError("Validation failed", parsed.error.flatten());
+  if (!parsed.success)
+    return ApiError.validationError(
+      "Validation failed",
+      parsed.error.flatten()
+    );
 
   const { id, ...fields } = parsed.data;
 
   const data: Prisma.GoLinksUpdateInput = {};
   let hasUpdates = false;
 
-  if (fields.url !== undefined) { data.url = fields.url; hasUpdates = true; }
-  if (fields.golink !== undefined) { data.golink = fields.golink; hasUpdates = true; }
-  if (fields.description !== undefined) { data.description = fields.description; hasUpdates = true; }
-  if (fields.isPinned !== undefined) { data.isPinned = fields.isPinned; hasUpdates = true; }
-  if (fields.isPublic !== undefined) { data.isPublic = fields.isPublic; hasUpdates = true; }
+  if (fields.url !== undefined) {
+    data.url = fields.url;
+    hasUpdates = true;
+  }
+  if (fields.golink !== undefined) {
+    data.golink = fields.golink;
+    hasUpdates = true;
+  }
+  if (fields.description !== undefined) {
+    data.description = fields.description;
+    hasUpdates = true;
+  }
+  if (fields.isPinned !== undefined) {
+    data.isPinned = fields.isPinned;
+    hasUpdates = true;
+  }
+  if (fields.isPublic !== undefined) {
+    data.isPublic = fields.isPublic;
+    hasUpdates = true;
+  }
 
   if (!hasUpdates) {
-     return ApiError.badRequest("No update fields provided in the request body.");
+    return ApiError.badRequest(
+      "No update fields provided in the request body."
+    );
   }
 
   data.updatedAt = new Date().toISOString();
 
   try {
     const updatedGolink = await prisma.goLinks.update({
-       where: { id },
-       data
+      where: { id },
+      data,
     });
 
     return NextResponse.json(updatedGolink, { status: 200 });
-
   } catch (error: any) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === 'P2025') {
+      if (error.code === "P2025") {
         return ApiError.notFound(`GoLink with ID ${id}`);
       }
-      if (error.code === 'P2002' && error.meta?.target) {
-          const targetField = Array.isArray(error.meta.target) ? error.meta.target[0] : error.meta.target;
-          const failedValue = body[targetField] ?? '[unknown value]';
-          return ApiError.conflict(`The ${targetField} '${failedValue}' already exists.`);
+      if (error.code === "P2002" && error.meta?.target) {
+        const targetField = Array.isArray(error.meta.target)
+          ? error.meta.target[0]
+          : error.meta.target;
+        const failedValue = body[targetField] ?? "[unknown value]";
+        return ApiError.conflict(
+          `The ${targetField} '${failedValue}' already exists.`
+        );
       }
     }
     return ApiError.internal();

@@ -37,7 +37,11 @@ export async function POST(req: Request) {
   }
 
   const parsed = CreateQuoteSchema.safeParse(body);
-  if (!parsed.success) return ApiError.validationError("Validation failed", parsed.error.flatten());
+  if (!parsed.success)
+    return ApiError.validationError(
+      "Validation failed",
+      parsed.error.flatten()
+    );
 
   const { dateAdded, quote, userId, author } = parsed.data;
 
@@ -65,7 +69,6 @@ export async function POST(req: Request) {
     return ApiError.internal();
   }
 }
-
 
 /**
  * PUT request to /api/quotes
@@ -96,7 +99,11 @@ export async function PUT(request: NextRequest) {
   }
 
   const parsed = UpdateQuoteSchema.safeParse(body);
-  if (!parsed.success) return ApiError.validationError("Validation failed", parsed.error.flatten());
+  if (!parsed.success)
+    return ApiError.validationError(
+      "Validation failed",
+      parsed.error.flatten()
+    );
 
   const { id, quote, author } = parsed.data;
 

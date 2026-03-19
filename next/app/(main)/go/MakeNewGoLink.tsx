@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useEffect, useState } from "react";
 import { CreateGoLinkProps } from "./page";
@@ -75,13 +75,15 @@ export const GoLinkButton: React.FC<CreateGoLinkProps> = ({ fetchData }) => {
   return (
     <>
       <button onClick={() => setOpen(true)}>
-        <Card 
+        <Card
           depth={2}
           className="p-4 h-full flex items-center justify-center
                      transition-all hover:scale-[1.02]
                      border-dashed"
         >
-          <span className="text-lg font-display font-bold text-muted-foreground">+ Create Go Link</span>
+          <span className="text-lg font-display font-bold text-muted-foreground">
+            + Create Go Link
+          </span>
         </Card>
       </button>
 
@@ -123,7 +125,9 @@ export const GoLinkButton: React.FC<CreateGoLinkProps> = ({ fetchData }) => {
               checked={pinned}
               onCheckedChange={(checked) => setPinned(checked === true)}
             />
-            <Label htmlFor="golink-pinned" className="cursor-pointer">Pinned</Label>
+            <Label htmlFor="golink-pinned" className="cursor-pointer">
+              Pinned
+            </Label>
           </div>
 
           <div className="flex items-center gap-2">
@@ -132,12 +136,16 @@ export const GoLinkButton: React.FC<CreateGoLinkProps> = ({ fetchData }) => {
               checked={officer}
               onCheckedChange={(checked) => setOfficer(checked === true)}
             />
-            <Label htmlFor="golink-officer" className="cursor-pointer">Officer (Won&apos;t be publicly shown)</Label>
+            <Label htmlFor="golink-officer" className="cursor-pointer">
+              Officer (Won&apos;t be publicly shown)
+            </Label>
           </div>
         </div>
 
         <ModalFooter>
-          <Button variant="neutral" onClick={handleCancel}>Cancel</Button>
+          <Button variant="neutral" onClick={handleCancel}>
+            Cancel
+          </Button>
           <Button onClick={handleCreate}>Create</Button>
         </ModalFooter>
       </Modal>

@@ -63,7 +63,10 @@ function formatDate(date: string) {
 }
 
 function getStatusClasses(status: string) {
-  return STATUS_STYLES[status.toLowerCase()] ?? "border-border bg-muted text-foreground";
+  return (
+    STATUS_STYLES[status.toLowerCase()] ??
+    "border-border bg-muted text-foreground"
+  );
 }
 
 function normalizeStatus(status: string) {
@@ -237,7 +240,10 @@ export default function TechCommitteeApplicationsGrid() {
     );
   }, [applications]);
 
-  const totalPages = Math.max(1, Math.ceil(filteredApplications.length / PAGE_SIZE));
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredApplications.length / PAGE_SIZE)
+  );
 
   const paginatedApplications = useMemo(() => {
     const start = (page - 1) * PAGE_SIZE;
@@ -290,7 +296,9 @@ export default function TechCommitteeApplicationsGrid() {
   if (error) {
     return (
       <Card depth={2}>
-        <CardContent className="p-6 text-sm text-destructive">{error}</CardContent>
+        <CardContent className="p-6 text-sm text-destructive">
+          {error}
+        </CardContent>
       </Card>
     );
   }
@@ -327,7 +335,8 @@ export default function TechCommitteeApplicationsGrid() {
                   Accept Applications
                 </Label>
                 <p className="text-xs text-muted-foreground">
-                  Review access stays available even when submissions are closed.
+                  Review access stays available even when submissions are
+                  closed.
                 </p>
               </div>
               <Switch
@@ -407,48 +416,50 @@ export default function TechCommitteeApplicationsGrid() {
         </Card>
       ) : (
         <div className="space-y-3">
-        {paginatedApplications.map((application) => (
-          <Card key={application.id} depth={2}>
-            <CardContent className="grid gap-4 p-5 md:grid-cols-[2.2fr_1.2fr_1fr_auto] md:items-center">
-              <div className="min-w-0">
-                <p className="text-xs uppercase tracking-wide text-muted-foreground md:hidden">
-                  Applicant
-                </p>
-                <p className="truncate font-semibold">{application.user.name}</p>
-                <p className="truncate text-sm text-muted-foreground">
-                  {application.user.email}
-                </p>
-              </div>
+          {paginatedApplications.map((application) => (
+            <Card key={application.id} depth={2}>
+              <CardContent className="grid gap-4 p-5 md:grid-cols-[2.2fr_1.2fr_1fr_auto] md:items-center">
+                <div className="min-w-0">
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground md:hidden">
+                    Applicant
+                  </p>
+                  <p className="truncate font-semibold">
+                    {application.user.name}
+                  </p>
+                  <p className="truncate text-sm text-muted-foreground">
+                    {application.user.email}
+                  </p>
+                </div>
 
-              <div>
-                <p className="text-xs uppercase tracking-wide text-muted-foreground md:hidden">
-                  Applied
-                </p>
-                <p className="text-sm">{formatDate(application.createdAt)}</p>
-              </div>
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground md:hidden">
+                    Applied
+                  </p>
+                  <p className="text-sm">{formatDate(application.createdAt)}</p>
+                </div>
 
-              <div>
-                <p className="text-xs uppercase tracking-wide text-muted-foreground md:hidden">
-                  Status
-                </p>
-                <Badge
-                  variant="outline"
-                  className={getStatusClasses(application.status)}
-                >
-                  {normalizeStatus(application.status)}
-                </Badge>
-              </div>
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground md:hidden">
+                    Status
+                  </p>
+                  <Badge
+                    variant="outline"
+                    className={getStatusClasses(application.status)}
+                  >
+                    {normalizeStatus(application.status)}
+                  </Badge>
+                </div>
 
-              <div className="flex justify-start md:justify-end">
-                <Button asChild size="sm">
-                  <Link href={`/dashboard/tech-committee/${application.id}`}>
-                    Review
-                  </Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+                <div className="flex justify-start md:justify-end">
+                  <Button asChild size="sm">
+                    <Link href={`/dashboard/tech-committee/${application.id}`}>
+                      Review
+                    </Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       )}
 

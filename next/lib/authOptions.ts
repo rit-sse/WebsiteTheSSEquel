@@ -11,7 +11,8 @@ const scopes = "openid email profile";
 const adapter = PrismaAdapter(prisma);
 
 export const authOptions: AuthOptions = {
-  adapter: { ...adapter,
+  adapter: {
+    ...adapter,
     createUser: async (data: any) => {
       const { image, ...rest } = data as any;
       return prisma.user.create({
@@ -20,7 +21,7 @@ export const authOptions: AuthOptions = {
           googleImageURL: image ?? null,
         },
       }) as any;
-    }
+    },
   },
   providers: [
     GoogleProvider({
@@ -40,21 +41,24 @@ export const authOptions: AuthOptions = {
   callbacks: {
     async session({ session }) {
       if (!session.user?.email) return session;
-      
+
       const dbUser = await prisma.user.findUnique({
-        where: {email: session.user.email }, 
+        where: { email: session.user.email },
         select: {
           profileImageKey: true,
           googleImageURL: true,
-        }
+        },
       });
 
       if (dbUser) {
-        session.user.image = resolveUserImage(dbUser.profileImageKey, dbUser.googleImageURL);
+        session.user.image = resolveUserImage(
+          dbUser.profileImageKey,
+          dbUser.googleImageURL
+        );
       }
 
       return session;
-    }, 
+    },
     async signIn({ user, account, profile }) {
       // Monitor sign ins
       console.log(`Sign-in attempt: ${user.email} via ${account?.provider}`);
@@ -102,22 +106,24 @@ export const authOptions: AuthOptions = {
       if (user.email) {
         try {
           const pendingInvites = await prisma.invitation.count({
-            where: { 
+            where: {
               invitedEmail: user.email,
               expiresAt: {
-                gte: new Date()
-              }
-            }
+                gte: new Date(),
+              },
+            },
           });
-          
+
           if (pendingInvites > 0) {
-            console.log(`User ${user.email} has ${pendingInvites} pending invitation(s)`);
+            console.log(
+              `User ${user.email} has ${pendingInvites} pending invitation(s)`
+            );
           }
         } catch (error) {
-          console.error('Error checking pending invitations:', error);
+          console.error("Error checking pending invitations:", error);
         }
       }
-      
+
       return true;
     },
   },

@@ -26,9 +26,12 @@ describe("/api/projectContributor/[id] route", () => {
       project: { id: 10, title: "Portal" },
     });
 
-    const res = await GET(new Request("http://localhost/api/projectContributor/5"), {
-      params: Promise.resolve({ id: "5" }),
-    });
+    const res = await GET(
+      new Request("http://localhost/api/projectContributor/5"),
+      {
+        params: Promise.resolve({ id: "5" }),
+      }
+    );
 
     expect(res.status).toBe(200);
     expect(await res.json()).toMatchObject({
@@ -41,9 +44,12 @@ describe("/api/projectContributor/[id] route", () => {
   it("returns not-found message when contributor is missing", async () => {
     mockFindUnique.mockResolvedValue(null);
 
-    const res = await GET(new Request("http://localhost/api/projectContributor/99"), {
-      params: Promise.resolve({ id: "99" }),
-    });
+    const res = await GET(
+      new Request("http://localhost/api/projectContributor/99"),
+      {
+        params: Promise.resolve({ id: "99" }),
+      }
+    );
 
     expect(await res.text()).toContain("project of 'id' 99 doesn't exist");
   });

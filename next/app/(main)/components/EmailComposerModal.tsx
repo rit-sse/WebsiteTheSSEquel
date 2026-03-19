@@ -52,7 +52,9 @@ interface EmailComposerModalProps {
   /** Explicit recipients. When omitted, onSend must be provided. */
   recipients?: EmailRecipient[];
   /** Override default send logic. Receives the composed payload; return { sent, failed?, message? }. */
-  onSend?: (payload: EmailComposerSendPayload) => Promise<{ sent: number; failed?: number; message?: string }>;
+  onSend?: (
+    payload: EmailComposerSendPayload
+  ) => Promise<{ sent: number; failed?: number; message?: string }>;
   /** Custom node shown instead of the default "Sending to N recipients" badge. */
   recipientSummary?: React.ReactNode;
   defaultSubject?: string;
@@ -113,21 +115,53 @@ export default function EmailComposerModal({
     const end = ta.selectionEnd;
     const selected = message.substring(start, end);
     const text = selected || placeholder;
-    const newValue = message.substring(0, start) + before + text + after + message.substring(end);
+    const newValue =
+      message.substring(0, start) +
+      before +
+      text +
+      after +
+      message.substring(end);
     setMessage(newValue);
     setTimeout(() => {
       ta.focus();
-      ta.setSelectionRange(start + before.length, start + before.length + text.length);
+      ta.setSelectionRange(
+        start + before.length,
+        start + before.length + text.length
+      );
     }, 0);
   };
 
   const toolbarActions = [
-    { icon: Bold, label: "Bold", action: () => insertMarkdown("**", "**", "bold text") },
-    { icon: Italic, label: "Italic", action: () => insertMarkdown("_", "_", "italic text") },
-    { icon: Heading2, label: "Heading", action: () => insertMarkdown("\n## ", "\n", "Heading") },
-    { icon: List, label: "Bullet list", action: () => insertMarkdown("\n- ", "", "item") },
-    { icon: ListOrdered, label: "Numbered list", action: () => insertMarkdown("\n1. ", "", "item") },
-    { icon: Link, label: "Link", action: () => insertMarkdown("[", "](https://)", "link text") },
+    {
+      icon: Bold,
+      label: "Bold",
+      action: () => insertMarkdown("**", "**", "bold text"),
+    },
+    {
+      icon: Italic,
+      label: "Italic",
+      action: () => insertMarkdown("_", "_", "italic text"),
+    },
+    {
+      icon: Heading2,
+      label: "Heading",
+      action: () => insertMarkdown("\n## ", "\n", "Heading"),
+    },
+    {
+      icon: List,
+      label: "Bullet list",
+      action: () => insertMarkdown("\n- ", "", "item"),
+    },
+    {
+      icon: ListOrdered,
+      label: "Numbered list",
+      action: () => insertMarkdown("\n1. ", "", "item"),
+    },
+    {
+      icon: Link,
+      label: "Link",
+      action: () => insertMarkdown("[", "](https://)", "link text"),
+    },
   ];
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -147,7 +181,10 @@ export default function EmailComposerModal({
         continue;
       }
       const base64 = await fileToBase64(file);
-      setAttachments((prev) => [...prev, { name: file.name, size: file.size, type: file.type, base64 }]);
+      setAttachments((prev) => [
+        ...prev,
+        { name: file.name, size: file.size, type: file.type, base64 },
+      ]);
     }
     e.target.value = "";
   };
@@ -187,7 +224,9 @@ export default function EmailComposerModal({
       if (data.sent === 0) {
         toast.info(data.message || "No emails sent");
       } else {
-        toast.success(`Sent to ${data.sent} recipient${data.sent !== 1 ? "s" : ""}${data.failed ? ` (${data.failed} failed)` : ""}`);
+        toast.success(
+          `Sent to ${data.sent} recipient${data.sent !== 1 ? "s" : ""}${data.failed ? ` (${data.failed} failed)` : ""}`
+        );
       }
 
       onClose();
@@ -206,14 +245,20 @@ export default function EmailComposerModal({
 
   return (
     <>
-      <Modal open={open} onOpenChange={(o) => !o && handleClose()} title={title} className="max-w-2xl">
+      <Modal
+        open={open}
+        onOpenChange={(o) => !o && handleClose()}
+        title={title}
+        className="max-w-2xl"
+      >
         <div className="space-y-4">
           {/* Recipients summary */}
           {recipientSummary ?? (
             <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/40 rounded-md px-3 py-2">
               <Mail className="h-4 w-4 shrink-0" />
               <span>
-                Sending to <strong>{recipients.length}</strong> recipient{recipients.length !== 1 ? "s" : ""}
+                Sending to <strong>{recipients.length}</strong> recipient
+                {recipients.length !== 1 ? "s" : ""}
               </span>
             </div>
           )}
@@ -248,7 +293,11 @@ export default function EmailComposerModal({
                 onClick={() => setShowPreview(!showPreview)}
                 className="flex items-center gap-1 px-2 py-1 rounded text-xs text-muted-foreground hover:text-foreground hover:bg-muted"
               >
-                {showPreview ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                {showPreview ? (
+                  <EyeOff className="h-3.5 w-3.5" />
+                ) : (
+                  <Eye className="h-3.5 w-3.5" />
+                )}
                 {showPreview ? "Edit" : "Preview"}
               </button>
             </div>
@@ -258,9 +307,13 @@ export default function EmailComposerModal({
           {showPreview ? (
             <Card className="p-4 min-h-[160px] prose prose-sm max-w-none dark:prose-invert rounded-t-none border-t-0">
               {message ? (
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>{message}</ReactMarkdown>
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {message}
+                </ReactMarkdown>
               ) : (
-                <p className="text-muted-foreground text-sm">Nothing to preview yet.</p>
+                <p className="text-muted-foreground text-sm">
+                  Nothing to preview yet.
+                </p>
               )}
             </Card>
           ) : (
@@ -278,15 +331,24 @@ export default function EmailComposerModal({
             {attachments.length > 0 && (
               <div className="space-y-1">
                 {attachments.map((att) => (
-                  <div key={att.name} className="flex items-center justify-between gap-2 text-sm bg-muted/30 rounded-md px-3 py-1.5">
+                  <div
+                    key={att.name}
+                    className="flex items-center justify-between gap-2 text-sm bg-muted/30 rounded-md px-3 py-1.5"
+                  >
                     <div className="flex items-center gap-2 min-w-0">
                       <FileIcon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                       <span className="truncate">{att.name}</span>
-                      <span className="text-xs text-muted-foreground shrink-0">{formatFileSize(att.size)}</span>
+                      <span className="text-xs text-muted-foreground shrink-0">
+                        {formatFileSize(att.size)}
+                      </span>
                     </div>
                     <button
                       type="button"
-                      onClick={() => setAttachments((prev) => prev.filter((a) => a.name !== att.name))}
+                      onClick={() =>
+                        setAttachments((prev) =>
+                          prev.filter((a) => a.name !== att.name)
+                        )
+                      }
                       className="text-muted-foreground hover:text-destructive shrink-0"
                     >
                       <X className="h-3.5 w-3.5" />
@@ -332,14 +394,25 @@ export default function EmailComposerModal({
           </Button>
           <Button
             onClick={() => {
-              if (!canSend) { toast.error("Subject and message are required"); return; }
+              if (!canSend) {
+                toast.error("Subject and message are required");
+                return;
+              }
               setConfirmOpen(true);
             }}
             disabled={sending || !canSend}
             className="gap-2"
           >
-            {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-            {sending ? "Sending..." : recipients.length > 0 ? `Send to ${recipients.length}` : "Send"}
+            {sending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
+            {sending
+              ? "Sending..."
+              : recipients.length > 0
+                ? `Send to ${recipients.length}`
+                : "Send"}
           </Button>
         </ModalFooter>
       </Modal>

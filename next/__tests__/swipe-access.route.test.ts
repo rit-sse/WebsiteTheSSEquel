@@ -49,9 +49,15 @@ describe("/api/swipe-access route", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockGetGatewayAuthLevel.mockResolvedValue({ isOfficer: true });
-    mockGetServerSession.mockResolvedValue({ user: { email: "officer@g.rit.edu" } });
+    mockGetServerSession.mockResolvedValue({
+      user: { email: "officer@g.rit.edu" },
+    });
     mockGetProxyEmail.mockReturnValue(null);
-    mockUserFindFirst.mockResolvedValue({ id: 1, name: "Officer", email: "officer@g.rit.edu" });
+    mockUserFindFirst.mockResolvedValue({
+      id: 1,
+      name: "Officer",
+      email: "officer@g.rit.edu",
+    });
     mockIsEmailConfigured.mockReturnValue(true);
     mockSendEmail.mockResolvedValue(undefined);
   });

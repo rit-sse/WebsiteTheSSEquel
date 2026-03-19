@@ -68,20 +68,27 @@ import { DELETE, GET, POST } from "@/app/api/event/[id]/attendance/route";
 describe("/api/event/[id]/attendance route", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockTransaction.mockImplementation(async (cb: any) => cb({
-      eventAttendance: {
-        create: mockTxAttendanceCreate,
-        findMany: mockTxAttendanceFindMany,
-        delete: mockAttendanceDelete,
-      },
-      memberships: {
-        findFirst: mockMembershipFindFirst,
-        create: mockMembershipCreate,
-        deleteMany: mockMembershipDeleteMany,
-      },
-    }));
+    mockTransaction.mockImplementation(async (cb: any) =>
+      cb({
+        eventAttendance: {
+          create: mockTxAttendanceCreate,
+          findMany: mockTxAttendanceFindMany,
+          delete: mockAttendanceDelete,
+        },
+        memberships: {
+          findFirst: mockMembershipFindFirst,
+          create: mockMembershipCreate,
+          deleteMany: mockMembershipDeleteMany,
+        },
+      })
+    );
     mockGetSessionToken.mockReturnValue("token");
-    mockUserFindFirst.mockResolvedValue({ id: 1, name: "User", email: "u@g.rit.edu", officers: [] });
+    mockUserFindFirst.mockResolvedValue({
+      id: 1,
+      name: "User",
+      email: "u@g.rit.edu",
+      officers: [],
+    });
     mockGetGatewayAuthLevel.mockResolvedValue({ isOfficer: false });
     mockTxAttendanceCreate.mockResolvedValue({
       id: 11,
@@ -103,7 +110,9 @@ describe("/api/event/[id]/attendance route", () => {
   it("GET returns 404 when event does not exist", async () => {
     mockEventFindUnique.mockResolvedValue(null);
 
-    const res = await GET({} as any, { params: Promise.resolve({ id: "evt-1" }) });
+    const res = await GET({} as any, {
+      params: Promise.resolve({ id: "evt-1" }),
+    });
     expect(res.status).toBe(404);
   });
 
@@ -125,7 +134,9 @@ describe("/api/event/[id]/attendance route", () => {
         },
       ]);
 
-    const res = await GET({} as any, { params: Promise.resolve({ id: "evt-1" }) });
+    const res = await GET({} as any, {
+      params: Promise.resolve({ id: "evt-1" }),
+    });
     expect(res.status).toBe(200);
     expect(mockMembershipCreate).toHaveBeenCalledTimes(1);
   });
@@ -133,7 +144,9 @@ describe("/api/event/[id]/attendance route", () => {
   it("POST returns 401 when user is unauthenticated", async () => {
     mockGetSessionToken.mockReturnValue(null);
 
-    const res = await POST({} as any, { params: Promise.resolve({ id: "evt-1" }) });
+    const res = await POST({} as any, {
+      params: Promise.resolve({ id: "evt-1" }),
+    });
     expect(res.status).toBe(401);
   });
 
@@ -147,7 +160,9 @@ describe("/api/event/[id]/attendance route", () => {
       purchaseRequests: [],
     });
 
-    const res = await POST({} as any, { params: Promise.resolve({ id: "evt-1" }) });
+    const res = await POST({} as any, {
+      params: Promise.resolve({ id: "evt-1" }),
+    });
     const body = await res.json();
 
     expect(res.status).toBe(403);
@@ -166,7 +181,9 @@ describe("/api/event/[id]/attendance route", () => {
       purchaseRequests: [],
     });
 
-    const res = await POST({} as any, { params: Promise.resolve({ id: "evt-1" }) });
+    const res = await POST({} as any, {
+      params: Promise.resolve({ id: "evt-1" }),
+    });
     const body = await res.json();
 
     expect(res.status).toBe(201);
@@ -186,11 +203,15 @@ describe("/api/event/[id]/attendance route", () => {
       purchaseRequests: [],
     });
     mockTxAttendanceFindMany.mockResolvedValue([{ userId: 1 }]);
-    mockMembershipFindFirst
-      .mockResolvedValueOnce(null)
-      .mockResolvedValueOnce({ id: 1, userId: 1, reason: "Attended event: Event [evt-1]" });
+    mockMembershipFindFirst.mockResolvedValueOnce(null).mockResolvedValueOnce({
+      id: 1,
+      userId: 1,
+      reason: "Attended event: Event [evt-1]",
+    });
 
-    const res = await POST({} as any, { params: Promise.resolve({ id: "evt-1" }) });
+    const res = await POST({} as any, {
+      params: Promise.resolve({ id: "evt-1" }),
+    });
     const body = await res.json();
 
     expect(res.status).toBe(201);
@@ -215,7 +236,9 @@ describe("/api/event/[id]/attendance route", () => {
       userId: 1,
     });
 
-    const res = await POST({} as any, { params: Promise.resolve({ id: "evt-1" }) });
+    const res = await POST({} as any, {
+      params: Promise.resolve({ id: "evt-1" }),
+    });
     const body = await res.json();
     expect(res.status).toBe(409);
     expect(body.membershipPending).toBe(true);
@@ -237,11 +260,15 @@ describe("/api/event/[id]/attendance route", () => {
       userId: 1,
     });
     mockTxAttendanceFindMany.mockResolvedValue([{ userId: 1 }]);
-    mockMembershipFindFirst
-      .mockResolvedValueOnce(null)
-      .mockResolvedValueOnce({ id: 1, userId: 1, reason: "Attended event: Event [evt-1]" });
+    mockMembershipFindFirst.mockResolvedValueOnce(null).mockResolvedValueOnce({
+      id: 1,
+      userId: 1,
+      reason: "Attended event: Event [evt-1]",
+    });
 
-    const res = await POST({} as any, { params: Promise.resolve({ id: "evt-1" }) });
+    const res = await POST({} as any, {
+      params: Promise.resolve({ id: "evt-1" }),
+    });
     const body = await res.json();
     expect(res.status).toBe(409);
     expect(body.membershipGranted).toBe(true);

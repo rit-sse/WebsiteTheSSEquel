@@ -65,17 +65,23 @@ describe("/api/tech-committee-application route", () => {
   });
 
   it("GET my=true requires auth", async () => {
-    const res = await GET(req("http://localhost/api/tech-committee-application?my=true"));
+    const res = await GET(
+      req("http://localhost/api/tech-committee-application?my=true")
+    );
     expect(res.status).toBe(401);
   });
 
   it("POST requires sign-in", async () => {
-    const res = await POST(req("http://localhost/api/tech-committee-application", "POST", {}));
+    const res = await POST(
+      req("http://localhost/api/tech-committee-application", "POST", {})
+    );
     expect(res!.status).toBe(401);
   });
 
   it("POST rejects when submitted identity does not match account", async () => {
-    mockGetServerSession.mockResolvedValue({ user: { email: "student@g.rit.edu" } });
+    mockGetServerSession.mockResolvedValue({
+      user: { email: "student@g.rit.edu" },
+    });
     mockUserFindUnique.mockResolvedValue({
       id: 1,
       name: "Student User",
@@ -98,7 +104,9 @@ describe("/api/tech-committee-application route", () => {
   });
 
   it("POST rejects when applications are closed", async () => {
-    mockGetServerSession.mockResolvedValue({ user: { email: "student@g.rit.edu" } });
+    mockGetServerSession.mockResolvedValue({
+      user: { email: "student@g.rit.edu" },
+    });
     mockUserFindUnique.mockResolvedValue({
       id: 1,
       name: "Student User",
@@ -122,7 +130,9 @@ describe("/api/tech-committee-application route", () => {
   });
 
   it("POST rejects duplicate active applications", async () => {
-    mockGetServerSession.mockResolvedValue({ user: { email: "student@g.rit.edu" } });
+    mockGetServerSession.mockResolvedValue({
+      user: { email: "student@g.rit.edu" },
+    });
     mockUserFindUnique.mockResolvedValue({
       id: 1,
       name: "Student User",
@@ -146,7 +156,9 @@ describe("/api/tech-committee-application route", () => {
   });
 
   it("POST creates a pending Tech Committee application", async () => {
-    mockGetServerSession.mockResolvedValue({ user: { email: "student@g.rit.edu" } });
+    mockGetServerSession.mockResolvedValue({
+      user: { email: "student@g.rit.edu" },
+    });
     mockUserFindUnique.mockResolvedValue({
       id: 1,
       name: "Student User",
@@ -192,7 +204,9 @@ describe("/api/tech-committee-application route", () => {
   });
 
   it("POST rejects oversized input even if the client-side limit is bypassed", async () => {
-    mockGetServerSession.mockResolvedValue({ user: { email: "student@g.rit.edu" } });
+    mockGetServerSession.mockResolvedValue({
+      user: { email: "student@g.rit.edu" },
+    });
     mockUserFindUnique.mockResolvedValue({
       id: 1,
       name: "Student User",
@@ -216,7 +230,9 @@ describe("/api/tech-committee-application route", () => {
   });
 
   it("POST returns conflict when a concurrent create hits the cycle unique constraint", async () => {
-    mockGetServerSession.mockResolvedValue({ user: { email: "student@g.rit.edu" } });
+    mockGetServerSession.mockResolvedValue({
+      user: { email: "student@g.rit.edu" },
+    });
     mockUserFindUnique.mockResolvedValue({
       id: 1,
       name: "Student User",
@@ -245,12 +261,16 @@ describe("/api/tech-committee-application route", () => {
   });
 
   it("PUT requires sign-in", async () => {
-    const res = await PUT(req("http://localhost/api/tech-committee-application", "PUT", {}));
+    const res = await PUT(
+      req("http://localhost/api/tech-committee-application", "PUT", {})
+    );
     expect(res!.status).toBe(401);
   });
 
   it("PUT rejects when application is not found for the signed-in user", async () => {
-    mockGetServerSession.mockResolvedValue({ user: { email: "student@g.rit.edu" } });
+    mockGetServerSession.mockResolvedValue({
+      user: { email: "student@g.rit.edu" },
+    });
     mockUserFindUnique.mockResolvedValue({
       id: 1,
       name: "Student User",
@@ -275,7 +295,9 @@ describe("/api/tech-committee-application route", () => {
   });
 
   it("PUT rejects when application is not pending", async () => {
-    mockGetServerSession.mockResolvedValue({ user: { email: "student@g.rit.edu" } });
+    mockGetServerSession.mockResolvedValue({
+      user: { email: "student@g.rit.edu" },
+    });
     mockUserFindUnique.mockResolvedValue({
       id: 1,
       name: "Student User",
@@ -303,7 +325,9 @@ describe("/api/tech-committee-application route", () => {
   });
 
   it("PUT updates a pending application for the signed-in user", async () => {
-    mockGetServerSession.mockResolvedValue({ user: { email: "student@g.rit.edu" } });
+    mockGetServerSession.mockResolvedValue({
+      user: { email: "student@g.rit.edu" },
+    });
     mockUserFindUnique.mockResolvedValue({
       id: 1,
       name: "Student User",

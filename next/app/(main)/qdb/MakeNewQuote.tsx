@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -23,7 +23,11 @@ export const MakeNewQuote = () => {
     fetchData();
   }, [fetchData]);
 
-  const handleQuoteChange = (index: number, field: "quote" | "author", value: string) => {
+  const handleQuoteChange = (
+    index: number,
+    field: "quote" | "author",
+    value: string
+  ) => {
     const updated = [...quotes];
     updated[index][field] = value;
     setQuotes(updated);
@@ -41,29 +45,32 @@ export const MakeNewQuote = () => {
   };
 
   const createQuote = async () => {
-    const hasEmptyFields = quotes.some(q => !q.quote.trim());
+    const hasEmptyFields = quotes.some((q) => !q.quote.trim());
 
     if (hasEmptyFields) {
       toast.error("All quote fields must be filled out.");
       return;
     }
 
-    quotes.forEach(q => {
+    quotes.forEach((q) => {
       if (q.author === "") {
         q.author = "Anonymous";
       }
     });
 
-    const combinedQuote = quotes.map(q => `[${q.author}] "${q.quote}"`).join("\n");
+    const combinedQuote = quotes
+      .map((q) => `[${q.author}] "${q.quote}"`)
+      .join("\n");
 
     const authorSet: string[] = [];
-    quotes.forEach(q => {
+    quotes.forEach((q) => {
       if (q.author.trim() && !authorSet.includes(q.author.trim())) {
         authorSet.push(q.author.trim());
       }
     });
 
-    const authorString = authorSet.length > 0 ? authorSet.join(", ") : "Anonymous";
+    const authorString =
+      authorSet.length > 0 ? authorSet.join(", ") : "Anonymous";
 
     const newQuote = {
       dateAdded: new Date().toISOString(),
@@ -102,17 +109,27 @@ export const MakeNewQuote = () => {
         Add A Quote
       </button>
 
-      <Modal open={open} onOpenChange={setOpen} title="Add a Quote" className="max-w-xl">
+      <Modal
+        open={open}
+        onOpenChange={setOpen}
+        title="Add a Quote"
+        className="max-w-xl"
+      >
         <div className="space-y-4 max-h-[60vh] overflow-y-auto">
           {quotes.map((entry, index) => (
-            <div key={index} className="space-y-2 p-3 border border-border rounded-base">
+            <div
+              key={index}
+              className="space-y-2 p-3 border border-border rounded-base"
+            >
               <div className="space-y-1">
                 <Label htmlFor={`quote-${index}`}>Quote</Label>
                 <Input
                   id={`quote-${index}`}
                   placeholder="Enter quote"
                   value={entry.quote}
-                  onChange={(e) => handleQuoteChange(index, "quote", e.target.value)}
+                  onChange={(e) =>
+                    handleQuoteChange(index, "quote", e.target.value)
+                  }
                 />
               </div>
               <div className="space-y-1">
@@ -121,7 +138,9 @@ export const MakeNewQuote = () => {
                   id={`author-${index}`}
                   placeholder="Enter author (optional)"
                   value={entry.author}
-                  onChange={(e) => handleQuoteChange(index, "author", e.target.value)}
+                  onChange={(e) =>
+                    handleQuoteChange(index, "author", e.target.value)
+                  }
                 />
               </div>
               {quotes.length > 1 && (
@@ -142,7 +161,9 @@ export const MakeNewQuote = () => {
         </div>
 
         <ModalFooter>
-          <Button variant="neutral" onClick={() => setOpen(false)}>Cancel</Button>
+          <Button variant="neutral" onClick={() => setOpen(false)}>
+            Cancel
+          </Button>
           <Button onClick={createQuote}>Submit Quotes</Button>
         </ModalFooter>
       </Modal>

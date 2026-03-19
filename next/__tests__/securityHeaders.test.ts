@@ -42,7 +42,9 @@ describe("security headers", () => {
     });
     const byKey = new Map(headers.map((header) => [header.key, header.value]));
 
-    expect(byKey.get("Content-Security-Policy")).toContain("frame-ancestors 'none'");
+    expect(byKey.get("Content-Security-Policy")).toContain(
+      "frame-ancestors 'none'"
+    );
     expect(byKey.get("Content-Security-Policy-Report-Only")).toBeUndefined();
     expect(byKey.get("Strict-Transport-Security")).toBe(
       "max-age=31536000; includeSubDomains"

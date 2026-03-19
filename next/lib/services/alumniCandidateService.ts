@@ -7,8 +7,8 @@ function canCreateCandidate(user: {
 }) {
   return Boolean(
     user.graduationTerm &&
-      user.graduationYear &&
-      hasTermPassed(user.graduationTerm, user.graduationYear)
+    user.graduationYear &&
+    hasTermPassed(user.graduationTerm, user.graduationYear)
   );
 }
 
@@ -32,7 +32,12 @@ export async function maybeCreateAlumniCandidate(userId: number) {
     },
   });
 
-  if (!user || !canCreateCandidate(user) || user.alumni || user.alumniCandidates.length > 0) {
+  if (
+    !user ||
+    !canCreateCandidate(user) ||
+    user.alumni ||
+    user.alumniCandidates.length > 0
+  ) {
     return;
   }
 

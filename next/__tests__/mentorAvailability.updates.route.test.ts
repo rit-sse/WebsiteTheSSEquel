@@ -36,19 +36,29 @@ import { GET } from "@/app/api/mentor-availability/updates/route";
 describe("/api/mentor-availability/updates route", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockGetGatewayAuthLevel.mockResolvedValue({ isMentoringHead: false, isPrimary: false });
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isMentoringHead: false,
+      isPrimary: false,
+    });
   });
 
   it("returns 403 when caller cannot manage mentoring", async () => {
-    const res = await GET(new Request("http://localhost/api/mentor-availability/updates"));
+    const res = await GET(
+      new Request("http://localhost/api/mentor-availability/updates")
+    );
     expect(res.status).toBe(403);
   });
 
   it("returns empty update payload when no active semester exists", async () => {
-    mockGetGatewayAuthLevel.mockResolvedValue({ isMentoringHead: true, isPrimary: false });
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isMentoringHead: true,
+      isPrimary: false,
+    });
     mockMentorSemesterFindFirst.mockResolvedValue(null);
 
-    const res = await GET(new Request("http://localhost/api/mentor-availability/updates"));
+    const res = await GET(
+      new Request("http://localhost/api/mentor-availability/updates")
+    );
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({
       semester: null,
@@ -59,8 +69,14 @@ describe("/api/mentor-availability/updates route", () => {
   });
 
   it("returns availability updates with removed blocks", async () => {
-    mockGetGatewayAuthLevel.mockResolvedValue({ isMentoringHead: true, isPrimary: false });
-    mockMentorSemesterFindFirst.mockResolvedValue({ id: 2, name: "Spring 2026" });
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isMentoringHead: true,
+      isPrimary: false,
+    });
+    mockMentorSemesterFindFirst.mockResolvedValue({
+      id: 2,
+      name: "Spring 2026",
+    });
     mockMentorAvailabilityFindMany.mockResolvedValue([
       {
         updatedAt: "2026-03-01T00:00:00.000Z",
@@ -69,7 +85,9 @@ describe("/api/mentor-availability/updates route", () => {
     ]);
     mockGetMentorAvailabilityEvent.mockReturnValue({ removedBlocks: [5, 6] });
 
-    const res = await GET(new Request("http://localhost/api/mentor-availability/updates"));
+    const res = await GET(
+      new Request("http://localhost/api/mentor-availability/updates")
+    );
     expect(res.status).toBe(200);
 
     const body = await res.json();

@@ -162,7 +162,9 @@ describe("authMiddleware", () => {
   });
 
   it("denies tech committee application mutations when user is not signed in", async () => {
-    const res = await authMiddleware(req("/api/tech-committee-application", "PUT"));
+    const res = await authMiddleware(
+      req("/api/tech-committee-application", "PUT")
+    );
     expect((res as any).status).toBe(403);
     expect((res as any).body).toContain("need to be Signed-in User");
   });
@@ -175,7 +177,9 @@ describe("authMiddleware", () => {
       isPrimary: false,
     });
 
-    const res = await authMiddleware(req("/api/tech-committee-application", "POST"));
+    const res = await authMiddleware(
+      req("/api/tech-committee-application", "POST")
+    );
     expect((res as any).kind).toBe("next");
   });
 });

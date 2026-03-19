@@ -19,7 +19,11 @@ export const ACADEMIC_CALENDAR_CONFIG = {
   },
 } as const;
 
-function monthInRange(month: number, startMonth: number, endMonth: number): boolean {
+function monthInRange(
+  month: number,
+  startMonth: number,
+  endMonth: number
+): boolean {
   return month >= startMonth && month <= endMonth;
 }
 
@@ -65,7 +69,8 @@ export function hasTermPassed(
 }
 
 export function formatAcademicTerm(term: AcademicTerm, year: number): string {
-  const label = term === "SPRING" ? "Spring" : term === "SUMMER" ? "Summer" : "Fall";
+  const label =
+    term === "SPRING" ? "Spring" : term === "SUMMER" ? "Summer" : "Fall";
   return `${label} ${year}`;
 }
 
@@ -79,12 +84,19 @@ export function parseAcademicTermLabel(label: string): TermYear | null {
   if (Number.isNaN(year)) return null;
 
   const term: AcademicTerm =
-    termLabel === "spring" ? "SPRING" : termLabel === "summer" ? "SUMMER" : "FALL";
+    termLabel === "spring"
+      ? "SPRING"
+      : termLabel === "summer"
+        ? "SUMMER"
+        : "FALL";
 
   return { term, year };
 }
 
-export function getAcademicTermDateRange(term: AcademicTerm, year: number): {
+export function getAcademicTermDateRange(
+  term: AcademicTerm,
+  year: number
+): {
   startDate: Date;
   endDate: Date;
 } {
@@ -97,7 +109,11 @@ export function getAcademicTermDateRange(term: AcademicTerm, year: number): {
 export function getAcademicTermEndDate(date: Date): Date {
   const term = getAcademicTermFromDate(date);
   const termConfig = ACADEMIC_CALENDAR_CONFIG[term];
-  return new Date(date.getFullYear(), termConfig.endMonth - 1, termConfig.endDay);
+  return new Date(
+    date.getFullYear(),
+    termConfig.endMonth - 1,
+    termConfig.endDay
+  );
 }
 
 export function getDefaultOfficerTermDateRange(referenceDate = new Date()): {

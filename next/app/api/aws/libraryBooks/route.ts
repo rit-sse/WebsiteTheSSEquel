@@ -21,7 +21,10 @@ export async function POST(req: NextRequest) {
     try {
       body = await req.json();
     } catch {
-      return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid JSON payload" },
+        { status: 400 }
+      );
     }
 
     const { filename, contentType, isbn } = body;
@@ -41,7 +44,10 @@ export async function POST(req: NextRequest) {
     }
 
     if (!/^[\d-]+$/.test(isbn)) {
-      return NextResponse.json({ error: "Invalid ISBN format" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid ISBN format" },
+        { status: 400 }
+      );
     }
 
     const timestamp = Date.now();
@@ -77,7 +83,10 @@ export async function PUT(req: NextRequest) {
     try {
       body = await req.json();
     } catch {
-      return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid JSON payload" },
+        { status: 400 }
+      );
     }
 
     const { key, isbn } = body;
@@ -90,7 +99,10 @@ export async function PUT(req: NextRequest) {
     }
 
     if (!String(key).startsWith("uploads/library-books/")) {
-      return NextResponse.json({ error: "Invalid key prefix" }, { status: 403 });
+      return NextResponse.json(
+        { error: "Invalid key prefix" },
+        { status: 403 }
+      );
     }
 
     const book = await prisma.textbooks.findUnique({

@@ -38,13 +38,13 @@ export async function GET() {
       },
     },
     orderBy: [
-      { position: { is_primary: 'desc' } },
-      { position: { title: 'asc' } }
-    ]
+      { position: { is_primary: "desc" } },
+      { position: { title: "asc" } },
+    ],
   });
 
   // Transform to include resolved image URL
-  const officersWithImage = officers.map((o: typeof officers[number]) => ({
+  const officersWithImage = officers.map((o: (typeof officers)[number]) => ({
     ...o,
     user: {
       ...o.user,
@@ -63,12 +63,14 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   const authLevel = await getGatewayAuthLevel(request);
   if (!authLevel.isPrimary) {
-    return new Response("Only primary officers can assign officers", { status: 403 });
+    return new Response("Only primary officers can assign officers", {
+      status: 403,
+    });
   }
 
   // Get the logged-in user's session token
   const authToken = getSessionToken(request);
-  
+
   // Find the logged-in user (for sending email)
   let loggedInUser = null;
   if (authToken) {
@@ -103,37 +105,37 @@ export async function POST(request: NextRequest) {
     );
   }
   const { user_email, position, start_date, end_date } = body;
-  
+
   // Find the user being assigned
   const user = await prisma.user.findFirst({
     where: { email: user_email },
     select: { id: true, name: true, email: true },
   });
-  
+
   // Find the position
   const positionRecord = await prisma.officerPosition.findFirst({
     where: { title: position },
     select: { id: true, title: true },
   });
-  
+
   // If we couldn't find the user or position, give up
   if (!user || !positionRecord) {
     return new Response("User and position not found", { status: 404 });
   }
-  
+
   // Delete any previous officers in this position
   await prisma.officer.deleteMany({
     where: { position: { title: position }, is_active: true },
   });
-  
+
   // Create the new officer
   const newOfficer = await prisma.officer.create({
-    data: { 
-      user_id: user.id, 
-      position_id: positionRecord.id, 
-      start_date, 
-      end_date, 
-      is_active: true 
+    data: {
+      user_id: user.id,
+      position_id: positionRecord.id,
+      start_date,
+      end_date,
+      is_active: true,
     },
   });
 
@@ -145,7 +147,7 @@ export async function POST(request: NextRequest) {
       dateGiven: new Date(),
     },
   });
-  
+
   // Send notification email to the new officer
   if (isEmailConfigured() && loggedInUser) {
     const baseUrl = getPublicBaseUrl(request);
@@ -180,12 +182,17 @@ export async function POST(request: NextRequest) {
         `,
         text: `Welcome, ${user.name}!\n\nYou have been assigned to the ${positionRecord.title} position in the Society of Software Engineers.\n\nView your handover document at: ${handoverUrl}\n\nThis document contains important information about your role including responsibilities, key contacts, and notes from previous officers.`,
       });
-      console.log(`Notification email sent to ${user.email} for ${positionRecord.title} assignment`);
+      console.log(
+        `Notification email sent to ${user.email} for ${positionRecord.title} assignment`
+      );
     } catch (emailError) {
-      console.error("Failed to send officer assignment notification email:", emailError);
+      console.error(
+        "Failed to send officer assignment notification email:",
+        emailError
+      );
     }
   }
-  
+
   return Response.json(newOfficer);
 }
 
@@ -198,7 +205,9 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: Request) {
   const authLevel = await getGatewayAuthLevel(request);
   if (!authLevel.isPrimary) {
-    return new Response("Only primary officers can update officers", { status: 403 });
+    return new Response("Only primary officers can update officers", {
+      status: 403,
+    });
   }
 
   let body;
@@ -243,7 +252,9 @@ export async function PUT(request: Request) {
 export async function DELETE(request: Request) {
   const authLevel = await getGatewayAuthLevel(request);
   if (!authLevel.isPrimary) {
-    return new Response("Only primary officers can remove officers", { status: 403 });
+    return new Response("Only primary officers can remove officers", {
+      status: 403,
+    });
   }
 
   let body;
@@ -253,7 +264,7 @@ export async function DELETE(request: Request) {
     return new Response("Invalid JSON", { status: 400 });
   }
 
-  if (!("id" in body) || typeof body.id !== 'number') {
+  if (!("id" in body) || typeof body.id !== "number") {
     return new Response('A numeric "id" is required', { status: 400 });
   }
 
@@ -263,30 +274,30 @@ export async function DELETE(request: Request) {
     // Get the officer first to find the position
     const officer = await prisma.officer.findUnique({
       where: { id },
-      select: { position_id: true }
+      select: { position_id: true },
     });
 
     if (!officer) {
-      return new Response('Officer not found', { status: 404 });
+      return new Response("Officer not found", { status: 404 });
     }
 
     // Delete any pending invitations for this position
     await prisma.invitation.deleteMany({
       where: {
         positionId: officer.position_id,
-        type: 'officer'
-      }
+        type: "officer",
+      },
     });
 
     // Delete the officer record
     const deletedOfficer = await prisma.officer.delete({
-      where: { id }
+      where: { id },
     });
 
     return Response.json(deletedOfficer);
   } catch (e: any) {
-    if (e.code === 'P2025') {
-      return new Response('Officer not found', { status: 404 });
+    if (e.code === "P2025") {
+      return new Response("Officer not found", { status: 404 });
     }
     return new Response(`Failed to delete officer: ${e}`, { status: 500 });
   }

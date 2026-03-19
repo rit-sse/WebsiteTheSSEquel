@@ -69,7 +69,10 @@ describe("/api/scheduleBlock route", () => {
   });
 
   it("POST returns 403 when user cannot manage schedules", async () => {
-    mockGetGatewayAuthLevel.mockResolvedValue({ isMentoringHead: false, isPrimary: false });
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isMentoringHead: false,
+      isPrimary: false,
+    });
     const req = new Request("http://localhost/api/scheduleBlock", {
       method: "POST",
       body: JSON.stringify({ mentorId: 1, weekday: 1, startHour: 10 }),
@@ -80,7 +83,10 @@ describe("/api/scheduleBlock route", () => {
   });
 
   it("POST validates weekday bounds", async () => {
-    mockGetGatewayAuthLevel.mockResolvedValue({ isMentoringHead: true, isPrimary: false });
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isMentoringHead: true,
+      isPrimary: false,
+    });
     const req = new Request("http://localhost/api/scheduleBlock", {
       method: "POST",
       body: JSON.stringify({ mentorId: 1, weekday: 9, startHour: 10 }),
@@ -91,14 +97,20 @@ describe("/api/scheduleBlock route", () => {
   });
 
   it("POST creates block when valid", async () => {
-    mockGetGatewayAuthLevel.mockResolvedValue({ isMentoringHead: true, isPrimary: false });
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isMentoringHead: true,
+      isPrimary: false,
+    });
     mockMentorScheduleFindFirst.mockResolvedValue({ id: 55 });
     mockMentorFindUnique.mockResolvedValue({ id: 7, isActive: true });
     mockScheduleBlockFindFirst.mockResolvedValue(null);
     mockScheduleBlockCreate.mockResolvedValue({
       id: 99,
       mentor: {
-        user: { profileImageKey: null, googleImageURL: "https://example.com/avatar.png" },
+        user: {
+          profileImageKey: null,
+          googleImageURL: "https://example.com/avatar.png",
+        },
       },
     });
 
@@ -115,7 +127,10 @@ describe("/api/scheduleBlock route", () => {
   });
 
   it("PUT returns 404 when schedule block does not exist", async () => {
-    mockGetGatewayAuthLevel.mockResolvedValue({ isMentoringHead: true, isPrimary: false });
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isMentoringHead: true,
+      isPrimary: false,
+    });
     mockScheduleBlockFindUnique.mockResolvedValue(null);
     const req = new Request("http://localhost/api/scheduleBlock", {
       method: "PUT",
@@ -127,7 +142,10 @@ describe("/api/scheduleBlock route", () => {
   });
 
   it("DELETE by scheduleId removes all blocks for schedule", async () => {
-    mockGetGatewayAuthLevel.mockResolvedValue({ isMentoringHead: true, isPrimary: false });
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isMentoringHead: true,
+      isPrimary: false,
+    });
     const req = new Request("http://localhost/api/scheduleBlock", {
       method: "DELETE",
       body: JSON.stringify({ scheduleId: "55" }),
@@ -135,6 +153,8 @@ describe("/api/scheduleBlock route", () => {
     }) as any;
     const res = await DELETE(req);
     expect(res.status).toBe(200);
-    expect(mockScheduleBlockDeleteMany).toHaveBeenCalledWith({ where: { scheduleId: 55 } });
+    expect(mockScheduleBlockDeleteMany).toHaveBeenCalledWith({
+      where: { scheduleId: 55 },
+    });
   });
 });

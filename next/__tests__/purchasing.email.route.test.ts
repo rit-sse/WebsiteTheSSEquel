@@ -1,11 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { mockGetSessionToken, mockFindUser, mockFindPurchase, mockSendEmail } = vi.hoisted(() => ({
-  mockGetSessionToken: vi.fn(),
-  mockFindUser: vi.fn(),
-  mockFindPurchase: vi.fn(),
-  mockSendEmail: vi.fn(),
-}));
+const { mockGetSessionToken, mockFindUser, mockFindPurchase, mockSendEmail } =
+  vi.hoisted(() => ({
+    mockGetSessionToken: vi.fn(),
+    mockFindUser: vi.fn(),
+    mockFindPurchase: vi.fn(),
+    mockSendEmail: vi.fn(),
+  }));
 
 vi.mock("@/lib/sessionToken", () => ({
   getSessionToken: mockGetSessionToken,
@@ -61,7 +62,9 @@ describe("/api/purchasing/[id]/email route", () => {
       headers: { "content-type": "application/json" },
     });
 
-    const res = await POST(req as any, { params: Promise.resolve({ id: "5" }) });
+    const res = await POST(req as any, {
+      params: Promise.resolve({ id: "5" }),
+    });
     expect(res.status).toBe(400);
   });
 
@@ -76,7 +79,9 @@ describe("/api/purchasing/[id]/email route", () => {
       headers: { "content-type": "application/json" },
     });
 
-    const res = await POST(req as any, { params: Promise.resolve({ id: "5" }) });
+    const res = await POST(req as any, {
+      params: Promise.resolve({ id: "5" }),
+    });
     expect(res.status).toBe(200);
     expect(mockSendEmail).toHaveBeenCalledTimes(1);
     const payload = mockSendEmail.mock.calls[0][0];
@@ -100,7 +105,9 @@ describe("/api/purchasing/[id]/email route", () => {
       headers: { "content-type": "application/json" },
     });
 
-    const res = await POST(req as any, { params: Promise.resolve({ id: "5" }) });
+    const res = await POST(req as any, {
+      params: Promise.resolve({ id: "5" }),
+    });
     expect(res.status).toBe(200);
     const payload = mockSendEmail.mock.calls[0][0];
     expect(payload.attachments).toHaveLength(2);

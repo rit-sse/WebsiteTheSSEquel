@@ -182,9 +182,7 @@ function parseAndValidatePayload(
 
   if (trimmedEmail.toLowerCase() !== user.email.trim().toLowerCase()) {
     return {
-      response: validationError(
-        "RIT email must match your signed-in account"
-      ),
+      response: validationError("RIT email must match your signed-in account"),
     };
   }
 
@@ -252,7 +250,9 @@ export async function POST(request: NextRequest) {
 
     const openCycle = await getOpenApplicationCycle();
     if (!openCycle) {
-      return validationError("Tech Committee applications are currently closed");
+      return validationError(
+        "Tech Committee applications are currently closed"
+      );
     }
 
     const existingActiveApplication =
@@ -309,16 +309,18 @@ export async function PUT(request: NextRequest) {
     const validated = parseAndValidatePayload(body, auth.user, true);
     if ("response" in validated) return validated.response;
 
-    const existingApplication = await prisma.techCommitteeApplication.findFirst({
-      where: {
-        id: validated.data.id,
-        userId: auth.user.id,
-      },
-      select: {
-        id: true,
-        status: true,
-      },
-    });
+    const existingApplication = await prisma.techCommitteeApplication.findFirst(
+      {
+        where: {
+          id: validated.data.id,
+          userId: auth.user.id,
+        },
+        select: {
+          id: true,
+          status: true,
+        },
+      }
+    );
 
     if (!existingApplication) {
       return validationError("Application not found", 404);

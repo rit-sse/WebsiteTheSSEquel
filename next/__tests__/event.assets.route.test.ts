@@ -45,7 +45,9 @@ describe("/api/event/[id] asset/purchase routes", () => {
   it("purchases route returns list", async () => {
     mockPurchaseFindMany.mockResolvedValue([{ id: 1 }]);
     const req = new Request("http://localhost") as any;
-    const res = await purchasesGET(req, { params: Promise.resolve({ id: "evt-1" }) });
+    const res = await purchasesGET(req, {
+      params: Promise.resolve({ id: "evt-1" }),
+    });
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual([{ id: 1 }]);
   });
@@ -53,7 +55,9 @@ describe("/api/event/[id] asset/purchase routes", () => {
   it("qr route returns 404 when event missing", async () => {
     mockEventFindUnique.mockResolvedValue(null);
     const req = new Request("http://localhost") as any;
-    const res = await qrGET(req, { params: Promise.resolve({ id: "evt-missing" }) });
+    const res = await qrGET(req, {
+      params: Promise.resolve({ id: "evt-missing" }),
+    });
     expect(res.status).toBe(404);
   });
 
@@ -79,7 +83,9 @@ describe("/api/event/[id] asset/purchase routes", () => {
       attendanceEnabled: false,
     });
     const req = new Request("http://localhost") as any;
-    const res = await flyerGET(req, { params: Promise.resolve({ id: "evt-1" }) });
+    const res = await flyerGET(req, {
+      params: Promise.resolve({ id: "evt-1" }),
+    });
     expect(res.status).toBe(400);
   });
 
@@ -93,7 +99,9 @@ describe("/api/event/[id] asset/purchase routes", () => {
     });
     mockQrToString.mockResolvedValue("<svg>qr</svg>");
     const req = new Request("http://localhost") as any;
-    const res = await flyerGET(req, { params: Promise.resolve({ id: "evt-1" }) });
+    const res = await flyerGET(req, {
+      params: Promise.resolve({ id: "evt-1" }),
+    });
     expect(res.status).toBe(200);
     expect(res.headers.get("content-type")).toBe("image/svg+xml");
   });

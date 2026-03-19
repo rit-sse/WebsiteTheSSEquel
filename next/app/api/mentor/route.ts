@@ -21,7 +21,9 @@ function parseCourses(coursesJson: string | null | undefined): string[] {
   if (!coursesJson) return [];
   try {
     const parsed = JSON.parse(coursesJson);
-    return Array.isArray(parsed) ? parsed.filter((value) => typeof value === "string") : [];
+    return Array.isArray(parsed)
+      ? parsed.filter((value) => typeof value === "string")
+      : [];
   } catch {
     return [];
   }
@@ -126,37 +128,39 @@ export async function GET(request: NextRequest) {
         },
       }),
     },
-    orderBy: [
-      { isActive: "desc" },
-      { user: { name: "asc" } },
-    ],
+    orderBy: [{ isActive: "desc" }, { user: { name: "asc" } }],
   });
 
   const mentorsWithImage = allMentors.map((mentor) => {
     const latestApplication =
-      "mentorApplications" in mentor.user ? mentor.user.mentorApplications?.[0] : undefined;
-    const applicationCourseCount = parseCourseCount(latestApplication?.coursesJson);
+      "mentorApplications" in mentor.user
+        ? mentor.user.mentorApplications?.[0]
+        : undefined;
+    const applicationCourseCount = parseCourseCount(
+      latestApplication?.coursesJson
+    );
     const applicationCourses = parseCourses(latestApplication?.coursesJson);
 
-    const { mentorApplications, ...userWithoutApplications } = mentor.user as typeof mentor.user & {
-      mentorApplications?: Array<{
-        id: number;
-        discordUsername: string;
-        pronouns: string;
-        major: string;
-        yearLevel: string;
-        coursesJson: string;
-        skillsText: string;
-        toolsComfortable: string;
-        toolsLearning: string;
-        previousSemesters: number;
-        whyMentor: string;
-        comments: string | null;
-        createdAt: Date;
-        status: string;
-        semester: { id: number; name: string };
-      }>;
-    };
+    const { mentorApplications, ...userWithoutApplications } =
+      mentor.user as typeof mentor.user & {
+        mentorApplications?: Array<{
+          id: number;
+          discordUsername: string;
+          pronouns: string;
+          major: string;
+          yearLevel: string;
+          coursesJson: string;
+          skillsText: string;
+          toolsComfortable: string;
+          toolsLearning: string;
+          previousSemesters: number;
+          whyMentor: string;
+          comments: string | null;
+          createdAt: Date;
+          status: string;
+          semester: { id: number; name: string };
+        }>;
+      };
 
     return {
       ...mentor,
@@ -169,7 +173,10 @@ export async function GET(request: NextRequest) {
         : null,
       user: {
         ...userWithoutApplications,
-        image: resolveUserImage(mentor.user.profileImageKey, mentor.user.googleImageURL),
+        image: resolveUserImage(
+          mentor.user.profileImageKey,
+          mentor.user.googleImageURL
+        ),
       },
     };
   });
@@ -192,7 +199,11 @@ export async function POST(request: NextRequest) {
   }
 
   const parsed = CreateMentorSchema.safeParse(body);
-  if (!parsed.success) return ApiError.validationError("Validation failed", parsed.error.flatten());
+  if (!parsed.success)
+    return ApiError.validationError(
+      "Validation failed",
+      parsed.error.flatten()
+    );
 
   const { expirationDate, isActive, userId } = parsed.data;
 
@@ -309,7 +320,11 @@ export async function PUT(request: NextRequest) {
   }
 
   const parsed = UpdateMentorSchema.safeParse(body);
-  if (!parsed.success) return ApiError.validationError("Validation failed", parsed.error.flatten());
+  if (!parsed.success)
+    return ApiError.validationError(
+      "Validation failed",
+      parsed.error.flatten()
+    );
 
   const { id, expirationDate, isActive, userId } = parsed.data;
 

@@ -64,7 +64,11 @@ describe("/api/invitations/accept route", () => {
 
   it("requires invitationId", async () => {
     mockGetSessionToken.mockReturnValue("token");
-    mockUserFindFirst.mockResolvedValue({ id: 1, email: "user@g.rit.edu", name: "User" });
+    mockUserFindFirst.mockResolvedValue({
+      id: 1,
+      email: "user@g.rit.edu",
+      name: "User",
+    });
 
     const req = new Request("http://localhost/api/invitations/accept", {
       method: "POST",
@@ -78,7 +82,11 @@ describe("/api/invitations/accept route", () => {
 
   it("returns 410 and deletes expired invitations", async () => {
     mockGetSessionToken.mockReturnValue("token");
-    mockUserFindFirst.mockResolvedValue({ id: 1, email: "user@g.rit.edu", name: "User" });
+    mockUserFindFirst.mockResolvedValue({
+      id: 1,
+      email: "user@g.rit.edu",
+      name: "User",
+    });
     mockInvitationFindUnique.mockResolvedValue({
       id: 8,
       type: "user",

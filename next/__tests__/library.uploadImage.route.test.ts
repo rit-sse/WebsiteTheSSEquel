@@ -1,6 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { mockGetAuth, mockPutObject, mockTextbooksUpdate, mockTextbooksFindUnique } = vi.hoisted(() => ({
+const {
+  mockGetAuth,
+  mockPutObject,
+  mockTextbooksUpdate,
+  mockTextbooksFindUnique,
+} = vi.hoisted(() => ({
   mockGetAuth: vi.fn(),
   mockPutObject: vi.fn(),
   mockTextbooksUpdate: vi.fn(),
@@ -70,10 +75,12 @@ describe("/api/library/uploadImage route", () => {
   it("PUT uploads image to S3 for valid payload", async () => {
     mockGetAuth.mockResolvedValue({ isOfficer: true, isMentor: false });
 
-    const res = await PUT(req({
-      imageData: "data:image/png;base64,QUJDRA==",
-      ISBN: "123-4",
-    }));
+    const res = await PUT(
+      req({
+        imageData: "data:image/png;base64,QUJDRA==",
+        ISBN: "123-4",
+      })
+    );
 
     expect(res.status).toBe(200);
     expect(mockPutObject).toHaveBeenCalledWith(

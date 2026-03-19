@@ -42,10 +42,19 @@ describe("/api/memberships route", () => {
 
   it("GET aggregates memberships per user", async () => {
     mockMembershipsGroupBy.mockResolvedValue([
-      { userId: 10, _count: { userId: 2 }, _max: { dateGiven: "2026-01-01T00:00:00.000Z" } },
+      {
+        userId: 10,
+        _count: { userId: 2 },
+        _max: { dateGiven: "2026-01-01T00:00:00.000Z" },
+      },
     ]);
     mockUserFindMany.mockResolvedValue([
-      { id: 10, name: "Test User", profileImageKey: null, googleImageURL: null },
+      {
+        id: 10,
+        name: "Test User",
+        profileImageKey: null,
+        googleImageURL: null,
+      },
     ]);
 
     const res = await GET();

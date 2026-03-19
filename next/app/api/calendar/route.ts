@@ -47,7 +47,10 @@ export async function POST(request: NextRequest) {
       "end" in body
     )
   ) {
-    return new Response("Summary, Description, Location, Start, and End must be included", { status: 422 });
+    return new Response(
+      "Summary, Description, Location, Start, and End must be included",
+      { status: 422 }
+    );
   }
 
   const gcal_token = await getToken();
@@ -65,7 +68,7 @@ export async function POST(request: NextRequest) {
         location: body.location,
         start: {
           dateTime: body.start,
-          timeZone: "America/New_York", 
+          timeZone: "America/New_York",
         },
         end: {
           dateTime: body.end,
@@ -78,7 +81,8 @@ export async function POST(request: NextRequest) {
   return new Response(await gcalResponse.text(), {
     status: gcalResponse.status,
     headers: {
-      "Content-Type": gcalResponse.headers.get("Content-Type") || "application/json",
+      "Content-Type":
+        gcalResponse.headers.get("Content-Type") || "application/json",
     },
   });
 }
@@ -146,7 +150,8 @@ export async function PUT(request: NextRequest) {
   return new Response(await gcalResponse.text(), {
     status: gcalResponse.status,
     headers: {
-      "Content-Type": gcalResponse.headers.get("Content-Type") || "application/json",
+      "Content-Type":
+        gcalResponse.headers.get("Content-Type") || "application/json",
     },
   });
 }
@@ -182,12 +187,14 @@ export async function DELETE(request: NextRequest) {
     { method: "DELETE", headers: { Authorization: `Bearer ${gcal_token}` } }
   );
 
-  const responseText = gcalResponse.status === 204 ? null : await gcalResponse.text();
+  const responseText =
+    gcalResponse.status === 204 ? null : await gcalResponse.text();
 
   return new Response(responseText ?? undefined, {
     status: gcalResponse.status,
     headers: {
-      "Content-Type": gcalResponse.headers.get("Content-Type") || "application/json",
+      "Content-Type":
+        gcalResponse.headers.get("Content-Type") || "application/json",
     },
   });
 }

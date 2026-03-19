@@ -62,7 +62,7 @@ export async function PUT(request: NextRequest) {
     const currentCycleName = buildCycleName();
 
     const cycle =
-      body.isOpen && (existingCycle?.name !== currentCycleName)
+      body.isOpen && existingCycle?.name !== currentCycleName
         ? await prisma.techCommitteeApplicationCycle.create({
             data: {
               name: currentCycleName,

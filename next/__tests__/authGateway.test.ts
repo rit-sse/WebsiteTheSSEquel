@@ -22,7 +22,9 @@ describe("authGateway", () => {
       isOfficer: true,
     });
 
-    const auth = await getGatewayAuthLevel(new Request("http://localhost/api/test"));
+    const auth = await getGatewayAuthLevel(
+      new Request("http://localhost/api/test")
+    );
 
     expect(auth).toMatchObject({
       userId: 7,
@@ -36,7 +38,9 @@ describe("authGateway", () => {
   it("returns safe defaults when resolver throws", async () => {
     mockResolveAuthLevelFromRequest.mockRejectedValue(new Error("fail"));
 
-    const auth = await getGatewayAuthLevel(new Request("http://localhost/api/test"));
+    const auth = await getGatewayAuthLevel(
+      new Request("http://localhost/api/test")
+    );
     expect(auth).toEqual({
       userId: null,
       isUser: false,

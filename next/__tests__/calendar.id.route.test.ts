@@ -17,7 +17,9 @@ describe("/api/calendar/[id] route", () => {
   });
 
   it("proxies event fetch by id", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(new Response('{"id":"evt-1"}', { status: 200 }));
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(new Response('{"id":"evt-1"}', { status: 200 }));
     vi.stubGlobal("fetch", fetchMock);
 
     const req = new Request("http://localhost/api/calendar/evt-1") as any;

@@ -17,7 +17,9 @@ describe("/api/calendar route", () => {
   });
 
   it("GET proxies to Google Calendar API", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(new Response("[]", { status: 200 }));
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(new Response("[]", { status: 200 }));
     vi.stubGlobal("fetch", fetchMock);
     const req = new Request("http://localhost/api/calendar") as any;
     const res = await GET(req);

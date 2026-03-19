@@ -1,12 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { mockFindUnique, mockGetServerSession, mockGetGatewayAuthLevel, mockResolveUserImage } =
-  vi.hoisted(() => ({
-    mockFindUnique: vi.fn(),
-    mockGetServerSession: vi.fn(),
-    mockGetGatewayAuthLevel: vi.fn(),
-    mockResolveUserImage: vi.fn(),
-  }));
+const {
+  mockFindUnique,
+  mockGetServerSession,
+  mockGetGatewayAuthLevel,
+  mockResolveUserImage,
+} = vi.hoisted(() => ({
+  mockFindUnique: vi.fn(),
+  mockGetServerSession: vi.fn(),
+  mockGetGatewayAuthLevel: vi.fn(),
+  mockResolveUserImage: vi.fn(),
+}));
 
 vi.mock("@/lib/prisma", () => ({
   default: {
@@ -19,7 +23,9 @@ vi.mock("next-auth", () => ({
 }));
 
 vi.mock("@/lib/authOptions", () => ({ authOptions: {} }));
-vi.mock("@/lib/authGateway", () => ({ getGatewayAuthLevel: mockGetGatewayAuthLevel }));
+vi.mock("@/lib/authGateway", () => ({
+  getGatewayAuthLevel: mockGetGatewayAuthLevel,
+}));
 vi.mock("@/lib/s3Utils", () => ({ resolveUserImage: mockResolveUserImage }));
 
 import { GET } from "@/app/api/user/[id]/route";
@@ -46,7 +52,9 @@ describe("/api/user/[id] route", () => {
       profileImageKey: null,
       googleImageURL: null,
     });
-    mockGetServerSession.mockResolvedValue({ user: { email: "other@example.com" } });
+    mockGetServerSession.mockResolvedValue({
+      user: { email: "other@example.com" },
+    });
     mockGetGatewayAuthLevel.mockResolvedValue({ isOfficer: false });
 
     const res = await GET(new Request("http://localhost") as any, {
@@ -66,7 +74,9 @@ describe("/api/user/[id] route", () => {
       profileImageKey: null,
       googleImageURL: null,
     });
-    mockGetServerSession.mockResolvedValue({ user: { email: "other@example.com" } });
+    mockGetServerSession.mockResolvedValue({
+      user: { email: "other@example.com" },
+    });
     mockGetGatewayAuthLevel.mockResolvedValue({ isOfficer: true });
 
     const res = await GET(new Request("http://localhost") as any, {

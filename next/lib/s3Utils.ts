@@ -6,8 +6,11 @@
  * Constructs a public S3 URL from a key
  */
 export function getPublicS3Url(key: string): string {
-  const bucket = process.env.AWS_S3_BUCKET_NAME || process.env.NEXT_PUBLIC_AWS_S3_BUCKET_NAME;
-  const region = process.env.AWS_S3_REGION || process.env.NEXT_PUBLIC_AWS_S3_REGION;
+  const bucket =
+    process.env.AWS_S3_BUCKET_NAME ||
+    process.env.NEXT_PUBLIC_AWS_S3_BUCKET_NAME;
+  const region =
+    process.env.AWS_S3_REGION || process.env.NEXT_PUBLIC_AWS_S3_REGION;
   return `https://${bucket}.s3.${region}.amazonaws.com/${key}`;
 }
 
@@ -15,9 +18,14 @@ export function getPublicS3Url(key: string): string {
  * Extracts the S3 key from a public S3 URL
  */
 export function getKeyFromS3Url(url: string): string | null {
-  const bucket = process.env.AWS_S3_BUCKET_NAME || process.env.NEXT_PUBLIC_AWS_S3_BUCKET_NAME;
-  const region = process.env.AWS_S3_REGION || process.env.NEXT_PUBLIC_AWS_S3_REGION;
-  const pattern = new RegExp(`https://${bucket}\\.s3\\.${region}\\.amazonaws\\.com/(.+)`);
+  const bucket =
+    process.env.AWS_S3_BUCKET_NAME ||
+    process.env.NEXT_PUBLIC_AWS_S3_BUCKET_NAME;
+  const region =
+    process.env.AWS_S3_REGION || process.env.NEXT_PUBLIC_AWS_S3_REGION;
+  const pattern = new RegExp(
+    `https://${bucket}\\.s3\\.${region}\\.amazonaws\\.com/(.+)`
+  );
   const match = url.match(pattern);
   return match ? match[1] : null;
 }
@@ -28,7 +36,8 @@ export function getKeyFromS3Url(url: string): string | null {
 export function isS3Key(imageValue: string): boolean {
   if (!imageValue) return false;
   // Treat absolute/protocol-relative/app-relative/data URLs as URLs, not S3 keys
-  if (imageValue.startsWith("http://") || imageValue.startsWith("https://")) return false;
+  if (imageValue.startsWith("http://") || imageValue.startsWith("https://"))
+    return false;
   if (imageValue.startsWith("//") || imageValue.startsWith("/")) return false;
   if (imageValue.startsWith("data:")) return false;
   return true;
@@ -38,7 +47,9 @@ export function isS3Key(imageValue: string): boolean {
  * Normalizes an image value into an S3 key when possible.
  * Supports raw keys, public S3 URLs, and `/api/aws/image?key=...` proxy URLs.
  */
-export function normalizeToS3Key(imageValue: string | null | undefined): string | null {
+export function normalizeToS3Key(
+  imageValue: string | null | undefined
+): string | null {
   if (!imageValue) return null;
 
   if (isS3Key(imageValue)) return imageValue;
@@ -76,7 +87,7 @@ export function getImageUrl(imageValue: string | null | undefined): string {
  */
 export function resolveBookImage(
   imageKey: string | null | undefined,
-  image: string | null | undefined,
+  image: string | null | undefined
 ): string | null {
   if (imageKey) return getImageUrl(imageKey);
   return image || null;
@@ -91,7 +102,7 @@ export function resolveBookImage(
  */
 export function resolveUserImage(
   profileImageKey: string | null | undefined,
-  googleImageURL: string | null | undefined,
+  googleImageURL: string | null | undefined
 ): string | null {
   // Use || so empty strings are treated as missing and the chain falls through.
   const raw = profileImageKey || googleImageURL || null;

@@ -23,7 +23,10 @@ describe("/api/headcount-import route", () => {
   });
 
   it("POST denies non-manager users", async () => {
-    mockGetGatewayAuthLevel.mockResolvedValue({ isMentoringHead: false, isPrimary: false });
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isMentoringHead: false,
+      isPrimary: false,
+    });
     const req = new Request("http://localhost/api/headcount-import", {
       method: "POST",
       body: JSON.stringify({ type: "mentor", rows: [] }),
@@ -34,7 +37,10 @@ describe("/api/headcount-import route", () => {
   });
 
   it("POST validates payload shape", async () => {
-    mockGetGatewayAuthLevel.mockResolvedValue({ isMentoringHead: true, isPrimary: false });
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isMentoringHead: true,
+      isPrimary: false,
+    });
     const req = new Request("http://localhost/api/headcount-import", {
       method: "POST",
       body: JSON.stringify({ foo: "bar" }),
@@ -45,7 +51,10 @@ describe("/api/headcount-import route", () => {
   });
 
   it("DELETE denies non-manager users", async () => {
-    mockGetGatewayAuthLevel.mockResolvedValue({ isMentoringHead: false, isPrimary: false });
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isMentoringHead: false,
+      isPrimary: false,
+    });
     const req = new Request("http://localhost/api/headcount-import", {
       method: "DELETE",
     }) as any;
@@ -54,15 +63,28 @@ describe("/api/headcount-import route", () => {
   });
 
   it("DELETE clears data and returns deleted counts", async () => {
-    mockGetGatewayAuthLevel.mockResolvedValue({ isMentoringHead: true, isPrimary: false });
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isMentoringHead: true,
+      isPrimary: false,
+    });
 
     mockTransaction.mockImplementation(async (cb: any) =>
       cb({
-        mentorHeadcountMentor: { deleteMany: vi.fn().mockResolvedValue({ count: 1 }) },
-        menteeHeadcountMentor: { deleteMany: vi.fn().mockResolvedValue({ count: 2 }) },
-        menteeHeadcountCourse: { deleteMany: vi.fn().mockResolvedValue({ count: 3 }) },
-        mentorHeadcountEntry: { deleteMany: vi.fn().mockResolvedValue({ count: 4 }) },
-        menteeHeadcountEntry: { deleteMany: vi.fn().mockResolvedValue({ count: 5 }) },
+        mentorHeadcountMentor: {
+          deleteMany: vi.fn().mockResolvedValue({ count: 1 }),
+        },
+        menteeHeadcountMentor: {
+          deleteMany: vi.fn().mockResolvedValue({ count: 2 }),
+        },
+        menteeHeadcountCourse: {
+          deleteMany: vi.fn().mockResolvedValue({ count: 3 }),
+        },
+        mentorHeadcountEntry: {
+          deleteMany: vi.fn().mockResolvedValue({ count: 4 }),
+        },
+        menteeHeadcountEntry: {
+          deleteMany: vi.fn().mockResolvedValue({ count: 5 }),
+        },
       })
     );
 

@@ -47,13 +47,17 @@ describe("/api/invitations/pending route", () => {
   it("returns pending invitations and cleans up expired ones", async () => {
     mockGetSessionToken.mockReturnValue("token");
     mockUserFindFirst.mockResolvedValue({ id: 3, email: "member@g.rit.edu" });
-    mockInvitationFindMany.mockResolvedValue([{ id: 7, invitedEmail: "member@g.rit.edu" }]);
+    mockInvitationFindMany.mockResolvedValue([
+      { id: 7, invitedEmail: "member@g.rit.edu" },
+    ]);
 
     const req = new Request("http://localhost/api/invitations/pending") as any;
     const res = await GET(req);
 
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual([{ id: 7, invitedEmail: "member@g.rit.edu" }]);
+    expect(await res.json()).toEqual([
+      { id: 7, invitedEmail: "member@g.rit.edu" },
+    ]);
     expect(mockInvitationFindMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({ invitedEmail: "member@g.rit.edu" }),

@@ -38,7 +38,9 @@ function req(body?: unknown) {
   return {
     method: "PUT",
     headers: new Headers({ host: "localhost:3000" }),
-    nextUrl: new URL("http://localhost:3000/api/tech-committee-application/assign"),
+    nextUrl: new URL(
+      "http://localhost:3000/api/tech-committee-application/assign"
+    ),
     json: vi.fn().mockResolvedValue(body ?? {}),
   } as any;
 }

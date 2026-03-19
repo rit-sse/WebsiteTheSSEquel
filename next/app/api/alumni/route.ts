@@ -24,7 +24,7 @@ export async function GET() {
       start_date: true,
       end_date: true,
       quote: true,
-      previous_roles: true
+      previous_roles: true,
     },
   });
   return Response.json(
@@ -50,9 +50,26 @@ export async function POST(request: Request) {
   }
 
   const parsed = CreateAlumniSchema.safeParse(body);
-  if (!parsed.success) return ApiError.validationError("Validation failed", parsed.error.flatten());
+  if (!parsed.success)
+    return ApiError.validationError(
+      "Validation failed",
+      parsed.error.flatten()
+    );
 
-  const { name, email, linkedIn, gitHub, start_date, end_date, quote, previous_roles, description, image, showEmail, receiveEmails } = parsed.data;
+  const {
+    name,
+    email,
+    linkedIn,
+    gitHub,
+    start_date,
+    end_date,
+    quote,
+    previous_roles,
+    description,
+    image,
+    showEmail,
+    receiveEmails,
+  } = parsed.data;
 
   // Set the new alumni
   try {
@@ -93,7 +110,11 @@ export async function PUT(request: Request) {
   }
 
   const parsed = UpdateAlumniSchema.safeParse(body);
-  if (!parsed.success) return ApiError.validationError("Validation failed", parsed.error.flatten());
+  if (!parsed.success)
+    return ApiError.validationError(
+      "Validation failed",
+      parsed.error.flatten()
+    );
 
   const { id, ...fields } = parsed.data;
 
@@ -124,8 +145,10 @@ export async function DELETE(request: Request) {
     return ApiError.validationError("Invalid JSON payload");
   }
 
-  if (!("id" in body) || typeof body.id !== 'number') {
-    return ApiError.badRequest("A numeric `id` must be included in the request body");
+  if (!("id" in body) || typeof body.id !== "number") {
+    return ApiError.badRequest(
+      "A numeric `id` must be included in the request body"
+    );
   }
   const id = body.id;
 

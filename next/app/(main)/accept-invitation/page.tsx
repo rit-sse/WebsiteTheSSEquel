@@ -3,7 +3,14 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn, useSession } from "next-auth/react";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -177,19 +184,23 @@ export default function AcceptInvitationPage() {
                       invitation.type === "officer"
                         ? "bg-primary/20 text-primary"
                         : invitation.type === "mentor"
-                        ? "bg-green-500/20 text-green-700 dark:text-green-400"
-                        : "bg-accent/20 text-accent-foreground"
+                          ? "bg-green-500/20 text-green-700 dark:text-green-400"
+                          : "bg-accent/20 text-accent-foreground"
                     }`}
                   >
-                    {invitation.type === "officer" ? "Officer Position" : invitation.type === "mentor" ? "Mentor Position" : "Membership"}
+                    {invitation.type === "officer"
+                      ? "Officer Position"
+                      : invitation.type === "mentor"
+                        ? "Mentor Position"
+                        : "Membership"}
                   </span>
                 </div>
                 <CardTitle>
                   {invitation.type === "officer" && invitation.position
                     ? invitation.position.title
                     : invitation.type === "mentor"
-                    ? "Join SSE as a Mentor"
-                    : "Join SSE as a Member"}
+                      ? "Join SSE as a Mentor"
+                      : "Join SSE as a Member"}
                 </CardTitle>
                 <CardDescription>
                   Invited by {invitation.inviter.name}
@@ -205,7 +216,8 @@ export default function AcceptInvitationPage() {
                     </p>
                     {invitation.startDate && invitation.endDate && (
                       <div className="text-sm text-muted-foreground">
-                        <strong>Term:</strong> {formatDate(invitation.startDate)} —{" "}
+                        <strong>Term:</strong>{" "}
+                        {formatDate(invitation.startDate)} —{" "}
                         {formatDate(invitation.endDate)}
                       </div>
                     )}
@@ -218,29 +230,31 @@ export default function AcceptInvitationPage() {
                 ) : invitation.type === "mentor" ? (
                   <div className="space-y-3">
                     <p className="text-sm">
-                      You&apos;ve been invited to join the Society of Software Engineers
-                      as a <strong>Mentor</strong>.
+                      You&apos;ve been invited to join the Society of Software
+                      Engineers as a <strong>Mentor</strong>.
                     </p>
                     {invitation.endDate && (
                       <div className="text-sm text-muted-foreground">
-                        <strong>Mentorship expires:</strong> {formatDate(invitation.endDate)}
+                        <strong>Mentorship expires:</strong>{" "}
+                        {formatDate(invitation.endDate)}
                       </div>
                     )}
                     <p className="text-sm text-muted-foreground">
-                      As a mentor, you&apos;ll help fellow students with coursework,
-                      assignments, and test preparation in the SSE lab.
+                      As a mentor, you&apos;ll help fellow students with
+                      coursework, assignments, and test preparation in the SSE
+                      lab.
                     </p>
                   </div>
                 ) : (
                   <div className="space-y-3">
                     <p className="text-sm">
-                      You&apos;ve been invited to join the Society of Software Engineers
-                      as a member.
+                      You&apos;ve been invited to join the Society of Software
+                      Engineers as a member.
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      As a member, you&apos;ll have access to mentoring programs,
-                      exclusive workshops, networking opportunities, and project
-                      collaboration.
+                      As a member, you&apos;ll have access to mentoring
+                      programs, exclusive workshops, networking opportunities,
+                      and project collaboration.
                     </p>
                   </div>
                 )}

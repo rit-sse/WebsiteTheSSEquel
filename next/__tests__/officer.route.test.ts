@@ -127,9 +127,16 @@ describe("/api/officer route", () => {
 
   it("POST returns 404 when user or position is missing", async () => {
     mockGetSessionToken.mockReturnValue("token");
-    mockUserFindFirst.mockResolvedValueOnce({ id: 90, email: "admin@example.com", name: "Admin" }); // logged-in user
+    mockUserFindFirst.mockResolvedValueOnce({
+      id: 90,
+      email: "admin@example.com",
+      name: "Admin",
+    }); // logged-in user
     mockUserFindFirst.mockResolvedValueOnce(null); // target user not found
-    mockOfficerPositionFindFirst.mockResolvedValue({ id: 1, title: "President" });
+    mockOfficerPositionFindFirst.mockResolvedValue({
+      id: 1,
+      title: "President",
+    });
 
     const req = new Request("http://localhost/api/officer", {
       method: "POST",
@@ -151,9 +158,20 @@ describe("/api/officer route", () => {
     mockGetPublicBaseUrl.mockReturnValue("https://example.com");
 
     mockUserFindFirst
-      .mockResolvedValueOnce({ id: 90, email: "admin@example.com", name: "Admin" }) // logged-in user
-      .mockResolvedValueOnce({ id: 10, email: "new@example.com", name: "New Officer" }); // target user
-    mockOfficerPositionFindFirst.mockResolvedValue({ id: 3, title: "Mentoring Head" });
+      .mockResolvedValueOnce({
+        id: 90,
+        email: "admin@example.com",
+        name: "Admin",
+      }) // logged-in user
+      .mockResolvedValueOnce({
+        id: 10,
+        email: "new@example.com",
+        name: "New Officer",
+      }); // target user
+    mockOfficerPositionFindFirst.mockResolvedValue({
+      id: 3,
+      title: "Mentoring Head",
+    });
     mockOfficerCreate.mockResolvedValue({ id: 500 });
 
     const req = new Request("http://localhost/api/officer", {

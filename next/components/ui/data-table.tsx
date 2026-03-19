@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 import {
   Table,
   TableBody,
@@ -8,41 +8,41 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Search, Plus, ChevronUp, ChevronDown } from "lucide-react"
-import { useIsMobile } from "@/hooks/use-mobile"
+} from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Search, Plus, ChevronUp, ChevronDown } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export interface Column<T> {
-  key: string
-  header: string
-  render?: (item: T) => React.ReactNode
-  sortable?: boolean
-  className?: string  // For hiding columns on mobile etc.
-  isPrimary?: boolean  // Rendered as card header on mobile
-  isAction?: boolean   // Rendered at card bottom on mobile
-  isFullWidth?: boolean // On mobile, label stacks above content instead of side-by-side
-  mobileHidden?: boolean // Exclude from mobile card layout entirely
+  key: string;
+  header: string;
+  render?: (item: T) => React.ReactNode;
+  sortable?: boolean;
+  className?: string; // For hiding columns on mobile etc.
+  isPrimary?: boolean; // Rendered as card header on mobile
+  isAction?: boolean; // Rendered at card bottom on mobile
+  isFullWidth?: boolean; // On mobile, label stacks above content instead of side-by-side
+  mobileHidden?: boolean; // Exclude from mobile card layout entirely
 }
 
 interface DataTableProps<T> {
-  data: T[]
-  columns: Column<T>[]
-  keyField: keyof T
-  title?: string
-  titleExtra?: React.ReactNode
-  searchPlaceholder?: string
-  searchFields?: (keyof T)[]
-  onAdd?: () => void
-  addLabel?: string
-  isLoading?: boolean
-  emptyMessage?: string
-  expandedContent?: (item: T) => React.ReactNode
-  enablePagination?: boolean
-  pageSizeOptions?: number[]
-  defaultPageSize?: number
+  data: T[];
+  columns: Column<T>[];
+  keyField: keyof T;
+  title?: string;
+  titleExtra?: React.ReactNode;
+  searchPlaceholder?: string;
+  searchFields?: (keyof T)[];
+  onAdd?: () => void;
+  addLabel?: string;
+  isLoading?: boolean;
+  emptyMessage?: string;
+  expandedContent?: (item: T) => React.ReactNode;
+  enablePagination?: boolean;
+  pageSizeOptions?: number[];
+  defaultPageSize?: number;
 }
 
 export function DataTable<T extends Record<string, any>>({
@@ -60,93 +60,101 @@ export function DataTable<T extends Record<string, any>>({
   expandedContent,
   enablePagination = false,
   pageSizeOptions = [10, 25, 50, 100],
-  defaultPageSize = 25
+  defaultPageSize = 25,
 }: DataTableProps<T>) {
-  const [searchQuery, setSearchQuery] = React.useState("")
-  const [sortKey, setSortKey] = React.useState<string | null>(null)
-  const [sortDirection, setSortDirection] = React.useState<"asc" | "desc">("asc")
-  const [page, setPage] = React.useState(1)
-  const [pageSize, setPageSize] = React.useState(defaultPageSize)
-  const isMobile = useIsMobile()
+  const [searchQuery, setSearchQuery] = React.useState("");
+  const [sortKey, setSortKey] = React.useState<string | null>(null);
+  const [sortDirection, setSortDirection] = React.useState<"asc" | "desc">(
+    "asc"
+  );
+  const [page, setPage] = React.useState(1);
+  const [pageSize, setPageSize] = React.useState(defaultPageSize);
+  const isMobile = useIsMobile();
 
   // Filter data based on search query
   const filteredData = React.useMemo(() => {
-    if (!searchQuery.trim()) return data
+    if (!searchQuery.trim()) return data;
 
-    const query = searchQuery.toLowerCase()
+    const query = searchQuery.toLowerCase();
     return data.filter((item) => {
-      const fieldsToSearch = searchFields || (Object.keys(item) as (keyof T)[])
+      const fieldsToSearch = searchFields || (Object.keys(item) as (keyof T)[]);
       return fieldsToSearch.some((field) => {
-        const value = item[field]
-        if (value == null) return false
-        return String(value).toLowerCase().includes(query)
-      })
-    })
-  }, [data, searchQuery, searchFields])
+        const value = item[field];
+        if (value == null) return false;
+        return String(value).toLowerCase().includes(query);
+      });
+    });
+  }, [data, searchQuery, searchFields]);
 
   // Sort data
   const sortedData = React.useMemo(() => {
-    if (!sortKey) return filteredData
+    if (!sortKey) return filteredData;
 
     return [...filteredData].sort((a, b) => {
-      const aVal = a[sortKey]
-      const bVal = b[sortKey]
+      const aVal = a[sortKey];
+      const bVal = b[sortKey];
 
-      if (aVal == null && bVal == null) return 0
-      if (aVal == null) return sortDirection === "asc" ? 1 : -1
-      if (bVal == null) return sortDirection === "asc" ? -1 : 1
+      if (aVal == null && bVal == null) return 0;
+      if (aVal == null) return sortDirection === "asc" ? 1 : -1;
+      if (bVal == null) return sortDirection === "asc" ? -1 : 1;
 
       if (typeof aVal === "string" && typeof bVal === "string") {
         return sortDirection === "asc"
           ? aVal.localeCompare(bVal)
-          : bVal.localeCompare(aVal)
+          : bVal.localeCompare(aVal);
       }
 
-      if (aVal < bVal) return sortDirection === "asc" ? -1 : 1
-      if (aVal > bVal) return sortDirection === "asc" ? 1 : -1
-      return 0
-    })
-  }, [filteredData, sortKey, sortDirection])
+      if (aVal < bVal) return sortDirection === "asc" ? -1 : 1;
+      if (aVal > bVal) return sortDirection === "asc" ? 1 : -1;
+      return 0;
+    });
+  }, [filteredData, sortKey, sortDirection]);
 
   React.useEffect(() => {
-    setPage(1)
-  }, [searchQuery, sortKey, sortDirection, pageSize, data.length])
+    setPage(1);
+  }, [searchQuery, sortKey, sortDirection, pageSize, data.length]);
 
   React.useEffect(() => {
-    if (!enablePagination) return
-    const totalPages = Math.max(1, Math.ceil(sortedData.length / pageSize))
+    if (!enablePagination) return;
+    const totalPages = Math.max(1, Math.ceil(sortedData.length / pageSize));
     if (page > totalPages) {
-      setPage(totalPages)
+      setPage(totalPages);
     }
-  }, [enablePagination, page, pageSize, sortedData.length])
+  }, [enablePagination, page, pageSize, sortedData.length]);
 
   const totalPages = enablePagination
     ? Math.max(1, Math.ceil(sortedData.length / pageSize))
-    : 1
-  const startIdx = enablePagination ? (page - 1) * pageSize : 0
+    : 1;
+  const startIdx = enablePagination ? (page - 1) * pageSize : 0;
   const paginatedData = enablePagination
     ? sortedData.slice(startIdx, startIdx + pageSize)
-    : sortedData
-  const startCount = sortedData.length === 0 ? 0 : startIdx + 1
-  const endCount = sortedData.length === 0 ? 0 : Math.min(startIdx + paginatedData.length, sortedData.length)
+    : sortedData;
+  const startCount = sortedData.length === 0 ? 0 : startIdx + 1;
+  const endCount =
+    sortedData.length === 0
+      ? 0
+      : Math.min(startIdx + paginatedData.length, sortedData.length);
 
   const handleSort = (key: string) => {
     if (sortKey === key) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc")
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
-      setSortKey(key)
-      setSortDirection("asc")
+      setSortKey(key);
+      setSortDirection("asc");
     }
-  }
+  };
 
   // Derive column roles for mobile card layout
-  const primaryColumn = columns.find(c => c.isPrimary) || columns[0]
-  const actionColumn = columns.find(c => c.isAction) || columns.find(c => c.header === "")
-  const detailColumns = columns.filter(c => c !== primaryColumn && c !== actionColumn && !c.mobileHidden)
+  const primaryColumn = columns.find((c) => c.isPrimary) || columns[0];
+  const actionColumn =
+    columns.find((c) => c.isAction) || columns.find((c) => c.header === "");
+  const detailColumns = columns.filter(
+    (c) => c !== primaryColumn && c !== actionColumn && !c.mobileHidden
+  );
 
   const renderCellValue = (column: Column<T>, item: T) => {
-    return column.render ? column.render(item) : String(item[column.key] ?? "")
-  }
+    return column.render ? column.render(item) : String(item[column.key] ?? "");
+  };
 
   return (
     <Card depth={1} className="w-full max-w-full overflow-hidden">
@@ -157,7 +165,7 @@ export function DataTable<T extends Record<string, any>>({
           {titleExtra}
         </div>
       )}
-      
+
       {/* Content area */}
       <div className="p-3 sm:p-4">
         {/* Header with search and add button */}
@@ -172,7 +180,11 @@ export function DataTable<T extends Record<string, any>>({
             />
           </div>
           {onAdd && (
-            <Button variant="accent" onClick={onAdd} className="w-full sm:w-auto text-sm">
+            <Button
+              variant="accent"
+              onClick={onAdd}
+              className="w-full sm:w-auto text-sm"
+            >
               <Plus className="h-4 w-4 mr-2" />
               {addLabel}
             </Button>
@@ -183,9 +195,13 @@ export function DataTable<T extends Record<string, any>>({
         {isMobile ? (
           <div className="space-y-3">
             {isLoading ? (
-              <div className="text-center py-8 text-muted-foreground text-sm">Loading...</div>
+              <div className="text-center py-8 text-muted-foreground text-sm">
+                Loading...
+              </div>
             ) : paginatedData.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground text-sm">{emptyMessage}</div>
+              <div className="text-center py-8 text-muted-foreground text-sm">
+                {emptyMessage}
+              </div>
             ) : (
               paginatedData.map((item) => (
                 <div
@@ -206,14 +222,18 @@ export function DataTable<T extends Record<string, any>>({
                             <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
                               {column.header}
                             </span>
-                            <div className="text-sm">{renderCellValue(column, item)}</div>
+                            <div className="text-sm">
+                              {renderCellValue(column, item)}
+                            </div>
                           </div>
                         ) : (
                           <div key={column.key} className="space-y-0.5">
                             <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
                               {column.header}
                             </span>
-                            <div className="text-sm">{renderCellValue(column, item)}</div>
+                            <div className="text-sm">
+                              {renderCellValue(column, item)}
+                            </div>
                           </div>
                         )
                       )}
@@ -244,13 +264,13 @@ export function DataTable<T extends Record<string, any>>({
                     >
                       <div className="flex items-center gap-1 whitespace-nowrap">
                         {column.header}
-                        {column.sortable && sortKey === column.key && (
-                          sortDirection === "asc" ? (
+                        {column.sortable &&
+                          sortKey === column.key &&
+                          (sortDirection === "asc" ? (
                             <ChevronUp className="h-3 w-3 sm:h-4 sm:w-4" />
                           ) : (
                             <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4" />
-                          )
-                        )}
+                          ))}
                       </div>
                     </TableHead>
                   ))}
@@ -259,24 +279,39 @@ export function DataTable<T extends Record<string, any>>({
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={columns.length} className="text-center py-8">
-                      <div className="text-muted-foreground text-sm">Loading...</div>
+                    <TableCell
+                      colSpan={columns.length}
+                      className="text-center py-8"
+                    >
+                      <div className="text-muted-foreground text-sm">
+                        Loading...
+                      </div>
                     </TableCell>
                   </TableRow>
                 ) : paginatedData.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={columns.length} className="text-center py-8">
-                      <div className="text-muted-foreground text-sm">{emptyMessage}</div>
+                    <TableCell
+                      colSpan={columns.length}
+                      className="text-center py-8"
+                    >
+                      <div className="text-muted-foreground text-sm">
+                        {emptyMessage}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ) : (
                   paginatedData.map((item) => {
-                    const expanded = expandedContent ? expandedContent(item) : null
+                    const expanded = expandedContent
+                      ? expandedContent(item)
+                      : null;
                     return (
                       <React.Fragment key={String(item[keyField])}>
                         <TableRow>
                           {columns.map((column) => (
-                            <TableCell key={column.key} className={`text-xs sm:text-sm ${column.className || ""}`}>
+                            <TableCell
+                              key={column.key}
+                              className={`text-xs sm:text-sm ${column.className || ""}`}
+                            >
                               {column.render
                                 ? column.render(item)
                                 : String(item[column.key] ?? "")}
@@ -291,7 +326,7 @@ export function DataTable<T extends Record<string, any>>({
                           </TableRow>
                         )}
                       </React.Fragment>
-                    )
+                    );
                   })
                 )}
               </TableBody>
@@ -312,9 +347,9 @@ export function DataTable<T extends Record<string, any>>({
                 <select
                   value={pageSize}
                   onChange={(e) => {
-                    const nextPageSize = Number(e.target.value)
-                    setPageSize(nextPageSize)
-                    setPage(1)
+                    const nextPageSize = Number(e.target.value);
+                    setPageSize(nextPageSize);
+                    setPage(1);
                   }}
                   className="h-9 min-w-[4.5rem] rounded-md border border-border bg-background pl-2 pr-7 text-xs sm:text-sm"
                 >
@@ -340,7 +375,9 @@ export function DataTable<T extends Record<string, any>>({
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+                onClick={() =>
+                  setPage((prev) => Math.min(totalPages, prev + 1))
+                }
                 disabled={page >= totalPages}
                 className="h-8 px-2"
               >
@@ -351,5 +388,5 @@ export function DataTable<T extends Record<string, any>>({
         </div>
       </div>
     </Card>
-  )
+  );
 }

@@ -6,12 +6,16 @@ import Image from "next/image";
 import Avatar from "boring-avatars";
 
 export default async function MemberCard({ member }: CommitteeMemberProp) {
-  const gradLabel = member.graduationTerm && member.graduationYear
-    ? `${member.graduationTerm.charAt(0).toUpperCase()}${member.graduationTerm.slice(1).toLowerCase()} '${String(member.graduationYear).slice(-2)}`
-    : null;
+  const gradLabel =
+    member.graduationTerm && member.graduationYear
+      ? `${member.graduationTerm.charAt(0).toUpperCase()}${member.graduationTerm.slice(1).toLowerCase()} '${String(member.graduationYear).slice(-2)}`
+      : null;
 
   return (
-    <Card depth={2} className="w-52 p-4 flex flex-col items-center gap-2 hover:border-0">
+    <Card
+      depth={2}
+      className="w-52 p-4 flex flex-col items-center gap-2 hover:border-0"
+    >
       {/* Avatar */}
       <div className="mt-1">
         {member.profileImageUrl ? (

@@ -140,7 +140,9 @@ describe("/api/officer-positions route", () => {
 
     const res = await DELETE(req);
     expect(res.status).toBe(200);
-    expect(mockOfficerDeleteMany).toHaveBeenCalledWith({ where: { position_id: 5 } });
+    expect(mockOfficerDeleteMany).toHaveBeenCalledWith({
+      where: { position_id: 5 },
+    });
     expect(await res.json()).toEqual({ id: 5, title: "Role" });
   });
 });

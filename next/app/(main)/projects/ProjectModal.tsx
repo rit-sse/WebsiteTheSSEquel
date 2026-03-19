@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import React, { useEffect, useState } from "react";
 import { Project } from "./projects";
@@ -31,14 +31,21 @@ interface User {
   email: string;
 }
 
-const ProjectModal = ({ enabled, setEnabled, project, isOfficer }: ProjectModalInterface) => {
+const ProjectModal = ({
+  enabled,
+  setEnabled,
+  project,
+  isOfficer,
+}: ProjectModalInterface) => {
   const [lead, setLead] = useState({ name: "", email: "" });
   const [editMode, setEditMode] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
 
   // Edit mode states
   const [projectTitle, setProjectTitle] = useState(project.title);
-  const [leadid, setLeadID] = useState<string>(project.leadid?.toString() || "");
+  const [leadid, setLeadID] = useState<string>(
+    project.leadid?.toString() || ""
+  );
   const [desc, setDescription] = useState(project.description);
   const [repoLink, setRepoLink] = useState(project.repoLink);
   const [contentURLLink, setContentURL] = useState(project.contentURL);
@@ -65,17 +72,6 @@ const ProjectModal = ({ enabled, setEnabled, project, isOfficer }: ProjectModalI
         });
     }
   }, [project.leadid]);
-
-  // Reset edit values when project changes
-  useEffect(() => {
-    setProjectTitle(project.title);
-    setLeadID(project.leadid?.toString() || "");
-    setDescription(project.description);
-    setRepoLink(project.repoLink);
-    setContentURL(project.contentURL);
-    setImageLink(project.projectImage);
-    setCompleted(project.completed);
-  }, [project]);
 
   const handleClose = () => {
     setEnabled(false);
@@ -218,7 +214,9 @@ const ProjectModal = ({ enabled, setEnabled, project, isOfficer }: ProjectModalI
                   checked={completed}
                   onCheckedChange={(checked) => setCompleted(checked === true)}
                 />
-                <Label htmlFor="edit-completed" className="cursor-pointer">Completed</Label>
+                <Label htmlFor="edit-completed" className="cursor-pointer">
+                  Completed
+                </Label>
               </div>
             </>
           ) : (
@@ -229,11 +227,17 @@ const ProjectModal = ({ enabled, setEnabled, project, isOfficer }: ProjectModalI
               <p className="text-xl">
                 <span className="font-bold">Contact:</span> {lead.email}
               </p>
-              <p className="text-lg max-h-[150px] overflow-auto">{project.description}</p>
+              <p className="text-lg max-h-[150px] overflow-auto">
+                {project.description}
+              </p>
 
               <ProjectLink url={"mailto:" + lead.email} text="Email" />
-              {project.repoLink && <ProjectLink url={project.repoLink} text="Repo Link" />}
-              {project.contentURL && <ProjectLink url={project.contentURL} text="Content URL Link" />}
+              {project.repoLink && (
+                <ProjectLink url={project.repoLink} text="Repo Link" />
+              )}
+              {project.contentURL && (
+                <ProjectLink url={project.contentURL} text="Content URL Link" />
+              )}
             </>
           )}
         </div>
@@ -242,13 +246,17 @@ const ProjectModal = ({ enabled, setEnabled, project, isOfficer }: ProjectModalI
       <ModalFooter>
         {editMode ? (
           <>
-            <Button variant="neutral" onClick={deleteProject}>Delete</Button>
+            <Button variant="neutral" onClick={deleteProject}>
+              Delete
+            </Button>
             <Button onClick={editProject}>Save</Button>
           </>
         ) : (
           <>
             {isOfficer && (
-              <Button variant="neutral" onClick={() => setEditMode(true)}>Edit</Button>
+              <Button variant="neutral" onClick={() => setEditMode(true)}>
+                Edit
+              </Button>
             )}
             <Button onClick={handleClose}>Close</Button>
           </>

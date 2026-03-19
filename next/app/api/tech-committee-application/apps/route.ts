@@ -65,9 +65,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(applications);
   } catch (error) {
     console.error("Error fetching Tech Committee review applications:", error);
-    return validationError(
-      "Failed to fetch Tech Committee applications",
-      500
-    );
+    return validationError("Failed to fetch Tech Committee applications", 500);
   }
 }

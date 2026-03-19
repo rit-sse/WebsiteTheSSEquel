@@ -1,12 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const {
-  mockGetGatewayAuthLevel,
-  mockTechCommitteeApplicationFindUnique,
-} = vi.hoisted(() => ({
-  mockGetGatewayAuthLevel: vi.fn(),
-  mockTechCommitteeApplicationFindUnique: vi.fn(),
-}));
+const { mockGetGatewayAuthLevel, mockTechCommitteeApplicationFindUnique } =
+  vi.hoisted(() => ({
+    mockGetGatewayAuthLevel: vi.fn(),
+    mockTechCommitteeApplicationFindUnique: vi.fn(),
+  }));
 
 vi.mock("@/lib/authGateway", () => ({
   getGatewayAuthLevel: mockGetGatewayAuthLevel,
@@ -40,9 +38,12 @@ describe("/api/tech-committee-application/apps/[id] route", () => {
   });
 
   it("rejects non-reviewers", async () => {
-    const res = await GET(req("http://localhost/api/tech-committee-application/apps/7"), {
-      params: Promise.resolve({ id: "7" }),
-    });
+    const res = await GET(
+      req("http://localhost/api/tech-committee-application/apps/7"),
+      {
+        params: Promise.resolve({ id: "7" }),
+      }
+    );
 
     expect(res.status).toBe(403);
   });
@@ -55,9 +56,12 @@ describe("/api/tech-committee-application/apps/[id] route", () => {
     });
     mockTechCommitteeApplicationFindUnique.mockResolvedValue(null);
 
-    const res = await GET(req("http://localhost/api/tech-committee-application/apps/7"), {
-      params: Promise.resolve({ id: "7" }),
-    });
+    const res = await GET(
+      req("http://localhost/api/tech-committee-application/apps/7"),
+      {
+        params: Promise.resolve({ id: "7" }),
+      }
+    );
 
     expect(res.status).toBe(404);
   });
@@ -85,9 +89,12 @@ describe("/api/tech-committee-application/apps/[id] route", () => {
       },
     });
 
-    const res = await GET(req("http://localhost/api/tech-committee-application/apps/7"), {
-      params: Promise.resolve({ id: "7" }),
-    });
+    const res = await GET(
+      req("http://localhost/api/tech-committee-application/apps/7"),
+      {
+        params: Promise.resolve({ id: "7" }),
+      }
+    );
     const body = await res.json();
 
     expect(res.status).toBe(200);
@@ -121,9 +128,12 @@ describe("/api/tech-committee-application/apps/[id] route", () => {
       },
     });
 
-    const res = await GET(req("http://localhost/api/tech-committee-application/apps/9"), {
-      params: Promise.resolve({ id: "9" }),
-    });
+    const res = await GET(
+      req("http://localhost/api/tech-committee-application/apps/9"),
+      {
+        params: Promise.resolve({ id: "9" }),
+      }
+    );
 
     expect(res.status).toBe(200);
   });

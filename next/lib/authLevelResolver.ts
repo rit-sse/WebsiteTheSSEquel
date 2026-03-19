@@ -156,17 +156,20 @@ export async function resolveAuthLevelFromToken(
     );
     authLevel.isTechCommitteeDivisionManager = user.officers.some((officer) =>
       TECH_COMMITTEE_DIVISION_MANAGER_TITLES.includes(
-        officer.position.title as (typeof TECH_COMMITTEE_DIVISION_MANAGER_TITLES)[number]
+        officer.position
+          .title as (typeof TECH_COMMITTEE_DIVISION_MANAGER_TITLES)[number]
       )
     );
     const managedDivisionOfficer = user.officers.find((officer) =>
       TECH_COMMITTEE_DIVISION_MANAGER_TITLES.includes(
-        officer.position.title as (typeof TECH_COMMITTEE_DIVISION_MANAGER_TITLES)[number]
+        officer.position
+          .title as (typeof TECH_COMMITTEE_DIVISION_MANAGER_TITLES)[number]
       )
     );
     authLevel.techCommitteeManagedDivision = managedDivisionOfficer
       ? TECH_COMMITTEE_DIVISION_MANAGER_BY_TITLE[
-          managedDivisionOfficer.position.title as keyof typeof TECH_COMMITTEE_DIVISION_MANAGER_BY_TITLE
+          managedDivisionOfficer.position
+            .title as keyof typeof TECH_COMMITTEE_DIVISION_MANAGER_BY_TITLE
         ]
       : null;
     authLevel.isPrimary = user.officers.some(

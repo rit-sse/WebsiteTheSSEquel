@@ -39,7 +39,8 @@ export default function OfficerInviteModal({
   // Set default dates when modal opens
   const handleOpenChange = (newOpen: boolean) => {
     if (newOpen && !startDate && !endDate) {
-      const { startDate: defaultStart, endDate: defaultEnd } = getDefaultOfficerTermDateRange();
+      const { startDate: defaultStart, endDate: defaultEnd } =
+        getDefaultOfficerTermDateRange();
       setStartDate(toDateInputValue(defaultStart));
       setEndDate(toDateInputValue(defaultEnd));
     }
@@ -120,7 +121,9 @@ export default function OfficerInviteModal({
     <Modal
       open={open}
       onOpenChange={handleOpenChange}
-      title={position ? `Invite Officer for ${position.title}` : "Invite Officer"}
+      title={
+        position ? `Invite Officer for ${position.title}` : "Invite Officer"
+      }
       className="max-w-md"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -164,9 +167,7 @@ export default function OfficerInviteModal({
           </div>
         </div>
 
-        {error && (
-          <p className="text-sm text-destructive">{error}</p>
-        )}
+        {error && <p className="text-sm text-destructive">{error}</p>}
 
         <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-md">
           <p className="font-medium mb-1">What happens next?</p>

@@ -44,8 +44,16 @@ describe("/api/headcount-trends route", () => {
 
   it("aggregates mentor and mentee headcount by semester", async () => {
     mockMentorHeadcountFindMany.mockResolvedValue([
-      { semesterId: 1, peopleInLab: 5, semester: { id: 1, name: "Spring 2026" } },
-      { semesterId: 1, peopleInLab: 7, semester: { id: 1, name: "Spring 2026" } },
+      {
+        semesterId: 1,
+        peopleInLab: 5,
+        semester: { id: 1, name: "Spring 2026" },
+      },
+      {
+        semesterId: 1,
+        peopleInLab: 7,
+        semester: { id: 1, name: "Spring 2026" },
+      },
     ]);
     mockMenteeHeadcountFindMany.mockResolvedValue([
       {

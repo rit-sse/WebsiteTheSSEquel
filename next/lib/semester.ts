@@ -1,22 +1,25 @@
 /**
  * Utility functions for semester-based grouping and sorting
  */
-import { formatAcademicTerm, getAcademicTermFromDate } from "@/lib/academicTerm"
+import {
+  formatAcademicTerm,
+  getAcademicTermFromDate,
+} from "@/lib/academicTerm";
 
 export interface SemesterInfo {
-  label: string
-  sortKey: string
+  label: string;
+  sortKey: string;
 }
 
 export function getSemester(dateString: string): SemesterInfo {
-  const date = new Date(dateString)
-  const year = date.getFullYear()
-  const term = getAcademicTermFromDate(date)
-  const rank = term === "FALL" ? 2 : term === "SPRING" ? 1 : 0
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  const term = getAcademicTermFromDate(date);
+  const rank = term === "FALL" ? 2 : term === "SPRING" ? 1 : 0;
   return {
     label: formatAcademicTerm(term, year),
     sortKey: `${year}-${rank}`,
-  }
+  };
 }
 
 /**
@@ -24,13 +27,13 @@ export function getSemester(dateString: string): SemesterInfo {
  * Useful for auto-detecting which semester to use for recruitment, etc.
  */
 export function getCurrentSemester(): SemesterInfo {
-  return getSemester(new Date().toISOString())
+  return getSemester(new Date().toISOString());
 }
 
 export interface SemesterGroup<T> {
-  label: string
-  sortKey: string
-  items: T[]
+  label: string;
+  sortKey: string;
+  items: T[];
 }
 
 /**
@@ -43,19 +46,21 @@ export function groupBySemester<T>(
   items: T[],
   getDate: (item: T) => string
 ): SemesterGroup<T>[] {
-  const groups: { [key: string]: SemesterGroup<T> } = {}
+  const groups: { [key: string]: SemesterGroup<T> } = {};
 
   for (const item of items) {
-    const { label, sortKey } = getSemester(getDate(item))
+    const { label, sortKey } = getSemester(getDate(item));
 
     if (!groups[label]) {
-      groups[label] = { label, sortKey, items: [] }
+      groups[label] = { label, sortKey, items: [] };
     }
-    groups[label].items.push(item)
+    groups[label].items.push(item);
   }
 
   // Sort groups by sortKey descending (most recent first)
-  return Object.values(groups).sort((a, b) => b.sortKey.localeCompare(a.sortKey))
+  return Object.values(groups).sort((a, b) =>
+    b.sortKey.localeCompare(a.sortKey)
+  );
 }
 
 /**
@@ -66,15 +71,15 @@ export function groupBySemester<T>(
 export function identifyRecurringSeries<T extends { title: string }>(
   events: T[]
 ): Map<string, T[]> {
-  const seriesMap = new Map<string, T[]>()
+  const seriesMap = new Map<string, T[]>();
 
   for (const event of events) {
-    const existing = seriesMap.get(event.title) || []
-    existing.push(event)
-    seriesMap.set(event.title, existing)
+    const existing = seriesMap.get(event.title) || [];
+    existing.push(event);
+    seriesMap.set(event.title, existing);
   }
 
-  return seriesMap
+  return seriesMap;
 }
 
 /**
@@ -88,48 +93,54 @@ export function sortEventsWithRecurring<T extends { title: string }>(
   getDate: (event: T) => string
 ): { event: T; isRecurring: boolean; seriesCount: number }[] {
   // Identify recurring series
-  const seriesMap = identifyRecurringSeries(events)
+  const seriesMap = identifyRecurringSeries(events);
 
   // Separate recurring and non-recurring events
-  const recurring: T[] = []
-  const nonRecurring: T[] = []
+  const recurring: T[] = [];
+  const nonRecurring: T[] = [];
 
   for (const event of events) {
-    const series = seriesMap.get(event.title) || []
+    const series = seriesMap.get(event.title) || [];
     if (series.length > 1) {
-      recurring.push(event)
+      recurring.push(event);
     } else {
-      nonRecurring.push(event)
+      nonRecurring.push(event);
     }
   }
 
   // Sort non-recurring by date (most recent first)
-  nonRecurring.sort((a, b) => new Date(getDate(b)).getTime() - new Date(getDate(a)).getTime())
+  nonRecurring.sort(
+    (a, b) => new Date(getDate(b)).getTime() - new Date(getDate(a)).getTime()
+  );
 
   // Sort recurring by title first, then by date within each series
   recurring.sort((a, b) => {
     if (a.title !== b.title) {
       // Sort series by the earliest date in each series
-      const aSeriesDates = (seriesMap.get(a.title) || []).map((e) => new Date(getDate(e)).getTime())
-      const bSeriesDates = (seriesMap.get(b.title) || []).map((e) => new Date(getDate(e)).getTime())
-      const aEarliest = Math.min(...aSeriesDates)
-      const bEarliest = Math.min(...bSeriesDates)
-      return bEarliest - aEarliest // Most recent series first
+      const aSeriesDates = (seriesMap.get(a.title) || []).map((e) =>
+        new Date(getDate(e)).getTime()
+      );
+      const bSeriesDates = (seriesMap.get(b.title) || []).map((e) =>
+        new Date(getDate(e)).getTime()
+      );
+      const aEarliest = Math.min(...aSeriesDates);
+      const bEarliest = Math.min(...bSeriesDates);
+      return bEarliest - aEarliest; // Most recent series first
     }
     // Within the same series, sort by date (earliest first)
-    return new Date(getDate(a)).getTime() - new Date(getDate(b)).getTime()
-  })
+    return new Date(getDate(a)).getTime() - new Date(getDate(b)).getTime();
+  });
 
   // Combine: recurring first, then non-recurring
-  const result: { event: T; isRecurring: boolean; seriesCount: number }[] = []
+  const result: { event: T; isRecurring: boolean; seriesCount: number }[] = [];
 
   for (const event of recurring) {
-    const series = seriesMap.get(event.title) || []
+    const series = seriesMap.get(event.title) || [];
     result.push({
       event,
       isRecurring: true,
       seriesCount: series.length,
-    })
+    });
   }
 
   for (const event of nonRecurring) {
@@ -137,8 +148,8 @@ export function sortEventsWithRecurring<T extends { title: string }>(
       event,
       isRecurring: false,
       seriesCount: 1,
-    })
+    });
   }
 
-  return result
+  return result;
 }

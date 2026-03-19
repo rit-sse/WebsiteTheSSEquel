@@ -1,32 +1,41 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { Github, Linkedin, Mail } from "lucide-react";
 import { TeamMember } from "./team";
 import Avatar from "boring-avatars";
 import { Card } from "@/components/ui/card";
 import { ensureGithubUrl, ensureLinkedinUrl } from "@/lib/utils";
 
-
 interface OfficerCardProps {
   teamMember: TeamMember;
   children?: React.ReactNode;
 }
 
-export default function OfficerCard({ teamMember, children }: OfficerCardProps) {
+export default function OfficerCard({
+  teamMember,
+  children,
+}: OfficerCardProps) {
   const officerImage = teamMember.image || null;
   const [imgFailed, setImgFailed] = useState(false);
 
   return (
-    <Card depth={2} className="w-full max-w-[280px] p-5 flex flex-col items-center text-center h-full">
+    <Card
+      depth={2}
+      className="w-full max-w-[280px] p-5 flex flex-col items-center text-center h-full"
+    >
       <div className="mb-3">
         {officerImage && !imgFailed ? (
-          <img
+          <Image
             src={officerImage}
             alt={`Photo of ${teamMember.name}`}
+            width={96}
+            height={96}
             className="rounded-full object-cover w-24 h-24"
             referrerPolicy="no-referrer"
             onError={() => setImgFailed(true)}
+            unoptimized
           />
         ) : (
           <Avatar
@@ -40,7 +49,9 @@ export default function OfficerCard({ teamMember, children }: OfficerCardProps) 
 
       {/* Name & Title */}
       <h4 className="font-bold text-lg text-foreground">{teamMember.name}</h4>
-      <p className="text-sm font-semibold text-primary mb-2">{teamMember.title}</p>
+      <p className="text-sm font-semibold text-primary mb-2">
+        {teamMember.title}
+      </p>
 
       {/* Description */}
       <p className="text-sm text-muted-foreground flex-grow line-clamp-3">

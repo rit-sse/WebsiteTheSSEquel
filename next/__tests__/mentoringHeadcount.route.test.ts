@@ -1,14 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const {
-  mockHeadcountFindMany,
-  mockHeadcountCreate,
-  mockSemesterFindFirst,
-} = vi.hoisted(() => ({
-  mockHeadcountFindMany: vi.fn(),
-  mockHeadcountCreate: vi.fn(),
-  mockSemesterFindFirst: vi.fn(),
-}));
+const { mockHeadcountFindMany, mockHeadcountCreate, mockSemesterFindFirst } =
+  vi.hoisted(() => ({
+    mockHeadcountFindMany: vi.fn(),
+    mockHeadcountCreate: vi.fn(),
+    mockSemesterFindFirst: vi.fn(),
+  }));
 
 vi.mock("@/lib/prisma", () => ({
   default: {
@@ -44,7 +41,9 @@ describe("/api/mentoring-headcount route", () => {
       { peopleInLab: 8, createdAt: new Date("2026-03-01T14:00:00.000Z") }, // Sunday ignored
     ]);
 
-    const res = await GET(req("http://localhost/api/mentoring-headcount?traffic=true"));
+    const res = await GET(
+      req("http://localhost/api/mentoring-headcount?traffic=true")
+    );
     expect(res.status).toBe(200);
 
     const body = await res.json();

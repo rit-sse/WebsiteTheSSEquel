@@ -25,7 +25,9 @@ describe("/api/library/isbnlookup route", () => {
   });
 
   it("denies unauthorized users", async () => {
-    const res = await GET(req("http://localhost/api/library/isbnlookup?isbn=123"));
+    const res = await GET(
+      req("http://localhost/api/library/isbnlookup?isbn=123")
+    );
     expect(res.status).toBe(401);
   });
 
@@ -49,7 +51,9 @@ describe("/api/library/isbnlookup route", () => {
       }),
     });
 
-    const res = await GET(req("http://localhost/api/library/isbnlookup?isbn=123"));
+    const res = await GET(
+      req("http://localhost/api/library/isbnlookup?isbn=123")
+    );
     expect(res.status).toBe(200);
     const expectedYear = new Date("2020-01-01").getFullYear();
     expect(await res.json()).toMatchObject({

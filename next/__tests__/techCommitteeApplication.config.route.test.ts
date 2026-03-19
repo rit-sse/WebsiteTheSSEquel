@@ -26,10 +26,7 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
-import {
-  GET,
-  PUT,
-} from "@/app/api/tech-committee-application/config/route";
+import { GET, PUT } from "@/app/api/tech-committee-application/config/route";
 
 function getReq(url: string) {
   return {

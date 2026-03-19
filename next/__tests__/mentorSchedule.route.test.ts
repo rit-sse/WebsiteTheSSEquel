@@ -51,7 +51,10 @@ function req(url: string, method = "GET", body?: unknown) {
 describe("/api/mentorSchedule route", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockGetGatewayAuthLevel.mockResolvedValue({ isMentoringHead: false, isPrimary: false });
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isMentoringHead: false,
+      isPrimary: false,
+    });
   });
 
   it("GET returns schedules list", async () => {
@@ -63,38 +66,60 @@ describe("/api/mentorSchedule route", () => {
   });
 
   it("POST denies unauthorized users", async () => {
-    const res = await POST(req("http://localhost/api/mentorSchedule", "POST", { name: "Spring" }));
+    const res = await POST(
+      req("http://localhost/api/mentorSchedule", "POST", { name: "Spring" })
+    );
     expect(res.status).toBe(403);
   });
 
   it("POST validates schedule name", async () => {
-    mockGetGatewayAuthLevel.mockResolvedValue({ isMentoringHead: true, isPrimary: false });
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isMentoringHead: true,
+      isPrimary: false,
+    });
 
-    const res = await POST(req("http://localhost/api/mentorSchedule", "POST", { name: "" }));
+    const res = await POST(
+      req("http://localhost/api/mentorSchedule", "POST", { name: "" })
+    );
     expect(res.status).toBe(400);
   });
 
   it("POST creates schedule when canonical schedule does not exist", async () => {
-    mockGetGatewayAuthLevel.mockResolvedValue({ isMentoringHead: true, isPrimary: false });
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isMentoringHead: true,
+      isPrimary: false,
+    });
     mockFindFirst.mockResolvedValue(null);
     mockCreate.mockResolvedValue({ id: 5, name: "Fresh", isActive: true });
 
-    const res = await POST(req("http://localhost/api/mentorSchedule", "POST", { name: "Fresh" }));
+    const res = await POST(
+      req("http://localhost/api/mentorSchedule", "POST", { name: "Fresh" })
+    );
     expect(res.status).toBe(201);
     expect(await res.json()).toEqual({ id: 5, name: "Fresh", isActive: true });
   });
 
   it("PUT requires id", async () => {
-    mockGetGatewayAuthLevel.mockResolvedValue({ isMentoringHead: true, isPrimary: false });
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isMentoringHead: true,
+      isPrimary: false,
+    });
 
-    const res = await PUT(req("http://localhost/api/mentorSchedule", "PUT", { name: "Updated" }));
+    const res = await PUT(
+      req("http://localhost/api/mentorSchedule", "PUT", { name: "Updated" })
+    );
     expect(res.status).toBe(400);
   });
 
   it("DELETE requires id", async () => {
-    mockGetGatewayAuthLevel.mockResolvedValue({ isMentoringHead: true, isPrimary: false });
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isMentoringHead: true,
+      isPrimary: false,
+    });
 
-    const res = await DELETE(req("http://localhost/api/mentorSchedule", "DELETE", {}));
+    const res = await DELETE(
+      req("http://localhost/api/mentorSchedule", "DELETE", {})
+    );
     expect(res.status).toBe(400);
   });
 });

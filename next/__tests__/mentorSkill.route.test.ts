@@ -49,7 +49,11 @@ describe("/api/mentorSkill route", () => {
     vi.clearAllMocks();
     mockGetGatewayAuthLevel.mockResolvedValue({ isOfficer: false, userId: 7 });
     mockMentorFindUnique.mockResolvedValue({ user_Id: 7 });
-    mockMentorSkillFindUnique.mockResolvedValue({ id: 1, mentor_Id: 2, skill_Id: 3 });
+    mockMentorSkillFindUnique.mockResolvedValue({
+      id: 1,
+      mentor_Id: 2,
+      skill_Id: 3,
+    });
     mockSkillFindUnique.mockResolvedValue({ id: 3 });
   });
 
@@ -87,7 +91,11 @@ describe("/api/mentorSkill route", () => {
 
   it("POST creates mentor-skill when authorized", async () => {
     mockGetGatewayAuthLevel.mockResolvedValue({ isOfficer: true, userId: 7 });
-    mockMentorSkillCreate.mockResolvedValue({ id: 11, mentor_Id: 1, skill_Id: 2 });
+    mockMentorSkillCreate.mockResolvedValue({
+      id: 11,
+      mentor_Id: 1,
+      skill_Id: 2,
+    });
 
     const req = new Request("http://localhost/api/mentorSkill", {
       method: "POST",

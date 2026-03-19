@@ -1,19 +1,23 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Users, GraduationCap } from "lucide-react"
-import PositionsSection from "../PositionsSection"
-import MentorSection from "../MentorSection"
-import { useDashboardAuth } from "../DashboardAuthProvider"
+import { useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Users, GraduationCap } from "lucide-react";
+import PositionsSection from "../PositionsSection";
+import MentorSection from "../MentorSection";
+import { useDashboardAuth } from "../DashboardAuthProvider";
 
 export default function PositionsPage() {
-  const [activeTab, setActiveTab] = useState("officers")
-  const { isPrimary } = useDashboardAuth()
+  const [activeTab, setActiveTab] = useState("officers");
+  const { isPrimary } = useDashboardAuth();
 
   return (
     <div className="w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="space-y-6"
+      >
         <TabsList className="grid w-full max-w-md grid-cols-2">
           <TabsTrigger value="officers" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
@@ -32,5 +36,5 @@ export default function PositionsPage() {
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }

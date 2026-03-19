@@ -16,4 +16,4 @@ export interface AlumniMember {
 
 export interface Team {
   alumni_member: AlumniMember[];
-}  
+}

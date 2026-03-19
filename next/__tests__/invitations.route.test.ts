@@ -85,7 +85,11 @@ describe("/api/invitations route", () => {
 
   it("POST validates g.rit.edu email domain", async () => {
     mockGetSessionToken.mockReturnValue("token");
-    mockUserFindFirst.mockResolvedValue({ id: 5, email: "officer@g.rit.edu", name: "Officer" });
+    mockUserFindFirst.mockResolvedValue({
+      id: 5,
+      email: "officer@g.rit.edu",
+      name: "Officer",
+    });
     const req = new Request("http://localhost/api/invitations", {
       method: "POST",
       body: JSON.stringify({ email: "x@example.com", type: "user" }),

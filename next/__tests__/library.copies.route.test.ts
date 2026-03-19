@@ -71,7 +71,9 @@ describe("/api/library/copies route", () => {
     mockGetAuth.mockResolvedValue({ isOfficer: true, isMentor: false });
     mockUpdate.mockResolvedValue({ id: 9, checkedOut: true });
 
-    const res = await PUT(req("http://localhost/api/library/copies", { id: 9, checkedOut: true }));
+    const res = await PUT(
+      req("http://localhost/api/library/copies", { id: 9, checkedOut: true })
+    );
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ id: 9, checkedOut: true });
   });

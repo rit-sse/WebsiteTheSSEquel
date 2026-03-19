@@ -223,10 +223,7 @@ const libraryVerifier: AuthVerifier = async (request: NextRequest) => {
     return mentorOrOfficerVerifier(request);
   }
 
-  if (
-    request.method === "POST" &&
-    pathname === "/api/library/copies"
-  ) {
+  if (request.method === "POST" && pathname === "/api/library/copies") {
     return signedInVerifier(request);
   }
 
@@ -294,7 +291,7 @@ const accessDenied = (authType: string, request: NextRequest) => {
   return new NextResponse(
     `Access Denied; need to be ${authType} to access ${request.method} ${pathname}`,
     {
-    status: 403,
+      status: 403,
     }
   );
 };

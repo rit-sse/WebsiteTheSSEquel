@@ -45,27 +45,26 @@ export async function PUT(request: NextRequest) {
       return ApiError.badRequest("Unsupported reviewer action");
     }
 
-    const existingApplication = await prisma.techCommitteeApplication.findUnique({
-      where: { id: applicationId },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
+    const existingApplication =
+      await prisma.techCommitteeApplication.findUnique({
+        where: { id: applicationId },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
           },
         },
-      },
-    });
+      });
 
     if (!existingApplication) {
       return ApiError.notFound("Application");
     }
 
     if (existingApplication.status !== "PENDING") {
-      return ApiError.conflict(
-        `Only pending applications can be ${action}`
-      );
+      return ApiError.conflict(`Only pending applications can be ${action}`);
     }
 
     if (action === "reject") {
@@ -87,7 +86,10 @@ export async function PUT(request: NextRequest) {
           text: rejectionEmail.text,
         });
       } catch (emailError) {
-        console.error("Failed to send Tech Committee rejection email:", emailError);
+        console.error(
+          "Failed to send Tech Committee rejection email:",
+          emailError
+        );
         return new Response(
           JSON.stringify({ error: "Failed to send rejection email" }),
           { status: 502 }

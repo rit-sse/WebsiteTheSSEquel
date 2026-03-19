@@ -152,7 +152,9 @@ export default function OfficerAssignmentCard({
         <UserPlus className="h-4 w-4 text-muted-foreground" />
       </div>
       <div className="flex-1">
-        <span className="text-sm text-muted-foreground italic">No officer assigned</span>
+        <span className="text-sm text-muted-foreground italic">
+          No officer assigned
+        </span>
       </div>
       {!readOnly && (
         <Button

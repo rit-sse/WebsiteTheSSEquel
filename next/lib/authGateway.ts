@@ -17,9 +17,12 @@ const DEFAULT_GATEWAY_AUTH_LEVEL: GatewayAuthLevel = {
   isPrimary: false,
 };
 
-export async function getGatewayAuthLevel(request: Request): Promise<GatewayAuthLevel> {
+export async function getGatewayAuthLevel(
+  request: Request
+): Promise<GatewayAuthLevel> {
   try {
-    const { resolveAuthLevelFromRequest } = await import("@/lib/authLevelResolver");
+    const { resolveAuthLevelFromRequest } =
+      await import("@/lib/authLevelResolver");
     const data = await resolveAuthLevelFromRequest(request);
     return { ...DEFAULT_GATEWAY_AUTH_LEVEL, ...data };
   } catch {

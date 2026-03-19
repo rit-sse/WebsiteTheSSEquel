@@ -69,7 +69,8 @@ export async function getAuthLevel(): Promise<AuthLevel> {
   const membershipCount = user._count.Memberships;
   const managedDivisionOfficer = user.officers.find((o) =>
     TECH_COMMITTEE_DIVISION_MANAGER_TITLES.includes(
-      o.position.title as (typeof TECH_COMMITTEE_DIVISION_MANAGER_TITLES)[number]
+      o.position
+        .title as (typeof TECH_COMMITTEE_DIVISION_MANAGER_TITLES)[number]
     )
   );
   return {
@@ -79,19 +80,25 @@ export async function getAuthLevel(): Promise<AuthLevel> {
     isMember: membershipCount >= 1,
     isMentor: user.mentor.length > 0,
     isOfficer: user.officers.length > 0,
-    isMentoringHead: user.officers.some((o) => o.position.title === MENTOR_HEAD_TITLE),
-    isProjectsHead: user.officers.some((o) => o.position.title === PROJECTS_HEAD_TITLE),
+    isMentoringHead: user.officers.some(
+      (o) => o.position.title === MENTOR_HEAD_TITLE
+    ),
+    isProjectsHead: user.officers.some(
+      (o) => o.position.title === PROJECTS_HEAD_TITLE
+    ),
     isTechCommitteeHead: user.officers.some(
       (o) => o.position.title === TECH_COMMITTEE_HEAD_TITLE
     ),
     isTechCommitteeDivisionManager: user.officers.some((o) =>
       TECH_COMMITTEE_DIVISION_MANAGER_TITLES.includes(
-        o.position.title as (typeof TECH_COMMITTEE_DIVISION_MANAGER_TITLES)[number]
+        o.position
+          .title as (typeof TECH_COMMITTEE_DIVISION_MANAGER_TITLES)[number]
       )
     ),
     techCommitteeManagedDivision: managedDivisionOfficer
       ? TECH_COMMITTEE_DIVISION_MANAGER_BY_TITLE[
-          managedDivisionOfficer.position.title as keyof typeof TECH_COMMITTEE_DIVISION_MANAGER_BY_TITLE
+          managedDivisionOfficer.position
+            .title as keyof typeof TECH_COMMITTEE_DIVISION_MANAGER_BY_TITLE
         ]
       : null,
     isPrimary: user.officers.some((o) => o.position.is_primary),

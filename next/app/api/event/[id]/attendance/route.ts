@@ -1,6 +1,6 @@
 import prisma from "@/lib/prisma";
-import {NextRequest, NextResponse} from "next/server";
-import {getGatewayAuthLevel} from "@/lib/authGateway";
+import { NextRequest, NextResponse } from "next/server";
+import { getGatewayAuthLevel } from "@/lib/authGateway";
 import { getSessionToken } from "@/lib/sessionToken";
 
 type TxClient = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
  */
 async function getUserFromSession(request: NextRequest) {
   const authToken = getSessionToken(request);
-  
+
   if (!authToken) {
     return null;
   }
@@ -31,8 +31,8 @@ async function getUserFromSession(request: NextRequest) {
       name: true,
       email: true,
       officers: {
-        where: {is_active: true},
-        select: {id: true},
+        where: { is_active: true },
+        select: { id: true },
       },
     },
   });
@@ -51,7 +51,9 @@ function isEventEnded(eventDate: Date) {
 }
 
 function getCheckinOpensAt(eventDate: Date) {
-  return new Date(new Date(eventDate).getTime() - EARLY_CHECKIN_WINDOW_MINUTES * 60 * 1000);
+  return new Date(
+    new Date(eventDate).getTime() - EARLY_CHECKIN_WINDOW_MINUTES * 60 * 1000
+  );
 }
 
 function isCheckinOpen(eventDate: Date) {
@@ -77,7 +79,9 @@ async function reconcileEndedEventMemberships(
 
   const marker = buildEventMembershipMarker(event.id);
   const reason = buildEventMembershipReason(event.title, event.id);
-  const uniqueUserIds = [...new Set(attendances.map((attendance) => attendance.userId))];
+  const uniqueUserIds = [
+    ...new Set(attendances.map((attendance) => attendance.userId)),
+  ];
 
   for (const userId of uniqueUserIds) {
     const existingMembership = await db.memberships.findFirst({
@@ -127,10 +131,7 @@ export async function GET(
     });
 
     if (!event) {
-      return NextResponse.json(
-        { error: "Event not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Event not found" }, { status: 404 });
     }
 
     const attendances = await prisma.$transaction(async (tx: TxClient) => {
@@ -158,13 +159,19 @@ export async function GET(
       eventTitle: event.title,
       attendanceEnabled: event.attendanceEnabled,
       eventHasEnded: isEventEnded(event.date),
-      attendees: attendances.map((a: { id: any; user: { id: any; name: any; email: any; }; createdAt: any; }) => ({
-        id: a.id,
-        userId: a.user.id,
-        name: a.user.name,
-        email: a.user.email,
-        attendedAt: a.createdAt,
-      })),
+      attendees: attendances.map(
+        (a: {
+          id: any;
+          user: { id: any; name: any; email: any };
+          createdAt: any;
+        }) => ({
+          id: a.id,
+          userId: a.user.id,
+          name: a.user.name,
+          email: a.user.email,
+          attendedAt: a.createdAt,
+        })
+      ),
       count: attendances.length,
     });
   } catch (error) {
@@ -218,7 +225,9 @@ async function updatePurchaseRequestAttendance(
 ) {
   for (const pr of purchaseRequests) {
     try {
-      const existingData = pr.attendanceData ? JSON.parse(pr.attendanceData) : [];
+      const existingData = pr.attendanceData
+        ? JSON.parse(pr.attendanceData)
+        : [];
 
       const alreadyPresent = existingData.some(
         (attendee: { email: string }) => attendee.email === user.email
@@ -236,7 +245,10 @@ async function updatePurchaseRequestAttendance(
         data: { attendanceData: JSON.stringify(existingData) },
       });
     } catch (err) {
-      console.error(`Failed to update purchase request ${pr.id} attendance data:`, err);
+      console.error(
+        `Failed to update purchase request ${pr.id} attendance data:`,
+        err
+      );
     }
   }
 }
@@ -275,10 +287,7 @@ export async function POST(
     });
 
     if (!event) {
-      return NextResponse.json(
-        { error: "Event not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Event not found" }, { status: 404 });
     }
 
     if (!event.attendanceEnabled) {
@@ -305,11 +314,17 @@ export async function POST(
 
     if (existingAttendance) {
       let membershipGranted = false;
-      const membershipPending = event.grantsMembership && !isEventEnded(event.date);
+      const membershipPending =
+        event.grantsMembership && !isEventEnded(event.date);
       if (event.grantsMembership && isEventEnded(event.date)) {
         try {
           await prisma.$transaction(async (tx: TxClient) => {
-            const result = await ensureMembership(tx, user.id, eventId, event.title);
+            const result = await ensureMembership(
+              tx,
+              user.id,
+              eventId,
+              event.title
+            );
             membershipGranted = result.granted;
             await reconcileEndedEventMemberships(tx, event);
           });
@@ -331,14 +346,20 @@ export async function POST(
     }
 
     let membershipGranted = false;
-    const membershipPending = event.grantsMembership && !isEventEnded(event.date);
+    const membershipPending =
+      event.grantsMembership && !isEventEnded(event.date);
     const attendance = await prisma.$transaction(async (tx: TxClient) => {
       const record = await tx.eventAttendance.create({
         data: { eventId, userId: user.id },
       });
 
       if (event.grantsMembership && isEventEnded(event.date)) {
-        const result = await ensureMembership(tx, user.id, eventId, event.title);
+        const result = await ensureMembership(
+          tx,
+          user.id,
+          eventId,
+          event.title
+        );
         membershipGranted = result.granted;
         await reconcileEndedEventMemberships(tx, event);
       }
@@ -348,22 +369,28 @@ export async function POST(
 
     // Purchase-request updates are best-effort and non-blocking.
     updatePurchaseRequestAttendance(event.purchaseRequests, user).catch((err) =>
-      console.error("Background purchase-request attendance update failed:", err)
+      console.error(
+        "Background purchase-request attendance update failed:",
+        err
+      )
     );
 
-    return NextResponse.json({
-      success: true,
-      message: "Attendance marked successfully",
-      attendance: {
-        id: attendance.id,
-        eventId: attendance.eventId,
-        userId: attendance.userId,
-        createdAt: attendance.createdAt,
+    return NextResponse.json(
+      {
+        success: true,
+        message: "Attendance marked successfully",
+        attendance: {
+          id: attendance.id,
+          eventId: attendance.eventId,
+          userId: attendance.userId,
+          createdAt: attendance.createdAt,
+        },
+        membershipGranted,
+        membershipPending,
+        eventGrantsMembership: event.grantsMembership,
       },
-      membershipGranted,
-      membershipPending,
-      eventGrantsMembership: event.grantsMembership,
-    }, { status: 201 });
+      { status: 201 }
+    );
   } catch (error) {
     console.error("Error marking attendance:", error);
     return NextResponse.json(

@@ -26,17 +26,25 @@ function startsWithSignature(bytes: Uint8Array, signature: number[]) {
 }
 
 export function detectImageMimeType(bytes: Uint8Array): string | null {
-  if (bytes.length >= JPEG_SIGNATURE.length && startsWithSignature(bytes, JPEG_SIGNATURE)) {
+  if (
+    bytes.length >= JPEG_SIGNATURE.length &&
+    startsWithSignature(bytes, JPEG_SIGNATURE)
+  ) {
     return "image/jpeg";
   }
 
-  if (bytes.length >= PNG_SIGNATURE.length && startsWithSignature(bytes, PNG_SIGNATURE)) {
+  if (
+    bytes.length >= PNG_SIGNATURE.length &&
+    startsWithSignature(bytes, PNG_SIGNATURE)
+  ) {
     return "image/png";
   }
 
   if (
-    (bytes.length >= GIF87A_SIGNATURE.length && startsWithSignature(bytes, GIF87A_SIGNATURE)) ||
-    (bytes.length >= GIF89A_SIGNATURE.length && startsWithSignature(bytes, GIF89A_SIGNATURE))
+    (bytes.length >= GIF87A_SIGNATURE.length &&
+      startsWithSignature(bytes, GIF87A_SIGNATURE)) ||
+    (bytes.length >= GIF89A_SIGNATURE.length &&
+      startsWithSignature(bytes, GIF89A_SIGNATURE))
   ) {
     return "image/gif";
   }
@@ -54,7 +62,11 @@ export function detectImageMimeType(bytes: Uint8Array): string | null {
     .trimStart()
     .toLowerCase();
 
-  if (prefix.startsWith("<svg") || prefix.startsWith("<?xml") || prefix.includes("<svg")) {
+  if (
+    prefix.startsWith("<svg") ||
+    prefix.startsWith("<?xml") ||
+    prefix.includes("<svg")
+  ) {
     return "image/svg+xml";
   }
 

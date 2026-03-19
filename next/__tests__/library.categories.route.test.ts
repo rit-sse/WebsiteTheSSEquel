@@ -66,14 +66,20 @@ describe("/api/library/categories route", () => {
   });
 
   it("POST denies unauthorized users", async () => {
-    const res = await POST(req("http://localhost/api/library/categories", { categoryName: "Core" }));
+    const res = await POST(
+      req("http://localhost/api/library/categories", { categoryName: "Core" })
+    );
     expect(res.status).toBe(401);
   });
 
   it("PUT updates category with mapped textbook ids", async () => {
     mockGetAuth.mockResolvedValue({ isOfficer: true, isMentor: false });
     mockTextbooksFindMany.mockResolvedValue([{ id: 4, ISBN: "123" }]);
-    mockCategoryUpdate.mockResolvedValue({ id: 2, categoryName: "Core", books: [4] });
+    mockCategoryUpdate.mockResolvedValue({
+      id: 2,
+      categoryName: "Core",
+      books: [4],
+    });
 
     const res = await PUT(
       req("http://localhost/api/library/categories", {
@@ -84,11 +90,17 @@ describe("/api/library/categories route", () => {
     );
 
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ id: 2, categoryName: "Core", books: [4] });
+    expect(await res.json()).toEqual({
+      id: 2,
+      categoryName: "Core",
+      books: [4],
+    });
   });
 
   it("DELETE denies unauthorized users", async () => {
-    const res = await DELETE(req("http://localhost/api/library/categories", { id: 1 }));
+    const res = await DELETE(
+      req("http://localhost/api/library/categories", { id: 1 })
+    );
     expect(res.status).toBe(401);
   });
 });
