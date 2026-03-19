@@ -2,13 +2,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const {
   mockResolveAuthLevelFromRequest,
-  mockPutObject,
+  mockGetSignedUploadUrl,
   mockTextbooksFindUnique,
   mockTextbooksUpdate,
   mockNormalizeToS3Key,
 } = vi.hoisted(() => ({
   mockResolveAuthLevelFromRequest: vi.fn(),
-  mockPutObject: vi.fn(),
+  mockGetSignedUploadUrl: vi.fn(),
   mockTextbooksFindUnique: vi.fn(),
   mockTextbooksUpdate: vi.fn(),
   mockNormalizeToS3Key: vi.fn(),
@@ -20,7 +20,7 @@ vi.mock("@/lib/authLevelResolver", () => ({
 
 vi.mock("@/lib/services/s3Service", () => ({
   s3Service: {
-    putObject: mockPutObject,
+    getSignedUploadUrl: mockGetSignedUploadUrl,
     deleteObject: vi.fn(),
   },
 }));
@@ -40,13 +40,9 @@ vi.mock("@/lib/s3Utils", () => ({
 
 import { POST } from "@/app/api/aws/libraryBooks/route";
 
-function makeUploadRequest(file: File | null, isbn = "9781556159008") {
-  const formData = new FormData();
-  if (file) formData.append("file", file);
-  formData.append("isbn", isbn);
-
+function makeRequest(body: unknown) {
   return {
-    formData: vi.fn().mockResolvedValue(formData),
+    json: vi.fn().mockResolvedValue(body),
   } as any;
 }
 
@@ -57,7 +53,7 @@ describe("/api/aws/libraryBooks route", () => {
       isOfficer: false,
       isMentor: true,
     });
-    mockPutObject.mockResolvedValue(undefined);
+    mockGetSignedUploadUrl.mockResolvedValue("https://signed-upload.example");
     mockTextbooksFindUnique.mockResolvedValue({ imageKey: null });
     mockTextbooksUpdate.mockResolvedValue({});
     mockNormalizeToS3Key.mockReturnValue(null);
@@ -69,47 +65,37 @@ describe("/api/aws/libraryBooks route", () => {
       isMentor: false,
     });
 
-    const res = await POST(makeUploadRequest(null));
+    const res = await POST(makeRequest({}));
     expect(res.status).toBe(401);
   });
 
-  it("POST rejects non-image bytes even when declared as an image", async () => {
-    const req = makeUploadRequest(
-      new File([Buffer.from("not an image")], "cover.jpg", {
-        type: "image/jpeg",
+  it("POST validates required fields", async () => {
+    const res = await POST(makeRequest({ filename: "cover.jpg", isbn: "123" }));
+    expect(res.status).toBe(400);
+  });
+
+  it("POST returns a presigned upload URL and key", async () => {
+    const res = await POST(
+      makeRequest({
+        filename: "rapid.jpg",
+        contentType: "image/jpeg",
+        isbn: "9781556159008",
       })
     );
 
-    const res = await POST(req);
-    expect(res.status).toBe(415);
-  });
-
-  it("POST uploads a valid PNG and returns an S3 key", async () => {
-    const req = makeUploadRequest(
-      new File(
-        [
-          Uint8Array.from([
-            0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00,
-          ]),
-        ],
-        "rapid.png",
-        { type: "image/png" }
-      )
-    );
-
-    const res = await POST(req);
-    expect(res.status).toBe(201);
-    expect(mockPutObject).toHaveBeenCalledWith(
+    expect(res.status).toBe(200);
+    expect(mockGetSignedUploadUrl).toHaveBeenCalledWith(
       expect.stringMatching(
-        /^uploads\/library-books\/9781556159008\/\d+-rapid-[a-f0-9-]+\.png$/
+        /^uploads\/library-books\/9781556159008\/\d+-rapid\.jpg$/
       ),
-      expect.any(Uint8Array),
-      "image/png"
+      "image/jpeg",
+      300
     );
 
     const body = await res.json();
+    expect(body.uploadUrl).toBe("https://signed-upload.example");
     expect(body.key).toMatch(
-      /^uploads\/library-books\/9781556159008\/\d+-rapid-[a-f0-9-]+\.png$/
+      /^uploads\/library-books\/9781556159008\/\d+-rapid\.jpg$/
     );
   });
 });

@@ -60,9 +60,17 @@ function maybeSweepBuckets(now: number) {
 
 const RATE_LIMIT_RULES: RateLimitRule[] = [
   {
+    id: "auth-session",
+    limit: 60,
+    windowMs: 60_000,
+    method: "GET",
+    pathname: /^\/api\/auth\/session$/,
+  },
+  {
     id: "auth",
     limit: 10,
     windowMs: 60_000,
+    method: "POST",
     pathname: /^\/api\/auth(?:\/|$)/,
   },
   {

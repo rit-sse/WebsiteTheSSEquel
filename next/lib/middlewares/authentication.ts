@@ -228,6 +228,21 @@ const techCommitteeApplicationVerifier: AuthVerifier = async (
 };
 
 /**
+ * Auth verifier for headcount submission routes:
+ * - GET remains officer-only for dashboards/reporting
+ * - POST is public so anyone staffing the lab can submit the form
+ */
+const headcountSubmissionVerifier: AuthVerifier = async (
+  request: NextRequest
+) => {
+  if (request.method === "POST") {
+    return { isAllowed: true, authType: "None" };
+  }
+
+  return officerVerifier(request);
+};
+
+/**
  * Auth verifier for library routes:
  * - public GETs for catalog/search/statistics/category and book lookup routes
  * - copy creation requires any signed-in user
@@ -286,12 +301,12 @@ const ROUTES: { [key: string]: AuthVerifier } = {
   invitations: officerVerifier,
   library: libraryVerifier,
   memberships: nonGetOfficerVerifier,
-  "mentee-headcount": officerVerifier,
+  "mentee-headcount": headcountSubmissionVerifier,
   mentor: nonGetOfficerVerifier,
   "mentor-application": mentorApplicationVerifier,
   "mentor-availability": nonGetMentorVerifier,
   "mentor-semester": nonGetOfficerVerifier,
-  "mentoring-headcount": officerVerifier,
+  "mentoring-headcount": headcountSubmissionVerifier,
   mentorSchedule: nonGetMentorVerifier,
   mentorSkill: nonGetMentorVerifier,
   officer: nonGetPrimaryOfficerVerifier,

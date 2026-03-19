@@ -2,17 +2,10 @@ import { resolveAuthLevelFromRequest } from "@/lib/authLevelResolver";
 import prisma from "@/lib/prisma";
 import { normalizeToS3Key } from "@/lib/s3Utils";
 import { s3Service } from "@/lib/services/s3Service";
-import {
-  ALLOWED_IMAGE_MIME_TYPES,
-  detectImageMimeType,
-  IMAGE_EXTENSIONS_BY_MIME,
-  MAX_PROFILE_IMAGE_SIZE_BYTES,
-} from "@/lib/uploadValidation";
-import { randomUUID } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 
 /**
- * POST - Upload a library book cover image to S3 and return its key.
+ * POST - Generate a presigned upload URL for a library book cover image.
  * Requires mentor or officer auth.
  */
 export async function POST(req: NextRequest) {
@@ -24,58 +17,29 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    let formData;
+    let body;
     try {
-      formData = await req.formData();
+      body = await req.json();
     } catch {
       return NextResponse.json(
-        { error: "Invalid upload payload" },
+        { error: "Invalid JSON payload" },
         { status: 400 }
       );
     }
 
-    const file = formData.get("file");
-    const isbn = String(formData.get("isbn") ?? "").trim();
+    const { filename, contentType, isbn } = body;
 
-    if (!(file instanceof File)) {
-      return NextResponse.json({ error: "file is required" }, { status: 400 });
-    }
-
-    if (!isbn) {
+    if (!filename || !contentType || !isbn) {
       return NextResponse.json(
-        { error: "isbn is required" },
+        { error: "filename, contentType, and isbn are required" },
         { status: 400 }
       );
     }
 
-    if (file.size > MAX_PROFILE_IMAGE_SIZE_BYTES) {
+    if (!contentType.startsWith("image/")) {
       return NextResponse.json(
-        { error: "Book cover images must be 5MB or smaller" },
-        { status: 413 }
-      );
-    }
-
-    const bytes = new Uint8Array(await file.arrayBuffer());
-    const detectedMimeType = detectImageMimeType(bytes);
-
-    if (file.type === "image/svg+xml" || detectedMimeType === "image/svg+xml") {
-      return NextResponse.json(
-        { error: "SVG uploads are not allowed" },
-        { status: 415 }
-      );
-    }
-
-    if (!detectedMimeType || !ALLOWED_IMAGE_MIME_TYPES.has(detectedMimeType)) {
-      return NextResponse.json(
-        { error: "Only JPEG, PNG, WEBP, and GIF images are allowed" },
-        { status: 415 }
-      );
-    }
-
-    if (!file.type || file.type !== detectedMimeType) {
-      return NextResponse.json(
-        { error: "Uploaded file type does not match file contents" },
-        { status: 415 }
+        { error: "Only image files are allowed" },
+        { status: 400 }
       );
     }
 
@@ -86,23 +50,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const extension = IMAGE_EXTENSIONS_BY_MIME[detectedMimeType];
-    const baseName = (file.name.replace(/\.[^.]+$/, "") || "cover").replace(
-      /[^a-zA-Z0-9.-]/g,
-      "_"
-    );
-    const key = `uploads/library-books/${isbn}/${Date.now()}-${baseName}-${randomUUID()}.${extension}`;
+    const timestamp = Date.now();
+    const sanitizedFilename = filename.replace(/[^a-zA-Z0-9.-]/g, "_");
+    const key = `uploads/library-books/${isbn}/${timestamp}-${sanitizedFilename}`;
 
-    await s3Service.putObject(key, bytes, detectedMimeType);
+    const uploadUrl = await s3Service.getSignedUploadUrl(key, contentType, 300);
 
-    return NextResponse.json(
-      { key, message: "Library book cover uploaded successfully" },
-      { status: 201 }
-    );
+    return NextResponse.json({ uploadUrl, key });
   } catch (error: any) {
-    console.error("Error uploading library book cover:", error);
+    console.error("Error generating library book upload URL:", error);
     return NextResponse.json(
-      { error: "Failed to upload library book cover", details: error.message },
+      { error: "Failed to generate upload URL", details: error.message },
       { status: 500 }
     );
   }

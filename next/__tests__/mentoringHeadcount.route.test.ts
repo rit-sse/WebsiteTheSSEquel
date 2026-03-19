@@ -1,20 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const {
-  mockGetGatewayAuthLevel,
-  mockHeadcountFindMany,
-  mockHeadcountCreate,
-  mockSemesterFindFirst,
-} = vi.hoisted(() => ({
-  mockGetGatewayAuthLevel: vi.fn(),
-  mockHeadcountFindMany: vi.fn(),
-  mockHeadcountCreate: vi.fn(),
-  mockSemesterFindFirst: vi.fn(),
-}));
-
-vi.mock("@/lib/authGateway", () => ({
-  getGatewayAuthLevel: mockGetGatewayAuthLevel,
-}));
+const { mockHeadcountFindMany, mockHeadcountCreate, mockSemesterFindFirst } =
+  vi.hoisted(() => ({
+    mockHeadcountFindMany: vi.fn(),
+    mockHeadcountCreate: vi.fn(),
+    mockSemesterFindFirst: vi.fn(),
+  }));
 
 vi.mock("@/lib/prisma", () => ({
   default: {
@@ -41,10 +32,6 @@ function req(url: string, method = "GET", body?: unknown) {
 describe("/api/mentoring-headcount route", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockGetGatewayAuthLevel.mockResolvedValue({
-      isMentor: true,
-      isOfficer: false,
-    });
   });
 
   it("GET traffic mode aggregates weekday hour buckets", async () => {
@@ -79,23 +66,6 @@ describe("/api/mentoring-headcount route", () => {
     );
 
     expect(res.status).toBe(400);
-  });
-
-  it("POST denies unauthorized users", async () => {
-    mockGetGatewayAuthLevel.mockResolvedValue({
-      isMentor: false,
-      isOfficer: false,
-    });
-
-    const res = await POST(
-      req("http://localhost/api/mentoring-headcount", "POST", {
-        mentorIds: [1],
-        peopleInLab: 5,
-        feeling: "busy",
-      })
-    );
-
-    expect(res.status).toBe(401);
   });
 
   it("POST creates entry using active semester fallback", async () => {
