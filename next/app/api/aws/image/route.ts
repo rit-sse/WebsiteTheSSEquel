@@ -45,13 +45,14 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    const body = response.Body;
     const stream =
-      typeof response.Body.transformToWebStream === "function"
-        ? response.Body.transformToWebStream()
-        : typeof response.Body.transformToByteArray === "function"
+      typeof body.transformToWebStream === "function"
+        ? body.transformToWebStream()
+        : typeof body.transformToByteArray === "function"
           ? new ReadableStream({
               async start(controller) {
-                controller.enqueue(await response.Body.transformToByteArray());
+                controller.enqueue(await body.transformToByteArray());
                 controller.close();
               },
             })
