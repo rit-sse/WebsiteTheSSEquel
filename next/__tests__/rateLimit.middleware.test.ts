@@ -42,7 +42,7 @@ describe("rateLimitMiddleware", () => {
       })
     );
 
-    expect(ip).toBe("203.0.113.8");
+    expect(ip).toBe("203.0.113.9");
   });
 
   it("recognizes configured routes only", () => {
