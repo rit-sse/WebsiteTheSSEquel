@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 
-export const MakeNewQuote = () => {
+const MakeNewQuote = () => {
   const [open, setOpen] = useState(false);
   const [quotes, setQuotes] = useState([{ quote: "", author: "" }]);
   const [userId, setUserID] = useState(0);

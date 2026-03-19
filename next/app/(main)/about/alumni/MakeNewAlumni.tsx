@@ -14,9 +14,7 @@ interface CreateAlumniProps {
   fetchData: () => Promise<void>;
 }
 
-export const CreateAlumniButton: React.FC<CreateAlumniProps> = ({
-  fetchData,
-}) => {
+const CreateAlumniButton: React.FC<CreateAlumniProps> = ({ fetchData }) => {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [quote, setQuote] = useState("");

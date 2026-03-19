@@ -10,7 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 
-export const GoLinkButton: React.FC<CreateGoLinkProps> = ({ fetchData }) => {
+const GoLinkButton: React.FC<CreateGoLinkProps> = ({ fetchData }) => {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [url, setUrl] = useState("");

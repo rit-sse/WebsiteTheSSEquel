@@ -12,7 +12,7 @@ interface DeleteAlumniProps {
   closeModal: () => void; // closeModal - Function to close the form's modal
 }
 
-export const DeleteAlumniButton: React.FC<DeleteAlumniProps> = ({
+const DeleteAlumniButton: React.FC<DeleteAlumniProps> = ({
   alumniMember,
   fetchData,
   closeModal,

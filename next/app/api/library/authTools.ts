@@ -1,6 +1,6 @@
 import { AuthLevel } from "@/lib/authLevel";
 import { resolveAuthLevelFromRequest } from "@/lib/authLevelResolver";
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 import { NextRequest } from "next/server";
 
 export const dynamic = "force-dynamic";
