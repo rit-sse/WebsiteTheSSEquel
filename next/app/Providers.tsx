@@ -10,11 +10,13 @@ import { ProfileImageProvider } from "@/contexts/ProfileImageContext";
 interface ProvidersProps {
   children: React.ReactNode;
   session: Session | null;
+  nonce?: string;
 }
 
 export function Providers({
   children,
   session,
+  nonce,
 }: ProvidersProps): React.JSX.Element {
   return (
     <SessionProvider session={session}>
@@ -26,6 +28,7 @@ export function Providers({
               defaultTheme="dark"
               enableSystem={false}
               disableTransitionOnChange
+              nonce={nonce}
             >
               {children}
             </ThemeProvider>

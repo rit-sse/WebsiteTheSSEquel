@@ -25,7 +25,7 @@ export const EventCard: React.FC<Event> = (event: Event) => {
             />
           ) : (
             <Image
-              src="/icon.png"
+              src="/icon"
               alt="SSE Logo"
               fill
               className="object-cover"
