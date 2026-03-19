@@ -2,7 +2,7 @@ name: Discord CI Failures
 
 on:
   workflow_run:
-    workflows: ["Lint", "Test", "Typecheck", "Docker CI"]
+    workflows: ["Lint", "Test", "Typecheck", "Knip", "Docker CI"]
     types: [completed]
 
 permissions:
@@ -23,7 +23,7 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const expectedWorkflows = new Set(["Lint", "Test", "Typecheck", "Docker CI"]);
+            const expectedWorkflows = new Set(["Lint", "Test", "Typecheck", "Knip", "Docker CI"]);
             const owner = context.repo.owner;
             const repo = context.repo.repo;
             const headSha = context.payload.workflow_run.head_sha;
@@ -84,15 +84,35 @@ jobs:
           FAILED_WORKFLOWS: ${{ steps.evaluate.outputs.failed_workflows }}
           SUMMARY_URL: ${{ steps.evaluate.outputs.summary_url }}
         run: |
-          content=$(printf 'CI failed for `%s` on `%s`.\nEvent: `%s`\nActor: `%s`\nFailed workflows:\n%s\nActions: %s' \
-            "$REPOSITORY" \
-            "$BRANCH" \
-            "$EVENT_NAME" \
-            "$ACTOR" \
-            "$FAILED_WORKFLOWS" \
-            "$SUMMARY_URL")
+          payload=$(python3 - <<'PY'
+          import json
+          import os
 
-          payload=$(printf '{"content":"%s"}' "$(printf '%s' "$content" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read())[1:-1])')")
+          repository = os.environ["REPOSITORY"]
+          branch = os.environ["BRANCH"]
+          event_name = os.environ["EVENT_NAME"]
+          actor = os.environ["ACTOR"]
+          failed_workflows = os.environ["FAILED_WORKFLOWS"]
+          summary_url = os.environ["SUMMARY_URL"]
+
+          print(json.dumps({
+              "embeds": [
+                  {
+                      "title": "CI Failure",
+                      "color": 15158332,
+                      "fields": [
+                          {"name": "Repository", "value": repository, "inline": True},
+                          {"name": "Branch", "value": branch, "inline": True},
+                          {"name": "Event", "value": event_name, "inline": True},
+                          {"name": "Actor", "value": actor, "inline": True},
+                          {"name": "Failed Workflows", "value": failed_workflows or "None", "inline": False},
+                          {"name": "Actions", "value": summary_url, "inline": False},
+                      ],
+                  }
+              ]
+          }))
+          PY
+          )
 
           curl -fsSL -H "Content-Type: application/json" \
             -d "$payload" \
