@@ -1,0 +1,31 @@
+{
+  "$schema": "https://unpkg.com/knip@latest/schema.json",
+  "entry": [
+    "scripts/**/*.ts",
+    "scripts/**/*.mjs",
+    "scripts/**/*.cjs",
+    "app/**/*.{ts,tsx}",
+    "components/**/*.{ts,tsx}",
+    "lib/**/*.{ts,tsx,js}",
+    "hooks/**/*.{ts,tsx}",
+    "contexts/**/*.{ts,tsx}"
+  ],
+  "project": [
+    "app/**/*.{ts,tsx}",
+    "components/**/*.{ts,tsx}",
+    "lib/**/*.{ts,tsx,js}",
+    "hooks/**/*.{ts,tsx}",
+    "contexts/**/*.{ts,tsx}",
+    "types/**/*.ts",
+    "scripts/**/*.{ts,mjs,cjs}",
+    "__tests__/**/*.ts"
+  ],
+  "next": true,
+  "vitest": true,
+  "eslint": true,
+  "husky": true,
+  "includeEntryExports": false,
+  "ignoreIssues": {
+    "app/api/**/*.ts": ["exports"]
+  }
+}
