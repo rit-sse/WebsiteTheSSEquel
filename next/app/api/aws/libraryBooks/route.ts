@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
 
     const timestamp = Date.now();
     const sanitizedFilename = filename.replace(/[^a-zA-Z0-9.-]/g, "_");
-    const key = `uploads/library-books/${isbn}/${timestamp}-${sanitizedFilename}`;
+    const key = `assets/library/${isbn}/${timestamp}-${sanitizedFilename}`;
 
     const uploadUrl = await s3Service.getSignedUploadUrl(key, contentType, 300);
 
