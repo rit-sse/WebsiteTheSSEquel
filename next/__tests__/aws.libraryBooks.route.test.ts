@@ -38,7 +38,7 @@ vi.mock("@/lib/s3Utils", () => ({
   normalizeToS3Key: mockNormalizeToS3Key,
 }));
 
-import { POST } from "@/app/api/aws/libraryBooks/route";
+import { POST, PUT } from "@/app/api/aws/libraryBooks/route";
 
 function makeRequest(body: unknown) {
   return {
@@ -85,9 +85,7 @@ describe("/api/aws/libraryBooks route", () => {
 
     expect(res.status).toBe(200);
     expect(mockGetSignedUploadUrl).toHaveBeenCalledWith(
-      expect.stringMatching(
-        /^uploads\/library-books\/9781556159008\/\d+-rapid\.jpg$/
-      ),
+      expect.stringMatching(/^assets\/library\/9781556159008\/\d+-rapid\.jpg$/),
       "image/jpeg",
       300
     );
@@ -95,7 +93,33 @@ describe("/api/aws/libraryBooks route", () => {
     const body = await res.json();
     expect(body.uploadUrl).toBe("https://signed-upload.example");
     expect(body.key).toMatch(
-      /^uploads\/library-books\/9781556159008\/\d+-rapid\.jpg$/
+      /^assets\/library\/9781556159008\/\d+-rapid\.jpg$/
     );
+  });
+
+  it("PUT accepts current library asset keys", async () => {
+    const res = await PUT(
+      makeRequest({
+        key: "assets/library/9781556159008/1234-rapid.jpg",
+        isbn: "9781556159008",
+      })
+    );
+
+    expect(res.status).toBe(200);
+    expect(mockTextbooksUpdate).toHaveBeenCalledWith({
+      where: { ISBN: "9781556159008" },
+      data: { imageKey: "assets/library/9781556159008/1234-rapid.jpg" },
+    });
+  });
+
+  it("PUT still accepts legacy uploads keys", async () => {
+    const res = await PUT(
+      makeRequest({
+        key: "uploads/library-books/9781556159008/1234-rapid.jpg",
+        isbn: "9781556159008",
+      })
+    );
+
+    expect(res.status).toBe(200);
   });
 });
