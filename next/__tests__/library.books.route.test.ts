@@ -45,10 +45,11 @@ describe("/api/library/books route", () => {
     expect(res.status).toBe(404);
   });
 
-  it("GET all returns 404 when no books exist", async () => {
+  it("GET all returns an empty array when no books exist", async () => {
     mockTextbooksFindMany.mockResolvedValue([]);
 
     const res = await GET(req("http://localhost/api/library/books"));
-    expect(res.status).toBe(404);
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual([]);
   });
 });

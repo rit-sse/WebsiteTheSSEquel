@@ -4,10 +4,12 @@ import { getS3Client, getBucketName } from "@/lib/S3Client";
 
 export const dynamic = "force-dynamic";
 
+const ALLOWED_KEY_PREFIXES = ["uploads/", "assets/library/"] as const;
+
 /**
  * Image proxy for S3 uploads (profile pictures, library book covers, etc.).
  *
- * Security:  Only keys under the `uploads/` prefix are allowed.
+ * Security:  Only keys under approved upload prefixes are allowed.
  *            The raw S3 bucket URL is never exposed to the client.
  *
  * Caching:   5 min browser cache + 10 min stale-while-revalidate.
@@ -23,8 +25,8 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  // Only allow keys under the uploads/ prefix to prevent arbitrary S3 reads
-  if (!key.startsWith("uploads/")) {
+  // Only allow keys under known upload prefixes to prevent arbitrary S3 reads.
+  if (!ALLOWED_KEY_PREFIXES.some((prefix) => key.startsWith(prefix))) {
     return NextResponse.json({ error: "Invalid key" }, { status: 403 });
   }
 

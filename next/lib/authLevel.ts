@@ -11,5 +11,6 @@ export type AuthLevel = {
   isTechCommitteeDivisionManager: boolean;
   techCommitteeManagedDivision: string | null;
   isPrimary: boolean;
+  isPresident: boolean;
   profileComplete?: boolean;
 };

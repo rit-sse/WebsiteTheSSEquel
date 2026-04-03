@@ -27,6 +27,15 @@ enum AlumniCandidateStatus {
   rejected
 }
 
+enum ConstitutionProposalStatus {
+  DRAFT
+  PRIMARY_REVIEW
+  SCHEDULED
+  APPLIED
+  WITHDRAWN
+  STALE
+}
+
 model User {
   //Store an automatically generated unique int for id
   id Int @id @default(autoincrement())
@@ -73,6 +82,8 @@ model User {
   alumni                    Alumni?
   alumniCandidates          AlumniCandidate[]          @relation("AlumniCandidateOwner")
   reviewedAlumniCandidates  AlumniCandidate[]          @relation("AlumniCandidateReviewer")
+  authoredConstitutionProposals ConstitutionProposal[] @relation("ConstitutionProposalAuthor")
+  constitutionVotes            ConstitutionProposalVote[] @relation("ConstitutionProposalVoter")
 }
 
 model Alumni {
@@ -262,6 +273,7 @@ model Officer {
   //Relational fields
   user     User            @relation(fields: [user_id], references: [id])
   position OfficerPosition @relation(fields: [position_id], references: [id])
+  constitutionProposalApprovals ConstitutionProposalPrimaryApproval[]
 }
 
 model Mentor {
@@ -831,6 +843,62 @@ model Memberships {
 
   // Relational Fields
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ConstitutionProposal {
+  id                     Int                        @id @default(autoincrement())
+  title                  String                     @db.VarChar(200)
+  summary                String                     @db.VarChar(1000)
+  rationale              String                     @db.Text
+  status                 ConstitutionProposalStatus @default(DRAFT)
+  authorId               Int
+  baseRepoOwner          String                     @db.VarChar(100)
+  baseRepoName           String                     @db.VarChar(100)
+  baseBranch             String                     @db.VarChar(100)
+  basePath               String                     @db.VarChar(255)
+  baseDocumentSha        String                     @db.VarChar(100)
+  baseMarkdown           String                     @db.Text
+  sectionHeadingPath     String                     @db.VarChar(500)
+  proposedSectionMarkdown String                    @db.Text
+  fullProposedMarkdown   String                     @db.Text
+  unifiedDiff            String                     @db.Text
+  electionStartsAt       DateTime?
+  electionEndsAt         DateTime?
+  submittedAt            DateTime?
+  appliedAt              DateTime?
+  appliedCommitSha       String?                    @db.VarChar(100)
+  createdAt              DateTime                   @default(now())
+  updatedAt              DateTime                   @updatedAt
+
+  author           User                                  @relation("ConstitutionProposalAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  primaryApprovals ConstitutionProposalPrimaryApproval[]
+  votes            ConstitutionProposalVote[]
+}
+
+model ConstitutionProposalPrimaryApproval {
+  id         Int      @id @default(autoincrement())
+  proposalId Int
+  approverOfficerId Int
+  createdAt  DateTime @default(now())
+
+  proposal ConstitutionProposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  approverOfficer Officer       @relation(fields: [approverOfficerId], references: [id], onDelete: Cascade)
+
+  @@unique([proposalId, approverOfficerId])
+}
+
+model ConstitutionProposalVote {
+  id         Int      @id @default(autoincrement())
+  proposalId Int
+  voterId    Int
+  choice     String   @db.VarChar(10)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  proposal ConstitutionProposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  voter    User                 @relation("ConstitutionProposalVoter", fields: [voterId], references: [id], onDelete: Cascade)
+
+  @@unique([proposalId, voterId])
 }
 
 model Sponsor {

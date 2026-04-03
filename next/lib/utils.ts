@@ -33,6 +33,8 @@ export const isUrlValid = (str: string) => {
 export const MENTOR_HEAD_TITLE = "Mentoring Head";
 export const PROJECTS_HEAD_TITLE = "Projects Head";
 export const TECH_COMMITTEE_HEAD_TITLE = "Tech Head";
+export const PRESIDENT_TITLE = "President";
+export const VICE_PRESIDENT_TITLE = "Vice President";
 export const TECH_COMMITTEE_DIVISIONS = [
   "Web Division",
   "Lab Division",

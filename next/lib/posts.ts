@@ -8,6 +8,19 @@ import { unified } from "unified";
 import remarkGfm from "remark-gfm";
 
 const postsDirectory = path.join(process.cwd(), "app", "about", "posts");
+
+export async function renderMarkdownToHtml(markdown: string) {
+  const htmlContent = await unified()
+    .use(remarkParse)
+    .use(remarkGfm)
+    .use(remarkRehype)
+    .use(rehypeSanitize)
+    .use(rehypeStringify)
+    .process(markdown);
+
+  return String(htmlContent.value);
+}
+
 export async function getPostData(url: string) {
   try {
     const markdown = await fetch(url);
@@ -15,18 +28,12 @@ export async function getPostData(url: string) {
     // This content is fetched server-side from the SSE governing-docs repo and
     // sanitized before rendering, so the downstream dangerouslySetInnerHTML
     // calls only receive trusted, cleaned HTML.
-    const htmlContent = await unified()
-      .use(remarkParse)
-      .use(remarkGfm)
-      .use(remarkRehype)
-      .use(rehypeSanitize)
-      .use(rehypeStringify)
-      .process(await markdown.text());
+    const htmlContent = await renderMarkdownToHtml(await markdown.text());
 
     //console.dir(htmlContent)
     return {
       props: {
-        htmlContent: htmlContent.value,
+        htmlContent,
       },
     };
   } catch (error) {

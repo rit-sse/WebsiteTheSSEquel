@@ -1,8 +1,13 @@
-import { s3Service } from "@/lib/services/s3Service";
-import prisma from "@/lib/prisma";
-import { NextRequest, NextResponse } from "next/server";
 import { resolveAuthLevelFromRequest } from "@/lib/authLevelResolver";
+import prisma from "@/lib/prisma";
 import { normalizeToS3Key } from "@/lib/s3Utils";
+import { s3Service } from "@/lib/services/s3Service";
+import { NextRequest, NextResponse } from "next/server";
+
+const LIBRARY_BOOK_KEY_PREFIXES = [
+  "assets/library/",
+  "uploads/library-books/",
+] as const;
 
 /**
  * POST - Generate a presigned upload URL for a library book cover image.
@@ -52,7 +57,7 @@ export async function POST(req: NextRequest) {
 
     const timestamp = Date.now();
     const sanitizedFilename = filename.replace(/[^a-zA-Z0-9.-]/g, "_");
-    const key = `uploads/library-books/${isbn}/${timestamp}-${sanitizedFilename}`;
+    const key = `assets/library/${isbn}/${timestamp}-${sanitizedFilename}`;
 
     const uploadUrl = await s3Service.getSignedUploadUrl(key, contentType, 300);
 
@@ -98,7 +103,11 @@ export async function PUT(req: NextRequest) {
       );
     }
 
-    if (!String(key).startsWith("uploads/library-books/")) {
+    if (
+      !LIBRARY_BOOK_KEY_PREFIXES.some((prefix) =>
+        String(key).startsWith(prefix)
+      )
+    ) {
       return NextResponse.json(
         { error: "Invalid key prefix" },
         { status: 403 }

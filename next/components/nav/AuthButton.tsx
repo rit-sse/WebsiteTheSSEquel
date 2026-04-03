@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { signIn, signOut, useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { User, LogOut } from "lucide-react";
 import {
   DropdownMenu,
@@ -115,7 +115,9 @@ export default function AuthButton({
 
   return (
     <button
-      onClick={() => signIn("google")}
+      onClick={() =>
+        router.push(`/signin?callbackUrl=${encodeURIComponent(pathname || "/")}`)
+      }
       className="relative rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 mr-2"
       aria-label="Sign in"
     >

@@ -50,6 +50,9 @@ describe("rateLimitMiddleware", () => {
       getRateLimitRule(makeRequest("/api/quotes", { method: "POST" }))?.id
     ).toBe("quotes-post");
     expect(
+      getRateLimitRule(makeRequest("/api/auth/session", { method: "GET" }))?.id
+    ).toBe("auth-session");
+    expect(
       getRateLimitRule(makeRequest("/api/library/books", { method: "POST" }))
     ).toBeNull();
   });
@@ -76,5 +79,20 @@ describe("rateLimitMiddleware", () => {
     );
 
     expect(response.headers.get("x-middleware-next")).toBe("1");
+  });
+
+  it("allows a higher threshold for auth session polling", async () => {
+    const request = makeRequest("/api/auth/session", {
+      method: "GET",
+      headers: { "x-forwarded-for": "203.0.113.12" },
+    });
+
+    for (let index = 0; index < 60; index++) {
+      const response = await rateLimitMiddleware(request);
+      expect(response.headers.get("x-middleware-next")).toBe("1");
+    }
+
+    const blocked = await rateLimitMiddleware(request);
+    expect(blocked.status).toBe(429);
   });
 });

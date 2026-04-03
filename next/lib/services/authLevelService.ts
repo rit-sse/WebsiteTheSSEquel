@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/authOptions";
 import { AuthLevel } from "@/lib/authLevel";
 import {
   MENTOR_HEAD_TITLE,
+  PRESIDENT_TITLE,
   PROJECTS_HEAD_TITLE,
   TECH_COMMITTEE_HEAD_TITLE,
   TECH_COMMITTEE_DIVISION_MANAGER_BY_TITLE,
@@ -29,6 +30,7 @@ export async function getAuthLevel(): Promise<AuthLevel> {
     isTechCommitteeDivisionManager: false,
     techCommitteeManagedDivision: null,
     isPrimary: false,
+    isPresident: false,
     profileComplete: true,
   };
 
@@ -102,6 +104,7 @@ export async function getAuthLevel(): Promise<AuthLevel> {
         ]
       : null,
     isPrimary: user.officers.some((o) => o.position.is_primary),
+    isPresident: user.officers.some((o) => o.position.title === PRESIDENT_TITLE),
     profileComplete: !!(
       user.graduationTerm &&
       user.graduationYear &&

@@ -82,6 +82,31 @@ const signedInVerifier = authVerifierFactory((permissions) => {
 });
 
 /**
+ * Auth verifier for AWS-backed asset routes:
+ * - public GETs for the shared image proxy
+ * - signed-in users for profile picture upload/update
+ * - mentor/officer for library book upload/update
+ * - officer for any remaining aws routes
+ */
+const awsVerifier: AuthVerifier = async (request: NextRequest) => {
+  const pathname = request.nextUrl.pathname;
+
+  if (request.method === "GET" && pathname === "/api/aws/image") {
+    return { isAllowed: true, authType: "None" };
+  }
+
+  if (pathname === "/api/aws/profilePictures") {
+    return signedInVerifier(request);
+  }
+
+  if (pathname === "/api/aws/libraryBooks") {
+    return mentorOrOfficerVerifier(request);
+  }
+
+  return officerVerifier(request);
+};
+
+/**
  * Auth verifier specifically for the golinks route
  */
 const goLinkVerifier = async (request: NextRequest) => {
@@ -202,6 +227,29 @@ const techCommitteeApplicationVerifier: AuthVerifier = async (
   return signedInVerifier(request);
 };
 
+const constitutionVerifier: AuthVerifier = async (request: NextRequest) => {
+  if (request.method === "GET") {
+    return { isAllowed: true, authType: "None" };
+  }
+
+  return signedInVerifier(request);
+};
+
+/**
+ * Auth verifier for headcount submission routes:
+ * - GET remains officer-only for dashboards/reporting
+ * - POST is public so anyone staffing the lab can submit the form
+ */
+const headcountSubmissionVerifier: AuthVerifier = async (
+  request: NextRequest
+) => {
+  if (request.method === "POST") {
+    return { isAllowed: true, authType: "None" };
+  }
+
+  return officerVerifier(request);
+};
+
 /**
  * Auth verifier for library routes:
  * - public GETs for catalog/search/statistics/category and book lookup routes
@@ -245,8 +293,9 @@ const ROUTES: { [key: string]: AuthVerifier } = {
   "alumni-requests": alumniRequestsVerifier,
   auth: allowAllVerifier,
   authLevel: allowAllVerifier,
-  aws: officerVerifier,
+  aws: awsVerifier,
   calendar: nonGetOfficerVerifier,
+  constitution: constitutionVerifier,
   course: nonGetOfficerVerifier,
   courseTaken: nonGetMentorVerifier,
   departments: nonGetOfficerVerifier,
@@ -261,12 +310,12 @@ const ROUTES: { [key: string]: AuthVerifier } = {
   invitations: officerVerifier,
   library: libraryVerifier,
   memberships: nonGetOfficerVerifier,
-  "mentee-headcount": officerVerifier,
+  "mentee-headcount": headcountSubmissionVerifier,
   mentor: nonGetOfficerVerifier,
   "mentor-application": mentorApplicationVerifier,
   "mentor-availability": nonGetMentorVerifier,
   "mentor-semester": nonGetOfficerVerifier,
-  "mentoring-headcount": officerVerifier,
+  "mentoring-headcount": headcountSubmissionVerifier,
   mentorSchedule: nonGetMentorVerifier,
   mentorSkill: nonGetMentorVerifier,
   officer: nonGetPrimaryOfficerVerifier,

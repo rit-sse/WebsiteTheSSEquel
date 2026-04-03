@@ -6,7 +6,6 @@ import { Inter, Rethink_Sans, PT_Serif } from "next/font/google";
 import { Providers } from "./Providers";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
-import Script from "next/script";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -29,7 +28,14 @@ export const metadata: Metadata = {
   title: "Society of Software Engineers",
   description:
     "The Society of Software Engineers (SSE) is an academic organization at the Rochester Institute of Technology (RIT) that provides mentoring and support for students in the Golisano College for Computing and Information Sciences (GCCIS).",
-  icons: ["/icon.png"],
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon.png", type: "image/png" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: "/icon.png",
+  },
 };
 
 export default async function RootLayout({
@@ -41,8 +47,6 @@ export default async function RootLayout({
   const session = await getServerSession(authOptions);
 
   return (
-    // details on suppressHydrationWarning: https://github.com/pacocoursey/next-themes#html--css (scroll up a bit)
-    // Also: https://www.reddit.com/r/nextjs/comments/138smpm/how_to_fix_extra_attributes_from_the_server_error/
     <html
       lang="en"
       data-theme="dark"
@@ -54,7 +58,6 @@ export default async function RootLayout({
       <body
         className={`min-h-screen flex flex-col bg-gradient-to-b from-background to-muted overflow-x-hidden`}
       >
-        <Script src="/init-style-font.js" strategy="beforeInteractive" />
         <Providers session={session}>{children}</Providers>
       </body>
     </html>
