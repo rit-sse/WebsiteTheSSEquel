@@ -1,11 +1,11 @@
 "use client";
 
 import * as React from "react";
-import { useTheme } from "next-themes";
 import { Moon, Sun } from "lucide-react";
+import { useThemeMode } from "@/contexts/ThemeModeContext";
 
 export default function DarkModeToggle() {
-  const { theme, setTheme } = useTheme();
+  const { theme, toggleTheme } = useThemeMode();
   const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => {
@@ -19,10 +19,6 @@ export default function DarkModeToggle() {
       </button>
     );
   }
-
-  const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark");
-  };
 
   return (
     <button

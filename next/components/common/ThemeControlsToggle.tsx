@@ -1,15 +1,15 @@
 "use client";
 
 import * as React from "react";
-import { useTheme } from "next-themes";
 import { Moon, Sun } from "lucide-react";
 import { useFontMode } from "@/contexts/FontModeContext";
 import { useStyleMode } from "@/contexts/StyleModeContext";
+import { useThemeMode } from "@/contexts/ThemeModeContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
 export default function ThemeControlsToggle() {
-  const { theme, setTheme } = useTheme();
+  const { theme, toggleTheme } = useThemeMode();
   const { fontMode, setFontMode } = useFontMode();
   const { styleMode, setStyleMode } = useStyleMode();
   const isMobile = useIsMobile();
@@ -47,7 +47,7 @@ export default function ThemeControlsToggle() {
     );
   }
 
-  const handleThemeClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+  function handleThemeClick(event: React.MouseEvent<HTMLButtonElement>) {
     if (isMobile && !isExpanded) {
       event.preventDefault();
       event.stopPropagation();
@@ -55,11 +55,11 @@ export default function ThemeControlsToggle() {
       return;
     }
 
-    setTheme(theme === "dark" ? "light" : "dark");
+    toggleTheme();
     if (isMobile) {
       setIsExpanded(false);
     }
-  };
+  }
 
   return (
     <div

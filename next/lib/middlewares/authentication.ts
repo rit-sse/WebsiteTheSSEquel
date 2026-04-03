@@ -227,6 +227,14 @@ const techCommitteeApplicationVerifier: AuthVerifier = async (
   return signedInVerifier(request);
 };
 
+const constitutionVerifier: AuthVerifier = async (request: NextRequest) => {
+  if (request.method === "GET") {
+    return { isAllowed: true, authType: "None" };
+  }
+
+  return signedInVerifier(request);
+};
+
 /**
  * Auth verifier for headcount submission routes:
  * - GET remains officer-only for dashboards/reporting
@@ -287,6 +295,7 @@ const ROUTES: { [key: string]: AuthVerifier } = {
   authLevel: allowAllVerifier,
   aws: awsVerifier,
   calendar: nonGetOfficerVerifier,
+  constitution: constitutionVerifier,
   course: nonGetOfficerVerifier,
   courseTaken: nonGetMentorVerifier,
   departments: nonGetOfficerVerifier,

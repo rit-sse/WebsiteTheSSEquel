@@ -225,7 +225,7 @@ export default function EventForm({
             />
           ) : (
             <Image
-              src="/icon"
+              src="/icon.png"
               alt="SSE Logo"
               fill
               className="object-contain p-2"

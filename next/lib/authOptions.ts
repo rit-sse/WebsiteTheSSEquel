@@ -5,10 +5,28 @@ import GoogleProvider from "next-auth/providers/google";
 import { getImageProps } from "next/image";
 import { resolveUserImage } from "./s3Utils";
 import { maybeCreateAlumniCandidate } from "@/lib/services/alumniCandidateService";
+import { isGoogleAuthConfigured } from "@/lib/authConfig";
 
 // OAuth scopes for authentication
 const scopes = "openid email profile";
 const adapter = PrismaAdapter(prisma);
+const providers = [];
+
+if (isGoogleAuthConfigured()) {
+  providers.push(
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+      allowDangerousEmailAccountLinking: true,
+      authorization: {
+        params: {
+          hd: "g.rit.edu",
+          scope: scopes,
+        },
+      },
+    })
+  );
+}
 
 export const authOptions: AuthOptions = {
   adapter: {
@@ -23,21 +41,7 @@ export const authOptions: AuthOptions = {
       }) as any;
     },
   },
-  providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID || "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
-      // Allow linking OAuth accounts to existing users with matching email
-      // This is safe because we restrict to @g.rit.edu which is verified by Google
-      allowDangerousEmailAccountLinking: true,
-      authorization: {
-        params: {
-          hd: "g.rit.edu", // restrict logins to rit.edu accounts
-          scope: scopes,
-        },
-      },
-    }),
-  ],
+  providers,
   callbacks: {
     async session({ session }) {
       if (!session.user?.email) return session;

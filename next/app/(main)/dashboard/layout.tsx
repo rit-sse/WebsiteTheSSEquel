@@ -19,6 +19,7 @@ export default async function DashboardLayout({
       isOfficer={authLevel.isOfficer}
       isMentor={authLevel.isMentor}
       isPrimary={authLevel.isPrimary}
+      isPresident={authLevel.isPresident}
       isMentoringHead={authLevel.isMentoringHead}
     >
       {children}

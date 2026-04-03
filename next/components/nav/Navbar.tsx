@@ -69,6 +69,11 @@ const aboutItems = [
     description: "Read our governing document and bylaws.",
   },
   {
+    title: "Amendment Dashboard",
+    href: "/about/constitution/dashboard",
+    description: "Track amendment proposals, drafts, and election windows.",
+  },
+  {
     title: "Primary Officer's Policy",
     href: "/about/primary-officers-policy",
     description: "View our officer guidelines and policies.",
@@ -110,6 +115,11 @@ const dashboardItems = [
     title: "Sponsors",
     href: "/dashboard/sponsors",
     description: "Manage sponsor information.",
+  },
+  {
+    title: "Amendment Dashboard",
+    href: "/about/constitution/dashboard",
+    description: "Review amendment drafts, proposals, and governance flow.",
   },
   {
     title: "Alumni Review",

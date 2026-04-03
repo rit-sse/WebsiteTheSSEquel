@@ -5,6 +5,7 @@ import { hasStagingElevatedAccess } from "@/lib/proxyAuth";
 import { getSessionToken } from "@/lib/sessionToken";
 import {
   MENTOR_HEAD_TITLE,
+  PRESIDENT_TITLE,
   PROJECTS_HEAD_TITLE,
   TECH_COMMITTEE_HEAD_TITLE,
   TECH_COMMITTEE_DIVISION_MANAGER_BY_TITLE,
@@ -30,6 +31,7 @@ function getDefaultAuthLevel(includeProfileComplete: boolean): AuthLevel {
     isTechCommitteeDivisionManager: false,
     techCommitteeManagedDivision: null,
     isPrimary: false,
+    isPresident: false,
   };
 
   if (includeProfileComplete) {
@@ -89,6 +91,7 @@ export async function resolveAuthLevelFromToken(
     authLevel.isTechCommitteeDivisionManager = true;
     authLevel.techCommitteeManagedDivision = "Lab Division";
     authLevel.isPrimary = true;
+    authLevel.isPresident = true;
   }
 
   if (!token) {
@@ -174,6 +177,9 @@ export async function resolveAuthLevelFromToken(
       : null;
     authLevel.isPrimary = user.officers.some(
       (officer) => officer.position.is_primary
+    );
+    authLevel.isPresident = user.officers.some(
+      (officer) => officer.position.title === PRESIDENT_TITLE
     );
   }
 

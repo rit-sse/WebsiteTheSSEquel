@@ -155,6 +155,12 @@ const featureGroups = [
     warnIfUnset:
       "SMTP is not fully configured; email flows may fail (local MailHog config is recommended).",
   },
+  {
+    name: "Governing Docs GitHub",
+    vars: ["GOVERNING_DOCS_GITHUB_TOKEN"],
+    warnIfUnset:
+      "Governing docs GitHub token is not configured; constitution apply-to-main will fail.",
+  },
 ];
 
 for (const group of featureGroups) {
