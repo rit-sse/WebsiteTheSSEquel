@@ -60,6 +60,7 @@ describe("authLevelResolver", () => {
       isTechCommitteeDivisionManager: false,
       techCommitteeManagedDivision: null,
       isPrimary: false,
+      isPresident: false,
     });
   });
 
@@ -75,6 +76,7 @@ describe("authLevelResolver", () => {
     expect(auth.isTechCommitteeDivisionManager).toBe(true);
     expect(auth.techCommitteeManagedDivision).toBe("Lab Division");
     expect(auth.isPrimary).toBe(true);
+    expect(auth.isPresident).toBe(true);
   });
 
   it("computes auth flags and profile completeness from user record", async () => {

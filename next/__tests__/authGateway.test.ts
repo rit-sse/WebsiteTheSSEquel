@@ -54,6 +54,7 @@ describe("authGateway", () => {
       isTechCommitteeDivisionManager: false,
       techCommitteeManagedDivision: null,
       isPrimary: false,
+      isPresident: false,
     });
   });
 });
