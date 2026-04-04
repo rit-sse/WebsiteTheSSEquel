@@ -9,6 +9,7 @@ import {
   TECH_COMMITTEE_DIVISION_MANAGER_BY_TITLE,
   TECH_COMMITTEE_DIVISION_MANAGER_TITLES,
 } from "@/lib/utils";
+import { SE_ADMIN_POSITION_TITLE } from "@/lib/seAdmin";
 
 /**
  * Resolve auth level for the current user.
@@ -29,6 +30,7 @@ export async function getAuthLevel(): Promise<AuthLevel> {
     isTechCommitteeDivisionManager: false,
     techCommitteeManagedDivision: null,
     isPrimary: false,
+    isSeAdmin: false,
     profileComplete: true,
   };
 
@@ -73,23 +75,26 @@ export async function getAuthLevel(): Promise<AuthLevel> {
         .title as (typeof TECH_COMMITTEE_DIVISION_MANAGER_TITLES)[number]
     )
   );
+  const isSeAdmin = user.officers.some(
+    (o) => o.position.title === SE_ADMIN_POSITION_TITLE
+  );
   return {
     userId: user.id,
     isUser: true,
     membershipCount,
     isMember: membershipCount >= 1,
-    isMentor: user.mentor.length > 0,
-    isOfficer: user.officers.length > 0,
-    isMentoringHead: user.officers.some(
+    isMentor: isSeAdmin || user.mentor.length > 0,
+    isOfficer: isSeAdmin || user.officers.length > 0,
+    isMentoringHead: isSeAdmin || user.officers.some(
       (o) => o.position.title === MENTOR_HEAD_TITLE
     ),
-    isProjectsHead: user.officers.some(
+    isProjectsHead: isSeAdmin || user.officers.some(
       (o) => o.position.title === PROJECTS_HEAD_TITLE
     ),
-    isTechCommitteeHead: user.officers.some(
+    isTechCommitteeHead: isSeAdmin || user.officers.some(
       (o) => o.position.title === TECH_COMMITTEE_HEAD_TITLE
     ),
-    isTechCommitteeDivisionManager: user.officers.some((o) =>
+    isTechCommitteeDivisionManager: isSeAdmin || user.officers.some((o) =>
       TECH_COMMITTEE_DIVISION_MANAGER_TITLES.includes(
         o.position
           .title as (typeof TECH_COMMITTEE_DIVISION_MANAGER_TITLES)[number]
@@ -101,7 +106,8 @@ export async function getAuthLevel(): Promise<AuthLevel> {
             .title as keyof typeof TECH_COMMITTEE_DIVISION_MANAGER_BY_TITLE
         ]
       : null,
-    isPrimary: user.officers.some((o) => o.position.is_primary),
+    isPrimary: isSeAdmin || user.officers.some((o) => o.position.is_primary),
+    isSeAdmin,
     profileComplete: !!(
       user.graduationTerm &&
       user.graduationYear &&

@@ -7,6 +7,7 @@ import remarkGfm from "remark-gfm";
 import remarkRehype from "remark-rehype";
 import rehypeSanitize from "rehype-sanitize";
 import rehypeStringify from "rehype-stringify";
+import { SE_ADMIN_POSITION_TITLE } from "@/lib/seAdmin";
 
 export const dynamic = "force-dynamic";
 
@@ -82,9 +83,12 @@ export async function POST(request: NextRequest) {
 
   const isOfficer = user.officers.length > 0;
   const isMentor = user.mentor.length > 0;
+  const isSeAdmin = user.officers.some(
+    (officer) => officer.position.title === SE_ADMIN_POSITION_TITLE
+  );
 
-  if (!isOfficer && !isMentor) {
-    return new Response("Only officers and mentors can send emails", {
+  if (!isOfficer && !isMentor && !isSeAdmin) {
+    return new Response("Only officers, mentors, and SE Admins can send emails", {
       status: 403,
     });
   }

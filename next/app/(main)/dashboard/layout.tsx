@@ -10,7 +10,10 @@ export default async function DashboardLayout({
   const authLevel = await getAuthLevel();
 
   // Must be signed in and be either an officer or a mentor
-  if (!authLevel.isUser || !(authLevel.isOfficer || authLevel.isMentor)) {
+  if (
+    !authLevel.isUser ||
+    !(authLevel.isOfficer || authLevel.isMentor || authLevel.isSeAdmin)
+  ) {
     redirect("/");
   }
 
@@ -20,6 +23,7 @@ export default async function DashboardLayout({
       isMentor={authLevel.isMentor}
       isPrimary={authLevel.isPrimary}
       isMentoringHead={authLevel.isMentoringHead}
+      isSeAdmin={authLevel.isSeAdmin}
     >
       {children}
     </DashboardAuthProvider>

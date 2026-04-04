@@ -27,6 +27,46 @@ enum AlumniCandidateStatus {
   rejected
 }
 
+enum ElectionKind {
+  PRIMARY_OFFICER
+}
+
+enum ElectionStatus {
+  DRAFT
+  NOMINATIONS_OPEN
+  NOMINATIONS_CLOSED
+  VOTING_OPEN
+  VOTING_CLOSED
+  CERTIFIED
+  CANCELLED
+  TIE_RUNOFF_REQUIRED
+}
+
+enum ElectionApprovalStage {
+  CONFIG
+  BALLOT
+  CERTIFICATION
+}
+
+enum ElectionNominationStatus {
+  PENDING_RESPONSE
+  ACCEPTED
+  DECLINED
+  EXPIRED
+}
+
+enum ElectionEligibilityStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ElectionEmailKind {
+  NOMINATION_NOTICE
+  BALLOT_ANNOUNCEMENT
+  BALLOT_REMINDER
+}
+
 model User {
   //Store an automatically generated unique int for id
   id Int @id @default(autoincrement())
@@ -73,6 +113,138 @@ model User {
   alumni                    Alumni?
   alumniCandidates          AlumniCandidate[]          @relation("AlumniCandidateOwner")
   reviewedAlumniCandidates  AlumniCandidate[]          @relation("AlumniCandidateReviewer")
+  createdElections          Election[]                @relation("ElectionCreator")
+  certifiedElections        Election[]                @relation("ElectionCertifier")
+  electionApprovals         ElectionApproval[]
+  electionNominationsMade   ElectionNomination[]      @relation("ElectionNominator")
+  electionNominations       ElectionNomination[]      @relation("ElectionNominee")
+  reviewedElectionNominations ElectionNomination[]    @relation("ElectionEligibilityReviewer")
+  electionBallots           ElectionBallot[]
+  electionEmailLogs         ElectionEmailLog[]
+}
+
+model Election {
+  id                Int            @id @default(autoincrement())
+  title             String         @db.VarChar(200)
+  slug              String         @unique @db.VarChar(200)
+  description       String         @default("") @db.Text
+  kind              ElectionKind   @default(PRIMARY_OFFICER)
+  status            ElectionStatus @default(DRAFT)
+  nominationsOpenAt DateTime
+  nominationsCloseAt DateTime
+  votingOpenAt      DateTime
+  votingCloseAt     DateTime
+  createdById       Int
+  certifiedById     Int?
+  certifiedAt       DateTime?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  createdBy   User               @relation("ElectionCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  certifiedBy User?              @relation("ElectionCertifier", fields: [certifiedById], references: [id], onDelete: SetNull)
+  offices     ElectionOffice[]
+  approvals   ElectionApproval[]
+  ballots     ElectionBallot[]
+  emailLogs   ElectionEmailLog[]
+}
+
+model ElectionOffice {
+  id              Int      @id @default(autoincrement())
+  electionId      Int
+  officerPositionId Int
+  createdAt       DateTime @default(now())
+
+  election        Election          @relation(fields: [electionId], references: [id], onDelete: Cascade)
+  officerPosition OfficerPosition   @relation(fields: [officerPositionId], references: [id], onDelete: Cascade)
+  nominations     ElectionNomination[]
+  ballotRankings  ElectionBallotRanking[]
+
+  @@unique([electionId, officerPositionId])
+}
+
+model ElectionApproval {
+  id         Int                   @id @default(autoincrement())
+  electionId Int
+  userId     Int
+  stage      ElectionApprovalStage
+  createdAt  DateTime              @default(now())
+
+  election Election @relation(fields: [electionId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([electionId, userId, stage])
+}
+
+model ElectionNomination {
+  id                         Int                        @id @default(autoincrement())
+  electionOfficeId           Int
+  nomineeUserId              Int
+  nominatorUserId            Int
+  statement                  String                     @default("") @db.Text
+  yearLevel                  Int?
+  program                    String?                    @db.VarChar(100)
+  canRemainEnrolledFullYear  Boolean?
+  canRemainEnrolledNextTerm  Boolean?
+  isOnCampus                 Boolean?
+  isOnCoop                   Boolean?
+  status                     ElectionNominationStatus   @default(PENDING_RESPONSE)
+  eligibilityStatus          ElectionEligibilityStatus  @default(PENDING)
+  reviewNotes                String?                    @db.Text
+  reviewedById               Int?
+  reviewedAt                 DateTime?
+  createdAt                  DateTime                   @default(now())
+  updatedAt                  DateTime                   @updatedAt
+
+  electionOffice ElectionOffice @relation(fields: [electionOfficeId], references: [id], onDelete: Cascade)
+  nominee       User           @relation("ElectionNominee", fields: [nomineeUserId], references: [id], onDelete: Cascade)
+  nominator     User           @relation("ElectionNominator", fields: [nominatorUserId], references: [id], onDelete: Cascade)
+  reviewedBy    User?          @relation("ElectionEligibilityReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  ballotRankings ElectionBallotRanking[]
+
+  @@unique([electionOfficeId, nomineeUserId])
+}
+
+model ElectionBallot {
+  id         Int      @id @default(autoincrement())
+  electionId Int
+  voterId    Int
+  submittedAt DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  election Election                @relation(fields: [electionId], references: [id], onDelete: Cascade)
+  voter    User                    @relation(fields: [voterId], references: [id], onDelete: Cascade)
+  rankings ElectionBallotRanking[]
+
+  @@unique([electionId, voterId])
+}
+
+model ElectionBallotRanking {
+  id            Int  @id @default(autoincrement())
+  ballotId       Int
+  electionOfficeId Int
+  nominationId   Int
+  rank           Int
+
+  ballot        ElectionBallot     @relation(fields: [ballotId], references: [id], onDelete: Cascade)
+  electionOffice ElectionOffice    @relation(fields: [electionOfficeId], references: [id], onDelete: Cascade)
+  nomination    ElectionNomination @relation(fields: [nominationId], references: [id], onDelete: Cascade)
+
+  @@unique([ballotId, electionOfficeId, nominationId])
+  @@unique([ballotId, electionOfficeId, rank])
+}
+
+model ElectionEmailLog {
+  id         Int               @id @default(autoincrement())
+  electionId Int
+  sentById   Int
+  kind       ElectionEmailKind
+  subject    String            @db.VarChar(255)
+  message    String            @db.Text
+  recipientCount Int
+  sentAt     DateTime          @default(now())
+
+  election Election @relation(fields: [electionId], references: [id], onDelete: Cascade)
+  sentBy   User     @relation(fields: [sentById], references: [id], onDelete: Cascade)
 }
 
 model Alumni {
@@ -223,6 +395,7 @@ model OfficerPosition {
   officers         Officer[]
   handoverDocument HandoverDocument?
   invitations      Invitation[]
+  electionOffices  ElectionOffice[]
 }
 
 model HandoverDocument {
