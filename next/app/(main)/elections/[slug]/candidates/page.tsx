@@ -4,8 +4,6 @@ import { ChevronRight, GraduationCap, Calendar, UserX } from "lucide-react";
 import {
   NeoCard,
   NeoCardHeader,
-  NeoCardTitle,
-  NeoCardDescription,
   NeoCardContent,
 } from "@/components/ui/neo-card";
 import { Card } from "@/components/ui/card";
@@ -60,14 +58,6 @@ export default async function ElectionCandidatesPage({
         <ChevronRight className="h-3.5 w-3.5" />
         <span className="text-foreground font-medium">Candidates</span>
       </nav>
-
-      {/* Header */}
-      <NeoCard depth={1}>
-        <NeoCardHeader>
-          <NeoCardTitle>Candidates</NeoCardTitle>
-          <NeoCardDescription>{election.title}</NeoCardDescription>
-        </NeoCardHeader>
-      </NeoCard>
 
       {/* Per-position cards */}
       {election.offices.map((office) => {

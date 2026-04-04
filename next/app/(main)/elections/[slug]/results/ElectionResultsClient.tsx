@@ -12,16 +12,11 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ElectionStatusBadge } from "@/components/elections/ElectionStatusBadge";
-import { StatCard } from "@/components/elections/StatCard";
 import { ElectionEmptyState } from "@/components/elections/ElectionEmptyState";
 import { IRVBarChart } from "@/components/elections/IRVBarChart";
 import { IRVRoundTable } from "@/components/elections/IRVRoundTable";
 import {
   ChevronRight,
-  Vote,
-  Users,
-  TrendingUp,
-  Award,
   Trophy,
   BarChart3,
   Table,
@@ -95,30 +90,12 @@ export default function ElectionResultsClient({
           </div>
         </NeoCardHeader>
         <NeoCardContent>
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-            <StatCard
-              label="Ballots Cast"
-              value={totalBallots}
-              icon={<Vote className="h-5 w-5" />}
-              iconBg="bg-sky-100 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400"
-            />
-            <StatCard
-              label="Eligible Voters"
-              value={eligibleVoters}
-              icon={<Users className="h-5 w-5" />}
-            />
-            <StatCard
-              label="Turnout"
-              value={`${turnout}%`}
-              icon={<TrendingUp className="h-5 w-5" />}
-              iconBg="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400"
-            />
-            <StatCard
-              label="Positions"
-              value={totalPositions}
-              icon={<Award className="h-5 w-5" />}
-            />
-          </div>
+          <p className="text-sm text-muted-foreground">
+            {totalBallots} ballot{totalBallots !== 1 ? "s" : ""} cast of{" "}
+            {eligibleVoters} eligible voter{eligibleVoters !== 1 ? "s" : ""}{" "}
+            ({turnout}% turnout) across {totalPositions} position
+            {totalPositions !== 1 ? "s" : ""}.
+          </p>
         </NeoCardContent>
       </NeoCard>
 
@@ -155,17 +132,12 @@ export default function ElectionResultsClient({
 
               {/* ---- Tie ---- */}
               {result.status === "tie" && (
-                <Card
-                  depth={2}
-                  className="border-l-4 border-l-amber-500 p-4"
-                >
-                  <CardContent className="p-0">
-                    <p className="font-medium text-amber-700 dark:text-amber-300">
-                      This position ended in an unresolved tie and requires a
-                      runoff election.
-                    </p>
-                  </CardContent>
-                </Card>
+                <div className="rounded-lg border-l-4 border-l-amber-500 bg-amber-50/50 p-4 dark:bg-amber-900/20">
+                  <p className="font-medium text-amber-700 dark:text-amber-300">
+                    This position ended in an unresolved tie and requires a
+                    runoff election.
+                  </p>
+                </div>
               )}
 
               {/* ---- Winner card ---- */}

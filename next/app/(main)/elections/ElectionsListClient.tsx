@@ -10,7 +10,6 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { NeoCard, NeoCardContent } from "@/components/ui/neo-card";
 import { ElectionStatusBadge } from "@/components/elections/ElectionStatusBadge";
 import { ElectionPhaseIndicator } from "@/components/elections/ElectionPhaseIndicator";
 import { ElectionEmptyState } from "@/components/elections/ElectionEmptyState";
@@ -251,22 +250,18 @@ export function ElectionsListClient({ elections }: ElectionsListClientProps) {
 
         return (
           <TabsContent key={tab} value={tab}>
-            <NeoCard depth={1}>
-              <NeoCardContent className="p-6">
-                {tabElections.length === 0 ? (
-                  <ElectionEmptyState
-                    title={TAB_EMPTY_MESSAGES[tab].title}
-                    description={TAB_EMPTY_MESSAGES[tab].description}
-                  />
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {tabElections.map((election) => (
-                      <ElectionCard key={election.id} election={election} />
-                    ))}
-                  </div>
-                )}
-              </NeoCardContent>
-            </NeoCard>
+            {tabElections.length === 0 ? (
+              <ElectionEmptyState
+                title={TAB_EMPTY_MESSAGES[tab].title}
+                description={TAB_EMPTY_MESSAGES[tab].description}
+              />
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {tabElections.map((election) => (
+                  <ElectionCard key={election.id} election={election} />
+                ))}
+              </div>
+            )}
           </TabsContent>
         );
       })}

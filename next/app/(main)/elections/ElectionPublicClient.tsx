@@ -334,77 +334,62 @@ export default function ElectionPublicClient({
 
       {/* ---- CTA Banner ---- */}
       {isNominationsOpen && isMember && (
-        <Card
-          depth={2}
-          className="border-l-4 border-l-sky-500 bg-sky-50/50 dark:bg-sky-900/20"
-        >
-          <CardContent className="flex items-center justify-between gap-4 p-4">
-            <div className="flex items-center gap-3">
-              <Users className="h-5 w-5 text-sky-600 dark:text-sky-400" />
-              <div>
-                <p className="font-medium text-sky-900 dark:text-sky-100">
-                  Nominations are open!
-                </p>
-                <p className="text-sm text-sky-700 dark:text-sky-300">
-                  Nominate a candidate for any open position.
-                </p>
-              </div>
+        <div className="flex items-center justify-between gap-4 rounded-lg border-l-4 border-l-sky-500 bg-sky-50/50 p-4 dark:bg-sky-900/20">
+          <div className="flex items-center gap-3">
+            <Users className="h-5 w-5 text-sky-600 dark:text-sky-400" />
+            <div>
+              <p className="font-medium text-sky-900 dark:text-sky-100">
+                Nominations are open!
+              </p>
+              <p className="text-sm text-sky-700 dark:text-sky-300">
+                Nominate a candidate for any open position.
+              </p>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                document.getElementById("nomination-form")?.scrollIntoView({
-                  behavior: "smooth",
-                });
-              }}
-            >
-              <Send className="mr-2 h-4 w-4" />
-              Nominate
-            </Button>
-          </CardContent>
-        </Card>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              document.getElementById("nomination-form")?.scrollIntoView({
+                behavior: "smooth",
+              });
+            }}
+          >
+            <Send className="mr-2 h-4 w-4" />
+            Nominate
+          </Button>
+        </div>
       )}
 
       {isVotingOpen && isMember && !hasVoted && (
-        <Card
-          depth={2}
-          className="border-l-4 border-l-emerald-500 bg-emerald-50/50 dark:bg-emerald-900/20"
-        >
-          <CardContent className="flex items-center justify-between gap-4 p-4">
-            <div className="flex items-center gap-3">
-              <Vote className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-              <div>
-                <p className="font-medium text-emerald-900 dark:text-emerald-100">
-                  Voting is open!
-                </p>
-                <p className="text-sm text-emerald-700 dark:text-emerald-300">
-                  Cast your ranked-choice ballot now.
-                </p>
-              </div>
+        <div className="flex items-center justify-between gap-4 rounded-lg border-l-4 border-l-emerald-500 bg-emerald-50/50 p-4 dark:bg-emerald-900/20">
+          <div className="flex items-center gap-3">
+            <Vote className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+            <div>
+              <p className="font-medium text-emerald-900 dark:text-emerald-100">
+                Voting is open!
+              </p>
+              <p className="text-sm text-emerald-700 dark:text-emerald-300">
+                Cast your ranked-choice ballot now.
+              </p>
             </div>
-            <Button asChild size="sm">
-              <Link href={`/elections/${election.slug}/vote`}>
-                <Vote className="mr-2 h-4 w-4" />
-                Vote Now
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
+          </div>
+          <Button asChild size="sm">
+            <Link href={`/elections/${election.slug}/vote`}>
+              <Vote className="mr-2 h-4 w-4" />
+              Vote Now
+            </Link>
+          </Button>
+        </div>
       )}
 
       {!isMember && isUser && (
-        <Card
-          depth={2}
-          className="border-l-4 border-l-amber-500 bg-amber-50/50 dark:bg-amber-900/20"
-        >
-          <CardContent className="flex items-center gap-3 p-4">
-            <Shield className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-            <p className="text-sm text-amber-800 dark:text-amber-200">
-              Sign in as a member to participate in this election.
-            </p>
-          </CardContent>
-        </Card>
+        <div className="flex items-center gap-3 rounded-lg border-l-4 border-l-amber-500 bg-amber-50/50 p-4 dark:bg-amber-900/20">
+          <Shield className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+          <p className="text-sm text-amber-800 dark:text-amber-200">
+            Sign in as a member to participate in this election.
+          </p>
+        </div>
       )}
 
       {/* ---- Your Nominations (pending response) ---- */}
@@ -572,36 +557,29 @@ export default function ElectionPublicClient({
                       <Link
                         key={nomination.id}
                         href={`/elections/${election.slug}/candidates`}
-                        className="block"
+                        className="flex items-center gap-3 rounded-lg p-3 transition-colors hover:bg-muted/50"
                       >
-                        <Card
-                          depth={3}
-                          className="p-4 hover:ring-2 hover:ring-primary/20 transition-all cursor-pointer"
-                        >
-                          <div className="flex items-center gap-3">
-                            <Avatar className="h-10 w-10">
-                              <AvatarFallback className="text-sm font-medium">
-                                {getInitials(nomination.nominee.name)}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2">
-                                <span className="font-medium truncate">
-                                  {nomination.nominee.name}
-                                </span>
-                                <NominationStatusBadge
-                                  status={nomination.status}
-                                />
-                              </div>
-                              {nomination.statement && (
-                                <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
-                                  {nomination.statement}
-                                </p>
-                              )}
-                            </div>
-                            <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
+                        <Avatar className="h-10 w-10">
+                          <AvatarFallback className="text-sm font-medium">
+                            {getInitials(nomination.nominee.name)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium truncate">
+                              {nomination.nominee.name}
+                            </span>
+                            <NominationStatusBadge
+                              status={nomination.status}
+                            />
                           </div>
-                        </Card>
+                          {nomination.statement && (
+                            <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
+                              {nomination.statement}
+                            </p>
+                          )}
+                        </div>
+                        <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
                       </Link>
                     )
                   )}
@@ -615,58 +593,50 @@ export default function ElectionPublicClient({
         <div className="space-y-6 lg:col-span-2">
           {/* Participation panel */}
           <Card depth={2}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5" />
+            <CardContent className="pt-5 space-y-3">
+              <h3 className="flex items-center gap-2 text-sm font-semibold">
+                <BarChart3 className="h-4 w-4" />
                 Participation
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Nominations</span>
-                  <span className="font-medium">{totalNominations}</span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Ballots cast</span>
-                  <span className="font-medium">{election.ballots.length}</span>
-                </div>
+              </h3>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Nominations</span>
+                <span className="font-medium">{totalNominations}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Ballots cast</span>
+                <span className="font-medium">{election.ballots.length}</span>
               </div>
             </CardContent>
           </Card>
 
           {/* Election info */}
           <Card depth={2}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Info className="h-5 w-5" />
+            <CardContent className="pt-5 space-y-3">
+              <h3 className="flex items-center gap-2 text-sm font-semibold">
+                <Info className="h-4 w-4" />
                 Election Info
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between text-sm">
-                  <Tooltip
-                    content={
-                      <p>
-                        Instant Runoff Voting (IRV): Voters rank candidates in
-                        order of preference. If no candidate wins a majority,
-                        the candidate with the fewest votes is eliminated and
-                        their votes are redistributed until a winner emerges.
-                      </p>
-                    }
-                    size="lg"
-                  >
-                    <span className="text-muted-foreground underline decoration-dotted cursor-help">
-                      Voting system
-                    </span>
-                  </Tooltip>
-                  <Badge variant="outline">IRV</Badge>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Positions</span>
-                  <span className="font-medium">{election.offices.length}</span>
-                </div>
+              </h3>
+              <div className="flex items-center justify-between text-sm">
+                <Tooltip
+                  content={
+                    <p>
+                      Instant Runoff Voting (IRV): Voters rank candidates in
+                      order of preference. If no candidate wins a majority,
+                      the candidate with the fewest votes is eliminated and
+                      their votes are redistributed until a winner emerges.
+                    </p>
+                  }
+                  size="lg"
+                >
+                  <span className="text-muted-foreground underline decoration-dotted cursor-help">
+                    Voting system
+                  </span>
+                </Tooltip>
+                <Badge variant="outline">IRV</Badge>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Positions</span>
+                <span className="font-medium">{election.offices.length}</span>
               </div>
             </CardContent>
           </Card>
@@ -692,13 +662,11 @@ export default function ElectionPublicClient({
           {/* Nomination form (sidebar) */}
           {showNominationForm && (
             <Card depth={2} id="nomination-form">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Send className="h-5 w-5" />
+              <CardContent className="pt-5 space-y-4">
+                <h3 className="flex items-center gap-2 text-sm font-semibold">
+                  <Send className="h-4 w-4" />
                   Nominate a Candidate
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
+                </h3>
                 <div className="space-y-2">
                   <Label>Office</Label>
                   <Select
@@ -748,41 +716,38 @@ export default function ElectionPublicClient({
                 </div>
 
                 {userResults.length > 0 && (
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     {userResults.map((user) => {
                       const isSelected = selectedUserId === user.id;
                       return (
-                        <Card
+                        <div
                           key={user.id}
-                          depth={3}
-                          className={`p-3 cursor-pointer transition-all ${
+                          className={`flex items-center gap-3 rounded-lg p-3 cursor-pointer transition-all ${
                             isSelected
-                              ? "ring-2 ring-primary"
-                              : "hover:ring-1 hover:ring-primary/30"
+                              ? "ring-2 ring-primary bg-primary/5"
+                              : "hover:bg-muted/50"
                           }`}
                           onClick={() => setSelectedUserId(user.id)}
                         >
-                          <div className="flex items-center gap-3">
-                            <Avatar className="h-8 w-8">
-                              <AvatarFallback className="text-xs">
-                                {getInitials(user.name)}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium truncate">
-                                {user.name}
+                          <Avatar className="h-8 w-8">
+                            <AvatarFallback className="text-xs">
+                              {getInitials(user.name)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">
+                              {user.name}
+                            </p>
+                            {user.email && (
+                              <p className="text-xs text-muted-foreground truncate">
+                                {user.email}
                               </p>
-                              {user.email && (
-                                <p className="text-xs text-muted-foreground truncate">
-                                  {user.email}
-                                </p>
-                              )}
-                            </div>
-                            {isSelected && (
-                              <CheckCircle className="h-5 w-5 text-primary shrink-0" />
                             )}
                           </div>
-                        </Card>
+                          {isSelected && (
+                            <CheckCircle className="h-5 w-5 text-primary shrink-0" />
+                          )}
+                        </div>
                       );
                     })}
                   </div>

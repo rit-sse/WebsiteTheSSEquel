@@ -18,7 +18,6 @@ import {
   NeoCardDescription,
   NeoCardContent,
 } from "@/components/ui/neo-card";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
@@ -354,12 +353,11 @@ export default function ElectionVoteClient({ electionId }: Props) {
             <NeoCardContent className="space-y-4">
               {/* Ranked candidates */}
               {state.ranked.length > 0 && (
-                <div className="space-y-2">
+                <div>
                   {state.ranked.map((nomination, index) => (
-                    <Card
+                    <div
                       key={nomination.id}
-                      depth={2}
-                      className="flex items-center gap-4 p-3"
+                      className="flex items-center gap-4 py-3 border-b border-border/10 last:border-b-0"
                     >
                       {/* Rank number */}
                       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
@@ -419,22 +417,21 @@ export default function ElectionVoteClient({ electionId }: Props) {
                           <X className="h-4 w-4" />
                         </Button>
                       </div>
-                    </Card>
+                    </div>
                   ))}
                 </div>
               )}
 
               {/* Unranked pool */}
               {state.unranked.length > 0 && (
-                <div className="space-y-2">
+                <div className="space-y-1">
                   <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                     Not ranked &mdash; click to add
                   </p>
                   {state.unranked.map((nomination) => (
-                    <Card
+                    <div
                       key={nomination.id}
-                      depth={3}
-                      className="flex cursor-pointer items-center gap-3 p-3 transition-colors hover:bg-surface-3/50"
+                      className="flex cursor-pointer items-center gap-3 rounded-lg p-3 transition-colors hover:bg-muted/50"
                       onClick={() => addToRanked(office.id, nomination.id)}
                       role="button"
                       tabIndex={0}
@@ -455,7 +452,7 @@ export default function ElectionVoteClient({ electionId }: Props) {
                       <p className="min-w-0 flex-1 truncate text-sm font-medium">
                         {nomination.nominee.name}
                       </p>
-                    </Card>
+                    </div>
                   ))}
                 </div>
               )}
@@ -472,38 +469,36 @@ export default function ElectionVoteClient({ electionId }: Props) {
       })}
 
       {/* Submit section */}
-      <NeoCard depth={1}>
-        <NeoCardContent className="space-y-4 pt-6">
-          {/* Completion info */}
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">
-              {positionsRanked} of {totalPositions} position
-              {totalPositions !== 1 ? "s" : ""} ranked
-            </span>
-            <span className="font-medium">{progressPercent}%</span>
-          </div>
+      <div className="space-y-4 pt-2">
+        {/* Completion info */}
+        <div className="flex items-center justify-between text-sm">
+          <span className="text-muted-foreground">
+            {positionsRanked} of {totalPositions} position
+            {totalPositions !== 1 ? "s" : ""} ranked
+          </span>
+          <span className="font-medium">{progressPercent}%</span>
+        </div>
 
-          {/* Progress bar */}
-          <Progress value={progressPercent} />
+        {/* Progress bar */}
+        <Progress value={progressPercent} />
 
-          {/* Submit button */}
-          <Button
-            onClick={saveBallot}
-            disabled={saving || positionsRanked === 0}
-            className="w-full"
-            size="lg"
-          >
-            {saving ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              "Submit Ballot"
-            )}
-          </Button>
-        </NeoCardContent>
-      </NeoCard>
+        {/* Submit button */}
+        <Button
+          onClick={saveBallot}
+          disabled={saving || positionsRanked === 0}
+          className="w-full"
+          size="lg"
+        >
+          {saving ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Saving...
+            </>
+          ) : (
+            "Submit Ballot"
+          )}
+        </Button>
+      </div>
     </div>
   );
 }

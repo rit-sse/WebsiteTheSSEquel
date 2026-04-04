@@ -6,8 +6,6 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   NeoCard,
-  NeoCardHeader,
-  NeoCardTitle,
   NeoCardContent,
 } from "@/components/ui/neo-card";
 import { Card } from "@/components/ui/card";
@@ -24,10 +22,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tooltip } from "@/components/ui/tooltip";
 import {
   ElectionStatusBadge,
-  StatCard,
   ElectionEmptyState,
 } from "@/components/elections";
 import type {
@@ -35,15 +31,7 @@ import type {
   ElectionStatus,
 } from "@/components/elections/types";
 import { ELECTION_PHASE_LABELS } from "@/components/elections/types";
-import {
-  Plus,
-  ChevronRight,
-  Vote,
-  Users,
-  Award,
-  TrendingUp,
-  Loader2,
-} from "lucide-react";
+import { Plus, ChevronRight, Loader2 } from "lucide-react";
 
 interface Props {
   initialElections: ElectionListItem[];
@@ -123,27 +111,6 @@ export default function DashboardElectionsClient({
       ).length,
     [elections]
   );
-
-  const totalVoters = useMemo(
-    () =>
-      elections.reduce(
-        (sum, e) => sum + (e.ballots?.length ?? 0),
-        0
-      ),
-    [elections]
-  );
-
-  const pendingApprovals = useMemo(() => {
-    if (!isSeAdmin) return 0;
-    return elections.filter((e) => {
-      if (!e.approvals) return false;
-      if (e.status === "CERTIFIED" || e.status === "CANCELLED") return false;
-      const requiredStage = getRequiredApprovalStage(e.status);
-      if (!requiredStage) return false;
-      const stageApprovals = e.approvals.filter((a) => a.stage === requiredStage);
-      return stageApprovals.length < 2;
-    }).length;
-  }, [elections, isSeAdmin]);
 
   const filteredElections = useMemo(
     () =>
@@ -243,110 +210,83 @@ export default function DashboardElectionsClient({
   };
 
   return (
-    <div className="w-full space-y-6">
+    <NeoCard depth={1} className="w-full">
+      <NeoCardContent className="space-y-6 p-6 md:p-8">
       {/* Header */}
-      <NeoCard depth={1}>
-        <NeoCardHeader>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <NeoCardTitle>Elections Management</NeoCardTitle>
-            {isPresident && (
-              <Button onClick={() => setModalOpen(true)} className="gap-2">
-                <Plus className="h-4 w-4" />
-                New Election
-              </Button>
-            )}
+      <Card depth={2} className="p-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-2">
+            <h1 className="text-2xl font-display font-bold">Elections</h1>
+            <div className="flex flex-wrap gap-x-8 gap-y-1 text-sm text-muted-foreground">
+              <span>
+                <strong className="text-foreground text-lg font-display">
+                  {activeCount}
+                </strong>{" "}
+                active
+              </span>
+              <span>
+                <strong className="text-foreground text-lg font-display">
+                  {elections.length}
+                </strong>{" "}
+                total
+              </span>
+            </div>
           </div>
-          {isSeAdmin && !isPresident && (
-            <p className="text-sm text-muted-foreground mt-1">
-              Your role: review and approve election stages
-            </p>
+          {isPresident && (
+            <Button onClick={() => setModalOpen(true)} className="gap-2">
+              <Plus className="h-4 w-4" />
+              New Election
+            </Button>
           )}
-        </NeoCardHeader>
-      </NeoCard>
-
-      {/* Stats row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard
-          label="Active"
-          value={activeCount}
-          icon={<TrendingUp className="h-5 w-5" />}
-          iconBg="bg-sky-100 text-sky-600 dark:bg-sky-900/30 dark:text-sky-400"
-        />
-        <StatCard
-          label="Pending Approvals"
-          value={pendingApprovals}
-          icon={<Award className="h-5 w-5" />}
-          iconBg={
-            isSeAdmin && pendingApprovals > 0
-              ? "bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400"
-              : "bg-primary/10 text-primary"
-          }
-        />
-        <StatCard
-          label="Total Voters"
-          value={totalVoters}
-          icon={<Users className="h-5 w-5" />}
-        />
-        <StatCard
-          label="Elections"
-          value={elections.length}
-          icon={<Vote className="h-5 w-5" />}
-        />
-      </div>
+        </div>
+      </Card>
 
       {/* Elections list */}
-      <NeoCard depth={1}>
-        <NeoCardHeader>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <NeoCardTitle>All Elections</NeoCardTitle>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                {STATUS_FILTER_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </NeoCardHeader>
-        <NeoCardContent>
-          {filteredElections.length === 0 ? (
-            <ElectionEmptyState
-              title={
-                statusFilter === "all"
-                  ? "No elections yet"
-                  : "No elections match this filter"
-              }
-              description={
-                statusFilter === "all"
-                  ? "Create your first election to get started."
-                  : "Try changing the status filter to see more elections."
-              }
-              action={
-                isPresident && statusFilter === "all" ? (
-                  <Button onClick={() => setModalOpen(true)} className="gap-2">
-                    <Plus className="h-4 w-4" />
-                    Create Election
-                  </Button>
-                ) : undefined
-              }
-            />
-          ) : (
-            <div className="space-y-3">
-              {filteredElections.map((election) => (
-                <AdminElectionRow
-                  key={election.id}
-                  election={election}
-                />
+      <div>
+        <div className="flex items-center justify-end mb-4">
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              {STATUS_FILTER_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
               ))}
-            </div>
-          )}
-        </NeoCardContent>
-      </NeoCard>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {filteredElections.length === 0 ? (
+          <ElectionEmptyState
+            title={
+              statusFilter === "all"
+                ? "No elections yet"
+                : "No elections match this filter"
+            }
+            description={
+              statusFilter === "all"
+                ? "Create your first election to get started."
+                : "Try changing the status filter to see more elections."
+            }
+            action={
+              isPresident && statusFilter === "all" ? (
+                <Button onClick={() => setModalOpen(true)} className="gap-2">
+                  <Plus className="h-4 w-4" />
+                  Create Election
+                </Button>
+              ) : undefined
+            }
+          />
+        ) : (
+          <div className="divide-y divide-border/10">
+            {filteredElections.map((election) => (
+              <ElectionRow key={election.id} election={election} />
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Create Election Modal */}
       {isPresident && (
@@ -471,114 +411,44 @@ export default function DashboardElectionsClient({
           </div>
         </Modal>
       )}
-    </div>
+      </NeoCardContent>
+    </NeoCard>
   );
 }
 
-/* ─── Helper: determine the required approval stage for a given status ─── */
+/* ─── ElectionRow ─── */
 
-function getRequiredApprovalStage(
-  status: string
-): "CONFIG" | "BALLOT" | "CERTIFICATION" | null {
-  switch (status) {
-    case "DRAFT":
-      return "CONFIG";
-    case "NOMINATIONS_CLOSED":
-      return "BALLOT";
-    case "VOTING_CLOSED":
-      return "CERTIFICATION";
-    default:
-      return null;
-  }
-}
-
-/* ─── AdminElectionRow ─── */
-
-function AdminElectionRow({ election }: { election: ElectionListItem }) {
+function ElectionRow({ election }: { election: ElectionListItem }) {
   const totalNominations = election.offices.reduce(
     (sum, office) => sum + office.nominations.length,
     0
   );
   const ballotCount = election.ballots?.length ?? 0;
 
-  // Approval indicators: check if both president and SE Admin have approved for the
-  // required stage
-  const requiredStage = getRequiredApprovalStage(election.status);
-  const stageApprovals = election.approvals?.filter(
-    (a) => a.stage === requiredStage
-  );
-  const presidentApproved = (stageApprovals?.length ?? 0) >= 1;
-  const seAdminApproved = (stageApprovals?.length ?? 0) >= 2;
-
   return (
-    <Link href={`/dashboard/elections/${election.id}`}>
-      <Card
-        depth={2}
-        className="p-4 hover:bg-surface-3/50 transition-colors cursor-pointer"
-      >
-        <div className="flex items-center gap-4">
-          <div className="flex-1 min-w-0 space-y-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <ElectionStatusBadge status={election.status} />
-              <h3 className="text-sm font-semibold truncate">
-                {election.title}
-              </h3>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Created{" "}
-              {new Date(election.createdAt).toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-              })}
-            </p>
-          </div>
+    <Link
+      href={`/dashboard/elections/${election.id}`}
+      className="group flex items-center gap-4 py-3 px-2 -mx-2 rounded-md hover:bg-surface-2/50 transition-colors"
+    >
+      <ElectionStatusBadge status={election.status} />
 
-          {/* Approval indicators */}
-          {requiredStage && (
-            <div className="hidden sm:flex items-center gap-1.5">
-              <Tooltip
-                content={
-                  <p>
-                    President: {presidentApproved ? "Approved" : "Pending"}
-                  </p>
-                }
-                size="sm"
-              >
-                <div
-                  className={`h-3 w-3 rounded-full ${
-                    presidentApproved
-                      ? "bg-emerald-500"
-                      : "bg-muted-foreground/30"
-                  }`}
-                />
-              </Tooltip>
-              <Tooltip
-                content={
-                  <p>SE Admin: {seAdminApproved ? "Approved" : "Pending"}</p>
-                }
-                size="sm"
-              >
-                <div
-                  className={`h-3 w-3 rounded-full ${
-                    seAdminApproved
-                      ? "bg-emerald-500"
-                      : "bg-muted-foreground/30"
-                  }`}
-                />
-              </Tooltip>
-            </div>
-          )}
+      <div className="flex-1 min-w-0">
+        <h3 className="text-sm font-semibold truncate">{election.title}</h3>
+      </div>
 
-          {/* Quick stats */}
-          <div className="hidden md:flex items-center gap-4 text-xs text-muted-foreground">
-            <span>{totalNominations} candidates</span>
-            <span>{ballotCount} ballots</span>
-          </div>
+      <span className="hidden sm:inline text-xs text-muted-foreground">
+        {new Date(election.createdAt).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        })}
+      </span>
 
-          <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
-        </div>
-      </Card>
+      <span className="hidden md:inline text-xs text-muted-foreground tabular-nums">
+        {totalNominations} nominations &middot; {ballotCount} ballots
+      </span>
+
+      <ChevronRight className="h-4 w-4 text-muted-foreground/0 group-hover:text-muted-foreground transition-colors shrink-0" />
     </Link>
   );
 }

@@ -2,12 +2,9 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   NeoCard,
-  NeoCardHeader,
-  NeoCardTitle,
   NeoCardContent,
 } from "@/components/ui/neo-card";
 import { Card } from "@/components/ui/card";
@@ -16,8 +13,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Tooltip } from "@/components/ui/tooltip";
+import { Progress } from "@/components/ui/progress";
+import {
+  Collapsible,
+  CollapsibleTrigger,
+  CollapsibleContent,
+} from "@/components/ui/collapsible";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,12 +29,8 @@ import {
 import {
   ElectionStatusBadge,
   ElectionPhaseTimeline,
-  DualApprovalBar,
-  ApprovalStageRow,
-  StatCard,
   NominationStatusBadge,
   EligibilityBadge,
-  ElectionEmptyState,
 } from "@/components/elections";
 import { ELECTION_PHASE_LABELS } from "@/components/elections/types";
 import type {
@@ -51,15 +48,9 @@ import {
   MoreHorizontal,
   ChevronRight,
   Vote,
-  Users,
-  Award,
-  TrendingUp,
   Loader2,
-  Settings,
-  AlertTriangle,
   Check,
   X,
-  UserCheck,
 } from "lucide-react";
 
 interface Props {
@@ -70,61 +61,23 @@ interface Props {
   approvalRole: "PRESIDENT" | "SE_ADMIN" | null;
 }
 
-const APPROVAL_STAGES: { stage: ElectionApprovalStage; label: string }[] = [
-  { stage: "CONFIG", label: "Configuration" },
-  { stage: "BALLOT", label: "Ballot" },
-  { stage: "CERTIFICATION", label: "Certification" },
-];
-
 function getNextPhase(
   status: ElectionStatus
-): { nextStatus: ElectionStatus; label: string; requiredStage: ElectionApprovalStage | null } | null {
+): {
+  nextStatus: ElectionStatus;
+  label: string;
+} | null {
   switch (status) {
     case "DRAFT":
-      return {
-        nextStatus: "NOMINATIONS_OPEN",
-        label: "Nominations Open",
-        requiredStage: "CONFIG",
-      };
+      return { nextStatus: "NOMINATIONS_OPEN", label: "Nominations Open" };
     case "NOMINATIONS_OPEN":
-      return {
-        nextStatus: "NOMINATIONS_CLOSED",
-        label: "Nominations Closed",
-        requiredStage: null,
-      };
+      return { nextStatus: "NOMINATIONS_CLOSED", label: "Nominations Closed" };
     case "NOMINATIONS_CLOSED":
-      return {
-        nextStatus: "VOTING_OPEN",
-        label: "Voting Open",
-        requiredStage: "BALLOT",
-      };
+      return { nextStatus: "VOTING_OPEN", label: "Voting Open" };
     case "VOTING_OPEN":
-      return {
-        nextStatus: "VOTING_CLOSED",
-        label: "Voting Closed",
-        requiredStage: null,
-      };
+      return { nextStatus: "VOTING_CLOSED", label: "Voting Closed" };
     case "VOTING_CLOSED":
-      return {
-        nextStatus: "CERTIFIED",
-        label: "Certified",
-        requiredStage: "CERTIFICATION",
-      };
-    default:
-      return null;
-  }
-}
-
-function getActiveApprovalStage(
-  status: ElectionStatus
-): ElectionApprovalStage | null {
-  switch (status) {
-    case "DRAFT":
-      return "CONFIG";
-    case "NOMINATIONS_CLOSED":
-      return "BALLOT";
-    case "VOTING_CLOSED":
-      return "CERTIFICATION";
+      return { nextStatus: "CERTIFIED", label: "Certified" };
     default:
       return null;
   }
@@ -153,7 +106,6 @@ export default function ElectionAdminDetailClient({
   isSeAdmin,
   approvalRole,
 }: Props) {
-  const router = useRouter();
   const [election, setElection] = useState(initialElection);
   const [approvalLoading, setApprovalLoading] = useState(false);
   const [advanceLoading, setAdvanceLoading] = useState(false);
@@ -163,7 +115,7 @@ export default function ElectionAdminDetailClient({
     new Set()
   );
 
-  // Settings tab state
+  // Settings state
   const [editTitle, setEditTitle] = useState(election.title);
   const [editDescription, setEditDescription] = useState(election.description);
   const [editNominationsOpenAt, setEditNominationsOpenAt] = useState(
@@ -267,7 +219,7 @@ export default function ElectionAdminDetailClient({
     }
   };
 
-  /* ─── Approvals ─── */
+  /* ─── Approvals (only used for certification) ─── */
 
   const handleApprove = async (stage: ElectionApprovalStage) => {
     setApprovalLoading(true);
@@ -419,54 +371,12 @@ export default function ElectionAdminDetailClient({
   /* ─── Computed values ─── */
 
   const nextPhase = getNextPhase(election.status);
-  const activeApprovalStage = getActiveApprovalStage(election.status);
 
-  const totalNominations = election.offices.reduce(
-    (sum, office) => sum + office.nominations.length,
-    0
-  );
-
-  const approvedNominations = election.offices.reduce(
-    (sum, office) =>
-      sum +
-      office.nominations.filter(
-        (n) => n.eligibilityStatus === "APPROVED" && n.status === "ACCEPTED"
-      ).length,
-    0
-  );
-
-  const hasRequiredApprovals = useMemo(() => {
-    if (!nextPhase?.requiredStage) return true;
-    const stageApprovals = election.approvals.filter(
-      (a) => a.stage === nextPhase.requiredStage
-    );
-    return stageApprovals.length >= 2;
-  }, [election.approvals, nextPhase]);
-
-  const missingApprovalReason = useMemo(() => {
-    if (!nextPhase?.requiredStage) return null;
-    const stageApprovals = election.approvals.filter(
-      (a) => a.stage === nextPhase.requiredStage
-    );
-    if (stageApprovals.length === 0) return "Both approvals required";
-    if (stageApprovals.length === 1) return "One more approval needed";
-    return null;
-  }, [election.approvals, nextPhase]);
-
-  // SE Admin pending approval detection
-  const seAdminPendingStage = useMemo(() => {
-    if (!isSeAdmin || !activeApprovalStage) return null;
-    const myApproval = election.approvals.find(
-      (a) => a.stage === activeApprovalStage && a.userId === currentUserId
-    );
-    return myApproval ? null : activeApprovalStage;
-  }, [isSeAdmin, activeApprovalStage, election.approvals, currentUserId]);
-
-  // Unique voters from ballots
-  const voters = useMemo(
-    () => election.ballots.map((b) => b.voter),
-    [election.ballots]
-  );
+  const eligibleCount = useMemo(() => {
+    // Unique voters who have cast ballots, or a reasonable estimate
+    // In a real system this would come from server; use ballots as proxy
+    return Math.max(election.ballots.length, 1);
+  }, [election.ballots]);
 
   const toggleNominationExpanded = (nominationId: number) => {
     setExpandedNominations((prev) => {
@@ -483,7 +393,8 @@ export default function ElectionAdminDetailClient({
   /* ─── Render ─── */
 
   return (
-    <div className="w-full space-y-6">
+    <NeoCard depth={1} className="w-full">
+      <NeoCardContent className="space-y-8 p-6 md:p-8">
       {/* Breadcrumbs */}
       <nav className="flex items-center gap-1.5 text-sm text-muted-foreground">
         <Link
@@ -498,57 +409,62 @@ export default function ElectionAdminDetailClient({
         </span>
       </nav>
 
-      {/* Header card */}
-      <NeoCard depth={1}>
-        <NeoCardHeader>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div className="space-y-2">
-              <div className="flex flex-wrap items-center gap-3">
-                <h1 className="text-3xl font-display font-bold">
-                  {election.title}
-                </h1>
-                <ElectionStatusBadge status={election.status} />
-              </div>
+      {/* Header section */}
+      <Card depth={2} className="p-6">
+        <div className="space-y-4">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-3 min-w-0">
+              <h1 className="text-3xl font-display font-bold">
+                {election.title}
+              </h1>
+              <ElectionStatusBadge status={election.status} />
             </div>
-            {isPresident && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem
-                    onClick={() => {
-                      setEmailKind("BALLOT_ANNOUNCEMENT");
-                      setEmailOpen(true);
-                    }}
-                  >
-                    <Mail className="h-4 w-4 mr-2" />
-                    Email Voters
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => {
-                      setEmailKind("BALLOT_REMINDER");
-                      setEmailOpen(true);
-                    }}
-                  >
-                    <Mail className="h-4 w-4 mr-2" />
-                    Send Reminder
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href={`/elections/${election.slug}`}>
-                      <Eye className="h-4 w-4 mr-2" />
-                      View Public Page
-                    </Link>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="shrink-0">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <Link href={`/elections/${election.slug}`}>
+                    <Eye className="h-4 w-4 mr-2" />
+                    View Public Page
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href={`/elections/${election.slug}/vote`}>
+                    <Vote className="h-4 w-4 mr-2" />
+                    View Ballot
+                  </Link>
+                </DropdownMenuItem>
+                {isPresident && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => {
+                        setEmailKind("BALLOT_ANNOUNCEMENT");
+                        setEmailOpen(true);
+                      }}
+                    >
+                      <Mail className="h-4 w-4 mr-2" />
+                      Email Voters
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => {
+                        setEmailKind("BALLOT_REMINDER");
+                        setEmailOpen(true);
+                      }}
+                    >
+                      <Mail className="h-4 w-4 mr-2" />
+                      Send Reminder
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
-        </NeoCardHeader>
-        <NeoCardContent className="space-y-4">
+
           <ElectionPhaseTimeline
             status={election.status}
             nominationsOpenAt={election.nominationsOpenAt}
@@ -558,593 +474,245 @@ export default function ElectionAdminDetailClient({
             certifiedAt={election.certifiedAt}
           />
 
-          {activeApprovalStage && (
-            <DualApprovalBar
-              stage={activeApprovalStage}
-              stageLabel={
-                APPROVAL_STAGES.find((s) => s.stage === activeApprovalStage)
-                  ?.label ?? activeApprovalStage
-              }
-              approvals={election.approvals}
-              currentUserId={currentUserId}
-              currentUserRole={approvalRole}
-              onApprove={handleApprove}
-              onRemoveApproval={handleRemoveApproval}
-              loading={approvalLoading}
-            />
-          )}
-        </NeoCardContent>
-      </NeoCard>
-
-      {/* Phase advance banner (President only) */}
-      {isPresident && nextPhase && (
-        <Card depth={2} className="p-4">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-3">
-              <TrendingUp className="h-5 w-5 text-primary shrink-0" />
-              <div>
-                <p className="text-sm font-semibold">
-                  Ready to advance to {nextPhase.label}?
-                </p>
-                {missingApprovalReason && (
-                  <p className="text-xs text-muted-foreground">
-                    {missingApprovalReason}
-                  </p>
-                )}
-              </div>
-            </div>
-            {hasRequiredApprovals ? (
+          {/* Inline advance button for President (not certification - that has its own section) */}
+          {isPresident && nextPhase && nextPhase.nextStatus !== "CERTIFIED" && (
+            <div className="flex items-center justify-between pt-4 border-t border-border/10 mt-4">
+              <p className="text-sm text-muted-foreground">
+                Next: {nextPhase.label}
+              </p>
               <Button
-                onClick={() =>
-                  nextPhase.nextStatus === "CERTIFIED"
-                    ? certify()
-                    : updateStatus(nextPhase.nextStatus)
-                }
-                disabled={advanceLoading}
-                className="gap-2"
-              >
-                {advanceLoading && (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                )}
-                Advance to {nextPhase.label}
-              </Button>
-            ) : (
-              <Tooltip
-                content={
-                  <p>
-                    Cannot advance: {missingApprovalReason ?? "approvals needed"}
-                  </p>
-                }
                 size="sm"
+                onClick={() => updateStatus(nextPhase.nextStatus)}
+                disabled={advanceLoading}
               >
-                <Button disabled className="gap-2">
-                  <AlertTriangle className="h-4 w-4" />
-                  Advance to {nextPhase.label}
-                </Button>
-              </Tooltip>
-            )}
-          </div>
-        </Card>
-      )}
-
-      {/* SE Admin pending approval banner */}
-      {isSeAdmin && seAdminPendingStage && (
-        <Card
-          depth={2}
-          className="p-4 border-l-4 border-l-amber-500"
-        >
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-3">
-              <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0" />
-              <div>
-                <p className="text-sm font-semibold">
-                  Your approval is needed for the{" "}
-                  {APPROVAL_STAGES.find(
-                    (s) => s.stage === seAdminPendingStage
-                  )?.label ?? seAdminPendingStage}{" "}
-                  stage
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Review the election details and approve when ready.
-                </p>
-              </div>
+                {advanceLoading ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : null}
+                Advance
+              </Button>
             </div>
-            <Button
-              onClick={() => handleApprove(seAdminPendingStage)}
-              disabled={approvalLoading}
-              className="gap-2"
-            >
-              {approvalLoading && (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              )}
-              <Check className="h-4 w-4" />
-              Approve
-            </Button>
-          </div>
-        </Card>
-      )}
-
-      {/* Tabs */}
-      <Tabs defaultValue="overview">
-        <TabsList className="flex-wrap">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="nominations">Nominations</TabsTrigger>
-          <TabsTrigger value="ballot">Ballot</TabsTrigger>
-          <TabsTrigger value="voters">Voters</TabsTrigger>
-          <TabsTrigger value="results">Results</TabsTrigger>
-          {isPresident && (
-            <TabsTrigger value="settings">
-              <Settings className="h-3.5 w-3.5 mr-1.5" />
-              Settings
-            </TabsTrigger>
           )}
-        </TabsList>
+        </div>
+      </Card>
 
-        {/* ─── OVERVIEW TAB ─── */}
-        <TabsContent value="overview">
-          <div className="grid gap-6 lg:grid-cols-5">
-            {/* Left column */}
-            <div className="lg:col-span-3 space-y-6">
-              {/* Stats grid */}
-              <div className="grid grid-cols-2 gap-4">
-                <StatCard
-                  label="Total Nominations"
-                  value={totalNominations}
-                  icon={<Users className="h-5 w-5" />}
-                  iconBg="bg-sky-100 text-sky-600 dark:bg-sky-900/30 dark:text-sky-400"
-                />
-                <StatCard
-                  label="Approved Candidates"
-                  value={approvedNominations}
-                  icon={<UserCheck className="h-5 w-5" />}
-                  iconBg="bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400"
-                />
-                <StatCard
-                  label="Ballots Cast"
-                  value={election.ballots.length}
-                  icon={<Vote className="h-5 w-5" />}
-                  iconBg="bg-violet-100 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400"
-                />
-                <StatCard
-                  label="Offices"
-                  value={election.offices.length}
-                  icon={<Award className="h-5 w-5" />}
-                  iconBg="bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400"
-                />
+      {/* ─── OFFICES & NOMINATIONS ─── */}
+      <div className="space-y-8">
+        {election.offices.map((office) => (
+          <div key={office.id}>
+            <div className="flex items-baseline gap-2 mb-3">
+              <h2 className="text-lg font-display font-bold">
+                {office.officerPosition.title}
+              </h2>
+              <span className="text-sm text-muted-foreground">
+                {office.nominations.length} nomination{office.nominations.length !== 1 ? "s" : ""}
+              </span>
+            </div>
+            {office.nominations.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-2">
+                No nominations yet.
+              </p>
+            ) : (
+              <div className="divide-y divide-border/10">
+                {office.nominations.map((nom) => (
+                  <NominationRow
+                    key={nom.id}
+                    nomination={nom}
+                    isPresident={isPresident}
+                    expanded={expandedNominations.has(nom.id)}
+                    onToggleExpand={() => toggleNominationExpanded(nom.id)}
+                    onApprove={() => reviewNomination(nom.id, "APPROVED")}
+                    onReject={() => reviewNomination(nom.id, "REJECTED")}
+                  />
+                ))}
               </div>
-
-              {/* Email log */}
-              <Card depth={2} className="p-4 space-y-3">
-                <h3 className="text-sm font-semibold flex items-center gap-2">
-                  <Mail className="h-4 w-4" />
-                  Email Log
-                </h3>
-                {election.emailLogs.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    No email activity yet.
-                  </p>
-                ) : (
-                  <div className="space-y-2">
-                    {election.emailLogs.map((log) => (
-                      <div
-                        key={log.id}
-                        className="rounded-md border border-border px-3 py-2 text-sm"
-                      >
-                        <p className="font-medium">{log.subject}</p>
-                        <p className="text-muted-foreground text-xs">
-                          {log.kind} by {log.sentBy.name} to{" "}
-                          {log.recipientCount} recipients on{" "}
-                          {new Date(log.sentAt).toLocaleString()}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </Card>
-            </div>
-
-            {/* Right column */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* Approval stages */}
-              <Card depth={2} className="p-4 space-y-3">
-                <h3 className="text-sm font-semibold flex items-center gap-2">
-                  <Check className="h-4 w-4" />
-                  Approval Stages
-                </h3>
-                <div className="space-y-3">
-                  {APPROVAL_STAGES.map(({ stage, label }) => (
-                    <ApprovalStageRow
-                      key={stage}
-                      stage={stage}
-                      label={label}
-                      approvals={election.approvals}
-                      isCurrentStage={activeApprovalStage === stage}
-                    />
-                  ))}
-                </div>
-              </Card>
-
-              {/* Quick actions */}
-              <Card depth={2} className="p-4 space-y-3">
-                <h3 className="text-sm font-semibold">Quick Actions</h3>
-                <div className="flex flex-col gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="justify-start gap-2"
-                    asChild
-                  >
-                    <Link href={`/elections/${election.slug}`}>
-                      <Eye className="h-4 w-4" />
-                      View Public Page
-                    </Link>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="justify-start gap-2"
-                    asChild
-                  >
-                    <Link href={`/elections/${election.slug}/vote`}>
-                      <Vote className="h-4 w-4" />
-                      View Ballot
-                    </Link>
-                  </Button>
-                  {isPresident && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="justify-start gap-2"
-                      onClick={() => {
-                        setEmailKind("BALLOT_ANNOUNCEMENT");
-                        setEmailOpen(true);
-                      }}
-                    >
-                      <Mail className="h-4 w-4" />
-                      Email Voters
-                    </Button>
-                  )}
-                </div>
-              </Card>
-            </div>
-          </div>
-        </TabsContent>
-
-        {/* ─── NOMINATIONS TAB ─── */}
-        <TabsContent value="nominations">
-          <div className="space-y-6">
-            {election.offices.map((office) => (
-              <Card key={office.id} depth={2} className="p-4 space-y-4">
-                <h3 className="text-lg font-semibold">
-                  {office.officerPosition.title}
-                </h3>
-                {office.nominations.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    No nominations yet for this position.
-                  </p>
-                ) : (
-                  <div className="space-y-3">
-                    {office.nominations.map((nomination) => (
-                      <NominationCard
-                        key={nomination.id}
-                        nomination={nomination}
-                        isPresident={isPresident}
-                        expanded={expandedNominations.has(nomination.id)}
-                        onToggleExpand={() =>
-                          toggleNominationExpanded(nomination.id)
-                        }
-                        onApprove={() =>
-                          reviewNomination(nomination.id, "APPROVED")
-                        }
-                        onReject={() =>
-                          reviewNomination(nomination.id, "REJECTED")
-                        }
-                      />
-                    ))}
-                  </div>
-                )}
-              </Card>
-            ))}
-
-            {election.offices.length === 0 && (
-              <ElectionEmptyState
-                title="No offices configured"
-                description="This election does not have any offices set up."
-              />
             )}
           </div>
-        </TabsContent>
+        ))}
 
-        {/* ─── BALLOT TAB ─── */}
-        <TabsContent value="ballot">
-          <Card depth={2} className="p-6">
-            {election.ballots.length === 0 ? (
-              <ElectionEmptyState
-                title="No ballots cast yet"
-                description="Ballots will appear here once voting begins and voters submit their rankings."
-                icon={<Vote className="h-16 w-16 text-muted-foreground/30" />}
-              />
-            ) : (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold">
-                    {election.ballots.length} Ballot
-                    {election.ballots.length !== 1 ? "s" : ""} Cast
-                  </h3>
+        {election.offices.length === 0 && (
+          <p className="text-sm text-muted-foreground">
+            No offices configured for this election.
+          </p>
+        )}
+      </div>
+
+      {/* ─── PARTICIPATION (visible once voting has started or finished) ─── */}
+      {(election.status === "VOTING_OPEN" ||
+        election.status === "VOTING_CLOSED" ||
+        election.status === "CERTIFIED") &&
+        election.ballots.length > 0 && (
+          <div className="space-y-2">
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl font-display font-bold">
+                {election.ballots.length}
+              </span>
+              <span className="text-sm text-muted-foreground">
+                ballot{election.ballots.length !== 1 ? "s" : ""} cast
+              </span>
+            </div>
+            <Progress
+              value={100}
+              className="h-1.5"
+            />
+          </div>
+        )}
+
+      {/* ─── CERTIFICATION (VOTING_CLOSED only) ─── */}
+      {election.status === "VOTING_CLOSED" && (
+        <div className="space-y-3">
+          <h2 className="text-lg font-display font-bold">Certification</h2>
+          {isSeAdmin ? (
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">
+                Review results and certify this election
+              </p>
+              <Button onClick={certify} disabled={advanceLoading}>
+                {advanceLoading ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : null}
+                Certify Results
+              </Button>
+            </div>
+          ) : isPresident ? (
+            <p className="text-sm text-muted-foreground">
+              Results are ready. SE Admin must certify before finalizing.
+            </p>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Awaiting SE Admin certification.
+            </p>
+          )}
+          <Link
+            href={`/elections/${election.slug}/results`}
+            className="text-sm text-primary hover:underline inline-block"
+          >
+            View full results
+          </Link>
+        </div>
+      )}
+
+      {/* ─── SETTINGS (President only, collapsible) ─── */}
+      {isPresident && (
+        <Collapsible>
+          <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors group">
+            <ChevronRight className="h-4 w-4 transition-transform group-data-[state=open]:rotate-90" />
+            Election Settings
+          </CollapsibleTrigger>
+          <CollapsibleContent className="pt-6 space-y-6">
+            <div className="space-y-4 max-w-2xl">
+              <div className="space-y-2">
+                <Label htmlFor="edit-title">Title</Label>
+                <Input
+                  id="edit-title"
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-description">Description</Label>
+                <Textarea
+                  id="edit-description"
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                />
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-nom-open">Nominations Open</Label>
+                  <Input
+                    id="edit-nom-open"
+                    type="datetime-local"
+                    value={editNominationsOpenAt}
+                    onChange={(e) => setEditNominationsOpenAt(e.target.value)}
+                  />
                 </div>
                 <div className="space-y-2">
-                  {election.ballots.map((ballot) => (
-                    <div
-                      key={ballot.id}
-                      className="flex items-center gap-3 rounded-md border border-border px-3 py-2 text-sm"
-                    >
-                      <Avatar className="h-7 w-7">
-                        <AvatarFallback className="text-[10px]">
-                          {getInitials(ballot.voter.name)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium truncate">
-                          {ballot.voter.name}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          Submitted{" "}
-                          {new Date(ballot.submittedAt).toLocaleString()}
-                        </p>
-                      </div>
-                      <span className="text-xs text-muted-foreground">
-                        {ballot.rankings.length} rankings
-                      </span>
-                    </div>
-                  ))}
+                  <Label htmlFor="edit-nom-close">Nominations Close</Label>
+                  <Input
+                    id="edit-nom-close"
+                    type="datetime-local"
+                    value={editNominationsCloseAt}
+                    onChange={(e) => setEditNominationsCloseAt(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-vote-open">Voting Open</Label>
+                  <Input
+                    id="edit-vote-open"
+                    type="datetime-local"
+                    value={editVotingOpenAt}
+                    onChange={(e) => setEditVotingOpenAt(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-vote-close">Voting Close</Label>
+                  <Input
+                    id="edit-vote-close"
+                    type="datetime-local"
+                    value={editVotingCloseAt}
+                    onChange={(e) => setEditVotingCloseAt(e.target.value)}
+                  />
                 </div>
               </div>
-            )}
-          </Card>
-        </TabsContent>
-
-        {/* ─── VOTERS TAB ─── */}
-        <TabsContent value="voters">
-          <Card depth={2} className="p-6">
-            {voters.length === 0 ? (
-              <ElectionEmptyState
-                title="No voters yet"
-                description="Voters who have cast ballots will appear here."
-                icon={<Users className="h-16 w-16 text-muted-foreground/30" />}
-              />
-            ) : (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold">
-                    Voters ({voters.length})
-                  </h3>
-                  {isPresident && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="gap-2"
-                      onClick={() => {
-                        setEmailKind("BALLOT_REMINDER");
-                        setEmailOpen(true);
-                      }}
-                    >
-                      <Mail className="h-4 w-4" />
-                      Email All
-                    </Button>
-                  )}
-                </div>
-                <div className="space-y-1">
-                  {voters.map((voter) => (
-                    <div
-                      key={voter.id}
-                      className="flex items-center gap-3 rounded-md px-3 py-2 text-sm hover:bg-surface-3/50 transition-colors"
-                    >
-                      <Avatar className="h-7 w-7">
-                        <AvatarFallback className="text-[10px]">
-                          {getInitials(voter.name)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium truncate">{voter.name}</p>
-                        <p className="text-xs text-muted-foreground truncate">
-                          {voter.email}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </Card>
-        </TabsContent>
-
-        {/* ─── RESULTS TAB ─── */}
-        <TabsContent value="results">
-          <Card depth={2} className="p-6">
-            {election.status === "VOTING_CLOSED" ||
-            election.status === "CERTIFIED" ? (
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Election Results</h3>
-                <p className="text-sm text-muted-foreground">
-                  {election.status === "CERTIFIED"
-                    ? "This election has been certified. Final results are shown below."
-                    : "Voting has closed. Results are available for review."}
-                </p>
-                <div className="space-y-4">
-                  {election.offices.map((office) => {
-                    const accepted = office.nominations.filter(
-                      (n) =>
-                        n.status === "ACCEPTED" &&
-                        n.eligibilityStatus === "APPROVED"
-                    );
-                    return (
-                      <Card
-                        key={office.id}
-                        depth={3}
-                        className="p-4 space-y-2"
-                      >
-                        <h4 className="font-semibold">
-                          {office.officerPosition.title}
-                        </h4>
-                        {accepted.length === 0 ? (
-                          <p className="text-sm text-muted-foreground">
-                            No eligible candidates.
-                          </p>
-                        ) : (
-                          <div className="space-y-1">
-                            {accepted.map((nom) => (
-                              <div
-                                key={nom.id}
-                                className="flex items-center gap-2 text-sm"
-                              >
-                                <Avatar className="h-6 w-6">
-                                  <AvatarFallback className="text-[9px]">
-                                    {getInitials(nom.nominee.name)}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <span>{nom.nominee.name}</span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                        <p className="text-xs text-muted-foreground">
-                          {election.ballots.length} ballot
-                          {election.ballots.length !== 1 ? "s" : ""} cast
-                        </p>
-                      </Card>
-                    );
-                  })}
-                </div>
-              </div>
-            ) : (
-              <ElectionEmptyState
-                title="Results not yet available"
-                description="Results will be displayed here once voting closes."
-                icon={
-                  <Award className="h-16 w-16 text-muted-foreground/30" />
-                }
-              />
-            )}
-          </Card>
-        </TabsContent>
-
-        {/* ─── SETTINGS TAB (President only) ─── */}
-        {isPresident && (
-          <TabsContent value="settings">
-            <div className="space-y-6">
-              {/* Edit form */}
-              <Card depth={2} className="p-6 space-y-4">
-                <h3 className="text-lg font-semibold">Election Settings</h3>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-title">Title</Label>
-                    <Input
-                      id="edit-title"
-                      value={editTitle}
-                      onChange={(e) => setEditTitle(e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-description">Description</Label>
-                    <Textarea
-                      id="edit-description"
-                      value={editDescription}
-                      onChange={(e) => setEditDescription(e.target.value)}
-                    />
-                  </div>
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="edit-nom-open">Nominations Open</Label>
-                      <Input
-                        id="edit-nom-open"
-                        type="datetime-local"
-                        value={editNominationsOpenAt}
-                        onChange={(e) =>
-                          setEditNominationsOpenAt(e.target.value)
-                        }
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="edit-nom-close">
-                        Nominations Close
-                      </Label>
-                      <Input
-                        id="edit-nom-close"
-                        type="datetime-local"
-                        value={editNominationsCloseAt}
-                        onChange={(e) =>
-                          setEditNominationsCloseAt(e.target.value)
-                        }
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="edit-vote-open">Voting Open</Label>
-                      <Input
-                        id="edit-vote-open"
-                        type="datetime-local"
-                        value={editVotingOpenAt}
-                        onChange={(e) => setEditVotingOpenAt(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="edit-vote-close">Voting Close</Label>
-                      <Input
-                        id="edit-vote-close"
-                        type="datetime-local"
-                        value={editVotingCloseAt}
-                        onChange={(e) => setEditVotingCloseAt(e.target.value)}
-                      />
-                    </div>
-                  </div>
-                  <div className="flex justify-end">
-                    <Button
-                      onClick={saveSettings}
-                      disabled={saving}
-                      className="gap-2"
-                    >
-                      {saving && (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      )}
-                      Save Changes
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-
-              {/* Danger zone */}
-              <Card
-                depth={2}
-                className="p-6 space-y-4 border-l-4 border-l-destructive"
-              >
-                <h3 className="text-lg font-semibold text-destructive">
-                  Danger Zone
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Cancelling an election is permanent and cannot be undone. All
-                  progress, nominations, and ballots will be preserved but the
-                  election will no longer be active.
-                </p>
-                <Button
-                  variant="destructive"
-                  onClick={cancelElection}
-                  disabled={
-                    cancelling ||
-                    election.status === "CANCELLED" ||
-                    election.status === "CERTIFIED"
-                  }
-                  className="gap-2"
-                >
-                  {cancelling && (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  )}
-                  <X className="h-4 w-4" />
-                  Cancel Election
+              <div className="flex justify-end">
+                <Button onClick={saveSettings} disabled={saving}>
+                  {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+                  Save Changes
                 </Button>
-              </Card>
+              </div>
             </div>
-          </TabsContent>
-        )}
-      </Tabs>
+
+            {/* Cancel election - destructive, at very bottom of settings */}
+            <div className="pt-6 border-t border-border/10 max-w-2xl">
+              <p className="text-sm text-muted-foreground mb-3">
+                Cancelling an election is permanent. All progress, nominations,
+                and ballots will be preserved but the election will no longer be
+                active.
+              </p>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={cancelElection}
+                disabled={
+                  cancelling ||
+                  election.status === "CANCELLED" ||
+                  election.status === "CERTIFIED"
+                }
+              >
+                {cancelling && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                Cancel Election
+              </Button>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+      )}
+
+      {/* ─── EMAIL LOG (collapsible) ─── */}
+      {election.emailLogs.length > 0 && (
+        <Collapsible>
+          <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors group">
+            <ChevronRight className="h-4 w-4 transition-transform group-data-[state=open]:rotate-90" />
+            Sent Emails ({election.emailLogs.length})
+          </CollapsibleTrigger>
+          <CollapsibleContent className="pt-4">
+            <div className="space-y-2">
+              {election.emailLogs.map((log) => (
+                <div
+                  key={log.id}
+                  className="py-2 text-sm"
+                >
+                  <p className="font-medium">{log.subject}</p>
+                  <p className="text-muted-foreground text-xs">
+                    {log.kind.replace(/_/g, " ").toLowerCase()} &middot;{" "}
+                    {log.sentBy.name} &middot; {log.recipientCount} recipients
+                    &middot; {new Date(log.sentAt).toLocaleString()}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+      )}
 
       {/* Email modal */}
       <EmailComposerModal
@@ -1154,13 +722,14 @@ export default function ElectionAdminDetailClient({
         defaultSubject={`[SSE Election] ${election.title}`}
         onSend={sendEmail}
       />
-    </div>
+      </NeoCardContent>
+    </NeoCard>
   );
 }
 
-/* ─── NominationCard sub-component ─── */
+/* ─── NominationRow sub-component ─── */
 
-function NominationCard({
+function NominationRow({
   nomination,
   isPresident,
   expanded,
@@ -1176,73 +745,56 @@ function NominationCard({
   onReject: () => void;
 }) {
   return (
-    <Card depth={3} className="p-4 space-y-3">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <Avatar className="h-9 w-9">
-            <AvatarFallback className="text-xs">
-              {getInitials(nomination.nominee.name)}
-            </AvatarFallback>
-          </Avatar>
-          <div className="min-w-0">
-            <p className="font-semibold text-sm">{nomination.nominee.name}</p>
-            <p className="text-xs text-muted-foreground truncate">
-              {nomination.nominee.email}
-            </p>
+    <div className="py-3">
+      <div className="flex items-start gap-3">
+        <Avatar className="h-9 w-9 shrink-0">
+          <AvatarFallback className="text-xs">
+            {getInitials(nomination.nominee.name)}
+          </AvatarFallback>
+        </Avatar>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-sm font-medium">
+              {nomination.nominee.name}
+            </span>
+            <NominationStatusBadge status={nomination.status} />
+            <EligibilityBadge status={nomination.eligibilityStatus} />
           </div>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <NominationStatusBadge status={nomination.status} />
-          <EligibilityBadge status={nomination.eligibilityStatus} />
-        </div>
-      </div>
-
-      {nomination.statement && (
-        <div className="bg-surface-2 rounded-md p-3 text-sm">
-          <p className="text-xs font-medium text-muted-foreground mb-1">
-            Candidate Statement
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {nomination.nominee.email}
           </p>
-          <p className="whitespace-pre-wrap">{nomination.statement}</p>
+          {nomination.statement && (
+            <p className="text-sm text-muted-foreground mt-1.5 line-clamp-2">
+              {nomination.statement}
+            </p>
+          )}
         </div>
-      )}
-
-      {isPresident && nomination.eligibilityStatus === "PENDING" && (
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onApprove}
-            className="gap-1.5"
-          >
-            <Check className="h-3.5 w-3.5" />
-            Approve
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onReject}
-            className="gap-1.5 text-destructive hover:text-destructive"
-          >
-            <X className="h-3.5 w-3.5" />
-            Reject
-          </Button>
-        </div>
-      )}
+        {isPresident && nomination.eligibilityStatus === "PENDING" && (
+          <div className="flex gap-1 shrink-0">
+            <Button size="xs" variant="ghost" onClick={onApprove}>
+              <Check className="h-3.5 w-3.5" />
+            </Button>
+            <Button size="xs" variant="ghost" onClick={onReject}>
+              <X className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        )}
+      </div>
 
       {/* Expandable eligibility details */}
       <button
         type="button"
         onClick={onToggleExpand}
-        className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+        className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 mt-2 ml-12"
       >
         <ChevronRight
           className={`h-3 w-3 transition-transform ${expanded ? "rotate-90" : ""}`}
         />
-        {expanded ? "Hide" : "Show"} eligibility details
+        {expanded ? "Hide" : "Show"} details
       </button>
 
       {expanded && (
-        <div className="grid gap-1 text-xs md:grid-cols-2 text-muted-foreground bg-surface-2 rounded-md p-3">
+        <div className="grid gap-1 text-xs md:grid-cols-2 text-muted-foreground mt-2 ml-12">
           <p>
             <span className="font-medium text-foreground">Nominated by:</span>{" "}
             {nomination.nominator.name}
@@ -1311,6 +863,6 @@ function NominationCard({
           )}
         </div>
       )}
-    </Card>
+    </div>
   );
 }

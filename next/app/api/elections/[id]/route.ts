@@ -99,16 +99,6 @@ export async function PUT(
       }
 
       if (
-        nextStatus === ElectionStatus.NOMINATIONS_OPEN &&
-        !(await stageHasRequiredApprovals(electionId, ElectionApprovalStage.CONFIG))
-      ) {
-        return new Response(
-          "CONFIG approval requires the President and one distinct SE Admin",
-          { status: 409 }
-        );
-      }
-
-      if (
         nextStatus === ElectionStatus.NOMINATIONS_CLOSED &&
         new Date() < existing.nominationsCloseAt
       ) {
@@ -128,14 +118,6 @@ export async function PUT(
         if (approvedCandidateCounts.some((count) => count < 1)) {
           return new Response(
             "Each office must have at least one approved candidate before voting opens",
-            { status: 409 }
-          );
-        }
-        if (
-          !(await stageHasRequiredApprovals(electionId, ElectionApprovalStage.BALLOT))
-        ) {
-          return new Response(
-            "BALLOT approval requires the President and one distinct SE Admin",
             { status: 409 }
           );
         }
