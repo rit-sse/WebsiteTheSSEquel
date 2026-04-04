@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo } from "react";
-// @ts-expect-error -- no @types/diff available
 import { diffLines } from "diff";
 
 type DiffLine = {

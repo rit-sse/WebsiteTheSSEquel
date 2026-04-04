@@ -19,8 +19,9 @@ function sanitizeStatus(value: string | null): AmendmentStatus | null {
   return null;
 }
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-  const amendmentId = Number(params.id);
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const amendmentId = Number(id);
   if (Number.isNaN(amendmentId)) {
     return new Response("Invalid amendment id", { status: 422 });
   }
@@ -119,8 +120,9 @@ function canChangeStatus(
   return actor.isPrimary;
 }
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
-  const amendmentId = Number(params.id);
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id: patchId } = await params;
+  const amendmentId = Number(patchId);
   if (Number.isNaN(amendmentId)) {
     return new Response("Invalid amendment id", { status: 422 });
   }
