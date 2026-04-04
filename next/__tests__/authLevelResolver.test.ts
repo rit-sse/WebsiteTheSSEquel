@@ -60,6 +60,7 @@ describe("authLevelResolver", () => {
       isTechCommitteeDivisionManager: false,
       techCommitteeManagedDivision: null,
       isPrimary: false,
+      isSeAdmin: false,
     });
   });
 
