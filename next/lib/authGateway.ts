@@ -15,6 +15,7 @@ const DEFAULT_GATEWAY_AUTH_LEVEL: GatewayAuthLevel = {
   isTechCommitteeDivisionManager: false,
   techCommitteeManagedDivision: null,
   isPrimary: false,
+  isSeAdmin: false,
 };
 
 export async function getGatewayAuthLevel(
