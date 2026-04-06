@@ -6,9 +6,9 @@ import { getAuthLevel } from "@/lib/services/authLevelService";
 import { notFound } from "next/navigation";
 
 type RouteParams = {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 };
 
 export const dynamic = "force-dynamic";
@@ -24,7 +24,7 @@ async function getAmendmentDetails(amendmentId: number) {
         },
       },
       votes: {
-        select: { userId: true, approve: true },
+        select: { userId: true, approve: true, phase: true, officerPositionId: true },
       },
       comments: {
         select: {
@@ -48,9 +48,45 @@ async function getAmendmentDetails(amendmentId: number) {
 
   if (!amendment) return null;
 
-  const voteSummary = computeVoteSummary(amendment.votes);
+  const memberVotes = amendment.votes.filter(v => v.phase === "VOTING");
+  const voteSummary = computeVoteSummary(memberVotes);
   const totalActiveMembers = await getActiveMemberCount();
   const requiredVotingParticipation = Math.ceil(totalActiveMembers * (2 / 3));
+
+  const primaryReviewVotes = amendment.votes.filter(v => v.phase === "PRIMARY_REVIEW");
+
+  // Build position-level primary review data
+  const allPrimaryPositions = await prisma.officerPosition.findMany({
+    where: { is_primary: true },
+    select: {
+      id: true,
+      title: true,
+      officers: {
+        where: { is_active: true },
+        select: { user: { select: { id: true, name: true } } },
+      },
+    },
+    orderBy: { title: "asc" },
+  });
+
+  const positionSlots = allPrimaryPositions.map((pos) => {
+    const vote = primaryReviewVotes.find((v) => (v as { officerPositionId?: number }).officerPositionId === pos.id);
+    const holder = pos.officers[0]?.user ?? null;
+    return {
+      positionId: pos.id,
+      title: pos.title,
+      holder: holder ? { id: holder.id, name: holder.name } : null,
+      voted: !!vote,
+      approve: vote?.approve ?? null,
+    };
+  });
+
+  const totalPositions = positionSlots.length;
+  const votedCount = positionSlots.filter((s) => s.voted).length;
+  const approveCount = positionSlots.filter((s) => s.approve === true).length;
+  const rejectCount = positionSlots.filter((s) => s.approve === false).length;
+  const quorumRequired = totalPositions === 0 ? 0 : Math.floor(totalPositions / 2) + 1;
+  const quorumMet = votedCount >= quorumRequired;
 
   return {
     id: amendment.id,
@@ -67,6 +103,10 @@ async function getAmendmentDetails(amendmentId: number) {
     publishedAt: amendment.publishedAt?.toISOString() ?? null,
     votingOpenedAt: amendment.votingOpenedAt?.toISOString() ?? null,
     votingClosedAt: amendment.votingClosedAt?.toISOString() ?? null,
+    primaryReviewOpenedAt: amendment.primaryReviewOpenedAt?.toISOString() ?? null,
+    primaryReviewClosedAt: amendment.primaryReviewClosedAt?.toISOString() ?? null,
+    votingDurationHours: amendment.votingDurationHours,
+    votingEndsAt: amendment.votingEndsAt?.toISOString() ?? null,
     author: amendment.author,
     votes: {
       totalVotes: voteSummary.totalVotes,
@@ -78,6 +118,17 @@ async function getAmendmentDetails(amendmentId: number) {
       hasSupermajority:
         voteSummary.totalVotes > 0 && voteSummary.approveVotes >= Math.ceil(voteSummary.totalVotes * (2 / 3)),
       totalActiveMembers,
+    },
+    primaryReview: {
+      positionSlots,
+      totalPositions,
+      votedCount,
+      approveCount,
+      rejectCount,
+      quorumRequired,
+      quorumMet,
+      majorityApproves: quorumMet && approveCount > rejectCount,
+      majorityRejects: quorumMet && rejectCount >= approveCount,
     },
     userVote: null,
     comments: amendment.comments.map((comment) => ({
@@ -95,7 +146,8 @@ async function getAmendmentDetails(amendmentId: number) {
 }
 
 export default async function AmendmentDetailPage({ params }: RouteParams) {
-  const amendmentId = Number(params.id);
+  const { id } = await params;
+  const amendmentId = Number(id);
   if (Number.isNaN(amendmentId)) {
     notFound();
   }
@@ -105,23 +157,18 @@ export default async function AmendmentDetailPage({ params }: RouteParams) {
     notFound();
   }
 
-  // Determine if current user already cast a vote for this amendment
+  // Determine if current user already cast a member vote
   const auth = await getAuthLevel();
   if (auth.userId) {
-    const vote = await prisma.amendmentVote.findUnique({
-      where: {
-        amendmentId_userId: {
-          amendmentId: amendment.id,
-          userId: auth.userId,
-        },
-      },
+    const vote = await prisma.amendmentVote.findFirst({
+      where: { amendmentId: amendment.id, userId: auth.userId, phase: "VOTING" },
       select: { approve: true },
     });
     amendment.userVote = vote ? vote.approve : null;
   }
 
   return (
-    <section className="w-full px-2 md:px-4 pb-6">
+    <section className="w-full max-w-6xl mx-auto px-2 md:px-4 pb-6">
       <AmendmentDetailClient amendment={amendment} />
     </section>
   );

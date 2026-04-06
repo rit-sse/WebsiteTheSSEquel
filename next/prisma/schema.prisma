@@ -850,23 +850,27 @@ model Memberships {
 }
 
 model Amendment {
-  id                Int             @id @default(autoincrement())
-  title             String
-  description       String          @db.Text
-  authorId          Int
-  status            AmendmentStatus @default(DRAFT)
-  phase             Int             @default(1)
-  githubPrNumber    Int?
-  githubBranch      String?
-  originalContent   String          @db.Text
-  proposedContent   String          @db.Text
-  publishedAt       DateTime?
-  votingOpenedAt    DateTime?
-  votingClosedAt    DateTime?
-  isSemanticChange  Boolean         @default(true)
-  officerPositionId Int?
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
+  id                    Int             @id @default(autoincrement())
+  title                 String
+  description           String          @db.Text
+  authorId              Int
+  status                AmendmentStatus @default(DRAFT)
+  phase                 Int             @default(1)
+  githubPrNumber        Int?
+  githubBranch          String?
+  originalContent       String          @db.Text
+  proposedContent       String          @db.Text
+  publishedAt           DateTime?
+  primaryReviewOpenedAt DateTime?
+  primaryReviewClosedAt DateTime?
+  votingOpenedAt        DateTime?
+  votingClosedAt        DateTime?
+  votingDurationHours   Int?
+  votingEndsAt          DateTime?
+  isSemanticChange      Boolean         @default(true)
+  officerPositionId     Int?
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
 
   author          User             @relation(fields: [authorId], references: [id])
   officerPosition OfficerPosition? @relation(fields: [officerPositionId], references: [id])
@@ -875,18 +879,21 @@ model Amendment {
 }
 
 model AmendmentVote {
-  id                Int      @id @default(autoincrement())
+  id                Int              @id @default(autoincrement())
   amendmentId       Int
   userId            Int
-  officerPositionId Int?
   approve           Boolean
-  createdAt         DateTime @default(now())
+  phase             String           @default("VOTING")
+  officerPositionId Int?
+  createdAt         DateTime         @default(now())
 
   amendment       Amendment        @relation(fields: [amendmentId], references: [id], onDelete: Cascade)
   user            User             @relation(fields: [userId], references: [id])
   officerPosition OfficerPosition? @relation(fields: [officerPositionId], references: [id])
 
-  @@unique([amendmentId, userId])
+  // Partial unique indexes managed via SQL:
+  // - AmendmentVote_amendmentId_userId_voting_key: unique (amendmentId, userId) WHERE phase='VOTING'
+  // - AmendmentVote_amendmentId_officerPositionId_phase_key: unique (amendmentId, officerPositionId, phase) WHERE officerPositionId IS NOT NULL
 }
 
 model AmendmentComment {

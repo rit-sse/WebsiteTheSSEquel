@@ -2,6 +2,7 @@ import prisma from "@/lib/prisma";
 import { AmendmentStatus } from "@prisma/client";
 import { getSessionToken } from "@/lib/sessionToken";
 import { resolveUserImage } from "@/lib/s3Utils";
+import { SE_ADMIN_POSITION_TITLE } from "@/lib/seAdmin";
 import { NextRequest } from "next/server";
 
 type Actor = {
@@ -9,6 +10,7 @@ type Actor = {
   email: string;
   isMember: boolean;
   isPrimary: boolean;
+  isSeAdmin: boolean;
   isOfficer: boolean;
   membershipCount: number;
 };
@@ -56,6 +58,7 @@ async function resolveActorFromToken(sessionToken: string | null): Promise<Actor
           position: {
             select: {
               is_primary: true,
+              title: true,
             },
           },
         },
@@ -71,6 +74,7 @@ async function resolveActorFromToken(sessionToken: string | null): Promise<Actor
     isMember: user._count.Memberships >= 1,
     isOfficer: user.officers.length > 0,
     isPrimary: user.officers.some((officer) => officer.position.is_primary),
+    isSeAdmin: user.officers.some((officer) => officer.position.title === SE_ADMIN_POSITION_TITLE),
   };
 }
 
@@ -82,7 +86,7 @@ export async function getActorFromRequest(request: NextRequest): Promise<Actor |
 export async function getActiveMemberCount(): Promise<number> {
   return prisma.user.count({
     where: {
-      memberships: {
+      Memberships: {
         some: {},
       },
     },
@@ -101,14 +105,52 @@ export function computeVoteSummary(votes: Pick<AmendmentVoteRow, "approve">[]): 
 
 export function getAmendmentStatusTransitions() {
   return {
-    DRAFT: ["OPEN", "WITHDRAWN"],
-    OPEN: ["VOTING", "WITHDRAWN"],
+    DRAFT: ["PRIMARY_REVIEW", "WITHDRAWN"],
+    OPEN: ["PRIMARY_REVIEW", "WITHDRAWN"],
+    PRIMARY_REVIEW: ["VOTING", "REJECTED", "WITHDRAWN"],
     VOTING: ["APPROVED", "REJECTED", "WITHDRAWN"],
     APPROVED: ["MERGED", "WITHDRAWN"],
     REJECTED: [],
     MERGED: [],
     WITHDRAWN: [],
   } as Record<AmendmentStatus, AmendmentStatus[]>;
+}
+
+export async function getActivePrimaryOfficerCount(): Promise<number> {
+  return prisma.officer.count({
+    where: {
+      is_active: true,
+      position: {
+        is_primary: true,
+      },
+    },
+  });
+}
+
+export function computePrimaryReviewQuorum(primaryCount: number): number {
+  if (primaryCount === 0) return 0;
+  return Math.floor(primaryCount / 2) + 1; // strict majority
+}
+
+export function computePrimaryReviewResult(
+  votes: Pick<{ approve: boolean }, "approve">[],
+  totalPrimaries: number,
+) {
+  const totalVoted = votes.length;
+  const approveVotes = votes.filter((v) => v.approve).length;
+  const rejectVotes = totalVoted - approveVotes;
+  const quorumRequired = computePrimaryReviewQuorum(totalPrimaries);
+  const quorumMet = totalVoted >= quorumRequired;
+
+  return {
+    totalVoted,
+    approveVotes,
+    rejectVotes,
+    quorumRequired,
+    quorumMet,
+    majorityApproves: quorumMet && approveVotes > rejectVotes,
+    majorityRejects: quorumMet && rejectVotes >= approveVotes,
+  };
 }
 
 export function resolveAmendmentImage(user: {

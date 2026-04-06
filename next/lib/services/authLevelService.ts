@@ -9,6 +9,7 @@ import {
   TECH_COMMITTEE_DIVISION_MANAGER_BY_TITLE,
   TECH_COMMITTEE_DIVISION_MANAGER_TITLES,
 } from "@/lib/utils";
+import { SE_ADMIN_POSITION_TITLE } from "@/lib/seAdmin";
 
 /**
  * Resolve auth level for the current user.
@@ -29,6 +30,7 @@ export async function getAuthLevel(): Promise<AuthLevel> {
     isTechCommitteeDivisionManager: false,
     techCommitteeManagedDivision: null,
     isPrimary: false,
+    isSeAdmin: false,
     profileComplete: true,
   };
 
@@ -102,6 +104,7 @@ export async function getAuthLevel(): Promise<AuthLevel> {
         ]
       : null,
     isPrimary: user.officers.some((o) => o.position.is_primary),
+    isSeAdmin: user.officers.some((o) => o.position.title === SE_ADMIN_POSITION_TITLE),
     profileComplete: !!(
       user.graduationTerm &&
       user.graduationYear &&

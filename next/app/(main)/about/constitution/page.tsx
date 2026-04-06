@@ -13,22 +13,23 @@ export default async function Constitution() {
 
   return (
     <section>
-      <div className="mb-4 w-full px-2 md:px-0 max-w-6xl">
-        <div className="flex flex-wrap gap-2 justify-end">
-          <Button variant="neutral" asChild>
-            <Link href="/about/constitution/amendments">Active Amendments</Link>
-          </Button>
-          {authLevel.isMember ? (
-            <Button asChild>
-              <Link href="/about/constitution/amendments/new">Propose Amendment</Link>
-            </Button>
-          ) : null}
-        </div>
-      </div>
       <div className="text-page-structure">
         <Card depth={1} className="w-full p-6 md:p-8">
+          <div className="flex flex-wrap gap-3 justify-between items-start mb-6">
+            <h1 className="font-display text-3xl font-bold tracking-tight">SSE Constitution</h1>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="secondary" asChild>
+                <Link href="/about/constitution/amendments">Active Amendments</Link>
+              </Button>
+              {authLevel.isMember ? (
+                <Button asChild>
+                  <Link href="/about/constitution/amendments/new">Propose Amendment</Link>
+                </Button>
+              ) : null}
+            </div>
+          </div>
           <div
-            className="prose prose-lg dark:prose-invert max-w-none"
+            className="prose prose-lg dark:prose-invert max-w-none [&>h1:first-child]:hidden"
             // Safe because getPostData() fetches the governing-docs markdown on
             // the server and sanitizes the generated HTML before render.
             dangerouslySetInnerHTML={{ __html: postData.props.htmlContent }}
