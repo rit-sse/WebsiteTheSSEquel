@@ -271,7 +271,7 @@ const ROUTES: { [key: string]: AuthVerifier } = {
   event: eventVerifier,
   go: allowAllVerifier,
   golinks: goLinkVerifier,
-  handover: nonGetPrimaryOfficerVerifier,
+  handover: nonGetOfficerVerifier,
   "headcount-import": primaryOfficerVerifier,
   "headcount-trends": officerVerifier,
   hourBlocks: nonGetOfficerVerifier,
