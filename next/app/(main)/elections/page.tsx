@@ -56,15 +56,15 @@ export default async function ElectionsPage() {
   }));
 
   return (
-    <section className="w-full max-w-5xl space-y-6">
+    <section className="w-full max-w-6xl">
       <NeoCard depth={1}>
-        <NeoCardHeader>
-          <NeoCardTitle>SSE Elections</NeoCardTitle>
-          <NeoCardDescription>
-            Ranked choice voting for officer positions
-          </NeoCardDescription>
-        </NeoCardHeader>
-        <NeoCardContent>
+        <NeoCardContent className="p-6 md:p-8 space-y-6">
+          <div>
+            <NeoCardTitle>SSE Elections</NeoCardTitle>
+            <NeoCardDescription>
+              Ranked choice voting for officer positions
+            </NeoCardDescription>
+          </div>
           <ElectionsListClient elections={serializedElections} />
         </NeoCardContent>
       </NeoCard>

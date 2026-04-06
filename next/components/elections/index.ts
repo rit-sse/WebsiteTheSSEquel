@@ -11,4 +11,5 @@ export { DualApprovalBar } from "./DualApprovalBar";
 export { ApprovalStageRow } from "./ApprovalStageRow";
 export { IRVBarChart } from "./IRVBarChart";
 export { IRVRoundTable } from "./IRVRoundTable";
+export { ActiveElectionBanner } from "./ActiveElectionBanner";
 export * from "./types";

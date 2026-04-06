@@ -20,6 +20,8 @@ export interface UserRef {
   id: number;
   name: string;
   email: string;
+  /** Resolved profile image URL (from S3 or Google OAuth) */
+  image?: string | null;
 }
 
 /* ---------- Officer position ---------- */

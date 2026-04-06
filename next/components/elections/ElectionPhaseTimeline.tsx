@@ -93,7 +93,7 @@ export function ElectionPhaseTimeline({
         {/* Background connector line */}
         <div className="absolute top-4 left-4 right-4 h-0.5 bg-border/30" />
         <div
-          className="absolute top-4 left-4 h-0.5 bg-primary/60 transition-all duration-700"
+          className="absolute top-4 left-4 h-0.5 bg-emerald-500/60 transition-all duration-700"
           style={{
             width: `${Math.max(0, (currentIndex / (ELECTION_PHASE_ORDER.length - 1)) * 100)}%`,
             maxWidth: "calc(100% - 2rem)",
@@ -123,7 +123,7 @@ export function ElectionPhaseTimeline({
                   className={cn(
                     "h-8 w-8 rounded-full flex items-center justify-center transition-all duration-300",
                     isCompleted &&
-                      "bg-primary/15 text-primary",
+                      "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400",
                     isCurrent &&
                       "bg-primary text-primary-foreground ring-4 ring-primary/20 scale-110",
                     isFuture &&
@@ -174,7 +174,7 @@ export function ElectionPhaseTimeline({
               <div
                 className={cn(
                   "h-6 w-6 rounded-full flex items-center justify-center shrink-0",
-                  isCompleted && "bg-primary/15 text-primary",
+                  isCompleted && "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400",
                   isCurrent &&
                     "bg-primary text-primary-foreground",
                   isFuture && "bg-surface-3 text-muted-foreground/40"

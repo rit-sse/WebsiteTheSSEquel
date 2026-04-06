@@ -9,6 +9,7 @@ import {
 } from "@prisma/client";
 import { getDefaultOfficerTermDateRange } from "@/lib/academicTerm";
 import { SE_ADMIN_POSITION_TITLE } from "@/lib/seAdmin";
+import { resolveUserImage } from "@/lib/s3Utils";
 
 export const PRIMARY_OFFICER_TITLES = [
   "President",
@@ -106,10 +107,10 @@ export async function getElectionWithRelations(where: {
           nominations: {
             include: {
               nominee: {
-                select: { id: true, name: true, email: true },
+                select: { id: true, name: true, email: true, profileImageKey: true, googleImageURL: true },
               },
               nominator: {
-                select: { id: true, name: true, email: true },
+                select: { id: true, name: true, email: true, profileImageKey: true, googleImageURL: true },
               },
               reviewedBy: {
                 select: { id: true, name: true, email: true },
@@ -181,10 +182,10 @@ export async function getElectionWithRelations(where: {
           nominations: {
             include: {
               nominee: {
-                select: { id: true, name: true, email: true },
+                select: { id: true, name: true, email: true, profileImageKey: true, googleImageURL: true },
               },
               nominator: {
-                select: { id: true, name: true, email: true },
+                select: { id: true, name: true, email: true, profileImageKey: true, googleImageURL: true },
               },
               reviewedBy: {
                 select: { id: true, name: true, email: true },
@@ -724,5 +725,31 @@ export async function assertPrimaryOfficerPositions(positionIds: number[]) {
 }
 
 export function serializeElectionForClient<T>(value: T): T {
-  return JSON.parse(JSON.stringify(value)) as T;
+  const serialized = JSON.parse(JSON.stringify(value));
+
+  // Resolve profile images on user references within election data
+  function resolveImages(obj: unknown): void {
+    if (!obj || typeof obj !== "object") return;
+    if (Array.isArray(obj)) {
+      obj.forEach(resolveImages);
+      return;
+    }
+    const record = obj as Record<string, unknown>;
+    // If this object looks like a user with image fields, resolve the image
+    if ("profileImageKey" in record || "googleImageURL" in record) {
+      record.image = resolveUserImage(
+        record.profileImageKey as string | undefined | null,
+        record.googleImageURL as string | undefined | null
+      );
+      delete record.profileImageKey;
+      delete record.googleImageURL;
+    }
+    // Recurse into nested objects
+    for (const val of Object.values(record)) {
+      resolveImages(val);
+    }
+  }
+
+  resolveImages(serialized);
+  return serialized as T;
 }

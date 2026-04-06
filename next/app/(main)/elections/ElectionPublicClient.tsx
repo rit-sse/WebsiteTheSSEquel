@@ -297,7 +297,8 @@ export default function ElectionPublicClient({
   /* ========================================================================= */
 
   return (
-    <div className="w-full space-y-6">
+    <NeoCard depth={1} className="w-full">
+      <NeoCardContent className="space-y-6 p-6 md:p-8">
       {/* ---- Breadcrumbs ---- */}
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
         <Link href="/elections" className="hover:text-foreground transition-colors">
@@ -307,20 +308,18 @@ export default function ElectionPublicClient({
         <span className="text-foreground font-medium">{election.title}</span>
       </nav>
 
-      {/* ---- Header Card ---- */}
-      <NeoCard depth={1}>
-        <NeoCardHeader>
+      {/* ---- Header ---- */}
+      <Card depth={2} className="p-6">
+        <div className="space-y-4">
           <div className="flex flex-wrap items-center gap-3">
-            <NeoCardTitle className="text-3xl">{election.title}</NeoCardTitle>
+            <h1 className="text-3xl font-display font-bold">{election.title}</h1>
             <ElectionStatusBadge status={election.status} />
           </div>
           {election.description && (
-            <NeoCardDescription className="mt-2 text-base">
+            <p className="text-base text-muted-foreground">
               {election.description}
-            </NeoCardDescription>
+            </p>
           )}
-        </NeoCardHeader>
-        <NeoCardContent>
           <ElectionPhaseTimeline
             status={election.status}
             nominationsOpenAt={election.nominationsOpenAt}
@@ -329,65 +328,165 @@ export default function ElectionPublicClient({
             votingCloseAt={election.votingCloseAt}
             certifiedAt={election.certifiedAt}
           />
-        </NeoCardContent>
-      </NeoCard>
+        </div>
+      </Card>
 
-      {/* ---- CTA Banner ---- */}
-      {isNominationsOpen && isMember && (
-        <div className="flex items-center justify-between gap-4 rounded-lg border-l-4 border-l-sky-500 bg-sky-50/50 p-4 dark:bg-sky-900/20">
-          <div className="flex items-center gap-3">
-            <Users className="h-5 w-5 text-sky-600 dark:text-sky-400" />
-            <div>
-              <p className="font-medium text-sky-900 dark:text-sky-100">
-                Nominations are open!
-              </p>
-              <p className="text-sm text-sky-700 dark:text-sky-300">
-                Nominate a candidate for any open position.
-              </p>
+      {/* ---- NOMINATION FORM (full-width, prominent when nominations open) ---- */}
+      {showNominationForm && (
+        <Card depth={2} id="nomination-form" className="p-6 md:p-8">
+          <div className="grid gap-8 lg:grid-cols-2">
+            <div className="space-y-4">
+              <div>
+                <h2 className="text-2xl font-display font-bold">Nominate a Candidate</h2>
+                <p className="text-muted-foreground mt-1">
+                  Search for any SSE member and nominate them for an open position.
+                  You can also nominate yourself.
+                </p>
+              </div>
+              <div className="space-y-3">
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Office</Label>
+                  <Select
+                    value={selectedOfficeId}
+                    onValueChange={setSelectedOfficeId}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Choose an office" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {election.offices.map(
+                        (office: SerializedElectionOffice) => (
+                          <SelectItem
+                            key={office.id}
+                            value={office.id.toString()}
+                          >
+                            {office.officerPosition.title}
+                          </SelectItem>
+                        )
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Search for a user</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={userQuery}
+                      onChange={(e) => setUserQuery(e.target.value)}
+                      placeholder="Name or email"
+                      className="flex-1"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          searchUsers();
+                        }
+                      }}
+                    />
+                    <Button
+                      variant="outline"
+                      onClick={searchUsers}
+                      type="button"
+                    >
+                      Search
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="space-y-4">
+              {userResults.length > 0 ? (
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Select a nominee</Label>
+                  <div className="space-y-1 max-h-64 overflow-y-auto">
+                    {userResults.map((user) => {
+                      const isSelected = selectedUserId === user.id;
+                      return (
+                        <div
+                          key={user.id}
+                          className={`flex items-center gap-3 rounded-lg p-3 cursor-pointer transition-all ${
+                            isSelected
+                              ? "ring-2 ring-primary bg-primary/5"
+                              : "hover:bg-muted/50"
+                          }`}
+                          onClick={() => setSelectedUserId(user.id)}
+                        >
+                          <Avatar className="h-9 w-9">
+                            <AvatarFallback className="text-xs">
+                              {getInitials(user.name)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">
+                              {user.name}
+                            </p>
+                            {user.email && (
+                              <p className="text-xs text-muted-foreground truncate">
+                                {user.email}
+                              </p>
+                            )}
+                          </div>
+                          {isSelected && (
+                            <CheckCircle className="h-5 w-5 text-primary shrink-0" />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center h-32 rounded-lg bg-surface-3/30 text-sm text-muted-foreground">
+                  Search for a user to see results here
+                </div>
+              )}
+              <Button
+                onClick={submitNomination}
+                disabled={
+                  !selectedOfficeId || !selectedUserId || submittingNomination
+                }
+                className="w-full"
+                size="lg"
+              >
+                <Send className="mr-2 h-4 w-4" />
+                Submit Nomination
+              </Button>
             </div>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              document.getElementById("nomination-form")?.scrollIntoView({
-                behavior: "smooth",
-              });
-            }}
-          >
-            <Send className="mr-2 h-4 w-4" />
-            Nominate
-          </Button>
-        </div>
+        </Card>
       )}
 
-      {isVotingOpen && isMember && !hasVoted && (
-        <div className="flex items-center justify-between gap-4 rounded-lg border-l-4 border-l-emerald-500 bg-emerald-50/50 p-4 dark:bg-emerald-900/20">
-          <div className="flex items-center gap-3">
-            <Vote className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-            <div>
-              <p className="font-medium text-emerald-900 dark:text-emerald-100">
-                Voting is open!
-              </p>
-              <p className="text-sm text-emerald-700 dark:text-emerald-300">
-                Cast your ranked-choice ballot now.
+      {/* ---- VOTING CTA (full-width, prominent when voting open) ---- */}
+      {isVotingOpen && isMember && (
+        <Card depth={2} className="p-6 md:p-8">
+          <div className="flex flex-col sm:flex-row items-center gap-6">
+            <div className="h-16 w-16 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center shrink-0">
+              <Vote className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
+            </div>
+            <div className="flex-1 text-center sm:text-left">
+              <h2 className="text-2xl font-display font-bold">
+                {hasVoted ? "You've voted!" : "Voting is open"}
+              </h2>
+              <p className="text-muted-foreground mt-1">
+                {hasVoted
+                  ? "You can update your ballot until voting closes."
+                  : "Cast your ranked-choice ballot for each position. Rank candidates in order of preference."}
               </p>
             </div>
+            <Button asChild size="lg" className="shrink-0">
+              <Link href={`/elections/${election.slug}/vote`}>
+                <Vote className="mr-2 h-4 w-4" />
+                {hasVoted ? "Update Ballot" : "Vote Now"}
+              </Link>
+            </Button>
           </div>
-          <Button asChild size="sm">
-            <Link href={`/elections/${election.slug}/vote`}>
-              <Vote className="mr-2 h-4 w-4" />
-              Vote Now
-            </Link>
-          </Button>
-        </div>
+        </Card>
       )}
 
+      {/* Non-member notice */}
       {!isMember && isUser && (
         <div className="flex items-center gap-3 rounded-lg border-l-4 border-l-amber-500 bg-amber-50/50 p-4 dark:bg-amber-900/20">
           <Shield className="h-5 w-5 text-amber-600 dark:text-amber-400" />
           <p className="text-sm text-amber-800 dark:text-amber-200">
-            Sign in as a member to participate in this election.
+            You must be an SSE member to nominate candidates and vote.
           </p>
         </div>
       )}
@@ -522,10 +621,52 @@ export default function ElectionPublicClient({
         </div>
       )}
 
-      {/* ---- Main grid ---- */}
-      <div className="grid gap-6 lg:grid-cols-5">
-        {/* ---- Left: Positions & Candidates ---- */}
-        <div className="space-y-6 lg:col-span-3">
+      {/* ---- Inline stats ---- */}
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
+        <span>
+          <strong className="text-foreground font-display text-base">{totalNominations}</strong> nominations
+        </span>
+        <span>
+          <strong className="text-foreground font-display text-base">{election.ballots.length}</strong> ballots cast
+        </span>
+        <span>
+          <strong className="text-foreground font-display text-base">{election.offices.length}</strong> positions
+        </span>
+        <Tooltip
+          content={
+            <p>
+              Instant Runoff Voting: Voters rank candidates in order of
+              preference. The candidate with the fewest votes is eliminated
+              each round until a winner emerges.
+            </p>
+          }
+          size="lg"
+        >
+          <span className="underline decoration-dotted cursor-help">
+            IRV voting system
+          </span>
+        </Tooltip>
+        {isCertified && (
+          <Link
+            href={`/elections/${election.slug}/results`}
+            className="inline-flex items-center gap-1.5 text-primary hover:underline ml-auto"
+          >
+            <Trophy className="h-4 w-4" />
+            View Results
+          </Link>
+        )}
+        {(isPresident || isSeAdmin) && (
+          <Link
+            href={`/dashboard/elections/${election.id}`}
+            className="text-primary hover:underline ml-auto"
+          >
+            {isPresident ? "Manage" : "Review"}
+          </Link>
+        )}
+      </div>
+
+      {/* ---- Positions & Candidates (full width) ---- */}
+      <div className="grid gap-4 md:grid-cols-2">
           {election.offices.map((office: SerializedElectionOffice) => {
             const acceptedNominations = office.nominations.filter(
               (n: SerializedNomination) => n.status === "ACCEPTED"
@@ -587,187 +728,8 @@ export default function ElectionPublicClient({
               </Card>
             );
           })}
-        </div>
-
-        {/* ---- Right sidebar ---- */}
-        <div className="space-y-6 lg:col-span-2">
-          {/* Participation panel */}
-          <Card depth={2}>
-            <CardContent className="pt-5 space-y-3">
-              <h3 className="flex items-center gap-2 text-sm font-semibold">
-                <BarChart3 className="h-4 w-4" />
-                Participation
-              </h3>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Nominations</span>
-                <span className="font-medium">{totalNominations}</span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Ballots cast</span>
-                <span className="font-medium">{election.ballots.length}</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Election info */}
-          <Card depth={2}>
-            <CardContent className="pt-5 space-y-3">
-              <h3 className="flex items-center gap-2 text-sm font-semibold">
-                <Info className="h-4 w-4" />
-                Election Info
-              </h3>
-              <div className="flex items-center justify-between text-sm">
-                <Tooltip
-                  content={
-                    <p>
-                      Instant Runoff Voting (IRV): Voters rank candidates in
-                      order of preference. If no candidate wins a majority,
-                      the candidate with the fewest votes is eliminated and
-                      their votes are redistributed until a winner emerges.
-                    </p>
-                  }
-                  size="lg"
-                >
-                  <span className="text-muted-foreground underline decoration-dotted cursor-help">
-                    Voting system
-                  </span>
-                </Tooltip>
-                <Badge variant="outline">IRV</Badge>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Positions</span>
-                <span className="font-medium">{election.offices.length}</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Results link (certified) */}
-          {isCertified && (
-            <Card depth={2}>
-              <CardContent className="p-6">
-                <div className="flex flex-col items-center gap-3 text-center">
-                  <Trophy className="h-8 w-8 text-violet-500" />
-                  <p className="font-medium">Results are available</p>
-                  <Button asChild className="w-full">
-                    <Link href={`/elections/${election.slug}/results`}>
-                      <Trophy className="mr-2 h-4 w-4" />
-                      View Results
-                    </Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Nomination form (sidebar) */}
-          {showNominationForm && (
-            <Card depth={2} id="nomination-form">
-              <CardContent className="pt-5 space-y-4">
-                <h3 className="flex items-center gap-2 text-sm font-semibold">
-                  <Send className="h-4 w-4" />
-                  Nominate a Candidate
-                </h3>
-                <div className="space-y-2">
-                  <Label>Office</Label>
-                  <Select
-                    value={selectedOfficeId}
-                    onValueChange={setSelectedOfficeId}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Choose an office" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {election.offices.map(
-                        (office: SerializedElectionOffice) => (
-                          <SelectItem
-                            key={office.id}
-                            value={office.id.toString()}
-                          >
-                            {office.officerPosition.title}
-                          </SelectItem>
-                        )
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Search for a user</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      value={userQuery}
-                      onChange={(e) => setUserQuery(e.target.value)}
-                      placeholder="Name or email"
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                          searchUsers();
-                        }
-                      }}
-                    />
-                    <Button
-                      variant="outline"
-                      onClick={searchUsers}
-                      type="button"
-                    >
-                      Search
-                    </Button>
-                  </div>
-                </div>
-
-                {userResults.length > 0 && (
-                  <div className="space-y-1">
-                    {userResults.map((user) => {
-                      const isSelected = selectedUserId === user.id;
-                      return (
-                        <div
-                          key={user.id}
-                          className={`flex items-center gap-3 rounded-lg p-3 cursor-pointer transition-all ${
-                            isSelected
-                              ? "ring-2 ring-primary bg-primary/5"
-                              : "hover:bg-muted/50"
-                          }`}
-                          onClick={() => setSelectedUserId(user.id)}
-                        >
-                          <Avatar className="h-8 w-8">
-                            <AvatarFallback className="text-xs">
-                              {getInitials(user.name)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate">
-                              {user.name}
-                            </p>
-                            {user.email && (
-                              <p className="text-xs text-muted-foreground truncate">
-                                {user.email}
-                              </p>
-                            )}
-                          </div>
-                          {isSelected && (
-                            <CheckCircle className="h-5 w-5 text-primary shrink-0" />
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-
-                <Button
-                  onClick={submitNomination}
-                  disabled={
-                    !selectedOfficeId || !selectedUserId || submittingNomination
-                  }
-                  className="w-full"
-                >
-                  <Send className="mr-2 h-4 w-4" />
-                  Submit Nomination
-                </Button>
-              </CardContent>
-            </Card>
-          )}
-        </div>
       </div>
-    </div>
+      </NeoCardContent>
+    </NeoCard>
   );
 }

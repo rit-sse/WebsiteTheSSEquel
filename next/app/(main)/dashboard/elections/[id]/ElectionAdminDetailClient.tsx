@@ -8,11 +8,12 @@ import {
   NeoCardContent,
 } from "@/components/ui/neo-card";
 import { Card } from "@/components/ui/card";
+import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import {
   Collapsible,
@@ -51,6 +52,7 @@ import {
   Loader2,
   Check,
   X,
+  Settings,
 } from "lucide-react";
 
 interface Props {
@@ -116,6 +118,7 @@ export default function ElectionAdminDetailClient({
   );
 
   // Settings state
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [editTitle, setEditTitle] = useState(election.title);
   const [editDescription, setEditDescription] = useState(election.description);
   const [editNominationsOpenAt, setEditNominationsOpenAt] = useState(
@@ -419,6 +422,17 @@ export default function ElectionAdminDetailClient({
               </h1>
               <ElectionStatusBadge status={election.status} />
             </div>
+            <div className="flex items-center gap-1">
+            {isPresident && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="shrink-0"
+                onClick={() => setSettingsOpen(true)}
+              >
+                <Settings className="h-4 w-4" />
+              </Button>
+            )}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="shrink-0">
@@ -463,6 +477,7 @@ export default function ElectionAdminDetailClient({
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
+            </div>
           </div>
 
           <ElectionPhaseTimeline
@@ -496,11 +511,11 @@ export default function ElectionAdminDetailClient({
       </Card>
 
       {/* ─── OFFICES & NOMINATIONS ─── */}
-      <div className="space-y-8">
+      <div className="space-y-4">
         {election.offices.map((office) => (
-          <div key={office.id}>
+          <Card key={office.id} depth={2} className="p-5">
             <div className="flex items-baseline gap-2 mb-3">
-              <h2 className="text-lg font-display font-bold">
+              <h2 className="text-base font-display font-bold">
                 {office.officerPosition.title}
               </h2>
               <span className="text-sm text-muted-foreground">
@@ -508,11 +523,11 @@ export default function ElectionAdminDetailClient({
               </span>
             </div>
             {office.nominations.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-2">
+              <p className="text-sm text-muted-foreground">
                 No nominations yet.
               </p>
             ) : (
-              <div className="divide-y divide-border/10">
+              <div className="flex flex-wrap gap-3">
                 {office.nominations.map((nom) => (
                   <NominationRow
                     key={nom.id}
@@ -526,7 +541,7 @@ export default function ElectionAdminDetailClient({
                 ))}
               </div>
             )}
-          </div>
+          </Card>
         ))}
 
         {election.offices.length === 0 && (
@@ -541,7 +556,8 @@ export default function ElectionAdminDetailClient({
         election.status === "VOTING_CLOSED" ||
         election.status === "CERTIFIED") &&
         election.ballots.length > 0 && (
-          <div className="space-y-2">
+          <Card depth={2} className="p-5 space-y-2">
+            <h2 className="text-base font-display font-bold">Participation</h2>
             <div className="flex items-baseline gap-2">
               <span className="text-2xl font-display font-bold">
                 {election.ballots.length}
@@ -554,13 +570,13 @@ export default function ElectionAdminDetailClient({
               value={100}
               className="h-1.5"
             />
-          </div>
+          </Card>
         )}
 
       {/* ─── CERTIFICATION (VOTING_CLOSED only) ─── */}
       {election.status === "VOTING_CLOSED" && (
-        <div className="space-y-3">
-          <h2 className="text-lg font-display font-bold">Certification</h2>
+        <Card depth={2} className="p-5 space-y-3">
+          <h2 className="text-base font-display font-bold">Certification</h2>
           {isSeAdmin ? (
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">
@@ -588,18 +604,19 @@ export default function ElectionAdminDetailClient({
           >
             View full results
           </Link>
-        </div>
+        </Card>
       )}
 
-      {/* ─── SETTINGS (President only, collapsible) ─── */}
+      {/* ─── SETTINGS MODAL (President only) ─── */}
       {isPresident && (
-        <Collapsible>
-          <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors group">
-            <ChevronRight className="h-4 w-4 transition-transform group-data-[state=open]:rotate-90" />
-            Election Settings
-          </CollapsibleTrigger>
-          <CollapsibleContent className="pt-6 space-y-6">
-            <div className="space-y-4 max-w-2xl">
+        <Modal
+          open={settingsOpen}
+          onOpenChange={setSettingsOpen}
+          title="Election Settings"
+          description={`Edit settings for ${election.title}`}
+        >
+          <div className="space-y-6 mt-4">
+            <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="edit-title">Title</Label>
                 <Input
@@ -616,7 +633,7 @@ export default function ElectionAdminDetailClient({
                   onChange={(e) => setEditDescription(e.target.value)}
                 />
               </div>
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="edit-nom-open">Nominations Open</Label>
                   <Input
@@ -662,12 +679,9 @@ export default function ElectionAdminDetailClient({
               </div>
             </div>
 
-            {/* Cancel election - destructive, at very bottom of settings */}
-            <div className="pt-6 border-t border-border/10 max-w-2xl">
+            <div className="pt-4 border-t border-border/10">
               <p className="text-sm text-muted-foreground mb-3">
-                Cancelling an election is permanent. All progress, nominations,
-                and ballots will be preserved but the election will no longer be
-                active.
+                Cancelling an election is permanent.
               </p>
               <Button
                 variant="destructive"
@@ -683,35 +697,37 @@ export default function ElectionAdminDetailClient({
                 Cancel Election
               </Button>
             </div>
-          </CollapsibleContent>
-        </Collapsible>
+          </div>
+        </Modal>
       )}
 
       {/* ─── EMAIL LOG (collapsible) ─── */}
       {election.emailLogs.length > 0 && (
-        <Collapsible>
-          <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors group">
-            <ChevronRight className="h-4 w-4 transition-transform group-data-[state=open]:rotate-90" />
-            Sent Emails ({election.emailLogs.length})
-          </CollapsibleTrigger>
-          <CollapsibleContent className="pt-4">
-            <div className="space-y-2">
-              {election.emailLogs.map((log) => (
-                <div
-                  key={log.id}
-                  className="py-2 text-sm"
-                >
-                  <p className="font-medium">{log.subject}</p>
-                  <p className="text-muted-foreground text-xs">
-                    {log.kind.replace(/_/g, " ").toLowerCase()} &middot;{" "}
-                    {log.sentBy.name} &middot; {log.recipientCount} recipients
-                    &middot; {new Date(log.sentAt).toLocaleString()}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </CollapsibleContent>
-        </Collapsible>
+        <Card depth={2} className="p-5">
+          <Collapsible>
+            <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors group w-full">
+              <ChevronRight className="h-4 w-4 transition-transform group-data-[state=open]:rotate-90" />
+              Sent Emails ({election.emailLogs.length})
+            </CollapsibleTrigger>
+            <CollapsibleContent className="pt-4">
+              <div className="space-y-2">
+                {election.emailLogs.map((log) => (
+                  <div
+                    key={log.id}
+                    className="py-2 text-sm"
+                  >
+                    <p className="font-medium">{log.subject}</p>
+                    <p className="text-muted-foreground text-xs">
+                      {log.kind.replace(/_/g, " ").toLowerCase()} &middot;{" "}
+                      {log.sentBy.name} &middot; {log.recipientCount} recipients
+                      &middot; {new Date(log.sentAt).toLocaleString()}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+        </Card>
       )}
 
       {/* Email modal */}
@@ -727,7 +743,7 @@ export default function ElectionAdminDetailClient({
   );
 }
 
-/* ─── NominationRow sub-component ─── */
+/* ─── NominationCard sub-component ─── */
 
 function NominationRow({
   nomination,
@@ -745,47 +761,52 @@ function NominationRow({
   onReject: () => void;
 }) {
   return (
-    <div className="py-3">
-      <div className="flex items-start gap-3">
-        <Avatar className="h-9 w-9 shrink-0">
+    <Card depth={3} className="w-80 shrink-0 p-4 space-y-3">
+      <div className="flex items-center gap-3">
+        <Avatar className="h-10 w-10 shrink-0">
+          {nomination.nominee.image && (
+            <AvatarImage src={nomination.nominee.image} alt={nomination.nominee.name} />
+          )}
           <AvatarFallback className="text-xs">
             {getInitials(nomination.nominee.name)}
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-sm font-medium">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="text-sm font-medium truncate">
               {nomination.nominee.name}
             </span>
             <NominationStatusBadge status={nomination.status} />
             <EligibilityBadge status={nomination.eligibilityStatus} />
           </div>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="text-xs text-muted-foreground truncate">
             {nomination.nominee.email}
           </p>
-          {nomination.statement && (
-            <p className="text-sm text-muted-foreground mt-1.5 line-clamp-2">
-              {nomination.statement}
-            </p>
-          )}
         </div>
-        {isPresident && nomination.eligibilityStatus === "PENDING" && (
-          <div className="flex gap-1 shrink-0">
-            <Button size="xs" variant="ghost" onClick={onApprove}>
-              <Check className="h-3.5 w-3.5" />
-            </Button>
-            <Button size="xs" variant="ghost" onClick={onReject}>
-              <X className="h-3.5 w-3.5" />
-            </Button>
-          </div>
-        )}
       </div>
 
-      {/* Expandable eligibility details */}
+      {nomination.statement && (
+        <p className="text-xs text-muted-foreground line-clamp-2">
+          {nomination.statement}
+        </p>
+      )}
+
+      {isPresident && nomination.eligibilityStatus === "PENDING" && (
+        <div className="flex gap-2 pt-1">
+          <Button size="xs" variant="outline" className="flex-1 gap-1" onClick={onApprove}>
+            <Check className="h-3 w-3" /> Approve
+          </Button>
+          <Button size="xs" variant="ghost" className="flex-1 gap-1" onClick={onReject}>
+            <X className="h-3 w-3" /> Reject
+          </Button>
+        </div>
+      )}
+
+      {/* Expandable details */}
       <button
         type="button"
         onClick={onToggleExpand}
-        className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 mt-2 ml-12"
+        className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
       >
         <ChevronRight
           className={`h-3 w-3 transition-transform ${expanded ? "rotate-90" : ""}`}
@@ -794,7 +815,7 @@ function NominationRow({
       </button>
 
       {expanded && (
-        <div className="grid gap-1 text-xs md:grid-cols-2 text-muted-foreground mt-2 ml-12">
+        <div className="grid gap-1 text-xs text-muted-foreground mt-1">
           <p>
             <span className="font-medium text-foreground">Nominated by:</span>{" "}
             {nomination.nominator.name}
@@ -863,6 +884,6 @@ function NominationRow({
           )}
         </div>
       )}
-    </div>
+    </Card>
   );
 }
