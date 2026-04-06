@@ -253,6 +253,14 @@ export default function AddEventForm({
               // Don't fail the whole operation if purchase request fails
             }
           }
+        } else {
+          const errorData = await prismaResponse.json().catch(() => null);
+          setError(
+            errorData?.error ||
+              "Failed to save event to database. The Google Calendar event was created but the event won't appear on the attendance page."
+          );
+          setLoading(false);
+          return;
         }
       }
 

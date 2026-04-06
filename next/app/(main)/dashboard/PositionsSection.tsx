@@ -309,7 +309,6 @@ export default function PositionsSection({
     {
       key: "handover",
       header: "Handover",
-      mobileHidden: true,
       className: "hidden lg:table-cell w-[100px]",
       render: (position) => (
         <Button
@@ -335,21 +334,6 @@ export default function PositionsSection({
               <div
                 className={`flex items-center ${isMobile ? "flex-wrap gap-2" : "gap-1"}`}
               >
-                {isMobile && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() =>
-                      router.push(
-                        `/dashboard/positions/${position.id}/handover`
-                      )
-                    }
-                    className="gap-1.5"
-                  >
-                    <FileText className="h-3.5 w-3.5" />
-                    Handover
-                  </Button>
-                )}
                 <Button
                   size={isMobile ? "sm" : "xs"}
                   variant={isMobile ? "outline" : "ghost"}
