@@ -855,7 +855,6 @@ model Amendment {
   description           String          @db.Text
   authorId              Int
   status                AmendmentStatus @default(DRAFT)
-  phase                 Int             @default(1)
   githubPrNumber        Int?
   githubBranch          String?
   originalContent       String          @db.Text
@@ -868,14 +867,12 @@ model Amendment {
   votingDurationHours   Int?
   votingEndsAt          DateTime?
   isSemanticChange      Boolean         @default(true)
-  officerPositionId     Int?
   createdAt             DateTime        @default(now())
   updatedAt             DateTime        @updatedAt
 
-  author          User             @relation(fields: [authorId], references: [id])
-  officerPosition OfficerPosition? @relation(fields: [officerPositionId], references: [id])
-  votes           AmendmentVote[]
-  comments        AmendmentComment[]
+  author   User               @relation(fields: [authorId], references: [id])
+  votes    AmendmentVote[]
+  comments AmendmentComment[]
 }
 
 model AmendmentVote {
