@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { signIn, useSession } from "next-auth/react";
 import {
   Card,
@@ -39,6 +39,8 @@ interface Invitation {
 export default function AcceptInvitationPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const emailHint = searchParams.get("email");
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState<number | null>(null);
@@ -48,7 +50,14 @@ export default function AcceptInvitationPage() {
 
     if (status === "unauthenticated") {
       // Redirect to sign in, then back here
-      signIn("google", { callbackUrl: "/accept-invitation" });
+      const callbackUrl = emailHint
+        ? `/accept-invitation?email=${encodeURIComponent(emailHint)}`
+        : "/accept-invitation";
+      signIn(
+        "google",
+        { callbackUrl },
+        emailHint ? { login_hint: emailHint } : {}
+      );
       return;
     }
 
@@ -63,7 +72,14 @@ export default function AcceptInvitationPage() {
         const data = await response.json();
         setInvitations(data);
       } else if (response.status === 401) {
-        signIn("google", { callbackUrl: "/accept-invitation" });
+        const callbackUrl = emailHint
+          ? `/accept-invitation?email=${encodeURIComponent(emailHint)}`
+          : "/accept-invitation";
+        signIn(
+          "google",
+          { callbackUrl },
+          emailHint ? { login_hint: emailHint } : {}
+        );
       }
     } catch (error) {
       console.error("Error fetching invitations:", error);
@@ -153,6 +169,20 @@ export default function AcceptInvitationPage() {
             <CardTitle>No Pending Invitations</CardTitle>
             <CardDescription>
               You don&apos;t have any pending invitations at this time.
+              {session?.user?.email && (
+                <span className="block mt-2 text-xs">
+                  Signed in as: {session.user.email}
+                </span>
+              )}
+              {emailHint &&
+                session?.user?.email &&
+                emailHint.toLowerCase() !==
+                  session.user.email.toLowerCase() && (
+                  <span className="block mt-2 text-xs text-destructive">
+                    The invitation was sent to {emailHint}. Try signing in with
+                    that account.
+                  </span>
+                )}
             </CardDescription>
           </CardHeader>
           <CardFooter className="justify-center">

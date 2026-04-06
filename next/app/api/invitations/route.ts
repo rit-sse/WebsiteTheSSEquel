@@ -256,7 +256,7 @@ export async function POST(request: NextRequest) {
   // Send invitation email
   if (isEmailConfigured()) {
     const baseUrl = getPublicBaseUrl(request);
-    const acceptUrl = `${baseUrl}/accept-invitation`;
+    const acceptUrl = `${baseUrl}/accept-invitation?email=${encodeURIComponent(email)}`;
 
     try {
       if (type === "officer" && invitation.position) {
