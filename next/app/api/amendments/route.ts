@@ -107,14 +107,22 @@ export async function POST(request: NextRequest) {
     return new Response('"title", "proposedContent" are required', { status: 422 });
   }
 
-  const currentSnapshot = await fetchConstitutionSnapshot();
+  // Fetch current constitution for diff — graceful if GitHub is unavailable
+  let originalContent = "";
+  try {
+    const currentSnapshot = await fetchConstitutionSnapshot();
+    originalContent = currentSnapshot.content;
+  } catch {
+    // GitHub unavailable — continue without original content
+  }
+
   const dbDraft = await prisma.amendment.create({
     data: {
       title,
       description,
       authorId: actor.id,
       status: "PRIMARY_REVIEW",
-      originalContent: currentSnapshot.content,
+      originalContent,
       proposedContent,
       isSemanticChange,
       publishedAt: new Date(),
@@ -122,11 +130,12 @@ export async function POST(request: NextRequest) {
     },
   });
 
+  // Attempt to create a GitHub PR — non-blocking
   const branchName = buildBranchName(title, dbDraft.id);
   const amendmentAuthor = `Member #${actor.id}`;
   const prBody = description || `${title}\n\nAmendment proposal by ${amendmentAuthor}.`;
   try {
-    const { prNumber, originalContent } = await createAmendmentPR({
+    const { prNumber, originalContent: prOriginal } = await createAmendmentPR({
       title,
       description: prBody,
       proposedContent,
@@ -134,33 +143,31 @@ export async function POST(request: NextRequest) {
       branchName,
     });
 
-    const amendment = await prisma.amendment.update({
+    await prisma.amendment.update({
       where: { id: dbDraft.id },
       data: {
         githubBranch: branchName,
         githubPrNumber: prNumber,
-        originalContent,
-      },
-      select: {
-        id: true,
-        title: true,
-        status: true,
-        githubPrNumber: true,
-        githubBranch: true,
+        originalContent: prOriginal || originalContent,
       },
     });
-
-    return Response.json(
-      { message: "Amendment proposal created and pull request opened", amendment },
-      { status: 201 },
-    );
-  } catch (error) {
-    await prisma.amendment.update({
-      where: { id: dbDraft.id },
-      data: {
-        status: "WITHDRAWN",
-      },
-    });
-    return new Response(`Failed to create amendment PR: ${error}`, { status: 500 });
+  } catch {
+    // GitHub PR creation failed — amendment still exists without a linked PR
   }
+
+  const amendment = await prisma.amendment.findUnique({
+    where: { id: dbDraft.id },
+    select: {
+      id: true,
+      title: true,
+      status: true,
+      githubPrNumber: true,
+      githubBranch: true,
+    },
+  });
+
+  return Response.json(
+    { message: "Amendment proposal created", amendment },
+    { status: 201 },
+  );
 }
