@@ -237,7 +237,6 @@ model OfficerPosition {
   officers         Officer[]
   handoverDocument HandoverDocument?
   invitations      Invitation[]
-  amendments       Amendment[]
   amendmentVotes   AmendmentVote[]
 }
 
