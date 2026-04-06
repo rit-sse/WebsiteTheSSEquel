@@ -45,10 +45,13 @@ interface PendingInvitation {
 
 interface PositionsSectionProps {
   readOnly?: boolean;
+  /** Filter positions by category. Omit to show all. */
+  category?: "PRIMARY_OFFICER" | "SE_OFFICE";
 }
 
 export default function PositionsSection({
   readOnly = false,
+  category,
 }: PositionsSectionProps) {
   const router = useRouter();
   const [positions, setPositions] = useState<Position[]>([]);
@@ -85,8 +88,11 @@ export default function PositionsSection({
   const fetchPositions = useCallback(async () => {
     setIsLoading(true);
     try {
+      const positionsUrl = category
+        ? `/api/officer-positions?category=${category}`
+        : "/api/officer-positions";
       const [positionsResponse, invitationsResponse] = await Promise.all([
-        fetch("/api/officer-positions"),
+        fetch(positionsUrl),
         fetch("/api/invitations?type=officer"),
       ]);
 
@@ -309,7 +315,6 @@ export default function PositionsSection({
     {
       key: "handover",
       header: "Handover",
-      mobileHidden: true,
       className: "hidden lg:table-cell w-[100px]",
       render: (position) => (
         <Button
@@ -335,21 +340,6 @@ export default function PositionsSection({
               <div
                 className={`flex items-center ${isMobile ? "flex-wrap gap-2" : "gap-1"}`}
               >
-                {isMobile && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() =>
-                      router.push(
-                        `/dashboard/positions/${position.id}/handover`
-                      )
-                    }
-                    className="gap-1.5"
-                  >
-                    <FileText className="h-3.5 w-3.5" />
-                    Handover
-                  </Button>
-                )}
                 <Button
                   size={isMobile ? "sm" : "xs"}
                   variant={isMobile ? "outline" : "ghost"}

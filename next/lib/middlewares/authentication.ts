@@ -281,6 +281,23 @@ const libraryVerifier: AuthVerifier = async (request: NextRequest) => {
 };
 
 /**
+ * Auth verifier for invitation routes:
+ * - pending/accept/decline are accessible to any signed-in user
+ * - all other invitation routes (create, list, delete) require officer
+ */
+const invitationsVerifier: AuthVerifier = async (request: NextRequest) => {
+  const pathname = request.nextUrl.pathname;
+  if (
+    pathname === "/api/invitations/pending" ||
+    pathname === "/api/invitations/accept" ||
+    pathname === "/api/invitations/decline"
+  ) {
+    return signedInVerifier(request);
+  }
+  return officerVerifier(request);
+};
+
+/**
  * Map from API route name to authorization verifier. The verifier should be run against any request that
  * goes through that route.
  * Keys are the second element in the path segment; for example, the path "/api/golinks/officer" would
@@ -305,11 +322,11 @@ const ROUTES: { [key: string]: AuthVerifier } = {
   event: eventVerifier,
   go: allowAllVerifier,
   golinks: goLinkVerifier,
-  handover: nonGetPrimaryOfficerVerifier,
+  handover: nonGetOfficerVerifier,
   "headcount-import": primaryOfficerVerifier,
   "headcount-trends": officerVerifier,
   hourBlocks: nonGetOfficerVerifier,
-  invitations: officerVerifier,
+  invitations: invitationsVerifier,
   library: libraryVerifier,
   memberships: nonGetOfficerVerifier,
   "mentee-headcount": headcountSubmissionVerifier,

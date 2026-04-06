@@ -10,13 +10,23 @@ export const dynamic = "force-dynamic";
  * Includes current officer details (name, email, term) when position is filled
  * @returns [{id, title, is_primary, isFilled, currentOfficer?: {id, userId, name, email, start_date, end_date}}]
  */
-export async function GET() {
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const categoryFilter = searchParams.get("category");
+
+  const where: Record<string, unknown> = {};
+  if (categoryFilter === "PRIMARY_OFFICER" || categoryFilter === "SE_OFFICE") {
+    where.category = categoryFilter;
+  }
+
   const positions = await prisma.officerPosition.findMany({
+    where,
     select: {
       id: true,
       title: true,
       is_primary: true,
       email: true,
+      category: true,
       officers: {
         where: { is_active: true },
         select: {
@@ -34,7 +44,7 @@ export async function GET() {
             },
           },
         },
-        take: 1, // Only get the first active officer (should only be one)
+        take: 1,
       },
     },
     orderBy: [{ is_primary: "desc" }, { title: "asc" }],

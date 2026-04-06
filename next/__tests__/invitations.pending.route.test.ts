@@ -60,12 +60,16 @@ describe("/api/invitations/pending route", () => {
     ]);
     expect(mockInvitationFindMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: expect.objectContaining({ invitedEmail: "member@g.rit.edu" }),
+        where: expect.objectContaining({
+          invitedEmail: { equals: "member@g.rit.edu", mode: "insensitive" },
+        }),
       })
     );
     expect(mockInvitationDeleteMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: expect.objectContaining({ invitedEmail: "member@g.rit.edu" }),
+        where: expect.objectContaining({
+          invitedEmail: { equals: "member@g.rit.edu", mode: "insensitive" },
+        }),
       })
     );
   });

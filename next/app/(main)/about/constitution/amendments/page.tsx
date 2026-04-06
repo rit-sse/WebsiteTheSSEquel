@@ -1,27 +1,18 @@
 import Link from "next/link";
-import { Card } from "@/components/ui/card";
+import { NeoCard } from "@/components/ui/neo-card";
 import { getAuthLevel } from "@/lib/services/authLevelService";
 import prisma from "@/lib/prisma";
 import { computeVoteSummary } from "@/lib/services/amendmentService";
-import { AmendmentStatus } from "@prisma/client";
 import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 import AmendmentCard from "@/components/amendments/AmendmentCard";
+import AmendmentEmptyState from "@/components/amendments/AmendmentEmptyState";
+import WithdrawnAmendments from "@/components/amendments/WithdrawnAmendments";
 
-export default async function AmendmentsListPage({
-  searchParams,
-}: {
-  searchParams?: { status?: string | string[] };
-}) {
+export default async function AmendmentsListPage() {
   const authLevel = await getAuthLevel();
-  const statusValue = Array.isArray(searchParams?.status) ? searchParams.status[0] : searchParams?.status;
-  const statusFilter = statusValue?.toUpperCase();
-  const where =
-    statusFilter && Object.values(AmendmentStatus).includes(statusFilter as AmendmentStatus)
-      ? { status: statusFilter as AmendmentStatus }
-      : {};
 
   const amendments = await prisma.amendment.findMany({
-    where,
     orderBy: { updatedAt: "desc" },
     include: {
       author: {
@@ -31,75 +22,106 @@ export default async function AmendmentsListPage({
         },
       },
       votes: {
-        select: { approve: true },
+        select: { approve: true, userId: true, phase: true },
       },
     },
   });
 
-  const rows = amendments.map((amendment) => ({
-    id: amendment.id,
-    title: amendment.title,
-    description: amendment.description,
-    status: amendment.status,
-    author: amendment.author,
-    ...computeVoteSummary(amendment.votes),
-  }));
+  const rows = amendments.map((amendment) => {
+    const memberVotes = amendment.votes.filter((v) => v.phase === "VOTING");
+    return {
+      id: amendment.id,
+      title: amendment.title,
+      description: amendment.description,
+      status: amendment.status,
+      originalContent: amendment.originalContent,
+      proposedContent: amendment.proposedContent,
+      author: amendment.author,
+      ...computeVoteSummary(memberVotes),
+    };
+  });
+
+  // Build a map of the current user's member votes
+  const userVotes: Record<number, boolean> = {};
+  if (authLevel.userId) {
+    for (const amendment of amendments) {
+      const vote = amendment.votes.find(
+        (v) => v.userId === authLevel.userId && v.phase === "VOTING"
+      );
+      if (vote) {
+        userVotes[amendment.id] = vote.approve;
+      }
+    }
+  }
+
+  const emptyRole = authLevel.isSeAdmin
+    ? "seAdmin" as const
+    : authLevel.isPrimary
+      ? "primary" as const
+      : authLevel.isOfficer
+        ? "officer" as const
+        : authLevel.isMember
+          ? "member" as const
+          : authLevel.isUser
+            ? "signedIn" as const
+            : "anonymous" as const;
+
+  const activeRows = rows.filter((r) => r.status !== "WITHDRAWN" && r.status !== "REJECTED");
+  const withdrawnRows = rows.filter((r) => r.status === "WITHDRAWN" || r.status === "REJECTED");
 
   return (
     <section className="w-full max-w-6xl px-2 md:px-4">
-      <div className="py-4 flex flex-wrap gap-2 justify-between items-center">
-        <h1 className="text-3xl font-display font-bold">Constitution Amendments</h1>
-        <div className="flex flex-wrap gap-2">
-          {authLevel.isMember ? (
-            <Button asChild>
-              <Link href="/about/constitution/amendments/new">Propose Amendment</Link>
-            </Button>
-          ) : null}
+      {/* Page header */}
+      <div className="py-4 flex flex-wrap gap-3 justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-display font-bold tracking-tight">
+            Constitutional Amendments
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Propose, discuss, and vote on changes to the SSE governing documents
+          </p>
         </div>
+        {authLevel.isMember && (
+          <Button asChild>
+            <Link href="/about/constitution/amendments/new" className="flex items-center gap-2">
+              <Plus className="h-4 w-4" />
+              Propose Amendment
+            </Link>
+          </Button>
+        )}
       </div>
 
-      <div className="mb-4 flex flex-wrap gap-2">
-        <Link href="/about/constitution/amendments" className="text-sm">
-          <Button size="sm" variant={statusFilter ? "neutral" : "default"}>
-            All
-          </Button>
-        </Link>
-        <Link href="/about/constitution/amendments?status=OPEN" className="text-sm">
-          <Button size="sm" variant={statusFilter === "OPEN" ? "default" : "neutral"}>
-            Open Forum
-          </Button>
-        </Link>
-        <Link href="/about/constitution/amendments?status=VOTING" className="text-sm">
-          <Button size="sm" variant={statusFilter === "VOTING" ? "default" : "neutral"}>
-            Voting
-          </Button>
-        </Link>
-        <Link href="/about/constitution/amendments?status=APPROVED" className="text-sm">
-          <Button size="sm" variant={statusFilter === "APPROVED" ? "default" : "neutral"}>
-            Approved
-          </Button>
-        </Link>
-        <Link href="/about/constitution/amendments?status=REJECTED" className="text-sm">
-          <Button size="sm" variant={statusFilter === "REJECTED" ? "default" : "neutral"}>
-            Rejected
-          </Button>
-        </Link>
-        <Link href="/about/constitution/amendments?status=MERGED" className="text-sm">
-          <Button size="sm" variant={statusFilter === "MERGED" ? "default" : "neutral"}>
-            Merged
-          </Button>
-        </Link>
-      </div>
+      {/* Amendment cards */}
+      <NeoCard depth={1} className="p-4 md:p-6 space-y-4">
+        {activeRows.length === 0 && withdrawnRows.length === 0 ? (
+          <AmendmentEmptyState role={emptyRole} />
+        ) : (
+          <>
+            {activeRows.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4 text-center">No active amendments right now.</p>
+            ) : (
+              <div className="space-y-3">
+                {activeRows.map((amendment) => (
+                  <AmendmentCard
+                    key={amendment.id}
+                    amendment={amendment}
+                    userVote={userVotes[amendment.id] ?? null}
+                    isAuthor={amendment.author?.id === authLevel.userId}
+                  />
+                ))}
+              </div>
+            )}
 
-      <Card depth={1} className="p-4 space-y-4">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {rows.length === 0 ? (
-            <p className="text-muted-foreground">No amendments found.</p>
-          ) : (
-            rows.map((amendment) => <AmendmentCard key={amendment.id} amendment={amendment} />)
-          )}
-        </div>
-      </Card>
+            {withdrawnRows.length > 0 && (
+              <WithdrawnAmendments
+                amendments={withdrawnRows}
+                userVotes={userVotes}
+                userId={authLevel.userId}
+              />
+            )}
+          </>
+        )}
+      </NeoCard>
     </section>
   );
 }

@@ -184,6 +184,9 @@ export async function resolveAuthLevelFromToken(
     authLevel.isPrimary = isSeAdmin || user.officers.some(
       (officer) => officer.position.is_primary
     );
+    authLevel.isSeAdmin = user.officers.some(
+      (officer) => officer.position.title === SE_ADMIN_POSITION_TITLE
+    );
   }
 
   if (includeProfileComplete) {

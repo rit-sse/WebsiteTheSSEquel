@@ -72,8 +72,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 }
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { id: postId } = await params;
-  const amendmentId = Number(postId);
+  const { id } = await params;
+  const amendmentId = Number(id);
   if (Number.isNaN(amendmentId)) {
     return new Response("Invalid amendment id", { status: 422 });
   }

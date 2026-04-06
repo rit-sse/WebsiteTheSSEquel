@@ -14,8 +14,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   }
 
   const actor = await getActorFromRequest(request);
-  if (!actor?.isPrimary) {
-    return new Response("Only primary officers can merge amendments", { status: 403 });
+  if (!(actor?.isPrimary || actor?.isSeAdmin)) {
+    return new Response("Only primary officers or SE admins can merge amendments", { status: 403 });
   }
 
   const amendment = await prisma.amendment.findUnique({

@@ -1,7 +1,11 @@
 import Link from "next/link";
 import { getAuthLevel } from "@/lib/services/authLevelService";
+import { NeoCard } from "@/components/ui/neo-card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import ConstitutionEditor from "@/components/amendments/ConstitutionEditor";
+import { FileText, LogIn, UserPlus } from "lucide-react";
+import AmendmentBreadcrumb from "@/components/amendments/AmendmentBreadcrumb";
+import AmendmentWizard from "@/components/amendments/AmendmentWizard";
 
 async function getConstitutionSource(): Promise<string> {
   const response = await fetch(
@@ -21,28 +25,64 @@ export default async function NewAmendmentPage() {
   if (!authLevel.isMember) {
     return (
       <section className="w-full max-w-6xl px-2 md:px-4">
-        <div className="py-6">
-          <h1 className="text-3xl font-display font-bold">Propose an Amendment</h1>
-          <p className="mt-4 text-muted-foreground">
-            You must be an active member to propose constitution amendments.
-          </p>
-          <Button asChild className="mt-4">
-            <Link href="/about/constitution">Return to Constitution</Link>
-          </Button>
-        </div>
+        <AmendmentBreadcrumb items={[{ label: "New Proposal" }]} />
+        <NeoCard depth={1} className="p-6 md:p-8">
+          <Card depth={2} className="flex flex-col items-center justify-center py-16 px-6 text-center">
+            <div className="rounded-full bg-primary/8 p-4 mb-5">
+              {authLevel.isUser ? (
+                <UserPlus className="h-8 w-8 text-primary/40" strokeWidth={1.5} />
+              ) : (
+                <LogIn className="h-8 w-8 text-primary/40" strokeWidth={1.5} />
+              )}
+            </div>
+            <h2 className="font-display text-xl font-semibold mb-2">
+              {authLevel.isUser
+                ? "Membership Required"
+                : "Sign In Required"}
+            </h2>
+            <p className="text-sm text-muted-foreground max-w-md mb-6">
+              {authLevel.isUser
+                ? "You must be an active SSE member to propose constitution amendments. Members can propose, discuss, and vote on changes to the governing documents."
+                : "Sign in with your RIT account to propose amendments to the SSE constitution."}
+            </p>
+            <div className="flex flex-wrap gap-3 justify-center">
+              {authLevel.isUser ? (
+                <Button asChild>
+                  <Link href="/memberships">Learn About Membership</Link>
+                </Button>
+              ) : (
+                <Button asChild>
+                  <Link href="/api/auth/signin">Sign In</Link>
+                </Button>
+              )}
+              <Button asChild variant="neutral">
+                <Link href="/about/constitution">Read the Constitution</Link>
+              </Button>
+            </div>
+          </Card>
+        </NeoCard>
       </section>
     );
   }
 
   return (
     <section className="w-full max-w-6xl px-2 md:px-4">
+      <AmendmentBreadcrumb items={[{ label: "New Proposal" }]} />
+
+      {/* Page header */}
       <div className="py-4">
-        <h1 className="text-3xl font-display font-bold">Propose an Amendment</h1>
-        <p className="mt-2 text-muted-foreground">
-          Edit the file below and submit to open a pull request to the governing-docs repository.
+        <h1 className="text-3xl font-display font-bold tracking-tight">
+          Propose an Amendment
+        </h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Walk through the steps below to propose a change to the SSE constitution
         </p>
       </div>
-      <ConstitutionEditor initialContent={constitutionText} />
+
+      {/* Wizard in NeoCard */}
+      <NeoCard depth={1} className="p-4 md:p-6">
+        <AmendmentWizard initialContent={constitutionText} />
+      </NeoCard>
     </section>
   );
 }
