@@ -6,8 +6,6 @@ import { Inter, Rethink_Sans, PT_Serif } from "next/font/google";
 import { Providers } from "./Providers";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
-import Script from "next/script";
-import { headers } from "next/headers";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -47,7 +45,6 @@ export default async function RootLayout({
 }) {
   // https://next-auth.js.org/configuration/nextjs#getserversession
   const session = await getServerSession(authOptions);
-  const nonce = (await headers()).get("x-nonce") ?? undefined;
 
   return (
     // details on suppressHydrationWarning: https://github.com/pacocoursey/next-themes#html--css (scroll up a bit)
@@ -63,12 +60,22 @@ export default async function RootLayout({
       <body
         className={`min-h-screen flex flex-col bg-gradient-to-b from-background to-muted overflow-x-hidden`}
       >
-        <Script
-          src="/init-style-font.js"
-          strategy="beforeInteractive"
-          nonce={nonce}
+        <script
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{
+            __html: `try {
+  var styleMode = localStorage.getItem("sse-style-mode");
+  if (styleMode === "neo" || styleMode === "clean") {
+    document.documentElement.setAttribute("data-style", styleMode);
+  }
+  var fontMode = localStorage.getItem("sse-font-mode");
+  if (fontMode === "rethink" || fontMode === "pt-serif") {
+    document.documentElement.setAttribute("data-font", fontMode);
+  }
+} catch (e) {}`,
+          }}
         />
-        <Providers session={session} nonce={nonce}>
+        <Providers session={session}>
           {children}
         </Providers>
       </body>

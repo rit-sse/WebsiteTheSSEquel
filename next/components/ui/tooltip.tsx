@@ -2,7 +2,12 @@
 
 import * as React from "react";
 import { createPortal } from "react-dom";
+import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import { cn } from "@/lib/utils";
+
+/* ------------------------------------------------------------------ */
+/*  Custom hover-follow tooltip (used by mentoring schedule etc.)      */
+/* ------------------------------------------------------------------ */
 
 const SIZE_CLASS_NAMES = {
   sm: "w-48",
@@ -99,4 +104,49 @@ function Tooltip({
   );
 }
 
-export { Tooltip };
+/* ------------------------------------------------------------------ */
+/*  Radix tooltip (used by amendment components etc.)                   */
+/* ------------------------------------------------------------------ */
+
+const TooltipProvider = TooltipPrimitive.Provider;
+
+function RadixTooltip({
+  ...props
+}: React.ComponentProps<typeof TooltipPrimitive.Root>) {
+  return <TooltipPrimitive.Root {...props} />;
+}
+
+function TooltipTrigger({
+  ...props
+}: React.ComponentProps<typeof TooltipPrimitive.Trigger>) {
+  return <TooltipPrimitive.Trigger {...props} />;
+}
+
+function TooltipContent({
+  className,
+  sideOffset = 4,
+  ...props
+}: React.ComponentProps<typeof TooltipPrimitive.Content>) {
+  return (
+    <TooltipPrimitive.Portal>
+      <TooltipPrimitive.Content
+        sideOffset={sideOffset}
+        className={cn(
+          "z-50 overflow-hidden px-3 py-1.5 text-xs animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+          "neo:rounded-base neo:border-2 neo:border-border neo:bg-popover neo:text-popover-foreground neo:shadow-md",
+          "clean:rounded-md clean:border clean:border-border/30 clean:bg-popover clean:text-popover-foreground clean:shadow-lg",
+          className,
+        )}
+        {...props}
+      />
+    </TooltipPrimitive.Portal>
+  );
+}
+
+export {
+  Tooltip,
+  RadixTooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+};
