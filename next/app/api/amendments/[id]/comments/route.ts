@@ -12,8 +12,8 @@ type CommentItem = {
   updatedAt: Date;
   author: {
     id: number;
-    name: string;
-    image: string;
+    name: string | null;
+    image: string | null;
   };
 };
 

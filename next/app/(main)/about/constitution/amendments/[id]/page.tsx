@@ -130,7 +130,7 @@ async function getAmendmentDetails(amendmentId: number) {
       majorityApproves: quorumMet && approveCount > rejectCount,
       majorityRejects: quorumMet && rejectCount >= approveCount,
     },
-    userVote: null,
+    userVote: null as boolean | null,
     comments: amendment.comments.map((comment) => ({
       id: comment.id,
       content: comment.content,

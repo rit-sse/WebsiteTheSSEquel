@@ -157,5 +157,5 @@ export function resolveAmendmentImage(user: {
   profileImageKey?: string | null;
   googleImageURL?: string | null;
 }): string {
-  return resolveUserImage(user.profileImageKey, user.googleImageURL);
+  return resolveUserImage(user.profileImageKey, user.googleImageURL) ?? "";
 }
