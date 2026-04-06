@@ -891,9 +891,7 @@ model AmendmentVote {
   user            User             @relation(fields: [userId], references: [id])
   officerPosition OfficerPosition? @relation(fields: [officerPositionId], references: [id])
 
-  // Partial unique indexes managed via SQL:
-  // - AmendmentVote_amendmentId_userId_voting_key: unique (amendmentId, userId) WHERE phase='VOTING'
-  // - AmendmentVote_amendmentId_officerPositionId_phase_key: unique (amendmentId, officerPositionId, phase) WHERE officerPositionId IS NOT NULL
+  @@unique([amendmentId, userId, phase])
 }
 
 model AmendmentComment {
