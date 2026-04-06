@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-// @ts-expect-error -- diff package lacks type declarations
 import { diffLines, diffWords } from "diff";
 import { ChevronDown, ChevronRight } from "lucide-react";
 
