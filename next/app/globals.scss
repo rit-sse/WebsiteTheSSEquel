@@ -72,6 +72,14 @@
   --cat-fg-19: #ffffff;
   --cat-fg-20: #1f2937;
   
+  /* Vote visualization colors */
+  --vote-approve: 152 68% 42%;
+  --vote-reject: 0 72% 55%;
+  --vote-not-voted: 220 10% 54%;
+  --vote-approve-hover: 152 75% 48%;
+  --vote-reject-hover: 0 80% 62%;
+  --vote-not-voted-hover: 220 15% 62%;
+
   /* Depth/Surface system - blue tones with clear distinction */
   --surface-0: 220 25% 82%;  /* Page background - muted blue-gray */
   --surface-1: 225 40% 90%;  /* Level 1 - light periwinkle */
@@ -163,6 +171,14 @@
   --cat-fg-19: #ffffff;
   --cat-fg-20: #0f172a;
   
+  /* Vote visualization colors - brighter for dark backgrounds */
+  --vote-approve: 152 60% 50%;
+  --vote-reject: 0 65% 60%;
+  --vote-not-voted: 220 15% 50%;
+  --vote-approve-hover: 152 68% 56%;
+  --vote-reject-hover: 0 72% 66%;
+  --vote-not-voted-hover: 220 20% 58%;
+
   /* Depth/Surface system - deep rich blues with color accents */
   --surface-0: 225 40% 8%;   /* Page background - deep navy */
   --surface-1: 220 50% 14%;  /* Level 1 - rich blue */

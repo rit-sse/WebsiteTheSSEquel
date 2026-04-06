@@ -8,5 +8,6 @@ export type AuthLevel = {
   isMentoringHead: boolean;
   isProjectsHead: boolean;
   isPrimary: boolean;
+  isSeAdmin: boolean;
   profileComplete?: boolean;
 };

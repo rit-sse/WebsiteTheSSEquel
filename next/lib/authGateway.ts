@@ -15,6 +15,7 @@ const DEFAULT_GATEWAY_AUTH_LEVEL: GatewayAuthLevel = {
   isMentoringHead: false,
   isProjectsHead: false,
   isPrimary: false,
+  isSeAdmin: false,
 };
 
 function getSessionTokenFromRequest(request: Request): string | null {

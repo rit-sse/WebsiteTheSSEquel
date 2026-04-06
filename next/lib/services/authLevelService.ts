@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { AuthLevel } from "@/lib/authLevel";
 import { MENTOR_HEAD_TITLE, PROJECTS_HEAD_TITLE } from "@/lib/utils";
+import { SE_ADMIN_POSITION_TITLE } from "@/lib/seAdmin";
 
 /**
  * Resolve auth level for the current user.
@@ -20,6 +21,7 @@ export async function getAuthLevel(): Promise<AuthLevel> {
     isMentoringHead: false,
     isProjectsHead: false,
     isPrimary: false,
+    isSeAdmin: false,
     profileComplete: true,
   };
 
@@ -68,6 +70,7 @@ export async function getAuthLevel(): Promise<AuthLevel> {
     isMentoringHead: user.officers.some((o) => o.position.title === MENTOR_HEAD_TITLE),
     isProjectsHead: user.officers.some((o) => o.position.title === PROJECTS_HEAD_TITLE),
     isPrimary: user.officers.some((o) => o.position.is_primary),
+    isSeAdmin: user.officers.some((o) => o.position.title === SE_ADMIN_POSITION_TITLE),
     profileComplete: !!(
       user.graduationTerm &&
       user.graduationYear &&

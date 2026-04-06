@@ -113,11 +113,12 @@ export async function POST(request: NextRequest) {
       title,
       description,
       authorId: actor.id,
-      status: "OPEN",
+      status: "PRIMARY_REVIEW",
       originalContent: currentSnapshot.content,
       proposedContent,
       isSemanticChange,
       publishedAt: new Date(),
+      primaryReviewOpenedAt: new Date(),
     },
   });
 

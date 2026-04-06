@@ -6,7 +6,6 @@ import { Inter, Rethink_Sans, PT_Serif } from 'next/font/google';
 import { Providers } from "./Providers";
 import { getServerSession } from "next-auth";
 import { authOptions } from '@/lib/authOptions';
-import Script from "next/script";
 
 
 const inter = Inter({
@@ -54,8 +53,10 @@ export default async function RootLayout({
             <body
                 className={`min-h-screen flex flex-col bg-gradient-to-b from-background to-muted overflow-x-hidden`}
             >
-                <Script id="init-style-font" strategy="beforeInteractive">
-                    {`try {
+                <script
+                    suppressHydrationWarning
+                    dangerouslySetInnerHTML={{
+                        __html: `try {
   var styleMode = localStorage.getItem("sse-style-mode");
   if (styleMode === "neo" || styleMode === "clean") {
     document.documentElement.setAttribute("data-style", styleMode);
@@ -64,8 +65,9 @@ export default async function RootLayout({
   if (fontMode === "rethink" || fontMode === "pt-serif") {
     document.documentElement.setAttribute("data-font", fontMode);
   }
-} catch (e) {}`}
-                </Script>
+} catch (e) {}`,
+                    }}
+                />
                 <Providers session={session}>
                     {children}
                 </Providers>

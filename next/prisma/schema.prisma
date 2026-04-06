@@ -30,6 +30,7 @@ enum AlumniCandidateStatus {
 enum AmendmentStatus {
   DRAFT
   OPEN
+  PRIMARY_REVIEW
   VOTING
   APPROVED
   REJECTED
@@ -235,6 +236,7 @@ model OfficerPosition {
   officers         Officer[]
   handoverDocument HandoverDocument?
   invitations      Invitation[]
+  amendmentVotes   AmendmentVote[]
 }
 
 model HandoverDocument {
@@ -815,10 +817,14 @@ model Amendment {
   githubBranch     String?
   originalContent  String          @db.Text
   proposedContent  String          @db.Text
-  publishedAt      DateTime?
-  votingOpenedAt   DateTime?
-  votingClosedAt   DateTime?
-  isSemanticChange Boolean         @default(true)
+  publishedAt            DateTime?
+  primaryReviewOpenedAt  DateTime?
+  primaryReviewClosedAt  DateTime?
+  votingOpenedAt         DateTime?
+  votingClosedAt         DateTime?
+  votingDurationHours    Int?
+  votingEndsAt           DateTime?
+  isSemanticChange       Boolean         @default(true)
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
 
@@ -828,16 +834,21 @@ model Amendment {
 }
 
 model AmendmentVote {
-  id          Int      @id @default(autoincrement())
-  amendmentId Int
-  userId      Int
-  approve     Boolean
-  createdAt   DateTime @default(now())
+  id                Int              @id @default(autoincrement())
+  amendmentId       Int
+  userId            Int
+  approve           Boolean
+  phase             String           @default("VOTING")
+  officerPositionId Int?
+  createdAt         DateTime         @default(now())
 
-  amendment Amendment @relation(fields: [amendmentId], references: [id], onDelete: Cascade)
-  user      User      @relation(fields: [userId], references: [id])
+  amendment       Amendment        @relation(fields: [amendmentId], references: [id], onDelete: Cascade)
+  user            User             @relation(fields: [userId], references: [id])
+  officerPosition OfficerPosition? @relation(fields: [officerPositionId], references: [id])
 
-  @@unique([amendmentId, userId])
+  // Partial unique indexes managed via SQL:
+  // - AmendmentVote_amendmentId_userId_voting_key: unique (amendmentId, userId) WHERE phase='VOTING'
+  // - AmendmentVote_amendmentId_officerPositionId_phase_key: unique (amendmentId, officerPositionId, phase) WHERE officerPositionId IS NOT NULL
 }
 
 model AmendmentComment {

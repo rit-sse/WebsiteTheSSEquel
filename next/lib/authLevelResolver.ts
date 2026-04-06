@@ -4,6 +4,7 @@ import { AuthLevel } from "@/lib/authLevel";
 import { hasStagingElevatedAccess } from "@/lib/proxyAuth";
 import { getSessionToken } from "@/lib/sessionToken";
 import { MENTOR_HEAD_TITLE, PROJECTS_HEAD_TITLE } from "@/lib/utils";
+import { SE_ADMIN_POSITION_TITLE } from "@/lib/seAdmin";
 
 type ResolveOptions = {
   includeProfileComplete?: boolean;
@@ -21,6 +22,7 @@ function getDefaultAuthLevel(includeProfileComplete: boolean): AuthLevel {
     isMentoringHead: false,
     isProjectsHead: false,
     isPrimary: false,
+    isSeAdmin: false,
   };
 
   if (includeProfileComplete) {
@@ -77,6 +79,7 @@ export async function resolveAuthLevelFromToken(
     authLevel.isMentoringHead = true;
     authLevel.isProjectsHead = true;
     authLevel.isPrimary = true;
+    authLevel.isSeAdmin = true;
   }
 
   if (!token) {
@@ -141,6 +144,9 @@ export async function resolveAuthLevelFromToken(
     );
     authLevel.isPrimary = user.officers.some(
       (officer) => officer.position.is_primary
+    );
+    authLevel.isSeAdmin = user.officers.some(
+      (officer) => officer.position.title === SE_ADMIN_POSITION_TITLE
     );
   }
 

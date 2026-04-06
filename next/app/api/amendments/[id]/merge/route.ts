@@ -6,15 +6,16 @@ import { mergePR } from "@/lib/services/githubAmendmentService";
 
 export const dynamic = "force-dynamic";
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
-  const amendmentId = Number(params.id);
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const amendmentId = Number(id);
   if (Number.isNaN(amendmentId)) {
     return new Response("Invalid amendment id", { status: 422 });
   }
 
   const actor = await getActorFromRequest(request);
-  if (!actor?.isPrimary) {
-    return new Response("Only primary officers can merge amendments", { status: 403 });
+  if (!(actor?.isPrimary || actor?.isSeAdmin)) {
+    return new Response("Only primary officers or SE admins can merge amendments", { status: 403 });
   }
 
   const amendment = await prisma.amendment.findUnique({
