@@ -86,13 +86,9 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    if (!books || books.length === 0) {
-      return new Response(JSON.stringify({ error: "Not found" }), {
-        status: 404,
-      });
-    }
-
-    return new Response(JSON.stringify(resolveBooks(books)), { status: 200 });
+    return new Response(JSON.stringify(resolveBooks(books ?? [])), {
+      status: 200,
+    });
   } catch (e) {
     console.error("Error fetching book:", e);
     return new Response(JSON.stringify({ error: `Failed to fetch book` }), {

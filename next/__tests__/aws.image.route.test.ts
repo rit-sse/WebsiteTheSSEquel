@@ -43,6 +43,21 @@ describe("/api/aws/image route", () => {
     expect(res.headers.get("content-type")).toBe("image/jpeg");
   });
 
+  it("allows library asset keys", async () => {
+    mockSend.mockResolvedValue({
+      Body: { transformToByteArray: () => new Uint8Array([1, 2, 3]) },
+      ContentType: "image/jpeg",
+    });
+
+    const res = await GET(
+      req(
+        "http://localhost/api/aws/image?key=assets/library/9781556159008/cover.jpg"
+      )
+    );
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-type")).toBe("image/jpeg");
+  });
+
   it("returns 404 for missing S3 key", async () => {
     const err = new Error("not found");
     err.name = "NoSuchKey";

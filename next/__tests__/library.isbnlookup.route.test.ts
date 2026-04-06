@@ -55,13 +55,29 @@ describe("/api/library/isbnlookup route", () => {
       req("http://localhost/api/library/isbnlookup?isbn=123")
     );
     expect(res.status).toBe(200);
-    const expectedYear = new Date("2020-01-01").getFullYear();
     expect(await res.json()).toMatchObject({
       ISBN: "123",
       name: "Book: Sub",
       description: "Desc",
       publisher: "Pub",
-      yearPublished: expectedYear,
+      yearPublished: 2020,
+    });
+  });
+
+  it("returns a JSON error when openlibrary fails", async () => {
+    mockGetAuth.mockResolvedValue({ isMentor: true, isOfficer: false });
+    mockFetch.mockResolvedValue({
+      ok: false,
+      statusText: "Forbidden",
+    });
+
+    const res = await GET(
+      req("http://localhost/api/library/isbnlookup?isbn=123")
+    );
+
+    expect(res.status).toBe(500);
+    expect(await res.json()).toEqual({
+      error: "Failed to fetch book data: Forbidden",
     });
   });
 });
