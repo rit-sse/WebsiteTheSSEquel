@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import {
-  Tooltip,
+  RadixTooltip as Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,

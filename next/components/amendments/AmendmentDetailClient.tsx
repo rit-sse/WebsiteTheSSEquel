@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { NeoCard } from "@/components/ui/neo-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Tooltip,
+  RadixTooltip as Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,

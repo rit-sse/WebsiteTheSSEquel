@@ -1,5 +1,5 @@
 import {
-  Tooltip,
+  RadixTooltip as Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
