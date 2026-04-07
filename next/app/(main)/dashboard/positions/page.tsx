@@ -33,7 +33,7 @@ export default function PositionsPage() {
           </TabsTrigger>
         </TabsList>
         <TabsContent value="officers" className="space-y-4">
-          <PositionsSection readOnly={!isPrimary} category="PRIMARY_OFFICER" />
+          <PositionsSection readOnly={!isPrimary} />
         </TabsContent>
         <TabsContent value="se-office" className="space-y-4">
           <PositionsSection readOnly={!isPrimary && !isSeAdmin} category="SE_OFFICE" />
