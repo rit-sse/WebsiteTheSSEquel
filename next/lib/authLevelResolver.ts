@@ -10,6 +10,7 @@ import {
   TECH_COMMITTEE_DIVISION_MANAGER_BY_TITLE,
   TECH_COMMITTEE_DIVISION_MANAGER_TITLES,
 } from "@/lib/utils";
+import { SE_ADMIN_POSITION_TITLE } from "@/lib/seAdmin";
 
 type ResolveOptions = {
   includeProfileComplete?: boolean;
@@ -30,6 +31,7 @@ function getDefaultAuthLevel(includeProfileComplete: boolean): AuthLevel {
     isTechCommitteeDivisionManager: false,
     techCommitteeManagedDivision: null,
     isPrimary: false,
+    isSeAdmin: false,
   };
 
   if (includeProfileComplete) {
@@ -89,6 +91,7 @@ export async function resolveAuthLevelFromToken(
     authLevel.isTechCommitteeDivisionManager = true;
     authLevel.techCommitteeManagedDivision = "Lab Division";
     authLevel.isPrimary = true;
+    authLevel.isSeAdmin = true;
   }
 
   if (!token) {
@@ -174,6 +177,9 @@ export async function resolveAuthLevelFromToken(
       : null;
     authLevel.isPrimary = user.officers.some(
       (officer) => officer.position.is_primary
+    );
+    authLevel.isSeAdmin = user.officers.some(
+      (officer) => officer.position.title === SE_ADMIN_POSITION_TITLE
     );
   }
 

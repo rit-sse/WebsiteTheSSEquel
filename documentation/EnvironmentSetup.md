@@ -47,6 +47,7 @@ DATABASE_URL="postgresql://postgres:postgres@localhost:5432/ssequel_dev"
 NEXTAUTH_URL="http://localhost:3000"
 NEXTAUTH_SECRET="replace-with-a-long-random-secret"
 SESSION_COOKIE_NAME="next-auth.session-token"
+GITHUB_PAT="server-side GitHub PAT for constitution amendments"
 
 # Google OAuth
 GOOGLE_CLIENT_ID=""
@@ -117,6 +118,23 @@ You do **not** need PostgreSQL installed directly on your computer if you use Do
 4. Create a new database by right clicking on `Databases` and selecting `Create > Database...`. Name the database something like `ssequel-dev` and click `Save`.
 
 5. Fill in the `DATABASE_URL` entry in `.env`. The `DATABASE_URL` format is: `postgresql://<username>:<password>@localhost:5432/<database name>`.
+
+### Amendment feature setup
+
+If you are using the constitution amendment workflow:
+
+- Create a server-side GitHub PAT with `repo` scope for write access to `rit-sse/governing-docs`.
+- Set `GITHUB_PAT` in the runtime environment for the Next.js container.
+- Keep this token out of source control and never expose it in client-side code.
+
+Example compose-style deployment snippet:
+
+```yaml
+services:
+  website:
+    environment:
+      GITHUB_PAT: ${GITHUB_PAT}
+```
 
 ## Setting up Google OAuth
 

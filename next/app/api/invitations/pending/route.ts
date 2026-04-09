@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
   // Fetch all pending invitations for this user's email
   const invitations = await prisma.invitation.findMany({
     where: {
-      invitedEmail: loggedInUser.email,
+      invitedEmail: { equals: loggedInUser.email, mode: "insensitive" },
       expiresAt: {
         gte: new Date(), // Only non-expired invitations
       },
@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
   // Delete any expired invitations we might find
   await prisma.invitation.deleteMany({
     where: {
-      invitedEmail: loggedInUser.email,
+      invitedEmail: { equals: loggedInUser.email, mode: "insensitive" },
       expiresAt: {
         lt: new Date(),
       },
