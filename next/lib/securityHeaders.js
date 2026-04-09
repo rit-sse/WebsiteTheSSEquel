@@ -43,7 +43,7 @@ function buildContentSecurityPolicy({ production, nonce } = {}) {
         "'self'",
         "data:",
         "blob:",
-        "https://lh3.googleusercontent.com",
+        "https://*.googleusercontent.com",
         ...s3Origins,
         "https://source.boringavatars.com",
         "https://dummyimage.com",
@@ -61,7 +61,7 @@ function buildContentSecurityPolicy({ production, nonce } = {}) {
     ["frame-src", ["https://calendar.google.com"]],
     ["object-src", ["'none'"]],
     ["base-uri", ["'self'"]],
-    ["form-action", ["'self'"]],
+    ["form-action", ["'self'", "https://accounts.google.com"]],
     ["frame-ancestors", ["'none'"]],
     ["upgrade-insecure-requests", []],
   ];

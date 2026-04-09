@@ -76,6 +76,8 @@ describe("security headers", () => {
     expect(policy).toContain("https://api.github.com");
     expect(policy).toContain("https://calendar.google.com");
     expect(policy).toContain("https://avatars.githubusercontent.com");
+    expect(policy).toContain("https://*.googleusercontent.com");
+    expect(policy).toContain("https://accounts.google.com");
     expect(policy).toContain("https://sse-web-prod.s3.us-east-2.amazonaws.com");
     expect(policy).toContain(
       "connect-src 'self' https://api.github.com https://*.s3.amazonaws.com https://*.amazonaws.com https://sse-web-prod.s3.us-east-2.amazonaws.com"
