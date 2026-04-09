@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn, useSession } from "next-auth/react";
 import {
@@ -45,27 +45,7 @@ export default function AcceptInvitationPage() {
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState<number | null>(null);
 
-  useEffect(() => {
-    if (status === "loading") return;
-
-    if (status === "unauthenticated") {
-      // Redirect to sign in, then back here
-      const callbackUrl = emailHint
-        ? `/accept-invitation?email=${encodeURIComponent(emailHint)}`
-        : "/accept-invitation";
-      signIn(
-        "google",
-        { callbackUrl },
-        emailHint ? { login_hint: emailHint } : {}
-      );
-      return;
-    }
-
-    // Fetch pending invitations
-    fetchInvitations();
-  }, [status]);
-
-  const fetchInvitations = async () => {
+  const fetchInvitations = useCallback(async () => {
     try {
       const response = await fetch("/api/invitations/pending");
       if (response.ok) {
@@ -87,7 +67,27 @@ export default function AcceptInvitationPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [emailHint]);
+
+  useEffect(() => {
+    if (status === "loading") return;
+
+    if (status === "unauthenticated") {
+      // Redirect to sign in, then back here
+      const callbackUrl = emailHint
+        ? `/accept-invitation?email=${encodeURIComponent(emailHint)}`
+        : "/accept-invitation";
+      signIn(
+        "google",
+        { callbackUrl },
+        emailHint ? { login_hint: emailHint } : {}
+      );
+      return;
+    }
+
+    // Fetch pending invitations
+    fetchInvitations();
+  }, [status, emailHint, fetchInvitations]);
 
   const handleAccept = async (invitationId: number) => {
     setProcessing(invitationId);
