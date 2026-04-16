@@ -332,6 +332,19 @@ export default function VotePanel({
 
   const requiredApproveVotes = Math.ceil((2 / 3) * localTotals.totalVotes);
 
+  async function readResponsePayload(response: Response) {
+    const raw = await response.text();
+    if (!raw) {
+      return null;
+    }
+
+    try {
+      return JSON.parse(raw) as Record<string, unknown>;
+    } catch {
+      return raw;
+    }
+  }
+
   async function castVote(approve: boolean) {
     setSubmitting(true);
     try {
@@ -340,16 +353,30 @@ export default function VotePanel({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ approve }),
       });
-      const payload = await response.json();
+      const payload = await readResponsePayload(response);
       if (!response.ok) {
-        throw new Error(payload?.error ?? payload ?? "Could not record vote");
+        throw new Error(
+          typeof payload === "object" && payload !== null
+            ? ((payload.error as string | undefined) ??
+              (payload.message as string | undefined) ??
+              "Could not record vote")
+            : ((payload as string | null) ?? "Could not record vote"),
+        );
       }
+      const voteSummary =
+        typeof payload === "object" && payload !== null
+          ? (payload.voteSummary as
+              | {
+                  totalVotes?: number;
+                  approveVotes?: number;
+                  rejectVotes?: number;
+                }
+              | undefined)
+          : undefined;
       setLocalTotals({
-        totalVotes: payload?.voteSummary?.totalVotes ?? localTotals.totalVotes,
-        approveVotes:
-          payload?.voteSummary?.approveVotes ?? localTotals.approveVotes,
-        rejectVotes:
-          payload?.voteSummary?.rejectVotes ?? localTotals.rejectVotes,
+        totalVotes: voteSummary?.totalVotes ?? localTotals.totalVotes,
+        approveVotes: voteSummary?.approveVotes ?? localTotals.approveVotes,
+        rejectVotes: voteSummary?.rejectVotes ?? localTotals.rejectVotes,
       });
       setLocalUserVote(approve);
     } catch (err) {
@@ -367,12 +394,24 @@ export default function VotePanel({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ approve, officerPositionId: positionId }),
       });
-      const payload = await response.json();
+      const payload = await readResponsePayload(response);
       if (!response.ok) {
-        throw new Error(payload?.error ?? payload ?? "Could not record vote");
+        throw new Error(
+          typeof payload === "object" && payload !== null
+            ? ((payload.error as string | undefined) ??
+              (payload.message as string | undefined) ??
+              "Could not record vote")
+            : ((payload as string | null) ?? "Could not record vote"),
+        );
       }
-      if (payload.primaryReview) {
-        setLocalPrimaryReview(payload.primaryReview);
+      if (
+        typeof payload === "object" &&
+        payload !== null &&
+        payload.primaryReview
+      ) {
+        setLocalPrimaryReview(
+          payload.primaryReview as VotePanelProps["primaryReview"],
+        );
       }
     } catch (err) {
       alert(err instanceof Error ? err.message : "Could not record vote");
