@@ -32,7 +32,10 @@ export default function AmendmentCard({
   isAuthor = false,
   muted = false,
 }: AmendmentCardProps) {
-  const hasDiff = amendment.originalContent && amendment.proposedContent &&
+  const isNewAmendment = amendment.status === "PRIMARY_REVIEW";
+  const hasDiff =
+    amendment.originalContent &&
+    amendment.proposedContent &&
     amendment.originalContent !== amendment.proposedContent;
 
   return (
@@ -40,18 +43,28 @@ export default function AmendmentCard({
       href={`/about/constitution/amendments/${amendment.id}`}
       className={`block group ${muted ? "opacity-60 hover:opacity-80" : ""}`}
     >
-      <Card depth={2} className={`transition-colors hover:bg-surface-3/30 cursor-pointer ${muted ? "p-3" : "p-4 md:p-5"}`}>
+      <Card
+        depth={2}
+        className={`cursor-pointer transition-colors hover:bg-surface-3/30 ${muted ? "p-3" : "p-4 md:p-5"}`}
+      >
         <CardHeader className="p-0">
-          <div className="flex flex-wrap gap-2 items-center justify-between">
-            <div className="flex items-center gap-3 min-w-0 flex-1">
-              <CardTitle className={`group-hover:text-primary transition-colors leading-snug ${muted ? "text-sm" : "text-base sm:text-lg"}`}>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0 flex-1">
+              <CardTitle
+                className={`group-hover:text-primary transition-colors leading-snug ${muted ? "text-sm" : "text-base sm:text-lg"}`}
+              >
                 {amendment.title}
               </CardTitle>
-              <span className="text-sm text-muted-foreground hidden sm:inline shrink-0">
+              <span className="mt-1 block text-xs text-muted-foreground sm:text-sm">
                 by {amendment.author?.name ?? "Unknown"}
               </span>
             </div>
-            <div className="flex items-center gap-1.5 shrink-0">
+            <div className="flex w-full flex-wrap items-center gap-1.5 sm:w-auto sm:justify-end">
+              {isNewAmendment && (
+                <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/12 px-2 py-0.5 text-xs font-semibold text-amber-700 dark:text-amber-300">
+                  New
+                </span>
+              )}
               {isAuthor && (
                 <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
                   <Pen className="h-2.5 w-2.5" />
@@ -59,7 +72,7 @@ export default function AmendmentCard({
                 </span>
               )}
               <AmendmentStatusBadge status={amendment.status} />
-              <ChevronRight className="h-4 w-4 text-muted-foreground/40 group-hover:text-primary/60 transition-colors" />
+              <ChevronRight className="ml-auto h-4 w-4 text-muted-foreground/40 transition-colors group-hover:text-primary/60 sm:ml-0" />
             </div>
           </div>
         </CardHeader>
