@@ -108,6 +108,11 @@ function createGithubAppJwt(): string {
   }
 
   const now = Math.floor(Date.now() / 1000);
+  // NOTE: do NOT pass `noTimestamp: true` here. jsonwebtoken deletes the `iat`
+  // claim from the payload when that option is set (see node_modules/
+  // jsonwebtoken/sign.js), even if we set it manually. GitHub rejects the
+  // JWT assertion with "Missing 'issued at' claim ('iat')" when that happens.
+  // With `noTimestamp` unset, the library preserves our manual `iat` value.
   return jwt.sign(
     {
       iat: now - 60,
@@ -117,7 +122,6 @@ function createGithubAppJwt(): string {
     config.privateKey,
     {
       algorithm: "RS256",
-      noTimestamp: true,
     },
   );
 }

@@ -17,6 +17,14 @@ function sanitizeText(input: unknown): string {
   return trimmed;
 }
 
+// Preserve whitespace on constitution content so the stored copy matches
+// what the wizard diffed against. Trimming caused the detail-page diff to
+// disagree with the wizard diff near the start/end of the file.
+function readContent(input: unknown): string {
+  if (typeof input !== "string") return "";
+  return input;
+}
+
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const status = searchParams.get("status");
@@ -92,12 +100,12 @@ export async function POST(request: NextRequest) {
 
   const title = sanitizeText(body.title);
   const description = sanitizeText(body.description);
-  const clientOriginalContent = sanitizeText(body.originalContent);
-  const proposedContent = sanitizeText(body.proposedContent);
+  const clientOriginalContent = readContent(body.originalContent);
+  const proposedContent = readContent(body.proposedContent);
   const isSemanticChange =
     typeof body.isSemanticChange === "boolean" ? body.isSemanticChange : true;
 
-  if (!title || !proposedContent) {
+  if (!title || proposedContent.trim().length === 0) {
     return new Response('"title", "proposedContent" are required', {
       status: 422,
     });

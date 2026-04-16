@@ -41,6 +41,14 @@ function sanitizeText(input: unknown): string | null {
   return input.trim();
 }
 
+// Preserve whitespace on constitution content so edits on the detail page
+// round-trip without altering leading/trailing whitespace the user sees in
+// the DiffViewer.
+function readContent(input: unknown): string | null {
+  if (typeof input !== "string") return null;
+  return input;
+}
+
 function canEditAmendmentContent(
   actor: { isPrimary: boolean; isSeAdmin: boolean; id: number } | null,
   amendment: { authorId: number; status: AmendmentStatus },
@@ -272,7 +280,7 @@ export async function PATCH(
 
   const nextTitle = sanitizeText(body.title);
   const nextDescription = sanitizeText(body.description);
-  const nextProposedContent = sanitizeText(body.proposedContent);
+  const nextProposedContent = readContent(body.proposedContent);
   const wantsContentEdit =
     nextTitle !== null ||
     nextDescription !== null ||
@@ -335,7 +343,7 @@ export async function PATCH(
     }
 
     if (nextProposedContent !== null) {
-      if (!nextProposedContent) {
+      if (nextProposedContent.trim().length === 0) {
         return new Response("proposedContent cannot be empty", { status: 422 });
       }
       updateData.proposedContent = nextProposedContent;
