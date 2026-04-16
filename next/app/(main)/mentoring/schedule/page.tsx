@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Modal, ModalFooter } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import { getCategoricalColorFromSeed } from "@/lib/categoricalColors";
+import { getInitials } from "@/lib/userDisplay";
 
 interface MentorSkill {
   id: number;
@@ -42,14 +43,6 @@ const HOURS = [
   { hour: 16, label: "4pm - 5pm" },
   { hour: 17, label: "5pm - 6pm" },
 ];
-
-const getInitials = (name: string) =>
-  name
-    .split(" ")
-    .filter(Boolean)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("")
-    .slice(0, 2) || "?";
 
 export default function PublicMentorSchedulePage() {
   const [schedule, setSchedule] = useState<MentorSchedule | null>(null);

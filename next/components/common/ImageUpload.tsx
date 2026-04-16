@@ -230,7 +230,7 @@ export default function ImageUpload({
               {displayUrl ? (
                 <AvatarImage src={displayUrl} alt="Upload" />
               ) : null}
-              <AvatarFallback className="text-lg font-bold">
+              <AvatarFallback className="font-sans text-lg font-bold">
                 {initials}
               </AvatarFallback>
             </Avatar>
@@ -298,7 +298,7 @@ export default function ImageUpload({
         {/* Current avatar */}
         <Avatar className={`${avatarSize} shrink-0`}>
           {displayUrl ? <AvatarImage src={displayUrl} alt="Upload" /> : null}
-          <AvatarFallback className="text-2xl font-bold">
+          <AvatarFallback className="font-sans text-2xl font-bold">
             {initials}
           </AvatarFallback>
         </Avatar>

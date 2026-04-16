@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import ImageUpload from "@/components/common/ImageUpload";
 import { isS3Key, normalizeToS3Key } from "@/lib/s3Utils";
+import { getInitials } from "@/lib/userDisplay";
 
 const DEFAULT_IMAGE = "https://source.boringavatars.com/beam/";
 
@@ -28,16 +29,6 @@ interface UserProfile {
   graduationYear: number | null;
   major: string | null;
   coopSummary: string | null;
-}
-
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
 }
 
 /** Strip a full LinkedIn URL down to just the username/slug */

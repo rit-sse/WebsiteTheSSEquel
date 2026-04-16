@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import NavAvatar from "./NavAvatar";
+import UserAvatar from "@/components/ui/user-avatar";
 import { useProfileImage } from "@/contexts/ProfileImageContext";
 
 interface AuthButtonProps {
@@ -64,10 +64,11 @@ export default function AuthButton({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button className="relative rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 mr-2">
-            <NavAvatar
+            <UserAvatar
               src={userImage}
               name={userName}
               className="h-8 w-8 ring-1 ring-border/50 shadow-sm"
+              initialsClassName="text-[10px]"
             />
             {!profileComplete && (
               <span className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-destructive border-2 border-background" />

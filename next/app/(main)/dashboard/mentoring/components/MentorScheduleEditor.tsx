@@ -28,6 +28,8 @@ import {
 } from "@/components/ui/table";
 import { Tooltip } from "@/components/ui/tooltip";
 import { toast } from "sonner";
+import { parseApiError } from "@/lib/apiClient";
+import { getInitials } from "@/lib/userDisplay";
 import {
   X,
   User,
@@ -142,17 +144,6 @@ const TRAFFIC_LEGEND = [
 
 function getMentorColor(mentorId: number) {
   return getCategoricalColorFromSeed(mentorId);
-}
-
-function getInitials(name: string) {
-  return (
-    name
-      .split(" ")
-      .filter(Boolean)
-      .map((part) => part[0]?.toUpperCase() ?? "")
-      .join("")
-      .slice(0, 2) || "?"
-  );
 }
 
 function getTrafficPresentation(averagePeopleInLab: number) {
@@ -609,8 +600,7 @@ export default function MentorScheduleEditor({
     });
 
     if (!response.ok) {
-      const data = await response.json();
-      throw new Error(data.error || "Failed to assign mentor");
+      throw new Error(await parseApiError(response, "Failed to assign mentor"));
     }
   };
 
@@ -626,8 +616,7 @@ export default function MentorScheduleEditor({
     });
 
     if (!response.ok) {
-      const data = await response.json();
-      throw new Error(data.error || "Failed to move mentor");
+      throw new Error(await parseApiError(response, "Failed to move mentor"));
     }
   };
 
@@ -639,8 +628,7 @@ export default function MentorScheduleEditor({
     });
 
     if (!response.ok) {
-      const data = await response.json();
-      throw new Error(data.error || "Failed to remove mentor");
+      throw new Error(await parseApiError(response, "Failed to remove mentor"));
     }
   };
 
@@ -701,8 +689,7 @@ export default function MentorScheduleEditor({
         fetchBlocks();
         setClearModalOpen(false);
       } else {
-        const data = await response.json();
-        toast.error(data.error || "Failed to clear schedule");
+        toast.error(await parseApiError(response, "Failed to clear schedule"));
       }
     } catch (error) {
       console.error("Failed to clear schedule:", error);

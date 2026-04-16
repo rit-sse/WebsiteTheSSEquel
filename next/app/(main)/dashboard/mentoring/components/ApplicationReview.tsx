@@ -23,6 +23,7 @@ import {
   ChevronUp,
   UserPlus,
 } from "lucide-react";
+import { getInitials } from "@/lib/userDisplay";
 
 interface MentorApplication {
   id: number;
@@ -63,14 +64,6 @@ const STATUS_COLORS: Record<string, string> = {
   rejected: "bg-red-500/20 text-red-700 dark:text-red-400",
   invited: "bg-blue-500/20 text-blue-700 dark:text-blue-400",
 };
-
-const getInitials = (name: string) =>
-  name
-    .split(" ")
-    .filter(Boolean)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("")
-    .slice(0, 2) || "?";
 
 export default function ApplicationReview() {
   const [applications, setApplications] = useState<MentorApplication[]>([]);
