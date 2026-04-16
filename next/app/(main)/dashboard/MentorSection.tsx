@@ -16,6 +16,7 @@ import {
 import { toast } from "sonner";
 import { Pencil, Trash2, UserCheck, UserX, Mail, Clock } from "lucide-react";
 import MentorInviteModal from "./MentorInviteModal";
+import { getInitials } from "@/lib/userDisplay";
 
 interface Mentor {
   id: number;
@@ -42,14 +43,6 @@ interface PendingInvitation {
     email: string;
   };
 }
-
-const getInitials = (name: string) =>
-  name
-    .split(" ")
-    .filter(Boolean)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("")
-    .slice(0, 2) || "?";
 
 export default function MentorSection() {
   const [mentors, setMentors] = useState<Mentor[]>([]);
