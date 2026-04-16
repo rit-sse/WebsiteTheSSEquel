@@ -409,9 +409,10 @@ export default function VotePanel({
         payload !== null &&
         payload.primaryReview
       ) {
-        setLocalPrimaryReview(
-          payload.primaryReview as VotePanelProps["primaryReview"],
-        );
+        const nextPrimaryReview = payload.primaryReview as NonNullable<
+          VotePanelProps["primaryReview"]
+        >;
+        setLocalPrimaryReview(nextPrimaryReview);
       }
     } catch (err) {
       alert(err instanceof Error ? err.message : "Could not record vote");
