@@ -19,6 +19,8 @@ import AmendmentBreadcrumb from "@/components/amendments/AmendmentBreadcrumb";
 import AmendmentTimeline from "@/components/amendments/AmendmentTimeline";
 import ConfirmationDialog from "@/components/amendments/ConfirmationDialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import AmendmentDetailSkeleton from "@/components/amendments/AmendmentDetailSkeleton";
 import { AmendmentStatus } from "@prisma/client";
 
@@ -110,8 +112,18 @@ export default function AmendmentDetailClient({
   const [isUser, setIsUser] = useState(false);
   const [roleName, setRoleName] = useState("");
   const [actionMessage, setActionMessage] = useState("");
+  const [editMessage, setEditMessage] = useState("");
   const [userId, setUserId] = useState<number | null>(null);
   const [authLoaded, setAuthLoaded] = useState(false);
+  const [isEditingDraft, setIsEditingDraft] = useState(false);
+  const [draftTitle, setDraftTitle] = useState(initialAmendment.title);
+  const [draftDescription, setDraftDescription] = useState(
+    initialAmendment.description,
+  );
+  const [draftProposedContent, setDraftProposedContent] = useState(
+    initialAmendment.proposedContent,
+  );
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -160,6 +172,9 @@ export default function AmendmentDetailClient({
         throw new Error(message || "Failed to update status");
       }
       const updated = await response.json();
+      if (updated?.prCreationWarning) {
+        setActionMessage(updated.prCreationWarning);
+      }
       setAmendment((prev) => ({
         ...prev,
         status: updated.status as AmendmentStatus,
@@ -205,7 +220,7 @@ export default function AmendmentDetailClient({
     }
   }
 
-  async function resubmitPr() {
+  async function createPr() {
     setActionMessage("");
     try {
       const response = await fetch(
@@ -216,7 +231,7 @@ export default function AmendmentDetailClient({
       );
       if (!response.ok) {
         const message = await response.text();
-        throw new Error(message || "Failed to re-submit PR");
+        throw new Error(message || "Failed to create PR");
       }
 
       const refreshed = await fetch(`/api/amendments/${amendment.id}`);
@@ -230,8 +245,57 @@ export default function AmendmentDetailClient({
       setAmendment((prev) => ({ ...prev, ...full }));
     } catch (err) {
       setActionMessage(
-        err instanceof Error ? err.message : "Failed to re-submit PR",
+        err instanceof Error ? err.message : "Failed to create PR",
       );
+    }
+  }
+
+  async function saveDraftEdits() {
+    setEditMessage("");
+
+    if (!draftTitle.trim()) {
+      setEditMessage("Title is required");
+      return;
+    }
+
+    if (!draftProposedContent.trim()) {
+      setEditMessage("Proposed text is required");
+      return;
+    }
+
+    setIsSavingDraft(true);
+    try {
+      const response = await fetch(`/api/amendments/${amendment.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: draftTitle,
+          description: draftDescription,
+          proposedContent: draftProposedContent,
+        }),
+      });
+      if (!response.ok) {
+        const message = await response.text();
+        throw new Error(message || "Failed to save amendment edits");
+      }
+
+      const refreshed = await fetch(`/api/amendments/${amendment.id}`);
+      if (!refreshed.ok) {
+        throw new Error("Edits were saved, but the amendment could not be refreshed");
+      }
+
+      const full = await refreshed.json();
+      setAmendment((prev) => ({ ...prev, ...full }));
+      setDraftTitle(full.title);
+      setDraftDescription(full.description);
+      setDraftProposedContent(full.proposedContent);
+      setIsEditingDraft(false);
+    } catch (err) {
+      setEditMessage(
+        err instanceof Error ? err.message : "Failed to save amendment edits",
+      );
+    } finally {
+      setIsSavingDraft(false);
     }
   }
 
@@ -239,11 +303,13 @@ export default function AmendmentDetailClient({
     return <AmendmentDetailSkeleton />;
   }
 
-  const canResubmitPr =
+  const canEditDraft =
+    amendment.status === "PRIMARY_REVIEW" &&
+    (amendment.author.id === userId || isPrimary || isSeAdmin);
+
+  const canCreatePr =
     !amendment.githubPrNumber &&
-    amendment.status !== "WITHDRAWN" &&
-    amendment.status !== "MERGED" &&
-    amendment.status !== "REJECTED" &&
+    (amendment.status === "VOTING" || amendment.status === "APPROVED") &&
     (amendment.author.id === userId || isPrimary || isSeAdmin);
 
   return (
@@ -282,14 +348,30 @@ export default function AmendmentDetailClient({
             </div>
             <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end">
               <AmendmentStatusBadge status={amendment.status} />
-              {canResubmitPr && (
+              {canEditDraft && (
                 <Button
                   size="xs"
                   variant="outline"
                   className="w-full sm:w-auto"
-                  onClick={resubmitPr}
+                  onClick={() => {
+                    setEditMessage("");
+                    setDraftTitle(amendment.title);
+                    setDraftDescription(amendment.description);
+                    setDraftProposedContent(amendment.proposedContent);
+                    setIsEditingDraft((prev) => !prev);
+                  }}
                 >
-                  Re-submit PR
+                  {isEditingDraft ? "Close Editor" : "Edit Draft Text"}
+                </Button>
+              )}
+              {canCreatePr && (
+                <Button
+                  size="xs"
+                  variant="outline"
+                  className="w-full sm:w-auto"
+                  onClick={createPr}
+                >
+                  Create PR
                 </Button>
               )}
               {(isPrimary || isSeAdmin) &&
@@ -401,6 +483,93 @@ export default function AmendmentDetailClient({
             </TooltipProvider>
           )}
         </div>
+
+        {isEditingDraft && canEditDraft && (
+          <Card depth={2} className="p-4 md:p-5 space-y-4">
+            <CardHeader className="p-0">
+              <CardTitle>Edit Quorum Draft</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0 space-y-4">
+              <div className="space-y-2">
+                <label
+                  htmlFor="amendment-edit-title"
+                  className="text-sm font-medium"
+                >
+                  Title
+                </label>
+                <Input
+                  id="amendment-edit-title"
+                  value={draftTitle}
+                  onChange={(event) => setDraftTitle(event.target.value)}
+                  disabled={isSavingDraft}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label
+                  htmlFor="amendment-edit-description"
+                  className="text-sm font-medium"
+                >
+                  Description
+                </label>
+                <Textarea
+                  id="amendment-edit-description"
+                  value={draftDescription}
+                  onChange={(event) => setDraftDescription(event.target.value)}
+                  rows={3}
+                  disabled={isSavingDraft}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label
+                  htmlFor="amendment-edit-content"
+                  className="text-sm font-medium"
+                >
+                  Proposed Constitution Text
+                </label>
+                <Textarea
+                  id="amendment-edit-content"
+                  value={draftProposedContent}
+                  onChange={(event) =>
+                    setDraftProposedContent(event.target.value)
+                  }
+                  rows={16}
+                  className="font-mono text-sm"
+                  disabled={isSavingDraft}
+                />
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  size="sm"
+                  onClick={saveDraftEdits}
+                  disabled={isSavingDraft}
+                >
+                  {isSavingDraft ? "Saving..." : "Save Draft"}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setEditMessage("");
+                    setDraftTitle(amendment.title);
+                    setDraftDescription(amendment.description);
+                    setDraftProposedContent(amendment.proposedContent);
+                    setIsEditingDraft(false);
+                  }}
+                  disabled={isSavingDraft}
+                >
+                  Cancel
+                </Button>
+              </div>
+
+              {editMessage && (
+                <p className="text-sm text-destructive">{editMessage}</p>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Main content grid */}
         <div className="grid gap-5 lg:grid-cols-5">

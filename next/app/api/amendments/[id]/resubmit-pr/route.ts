@@ -54,12 +54,11 @@ export async function POST(
   }
 
   if (
-    amendment.status === AmendmentStatus.MERGED ||
-    amendment.status === AmendmentStatus.WITHDRAWN ||
-    amendment.status === AmendmentStatus.REJECTED
+    amendment.status !== AmendmentStatus.VOTING &&
+    amendment.status !== AmendmentStatus.APPROVED
   ) {
     return new Response(
-      "This amendment is no longer eligible for PR re-submission",
+      "A PR can only be created after quorum has passed and member voting is open.",
       { status: 409 },
     );
   }

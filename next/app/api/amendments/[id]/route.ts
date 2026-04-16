@@ -4,10 +4,13 @@ import { NextRequest } from "next/server";
 import {
   computeVoteSummary,
   getActiveMemberCount,
-  getActivePrimaryOfficerCount,
-  computePrimaryReviewResult,
   getActorFromRequest,
 } from "@/lib/services/amendmentService";
+import {
+  buildAmendmentBranchName,
+  createAmendmentPR,
+  fetchConstitutionSnapshot,
+} from "@/lib/services/githubAmendmentService";
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +34,26 @@ function parseVotingDurationHours(value: unknown): number | null {
     return null;
   }
   return value;
+}
+
+function sanitizeText(input: unknown): string | null {
+  if (typeof input !== "string") return null;
+  return input.trim();
+}
+
+function canEditAmendmentContent(
+  actor: { isPrimary: boolean; isSeAdmin: boolean; id: number } | null,
+  amendment: { authorId: number; status: AmendmentStatus },
+) {
+  if (!actor) {
+    return false;
+  }
+
+  if (amendment.status !== "PRIMARY_REVIEW") {
+    return false;
+  }
+
+  return actor.isPrimary || actor.isSeAdmin || amendment.authorId === actor.id;
 }
 
 export async function GET(
@@ -230,6 +253,9 @@ export async function PATCH(
     status?: string;
     votingDurationHours?: number;
     resetVotingWindowFromNow?: boolean;
+    title?: unknown;
+    description?: unknown;
+    proposedContent?: unknown;
   };
   try {
     body = await request.json();
@@ -237,9 +263,25 @@ export async function PATCH(
     return new Response("Invalid JSON", { status: 422 });
   }
 
-  const requestedStatus = sanitizeStatus(body.status ?? null);
-  if (!requestedStatus) {
+  const requestedStatus = body.status
+    ? sanitizeStatus(body.status ?? null)
+    : null;
+  if (body.status && !requestedStatus) {
     return new Response("Invalid status value", { status: 422 });
+  }
+
+  const nextTitle = sanitizeText(body.title);
+  const nextDescription = sanitizeText(body.description);
+  const nextProposedContent = sanitizeText(body.proposedContent);
+  const wantsContentEdit =
+    nextTitle !== null ||
+    nextDescription !== null ||
+    nextProposedContent !== null;
+
+  if (!requestedStatus && !wantsContentEdit) {
+    return new Response("Provide a valid status change or amendment edits", {
+      status: 422,
+    });
   }
 
   const amendment = await prisma.amendment.findUnique({
@@ -248,6 +290,10 @@ export async function PATCH(
       id: true,
       status: true,
       authorId: true,
+      title: true,
+      description: true,
+      proposedContent: true,
+      githubPrNumber: true,
       publishedAt: true,
       votingOpenedAt: true,
     },
@@ -256,7 +302,10 @@ export async function PATCH(
     return new Response("Amendment not found", { status: 404 });
   }
 
-  if (!canChangeStatus(actor ?? null, amendment, requestedStatus)) {
+  if (
+    requestedStatus &&
+    !canChangeStatus(actor ?? null, amendment, requestedStatus)
+  ) {
     return new Response(
       "Only primary officers, SE admins, or the author may update this amendment",
       { status: 403 },
@@ -264,7 +313,45 @@ export async function PATCH(
   }
 
   const now = new Date();
-  const updateData: Record<string, unknown> = { status: requestedStatus };
+  const updateData: Record<string, unknown> = {};
+
+  if (wantsContentEdit) {
+    if (!canEditAmendmentContent(actor ?? null, amendment)) {
+      return new Response(
+        "Only the author, a primary officer, or an SE admin can edit this amendment during quorum.",
+        { status: 403 },
+      );
+    }
+
+    if (nextTitle !== null) {
+      if (!nextTitle) {
+        return new Response("title cannot be empty", { status: 422 });
+      }
+      updateData.title = nextTitle;
+    }
+
+    if (nextDescription !== null) {
+      updateData.description = nextDescription;
+    }
+
+    if (nextProposedContent !== null) {
+      if (!nextProposedContent) {
+        return new Response("proposedContent cannot be empty", { status: 422 });
+      }
+      updateData.proposedContent = nextProposedContent;
+    }
+
+    try {
+      const snapshot = await fetchConstitutionSnapshot();
+      updateData.originalContent = snapshot.content;
+    } catch {
+      // Keep the existing baseline if GitHub is unavailable while editing.
+    }
+  }
+
+  if (requestedStatus) {
+    updateData.status = requestedStatus;
+  }
 
   if (requestedStatus === "OPEN" && amendment.status !== "OPEN") {
     updateData.publishedAt = now;
@@ -321,6 +408,40 @@ export async function PATCH(
     updateData.votingOpenedAt = now;
     updateData.votingDurationHours = hours;
     updateData.votingEndsAt = new Date(now.getTime() + hours * 60 * 60 * 1000);
+
+    if (!amendment.githubPrNumber) {
+      const branchName = buildAmendmentBranchName(amendment.title, amendment.id);
+      const proposedBy = `Member #${amendment.authorId}`;
+      const prBody =
+        amendment.description ||
+        `${amendment.title}\n\nAmendment proposal by ${proposedBy}.`;
+
+      try {
+        const { prNumber, originalContent } = await createAmendmentPR({
+          title: amendment.title,
+          description: prBody,
+          proposedContent:
+            (typeof updateData.proposedContent === "string"
+              ? updateData.proposedContent
+              : amendment.proposedContent) ?? amendment.proposedContent,
+          proposedBy,
+          branchName,
+        });
+
+        updateData.githubBranch = branchName;
+        updateData.githubPrNumber = prNumber;
+        updateData.originalContent = originalContent;
+      } catch {
+        try {
+          const snapshot = await fetchConstitutionSnapshot();
+          updateData.originalContent = snapshot.content;
+        } catch {
+          // Keep the current baseline if GitHub is unavailable.
+        }
+        updateData.prCreationWarning =
+          "Member voting opened, but the GitHub PR could not be created. Use Create PR to retry.";
+      }
+    }
   }
 
   // VOTING → VOTING (edit the existing voting window without changing status)
@@ -383,10 +504,19 @@ export async function PATCH(
     updateData.votingClosedAt = now;
   }
 
+  const prCreationWarning =
+    typeof updateData.prCreationWarning === "string"
+      ? (updateData.prCreationWarning as string)
+      : null;
+  delete updateData.prCreationWarning;
+
   const updated = await prisma.amendment.update({
     where: { id: amendmentId },
     data: updateData,
   });
 
-  return Response.json(updated);
+  return Response.json({
+    ...updated,
+    prCreationWarning,
+  });
 }

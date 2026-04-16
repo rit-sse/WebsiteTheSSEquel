@@ -6,8 +6,6 @@ import {
   getActorFromRequest,
 } from "@/lib/services/amendmentService";
 import {
-  buildAmendmentBranchName,
-  createAmendmentPR,
   fetchConstitutionSnapshot,
 } from "@/lib/services/githubAmendmentService";
 
@@ -114,7 +112,7 @@ export async function POST(request: NextRequest) {
     // GitHub unavailable — continue without original content
   }
 
-  const dbDraft = await prisma.amendment.create({
+  const amendment = await prisma.amendment.create({
     data: {
       title,
       description,
@@ -126,36 +124,6 @@ export async function POST(request: NextRequest) {
       publishedAt: new Date(),
       primaryReviewOpenedAt: new Date(),
     },
-  });
-
-  // Attempt to create a GitHub PR — non-blocking
-  const branchName = buildAmendmentBranchName(title, dbDraft.id);
-  const amendmentAuthor = `Member #${actor.id}`;
-  const prBody =
-    description || `${title}\n\nAmendment proposal by ${amendmentAuthor}.`;
-  try {
-    const { prNumber, originalContent: prOriginal } = await createAmendmentPR({
-      title,
-      description: prBody,
-      proposedContent,
-      proposedBy: amendmentAuthor,
-      branchName,
-    });
-
-    await prisma.amendment.update({
-      where: { id: dbDraft.id },
-      data: {
-        githubBranch: branchName,
-        githubPrNumber: prNumber,
-        originalContent: prOriginal || originalContent,
-      },
-    });
-  } catch {
-    // GitHub PR creation failed — amendment still exists without a linked PR
-  }
-
-  const amendment = await prisma.amendment.findUnique({
-    where: { id: dbDraft.id },
     select: {
       id: true,
       title: true,

@@ -83,9 +83,7 @@ describe("/api/amendments routes", () => {
     mockFetchConstitutionSnapshot.mockRejectedValue(
       new Error("github offline"),
     );
-    mockCreateAmendmentPR.mockRejectedValue(new Error("pr create failed"));
-    mockAmendmentCreate.mockResolvedValue({ id: 42 });
-    mockAmendmentFindUnique.mockResolvedValue({
+    mockAmendmentCreate.mockResolvedValue({
       id: 42,
       title: "Presidential Running Mate Appointment",
       status: "PRIMARY_REVIEW",
@@ -113,7 +111,15 @@ describe("/api/amendments routes", () => {
         originalContent: "# SSE Constitution\n\nCurrent text",
         proposedContent: "# SSE Constitution\n\nUpdated text",
       }),
+      select: {
+        id: true,
+        title: true,
+        status: true,
+        githubPrNumber: true,
+        githubBranch: true,
+      },
     });
+    expect(mockCreateAmendmentPR).not.toHaveBeenCalled();
   });
 
   it("PATCH allows primary officers to edit the voting window while voting is live", async () => {
@@ -157,6 +163,123 @@ describe("/api/amendments routes", () => {
     });
   });
 
+  it("PATCH allows quorum-stage text edits before voting opens", async () => {
+    mockFetchConstitutionSnapshot.mockResolvedValue({
+      content: "# SSE Constitution\n\nCurrent baseline",
+      sha: "baseline-sha",
+    });
+    mockAmendmentFindUnique.mockResolvedValue({
+      id: 21,
+      status: "PRIMARY_REVIEW",
+      authorId: 7,
+      title: "Original title",
+      description: "Original description",
+      proposedContent: "# SSE Constitution\n\nOld text",
+      githubPrNumber: null,
+      publishedAt: new Date("2026-04-15T12:00:00.000Z"),
+      votingOpenedAt: null,
+    });
+    mockAmendmentUpdate.mockResolvedValue({
+      id: 21,
+      status: "PRIMARY_REVIEW",
+      title: "Updated title",
+      description: "Updated description",
+      proposedContent: "# SSE Constitution\n\nUpdated text",
+    });
+
+    const res = await PATCH(
+      new Request("http://localhost/api/amendments/21", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          title: "Updated title",
+          description: "Updated description",
+          proposedContent: "# SSE Constitution\n\nUpdated text",
+        }),
+      }) as any,
+      { params: Promise.resolve({ id: "21" }) },
+    );
+
+    expect(res.status).toBe(200);
+    expect(mockAmendmentUpdate).toHaveBeenCalledWith({
+      where: { id: 21 },
+      data: expect.objectContaining({
+        title: "Updated title",
+        description: "Updated description",
+        proposedContent: "# SSE Constitution\n\nUpdated text",
+        originalContent: "# SSE Constitution\n\nCurrent baseline",
+      }),
+    });
+    expect(mockCreateAmendmentPR).not.toHaveBeenCalled();
+  });
+
+  it("PATCH opens voting and creates the GitHub PR after quorum passes", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-15T18:00:00.000Z"));
+
+    mockAmendmentFindUnique.mockResolvedValue({
+      id: 34,
+      status: "PRIMARY_REVIEW",
+      authorId: 7,
+      title: "Presidential Running Mate Appointment",
+      description: "Adds a VP appointment flow.",
+      proposedContent: "# SSE Constitution\n\nUpdated text",
+      githubPrNumber: null,
+      publishedAt: new Date("2026-04-15T12:00:00.000Z"),
+      votingOpenedAt: null,
+    });
+    mockAmendmentVoteFindMany.mockResolvedValue([
+      { approve: true },
+      { approve: true },
+    ]);
+    mockOfficerPositionCount.mockResolvedValue(3);
+    mockCreateAmendmentPR.mockResolvedValue({
+      branch: "amendment-55-retry-branch",
+      prNumber: 123,
+      prUrl: "https://github.com/rit-sse/governing-docs/pull/123",
+      originalContent: "# SSE Constitution\n\nCurrent text",
+    });
+    mockAmendmentUpdate.mockResolvedValue({
+      id: 34,
+      status: "VOTING",
+      githubPrNumber: 123,
+      githubBranch: "amendment-55-retry-branch",
+    });
+
+    const res = await PATCH(
+      new Request("http://localhost/api/amendments/34", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          status: "VOTING",
+          votingDurationHours: 72,
+        }),
+      }) as any,
+      { params: Promise.resolve({ id: "34" }) },
+    );
+
+    expect(res.status).toBe(200);
+    expect(mockCreateAmendmentPR).toHaveBeenCalledWith({
+      title: "Presidential Running Mate Appointment",
+      description: "Adds a VP appointment flow.",
+      proposedContent: "# SSE Constitution\n\nUpdated text",
+      proposedBy: "Member #7",
+      branchName: "amendment-55-retry-branch",
+    });
+    expect(mockAmendmentUpdate).toHaveBeenCalledWith({
+      where: { id: 34 },
+      data: expect.objectContaining({
+        status: "VOTING",
+        primaryReviewClosedAt: new Date("2026-04-15T18:00:00.000Z"),
+        votingOpenedAt: new Date("2026-04-15T18:00:00.000Z"),
+        votingDurationHours: 72,
+        githubPrNumber: 123,
+        githubBranch: "amendment-55-retry-branch",
+        originalContent: "# SSE Constitution\n\nCurrent text",
+      }),
+    });
+  });
+
   it("POST can re-submit a missing amendment PR for the author", async () => {
     mockGetActorFromRequest.mockResolvedValue({
       id: 7,
@@ -171,7 +294,7 @@ describe("/api/amendments routes", () => {
       proposedContent: "# SSE Constitution\n\nUpdated text",
       authorId: 7,
       githubPrNumber: null,
-      status: "PRIMARY_REVIEW",
+      status: "VOTING",
     });
     mockCreateAmendmentPR.mockResolvedValue({
       branch: "amendment-55-retry-branch",
