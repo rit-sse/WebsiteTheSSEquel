@@ -19,7 +19,15 @@ import { AmendmentStatus } from "@prisma/client";
 type VotePanelProps = {
   amendmentId: number;
   isSemanticChange: boolean;
-  status: "DRAFT" | "OPEN" | "PRIMARY_REVIEW" | "VOTING" | "APPROVED" | "REJECTED" | "MERGED" | "WITHDRAWN";
+  status:
+    | "DRAFT"
+    | "OPEN"
+    | "PRIMARY_REVIEW"
+    | "VOTING"
+    | "APPROVED"
+    | "REJECTED"
+    | "MERGED"
+    | "WITHDRAWN";
   totalVotes: number;
   approveVotes: number;
   rejectVotes: number;
@@ -53,7 +61,10 @@ type VotePanelProps = {
   /** The position IDs held by the current user (for per-position voting) */
   userPrimaryPositionIds?: number[];
   /** Admin action callbacks */
-  onChangeStatus?: (s: AmendmentStatus, extraData?: Record<string, unknown>) => void;
+  onChangeStatus?: (
+    s: AmendmentStatus,
+    extraData?: Record<string, unknown>,
+  ) => void;
   onMerge?: () => void;
   actionMessage?: string;
 };
@@ -122,7 +133,8 @@ function canPassAmendment({
   totalActiveMembers: number;
 }) {
   const hasQuorum = totalVotes >= requiredVotingParticipation;
-  const hasSuperMajority = totalVotes > 0 && approveVotes >= Math.ceil((2 / 3) * totalVotes);
+  const hasSuperMajority =
+    totalVotes > 0 && approveVotes >= Math.ceil((2 / 3) * totalVotes);
 
   if (!isSemanticChange) {
     return {
@@ -160,7 +172,8 @@ function ThresholdBar({
   met: boolean;
   colorVar: string;
 }) {
-  const pct = required > 0 ? Math.min(100, Math.round((current / required) * 100)) : 100;
+  const pct =
+    required > 0 ? Math.min(100, Math.round((current / required) * 100)) : 100;
 
   return (
     <TooltipProvider delayDuration={150}>
@@ -183,7 +196,10 @@ function ThresholdBar({
             <div className="h-2 rounded-full bg-surface-3 overflow-hidden">
               <div
                 className="h-full rounded-full transition-all duration-500 ease-out"
-                style={{ width: `${pct}%`, backgroundColor: `hsl(var(${colorVar}))` }}
+                style={{
+                  width: `${pct}%`,
+                  backgroundColor: `hsl(var(${colorVar}))`,
+                }}
               />
             </div>
           </div>
@@ -210,7 +226,9 @@ function VoteLegendItem({
   tooltip?: string;
 }) {
   const inner = (
-    <div className={`flex items-center gap-2 text-sm ${tooltip ? "cursor-help" : ""}`}>
+    <div
+      className={`flex items-center gap-2 text-sm ${tooltip ? "cursor-help" : ""}`}
+    >
       <span
         className="inline-block h-3 w-3 rounded-sm shrink-0"
         style={{ backgroundColor: `hsl(var(${cssVar}))` }}
@@ -273,7 +291,17 @@ export default function VotePanel({
   });
   const [localPrimaryReview, setLocalPrimaryReview] = useState(primaryReview);
 
-  const votingWindowEnded = votingEndsAt ? new Date(votingEndsAt).getTime() < Date.now() : false;
+  const votingWindowEnded = votingEndsAt
+    ? new Date(votingEndsAt).getTime() < Date.now()
+    : false;
+  const currentVotingWindowHours = votingEndsAt
+    ? Math.max(
+        1,
+        Math.ceil(
+          (new Date(votingEndsAt).getTime() - Date.now()) / (1000 * 60 * 60),
+        ),
+      )
+    : null;
   const canVote = status === "VOTING" && !votingWindowEnded;
   const notVoted = Math.max(0, totalActiveMembers - localTotals.totalVotes);
   const totalForPct = localTotals.totalVotes || 1;
@@ -392,7 +420,9 @@ export default function VotePanel({
           {/* Position key slots */}
           <div className="space-y-2">
             {localPrimaryReview.positionSlots.map((slot) => {
-              const isMyPosition = userPrimaryPositionIds.includes(slot.positionId);
+              const isMyPosition = userPrimaryPositionIds.includes(
+                slot.positionId,
+              );
               const canActOnSlot = isMyPosition && !slot.voted;
               const hasVoted = slot.voted;
 
@@ -431,11 +461,13 @@ export default function VotePanel({
                       <p className="text-xs text-muted-foreground truncate">
                         {slot.holder?.name ?? "Vacant"}
                         {hasVoted && (
-                          <span className={`ml-1.5 font-medium ${
-                            slot.approve
-                              ? "text-emerald-600 dark:text-emerald-400"
-                              : "text-rose-600 dark:text-rose-400"
-                          }`}>
+                          <span
+                            className={`ml-1.5 font-medium ${
+                              slot.approve
+                                ? "text-emerald-600 dark:text-emerald-400"
+                                : "text-rose-600 dark:text-rose-400"
+                            }`}
+                          >
                             — {slot.approve ? "Approved" : "Rejected"}
                           </span>
                         )}
@@ -446,11 +478,13 @@ export default function VotePanel({
                     {isMyPosition && (
                       <div className="flex gap-1.5 shrink-0">
                         {hasVoted ? (
-                          <span className={`text-xs font-semibold px-2 py-1 rounded ${
-                            slot.approve
-                              ? "text-emerald-700 dark:text-emerald-300"
-                              : "text-rose-700 dark:text-rose-300"
-                          }`}>
+                          <span
+                            className={`text-xs font-semibold px-2 py-1 rounded ${
+                              slot.approve
+                                ? "text-emerald-700 dark:text-emerald-300"
+                                : "text-rose-700 dark:text-rose-300"
+                            }`}
+                          >
                             {slot.approve ? "Approved" : "Rejected"}
                           </span>
                         ) : (
@@ -460,7 +494,9 @@ export default function VotePanel({
                               variant="outline"
                               disabled={submitting}
                               className="text-emerald-700 dark:text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/10 h-7 px-2"
-                              onClick={() => castPositionVote(slot.positionId, true)}
+                              onClick={() =>
+                                castPositionVote(slot.positionId, true)
+                              }
                             >
                               Approve
                             </Button>
@@ -469,7 +505,9 @@ export default function VotePanel({
                               variant="outline"
                               disabled={submitting}
                               className="text-rose-700 dark:text-rose-300 border-rose-500/30 hover:bg-rose-500/10 h-7 px-2"
-                              onClick={() => castPositionVote(slot.positionId, false)}
+                              onClick={() =>
+                                castPositionVote(slot.positionId, false)
+                              }
                             >
                               Reject
                             </Button>
@@ -505,10 +543,14 @@ export default function VotePanel({
               rejected
             </span>
             <span className="ml-auto">
-              <span className="tabular-nums">{localPrimaryReview.votedCount}</span>
+              <span className="tabular-nums">
+                {localPrimaryReview.votedCount}
+              </span>
               {" / "}
-              <span className="tabular-nums">{localPrimaryReview.totalPositions}</span>
-              {" "}voted
+              <span className="tabular-nums">
+                {localPrimaryReview.totalPositions}
+              </span>{" "}
+              voted
             </span>
           </div>
         </div>
@@ -517,28 +559,34 @@ export default function VotePanel({
       {/* Non-semantic info banner */}
       {status !== "PRIMARY_REVIEW" && !isSemanticChange && canVote && (
         <div className="rounded-lg bg-sky-500/8 border border-sky-500/20 px-3 py-2 text-xs text-sky-700 dark:text-sky-300">
-          Non-semantic changes require primary officer consensus. Only primary officers vote on this type.
+          Non-semantic changes require primary officer consensus. Only primary
+          officers vote on this type.
         </div>
       )}
 
       {/* Voting countdown */}
-      {canVote && votingEndsAt && (() => {
-        const remaining = new Date(votingEndsAt).getTime() - Date.now();
-        if (remaining <= 0) {
+      {canVote &&
+        votingEndsAt &&
+        (() => {
+          const remaining = new Date(votingEndsAt).getTime() - Date.now();
+          if (remaining <= 0) {
+            return (
+              <div className="rounded-lg bg-rose-500/10 border border-rose-500/20 px-3 py-2 text-xs text-rose-700 dark:text-rose-300 font-medium">
+                Voting window has ended
+              </div>
+            );
+          }
+          const days = Math.floor(remaining / (1000 * 60 * 60 * 24));
+          const hours = Math.floor(
+            (remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
+          );
           return (
-            <div className="rounded-lg bg-rose-500/10 border border-rose-500/20 px-3 py-2 text-xs text-rose-700 dark:text-rose-300 font-medium">
-              Voting window has ended
+            <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 px-3 py-2 text-xs text-amber-700 dark:text-amber-300 font-medium">
+              {days > 0 ? `${days} day${days !== 1 ? "s" : ""}, ` : ""}
+              {hours} hour{hours !== 1 ? "s" : ""} remaining
             </div>
           );
-        }
-        const days = Math.floor(remaining / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        return (
-          <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 px-3 py-2 text-xs text-amber-700 dark:text-amber-300 font-medium">
-            {days > 0 ? `${days} day${days !== 1 ? "s" : ""}, ` : ""}{hours} hour{hours !== 1 ? "s" : ""} remaining
-          </div>
-        );
-      })()}
+        })()}
 
       {/* Pie chart + legend */}
       {status !== "PRIMARY_REVIEW" && (
@@ -629,7 +677,11 @@ export default function VotePanel({
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>{localUserVote === true ? "You approved this amendment. Click to re-confirm." : "Vote to approve this amendment"}</p>
+                      <p>
+                        {localUserVote === true
+                          ? "You approved this amendment. Click to re-confirm."
+                          : "Vote to approve this amendment"}
+                      </p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -638,14 +690,20 @@ export default function VotePanel({
                     <TooltipTrigger asChild>
                       <Button
                         disabled={submitting}
-                        variant={localUserVote === false ? "destructive" : "outline"}
+                        variant={
+                          localUserVote === false ? "destructive" : "outline"
+                        }
                         onClick={() => castVote(false)}
                       >
                         {localUserVote === false ? "Rejected" : "Reject"}
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>{localUserVote === false ? "You rejected this amendment. Click to re-confirm." : "Vote to reject this amendment"}</p>
+                      <p>
+                        {localUserVote === false
+                          ? "You rejected this amendment. Click to re-confirm."
+                          : "Vote to reject this amendment"}
+                      </p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -691,7 +749,9 @@ export default function VotePanel({
       )}
 
       {/* Outcome badge for closed votes */}
-      {(status === "APPROVED" || status === "REJECTED" || status === "MERGED") && (
+      {(status === "APPROVED" ||
+        status === "REJECTED" ||
+        status === "MERGED") && (
         <div
           className={`rounded-lg px-4 py-3 text-sm font-medium ${
             status === "REJECTED"
@@ -716,48 +776,92 @@ export default function VotePanel({
               {localPrimaryReview.majorityApproves && (
                 <VotingDurationDialog
                   trigger={
-                    <Button size="sm" className="w-full">Open Member Voting</Button>
+                    <Button size="sm" className="w-full">
+                      Open Member Voting
+                    </Button>
                   }
-                  onConfirm={(hours) => onChangeStatus("VOTING" as AmendmentStatus, { votingDurationHours: hours })}
+                  onConfirm={(hours) =>
+                    onChangeStatus("VOTING" as AmendmentStatus, {
+                      votingDurationHours: hours,
+                    })
+                  }
                 />
               )}
               {localPrimaryReview.majorityRejects && (
                 <ConfirmationDialog
                   trigger={
-                    <Button size="sm" variant="destructive" className="w-full">Close as Rejected</Button>
+                    <Button size="sm" variant="destructive" className="w-full">
+                      Close as Rejected
+                    </Button>
                   }
                   title="Reject Amendment"
                   description="Primary officers have rejected this amendment."
                   confirmLabel="Reject"
                   variant="destructive"
-                  onConfirm={() => onChangeStatus("REJECTED" as AmendmentStatus)}
+                  onConfirm={() =>
+                    onChangeStatus("REJECTED" as AmendmentStatus)
+                  }
                 />
               )}
             </div>
           )}
 
-          {/* VOTING: approve or reject (after window ends) */}
-          {status === "VOTING" && isPrimary && votingWindowEnded && (
-            <div className="flex gap-2 pt-1 border-t border-border/40">
-              <ConfirmationDialog
+          {/* VOTING: edit the window, then approve or reject once it closes */}
+          {status === "VOTING" && isPrimary && (
+            <div className="space-y-2 pt-1 border-t border-border/40">
+              <VotingDurationDialog
                 trigger={
-                  <Button size="sm" className="flex-1">Approve</Button>
+                  <Button size="sm" variant="outline" className="w-full">
+                    Edit Voting Window
+                  </Button>
                 }
-                title="Approve Amendment"
-                description="This will approve the amendment and close voting."
-                confirmLabel="Approve"
-                onConfirm={() => onChangeStatus("APPROVED" as AmendmentStatus)}
-              />
-              <ConfirmationDialog
-                trigger={
-                  <Button size="sm" variant="destructive" className="flex-1">Reject</Button>
+                title="Edit Voting Window"
+                description="Update how much longer member voting should remain open. The new duration is applied from now."
+                confirmLabel="Save Voting Window"
+                defaultHours={currentVotingWindowHours}
+                onConfirm={(hours) =>
+                  onChangeStatus("VOTING" as AmendmentStatus, {
+                    votingDurationHours: hours,
+                    resetVotingWindowFromNow: true,
+                  })
                 }
-                title="Reject Amendment"
-                description="This will reject the amendment."
-                confirmLabel="Reject"
-                variant="destructive"
-                onConfirm={() => onChangeStatus("REJECTED" as AmendmentStatus)}
               />
+
+              {votingWindowEnded && (
+                <div className="flex gap-2">
+                  <ConfirmationDialog
+                    trigger={
+                      <Button size="sm" className="flex-1">
+                        Approve
+                      </Button>
+                    }
+                    title="Approve Amendment"
+                    description="This will approve the amendment and close voting."
+                    confirmLabel="Approve"
+                    onConfirm={() =>
+                      onChangeStatus("APPROVED" as AmendmentStatus)
+                    }
+                  />
+                  <ConfirmationDialog
+                    trigger={
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        className="flex-1"
+                      >
+                        Reject
+                      </Button>
+                    }
+                    title="Reject Amendment"
+                    description="This will reject the amendment."
+                    confirmLabel="Reject"
+                    variant="destructive"
+                    onConfirm={() =>
+                      onChangeStatus("REJECTED" as AmendmentStatus)
+                    }
+                  />
+                </div>
+              )}
             </div>
           )}
 
@@ -766,7 +870,9 @@ export default function VotePanel({
             <div className="pt-1 border-t border-border/40">
               <ConfirmationDialog
                 trigger={
-                  <Button size="sm" className="w-full">Merge into Constitution</Button>
+                  <Button size="sm" className="w-full">
+                    Merge into Constitution
+                  </Button>
                 }
                 title="Merge Pull Request"
                 description="This will merge the amendment into the governing documents."

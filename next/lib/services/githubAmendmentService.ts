@@ -1,8 +1,12 @@
+import jwt from "jsonwebtoken";
+
 const GOVERNING_DOC_OWNER = "rit-sse";
 const GOVERNING_DOC_REPO = "governing-docs";
 const GOVERNING_DOC_BRANCH = "main";
 const GOVERNING_DOC_PATH = "constitution.md";
 const GOVERNING_DOCS_API = `https://api.github.com/repos/${GOVERNING_DOC_OWNER}/${GOVERNING_DOC_REPO}`;
+const GITHUB_API_VERSION = "2022-11-28";
+const GITHUB_INSTALLATION_TOKEN_BUFFER_MS = 60_000;
 
 type GitHubFileResponse = {
   content: string;
@@ -24,6 +28,15 @@ type GitHubPullRequest = {
   mergeable: boolean | null;
 };
 
+type GitHubInstallation = {
+  id: number;
+};
+
+type GitHubInstallationToken = {
+  token: string;
+  expires_at: string;
+};
+
 export type ConstitutionFileSnapshot = {
   content: string;
   sha: string;
@@ -36,18 +49,206 @@ export type AmendmentPRResult = {
   originalContent: string;
 };
 
-function getGithubToken(): string {
-  const token = process.env.GITHUB_PAT;
+export function buildAmendmentBranchName(
+  title: string,
+  amendmentId: number,
+): string {
+  const slug = title
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .replace(/-{2,}/g, "-");
+
+  const safeTitle = slug.length > 0 ? slug : "amendment";
+  return `amendment-${amendmentId}-${safeTitle}-${Date.now().toString(36)}`;
+}
+
+function normalizeGithubPrivateKey(privateKey: string): string {
+  return privateKey.replace(/\\n/g, "\n").trim();
+}
+
+function getLegacyGithubToken(): string | null {
+  const token = process.env.GITHUB_PAT?.trim();
+  return token && token.length > 0 ? token : null;
+}
+
+function getGithubAppConfig():
+  | {
+      appId: string;
+      installationId: number | null;
+      privateKey: string;
+    }
+  | null {
+  const appId = process.env.GITHUB_APP_ID?.trim();
+  const privateKey = process.env.GITHUB_APP_PRIVATE_KEY?.trim();
+
+  if (!appId || !privateKey) {
+    return null;
+  }
+
+  const installationIdValue = process.env.GITHUB_APP_INSTALLATION_ID?.trim();
+  const installationId = installationIdValue ? Number(installationIdValue) : null;
+
+  if (installationIdValue && Number.isNaN(installationId)) {
+    throw new Error("GITHUB_APP_INSTALLATION_ID must be a number when provided.");
+  }
+
+  return {
+    appId,
+    installationId,
+    privateKey: normalizeGithubPrivateKey(privateKey),
+  };
+}
+
+function createGithubAppJwt(): string {
+  const config = getGithubAppConfig();
+  if (!config) {
+    throw new Error("GitHub App credentials are not configured on the server.");
+  }
+
+  const now = Math.floor(Date.now() / 1000);
+  return jwt.sign(
+    {
+      iat: now - 60,
+      exp: now + 9 * 60,
+      iss: config.appId,
+    },
+    config.privateKey,
+    {
+      algorithm: "RS256",
+      noTimestamp: true,
+    },
+  );
+}
+
+let cachedInstallationToken:
+  | {
+      token: string;
+      expiresAtMs: number;
+    }
+  | null = null;
+let cachedInstallationTokenPromise: Promise<string> | null = null;
+let cachedInstallationId: number | null = null;
+
+async function fetchGithubWithJwt(url: string, options: RequestInit = {}) {
+  const headers = new Headers(options.headers);
+  headers.set("Authorization", `Bearer ${createGithubAppJwt()}`);
+  headers.set("X-GitHub-Api-Version", GITHUB_API_VERSION);
+  headers.set("User-Agent", "sse-amendment-feature");
+
+  if (!headers.has("Accept")) {
+    headers.set("Accept", "application/vnd.github+json");
+  }
+  if (options.body && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
+
+  const response = await fetch(url, {
+    ...options,
+    headers,
+  });
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(
+      `GitHub App request failed (${response.status}): ${message}`,
+    );
+  }
+
+  return response;
+}
+
+async function resolveGithubInstallationId(): Promise<number> {
+  const config = getGithubAppConfig();
+  if (!config) {
+    throw new Error("GitHub App credentials are not configured on the server.");
+  }
+
+  if (config.installationId) {
+    cachedInstallationId = config.installationId;
+    return config.installationId;
+  }
+
+  if (cachedInstallationId) {
+    return cachedInstallationId;
+  }
+
+  const response = await fetchGithubWithJwt(
+    `${GOVERNING_DOCS_API}/installation`,
+    {
+      method: "GET",
+    },
+  );
+  const installation = (await response.json()) as GitHubInstallation;
+
+  if (!installation?.id) {
+    throw new Error(
+      `GitHub App is not installed on ${GOVERNING_DOC_OWNER}/${GOVERNING_DOC_REPO}.`,
+    );
+  }
+
+  cachedInstallationId = installation.id;
+  return installation.id;
+}
+
+async function getGithubInstallationToken(): Promise<string> {
+  if (
+    cachedInstallationToken &&
+    cachedInstallationToken.expiresAtMs - GITHUB_INSTALLATION_TOKEN_BUFFER_MS >
+      Date.now()
+  ) {
+    return cachedInstallationToken.token;
+  }
+
+  if (!cachedInstallationTokenPromise) {
+    cachedInstallationTokenPromise = (async () => {
+      const installationId = await resolveGithubInstallationId();
+      const response = await fetchGithubWithJwt(
+        `https://api.github.com/app/installations/${installationId}/access_tokens`,
+        {
+          method: "POST",
+        },
+      );
+      const token = (await response.json()) as GitHubInstallationToken;
+      const expiresAtMs = Date.parse(token.expires_at);
+
+      if (!token.token || Number.isNaN(expiresAtMs)) {
+        throw new Error("GitHub App did not return a valid installation token.");
+      }
+
+      cachedInstallationToken = {
+        token: token.token,
+        expiresAtMs,
+      };
+
+      return token.token;
+    })().finally(() => {
+      cachedInstallationTokenPromise = null;
+    });
+  }
+
+  return cachedInstallationTokenPromise;
+}
+
+async function getGithubToken(): Promise<string> {
+  if (getGithubAppConfig()) {
+    return getGithubInstallationToken();
+  }
+
+  const token = getLegacyGithubToken();
   if (!token) {
-    throw new Error("GITHUB_PAT is not configured on the server.");
+    throw new Error(
+      "Neither GitHub App credentials nor GITHUB_PAT are configured on the server.",
+    );
   }
   return token;
 }
 
 async function fetchGithub(url: string, options: RequestInit = {}) {
   const headers = new Headers(options.headers);
-  headers.set("Authorization", `Bearer ${getGithubToken()}`);
-  headers.set("X-GitHub-Api-Version", "2022-11-28");
+  headers.set("Authorization", `Bearer ${await getGithubToken()}`);
+  headers.set("X-GitHub-Api-Version", GITHUB_API_VERSION);
   headers.set("User-Agent", "sse-amendment-feature");
 
   if (!headers.has("Accept")) {
@@ -63,7 +264,9 @@ async function fetchGithub(url: string, options: RequestInit = {}) {
   });
   if (!response.ok) {
     const message = await response.text();
-    throw new Error(`GitHub API request failed (${response.status}): ${message}`);
+    throw new Error(
+      `GitHub API request failed (${response.status}): ${message}`,
+    );
   }
   return response;
 }
@@ -92,7 +295,9 @@ export async function fetchConstitutionSnapshot(): Promise<ConstitutionFileSnaps
   );
   const json = (await response.json()) as GitHubFileResponse;
   if (!json?.content || !json?.sha) {
-    throw new Error("GitHub API did not return a valid constitution file payload.");
+    throw new Error(
+      "GitHub API did not return a valid constitution file payload.",
+    );
   }
 
   const content = decodeBase64File(json.content.replace(/\n/g, ""));
@@ -103,9 +308,12 @@ export async function fetchConstitutionSnapshot(): Promise<ConstitutionFileSnaps
 }
 
 async function createAmendmentBranch(branchName: string): Promise<void> {
-  const baseRefResponse = await fetchGithub(`${GOVERNING_DOCS_API}/git/ref/heads/${GOVERNING_DOC_BRANCH}`, {
-    method: "GET",
-  });
+  const baseRefResponse = await fetchGithub(
+    `${GOVERNING_DOCS_API}/git/ref/heads/${GOVERNING_DOC_BRANCH}`,
+    {
+      method: "GET",
+    },
+  );
   const baseRef = (await baseRefResponse.json()) as GitHubRefResponse;
 
   await fetchGithub(`${GOVERNING_DOCS_API}/git/refs`, {
@@ -144,7 +352,8 @@ export async function createAmendmentPR(params: {
   proposedBy: string;
   branchName: string;
 }): Promise<AmendmentPRResult> {
-  const { title, description, proposedContent, proposedBy, branchName } = params;
+  const { title, description, proposedContent, proposedBy, branchName } =
+    params;
   const snapshot = await fetchConstitutionSnapshot();
   await createAmendmentBranch(branchName);
   await commitConstitutionToBranch({
@@ -179,12 +388,15 @@ export async function createAmendmentPR(params: {
 }
 
 export async function fetchPRDiff(prNumber: number): Promise<string> {
-  const response = await fetchGithub(`${GOVERNING_DOCS_API}/pulls/${prNumber}.diff`, {
-    method: "GET",
-    headers: {
-      Accept: "application/vnd.github.v3.diff",
+  const response = await fetchGithub(
+    `${GOVERNING_DOCS_API}/pulls/${prNumber}.diff`,
+    {
+      method: "GET",
+      headers: {
+        Accept: "application/vnd.github.v3.diff",
+      },
     },
-  });
+  );
 
   return response.text();
 }

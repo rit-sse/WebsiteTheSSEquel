@@ -88,13 +88,22 @@ type AmendmentPayload = {
   comments: CommentItem[];
 };
 
+function isNewAmendment(amendment: AmendmentPayload) {
+  return (
+    amendment.status === "PRIMARY_REVIEW" &&
+    amendment.primaryReviewClosedAt === null &&
+    amendment.votingOpenedAt === null
+  );
+}
+
 export default function AmendmentDetailClient({
   amendment: initialAmendment,
 }: {
   amendment: AmendmentPayload;
 }) {
   const router = useRouter();
-  const [amendment, setAmendment] = useState<AmendmentPayload>(initialAmendment);
+  const [amendment, setAmendment] =
+    useState<AmendmentPayload>(initialAmendment);
   const [isPrimary, setIsPrimary] = useState(false);
   const [isSeAdmin, setIsSeAdmin] = useState(false);
   const [isMember, setIsMember] = useState(false);
@@ -135,7 +144,10 @@ export default function AmendmentDetailClient({
     .filter((slot) => slot.holder?.id === userId)
     .map((slot) => slot.positionId);
 
-  async function changeStatus(nextStatus: AmendmentStatus, extraData?: Record<string, unknown>) {
+  async function changeStatus(
+    nextStatus: AmendmentStatus,
+    extraData?: Record<string, unknown>,
+  ) {
     setActionMessage("");
     try {
       const response = await fetch(`/api/amendments/${amendment.id}`, {
@@ -160,9 +172,13 @@ export default function AmendmentDetailClient({
           const full = await detailResponse.json();
           setAmendment((prev) => ({ ...prev, ...full }));
         }
-      } catch { /* ignore refresh failure */ }
+      } catch {
+        /* ignore refresh failure */
+      }
     } catch (err) {
-      setActionMessage(err instanceof Error ? err.message : "Failed to update status");
+      setActionMessage(
+        err instanceof Error ? err.message : "Failed to update status",
+      );
     }
   }
 
@@ -183,7 +199,39 @@ export default function AmendmentDetailClient({
       }));
       router.refresh();
     } catch (err) {
-      setActionMessage(err instanceof Error ? err.message : "Failed to merge amendment");
+      setActionMessage(
+        err instanceof Error ? err.message : "Failed to merge amendment",
+      );
+    }
+  }
+
+  async function resubmitPr() {
+    setActionMessage("");
+    try {
+      const response = await fetch(
+        `/api/amendments/${amendment.id}/resubmit-pr`,
+        {
+          method: "POST",
+        },
+      );
+      if (!response.ok) {
+        const message = await response.text();
+        throw new Error(message || "Failed to re-submit PR");
+      }
+
+      const refreshed = await fetch(`/api/amendments/${amendment.id}`);
+      if (!refreshed.ok) {
+        throw new Error(
+          "PR was created, but the amendment could not be refreshed",
+        );
+      }
+
+      const full = await refreshed.json();
+      setAmendment((prev) => ({ ...prev, ...full }));
+    } catch (err) {
+      setActionMessage(
+        err instanceof Error ? err.message : "Failed to re-submit PR",
+      );
     }
   }
 
@@ -191,15 +239,36 @@ export default function AmendmentDetailClient({
     return <AmendmentDetailSkeleton />;
   }
 
+  const canResubmitPr =
+    !amendment.githubPrNumber &&
+    amendment.status !== "WITHDRAWN" &&
+    amendment.status !== "MERGED" &&
+    amendment.status !== "REJECTED" &&
+    (amendment.author.id === userId || isPrimary || isSeAdmin);
+
   return (
     <section className="w-full max-w-6xl mx-auto px-2 md:px-4 space-y-5">
       {/* Breadcrumb */}
       <AmendmentBreadcrumb items={[{ label: amendment.title }]} />
 
       <NeoCard depth={1} className="p-5 md:p-7 space-y-5">
+        {isNewAmendment(amendment) && (
+          <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/15 px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-amber-800 dark:text-amber-200">
+                New Amendment
+              </span>
+              <p className="text-sm text-amber-900/80 dark:text-amber-100/90">
+                This proposal was just introduced and is currently in primary
+                officer review before member voting opens.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Header — no inner card, just content within the NeoCard */}
         <div className="space-y-3">
-          <div className="flex flex-wrap gap-3 justify-between items-start">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div className="space-y-1.5 min-w-0 flex-1">
               <h1 className="font-display text-2xl md:text-3xl font-bold leading-tight tracking-tight">
                 {amendment.title}
@@ -211,22 +280,41 @@ export default function AmendmentDetailClient({
                 </span>
               </p>
             </div>
-            <div className="flex flex-wrap gap-2 items-center shrink-0">
+            <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end">
               <AmendmentStatusBadge status={amendment.status} />
-              {(isPrimary || isSeAdmin) && amendment.status !== "WITHDRAWN" && amendment.status !== "MERGED" && amendment.status !== "REJECTED" && (
-                <ConfirmationDialog
-                  trigger={
-                    <Button size="xs" variant="ghost" className="text-muted-foreground hover:text-destructive">
-                      Withdraw
-                    </Button>
-                  }
-                  title="Withdraw Amendment"
-                  description="This will withdraw the amendment from consideration."
-                  confirmLabel="Withdraw"
-                  variant="destructive"
-                  onConfirm={() => changeStatus("WITHDRAWN" as AmendmentStatus)}
-                />
+              {canResubmitPr && (
+                <Button
+                  size="xs"
+                  variant="outline"
+                  className="w-full sm:w-auto"
+                  onClick={resubmitPr}
+                >
+                  Re-submit PR
+                </Button>
               )}
+              {(isPrimary || isSeAdmin) &&
+                amendment.status !== "WITHDRAWN" &&
+                amendment.status !== "MERGED" &&
+                amendment.status !== "REJECTED" && (
+                  <ConfirmationDialog
+                    trigger={
+                      <Button
+                        size="xs"
+                        variant="ghost"
+                        className="w-full text-muted-foreground hover:text-destructive sm:w-auto"
+                      >
+                        Withdraw
+                      </Button>
+                    }
+                    title="Withdraw Amendment"
+                    description="This will withdraw the amendment from consideration."
+                    confirmLabel="Withdraw"
+                    variant="destructive"
+                    onConfirm={() =>
+                      changeStatus("WITHDRAWN" as AmendmentStatus)
+                    }
+                  />
+                )}
               {amendment.githubPrNumber && (
                 <TooltipProvider delayDuration={200}>
                   <Tooltip>
@@ -234,7 +322,7 @@ export default function AmendmentDetailClient({
                       <Link
                         href={`https://github.com/rit-sse/governing-docs/pull/${amendment.githubPrNumber}`}
                         target="_blank"
-                        className="inline-flex items-center gap-1.5 rounded-md bg-surface-3 px-2.5 py-1 text-xs font-mono font-medium text-foreground hover:bg-surface-4 transition-colors"
+                        className="inline-flex w-full items-center justify-center gap-1.5 rounded-md bg-surface-3 px-2.5 py-1 text-xs font-mono font-medium text-foreground transition-colors hover:bg-surface-4 sm:w-auto"
                       >
                         <svg
                           className="h-3.5 w-3.5 opacity-60"
@@ -270,8 +358,14 @@ export default function AmendmentDetailClient({
             events={[
               { label: "Created", date: amendment.createdAt },
               { label: "Published", date: amendment.publishedAt },
-              { label: "Primary review opened", date: amendment.primaryReviewOpenedAt },
-              { label: "Primary review closed", date: amendment.primaryReviewClosedAt },
+              {
+                label: "Primary review opened",
+                date: amendment.primaryReviewOpenedAt,
+              },
+              {
+                label: "Primary review closed",
+                date: amendment.primaryReviewClosedAt,
+              },
               { label: "Voting opened", date: amendment.votingOpenedAt },
               { label: "Voting closed", date: amendment.votingClosedAt },
             ]}
@@ -283,7 +377,11 @@ export default function AmendmentDetailClient({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-700 dark:text-amber-400 bg-amber-500/10 rounded-md px-2 py-0.5 w-fit cursor-help">
-                    <svg className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                    <svg
+                      className="h-3 w-3"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
                       <path
                         fillRule="evenodd"
                         d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z"
@@ -304,56 +402,61 @@ export default function AmendmentDetailClient({
           )}
         </div>
 
-      {/* Main content grid */}
-      <div className="grid gap-5 lg:grid-cols-5">
-        {/* Diff viewer — takes majority of space */}
-        <Card depth={2} className="lg:col-span-3 p-4 md:p-5 order-2 lg:order-1">
-          <CardHeader className="p-0 pb-3 flex flex-row items-center justify-between">
-            <CardTitle>Patch Review</CardTitle>
-            <span className="text-xs text-muted-foreground font-mono">
-              inline diff
-            </span>
-          </CardHeader>
-          <CardContent className="p-0">
-            <DiffViewer
-              originalContent={amendment.originalContent}
-              proposedContent={amendment.proposedContent}
+        {/* Main content grid */}
+        <div className="grid gap-5 lg:grid-cols-5">
+          {/* Diff viewer — takes majority of space */}
+          <Card
+            depth={2}
+            className="lg:col-span-3 p-4 md:p-5 order-2 lg:order-1"
+          >
+            <CardHeader className="p-0 pb-3 flex flex-row items-center justify-between">
+              <CardTitle>Patch Review</CardTitle>
+              <span className="text-xs text-muted-foreground font-mono">
+                inline diff
+              </span>
+            </CardHeader>
+            <CardContent className="p-0">
+              <DiffViewer
+                originalContent={amendment.originalContent}
+                proposedContent={amendment.proposedContent}
+              />
+            </CardContent>
+          </Card>
+
+          {/* Right sidebar — VotePanel appears first on mobile */}
+          <div className="lg:col-span-2 space-y-5 order-1 lg:order-2">
+            <VotePanel
+              amendmentId={amendment.id}
+              isSemanticChange={amendment.isSemanticChange}
+              status={amendment.status}
+              totalVotes={amendment.votes.totalVotes}
+              approveVotes={amendment.votes.approveVotes}
+              rejectVotes={amendment.votes.rejectVotes}
+              requiredVotingParticipation={
+                amendment.votes.requiredVotingParticipation
+              }
+              totalActiveMembers={amendment.votes.totalActiveMembers}
+              userVote={amendment.userVote}
+              isMember={isMember}
+              isUser={isUser}
+              isPrimary={isPrimary}
+              isSeAdmin={isSeAdmin}
+              primaryReview={amendment.primaryReview}
+              votingEndsAt={amendment.votingEndsAt}
+              userPrimaryPositionIds={userPrimaryPositionIds}
+              onChangeStatus={changeStatus}
+              onMerge={merge}
+              actionMessage={actionMessage}
             />
-          </CardContent>
-        </Card>
 
-        {/* Right sidebar — VotePanel appears first on mobile */}
-        <div className="lg:col-span-2 space-y-5 order-1 lg:order-2">
-          <VotePanel
-            amendmentId={amendment.id}
-            isSemanticChange={amendment.isSemanticChange}
-            status={amendment.status}
-            totalVotes={amendment.votes.totalVotes}
-            approveVotes={amendment.votes.approveVotes}
-            rejectVotes={amendment.votes.rejectVotes}
-            requiredVotingParticipation={amendment.votes.requiredVotingParticipation}
-            totalActiveMembers={amendment.votes.totalActiveMembers}
-            userVote={amendment.userVote}
-            isMember={isMember}
-            isUser={isUser}
-            isPrimary={isPrimary}
-            isSeAdmin={isSeAdmin}
-            primaryReview={amendment.primaryReview}
-            votingEndsAt={amendment.votingEndsAt}
-            userPrimaryPositionIds={userPrimaryPositionIds}
-            onChangeStatus={changeStatus}
-            onMerge={merge}
-            actionMessage={actionMessage}
-          />
-
-          <CommentThread
-            amendmentId={amendment.id}
-            initialComments={amendment.comments}
-            canComment={isMember}
-            isUser={isUser}
-          />
+            <CommentThread
+              amendmentId={amendment.id}
+              initialComments={amendment.comments}
+              canComment={isMember}
+              isUser={isUser}
+            />
+          </div>
         </div>
-      </div>
       </NeoCard>
     </section>
   );

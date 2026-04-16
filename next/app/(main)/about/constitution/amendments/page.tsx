@@ -46,7 +46,7 @@ export default async function AmendmentsListPage() {
   if (authLevel.userId) {
     for (const amendment of amendments) {
       const vote = amendment.votes.find(
-        (v) => v.userId === authLevel.userId && v.phase === "VOTING"
+        (v) => v.userId === authLevel.userId && v.phase === "VOTING",
       );
       if (vote) {
         userVotes[amendment.id] = vote.approve;
@@ -55,26 +55,30 @@ export default async function AmendmentsListPage() {
   }
 
   const emptyRole = authLevel.isSeAdmin
-    ? "seAdmin" as const
+    ? ("seAdmin" as const)
     : authLevel.isPrimary
-      ? "primary" as const
+      ? ("primary" as const)
       : authLevel.isOfficer
-        ? "officer" as const
+        ? ("officer" as const)
         : authLevel.isMember
-          ? "member" as const
+          ? ("member" as const)
           : authLevel.isUser
-            ? "signedIn" as const
-            : "anonymous" as const;
+            ? ("signedIn" as const)
+            : ("anonymous" as const);
 
-  const activeRows = rows.filter((r) => r.status !== "WITHDRAWN" && r.status !== "REJECTED");
-  const withdrawnRows = rows.filter((r) => r.status === "WITHDRAWN" || r.status === "REJECTED");
+  const activeRows = rows.filter(
+    (r) => r.status !== "WITHDRAWN" && r.status !== "REJECTED",
+  );
+  const withdrawnRows = rows.filter(
+    (r) => r.status === "WITHDRAWN" || r.status === "REJECTED",
+  );
 
   return (
-    <section className="w-full max-w-6xl px-2 md:px-4">
+    <section className="w-full max-w-6xl px-3 sm:px-4">
       {/* Page header */}
-      <div className="py-4 flex flex-wrap gap-3 justify-between items-center">
+      <div className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-display font-bold tracking-tight">
+          <h1 className="text-2xl font-display font-bold tracking-tight sm:text-3xl">
             Constitutional Amendments
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
@@ -82,8 +86,11 @@ export default async function AmendmentsListPage() {
           </p>
         </div>
         {authLevel.isMember && (
-          <Button asChild>
-            <Link href="/about/constitution/amendments/new" className="flex items-center gap-2">
+          <Button asChild className="w-full sm:w-auto">
+            <Link
+              href="/about/constitution/amendments/new"
+              className="flex items-center gap-2"
+            >
               <Plus className="h-4 w-4" />
               Propose Amendment
             </Link>
@@ -98,7 +105,9 @@ export default async function AmendmentsListPage() {
         ) : (
           <>
             {activeRows.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-4 text-center">No active amendments right now.</p>
+              <p className="text-sm text-muted-foreground py-4 text-center">
+                No active amendments right now.
+              </p>
             ) : (
               <div className="space-y-3">
                 {activeRows.map((amendment) => (
