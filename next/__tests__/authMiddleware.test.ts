@@ -21,6 +21,12 @@ vi.mock("next/server", () => {
     static next() {
       return { kind: "next" };
     }
+
+    static json(payload: unknown, init?: { status?: number }) {
+      // Serialize so existing `.body.toContain(...)` assertions keep working
+      // against the legacy plain-text substring checks.
+      return new MockNextResponse(JSON.stringify(payload), init);
+    }
   }
 
   return {
@@ -220,5 +226,75 @@ describe("authMiddleware", () => {
       req("/api/tech-committee-application", "POST")
     );
     expect((res as any).kind).toBe("next");
+  });
+
+  // ── Mentor schedule management routes ────────────────────────────────
+  // These routes' handlers enforce `isMentoringHead || isPrimary`. The
+  // middleware must match so that presidents / mentoring heads who have
+  // no Mentor row (e.g. SSE club president) can still manage the schedule.
+
+  it("allows scheduleBlock GET for anyone", async () => {
+    const res = await authMiddleware(req("/api/scheduleBlock", "GET"));
+    expect((res as any).kind).toBe("next");
+  });
+
+  it("denies scheduleBlock POST for a plain mentor without officer role", async () => {
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isUser: true,
+      isOfficer: false,
+      isMentor: true,
+      isMentoringHead: false,
+      isPrimary: false,
+    });
+
+    const res = await authMiddleware(req("/api/scheduleBlock", "POST"));
+    expect((res as any).status).toBe(403);
+    expect((res as any).body).toContain(
+      "need to be Mentoring Head or Primary Officer"
+    );
+  });
+
+  it("allows scheduleBlock POST for a primary officer with no Mentor row", async () => {
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isUser: true,
+      isOfficer: true,
+      isMentor: false,
+      isMentoringHead: false,
+      isPrimary: true,
+    });
+
+    const res = await authMiddleware(req("/api/scheduleBlock", "POST"));
+    expect((res as any).kind).toBe("next");
+  });
+
+  it("allows scheduleBlock POST for the Mentoring Head", async () => {
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isUser: true,
+      isOfficer: true,
+      isMentor: false,
+      isMentoringHead: true,
+      isPrimary: false,
+    });
+
+    const res = await authMiddleware(req("/api/scheduleBlock", "POST"));
+    expect((res as any).kind).toBe("next");
+  });
+
+  it("denies mentorSchedule PUT for anonymous users", async () => {
+    const res = await authMiddleware(req("/api/mentorSchedule", "PUT"));
+    expect((res as any).status).toBe(403);
+    expect((res as any).body).toContain(
+      "need to be Mentoring Head or Primary Officer"
+    );
+  });
+
+  it("returns access-denied as JSON so clients can safely response.json()", async () => {
+    const res = await authMiddleware(req("/api/scheduleBlock", "POST"));
+    expect((res as any).status).toBe(403);
+    const parsed = JSON.parse((res as any).body);
+    expect(parsed).toHaveProperty("error");
+    expect(parsed.error).toContain(
+      "need to be Mentoring Head or Primary Officer"
+    );
   });
 });
