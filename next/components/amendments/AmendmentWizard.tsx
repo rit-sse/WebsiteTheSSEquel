@@ -19,7 +19,9 @@ type AmendmentWizardProps = {
   initialContent: string;
 };
 
-export default function AmendmentWizard({ initialContent }: AmendmentWizardProps) {
+export default function AmendmentWizard({
+  initialContent,
+}: AmendmentWizardProps) {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [proposedContent, setProposedContent] = useState(initialContent);
@@ -49,6 +51,7 @@ export default function AmendmentWizard({ initialContent }: AmendmentWizardProps
           title: title.trim(),
           description: description.trim(),
           isSemanticChange,
+          originalContent: initialContent,
           proposedContent,
         }),
       });
@@ -65,7 +68,8 @@ export default function AmendmentWizard({ initialContent }: AmendmentWizardProps
       }
       router.push(`/about/constitution/amendments/${amendmentId}`);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to submit amendment";
+      const message =
+        err instanceof Error ? err.message : "Failed to submit amendment";
       setError(message);
       setLoading(false);
     }

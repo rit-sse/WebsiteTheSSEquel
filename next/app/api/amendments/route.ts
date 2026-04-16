@@ -1,25 +1,15 @@
 import prisma from "@/lib/prisma";
 import { AmendmentStatus } from "@prisma/client";
 import { NextRequest } from "next/server";
-import { computeVoteSummary, getActorFromRequest } from "@/lib/services/amendmentService";
 import {
-  createAmendmentPR,
+  computeVoteSummary,
+  getActorFromRequest,
+} from "@/lib/services/amendmentService";
+import {
   fetchConstitutionSnapshot,
 } from "@/lib/services/githubAmendmentService";
 
 export const dynamic = "force-dynamic";
-
-function buildBranchName(title: string, amendmentId: number): string {
-  const slug = title
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .replace(/-{2,}/g, "-");
-
-  const safeTitle = slug.length > 0 ? slug : "amendment";
-  return `amendment-${amendmentId}-${safeTitle}-${Date.now().toString(36)}`;
-}
 
 function sanitizeText(input: unknown): string {
   if (typeof input !== "string") return "";
@@ -27,11 +17,21 @@ function sanitizeText(input: unknown): string {
   return trimmed;
 }
 
+// Preserve whitespace on constitution content so the stored copy matches
+// what the wizard diffed against. Trimming caused the detail-page diff to
+// disagree with the wizard diff near the start/end of the file.
+function readContent(input: unknown): string {
+  if (typeof input !== "string") return "";
+  return input;
+}
+
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const status = searchParams.get("status");
   const validStatus =
-    status && Object.values(AmendmentStatus).includes(status as AmendmentStatus) ? (status as AmendmentStatus) : null;
+    status && Object.values(AmendmentStatus).includes(status as AmendmentStatus)
+      ? (status as AmendmentStatus)
+      : null;
 
   const where = validStatus ? { status: validStatus } : {};
   const amendments = await prisma.amendment.findMany({
@@ -88,6 +88,7 @@ export async function POST(request: NextRequest) {
   let body: {
     title?: unknown;
     description?: unknown;
+    originalContent?: unknown;
     proposedContent?: unknown;
     isSemanticChange?: unknown;
   };
@@ -99,16 +100,19 @@ export async function POST(request: NextRequest) {
 
   const title = sanitizeText(body.title);
   const description = sanitizeText(body.description);
-  const proposedContent = sanitizeText(body.proposedContent);
+  const clientOriginalContent = readContent(body.originalContent);
+  const proposedContent = readContent(body.proposedContent);
   const isSemanticChange =
     typeof body.isSemanticChange === "boolean" ? body.isSemanticChange : true;
 
-  if (!title || !proposedContent) {
-    return new Response('"title", "proposedContent" are required', { status: 422 });
+  if (!title || proposedContent.trim().length === 0) {
+    return new Response('"title", "proposedContent" are required', {
+      status: 422,
+    });
   }
 
   // Fetch current constitution for diff — graceful if GitHub is unavailable
-  let originalContent = "";
+  let originalContent = clientOriginalContent;
   try {
     const currentSnapshot = await fetchConstitutionSnapshot();
     originalContent = currentSnapshot.content;
@@ -116,7 +120,7 @@ export async function POST(request: NextRequest) {
     // GitHub unavailable — continue without original content
   }
 
-  const dbDraft = await prisma.amendment.create({
+  const amendment = await prisma.amendment.create({
     data: {
       title,
       description,
@@ -128,35 +132,6 @@ export async function POST(request: NextRequest) {
       publishedAt: new Date(),
       primaryReviewOpenedAt: new Date(),
     },
-  });
-
-  // Attempt to create a GitHub PR — non-blocking
-  const branchName = buildBranchName(title, dbDraft.id);
-  const amendmentAuthor = `Member #${actor.id}`;
-  const prBody = description || `${title}\n\nAmendment proposal by ${amendmentAuthor}.`;
-  try {
-    const { prNumber, originalContent: prOriginal } = await createAmendmentPR({
-      title,
-      description: prBody,
-      proposedContent,
-      proposedBy: amendmentAuthor,
-      branchName,
-    });
-
-    await prisma.amendment.update({
-      where: { id: dbDraft.id },
-      data: {
-        githubBranch: branchName,
-        githubPrNumber: prNumber,
-        originalContent: prOriginal || originalContent,
-      },
-    });
-  } catch {
-    // GitHub PR creation failed — amendment still exists without a linked PR
-  }
-
-  const amendment = await prisma.amendment.findUnique({
-    where: { id: dbDraft.id },
     select: {
       id: true,
       title: true,

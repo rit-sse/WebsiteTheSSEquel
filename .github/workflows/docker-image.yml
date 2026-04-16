@@ -19,21 +19,23 @@ jobs:
 
       - name: Set branch variables
         run: |
+          # DEPLOY_PATH and host targets are the same for both environments —
+          # `website` (prod) and `website-dev` are services in the same
+          # docker-compose stack at /home/administrator/deploy on the
+          # docker-host VM (reached via SSH ProxyJump through eggs).
           if [ "${GITHUB_REF_NAME}" = "main" ]; then
             echo "IMAGE_TAG=prod" >> $GITHUB_ENV
             echo "NEXTAUTH_URL=https://sse.rit.edu" >> $GITHUB_ENV
             echo "NEXT_PUBLIC_ENV=prod" >> $GITHUB_ENV
-            echo "DEPLOY_PATH=/home/sse-deploy/deploy" >> $GITHUB_ENV
             echo "DEPLOY_SERVICE=website" >> $GITHUB_ENV
-            echo "GIT_COMMIT=${GITHUB_SHA::7}" >> $GITHUB_ENV
           else
             echo "IMAGE_TAG=dev" >> $GITHUB_ENV
             echo "NEXTAUTH_URL=https://ssedev.se.rit.edu" >> $GITHUB_ENV
             echo "NEXT_PUBLIC_ENV=dev" >> $GITHUB_ENV
-            echo "DEPLOY_PATH=/home/sse-deploy/deploy" >> $GITHUB_ENV
             echo "DEPLOY_SERVICE=website-dev" >> $GITHUB_ENV
-            echo "GIT_COMMIT=${GITHUB_SHA::7}" >> $GITHUB_ENV
           fi
+          echo "DEPLOY_PATH=/home/administrator/deploy" >> $GITHUB_ENV
+          echo "GIT_COMMIT=${GITHUB_SHA::7}" >> $GITHUB_ENV
 
       - name: Build image
         working-directory: ./next
@@ -58,9 +60,15 @@ jobs:
         if: github.event_name == 'push'
         uses: appleboy/ssh-action@v1.0.3
         with:
+          # Final target: administrator@192.168.111.2 (docker-host VM, private IP).
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSE_DEPLOY_KEY }}
+          # Jump via eggs.se.rit.edu because the docker-host lives on a
+          # private subnet and isn't reachable from GitHub runners directly.
+          proxy_host: ${{ secrets.PROXY_HOST }}
+          proxy_username: ${{ secrets.PROXY_USER }}
+          proxy_key: ${{ secrets.SSE_DEPLOY_KEY }}
           script: |
             cd ${{ env.DEPLOY_PATH }}
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.repository_owner }}" --password-stdin
