@@ -886,8 +886,6 @@ model AmendmentVote {
   amendment       Amendment        @relation(fields: [amendmentId], references: [id], onDelete: Cascade)
   user            User             @relation(fields: [userId], references: [id])
   officerPosition OfficerPosition? @relation(fields: [officerPositionId], references: [id])
-
-  @@unique([amendmentId, userId, phase])
 }
 
 model AmendmentComment {
