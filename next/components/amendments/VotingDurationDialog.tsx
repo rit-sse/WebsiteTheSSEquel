@@ -18,6 +18,10 @@ import { Clock } from "lucide-react";
 type VotingDurationDialogProps = {
   trigger: React.ReactNode;
   onConfirm: (durationHours: number) => void | Promise<void>;
+  title?: string;
+  description?: string;
+  confirmLabel?: string;
+  defaultHours?: number | null;
 };
 
 const PRESETS = [
@@ -30,17 +34,38 @@ const PRESETS = [
 export default function VotingDurationDialog({
   trigger,
   onConfirm,
+  title = "Open Member Voting",
+  description = "Primary officers have approved this amendment. Choose how long the voting window should be open. Voting starts immediately.",
+  confirmLabel = "Start Voting Now",
+  defaultHours = 168,
 }: VotingDurationDialogProps) {
   const [open, setOpen] = useState(false);
-  const [selectedPreset, setSelectedPreset] = useState<number | null>(168);
-  const [useCustom, setUseCustom] = useState(false);
-  const [days, setDays] = useState("");
-  const [hours, setHours] = useState("");
+  const normalizedDefaultHours = defaultHours ?? 168;
+  const defaultPreset = PRESETS.some(
+    (preset) => preset.hours === normalizedDefaultHours,
+  )
+    ? normalizedDefaultHours
+    : 168;
+  const [selectedPreset, setSelectedPreset] = useState<number | null>(
+    defaultPreset,
+  );
+  const [useCustom, setUseCustom] = useState(
+    defaultHours !== null &&
+      !PRESETS.some((preset) => preset.hours === normalizedDefaultHours),
+  );
+  const [days, setDays] = useState(
+    useCustom ? String(Math.floor(normalizedDefaultHours / 24)) : "",
+  );
+  const [hours, setHours] = useState(
+    useCustom ? String(Math.floor(normalizedDefaultHours % 24)) : "",
+  );
   const [minutes, setMinutes] = useState("");
   const [loading, setLoading] = useState(false);
 
   const customTotalHours =
-    (parseInt(days) || 0) * 24 + (parseInt(hours) || 0) + (parseInt(minutes) || 0) / 60;
+    (parseInt(days) || 0) * 24 +
+    (parseInt(hours) || 0) +
+    (parseInt(minutes) || 0) / 60;
   const effectiveHours = useCustom ? customTotalHours : (selectedPreset ?? 0);
   const isValid = effectiveHours >= 0.5 && effectiveHours <= 336;
 
@@ -75,12 +100,9 @@ export default function VotingDurationDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Clock className="h-5 w-5 text-primary/60" />
-            Open Member Voting
+            {title}
           </DialogTitle>
-          <DialogDescription>
-            Primary officers have approved this amendment. Choose how long the
-            voting window should be open. Voting starts immediately.
-          </DialogDescription>
+          <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
@@ -116,10 +138,14 @@ export default function VotingDurationDialog({
               type="button"
               onClick={() => setUseCustom(!useCustom)}
               className={`text-sm font-medium transition-colors ${
-                useCustom ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                useCustom
+                  ? "text-primary"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              {useCustom ? "Using custom duration" : "Or set a custom duration..."}
+              {useCustom
+                ? "Using custom duration"
+                : "Or set a custom duration..."}
             </button>
             {useCustom && (
               <div className="flex items-center gap-2">
@@ -169,18 +195,22 @@ export default function VotingDurationDialog({
               Voting will be open for{" "}
               <span className="font-semibold text-foreground">
                 {formatDuration(effectiveHours)}
-              </span>
-              {" "}and starts immediately upon confirmation.
+              </span>{" "}
+              and starts immediately upon confirmation.
             </div>
           )}
         </div>
 
         <DialogFooter>
-          <Button variant="neutral" onClick={() => setOpen(false)} disabled={loading}>
+          <Button
+            variant="neutral"
+            onClick={() => setOpen(false)}
+            disabled={loading}
+          >
             Cancel
           </Button>
           <Button onClick={handleConfirm} disabled={loading || !isValid}>
-            {loading ? "Starting vote..." : "Start Voting Now"}
+            {loading ? "Saving..." : confirmLabel}
           </Button>
         </DialogFooter>
       </DialogContent>

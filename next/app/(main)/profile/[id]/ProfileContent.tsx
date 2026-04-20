@@ -43,6 +43,7 @@ import {
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import { isS3Key, normalizeToS3Key } from "@/lib/s3Utils";
+import { getInitials } from "@/lib/userDisplay";
 import { useProfileImage } from "@/contexts/ProfileImageContext";
 import ImageUpload from "@/components/common/ImageUpload";
 import AvailabilityGrid, {
@@ -163,16 +164,6 @@ interface ExistingApplication {
     name: string;
     isActive?: boolean;
   };
-}
-
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
 }
 
 function parseMembershipReason(reason: string): {

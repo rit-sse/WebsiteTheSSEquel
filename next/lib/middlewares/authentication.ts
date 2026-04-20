@@ -85,6 +85,22 @@ const primaryOfficerVerifier = authVerifierFactory((permissions) => {
 });
 
 /**
+ * Auth verifier for mentor-schedule management (create/assign/remove
+ * blocks, rename the schedule, etc.). The underlying route handlers all
+ * enforce `canManageSchedules()` = `isMentoringHead || isPrimary`, so the
+ * middleware gate must match. Gating these routes with a mentor-only
+ * verifier used to reject primary officers (e.g. President) who have no
+ * Mentor row, with a plain-text 403 that then crashed the client's JSON
+ * parse.
+ */
+const scheduleManagementVerifier = authVerifierFactory((permissions) => {
+  return {
+    isAllowed: permissions.isMentoringHead || permissions.isPrimary,
+    authType: "Mentoring Head or Primary Officer",
+  };
+});
+
+/**
  * Auth verifier that requires any signed-in user
  */
 const signedInVerifier = authVerifierFactory((permissions) => {
@@ -165,6 +181,15 @@ const nonGetPrimaryOfficerVerifier = nonGetVerifier(primaryOfficerVerifier);
  * An auth verifier that allows GET requests but makes sure all other requests are made by mentors
  */
 const nonGetMentorVerifier = nonGetVerifier(mentorVerifier);
+
+/**
+ * An auth verifier that allows GET requests but requires Mentoring Head
+ * or Primary Officer for mutations. Matches `canManageSchedules()` in
+ * the mentor-schedule route handlers.
+ */
+const nonGetScheduleManagementVerifier = nonGetVerifier(
+  scheduleManagementVerifier
+);
 
 /**
  * Auth verifier for alumni requests - allows POST (public submissions) but requires officer for GET/PUT/DELETE
@@ -335,7 +360,7 @@ const ROUTES: { [key: string]: AuthVerifier } = {
   "mentor-availability": nonGetMentorVerifier,
   "mentor-semester": nonGetOfficerVerifier,
   "mentoring-headcount": headcountSubmissionVerifier,
-  mentorSchedule: nonGetMentorVerifier,
+  mentorSchedule: nonGetScheduleManagementVerifier,
   mentorSkill: nonGetMentorVerifier,
   officer: nonGetPrimaryOfficerVerifier,
   "officer-positions": nonGetPrimaryOfficerVerifier,
@@ -343,8 +368,8 @@ const ROUTES: { [key: string]: AuthVerifier } = {
   projectContributor: nonGetOfficerVerifier,
   purchasing: officerVerifier, // All purchasing routes require officer auth
   quotes: quoteVerifier,
-  schedule: nonGetMentorVerifier,
-  scheduleBlock: nonGetMentorVerifier,
+  schedule: nonGetScheduleManagementVerifier,
+  scheduleBlock: nonGetScheduleManagementVerifier,
   skills: nonGetOfficerVerifier,
   sponsor: nonGetOfficerVerifier,
   "swipe-access": officerVerifier,
@@ -356,11 +381,11 @@ const ROUTES: { [key: string]: AuthVerifier } = {
 
 const accessDenied = (authType: string, request: NextRequest) => {
   const { pathname } = request.nextUrl;
-  return new NextResponse(
-    `Access Denied; need to be ${authType} to access ${request.method} ${pathname}`,
+  return NextResponse.json(
     {
-      status: 403,
-    }
+      error: `Access Denied; need to be ${authType} to access ${request.method} ${pathname}`,
+    },
+    { status: 403 }
   );
 };
 

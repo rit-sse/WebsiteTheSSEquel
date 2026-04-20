@@ -47,7 +47,11 @@ DATABASE_URL="postgresql://postgres:postgres@localhost:5432/ssequel_dev"
 NEXTAUTH_URL="http://localhost:3000"
 NEXTAUTH_SECRET="replace-with-a-long-random-secret"
 SESSION_COOKIE_NAME="next-auth.session-token"
-GITHUB_PAT="server-side GitHub PAT for constitution amendments"
+GITHUB_APP_ID=""
+GITHUB_APP_PRIVATE_KEY=""
+GITHUB_APP_INSTALLATION_ID=""
+GITHUB_WEBHOOK_SECRET=""
+GITHUB_PAT=""
 
 # Google OAuth
 GOOGLE_CLIENT_ID=""
@@ -123,9 +127,19 @@ You do **not** need PostgreSQL installed directly on your computer if you use Do
 
 If you are using the constitution amendment workflow:
 
-- Create a server-side GitHub PAT with `repo` scope for write access to `rit-sse/governing-docs`.
-- Set `GITHUB_PAT` in the runtime environment for the Next.js container.
-- Keep this token out of source control and never expose it in client-side code.
+- Preferred: create a private GitHub App installed on `rit-sse/governing-docs`.
+- Grant repository permissions:
+  - `Contents: Read and write`
+  - `Pull requests: Read and write`
+- Set these runtime env vars on the Next.js container:
+  - `GITHUB_APP_ID`
+  - `GITHUB_APP_PRIVATE_KEY`
+  - `GITHUB_WEBHOOK_SECRET`
+- Optional:
+  - `GITHUB_APP_INSTALLATION_ID` if you want to pin the installation instead of letting the app auto-discover its installation on `rit-sse/governing-docs`
+- Legacy fallback:
+  - `GITHUB_PAT` still works if GitHub App env vars are not set, but the GitHub App flow is the deployment target going forward.
+- Keep all secrets out of source control and never expose them in client-side code.
 
 Example compose-style deployment snippet:
 
@@ -133,7 +147,10 @@ Example compose-style deployment snippet:
 services:
   website:
     environment:
-      GITHUB_PAT: ${GITHUB_PAT}
+      GITHUB_APP_ID: ${GITHUB_APP_ID}
+      GITHUB_APP_PRIVATE_KEY: ${GITHUB_APP_PRIVATE_KEY}
+      GITHUB_WEBHOOK_SECRET: ${GITHUB_WEBHOOK_SECRET}
+      GITHUB_APP_INSTALLATION_ID: ${GITHUB_APP_INSTALLATION_ID}
 ```
 
 ## Setting up Google OAuth

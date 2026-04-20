@@ -3,6 +3,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { UserPlus, X, Mail, Clock } from "lucide-react";
+import { getInitials } from "@/lib/userDisplay";
 
 interface Officer {
   id: number;
@@ -33,15 +34,6 @@ interface OfficerAssignmentCardProps {
   onCancelInvitation: () => void;
   disabled?: boolean;
   readOnly?: boolean;
-}
-
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
 }
 
 function formatTimeAgo(dateString: string): string {

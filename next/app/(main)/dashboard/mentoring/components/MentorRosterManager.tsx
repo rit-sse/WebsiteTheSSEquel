@@ -25,6 +25,7 @@ import {
   ChevronUp,
 } from "lucide-react";
 import MentorInviteModal from "../../MentorInviteModal";
+import { getInitials } from "@/lib/userDisplay";
 
 interface LatestMentorApplication {
   id: number;
@@ -129,14 +130,6 @@ export default function MentorRosterManager() {
   const [isSendingSwipe, setIsSendingSwipe] = useState(false);
   const [swipeModalOpen, setSwipeModalOpen] = useState(false);
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
-
-  const getInitials = (name: string) =>
-    name
-      .split(" ")
-      .filter(Boolean)
-      .map((part) => part[0]?.toUpperCase() ?? "")
-      .join("")
-      .slice(0, 2) || "?";
 
   const renderWrappedList = (items: string[]) => {
     if (items.length === 0)
