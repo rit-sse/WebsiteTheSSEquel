@@ -79,7 +79,7 @@ describe("/api/officer-positions route", () => {
       },
     ]);
 
-    const res = await GET();
+    const res = await GET(new Request("http://localhost/api/officer-positions"));
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body[0]).toMatchObject({

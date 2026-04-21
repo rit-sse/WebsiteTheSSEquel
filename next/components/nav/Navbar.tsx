@@ -116,6 +116,11 @@ const dashboardItems = [
     href: "/dashboard/alumni",
     description: "Review alumni requests and auto-generated candidates.",
   },
+  {
+    title: "Elections",
+    href: "/dashboard/elections",
+    description: "Create and manage primary-officer election cycles.",
+  },
 ];
 
 interface NavbarProps {

@@ -7,6 +7,7 @@ interface DashboardAuth {
   isMentor: boolean;
   isPrimary: boolean;
   isMentoringHead: boolean;
+  isSeAdmin: boolean;
 }
 
 const DashboardAuthContext = createContext<DashboardAuth>({
@@ -14,6 +15,7 @@ const DashboardAuthContext = createContext<DashboardAuth>({
   isMentor: false,
   isPrimary: false,
   isMentoringHead: false,
+  isSeAdmin: false,
 });
 
 export function useDashboardAuth() {
@@ -26,10 +28,11 @@ export function DashboardAuthProvider({
   isMentor,
   isPrimary,
   isMentoringHead,
+  isSeAdmin,
 }: DashboardAuth & { children: React.ReactNode }) {
   return (
     <DashboardAuthContext.Provider
-      value={{ isOfficer, isMentor, isPrimary, isMentoringHead }}
+      value={{ isOfficer, isMentor, isPrimary, isMentoringHead, isSeAdmin }}
     >
       {children}
     </DashboardAuthContext.Provider>

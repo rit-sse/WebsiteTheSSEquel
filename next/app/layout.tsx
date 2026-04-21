@@ -7,6 +7,8 @@ import { Providers } from "./Providers";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import Script from "next/script";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { headers } from "next/headers";
 
 const inter = Inter({
@@ -40,6 +42,17 @@ export const metadata: Metadata = {
   },
 };
 
+// Read the FOUC-preventing theme/font init script at build time so we can
+// inline it into the <head>. In Next.js 16, <Script strategy="beforeInteractive">
+// placed in <body> warns with a hydration mismatch and "Scripts inside React
+// components are never executed when rendering on the client"; the idiomatic
+// pattern for a pre-hydration theme-init script is an inline <script> in
+// <head> (same approach `next-themes` uses).
+const initStyleFontSource = readFileSync(
+  path.join(process.cwd(), "public", "init-style-font.js"),
+  "utf8"
+);
+
 export default async function RootLayout({
   children,
 }: {
@@ -63,11 +76,22 @@ export default async function RootLayout({
       <body
         className={`min-h-screen flex flex-col bg-gradient-to-b from-background to-muted overflow-x-hidden`}
       >
+        {/*
+          FOUC-preventing theme/font init. `next/script` with
+          `strategy="beforeInteractive"` is the Next.js-16–blessed way to
+          run a script before React hydrates; a raw <script> element in
+          the React tree triggers a "Scripts inside React components are
+          never executed when rendering on the client" warning. We pass
+          the contents inline (read once at build time) so there's no
+          extra network round-trip.
+        */}
         <Script
-          src="/init-style-font.js"
+          id="sse-init-style-font"
           strategy="beforeInteractive"
           nonce={nonce}
-        />
+        >
+          {initStyleFontSource}
+        </Script>
         <Providers session={session} nonce={nonce}>
           {children}
         </Providers>

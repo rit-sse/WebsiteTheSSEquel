@@ -45,10 +45,13 @@ interface PendingInvitation {
 
 interface PositionsSectionProps {
   readOnly?: boolean;
+  /** Filter positions by category. Omit to show all. */
+  category?: "PRIMARY_OFFICER" | "SE_OFFICE";
 }
 
 export default function PositionsSection({
   readOnly = false,
+  category,
 }: PositionsSectionProps) {
   const router = useRouter();
   const [positions, setPositions] = useState<Position[]>([]);
@@ -85,8 +88,11 @@ export default function PositionsSection({
   const fetchPositions = useCallback(async () => {
     setIsLoading(true);
     try {
+      const positionsUrl = category
+        ? `/api/officer-positions?category=${category}`
+        : "/api/officer-positions";
       const [positionsResponse, invitationsResponse] = await Promise.all([
-        fetch("/api/officer-positions"),
+        fetch(positionsUrl),
         fetch("/api/invitations?type=officer"),
       ]);
 
@@ -384,63 +390,79 @@ export default function PositionsSection({
 
   return (
     <div className="space-y-6">
-      {/* Primary Officers */}
-      <DataTable
-        data={primaryOfficers}
-        columns={columns}
-        keyField="id"
-        title={`Primary Officers (${primaryOfficers.filter((p) => p.isFilled).length}/${primaryOfficers.length} filled)`}
-        titleExtra={
-          !readOnly ? (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                setSwipeModalPositions(primaryOfficers);
-                setSwipeModalLabel("Primary Officers");
-                setSwipeModalOpen(true);
-              }}
-              disabled={isSendingSwipe}
-            >
-              <Mail className="h-4 w-4 mr-2" />
-              Request Swipe Access
-            </Button>
-          ) : undefined
-        }
-        searchPlaceholder="Search primary officers..."
-        onAdd={!readOnly ? handleAddPrimary : undefined}
-        addLabel="Add Primary Officer"
-        emptyMessage="No primary officer positions defined"
-      />
+      {category === "SE_OFFICE" ? (
+        /* SE Office: single flat table, no primary/committee split */
+        <DataTable
+          data={positions}
+          columns={columns}
+          keyField="id"
+          title={`SE Office (${positions.filter((p) => p.isFilled).length}/${positions.length} filled)`}
+          searchPlaceholder="Search SE Office positions..."
+          onAdd={!readOnly ? handleAddCommittee : undefined}
+          addLabel="Add SE Office Position"
+          emptyMessage="No SE Office positions defined"
+        />
+      ) : (
+        <>
+          {/* Primary Officers */}
+          <DataTable
+            data={primaryOfficers}
+            columns={columns}
+            keyField="id"
+            title={`Primary Officers (${primaryOfficers.filter((p) => p.isFilled).length}/${primaryOfficers.length} filled)`}
+            titleExtra={
+              !readOnly ? (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setSwipeModalPositions(primaryOfficers);
+                    setSwipeModalLabel("Primary Officers");
+                    setSwipeModalOpen(true);
+                  }}
+                  disabled={isSendingSwipe}
+                >
+                  <Mail className="h-4 w-4 mr-2" />
+                  Request Swipe Access
+                </Button>
+              ) : undefined
+            }
+            searchPlaceholder="Search primary officers..."
+            onAdd={!readOnly ? handleAddPrimary : undefined}
+            addLabel="Add Primary Officer"
+            emptyMessage="No primary officer positions defined"
+          />
 
-      {/* Committee Heads */}
-      <DataTable
-        data={committeeHeads}
-        columns={columns}
-        keyField="id"
-        title={`Committee Heads (${committeeHeads.filter((p) => p.isFilled).length}/${committeeHeads.length} filled)`}
-        titleExtra={
-          !readOnly ? (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                setSwipeModalPositions(committeeHeads);
-                setSwipeModalLabel("Committee Heads");
-                setSwipeModalOpen(true);
-              }}
-              disabled={isSendingSwipe}
-            >
-              <Mail className="h-4 w-4 mr-2" />
-              Request Swipe Access
-            </Button>
-          ) : undefined
-        }
-        searchPlaceholder="Search committee heads..."
-        onAdd={!readOnly ? handleAddCommittee : undefined}
-        addLabel="Add Committee Head"
-        emptyMessage="No committee head positions defined"
-      />
+          {/* Committee Heads */}
+          <DataTable
+            data={committeeHeads}
+            columns={columns}
+            keyField="id"
+            title={`Committee Heads (${committeeHeads.filter((p) => p.isFilled).length}/${committeeHeads.length} filled)`}
+            titleExtra={
+              !readOnly ? (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setSwipeModalPositions(committeeHeads);
+                    setSwipeModalLabel("Committee Heads");
+                    setSwipeModalOpen(true);
+                  }}
+                  disabled={isSendingSwipe}
+                >
+                  <Mail className="h-4 w-4 mr-2" />
+                  Request Swipe Access
+                </Button>
+              ) : undefined
+            }
+            searchPlaceholder="Search committee heads..."
+            onAdd={!readOnly ? handleAddCommittee : undefined}
+            addLabel="Add Committee Head"
+            emptyMessage="No committee head positions defined"
+          />
+        </>
+      )}
 
       {/* Create/Edit Position Modal */}
       <PositionModal

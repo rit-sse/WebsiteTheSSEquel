@@ -140,24 +140,30 @@ export async function resolveAuthLevelFromToken(
   }
 
   const membershipCount = user._count.Memberships;
+  const isSeAdmin = user.officers.some(
+    (officer) => officer.position.title === SE_ADMIN_POSITION_TITLE
+  );
   authLevel.userId = user.id;
   authLevel.isUser = true;
   authLevel.membershipCount = membershipCount;
   authLevel.isMember = membershipCount >= 1;
+  authLevel.isSeAdmin = isSeAdmin;
 
   if (!stagingElevated) {
-    authLevel.isMentor = user.mentor.length > 0;
-    authLevel.isOfficer = user.officers.length > 0;
-    authLevel.isMentoringHead = user.officers.some(
+    authLevel.isMentor = isSeAdmin || user.mentor.length > 0;
+    authLevel.isOfficer = isSeAdmin || user.officers.length > 0;
+    authLevel.isMentoringHead = isSeAdmin || user.officers.some(
       (officer) => officer.position.title === MENTOR_HEAD_TITLE
     );
-    authLevel.isProjectsHead = user.officers.some(
+    authLevel.isProjectsHead = isSeAdmin || user.officers.some(
       (officer) => officer.position.title === PROJECTS_HEAD_TITLE
     );
-    authLevel.isTechCommitteeHead = user.officers.some(
+    authLevel.isTechCommitteeHead = isSeAdmin || user.officers.some(
       (officer) => officer.position.title === TECH_COMMITTEE_HEAD_TITLE
     );
-    authLevel.isTechCommitteeDivisionManager = user.officers.some((officer) =>
+    authLevel.isTechCommitteeDivisionManager =
+      isSeAdmin ||
+      user.officers.some((officer) =>
       TECH_COMMITTEE_DIVISION_MANAGER_TITLES.includes(
         officer.position
           .title as (typeof TECH_COMMITTEE_DIVISION_MANAGER_TITLES)[number]
@@ -175,7 +181,7 @@ export async function resolveAuthLevelFromToken(
             .title as keyof typeof TECH_COMMITTEE_DIVISION_MANAGER_BY_TITLE
         ]
       : null;
-    authLevel.isPrimary = user.officers.some(
+    authLevel.isPrimary = isSeAdmin || user.officers.some(
       (officer) => officer.position.is_primary
     );
     authLevel.isSeAdmin = user.officers.some(

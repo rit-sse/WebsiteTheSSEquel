@@ -50,6 +50,9 @@ const nextConfig = {
       {
         pathname: "/api/**",
       },
+      {
+        pathname: "/icon",
+      },
     ],
   },
   output: "standalone",
