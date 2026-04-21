@@ -335,19 +335,32 @@ function DecideStep({
             <h1 className="font-display text-3xl font-bold leading-tight text-left md:text-4xl">
               The SSE thinks you&rsquo;d make {article} <em>great</em>
             </h1>
+            {/* Apply the letter size classes to the DancingLetters
+                container too so its own `gap-[0.25em]` resolves against
+                the letter font-size (60–96 px), not the inherited 16 px
+                default — otherwise multi-word titles like
+                "Mentoring Head" render with ~4 px of word spacing and
+                collapse into "Mentoringhead". */}
             <DancingLetters
               text={
                 officeTitle.charAt(0).toUpperCase() +
                 officeTitle.slice(1).toLowerCase()
               }
-              className="justify-start"
+              className="justify-start text-6xl md:text-7xl lg:text-8xl"
               letterClassName="text-6xl md:text-7xl lg:text-8xl font-display font-bold leading-none text-primary"
             />
           </div>
 
           <p className="text-muted-foreground max-w-prose">
-            {nominatorText} {nominators.length === 1 ? "thinks" : "think"} you&rsquo;d
-            be a great {officeTitle}. You have until{" "}
+            {/* Use explicit {" "} between adjacent JSX expressions —
+                bare-whitespace-between-braces has been unreliable in
+                this exact layout (rendered as "thinksyou'd" in a recent
+                screenshot). */}
+            {nominatorText}
+            {" "}
+            {nominators.length === 1 ? "thinks" : "think"}
+            {" "}
+            you&rsquo;d be a great {officeTitle}. You have until{" "}
             <strong className="text-foreground">{deadlineText}</strong> to accept
             or decline. Nominations auto-expire after the deadline.
           </p>
