@@ -55,13 +55,21 @@ export async function ActiveElectionBanner() {
     // `border-b-[2px] border-black` as the navbar so its separator
     // line reads as a continuation of the nav's own border rather
     // than a lighter secondary divider.
+    //
+    // Surface: `bg-card` is the shadcn-native sibling-surface token —
+    // a touch darker than the page `bg-background`, which gives the
+    // strip clean definition without the washed-out tinted-blue look
+    // of the old `bg-primary/10`. The CTA icon takes `text-primary`
+    // so there's a single crisp blue accent pulling the eye, while
+    // the status badge keeps its semantic palette (shared with the
+    // rest of the election pages).
     <Link
       href={`/elections/${election.slug}`}
-      className="group block w-full bg-primary/10 hover:bg-primary/15 transition-colors border-b-[2px] border-black mt-20"
+      className="group block w-full bg-card hover:bg-muted transition-colors border-b-[2px] border-black mt-20"
     >
       <div className="flex items-center justify-center gap-3 px-4 py-2.5 text-sm">
         <span className="flex items-center gap-2">
-          {cta.icon}
+          <span className="text-primary">{cta.icon}</span>
           <span className="font-medium">{cta.text}</span>
           <span className="text-muted-foreground hidden sm:inline">
             — {election.title}
