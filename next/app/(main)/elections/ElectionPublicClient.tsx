@@ -8,13 +8,9 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
 import {
   NeoCard,
-  NeoCardHeader,
-  NeoCardTitle,
-  NeoCardDescription,
   NeoCardContent,
 } from "@/components/ui/neo-card";
 import { Button } from "@/components/ui/button";
@@ -364,37 +360,35 @@ export default function ElectionPublicClient({
       </nav>
 
       {/* ---- Header ---- */}
-      <Card depth={2} className="p-6">
-        <div className="space-y-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-3xl font-display font-bold">{election.title}</h1>
-            <ElectionStatusBadge status={election.status} />
-            {election.status === "VOTING_OPEN" && (
-              <span
-                className="live-badge"
-                aria-label="Voting is live"
-                title="Voting is live"
-              >
-                <span className="live-dot" />
-                Live
-              </span>
-            )}
-          </div>
-          {election.description && (
-            <p className="text-base text-muted-foreground">
-              {election.description}
-            </p>
+      <div className="space-y-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="text-3xl font-display font-bold">{election.title}</h1>
+          <ElectionStatusBadge status={election.status} />
+          {election.status === "VOTING_OPEN" && (
+            <span
+              className="live-badge"
+              aria-label="Voting is live"
+              title="Voting is live"
+            >
+              <span className="live-dot" />
+              Live
+            </span>
           )}
-          <ElectionPhaseTimeline
-            status={election.status}
-            nominationsOpenAt={election.nominationsOpenAt}
-            nominationsCloseAt={election.nominationsCloseAt}
-            votingOpenAt={election.votingOpenAt}
-            votingCloseAt={election.votingCloseAt}
-            certifiedAt={election.certifiedAt}
-          />
         </div>
-      </Card>
+        {election.description && (
+          <p className="text-base text-muted-foreground">
+            {election.description}
+          </p>
+        )}
+        <ElectionPhaseTimeline
+          status={election.status}
+          nominationsOpenAt={election.nominationsOpenAt}
+          nominationsCloseAt={election.nominationsCloseAt}
+          votingOpenAt={election.votingOpenAt}
+          votingCloseAt={election.votingCloseAt}
+          certifiedAt={election.certifiedAt}
+        />
+      </div>
 
       {/* ---- NOMINATION FORM ----
            Mirrors the officer-invite pattern from /dashboard/positions:
@@ -402,7 +396,7 @@ export default function ElectionPublicClient({
            filled accepted states. Clicking "Invite" opens the shared
            `<UserSearchInviteModal>` pre-selected to that office. */}
       {showNominationForm && (
-        <Card depth={2} id="nomination-form" className="p-6 md:p-8">
+        <div id="nomination-form">
           <div className="mb-6 space-y-1">
             <h2 className="text-2xl font-display font-bold">
               Nominate a Candidate
@@ -517,7 +511,7 @@ export default function ElectionPublicClient({
                 );
               })}
           </div>
-        </Card>
+        </div>
       )}
 
       {/* Nomination invite modal — shared with the officer-invite flow. */}
@@ -561,29 +555,27 @@ export default function ElectionPublicClient({
 
       {/* ---- VOTING CTA (full-width, prominent when voting open) ---- */}
       {isVotingOpen && isMember && (
-        <Card depth={2} className="p-6 md:p-8">
-          <div className="flex flex-col sm:flex-row items-center gap-6">
-            <div className="h-16 w-16 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center shrink-0">
-              <Vote className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
-            </div>
-            <div className="flex-1 text-center sm:text-left">
-              <h2 className="text-2xl font-display font-bold">
-                {hasVoted ? "You've voted!" : "Voting is open"}
-              </h2>
-              <p className="text-muted-foreground mt-1">
-                {hasVoted
-                  ? "You can update your ballot until voting closes."
-                  : "Cast your ranked-choice ballot for each position. Rank candidates in order of preference."}
-              </p>
-            </div>
-            <Button asChild size="lg" className="shrink-0">
-              <Link href={`/elections/${election.slug}/vote`}>
-                <Vote className="mr-2 h-4 w-4" />
-                {hasVoted ? "Update Ballot" : "Vote Now"}
-              </Link>
-            </Button>
+        <div className="flex flex-col sm:flex-row items-center gap-6">
+          <div className="h-16 w-16 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center shrink-0">
+            <Vote className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
           </div>
-        </Card>
+          <div className="flex-1 text-center sm:text-left">
+            <h2 className="text-2xl font-display font-bold">
+              {hasVoted ? "You've voted!" : "Voting is open"}
+            </h2>
+            <p className="text-muted-foreground mt-1">
+              {hasVoted
+                ? "You can update your ballot until voting closes."
+                : "Cast your ranked-choice ballot for each position. Rank candidates in order of preference."}
+            </p>
+          </div>
+          <Button asChild size="lg" className="shrink-0">
+            <Link href={`/elections/${election.slug}/vote`}>
+              <Vote className="mr-2 h-4 w-4" />
+              {hasVoted ? "Update Ballot" : "Vote Now"}
+            </Link>
+          </Button>
+        </div>
       )}
 
       {/* Non-member notice */}
@@ -748,10 +740,7 @@ export default function ElectionPublicClient({
       {(isCertified ||
         ((isSeAdmin || isPresident) &&
           election.status === "VOTING_CLOSED")) && (
-        <Card
-          depth={2}
-          className="flex flex-col items-center gap-3 p-6 text-center"
-        >
+        <div className="flex flex-col items-center gap-3 text-center">
           <p className="eyebrow inline-flex items-center gap-2 justify-center">
             <Trophy className="h-3 w-3" />{" "}
             {isCertified
@@ -780,7 +769,7 @@ export default function ElectionPublicClient({
                 : `/elections/${election.slug}/results`
             }
           />
-        </Card>
+        </div>
       )}
 
       {/* ---- Positions & Candidates (full width) ----
@@ -809,18 +798,20 @@ export default function ElectionPublicClient({
               office.officerPosition.title === "President";
 
             return (
-              <Card key={office.id} depth={2}>
-                <CardHeader>
-                  <CardTitle>{office.officerPosition.title}</CardTitle>
-                  <CardDescription>
+              <div key={office.id} className="space-y-3">
+                <div className="space-y-1.5">
+                  <h3 className="font-display text-xl font-bold leading-none tracking-tight">
+                    {office.officerPosition.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
                     {candidateCount === 0
                       ? "No candidates yet"
                       : candidateCount === 1
                         ? "1 candidate"
                         : `${candidateCount} candidates`}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-5">
+                  </p>
+                </div>
+                <div className="space-y-4">
                   {candidateCount === 0 && (
                     <div className="flex items-center gap-3 rounded-lg bg-muted/40 p-4 text-sm text-muted-foreground">
                       <UserX className="h-5 w-5 shrink-0" />
@@ -839,7 +830,11 @@ export default function ElectionPublicClient({
                           ? nomination.runningMateInvitation.invitee
                           : null;
                       return (
-                        <div key={nomination.id} className="space-y-4">
+                        <Card
+                          key={nomination.id}
+                          depth={2}
+                          className="space-y-4 p-5"
+                        >
                           <CandidateBlock
                             nominee={nomination.nominee}
                             statement={nomination.statement}
@@ -850,12 +845,12 @@ export default function ElectionPublicClient({
                           {runningMate && (
                             <RunningMateBlock runningMate={runningMate} />
                           )}
-                        </div>
+                        </Card>
                       );
                     }
                   )}
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             );
           })}
       </div>

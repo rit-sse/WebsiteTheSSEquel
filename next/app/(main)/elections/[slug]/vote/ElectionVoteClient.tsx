@@ -292,14 +292,13 @@ export default function ElectionVoteClient({ electionId }: Props) {
   }
 
   return (
-    <div className="election-scope w-full max-w-5xl space-y-6">
-      {/* Header */}
+    <div className="election-scope w-full max-w-5xl">
       <NeoCard depth={1}>
         <NeoCardHeader>
           <NeoCardTitle>Cast Your Ballot</NeoCardTitle>
           <NeoCardDescription>{data.title}</NeoCardDescription>
         </NeoCardHeader>
-        <NeoCardContent className="space-y-4">
+        <NeoCardContent className="space-y-8">
           {/* Info banner */}
           <div className="flex gap-3 rounded-lg bg-surface-2 p-4">
             <Info className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
@@ -335,202 +334,210 @@ export default function ElectionVoteClient({ electionId }: Props) {
               </p>
             </div>
           )}
+
+          {/* Per-position sections — canonical primary-office order. */}
+          {[...data.offices]
+            .sort((a, b) =>
+              compareByPrimaryOrder(
+                a.officerPosition.title,
+                b.officerPosition.title
+              )
+            )
+            .map((office, officeIndex) => {
+            const state = rankState[office.id] ?? { ranked: [], unranked: [] };
+
+            return (
+              <div key={office.id} className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
+                    {officeIndex + 1}
+                  </div>
+                  <h2 className="font-display text-xl">
+                    {office.officerPosition.title}
+                  </h2>
+                </div>
+                <div className="space-y-4">
+                  {/* Ranked candidates */}
+                  {state.ranked.length > 0 && (
+                    <div>
+                      {state.ranked.map((nomination, index) => (
+                        <div key={nomination.id} className="ballot-card ranked">
+                          {/* Rank pill — 38x38 bordered square with display-font number */}
+                          <div className="rank-pill">{index + 1}</div>
+
+                          {/* Avatar */}
+                          <ElectionAvatar
+                            user={nomination.nominee}
+                            className="h-10 w-10 border-2 border-black"
+                            fallbackClassName="text-xs"
+                          />
+
+                          {/* Name + running mate + statement excerpt */}
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-semibold">
+                              {nomination.nominee.name}
+                            </p>
+                            {nomination.runningMateInvitation?.status ===
+                              "ACCEPTED" && (
+                              <div className="mt-1 flex items-center gap-2">
+                                <span className="wvp-label">Running with</span>
+                                <span className="pair">
+                                  <ElectionAvatar
+                                    user={
+                                      nomination.runningMateInvitation.invitee
+                                    }
+                                    className="h-[18px] w-[18px] border-[1.5px] border-black"
+                                    fallbackClassName="text-[9px]"
+                                  />
+                                  {
+                                    nomination.runningMateInvitation.invitee
+                                      .name
+                                  }
+                                </span>
+                              </div>
+                            )}
+                            {nomination.statement && (
+                              <p className="truncate text-xs text-muted-foreground">
+                                {nomination.statement}
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Reorder + remove buttons */}
+                          <div className="flex shrink-0 items-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              disabled={index === 0}
+                              onClick={() => moveUp(office.id, index)}
+                              aria-label={`Move ${nomination.nominee.name} up`}
+                            >
+                              <ChevronUp className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              disabled={index === state.ranked.length - 1}
+                              onClick={() => moveDown(office.id, index)}
+                              aria-label={`Move ${nomination.nominee.name} down`}
+                            >
+                              <ChevronDown className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                              onClick={() =>
+                                removeFromRanked(office.id, nomination.id)
+                              }
+                              aria-label={`Remove ${nomination.nominee.name} from ranking`}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Unranked pool */}
+                  {state.unranked.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                        Not ranked &mdash; click to add
+                      </p>
+                      {state.unranked.map((nomination) => (
+                        <div
+                          key={nomination.id}
+                          className="ballot-card cursor-pointer"
+                          onClick={() => addToRanked(office.id, nomination.id)}
+                          role="button"
+                          tabIndex={0}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              addToRanked(office.id, nomination.id);
+                            }
+                          }}
+                          aria-label={`Add ${nomination.nominee.name} to ranking`}
+                        >
+                          <div className="rank-pill">
+                            <Plus className="h-4 w-4" />
+                          </div>
+                          <ElectionAvatar
+                            user={nomination.nominee}
+                            className="h-10 w-10 border-2 border-black"
+                            fallbackClassName="text-xs"
+                          />
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-medium">
+                              {nomination.nominee.name}
+                            </p>
+                            {nomination.runningMateInvitation?.status ===
+                              "ACCEPTED" && (
+                              <span className="pair mt-1 inline-flex">
+                                <ElectionAvatar
+                                  user={
+                                    nomination.runningMateInvitation.invitee
+                                  }
+                                  className="h-[18px] w-[18px] border-[1.5px] border-black"
+                                  fallbackClassName="text-[9px]"
+                                />
+                                {nomination.runningMateInvitation.invitee.name}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Empty state */}
+                  {office.nominations.length === 0 && (
+                    <p className="text-sm text-muted-foreground">
+                      No eligible candidates for this position.
+                    </p>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+
+          {/* Submit section */}
+          <div className="space-y-4 pt-2">
+            {/* Completion info */}
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">
+                {positionsRanked} of {totalPositions} position
+                {totalPositions !== 1 ? "s" : ""} ranked
+              </span>
+              <span className="font-medium">{progressPercent}%</span>
+            </div>
+
+            {/* Progress bar */}
+            <Progress value={progressPercent} />
+
+            {/* Submit button */}
+            <Button
+              onClick={saveBallot}
+              disabled={saving || positionsRanked === 0}
+              className="w-full"
+              size="lg"
+            >
+              {saving ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Submit Ballot"
+              )}
+            </Button>
+          </div>
         </NeoCardContent>
       </NeoCard>
-
-      {/* Per-position cards — canonical primary-office order. */}
-      {[...data.offices]
-        .sort((a, b) =>
-          compareByPrimaryOrder(a.officerPosition.title, b.officerPosition.title)
-        )
-        .map((office, officeIndex) => {
-        const state = rankState[office.id] ?? { ranked: [], unranked: [] };
-
-        return (
-          <NeoCard key={office.id} depth={1}>
-            <NeoCardHeader>
-              <div className="flex items-center gap-3">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
-                  {officeIndex + 1}
-                </div>
-                <h2 className="font-display text-xl">
-                  {office.officerPosition.title}
-                </h2>
-              </div>
-            </NeoCardHeader>
-            <NeoCardContent className="space-y-4">
-              {/* Ranked candidates */}
-              {state.ranked.length > 0 && (
-                <div>
-                  {state.ranked.map((nomination, index) => (
-                    <div key={nomination.id} className="ballot-card ranked">
-                      {/* Rank pill — 38x38 bordered square with display-font number */}
-                      <div className="rank-pill">{index + 1}</div>
-
-                      {/* Avatar */}
-                      <ElectionAvatar
-                        user={nomination.nominee}
-                        className="h-10 w-10 border-2 border-black"
-                        fallbackClassName="text-xs"
-                      />
-
-                      {/* Name + running mate + statement excerpt */}
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-semibold">
-                          {nomination.nominee.name}
-                        </p>
-                        {nomination.runningMateInvitation?.status ===
-                          "ACCEPTED" && (
-                          <div className="mt-1 flex items-center gap-2">
-                            <span className="wvp-label">Running with</span>
-                            <span className="pair">
-                              <ElectionAvatar
-                                user={nomination.runningMateInvitation.invitee}
-                                className="h-[18px] w-[18px] border-[1.5px] border-black"
-                                fallbackClassName="text-[9px]"
-                              />
-                              {nomination.runningMateInvitation.invitee.name}
-                            </span>
-                          </div>
-                        )}
-                        {nomination.statement && (
-                          <p className="truncate text-xs text-muted-foreground">
-                            {nomination.statement}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Reorder + remove buttons */}
-                      <div className="flex shrink-0 items-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          disabled={index === 0}
-                          onClick={() => moveUp(office.id, index)}
-                          aria-label={`Move ${nomination.nominee.name} up`}
-                        >
-                          <ChevronUp className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          disabled={index === state.ranked.length - 1}
-                          onClick={() => moveDown(office.id, index)}
-                          aria-label={`Move ${nomination.nominee.name} down`}
-                        >
-                          <ChevronDown className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                          onClick={() =>
-                            removeFromRanked(office.id, nomination.id)
-                          }
-                          aria-label={`Remove ${nomination.nominee.name} from ranking`}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Unranked pool */}
-              {state.unranked.length > 0 && (
-                <div className="space-y-2">
-                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                    Not ranked &mdash; click to add
-                  </p>
-                  {state.unranked.map((nomination) => (
-                    <div
-                      key={nomination.id}
-                      className="ballot-card cursor-pointer"
-                      onClick={() => addToRanked(office.id, nomination.id)}
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          addToRanked(office.id, nomination.id);
-                        }
-                      }}
-                      aria-label={`Add ${nomination.nominee.name} to ranking`}
-                    >
-                      <div className="rank-pill">
-                        <Plus className="h-4 w-4" />
-                      </div>
-                      <ElectionAvatar
-                        user={nomination.nominee}
-                        className="h-10 w-10 border-2 border-black"
-                        fallbackClassName="text-xs"
-                      />
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium">
-                          {nomination.nominee.name}
-                        </p>
-                        {nomination.runningMateInvitation?.status ===
-                          "ACCEPTED" && (
-                          <span className="pair mt-1 inline-flex">
-                            <ElectionAvatar
-                              user={nomination.runningMateInvitation.invitee}
-                              className="h-[18px] w-[18px] border-[1.5px] border-black"
-                              fallbackClassName="text-[9px]"
-                            />
-                            {nomination.runningMateInvitation.invitee.name}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Empty state */}
-              {office.nominations.length === 0 && (
-                <p className="text-sm text-muted-foreground">
-                  No eligible candidates for this position.
-                </p>
-              )}
-            </NeoCardContent>
-          </NeoCard>
-        );
-      })}
-
-      {/* Submit section */}
-      <div className="space-y-4 pt-2">
-        {/* Completion info */}
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">
-            {positionsRanked} of {totalPositions} position
-            {totalPositions !== 1 ? "s" : ""} ranked
-          </span>
-          <span className="font-medium">{progressPercent}%</span>
-        </div>
-
-        {/* Progress bar */}
-        <Progress value={progressPercent} />
-
-        {/* Submit button */}
-        <Button
-          onClick={saveBallot}
-          disabled={saving || positionsRanked === 0}
-          className="w-full"
-          size="lg"
-        >
-          {saving ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Saving...
-            </>
-          ) : (
-            "Submit Ballot"
-          )}
-        </Button>
-      </div>
     </div>
   );
 }
