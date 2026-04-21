@@ -641,13 +641,14 @@ export default function ElectionPublicClient({
                     Accept or decline on the dedicated response page.
                   </p>
                 </div>
-                <NeoBrutalistButton
-                  text="Respond"
-                  variant="pink"
-                  size="sm"
-                  icon={<CheckCircle className="h-4 w-4" />}
-                  href={`/elections/${election.slug}/respond/${nomination.id}`}
-                />
+                <Button asChild size="sm">
+                  <Link
+                    href={`/elections/${election.slug}/respond/${nomination.id}`}
+                  >
+                    <CheckCircle className="mr-2 h-4 w-4" />
+                    Respond
+                  </Link>
+                </Button>
               </div>
             </Card>
           ))}

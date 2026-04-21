@@ -26,7 +26,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import DancingLetters from "@/components/common/DancingLetters";
 import NeoBrutalistButton from "@/components/neo-brutalist-button";
 import RunningMateInviteCard, {
   type RunningMateInvitation,
@@ -144,7 +143,6 @@ export default function NomineeAcceptClient({
   }, [nominators]);
 
   const article = articleFor(officeTitle);
-  const officeUpper = officeTitle.toUpperCase();
 
   const respond = useCallback(
     async (status: "ACCEPTED" | "DECLINED") => {
@@ -244,7 +242,6 @@ export default function NomineeAcceptClient({
       {step === "decide" && (
         <DecideStep
           article={article}
-          officeUpper={officeUpper}
           officeTitle={officeTitle}
           nominatorText={nominatorText}
           nominators={nominators}
@@ -309,7 +306,6 @@ export default function NomineeAcceptClient({
 
 function DecideStep({
   article,
-  officeUpper,
   officeTitle,
   nominatorText,
   nominators,
@@ -319,7 +315,6 @@ function DecideStep({
   onDecline,
 }: {
   article: string;
-  officeUpper: string;
   officeTitle: string;
   nominatorText: string;
   nominators: { id: number; name: string }[];
@@ -333,14 +328,10 @@ function DecideStep({
       <NeoCardContent className="space-y-8 p-6 pb-10 md:p-10 md:pb-12">
         <div className="space-y-6">
           <p className="eyebrow">You&rsquo;ve been nominated</p>
-          <h1 className="font-display text-3xl font-bold leading-tight md:text-4xl">
-            The SSE thinks you&rsquo;d make {article}
+          <h1 className="font-display text-3xl font-bold leading-tight text-left md:text-4xl">
+            The SSE thinks you&rsquo;d make {article} <em>great</em>{" "}
+            {officeTitle}
           </h1>
-          <DancingLetters
-            text={officeUpper}
-            className="text-primary"
-            letterClassName="text-5xl md:text-7xl lg:text-[88px] text-primary"
-          />
           <p className="text-muted-foreground max-w-prose">
             {nominatorText} {nominators.length === 1 ? "thinks" : "think"} you&rsquo;d
             be a great {officeTitle}. You have until{" "}
@@ -399,13 +390,13 @@ function DecideStep({
         </div>
 
         <div className="flex flex-wrap items-center gap-4 pt-2">
-          <NeoBrutalistButton
-            text="Accept & continue"
-            variant="green"
-            icon={<CheckCircle className="h-[18px] w-[18px]" />}
+          <Button
             onClick={onAccept}
             disabled={submitting}
-          />
+            className="gap-2"
+          >
+            <CheckCircle className="h-4 w-4" /> Accept & continue
+          </Button>
           <Button
             variant="outline"
             onClick={onDecline}
