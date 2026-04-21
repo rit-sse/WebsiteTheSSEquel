@@ -442,16 +442,15 @@ export default function ElectionAdminDetailClient({
       </nav>
 
       {/* Header section */}
-      <Card depth={2} className="p-6">
-        <div className="space-y-4">
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex flex-wrap items-center gap-3 min-w-0">
-              <h1 className="text-3xl font-display font-bold">
-                {election.title}
-              </h1>
-              <ElectionStatusBadge status={election.status} />
-            </div>
-            <div className="flex items-center gap-1">
+      <div className="space-y-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-3 min-w-0">
+            <h1 className="text-3xl font-display font-bold">
+              {election.title}
+            </h1>
+            <ElectionStatusBadge status={election.status} />
+          </div>
+          <div className="flex items-center gap-1">
             {isPresident && (
               <Button
                 variant="ghost"
@@ -506,44 +505,43 @@ export default function ElectionAdminDetailClient({
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
-            </div>
           </div>
-
-          <ElectionPhaseTimeline
-            status={election.status}
-            nominationsOpenAt={election.nominationsOpenAt}
-            nominationsCloseAt={election.nominationsCloseAt}
-            votingOpenAt={election.votingOpenAt}
-            votingCloseAt={election.votingCloseAt}
-            certifiedAt={election.certifiedAt}
-          />
-
-          {/* Inline advance button for President (not certification - that has its own section) */}
-          {isPresident && nextPhase && nextPhase.nextStatus !== "CERTIFIED" && (
-            <div className="flex items-center justify-between pt-4 border-t border-border/10 mt-4">
-              <p className="text-sm text-muted-foreground">
-                Next: {nextPhase.label}
-              </p>
-              <Button
-                size="sm"
-                onClick={() => updateStatus(nextPhase.nextStatus)}
-                disabled={advanceLoading}
-              >
-                {advanceLoading ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                ) : null}
-                Advance
-              </Button>
-            </div>
-          )}
         </div>
-      </Card>
+
+        <ElectionPhaseTimeline
+          status={election.status}
+          nominationsOpenAt={election.nominationsOpenAt}
+          nominationsCloseAt={election.nominationsCloseAt}
+          votingOpenAt={election.votingOpenAt}
+          votingCloseAt={election.votingCloseAt}
+          certifiedAt={election.certifiedAt}
+        />
+
+        {/* Inline advance button for President (not certification - that has its own section) */}
+        {isPresident && nextPhase && nextPhase.nextStatus !== "CERTIFIED" && (
+          <div className="flex items-center justify-between pt-4 border-t border-border/10 mt-4">
+            <p className="text-sm text-muted-foreground">
+              Next: {nextPhase.label}
+            </p>
+            <Button
+              size="sm"
+              onClick={() => updateStatus(nextPhase.nextStatus)}
+              disabled={advanceLoading}
+            >
+              {advanceLoading ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : null}
+              Advance
+            </Button>
+          </div>
+        )}
+      </div>
 
       {/* ─── OFFICES & NOMINATIONS ─── */}
-      <div className="space-y-4">
+      <div className="space-y-6">
         {election.offices.map((office) => (
-          <Card key={office.id} depth={2} className="p-5">
-            <div className="flex items-baseline gap-2 mb-3">
+          <div key={office.id} className="space-y-3">
+            <div className="flex items-baseline gap-2">
               <h2 className="text-base font-display font-bold">
                 {office.officerPosition.title}
               </h2>
@@ -570,7 +568,7 @@ export default function ElectionAdminDetailClient({
                 ))}
               </div>
             )}
-          </Card>
+          </div>
         ))}
 
         {election.offices.length === 0 && (
@@ -585,7 +583,7 @@ export default function ElectionAdminDetailClient({
         election.status === "VOTING_CLOSED" ||
         election.status === "CERTIFIED") &&
         election.ballots.length > 0 && (
-          <Card depth={2} className="p-5 space-y-2">
+          <div className="space-y-2">
             <h2 className="text-base font-display font-bold">Participation</h2>
             <div className="flex items-baseline gap-2">
               <span className="text-2xl font-display font-bold">
@@ -599,12 +597,12 @@ export default function ElectionAdminDetailClient({
               value={100}
               className="h-1.5"
             />
-          </Card>
+          </div>
         )}
 
       {/* ─── NEW SEMESTER (CERTIFIED only, President/SE-Admin) ─── */}
       {election.status === "CERTIFIED" && (isPresident || isSeAdmin) && (
-        <Card depth={2} className="p-5 space-y-3">
+        <div className="space-y-3">
           <h2 className="text-base font-display font-bold">
             Start a new semester
           </h2>
@@ -641,12 +639,12 @@ export default function ElectionAdminDetailClient({
           ) : (
             <Button onClick={startNewSemester}>Start new semester</Button>
           )}
-        </Card>
+        </div>
       )}
 
       {/* ─── CERTIFICATION (VOTING_CLOSED only) ─── */}
       {election.status === "VOTING_CLOSED" && (
-        <Card depth={2} className="p-5 space-y-3">
+        <div className="space-y-3">
           <h2 className="text-base font-display font-bold">Certification</h2>
           {isSeAdmin ? (
             <div className="flex items-center justify-between">
@@ -675,7 +673,7 @@ export default function ElectionAdminDetailClient({
           >
             View full results
           </Link>
-        </Card>
+        </div>
       )}
 
       {/* ─── SETTINGS MODAL (President only) ─── */}
@@ -774,31 +772,29 @@ export default function ElectionAdminDetailClient({
 
       {/* ─── EMAIL LOG (collapsible) ─── */}
       {election.emailLogs.length > 0 && (
-        <Card depth={2} className="p-5">
-          <Collapsible>
-            <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors group w-full">
-              <ChevronRight className="h-4 w-4 transition-transform group-data-[state=open]:rotate-90" />
-              Sent Emails ({election.emailLogs.length})
-            </CollapsibleTrigger>
-            <CollapsibleContent className="pt-4">
-              <div className="space-y-2">
-                {election.emailLogs.map((log) => (
-                  <div
-                    key={log.id}
-                    className="py-2 text-sm"
-                  >
-                    <p className="font-medium">{log.subject}</p>
-                    <p className="text-muted-foreground text-xs">
-                      {log.kind.replace(/_/g, " ").toLowerCase()} &middot;{" "}
-                      {log.sentBy.name} &middot; {log.recipientCount} recipients
-                      &middot; {new Date(log.sentAt).toLocaleString()}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </CollapsibleContent>
-          </Collapsible>
-        </Card>
+        <Collapsible>
+          <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors group w-full">
+            <ChevronRight className="h-4 w-4 transition-transform group-data-[state=open]:rotate-90" />
+            Sent Emails ({election.emailLogs.length})
+          </CollapsibleTrigger>
+          <CollapsibleContent className="pt-4">
+            <div className="space-y-2">
+              {election.emailLogs.map((log) => (
+                <div
+                  key={log.id}
+                  className="py-2 text-sm"
+                >
+                  <p className="font-medium">{log.subject}</p>
+                  <p className="text-muted-foreground text-xs">
+                    {log.kind.replace(/_/g, " ").toLowerCase()} &middot;{" "}
+                    {log.sentBy.name} &middot; {log.recipientCount} recipients
+                    &middot; {new Date(log.sentAt).toLocaleString()}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
       )}
 
       {/* Email modal */}
