@@ -154,6 +154,7 @@ const Navbar: React.FC<NavbarProps> = ({
     React.useState(false);
   const [canViewTechCommitteeDashboard, setCanViewTechCommitteeDashboard] =
     React.useState(false);
+  const [isPrimary, setIsPrimary] = React.useState(false);
 
   // Background refresh so dynamic changes (e.g. profile completion) still propagate
   React.useEffect(() => {
@@ -161,6 +162,7 @@ const Navbar: React.FC<NavbarProps> = ({
       setShowDashboard(false);
       setUserId(null);
       setCanViewTechCommitteeDashboard(false);
+      setIsPrimary(false);
       return;
     }
 
@@ -171,6 +173,7 @@ const Navbar: React.FC<NavbarProps> = ({
         setShowDashboard(data.isOfficer || data.isMentor);
         setUserId(data.userId ?? null);
         setProfileComplete(data.profileComplete ?? true);
+        setIsPrimary(!!data.isPrimary);
         setCanViewTechCommitteeDashboard(
           !!(
             data.isTechCommitteeHead ||
@@ -200,18 +203,23 @@ const Navbar: React.FC<NavbarProps> = ({
       } catch (error) {
         console.error("Error checking auth level:", error);
         setCanViewTechCommitteeDashboard(false);
+        setIsPrimary(false);
       }
     })();
   }, [session]);
 
   const visibleDashboardItems = React.useMemo(
     () =>
-      dashboardItems.filter(
-        (item) =>
-          item.href !== "/dashboard/tech-committee" ||
-          canViewTechCommitteeDashboard
-      ),
-    [canViewTechCommitteeDashboard]
+      dashboardItems.filter((item) => {
+        if (item.href === "/dashboard/tech-committee") {
+          return canViewTechCommitteeDashboard;
+        }
+        if (item.href === "/dashboard/elections") {
+          return isPrimary;
+        }
+        return true;
+      }),
+    [canViewTechCommitteeDashboard, isPrimary]
   );
 
   React.useEffect(() => {
