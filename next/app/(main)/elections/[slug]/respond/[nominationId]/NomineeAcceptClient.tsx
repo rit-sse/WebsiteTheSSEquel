@@ -333,9 +333,12 @@ function DecideStep({
             The SSE thinks you&rsquo;d make {article} <em>great</em>
           </h1>
           <DancingLetters
-            text={officeTitle.toUpperCase()}
+            text={
+              officeTitle.charAt(0).toUpperCase() +
+              officeTitle.slice(1).toLowerCase()
+            }
             className="justify-start"
-            letterClassName="text-5xl md:text-7xl lg:text-[88px] font-display text-primary"
+            letterClassName="text-3xl md:text-4xl font-display font-bold leading-tight text-primary"
           />
 
           <p className="text-muted-foreground max-w-prose">
