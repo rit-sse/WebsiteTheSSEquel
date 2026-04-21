@@ -377,5 +377,3 @@ function buildSankeyRounds(rounds: IRVRound[]): SankeyCandidate[][] {
 
   return result;
 }
-
-export default IRVSankey;
