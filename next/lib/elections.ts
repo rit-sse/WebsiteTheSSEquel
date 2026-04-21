@@ -972,6 +972,10 @@ export async function tallyElectionForDisplay(slug: string) {
             id: invitee.id,
             name: invitee.name,
             email: invitee.email,
+            // Preserve image fields so the downstream transform can
+            // resolve the VP's photo just like any other winner.
+            profileImageKey: invitee.profileImageKey,
+            googleImageURL: invitee.googleImageURL,
           },
         } as unknown as (typeof rawResults)[number]["winner"],
         runnerUp: null,
@@ -1021,13 +1025,26 @@ export async function tallyElectionForDisplay(slug: string) {
           )?.votes ?? 0
         : 0;
 
-    let runningMate: { name: string } | null = null;
+    let runningMate: {
+      userId: number;
+      name: string;
+      image: string | null;
+    } | null = null;
     if (raw.officeTitle === PRESIDENT_TITLE && raw.winner && presidentOffice) {
       const winningNomination = presidentOffice.nominations.find(
         (n) => n.id === raw.winner.id
       );
       const invitee = getAcceptedRunningMate(winningNomination);
-      if (invitee) runningMate = { name: invitee.name };
+      if (invitee) {
+        runningMate = {
+          userId: invitee.id,
+          name: invitee.name,
+          image: resolveUserImage(
+            invitee.profileImageKey,
+            invitee.googleImageURL
+          ),
+        };
+      }
     }
 
     return {
@@ -1037,14 +1054,24 @@ export async function tallyElectionForDisplay(slug: string) {
       winner: raw.winner
         ? {
             nominationId: raw.winner.id,
+            userId: raw.winner.nominee.id,
             name: raw.winner.nominee.name,
+            image: resolveUserImage(
+              raw.winner.nominee.profileImageKey,
+              raw.winner.nominee.googleImageURL
+            ),
             finalVotes: winnerFinalVotes,
           }
         : null,
       runnerUp: raw.runnerUp
         ? {
             nominationId: raw.runnerUp.id,
+            userId: raw.runnerUp.nominee.id,
             name: raw.runnerUp.nominee.name,
+            image: resolveUserImage(
+              raw.runnerUp.nominee.profileImageKey,
+              raw.runnerUp.nominee.googleImageURL
+            ),
             finalVotes: runnerUpFinalVotes,
           }
         : null,

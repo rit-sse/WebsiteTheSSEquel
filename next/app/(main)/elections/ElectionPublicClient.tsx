@@ -22,8 +22,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { ElectionAvatar } from "@/components/elections/ElectionAvatar";
 import { Tooltip } from "@/components/ui/tooltip";
 import {
   Select,
@@ -102,15 +102,9 @@ interface UserSearchResult {
   id: number;
   name: string;
   email?: string;
-}
-
-/* ---------- Helpers ---------- */
-
-function getInitials(name: string): string {
-  const parts = name.trim().split(/\s+/);
-  const first = parts[0]?.[0] ?? "";
-  const last = parts.length > 1 ? parts[parts.length - 1]![0] ?? "" : "";
-  return (first + last).toUpperCase();
+  /** Resolved profile image URL (S3 or Google OAuth), or null when the
+   * user has neither. Populated by `/api/user/search`. */
+  image?: string | null;
 }
 
 /* ---------- My nomination with office info ---------- */
@@ -538,11 +532,11 @@ export default function ElectionPublicClient({
                           }`}
                           onClick={() => setSelectedUserId(user.id)}
                         >
-                          <Avatar className="h-9 w-9">
-                            <AvatarFallback className="text-xs">
-                              {getInitials(user.name)}
-                            </AvatarFallback>
-                          </Avatar>
+                          <ElectionAvatar
+                            user={user}
+                            className="h-9 w-9 border-2 border-black"
+                            fallbackClassName="text-xs"
+                          />
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium truncate">
                               {user.name}
@@ -848,11 +842,11 @@ export default function ElectionPublicClient({
                         href={`/elections/${election.slug}/candidates`}
                         className="flex items-center gap-3 rounded-lg p-3 transition-colors hover:bg-muted/50"
                       >
-                        <Avatar className="h-10 w-10">
-                          <AvatarFallback className="text-sm font-medium">
-                            {getInitials(nomination.nominee.name)}
-                          </AvatarFallback>
-                        </Avatar>
+                        <ElectionAvatar
+                          user={nomination.nominee}
+                          className="h-10 w-10 border-2 border-black"
+                          fallbackClassName="text-sm"
+                        />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <span className="font-medium truncate">

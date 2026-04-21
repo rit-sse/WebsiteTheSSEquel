@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { ElectionAvatar } from "@/components/elections/ElectionAvatar";
 import { Progress } from "@/components/ui/progress";
 import {
   Collapsible,
@@ -83,15 +83,6 @@ function getNextPhase(
     default:
       return null;
   }
-}
-
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
 }
 
 function toDateTimeLocalValue(dateStr: string) {
@@ -843,14 +834,11 @@ function NominationRow({
   return (
     <Card depth={3} className="w-80 shrink-0 p-4 space-y-3">
       <div className="flex items-center gap-3">
-        <Avatar className="h-10 w-10 shrink-0">
-          {nomination.nominee.image && (
-            <AvatarImage src={nomination.nominee.image} alt={nomination.nominee.name} />
-          )}
-          <AvatarFallback className="text-xs">
-            {getInitials(nomination.nominee.name)}
-          </AvatarFallback>
-        </Avatar>
+        <ElectionAvatar
+          user={nomination.nominee}
+          className="h-10 w-10 shrink-0 border-2 border-black"
+          fallbackClassName="text-xs"
+        />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
             <span className="text-sm font-medium truncate">

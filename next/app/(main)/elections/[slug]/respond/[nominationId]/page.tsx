@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getAuthLevel } from "@/lib/services/authLevelService";
 import { getElectionWithRelations, serializeElectionForClient } from "@/lib/elections";
+import { resolveUserImage } from "@/lib/s3Utils";
 import NomineeAcceptClient from "./NomineeAcceptClient";
 import type {
   SerializedElection,
@@ -35,7 +36,11 @@ export default async function RespondToNominationPage({
   const nominationIdNum = Number(nominationId);
   let nomination: SerializedNomination | null = null;
   let officeTitle: string | null = null;
-  let nominators: { id: number; name: string }[] = [];
+  let nominators: {
+    id: number;
+    name: string;
+    image: string | null;
+  }[] = [];
   for (const office of election.offices) {
     const match = office.nominations.find((n) => n.id === nominationIdNum);
     if (match) {
@@ -45,11 +50,16 @@ export default async function RespondToNominationPage({
       // office so we can show "nominated by X, Y, Z" — in the current
       // schema each (office, nominee) pair is a single row so we rely
       // on the single nominator. Pre-compute it here so the client has
-      // ready data.
+      // ready data — including a resolved profile image URL so the
+      // nominator chip can show the person's actual photo.
       nominators = [
         {
           id: match.nominator.id,
           name: match.nominator.name,
+          image: resolveUserImage(
+            match.nominator.profileImageKey ?? null,
+            match.nominator.googleImageURL ?? null
+          ),
         },
       ];
       break;

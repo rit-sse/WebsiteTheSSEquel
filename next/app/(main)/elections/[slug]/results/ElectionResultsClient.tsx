@@ -4,9 +4,8 @@ import Link from "next/link";
 import { NeoCard, NeoCardContent } from "@/components/ui/neo-card";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ElectionStatusBadge } from "@/components/elections/ElectionStatusBadge";
-import { electionAvatarStyle } from "@/components/elections/electionAvatarColor";
+import { ElectionAvatar } from "@/components/elections/ElectionAvatar";
 import { compareByPrimaryOrder } from "@/lib/elections";
 import { ElectionEmptyState } from "@/components/elections/ElectionEmptyState";
 import { IRVSankey } from "@/components/elections/IRVSankey";
@@ -32,13 +31,6 @@ import type { SerializedElection } from "@/components/elections/types";
 import type { IRVOfficeResult } from "@/components/elections/types";
 
 /* ---------- Helpers ---------- */
-
-function getInitials(name: string): string {
-  const parts = name.trim().split(/\s+/);
-  const first = parts[0]?.[0] ?? "";
-  const last = parts.length > 1 ? parts[parts.length - 1]![0] ?? "" : "";
-  return (first + last).toUpperCase();
-}
 
 function PositionIcon({
   title,
@@ -249,19 +241,15 @@ export default function ElectionResultsClient({
                 <div>
                   <span className="display-3 text-xl">President</span>
                   <div className="ticket-avatar-row mt-3">
-                    <Avatar
+                    <ElectionAvatar
+                      user={{
+                        id: presidentWinner.winner.userId,
+                        name: presidentWinner.winner.name,
+                        image: presidentWinner.winner.image,
+                      }}
                       className="h-12 w-12 border-2 border-black"
-                      style={electionAvatarStyle(presidentWinner.winner.name)}
-                    >
-                      <AvatarFallback
-                        className="font-display text-sm font-bold"
-                        style={electionAvatarStyle(
-                          presidentWinner.winner.name
-                        )}
-                      >
-                        {getInitials(presidentWinner.winner.name)}
-                      </AvatarFallback>
-                    </Avatar>
+                      fallbackClassName="text-sm"
+                    />
                     <div className="min-w-0">
                       <div className="ticket-name">
                         {presidentWinner.winner.name}
@@ -285,21 +273,15 @@ export default function ElectionResultsClient({
                   </span>
                   {presidentWinner.runningMate ? (
                     <div className="ticket-avatar-row mt-3">
-                      <Avatar
+                      <ElectionAvatar
+                        user={{
+                          id: presidentWinner.runningMate.userId,
+                          name: presidentWinner.runningMate.name,
+                          image: presidentWinner.runningMate.image,
+                        }}
                         className="h-12 w-12 border-2 border-black"
-                        style={electionAvatarStyle(
-                          presidentWinner.runningMate.name
-                        )}
-                      >
-                        <AvatarFallback
-                          className="font-display text-sm font-bold"
-                          style={electionAvatarStyle(
-                            presidentWinner.runningMate.name
-                          )}
-                        >
-                          {getInitials(presidentWinner.runningMate.name)}
-                        </AvatarFallback>
-                      </Avatar>
+                        fallbackClassName="text-sm"
+                      />
                       <div className="min-w-0">
                         <div className="ticket-name">
                           {presidentWinner.runningMate.name}
@@ -347,17 +329,15 @@ export default function ElectionResultsClient({
                       {result.officeTitle}
                     </span>
                     <div className="mt-3 flex items-center gap-3">
-                      <Avatar
+                      <ElectionAvatar
+                        user={{
+                          id: result.winner!.userId,
+                          name: result.winner!.name,
+                          image: result.winner!.image,
+                        }}
                         className="h-10 w-10 border-2 border-black"
-                        style={electionAvatarStyle(result.winner!.name)}
-                      >
-                        <AvatarFallback
-                          className="text-xs font-bold font-display"
-                          style={electionAvatarStyle(result.winner!.name)}
-                        >
-                          {getInitials(result.winner!.name)}
-                        </AvatarFallback>
-                      </Avatar>
+                        fallbackClassName="text-xs"
+                      />
                       <div className="min-w-0">
                         <div className="font-display text-base font-bold">
                           {result.winner!.name}
@@ -465,17 +445,15 @@ export default function ElectionResultsClient({
                     <div className="stat-chip">
                       <div className="stat-chip-label">Winner</div>
                       <div className="mt-1 flex items-center gap-2">
-                        <Avatar
+                        <ElectionAvatar
+                          user={{
+                            id: selected.winner.userId,
+                            name: selected.winner.name,
+                            image: selected.winner.image,
+                          }}
                           className="h-8 w-8 border-2 border-black"
-                          style={electionAvatarStyle(selected.winner.name)}
-                        >
-                          <AvatarFallback
-                            className="font-display text-[11px] font-bold"
-                            style={electionAvatarStyle(selected.winner.name)}
-                          >
-                            {getInitials(selected.winner.name)}
-                          </AvatarFallback>
-                        </Avatar>
+                          fallbackClassName="text-[11px]"
+                        />
                         <span className="font-display text-base font-bold">
                           {selected.winner.name}
                         </span>
@@ -501,14 +479,15 @@ export default function ElectionResultsClient({
                           </div>
                           <div className="mt-1 flex items-center gap-2">
                             <span className="pair">
-                              <span
-                                className="pair-avatar"
-                                style={electionAvatarStyle(
-                                  selected.runningMate.name
-                                )}
-                              >
-                                {getInitials(selected.runningMate.name)}
-                              </span>
+                              <ElectionAvatar
+                                user={{
+                                  id: selected.runningMate.userId,
+                                  name: selected.runningMate.name,
+                                  image: selected.runningMate.image,
+                                }}
+                                className="h-[18px] w-[18px] border-[1.5px] border-black"
+                                fallbackClassName="text-[9px]"
+                              />
                               {selected.runningMate.name}
                             </span>
                           </div>

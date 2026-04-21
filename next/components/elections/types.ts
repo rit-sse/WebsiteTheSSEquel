@@ -200,19 +200,37 @@ export interface IRVRound {
   eliminatedNominationId: number | null;
 }
 
+export interface IRVWinner {
+  nominationId: number;
+  /** User id of the winning nominee — used as a stable seed for the
+   * deterministic gradient avatar when no real image is available. */
+  userId: number;
+  name: string;
+  /** Resolved profile image URL (S3 proxy or Google OAuth avatar), or
+   * `null` when the winner has neither uploaded nor authed one. */
+  image: string | null;
+  finalVotes: number;
+}
+
+export interface IRVRunningMate {
+  userId: number;
+  name: string;
+  image: string | null;
+}
+
 export interface IRVOfficeResult {
   officeId: number;
   officeTitle: string;
   status: "ok" | "tie" | "no_candidates";
-  winner: { nominationId: number; name: string; finalVotes: number } | null;
-  runnerUp: { nominationId: number; name: string; finalVotes: number } | null;
+  winner: IRVWinner | null;
+  runnerUp: IRVWinner | null;
   rounds: IRVRound[];
   totalBallots: number;
   /** Amendment 12: true when this office's winner was derived from another
    *  office's winning ticket (e.g. VP from the President's running mate). */
   ticketDerived?: boolean;
   /** Amendment 12: the running-mate VP attached to the President winner. */
-  runningMate?: { name: string } | null;
+  runningMate?: IRVRunningMate | null;
 }
 
 /* ---------- Election phase order ---------- */

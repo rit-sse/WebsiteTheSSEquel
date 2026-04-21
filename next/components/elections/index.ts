@@ -12,4 +12,9 @@ export { ApprovalStageRow } from "./ApprovalStageRow";
 export { IRVBarChart } from "./IRVBarChart";
 export { IRVRoundTable } from "./IRVRoundTable";
 export { ActiveElectionBanner } from "./ActiveElectionBanner";
+export {
+  ElectionAvatar,
+  getElectionAvatarInitials,
+  type ElectionAvatarUser,
+} from "./ElectionAvatar";
 export * from "./types";

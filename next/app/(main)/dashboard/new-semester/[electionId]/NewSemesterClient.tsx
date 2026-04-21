@@ -11,15 +11,17 @@ import {
   NeoCardTitle,
 } from "@/components/ui/neo-card";
 import { Card } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import NeoBrutalistButton from "@/components/neo-brutalist-button";
-import { electionAvatarStyle } from "@/components/elections/electionAvatarColor";
+import { ElectionAvatar } from "@/components/elections/ElectionAvatar";
 
 export interface DispatchRecipient {
   positionTitle: string;
   name: string;
   email: string;
   userId: number;
+  /** Resolved profile image URL so the recipient chip shows the
+   * officer's actual photo when available. */
+  image: string | null;
 }
 
 interface Props {
@@ -27,16 +29,6 @@ interface Props {
   electionTitle: string;
   electionSlug: string;
   recipients: DispatchRecipient[];
-}
-
-function getInitials(name: string): string {
-  return (name || "??")
-    .split(/\s+/)
-    .map((p) => p[0])
-    .filter(Boolean)
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
 }
 
 export default function NewSemesterClient({
@@ -105,17 +97,15 @@ export default function NewSemesterClient({
                 depth={2}
                 className="flex items-center gap-3 p-4"
               >
-                <Avatar
+                <ElectionAvatar
+                  user={{
+                    id: r.userId || r.email,
+                    name: r.name,
+                    image: r.image,
+                  }}
                   className="h-11 w-11 border-2 border-black"
-                  style={electionAvatarStyle(r.userId || r.email)}
-                >
-                  <AvatarFallback
-                    className="font-display text-xs font-bold"
-                    style={electionAvatarStyle(r.userId || r.email)}
-                  >
-                    {getInitials(r.name)}
-                  </AvatarFallback>
-                </Avatar>
+                  fallbackClassName="text-xs"
+                />
                 <div className="min-w-0 flex-1">
                   <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                     {r.positionTitle}

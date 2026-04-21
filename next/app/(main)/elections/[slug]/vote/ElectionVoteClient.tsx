@@ -19,9 +19,8 @@ import {
   NeoCardContent,
 } from "@/components/ui/neo-card";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
-import { electionAvatarStyle } from "@/components/elections/electionAvatarColor";
+import { ElectionAvatar } from "@/components/elections/ElectionAvatar";
 import { compareByPrimaryOrder } from "@/lib/elections";
 
 /* ---------- Types ---------- */
@@ -30,6 +29,8 @@ interface BallotNominee {
   id: number;
   name: string;
   email: string;
+  /** Resolved profile image URL, added by `serializeElectionForClient`. */
+  image?: string | null;
 }
 
 interface BallotRunningMateInvitation {
@@ -38,6 +39,7 @@ interface BallotRunningMateInvitation {
     id: number;
     name: string;
     email: string;
+    image?: string | null;
   };
 }
 
@@ -78,18 +80,6 @@ interface BallotData {
     id: number;
     rankings: BallotRanking[];
   } | null;
-}
-
-/* ---------- Helpers ---------- */
-
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((part) => part[0])
-    .filter(Boolean)
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
 }
 
 /* ---------- Per-office state ---------- */
@@ -378,17 +368,11 @@ export default function ElectionVoteClient({ electionId }: Props) {
                       <div className="rank-pill">{index + 1}</div>
 
                       {/* Avatar */}
-                      <Avatar
+                      <ElectionAvatar
+                        user={nomination.nominee}
                         className="h-10 w-10 border-2 border-black"
-                        style={electionAvatarStyle(nomination.nominee.id)}
-                      >
-                        <AvatarFallback
-                          className="text-xs font-bold font-display"
-                          style={electionAvatarStyle(nomination.nominee.id)}
-                        >
-                          {getInitials(nomination.nominee.name)}
-                        </AvatarFallback>
-                      </Avatar>
+                        fallbackClassName="text-xs"
+                      />
 
                       {/* Name + running mate + statement excerpt */}
                       <div className="min-w-0 flex-1">
@@ -400,11 +384,11 @@ export default function ElectionVoteClient({ electionId }: Props) {
                           <div className="mt-1 flex items-center gap-2">
                             <span className="wvp-label">Running with</span>
                             <span className="pair">
-                              <span className="pair-avatar">
-                                {getInitials(
-                                  nomination.runningMateInvitation.invitee.name
-                                )}
-                              </span>
+                              <ElectionAvatar
+                                user={nomination.runningMateInvitation.invitee}
+                                className="h-[18px] w-[18px] border-[1.5px] border-black"
+                                fallbackClassName="text-[9px]"
+                              />
                               {nomination.runningMateInvitation.invitee.name}
                             </span>
                           </div>
@@ -479,17 +463,11 @@ export default function ElectionVoteClient({ electionId }: Props) {
                       <div className="rank-pill">
                         <Plus className="h-4 w-4" />
                       </div>
-                      <Avatar
+                      <ElectionAvatar
+                        user={nomination.nominee}
                         className="h-10 w-10 border-2 border-black"
-                        style={electionAvatarStyle(nomination.nominee.id)}
-                      >
-                        <AvatarFallback
-                          className="text-xs font-bold font-display"
-                          style={electionAvatarStyle(nomination.nominee.id)}
-                        >
-                          {getInitials(nomination.nominee.name)}
-                        </AvatarFallback>
-                      </Avatar>
+                        fallbackClassName="text-xs"
+                      />
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-medium">
                           {nomination.nominee.name}
@@ -497,16 +475,11 @@ export default function ElectionVoteClient({ electionId }: Props) {
                         {nomination.runningMateInvitation?.status ===
                           "ACCEPTED" && (
                           <span className="pair mt-1 inline-flex">
-                            <span
-                              className="pair-avatar"
-                              style={electionAvatarStyle(
-                                nomination.runningMateInvitation.invitee.id
-                              )}
-                            >
-                              {getInitials(
-                                nomination.runningMateInvitation.invitee.name
-                              )}
-                            </span>
+                            <ElectionAvatar
+                              user={nomination.runningMateInvitation.invitee}
+                              className="h-[18px] w-[18px] border-[1.5px] border-black"
+                              fallbackClassName="text-[9px]"
+                            />
                             {nomination.runningMateInvitation.invitee.name}
                           </span>
                         )}

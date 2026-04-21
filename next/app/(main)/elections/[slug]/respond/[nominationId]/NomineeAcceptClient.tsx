@@ -31,9 +31,17 @@ import NeoBrutalistButton from "@/components/neo-brutalist-button";
 import RunningMateInviteCard, {
   type RunningMateInvitation,
 } from "@/components/elections/RunningMateInviteCard";
-import { electionAvatarStyle } from "@/components/elections/electionAvatarColor";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { ElectionAvatar } from "@/components/elections/ElectionAvatar";
 import type { SerializedNomination } from "@/components/elections/types";
+
+/** Shape the server page hands us for each nominator. The `image`
+ * field is already resolved through `resolveUserImage` so we can pass
+ * it directly to `<ElectionAvatar>`. */
+interface NominatorRef {
+  id: number;
+  name: string;
+  image: string | null;
+}
 
 interface Props {
   electionId: number;
@@ -41,7 +49,7 @@ interface Props {
   electionTitle: string;
   officeTitle: string;
   nomination: SerializedNomination;
-  nominators: { id: number; name: string }[];
+  nominators: NominatorRef[];
   responseDeadline: string;
 }
 
@@ -53,17 +61,6 @@ interface MaterialsState {
   canRemainEnrolledNextTerm: boolean;
   isOnCampus: boolean;
   isOnCoop: boolean;
-}
-
-function getInitials(name: string): string {
-  return name
-    .trim()
-    .split(/\s+/)
-    .map((p) => p[0])
-    .filter(Boolean)
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
 }
 
 /** Grammatical article: "a President" vs "an SE Admin". */
@@ -271,6 +268,7 @@ export default function NomineeAcceptClient({
           officeTitle={officeTitle}
           nomineeName={nomination.nominee.name}
           nomineeId={nomination.nomineeUserId}
+          nomineeImage={nomination.nominee.image ?? null}
           materials={materials}
           setMaterials={setMaterials}
           submitting={submitting}
@@ -318,7 +316,7 @@ function DecideStep({
   article: string;
   officeTitle: string;
   nominatorText: string;
-  nominators: { id: number; name: string }[];
+  nominators: NominatorRef[];
   deadlineText: string;
   submitting: boolean;
   onAccept: () => void;
@@ -363,17 +361,11 @@ function DecideStep({
             <ul className="mt-3 space-y-2">
               {nominators.map((n) => (
                 <li key={n.id} className="flex items-center gap-3">
-                  <Avatar
+                  <ElectionAvatar
+                    user={n}
                     className="h-8 w-8 border-2 border-black"
-                    style={electionAvatarStyle(n.id)}
-                  >
-                    <AvatarFallback
-                      className="font-display text-[11px] font-bold"
-                      style={electionAvatarStyle(n.id)}
-                    >
-                      {getInitials(n.name)}
-                    </AvatarFallback>
-                  </Avatar>
+                    fallbackClassName="text-[11px]"
+                  />
                   <span className="text-sm font-medium">{n.name}</span>
                 </li>
               ))}
@@ -488,6 +480,7 @@ function MaterialsStep({
   officeTitle,
   nomineeName,
   nomineeId,
+  nomineeImage,
   materials,
   setMaterials,
   submitting,
@@ -496,6 +489,7 @@ function MaterialsStep({
   officeTitle: string;
   nomineeName: string;
   nomineeId: number;
+  nomineeImage: string | null;
   materials: MaterialsState;
   setMaterials: React.Dispatch<React.SetStateAction<MaterialsState>>;
   submitting: boolean;
@@ -598,17 +592,11 @@ function MaterialsStep({
         </p>
         <Card depth={2} className="space-y-4 p-5">
           <div className="flex items-center gap-3">
-            <Avatar
+            <ElectionAvatar
+              user={{ id: nomineeId, name: nomineeName, image: nomineeImage }}
               className="h-16 w-16 border-2 border-black"
-              style={electionAvatarStyle(nomineeId)}
-            >
-              <AvatarFallback
-                className="font-display text-lg font-bold"
-                style={electionAvatarStyle(nomineeId)}
-              >
-                {getInitials(nomineeName)}
-              </AvatarFallback>
-            </Avatar>
+              fallbackClassName="text-lg"
+            />
             <div className="min-w-0 flex-1">
               <p className="truncate text-base font-semibold">{nomineeName}</p>
               <Badge className="mt-1" variant="outline">

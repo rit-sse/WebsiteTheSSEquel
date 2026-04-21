@@ -7,7 +7,6 @@ import {
   NeoCardContent,
 } from "@/components/ui/neo-card";
 import { Card } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Tooltip } from "@/components/ui/tooltip";
 import { NominationStatusBadge } from "@/components/elections/NominationStatusBadge";
 import {
@@ -15,19 +14,10 @@ import {
   getElectionWithRelations,
   isTicketDerivedOffice,
 } from "@/lib/elections";
-import { electionAvatarStyle } from "@/components/elections/electionAvatarColor";
+import { ElectionAvatar } from "@/components/elections/ElectionAvatar";
+import { resolveUserImage } from "@/lib/s3Utils";
 import { getAuthLevel } from "@/lib/services/authLevelService";
 import type { ElectionNominationStatus } from "@prisma/client";
-
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((part) => part[0])
-    .filter(Boolean)
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
-}
 
 export default async function ElectionCandidatesPage({
   params,
@@ -115,17 +105,18 @@ export default async function ElectionCandidatesPage({
                     >
                       {/* Avatar + Name + Status */}
                       <div className="flex items-center gap-3">
-                        <Avatar
+                        <ElectionAvatar
+                          user={{
+                            id: nomination.nominee.id,
+                            name: nomination.nominee.name,
+                            image: resolveUserImage(
+                              nomination.nominee.profileImageKey,
+                              nomination.nominee.googleImageURL
+                            ),
+                          }}
                           className="h-16 w-16 border-2 border-black"
-                          style={electionAvatarStyle(nomination.nominee.id)}
-                        >
-                          <AvatarFallback
-                            className="text-lg font-bold font-display"
-                            style={electionAvatarStyle(nomination.nominee.id)}
-                          >
-                            {getInitials(nomination.nominee.name)}
-                          </AvatarFallback>
-                        </Avatar>
+                          fallbackClassName="text-lg"
+                        />
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-base font-semibold">
                             {nomination.nominee.name}
@@ -146,16 +137,22 @@ export default async function ElectionCandidatesPage({
                           <div className="flex items-center gap-2">
                             <span className="wvp-label">W/ VP</span>
                             <span className="pair">
-                              <span
-                                className="pair-avatar"
-                                style={electionAvatarStyle(
-                                  nomination.runningMateInvitation.invitee.id
-                                )}
-                              >
-                                {getInitials(
-                                  nomination.runningMateInvitation.invitee.name
-                                )}
-                              </span>
+                              <ElectionAvatar
+                                user={{
+                                  id: nomination.runningMateInvitation.invitee
+                                    .id,
+                                  name: nomination.runningMateInvitation.invitee
+                                    .name,
+                                  image: resolveUserImage(
+                                    nomination.runningMateInvitation.invitee
+                                      .profileImageKey,
+                                    nomination.runningMateInvitation.invitee
+                                      .googleImageURL
+                                  ),
+                                }}
+                                className="h-[18px] w-[18px] border-[1.5px] border-black"
+                                fallbackClassName="text-[9px]"
+                              />
                               {nomination.runningMateInvitation.invitee.name}
                             </span>
                           </div>

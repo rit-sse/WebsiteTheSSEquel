@@ -1,14 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { ArrowLeft, ArrowRight, Trophy, Home } from "lucide-react";
 import DancingLetters from "@/components/common/DancingLetters";
 import NeoBrutalistButton from "@/components/neo-brutalist-button";
 import { NeoCard, NeoCardContent } from "@/components/ui/neo-card";
-import { electionAvatarStyle } from "@/components/elections/electionAvatarColor";
+import { ElectionAvatar } from "@/components/elections/ElectionAvatar";
 
 /**
  * "Your new officers" reveal ceremony. A full-screen carousel that
@@ -36,16 +35,6 @@ interface Props {
   electionSlug: string;
   electionTitle: string;
   slides: RevealSlide[];
-}
-
-function getInitials(name: string): string {
-  return (name || "??")
-    .split(/\s+/)
-    .map((p) => p[0])
-    .filter(Boolean)
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
 }
 
 export default function ElectionResultsReveal({
@@ -193,25 +182,15 @@ function SlideAnnouncement({ slide }: { slide: RevealSlide }) {
             transition={{ duration: 0.6, delay: 0.5, ease: "easeOut" }}
             className="mt-2"
           >
-            {slide.winnerImage ? (
-              <div className="h-[140px] w-[140px] overflow-hidden rounded-full border-[3px] border-black shadow-[6px_6px_0_0_black]">
-                <Image
-                  src={slide.winnerImage}
-                  alt={slide.winnerName}
-                  width={140}
-                  height={140}
-                  className="h-full w-full object-cover"
-                  unoptimized
-                />
-              </div>
-            ) : (
-              <div
-                className="flex h-[140px] w-[140px] items-center justify-center rounded-full border-[3px] border-black font-display text-5xl font-bold shadow-[6px_6px_0_0_black]"
-                style={electionAvatarStyle(slide.winnerUserId || slide.winnerName)}
-              >
-                {getInitials(slide.winnerName)}
-              </div>
-            )}
+            <ElectionAvatar
+              user={{
+                id: slide.winnerUserId || slide.winnerName,
+                name: slide.winnerName,
+                image: slide.winnerImage,
+              }}
+              className="h-[140px] w-[140px] border-[3px] border-black shadow-[6px_6px_0_0_black]"
+              fallbackClassName="text-5xl"
+            />
           </motion.div>
 
           {(slide.yearLevel || slide.program) && (
@@ -273,25 +252,15 @@ function SlideSummary({
             key={`${s.officeTitle}-${s.winnerName}`}
             className="flex flex-col items-center gap-2"
           >
-            {s.winnerImage ? (
-              <div className="h-16 w-16 overflow-hidden rounded-full border-2 border-black shadow-[3px_3px_0_0_black]">
-                <Image
-                  src={s.winnerImage}
-                  alt={s.winnerName}
-                  width={64}
-                  height={64}
-                  className="h-full w-full object-cover"
-                  unoptimized
-                />
-              </div>
-            ) : (
-              <div
-                className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-black font-display text-lg font-bold shadow-[3px_3px_0_0_black]"
-                style={electionAvatarStyle(s.winnerUserId || s.winnerName)}
-              >
-                {getInitials(s.winnerName)}
-              </div>
-            )}
+            <ElectionAvatar
+              user={{
+                id: s.winnerUserId || s.winnerName,
+                name: s.winnerName,
+                image: s.winnerImage,
+              }}
+              className="h-16 w-16 border-2 border-black shadow-[3px_3px_0_0_black]"
+              fallbackClassName="text-lg"
+            />
             <div className="min-w-0">
               <p className="text-[10px] font-bold uppercase tracking-wider text-black">
                 {s.officeTitle}

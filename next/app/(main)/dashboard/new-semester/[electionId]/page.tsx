@@ -9,6 +9,7 @@ import {
   isTicketDerivedOffice,
   tallyInstantRunoffElection,
 } from "@/lib/elections";
+import { resolveUserImage } from "@/lib/s3Utils";
 import NewSemesterClient, {
   type DispatchRecipient,
 } from "./NewSemesterClient";
@@ -73,6 +74,10 @@ export default async function NewSemesterDispatchPage({
       name: nomination.nominee.name,
       email: nomination.nominee.email,
       userId: nomination.nomineeUserId,
+      image: resolveUserImage(
+        nomination.nominee.profileImageKey,
+        nomination.nominee.googleImageURL
+      ),
     });
   }
 
@@ -97,6 +102,10 @@ export default async function NewSemesterDispatchPage({
         name: invitee.name,
         email: invitee.email,
         userId: invitee.id,
+        image: resolveUserImage(
+          invitee.profileImageKey,
+          invitee.googleImageURL
+        ),
       });
     }
   }

@@ -9,13 +9,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import NeoBrutalistButton from "@/components/neo-brutalist-button";
-import { electionAvatarStyle } from "@/components/elections/electionAvatarColor";
+import { ElectionAvatar } from "@/components/elections/ElectionAvatar";
 
 /**
  * Amendment 12: presidential nominees pick their own VP running mate after
@@ -54,16 +53,8 @@ interface UserSearchResult {
   id: number;
   name: string;
   email: string;
-}
-
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((part) => part[0])
-    .filter(Boolean)
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
+  /** Resolved profile image URL from `/api/user/search`. */
+  image?: string | null;
 }
 
 function formatExpiry(iso: string): string {
@@ -185,17 +176,11 @@ export default function RunningMateInviteCard({
       <CardContent className="space-y-4">
         {invitation && active ? (
           <div className="flex items-center gap-3 rounded-lg bg-surface-2 p-3">
-            <Avatar
+            <ElectionAvatar
+              user={invitation.invitee}
               className="h-10 w-10 border-2 border-black"
-              style={electionAvatarStyle(invitation.invitee.id)}
-            >
-              <AvatarFallback
-                className="text-xs font-bold font-display"
-                style={electionAvatarStyle(invitation.invitee.id)}
-              >
-                {getInitials(invitation.invitee.name)}
-              </AvatarFallback>
-            </Avatar>
+              fallbackClassName="text-xs"
+            />
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold">
                 {invitation.invitee.name}
@@ -285,17 +270,11 @@ export default function RunningMateInviteCard({
                     disabled={submitting}
                     className="flex w-full items-center gap-3 rounded-md p-2 text-left transition-colors hover:bg-muted/50 disabled:opacity-50"
                   >
-                    <Avatar
+                    <ElectionAvatar
+                      user={r}
                       className="h-8 w-8 border-2 border-black"
-                      style={electionAvatarStyle(r.id)}
-                    >
-                      <AvatarFallback
-                        className="text-xs font-bold font-display"
-                        style={electionAvatarStyle(r.id)}
-                      >
-                        {getInitials(r.name)}
-                      </AvatarFallback>
-                    </Avatar>
+                      fallbackClassName="text-xs"
+                    />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium">{r.name}</p>
                       <p className="truncate text-xs text-muted-foreground">
