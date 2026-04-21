@@ -667,17 +667,14 @@ function DoneStep({
             : "Edit your materials any time before voting opens."}
         </p>
         <div className="flex justify-center gap-4 pt-2">
+          {/* The election overview now shows every candidate inline —
+              the old /candidates page has been removed — so the single
+              "back to election" link is enough. */}
           <Link
             href={`/elections/${electionSlug}`}
             className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
           >
             Back to election <ArrowRight className="h-4 w-4" />
-          </Link>
-          <Link
-            href={`/elections/${electionSlug}/candidates`}
-            className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
-          >
-            View candidates <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
       </NeoCardContent>
