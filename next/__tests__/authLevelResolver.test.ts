@@ -148,5 +148,11 @@ describe("authLevelResolver", () => {
     expect(auth.isTechCommitteeDivisionManager).toBe(true);
     expect(auth.techCommitteeManagedDivision).toBe("Lab Division");
     expect(auth.isPrimary).toBe(true);
+    // Regression guard: staging elevation must keep isSeAdmin=true even
+    // when the logged-in user has no real SE Admin Officer row. An
+    // unconditional `authLevel.isSeAdmin = …` assignment in
+    // resolveAuthLevelFromToken used to silently flip this back to false
+    // and lock staging devs out of isSeAdmin-gated dev endpoints.
+    expect(auth.isSeAdmin).toBe(true);
   });
 });

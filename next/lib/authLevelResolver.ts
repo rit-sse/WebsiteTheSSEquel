@@ -147,7 +147,12 @@ export async function resolveAuthLevelFromToken(
   authLevel.isUser = true;
   authLevel.membershipCount = membershipCount;
   authLevel.isMember = membershipCount >= 1;
-  authLevel.isSeAdmin = isSeAdmin;
+
+  // NOTE: `isSeAdmin` is intentionally NOT assigned here. When
+  // `stagingElevated` is true we want the top-of-function `true` default
+  // (lines 85-95) to survive so dev tools gated on `isSeAdmin` still
+  // work under STAGING_PROXY_AUTH. Outside staging it's assigned below
+  // inside the `!stagingElevated` branch.
 
   if (!stagingElevated) {
     authLevel.isMentor = isSeAdmin || user.mentor.length > 0;
@@ -184,9 +189,7 @@ export async function resolveAuthLevelFromToken(
     authLevel.isPrimary = isSeAdmin || user.officers.some(
       (officer) => officer.position.is_primary
     );
-    authLevel.isSeAdmin = user.officers.some(
-      (officer) => officer.position.title === SE_ADMIN_POSITION_TITLE
-    );
+    authLevel.isSeAdmin = isSeAdmin;
   }
 
   if (includeProfileComplete) {
