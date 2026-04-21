@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import {
@@ -14,7 +14,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ElectionAvatar } from "@/components/elections/ElectionAvatar";
-import { Progress } from "@/components/ui/progress";
 import {
   Collapsible,
   CollapsibleTrigger,
@@ -53,6 +52,9 @@ import {
   Check,
   X,
   Settings,
+  GraduationCap,
+  Calendar,
+  Minus,
 } from "lucide-react";
 
 interface Props {
@@ -104,9 +106,6 @@ export default function ElectionAdminDetailClient({
   const [advanceLoading, setAdvanceLoading] = useState(false);
   const [emailOpen, setEmailOpen] = useState(false);
   const [emailKind, setEmailKind] = useState("BALLOT_ANNOUNCEMENT");
-  const [expandedNominations, setExpandedNominations] = useState<Set<number>>(
-    new Set()
-  );
 
   // Settings state
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -404,24 +403,6 @@ export default function ElectionAdminDetailClient({
 
   const nextPhase = getNextPhase(election.status);
 
-  const eligibleCount = useMemo(() => {
-    // Unique voters who have cast ballots, or a reasonable estimate
-    // In a real system this would come from server; use ballots as proxy
-    return Math.max(election.ballots.length, 1);
-  }, [election.ballots]);
-
-  const toggleNominationExpanded = (nominationId: number) => {
-    setExpandedNominations((prev) => {
-      const next = new Set(prev);
-      if (next.has(nominationId)) {
-        next.delete(nominationId);
-      } else {
-        next.add(nominationId);
-      }
-      return next;
-    });
-  };
-
   /* ─── Render ─── */
 
   return (
@@ -517,6 +498,21 @@ export default function ElectionAdminDetailClient({
           certifiedAt={election.certifiedAt}
         />
 
+        {/* Ballot count — surfaced at the top once voting is live / done */}
+        {(election.status === "VOTING_OPEN" ||
+          election.status === "VOTING_CLOSED" ||
+          election.status === "CERTIFIED") &&
+          election.ballots.length > 0 && (
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl font-display font-bold">
+                {election.ballots.length}
+              </span>
+              <span className="text-sm text-muted-foreground">
+                ballot{election.ballots.length !== 1 ? "s" : ""} cast
+              </span>
+            </div>
+          )}
+
         {/* Inline advance button for President (not certification - that has its own section) */}
         {isPresident && nextPhase && nextPhase.nextStatus !== "CERTIFIED" && (
           <div className="flex items-center justify-between pt-4 border-t border-border/10 mt-4">
@@ -560,8 +556,6 @@ export default function ElectionAdminDetailClient({
                     key={nom.id}
                     nomination={nom}
                     isPresident={isPresident}
-                    expanded={expandedNominations.has(nom.id)}
-                    onToggleExpand={() => toggleNominationExpanded(nom.id)}
                     onApprove={() => reviewNomination(nom.id, "APPROVED")}
                     onReject={() => reviewNomination(nom.id, "REJECTED")}
                   />
@@ -577,28 +571,6 @@ export default function ElectionAdminDetailClient({
           </p>
         )}
       </div>
-
-      {/* ─── PARTICIPATION (visible once voting has started or finished) ─── */}
-      {(election.status === "VOTING_OPEN" ||
-        election.status === "VOTING_CLOSED" ||
-        election.status === "CERTIFIED") &&
-        election.ballots.length > 0 && (
-          <div className="space-y-2">
-            <h2 className="text-base font-display font-bold">Participation</h2>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-display font-bold">
-                {election.ballots.length}
-              </span>
-              <span className="text-sm text-muted-foreground">
-                ballot{election.ballots.length !== 1 ? "s" : ""} cast
-              </span>
-            </div>
-            <Progress
-              value={100}
-              className="h-1.5"
-            />
-          </div>
-        )}
 
       {/* ─── NEW SEMESTER (CERTIFIED only, President/SE-Admin) ─── */}
       {election.status === "CERTIFIED" && (isPresident || isSeAdmin) && (
@@ -815,20 +787,17 @@ export default function ElectionAdminDetailClient({
 function NominationRow({
   nomination,
   isPresident,
-  expanded,
-  onToggleExpand,
   onApprove,
   onReject,
 }: {
   nomination: SerializedNomination;
   isPresident: boolean;
-  expanded: boolean;
-  onToggleExpand: () => void;
   onApprove: () => void;
   onReject: () => void;
 }) {
   return (
     <Card depth={3} className="w-80 shrink-0 p-4 space-y-3">
+      {/* Identity */}
       <div className="flex items-center gap-3">
         <ElectionAvatar
           user={nomination.nominee}
@@ -849,105 +818,123 @@ function NominationRow({
         </div>
       </div>
 
+      {/* Program / year chips */}
+      {(nomination.program || nomination.yearLevel) && (
+        <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
+          {nomination.yearLevel && (
+            <span className="inline-flex items-center gap-1">
+              <Calendar className="h-3 w-3 shrink-0" />
+              Year {nomination.yearLevel}
+            </span>
+          )}
+          {nomination.program && (
+            <span className="inline-flex items-center gap-1">
+              <GraduationCap className="h-3 w-3 shrink-0" />
+              {nomination.program}
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Statement */}
       {nomination.statement && (
-        <p className="text-xs text-muted-foreground line-clamp-2">
+        <p className="text-xs text-muted-foreground line-clamp-3">
           {nomination.statement}
         </p>
       )}
 
+      {/* Eligibility checks */}
+      <div className="grid grid-cols-2 gap-x-2 gap-y-1 rounded-md bg-muted/40 p-2 text-xs">
+        <EligibilityCheck label="On campus" value={nomination.isOnCampus} />
+        <EligibilityCheck label="On co-op" value={nomination.isOnCoop} />
+        <EligibilityCheck
+          label="Enrolled full year"
+          value={nomination.canRemainEnrolledFullYear}
+        />
+        <EligibilityCheck
+          label="Enrolled next term"
+          value={nomination.canRemainEnrolledNextTerm}
+        />
+      </div>
+
+      {/* Nominator */}
+      <p className="text-xs text-muted-foreground">
+        Nominated by{" "}
+        <span className="font-medium text-foreground">
+          {nomination.nominator.name}
+        </span>
+      </p>
+
+      {/* Review trail */}
+      {nomination.reviewedBy && (
+        <div className="space-y-1 border-t border-border/20 pt-2 text-xs text-muted-foreground">
+          <p>
+            Reviewed by{" "}
+            <span className="font-medium text-foreground">
+              {nomination.reviewedBy.name}
+            </span>
+            {nomination.reviewedAt &&
+              ` on ${new Date(nomination.reviewedAt).toLocaleDateString()}`}
+          </p>
+          {nomination.reviewNotes && (
+            <p className="italic">&ldquo;{nomination.reviewNotes}&rdquo;</p>
+          )}
+        </div>
+      )}
+
+      {/* Approve / Reject */}
       {isPresident && nomination.eligibilityStatus === "PENDING" && (
         <div className="flex gap-2 pt-1">
-          <Button size="xs" variant="outline" className="flex-1 gap-1" onClick={onApprove}>
+          <Button
+            size="xs"
+            variant="outline"
+            className="flex-1 gap-1"
+            onClick={onApprove}
+          >
             <Check className="h-3 w-3" /> Approve
           </Button>
-          <Button size="xs" variant="ghost" className="flex-1 gap-1" onClick={onReject}>
+          <Button
+            size="xs"
+            variant="ghost"
+            className="flex-1 gap-1"
+            onClick={onReject}
+          >
             <X className="h-3 w-3" /> Reject
           </Button>
         </div>
       )}
-
-      {/* Expandable details */}
-      <button
-        type="button"
-        onClick={onToggleExpand}
-        className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
-      >
-        <ChevronRight
-          className={`h-3 w-3 transition-transform ${expanded ? "rotate-90" : ""}`}
-        />
-        {expanded ? "Hide" : "Show"} details
-      </button>
-
-      {expanded && (
-        <div className="grid gap-1 text-xs text-muted-foreground mt-1">
-          <p>
-            <span className="font-medium text-foreground">Nominated by:</span>{" "}
-            {nomination.nominator.name}
-          </p>
-          <p>
-            <span className="font-medium text-foreground">Year level:</span>{" "}
-            {nomination.yearLevel ?? "Not provided"}
-          </p>
-          <p>
-            <span className="font-medium text-foreground">Program:</span>{" "}
-            {nomination.program ?? "Not provided"}
-          </p>
-          <p>
-            <span className="font-medium text-foreground">On campus:</span>{" "}
-            {nomination.isOnCampus === null
-              ? "Not provided"
-              : nomination.isOnCampus
-                ? "Yes"
-                : "No"}
-          </p>
-          <p>
-            <span className="font-medium text-foreground">On co-op:</span>{" "}
-            {nomination.isOnCoop === null
-              ? "Not provided"
-              : nomination.isOnCoop
-                ? "Yes"
-                : "No"}
-          </p>
-          <p>
-            <span className="font-medium text-foreground">
-              Can remain enrolled (full year):
-            </span>{" "}
-            {nomination.canRemainEnrolledFullYear === null
-              ? "Not provided"
-              : nomination.canRemainEnrolledFullYear
-                ? "Yes"
-                : "No"}
-          </p>
-          <p>
-            <span className="font-medium text-foreground">
-              Can remain enrolled (next term):
-            </span>{" "}
-            {nomination.canRemainEnrolledNextTerm === null
-              ? "Not provided"
-              : nomination.canRemainEnrolledNextTerm
-                ? "Yes"
-                : "No"}
-          </p>
-          {nomination.reviewNotes && (
-            <p className="md:col-span-2">
-              <span className="font-medium text-foreground">
-                Review notes:
-              </span>{" "}
-              {nomination.reviewNotes}
-            </p>
-          )}
-          {nomination.reviewedBy && (
-            <p className="md:col-span-2">
-              <span className="font-medium text-foreground">
-                Reviewed by:
-              </span>{" "}
-              {nomination.reviewedBy.name}
-              {nomination.reviewedAt &&
-                ` on ${new Date(nomination.reviewedAt).toLocaleString()}`}
-            </p>
-          )}
-        </div>
-      )}
     </Card>
+  );
+}
+
+/* ─── EligibilityCheck helper ─── */
+
+function EligibilityCheck({
+  label,
+  value,
+}: {
+  label: string;
+  value: boolean | null | undefined;
+}) {
+  const isUnknown = value === null || value === undefined;
+  return (
+    <div className="inline-flex min-w-0 items-center gap-1">
+      {isUnknown ? (
+        <Minus className="h-3 w-3 shrink-0 text-muted-foreground/60" />
+      ) : value ? (
+        <Check className="h-3 w-3 shrink-0 text-emerald-600 dark:text-emerald-400" />
+      ) : (
+        <X className="h-3 w-3 shrink-0 text-red-600 dark:text-red-400" />
+      )}
+      <span
+        className={
+          isUnknown
+            ? "truncate text-muted-foreground/60"
+            : "truncate text-muted-foreground"
+        }
+      >
+        {label}
+      </span>
+    </div>
   );
 }
