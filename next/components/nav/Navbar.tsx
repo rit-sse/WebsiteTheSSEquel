@@ -30,6 +30,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
+import type { ActiveElectionSummary } from "@/lib/elections";
 
 const aboutItems = [
   {
@@ -128,12 +129,16 @@ interface NavbarProps {
   serverUserId?: number | null;
   serverShowDashboard?: boolean;
   serverProfileComplete?: boolean;
+  /** When set, the navbar shows a top-level "Elections" link pointing at the
+   * live election. Rendered on the server so the first paint is correct. */
+  serverActiveElection?: ActiveElectionSummary | null;
 }
 
 const Navbar: React.FC<NavbarProps> = ({
   serverUserId = null,
   serverShowDashboard = false,
   serverProfileComplete = true,
+  serverActiveElection = null,
 }) => {
   const [open, setOpen] = React.useState(false);
   const { data: session } = useSession();
@@ -254,10 +259,18 @@ const Navbar: React.FC<NavbarProps> = ({
     }
   };
 
+  // When there's a live election, the ActiveElectionBanner sits flush
+  // underneath the navbar — drop the navbar's black bottom border so the
+  // banner visually extends out of the navbar instead of being separated
+  // by a seam.
+  const hasBanner = Boolean(serverActiveElection);
   return (
     <nav
       id="navbar"
-      className="fixed left-0 top-0 w-screen z-50 flex items-center justify-center bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b-[2px] border-black"
+      className={cn(
+        "fixed left-0 top-0 w-screen z-50 flex items-center justify-center bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60",
+        hasBanner ? "border-b-0" : "border-b-[2px] border-black"
+      )}
     >
       <div
         id="nav-content"
@@ -333,6 +346,19 @@ const Navbar: React.FC<NavbarProps> = ({
                   <Link href="/go">Go Links</Link>
                 </NavigationMenuLink>
               </NavigationMenuItem>
+
+              {serverActiveElection && (
+                <NavigationMenuItem>
+                  <NavigationMenuLink
+                    asChild
+                    className={navigationMenuTriggerStyle()}
+                  >
+                    <Link href={`/elections/${serverActiveElection.slug}`}>
+                      Elections
+                    </Link>
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+              )}
 
               <NavigationMenuItem value="about">
                 <NavigationMenuTrigger onClick={handleTriggerClick("about")}>
@@ -442,6 +468,15 @@ const Navbar: React.FC<NavbarProps> = ({
                 <MobileNavLink href="/go" onClick={() => setOpen(false)}>
                   Go Links
                 </MobileNavLink>
+
+                {serverActiveElection && (
+                  <MobileNavLink
+                    href={`/elections/${serverActiveElection.slug}`}
+                    onClick={() => setOpen(false)}
+                  >
+                    Elections
+                  </MobileNavLink>
+                )}
 
                 <MobileNavCollapsible title="About">
                   {aboutItems.map((item) => (
@@ -625,7 +660,7 @@ function ListItem({
           <div className="text-sm font-bold font-heading leading-none text-foreground">
             {title}
           </div>
-          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground mt-1">
+          <p className="line-clamp-2 min-h-[2lh] text-sm leading-snug text-muted-foreground mt-1">
             {children}
           </p>
         </Link>

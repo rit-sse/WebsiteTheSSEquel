@@ -1,3 +1,4 @@
+import { cache } from "react";
 import prisma from "@/lib/prisma";
 import {
   ElectionApprovalStage,
@@ -11,6 +12,49 @@ import {
 import { getDefaultOfficerTermDateRange } from "@/lib/academicTerm";
 import { SE_ADMIN_POSITION_TITLE } from "@/lib/seAdmin";
 import { resolveUserImage } from "@/lib/s3Utils";
+
+/**
+ * Statuses that count as "an election is live on the site" — i.e. there's
+ * something a member might want to look at / act on. Excludes DRAFT
+ * (pre-launch) and CANCELLED (post-kill). Included:
+ *   - NOMINATIONS_OPEN / _CLOSED  → nominate or wait
+ *   - VOTING_OPEN / _CLOSED       → vote or wait for reveal
+ *   - TIE_RUNOFF_REQUIRED          → needs admin attention
+ *   - CERTIFIED                    → result pages still worth showing
+ *                                    briefly (filtered out of nav by the
+ *                                    callers that want "pre-result only")
+ */
+const LIVE_ELECTION_STATUSES: ElectionStatus[] = [
+  ElectionStatus.NOMINATIONS_OPEN,
+  ElectionStatus.NOMINATIONS_CLOSED,
+  ElectionStatus.VOTING_OPEN,
+  ElectionStatus.VOTING_CLOSED,
+  ElectionStatus.TIE_RUNOFF_REQUIRED,
+  ElectionStatus.CERTIFIED,
+];
+
+export type ActiveElectionSummary = {
+  id: number;
+  title: string;
+  slug: string;
+  status: ElectionStatus;
+};
+
+/**
+ * Fetch the most-recent live election (or null if none). Wrapped in
+ * React's `cache` so the navbar, the banner, and the home-page CTA all
+ * dedupe to a single DB roundtrip per request.
+ */
+export const getActiveElection = cache(
+  async (): Promise<ActiveElectionSummary | null> => {
+    const election = await prisma.election.findFirst({
+      where: { status: { in: LIVE_ELECTION_STATUSES } },
+      select: { id: true, title: true, slug: true, status: true },
+      orderBy: { createdAt: "desc" },
+    });
+    return election;
+  }
+);
 
 /**
  * Post-Amendment 12/13: Vice President is no longer separately elected —

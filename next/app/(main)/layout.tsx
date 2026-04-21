@@ -6,13 +6,17 @@ import ScrollToTopButton from "@/components/nav/ScrollToTopButton";
 import { Toaster } from "@/components/ui/sonner";
 import { getAuthLevel } from "@/lib/services/authLevelService";
 import { ActiveElectionBanner } from "@/components/elections/ActiveElectionBanner";
+import { getActiveElection } from "@/lib/elections";
 
 export default async function MainLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const authLevel = await getAuthLevel();
+  const [authLevel, activeElection] = await Promise.all([
+    getAuthLevel(),
+    getActiveElection(),
+  ]);
 
   return (
     <>
@@ -22,6 +26,7 @@ export default async function MainLayout({
           authLevel.isOfficer || authLevel.isMentor || authLevel.isSeAdmin
         }
         serverProfileComplete={authLevel.profileComplete}
+        serverActiveElection={activeElection}
       />
       <ActiveElectionBanner />
       <main className="flex flex-col grow items-center px-2 pb-2 pt-20 md:px-3 md:pb-3 md:pt-20 lg:px-4 lg:pb-4 lg:pt-20 w-full overflow-x-hidden">

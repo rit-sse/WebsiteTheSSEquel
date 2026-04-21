@@ -52,9 +52,16 @@ export async function ActiveElectionBanner() {
     // `mt-20` clears the 80px-tall fixed navbar (`Navbar` is
     // `fixed top-0` with `z-50` — without this margin the banner
     // tucks underneath the nav).
+    //
+    // The navbar drops its own `border-b-[2px] border-black` when an
+    // active election exists (see `Navbar.tsx`), so the banner here
+    // picks up that border on its bottom edge — the overall effect is
+    // that the single black separator line moves from under the navbar
+    // to under the banner, and the banner reads as an extension of
+    // the navbar itself rather than a disconnected strip.
     <Link
       href={`/elections/${election.slug}`}
-      className="group block w-full bg-primary/10 hover:bg-primary/15 transition-colors border-b border-primary/20 mt-20"
+      className="group block w-full bg-primary/10 hover:bg-primary/15 transition-colors border-b-[2px] border-black mt-20"
     >
       <div className="flex items-center justify-center gap-3 px-4 py-2.5 text-sm">
         <span className="flex items-center gap-2">

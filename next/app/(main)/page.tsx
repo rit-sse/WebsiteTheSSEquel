@@ -11,6 +11,7 @@ import { HeroCTA } from "../HeroCTA";
 import { HeroImage } from "../HeroImage";
 import { NeoCard } from "@/components/ui/neo-card";
 import prisma from "@/lib/prisma";
+import { getActiveElection } from "@/lib/elections";
 
 interface SponsorData {
   id: number;
@@ -29,6 +30,9 @@ export const revalidate = 0;
 
 export default async function Home() {
   let events = (await getEvents()) as Event[] | null;
+  // Deduped via React `cache` with the same call in layout.tsx — at most
+  // one DB hit per request even though both render paths read it.
+  const activeElection = await getActiveElection();
 
   // Fetch active sponsors from the database
   // Wrapped in try-catch to handle case where table doesn't exist yet
@@ -79,6 +83,7 @@ export default async function Home() {
             labHoursCallout={HomepageContent.labHoursCallout}
             weeklyMeetingCallout={HomepageContent.weeklyMeetingCallout}
             discordLink={HomepageContent.discordLink}
+            activeElection={activeElection}
           />
           <HeroImage />
         </div>
