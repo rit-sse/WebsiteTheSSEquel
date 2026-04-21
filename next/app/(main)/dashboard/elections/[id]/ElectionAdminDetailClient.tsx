@@ -198,6 +198,44 @@ export default function ElectionAdminDetailClient({
     }
   };
 
+  const [newSemesterLoading, setNewSemesterLoading] = useState(false);
+  const [newSemesterConfirmed, setNewSemesterConfirmed] = useState(false);
+  const startNewSemester = async () => {
+    if (!newSemesterConfirmed) {
+      setNewSemesterConfirmed(true);
+      return;
+    }
+    setNewSemesterLoading(true);
+    try {
+      const response = await fetch(
+        `/api/elections/${election.id}/start-new-semester`,
+        { method: "POST" }
+      );
+      if (!response.ok) {
+        throw new Error(
+          (await response.text()) || "Failed to start new semester"
+        );
+      }
+      const data = await response.json();
+      toast.success(
+        `New semester started — notified ${data.seAdminsNotified} SE admin${
+          data.seAdminsNotified === 1 ? "" : "s"
+        }.`
+      );
+      if (data.inviteDispatchUrl) {
+        // Navigate the current user (if an SE admin) straight to the
+        // dispatch page. Non-admins will be redirected back by its gate.
+        window.location.href = data.inviteDispatchUrl;
+      }
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to start new semester"
+      );
+    } finally {
+      setNewSemesterLoading(false);
+    }
+  };
+
   const cancelElection = async () => {
     setCancelling(true);
     try {
@@ -572,6 +610,48 @@ export default function ElectionAdminDetailClient({
             />
           </Card>
         )}
+
+      {/* ─── NEW SEMESTER (CERTIFIED only, President/SE-Admin) ─── */}
+      {election.status === "CERTIFIED" && (isPresident || isSeAdmin) && (
+        <Card depth={2} className="p-5 space-y-3">
+          <h2 className="text-base font-display font-bold">
+            Start a new semester
+          </h2>
+          <p className="text-sm text-muted-foreground max-w-prose">
+            Kicks off the new term — wipes every membership, deactivates all
+            mentors and non–SE-Admin officers, then emails the SE Office a
+            link to dispatch fresh officer invitations to the newly-elected
+            primaries.
+          </p>
+          {newSemesterConfirmed ? (
+            <div className="flex items-center gap-3 rounded-lg border-l-4 border-l-amber-500 bg-amber-50/40 p-4 dark:bg-amber-900/20">
+              <p className="text-sm text-amber-700 dark:text-amber-300">
+                This removes every current membership + officer except SE
+                Admin. Are you sure?
+              </p>
+              <Button
+                variant="destructive"
+                onClick={startNewSemester}
+                disabled={newSemesterLoading}
+              >
+                {newSemesterLoading ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : null}
+                Yes, wipe and start fresh
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setNewSemesterConfirmed(false)}
+                disabled={newSemesterLoading}
+              >
+                Cancel
+              </Button>
+            </div>
+          ) : (
+            <Button onClick={startNewSemester}>Start new semester</Button>
+          )}
+        </Card>
+      )}
 
       {/* ─── CERTIFICATION (VOTING_CLOSED only) ─── */}
       {election.status === "VOTING_CLOSED" && (

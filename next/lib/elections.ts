@@ -3,6 +3,7 @@ import {
   ElectionApprovalStage,
   ElectionEligibilityStatus,
   ElectionNominationStatus,
+  ElectionRunningMateStatus,
   ElectionStatus,
   type ElectionOffice,
   type ElectionNomination,
@@ -11,12 +12,47 @@ import { getDefaultOfficerTermDateRange } from "@/lib/academicTerm";
 import { SE_ADMIN_POSITION_TITLE } from "@/lib/seAdmin";
 import { resolveUserImage } from "@/lib/s3Utils";
 
+/**
+ * Post-Amendment 12/13: Vice President is no longer separately elected —
+ * it is chosen as a running mate by the President nominee. Mentoring Head
+ * is now a Primary Officer elected by the membership.
+ */
 export const PRIMARY_OFFICER_TITLES = [
+  "President",
+  "Secretary",
+  "Treasurer",
+  "Mentoring Head",
+] as const;
+
+/**
+ * Offices that cannot appear on a ballot independently because they are
+ * derived from another office's ticket (Amendment 12).
+ */
+export const TICKET_DERIVED_OFFICE_TITLES = ["Vice President"] as const;
+
+export const VICE_PRESIDENT_TITLE = "Vice President";
+export const PRESIDENT_TITLE = "President";
+
+/**
+ * Canonical rendering order for primary offices — apply everywhere that
+ * a list of primary-office tabs / tiles / slides appears so the user
+ * sees the same ordering site-wide. Mentoring Head always tails the
+ * list. Unknown titles sort to the end.
+ */
+export const PRIMARY_OFFICE_ORDER = [
   "President",
   "Vice President",
   "Treasurer",
   "Secretary",
+  "Mentoring Head",
 ] as const;
+
+export function compareByPrimaryOrder(a: string, b: string): number {
+  const order = PRIMARY_OFFICE_ORDER as readonly string[];
+  const ai = order.indexOf(a);
+  const bi = order.indexOf(b);
+  return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+}
 
 export function getNominationResponseDeadline(election: {
   votingOpenAt: Date;
@@ -115,6 +151,13 @@ export async function getElectionWithRelations(where: {
               reviewedBy: {
                 select: { id: true, name: true, email: true },
               },
+              runningMateInvitation: {
+                include: {
+                  invitee: {
+                    select: { id: true, name: true, email: true, profileImageKey: true, googleImageURL: true },
+                  },
+                },
+              },
             },
             orderBy: [{ createdAt: "asc" }],
           },
@@ -189,6 +232,13 @@ export async function getElectionWithRelations(where: {
               },
               reviewedBy: {
                 select: { id: true, name: true, email: true },
+              },
+              runningMateInvitation: {
+                include: {
+                  invitee: {
+                    select: { id: true, name: true, email: true, profileImageKey: true, googleImageURL: true },
+                  },
+                },
               },
             },
             orderBy: [{ createdAt: "asc" }],
@@ -504,90 +554,142 @@ export function tallyInstantRunoffElection(params: {
   };
 }
 
-export function shouldUsePresidentOnlyBallot(
-  election: {
-    offices: Array<{
-      officerPosition: { title: string };
-      nominations: ElectionNomination[];
-    }>;
-  }
+/**
+ * Amendment 12: Vice President is derived from the winning presidential
+ * ticket's accepted running-mate invitation. These helpers replace the old
+ * `shouldUsePresidentOnlyBallot` shim that paired VP via identical nominee
+ * lists.
+ */
+export function isTicketDerivedOffice(title: string) {
+  return (TICKET_DERIVED_OFFICE_TITLES as readonly string[]).includes(title);
+}
+
+type NominationWithRunningMate = {
+  id: number;
+  nomineeUserId: number;
+  runningMateInvitation?: {
+    status: ElectionRunningMateStatus;
+    invitee: {
+      id: number;
+      name: string;
+      email: string;
+      profileImageKey?: string | null;
+      googleImageURL?: string | null;
+    };
+  } | null;
+};
+
+export function getAcceptedRunningMate(
+  nomination: NominationWithRunningMate | null | undefined
 ) {
-  const presidentOffice = election.offices.find(
-    (office) => office.officerPosition.title === "President"
-  );
-  const vicePresidentOffice = election.offices.find(
-    (office) => office.officerPosition.title === "Vice President"
-  );
-  if (!presidentOffice || !vicePresidentOffice) return false;
-
-  const presidentNominees = presidentOffice.nominations
-    .filter(
-      (nomination) =>
-        nomination.status === ElectionNominationStatus.ACCEPTED &&
-        nomination.eligibilityStatus === ElectionEligibilityStatus.APPROVED
-    )
-    .map((nomination) => nomination.nomineeUserId)
-    .sort((a, b) => a - b);
-  const vicePresidentNominees = vicePresidentOffice.nominations
-    .filter(
-      (nomination) =>
-        nomination.status === ElectionNominationStatus.ACCEPTED &&
-        nomination.eligibilityStatus === ElectionEligibilityStatus.APPROVED
-    )
-    .map((nomination) => nomination.nomineeUserId)
-    .sort((a, b) => a - b);
-
-  return (
-    presidentNominees.length > 0 &&
-    presidentNominees.length === vicePresidentNominees.length &&
-    presidentNominees.every((nomineeId, index) => nomineeId === vicePresidentNominees[index])
-  );
+  if (!nomination?.runningMateInvitation) return null;
+  if (nomination.runningMateInvitation.status !== ElectionRunningMateStatus.ACCEPTED) {
+    return null;
+  }
+  return nomination.runningMateInvitation.invitee;
 }
 
 export async function tallyElectionResults(electionId: number) {
   const election = await getElectionWithRelations({ id: electionId });
   if (!election) return null;
 
-  const presidentOnlyBallot = shouldUsePresidentOnlyBallot(election);
-  const results: Array<any> = election.offices
-    .filter(
-      (office) =>
-        !(presidentOnlyBallot && office.officerPosition.title === "Vice President")
-    )
-    .map((office) =>
-      tallyInstantRunoffElection({
-        office,
-        ballots: election.ballots.map((ballot) => ({
-          rankings: ballot.rankings.map((ranking) => ({
-            electionOfficeId: ranking.electionOfficeId,
-            nominationId: ranking.nominationId,
-            rank: ranking.rank,
-          })),
-        })),
-      })
-    );
+  // Offices on the ballot — VP is ticket-derived and never tallied.
+  const ballotedOffices = election.offices.filter(
+    (office) => !isTicketDerivedOffice(office.officerPosition.title)
+  );
 
-  if (presidentOnlyBallot) {
-    const presidentResult = results.find((result) => result.officeTitle === "President");
-    const vicePresidentOffice = election.offices.find(
-      (office) => office.officerPosition.title === "Vice President"
+  const results: Array<any> = ballotedOffices.map((office) =>
+    tallyInstantRunoffElection({
+      office,
+      ballots: election.ballots.map((ballot) => ({
+        rankings: ballot.rankings.map((ranking) => ({
+          electionOfficeId: ranking.electionOfficeId,
+          nominationId: ranking.nominationId,
+          rank: ranking.rank,
+        })),
+      })),
+    })
+  );
+
+  // Amendment 12: attach the winning presidential ticket's running mate as
+  // the VP outcome. We expose it as a `runningMate` field on the President
+  // result and as a synthetic "Vice President" result so that certification
+  // and existing results UI can continue to key off office title.
+  const presidentResult = results.find(
+    (result) => result.officeTitle === PRESIDENT_TITLE
+  );
+  const presidentOffice = election.offices.find(
+    (office) => office.officerPosition.title === PRESIDENT_TITLE
+  );
+  const vicePresidentOffice = election.offices.find(
+    (office) => office.officerPosition.title === VICE_PRESIDENT_TITLE
+  );
+
+  let runningMate: {
+    userId: number;
+    name: string;
+    email: string;
+    profileImageKey?: string | null;
+    googleImageURL?: string | null;
+  } | null = null;
+
+  if (presidentResult && presidentResult.winner && presidentOffice) {
+    const winningNomination = presidentOffice.nominations.find(
+      (nomination) => nomination.id === presidentResult.winner.id
     );
-    if (presidentResult && vicePresidentOffice) {
-      results.push({
-        officeId: vicePresidentOffice.id,
-        officeTitle: "Vice President",
-        status: presidentResult.status,
-        winner: presidentResult.runnerUp,
-        runnerUp: null,
-        rounds: presidentResult.rounds,
-      });
+    const invitee = getAcceptedRunningMate(winningNomination);
+    if (invitee) {
+      runningMate = {
+        userId: invitee.id,
+        name: invitee.name,
+        email: invitee.email,
+        profileImageKey: invitee.profileImageKey,
+        googleImageURL: invitee.googleImageURL,
+      };
+      presidentResult.runningMate = runningMate;
     }
   }
+
+  if (vicePresidentOffice && presidentResult) {
+    // Keep a derived VP result so downstream certification / UI continues
+    // to see a Vice President row, but mark it ticket-derived.
+    results.push({
+      officeId: vicePresidentOffice.id,
+      officeTitle: VICE_PRESIDENT_TITLE,
+      status: runningMate ? ("ok" as const) : ("no_candidates" as const),
+      ticketDerived: true,
+      derivedFromOfficeId: presidentOffice?.id ?? null,
+      winner: runningMate
+        ? {
+            // Shape this like an ElectionNomination "winner" so existing
+            // consumers don't have to branch: they key off winner.nomineeUserId.
+            id: null as unknown as number,
+            nomineeUserId: runningMate.userId,
+            nominee: {
+              id: runningMate.userId,
+              name: runningMate.name,
+              email: runningMate.email,
+            },
+          }
+        : null,
+      runnerUp: null,
+      rounds: [],
+    });
+  }
+
+  // Canonical primary-office order, applied site-wide via the tally
+  // consumers (results page, reveal page, certify).
+  results.sort((a, b) =>
+    compareByPrimaryOrder(a.officeTitle, b.officeTitle)
+  );
 
   return {
     electionId: election.id,
     electionTitle: election.title,
-    presidentOnlyBallot,
+    // Kept for backwards-compat with existing callers; always false now
+    // because ballot suppression is gone.
+    presidentOnlyBallot: false,
+    runningMate,
     results,
     unresolvedTie: results.some((result) => result.status === "tie"),
   };
@@ -752,4 +854,168 @@ export function serializeElectionForClient<T>(value: T): T {
 
   resolveImages(serialized);
   return serialized as T;
+}
+
+/**
+ * Full tally → client-friendly rounds helper. Centralizes the pipeline
+ * previously inlined in `app/(main)/elections/[slug]/results/page.tsx`
+ * so both the results page and the new reveal ceremony can consume the
+ * same shape.
+ *
+ * Returns:
+ *   - `election`: the raw fetched election (including offices, nominations
+ *     with runningMateInvitation, ballots, etc.) for any downstream lookups
+ *   - `results`: IRV results per ballot-office + a synthetic Vice President
+ *     row when the President's winning ticket has an ACCEPTED running mate
+ */
+export async function tallyElectionForDisplay(slug: string) {
+  const election = await getElectionWithRelations({ slug });
+  if (!election) return null;
+
+  // Build nominee lookup from every office
+  const nomineeNames = new Map<number, string>();
+  for (const office of election.offices) {
+    for (const nomination of office.nominations) {
+      nomineeNames.set(nomination.id, nomination.nominee.name);
+    }
+  }
+
+  // Tally each ballotable office. VP is ticket-derived and excluded here
+  // — it's reattached via the running-mate invitation below.
+  const officesToTally = election.offices.filter(
+    (office) => !isTicketDerivedOffice(office.officerPosition.title)
+  );
+
+  const rawResults = officesToTally.map((office) =>
+    tallyInstantRunoffElection({
+      office,
+      ballots: election.ballots.map((ballot) => ({
+        rankings: ballot.rankings.map((ranking) => ({
+          electionOfficeId: ranking.electionOfficeId,
+          nominationId: ranking.nominationId,
+          rank: ranking.rank,
+        })),
+      })),
+    })
+  );
+
+  // Attach the running-mate VP row derived from the winning presidential
+  // ticket's ACCEPTED invitee.
+  const presidentOffice = election.offices.find(
+    (o) => o.officerPosition.title === PRESIDENT_TITLE
+  );
+  const vpOffice = election.offices.find(
+    (o) => o.officerPosition.title === VICE_PRESIDENT_TITLE
+  );
+  const presidentResult = rawResults.find(
+    (r) => r.officeTitle === PRESIDENT_TITLE
+  );
+  if (presidentResult?.winner && presidentOffice && vpOffice) {
+    const winningNomination = presidentOffice.nominations.find(
+      (n) => n.id === presidentResult.winner!.id
+    );
+    const invitee = getAcceptedRunningMate(winningNomination);
+    if (invitee) {
+      rawResults.push({
+        officeId: vpOffice.id,
+        officeTitle: VICE_PRESIDENT_TITLE,
+        status: "ok" as const,
+        winner: {
+          // Synthetic negative id — never used for lookups
+          id: -winningNomination!.id,
+          nomineeUserId: invitee.id,
+          nominee: {
+            id: invitee.id,
+            name: invitee.name,
+            email: invitee.email,
+          },
+        } as unknown as (typeof rawResults)[number]["winner"],
+        runnerUp: null,
+        rounds: [],
+      } as unknown as (typeof rawResults)[number]);
+      nomineeNames.set(-winningNomination!.id, invitee.name);
+    }
+  }
+
+  // Transform into client-friendly IRVOfficeResult rows. The result
+  // shape matches `next/components/elections/types.ts::IRVOfficeResult`
+  // but we keep the type inline here so lib has no component import.
+  const totalBallots = election.ballots.length;
+
+  const results = rawResults.map((raw: any) => {
+    const rounds = raw.rounds.map(
+      (
+        round: {
+          counts: Array<{ nominationId: number; votes: number }>;
+          eliminatedNominationId?: number | null;
+        },
+        index: number
+      ) => ({
+        roundNumber: index + 1,
+        counts: round.counts.map((entry) => ({
+          nominationId: entry.nominationId,
+          candidateName: nomineeNames.get(entry.nominationId) ?? "Unknown",
+          votes: entry.votes,
+          eliminated: entry.nominationId === round.eliminatedNominationId,
+        })),
+        eliminatedNominationId: round.eliminatedNominationId ?? null,
+      })
+    );
+
+    const lastRound = rounds[rounds.length - 1];
+    const winnerFinalVotes =
+      raw.winner && lastRound
+        ? lastRound.counts.find(
+            (c: { nominationId: number }) => c.nominationId === raw.winner!.id
+          )?.votes ?? 0
+        : 0;
+    const runnerUpFinalVotes =
+      raw.runnerUp && lastRound
+        ? lastRound.counts.find(
+            (c: { nominationId: number }) =>
+              c.nominationId === raw.runnerUp!.id
+          )?.votes ?? 0
+        : 0;
+
+    let runningMate: { name: string } | null = null;
+    if (raw.officeTitle === PRESIDENT_TITLE && raw.winner && presidentOffice) {
+      const winningNomination = presidentOffice.nominations.find(
+        (n) => n.id === raw.winner.id
+      );
+      const invitee = getAcceptedRunningMate(winningNomination);
+      if (invitee) runningMate = { name: invitee.name };
+    }
+
+    return {
+      officeId: raw.officeId,
+      officeTitle: raw.officeTitle,
+      status: raw.status,
+      winner: raw.winner
+        ? {
+            nominationId: raw.winner.id,
+            name: raw.winner.nominee.name,
+            finalVotes: winnerFinalVotes,
+          }
+        : null,
+      runnerUp: raw.runnerUp
+        ? {
+            nominationId: raw.runnerUp.id,
+            name: raw.runnerUp.nominee.name,
+            finalVotes: runnerUpFinalVotes,
+          }
+        : null,
+      rounds,
+      totalBallots,
+      ticketDerived: raw.officeTitle === VICE_PRESIDENT_TITLE,
+      runningMate,
+    };
+  });
+
+  // Canonical primary-office order — threads through the results page
+  // and the reveal carousel because both consume this `results` array.
+  results.sort((a, b) =>
+    compareByPrimaryOrder(a.officeTitle, b.officeTitle)
+  );
+
+  return { election, results };
 }

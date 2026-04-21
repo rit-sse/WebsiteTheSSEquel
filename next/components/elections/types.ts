@@ -32,6 +32,27 @@ export interface OfficerPositionRef {
   email: string;
 }
 
+/* ---------- Running mate (Amendment 12) ---------- */
+export type RunningMateInviteStatus =
+  | "INVITED"
+  | "ACCEPTED"
+  | "DECLINED"
+  | "EXPIRED"
+  | "WITHDRAWN";
+
+export interface SerializedRunningMateInvitation {
+  id: number;
+  presidentNominationId: number;
+  inviteeUserId: number;
+  status: RunningMateInviteStatus;
+  expiresAt: string;
+  respondedAt: string | null;
+  declineReason: string | null;
+  createdAt: string;
+  updatedAt: string;
+  invitee: UserRef;
+}
+
 /* ---------- Nomination ---------- */
 export interface SerializedNomination {
   id: number;
@@ -55,6 +76,8 @@ export interface SerializedNomination {
   nominee: UserRef;
   nominator: UserRef;
   reviewedBy: UserRef | null;
+  /** Present only on the President office's nominations (Amendment 12). */
+  runningMateInvitation?: SerializedRunningMateInvitation | null;
 }
 
 /* ---------- Election office ---------- */
@@ -185,6 +208,11 @@ export interface IRVOfficeResult {
   runnerUp: { nominationId: number; name: string; finalVotes: number } | null;
   rounds: IRVRound[];
   totalBallots: number;
+  /** Amendment 12: true when this office's winner was derived from another
+   *  office's winning ticket (e.g. VP from the President's running mate). */
+  ticketDerived?: boolean;
+  /** Amendment 12: the running-mate VP attached to the President winner. */
+  runningMate?: { name: string } | null;
 }
 
 /* ---------- Election phase order ---------- */

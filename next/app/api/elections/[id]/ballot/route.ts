@@ -2,8 +2,8 @@ import prisma from "@/lib/prisma";
 import { getGatewayAuthLevel } from "@/lib/authGateway";
 import {
   getElectionWithRelations,
+  isTicketDerivedOffice,
   serializeElectionForClient,
-  shouldUsePresidentOnlyBallot,
 } from "@/lib/elections";
 import { isActiveMemberForElection } from "@/lib/electionEligibility";
 import {
@@ -40,12 +40,9 @@ export async function GET(
     }
 
     const ballot = election.ballots.find((item) => item.voterId === authLevel.userId) ?? null;
-    const presidentOnlyBallot = shouldUsePresidentOnlyBallot(election);
+    // Amendment 12: VP is ticket-derived and never appears on the ballot.
     const offices = election.offices
-      .filter(
-        (office) =>
-          !(presidentOnlyBallot && office.officerPosition.title === "Vice President")
-      )
+      .filter((office) => !isTicketDerivedOffice(office.officerPosition.title))
       .map((office) => ({
         ...office,
         nominations: office.nominations.filter(
@@ -61,7 +58,7 @@ export async function GET(
         title: election.title,
         slug: election.slug,
         status: election.status,
-        presidentOnlyBallot,
+        presidentOnlyBallot: false,
         isEligibleVoter: await isActiveMemberForElection(authLevel.userId),
         offices,
         ballot,
@@ -109,10 +106,8 @@ export async function PUT(
       return new Response("At least one office ranking is required", { status: 400 });
     }
 
-    const presidentOnlyBallot = shouldUsePresidentOnlyBallot(election);
     const eligibleOffices = election.offices.filter(
-      (office) =>
-        !(presidentOnlyBallot && office.officerPosition.title === "Vice President")
+      (office) => !isTicketDerivedOffice(office.officerPosition.title)
     );
 
     const rankingRows: Array<{

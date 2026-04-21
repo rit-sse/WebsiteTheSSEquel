@@ -21,6 +21,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
+import { electionAvatarStyle } from "@/components/elections/electionAvatarColor";
+import { compareByPrimaryOrder } from "@/lib/elections";
 
 /* ---------- Types ---------- */
 
@@ -30,11 +32,21 @@ interface BallotNominee {
   email: string;
 }
 
+interface BallotRunningMateInvitation {
+  status: "INVITED" | "ACCEPTED" | "DECLINED" | "EXPIRED" | "WITHDRAWN";
+  invitee: {
+    id: number;
+    name: string;
+    email: string;
+  };
+}
+
 interface BallotNomination {
   id: number;
   nomineeUserId: number;
   statement: string;
   nominee: BallotNominee;
+  runningMateInvitation?: BallotRunningMateInvitation | null;
 }
 
 interface BallotOffice {
@@ -290,7 +302,7 @@ export default function ElectionVoteClient({ electionId }: Props) {
   }
 
   return (
-    <div className="w-full max-w-5xl space-y-6">
+    <div className="election-scope w-full max-w-5xl space-y-6">
       {/* Header */}
       <NeoCard depth={1}>
         <NeoCardHeader>
@@ -320,22 +332,28 @@ export default function ElectionVoteClient({ electionId }: Props) {
             </div>
           )}
 
-          {/* President-only note */}
-          {data.presidentOnlyBallot && (
+          {/* Post-Amendment 12 ticket note */}
+          {data.offices.some(
+            (office) => office.officerPosition.title === "President"
+          ) && (
             <div className="flex gap-3 rounded-lg bg-surface-2 p-4">
               <Info className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
               <p className="text-sm text-muted-foreground">
-                President and Vice President share the same approved slate, so
-                the Vice President ballot is suppressed and the President
-                runner-up becomes Vice President.
+                Each President candidate runs on a ticket with a Vice President
+                running mate. Your vote for President automatically elects their
+                chosen VP.
               </p>
             </div>
           )}
         </NeoCardContent>
       </NeoCard>
 
-      {/* Per-position cards */}
-      {data.offices.map((office, officeIndex) => {
+      {/* Per-position cards — canonical primary-office order. */}
+      {[...data.offices]
+        .sort((a, b) =>
+          compareByPrimaryOrder(a.officerPosition.title, b.officerPosition.title)
+        )
+        .map((office, officeIndex) => {
         const state = rankState[office.id] ?? { ranked: [], unranked: [] };
 
         return (
@@ -355,27 +373,42 @@ export default function ElectionVoteClient({ electionId }: Props) {
               {state.ranked.length > 0 && (
                 <div>
                   {state.ranked.map((nomination, index) => (
-                    <div
-                      key={nomination.id}
-                      className="flex items-center gap-4 py-3 border-b border-border/10 last:border-b-0"
-                    >
-                      {/* Rank number */}
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
-                        {index + 1}
-                      </div>
+                    <div key={nomination.id} className="ballot-card ranked">
+                      {/* Rank pill — 38x38 bordered square with display-font number */}
+                      <div className="rank-pill">{index + 1}</div>
 
                       {/* Avatar */}
-                      <Avatar className="h-10 w-10">
-                        <AvatarFallback className="text-xs font-semibold">
+                      <Avatar
+                        className="h-10 w-10 border-2 border-black"
+                        style={electionAvatarStyle(nomination.nominee.id)}
+                      >
+                        <AvatarFallback
+                          className="text-xs font-bold font-display"
+                          style={electionAvatarStyle(nomination.nominee.id)}
+                        >
                           {getInitials(nomination.nominee.name)}
                         </AvatarFallback>
                       </Avatar>
 
-                      {/* Name + statement excerpt */}
+                      {/* Name + running mate + statement excerpt */}
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-semibold">
                           {nomination.nominee.name}
                         </p>
+                        {nomination.runningMateInvitation?.status ===
+                          "ACCEPTED" && (
+                          <div className="mt-1 flex items-center gap-2">
+                            <span className="wvp-label">Running with</span>
+                            <span className="pair">
+                              <span className="pair-avatar">
+                                {getInitials(
+                                  nomination.runningMateInvitation.invitee.name
+                                )}
+                              </span>
+                              {nomination.runningMateInvitation.invitee.name}
+                            </span>
+                          </div>
+                        )}
                         {nomination.statement && (
                           <p className="truncate text-xs text-muted-foreground">
                             {nomination.statement}
@@ -424,14 +457,14 @@ export default function ElectionVoteClient({ electionId }: Props) {
 
               {/* Unranked pool */}
               {state.unranked.length > 0 && (
-                <div className="space-y-1">
+                <div className="space-y-2">
                   <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                     Not ranked &mdash; click to add
                   </p>
                   {state.unranked.map((nomination) => (
                     <div
                       key={nomination.id}
-                      className="flex cursor-pointer items-center gap-3 rounded-lg p-3 transition-colors hover:bg-muted/50"
+                      className="ballot-card cursor-pointer"
                       onClick={() => addToRanked(office.id, nomination.id)}
                       role="button"
                       tabIndex={0}
@@ -443,15 +476,41 @@ export default function ElectionVoteClient({ electionId }: Props) {
                       }}
                       aria-label={`Add ${nomination.nominee.name} to ranking`}
                     >
-                      <Plus className="h-4 w-4 shrink-0 text-muted-foreground" />
-                      <Avatar className="h-10 w-10">
-                        <AvatarFallback className="text-xs font-semibold">
+                      <div className="rank-pill">
+                        <Plus className="h-4 w-4" />
+                      </div>
+                      <Avatar
+                        className="h-10 w-10 border-2 border-black"
+                        style={electionAvatarStyle(nomination.nominee.id)}
+                      >
+                        <AvatarFallback
+                          className="text-xs font-bold font-display"
+                          style={electionAvatarStyle(nomination.nominee.id)}
+                        >
                           {getInitials(nomination.nominee.name)}
                         </AvatarFallback>
                       </Avatar>
-                      <p className="min-w-0 flex-1 truncate text-sm font-medium">
-                        {nomination.nominee.name}
-                      </p>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium">
+                          {nomination.nominee.name}
+                        </p>
+                        {nomination.runningMateInvitation?.status ===
+                          "ACCEPTED" && (
+                          <span className="pair mt-1 inline-flex">
+                            <span
+                              className="pair-avatar"
+                              style={electionAvatarStyle(
+                                nomination.runningMateInvitation.invitee.id
+                              )}
+                            >
+                              {getInitials(
+                                nomination.runningMateInvitation.invitee.name
+                              )}
+                            </span>
+                            {nomination.runningMateInvitation.invitee.name}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>

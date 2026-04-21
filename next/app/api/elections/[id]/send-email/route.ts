@@ -70,14 +70,14 @@ export async function POST(
   }
 
   const kind = body.kind as ElectionEmailKind | undefined;
-  if (
-    !kind ||
-    ![
-      ElectionEmailKind.BALLOT_ANNOUNCEMENT,
-      ElectionEmailKind.BALLOT_REMINDER,
-      ElectionEmailKind.NOMINATION_NOTICE,
-    ].includes(kind)
-  ) {
+  // RUNNING_MATE_INVITE is sent by the running-mate invite route directly
+  // (one recipient, templated), not by this broadcast endpoint.
+  const broadcastKinds: readonly ElectionEmailKind[] = [
+    ElectionEmailKind.BALLOT_ANNOUNCEMENT,
+    ElectionEmailKind.BALLOT_REMINDER,
+    ElectionEmailKind.NOMINATION_NOTICE,
+  ];
+  if (!kind || !broadcastKinds.includes(kind)) {
     return new Response("A valid election email kind is required", { status: 400 });
   }
 

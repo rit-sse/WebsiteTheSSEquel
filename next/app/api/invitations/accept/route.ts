@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { getSessionToken } from "@/lib/sessionToken";
+import { getCurrentAcademicTerm } from "@/lib/academicTerm";
 import { NextRequest } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -158,12 +159,14 @@ export async function POST(request: NextRequest) {
           },
         });
 
-        // Grant membership for becoming an officer
+        // Grant membership for becoming an officer — tagged with the
+        // current academic term so it stays scoped to this cycle.
         const mem = await tx.memberships.create({
           data: {
             userId: loggedInUser.id,
             reason: `Officer: ${invitation.position?.title ?? "Unknown Position"}`,
             dateGiven: new Date(),
+            ...getCurrentAcademicTerm(),
           },
         });
 
@@ -292,12 +295,13 @@ export async function POST(request: NextRequest) {
         mentor,
       });
     } else if (invitation.type === "user") {
-      // Create a membership record for the user
+      // Create a membership record for the user (current-term scoped).
       const membership = await prisma.memberships.create({
         data: {
           userId: loggedInUser.id,
           reason: "Accepted membership invitation",
           dateGiven: new Date(),
+          ...getCurrentAcademicTerm(),
         },
       });
 

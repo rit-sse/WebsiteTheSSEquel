@@ -35,6 +35,11 @@ import {
 import { ElectionStatusBadge } from "@/components/elections/ElectionStatusBadge";
 import { ElectionPhaseTimeline } from "@/components/elections/ElectionPhaseTimeline";
 import { NominationStatusBadge } from "@/components/elections/NominationStatusBadge";
+import RunningMateInviteCard, {
+  type RunningMateInvitation,
+} from "@/components/elections/RunningMateInviteCard";
+import NeoBrutalistButton from "@/components/neo-brutalist-button";
+import ElectionDevTweaks from "@/components/elections/ElectionDevTweaks";
 import {
   ChevronRight,
   Vote,
@@ -51,6 +56,7 @@ import type {
   SerializedElectionOffice,
   SerializedNomination,
 } from "@/components/elections/types";
+import { compareByPrimaryOrder } from "@/lib/elections";
 
 /* ---------- Props ---------- */
 
@@ -154,6 +160,92 @@ export default function ElectionPublicClient({
           ...n,
           officeTitle: office.officerPosition.title,
         }))
+  );
+
+  /* ---- Amendment 12: accepted presidential nominations owned by me — I get
+       a running-mate invite panel for each ---- */
+  const myAcceptedPresidentNominations: MyNomination[] = election.offices
+    .filter(
+      (office: SerializedElectionOffice) =>
+        office.officerPosition.title === "President"
+    )
+    .flatMap((office: SerializedElectionOffice) =>
+      office.nominations
+        .filter(
+          (n: SerializedNomination) =>
+            n.nomineeUserId === currentUserId && n.status === "ACCEPTED"
+        )
+        .map((n: SerializedNomination) => ({
+          ...n,
+          officeTitle: office.officerPosition.title,
+        }))
+    );
+
+  /* ---- Amendment 12: inbound running-mate invitations addressed to me ---- */
+  interface InboundRunningMateInvite {
+    nominationId: number;
+    status: string;
+    expiresAt: string;
+    presidentNomineeName: string;
+  }
+  const inboundRunningMateInvites: InboundRunningMateInvite[] =
+    election.offices
+      .filter(
+        (office: SerializedElectionOffice) =>
+          office.officerPosition.title === "President"
+      )
+      .flatMap((office: SerializedElectionOffice) =>
+        office.nominations
+          .filter((n: SerializedNomination) => {
+            const inv = n.runningMateInvitation;
+            return (
+              inv &&
+              inv.inviteeUserId === currentUserId &&
+              inv.status === "INVITED"
+            );
+          })
+          .map((n: SerializedNomination) => ({
+            nominationId: n.id,
+            status: n.runningMateInvitation!.status,
+            expiresAt: n.runningMateInvitation!.expiresAt,
+            presidentNomineeName: n.nominee.name,
+          }))
+      );
+
+  const respondToRunningMateInvite = useCallback(
+    async (
+      nominationId: number,
+      action: "ACCEPT" | "DECLINE"
+    ) => {
+      try {
+        const response = await fetch(
+          `/api/elections/${election.id}/nominations/${nominationId}/running-mate/respond`,
+          {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action }),
+          }
+        );
+        if (!response.ok) {
+          toast.error(
+            (await response.text()) ||
+              "Failed to respond to running-mate invite"
+          );
+          return;
+        }
+        toast.success(
+          action === "ACCEPT"
+            ? "You're now running as VP on this ticket"
+            : "Invitation declined"
+        );
+        if (typeof window !== "undefined") {
+          window.location.reload();
+        }
+      } catch {
+        toast.error("Failed to respond to running-mate invite");
+      }
+    },
+    [election.id]
   );
 
   const totalNominations = election.offices.reduce(
@@ -297,7 +389,7 @@ export default function ElectionPublicClient({
   /* ========================================================================= */
 
   return (
-    <NeoCard depth={1} className="w-full">
+    <NeoCard depth={1} className="election-scope w-full">
       <NeoCardContent className="space-y-6 p-6 md:p-8">
       {/* ---- Breadcrumbs ---- */}
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -314,6 +406,16 @@ export default function ElectionPublicClient({
           <div className="flex flex-wrap items-center gap-3">
             <h1 className="text-3xl font-display font-bold">{election.title}</h1>
             <ElectionStatusBadge status={election.status} />
+            {election.status === "VOTING_OPEN" && (
+              <span
+                className="live-badge"
+                aria-label="Voting is live"
+                title="Voting is live"
+              >
+                <span className="live-dot" />
+                Live
+              </span>
+            )}
           </div>
           {election.description && (
             <p className="text-base text-muted-foreground">
@@ -354,18 +456,44 @@ export default function ElectionPublicClient({
                       <SelectValue placeholder="Choose an office" />
                     </SelectTrigger>
                     <SelectContent>
-                      {election.offices.map(
-                        (office: SerializedElectionOffice) => (
+                      {[...election.offices]
+                        // VP is ticket-derived — chosen as a running mate by
+                        // the presidential nominee, not nominated directly.
+                        .filter(
+                          (office: SerializedElectionOffice) =>
+                            office.officerPosition.title !== "Vice President"
+                        )
+                        .sort((a, b) =>
+                          compareByPrimaryOrder(
+                            a.officerPosition.title,
+                            b.officerPosition.title
+                          )
+                        )
+                        .map((office: SerializedElectionOffice) => (
                           <SelectItem
                             key={office.id}
                             value={office.id.toString()}
                           >
                             {office.officerPosition.title}
                           </SelectItem>
-                        )
-                      )}
+                        ))}
                     </SelectContent>
                   </Select>
+                  {/* Amendment 12 banner on President selection */}
+                  {selectedOfficeId &&
+                    election.offices.find(
+                      (o: SerializedElectionOffice) =>
+                        o.id === Number(selectedOfficeId)
+                    )?.officerPosition.title === "President" && (
+                      <div className="flex gap-2 rounded-lg bg-surface-2 p-3 text-xs text-muted-foreground">
+                        <Info className="mt-0.5 h-4 w-4 shrink-0" />
+                        <p>
+                          Your nominee will pick their own VP running mate
+                          after accepting &mdash; no need to nominate a VP
+                          separately.
+                        </p>
+                      </div>
+                    )}
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm font-medium">Search for a user</Label>
@@ -491,131 +619,111 @@ export default function ElectionPublicClient({
         </div>
       )}
 
-      {/* ---- Your Nominations (pending response) ---- */}
+      {/* ---- Your Nominations (pending response) ----
+           The full accept + materials + running-mate flow lives on
+           /elections/[slug]/respond/[nominationId]. Here we just surface
+           the pending-response banner with a button that jumps there. */}
       {myNominations.length > 0 && (
         <div className="space-y-4">
           <h2 className="text-xl font-display font-bold">Your Nominations</h2>
-          {myNominations.map((nomination) => {
-            const state = getResponseForNomination(
-              nomination.id,
-              nomination
-            );
-            const isLoading = respondingId === nomination.id;
-
-            return (
-              <Card key={nomination.id} depth={2} className="overflow-hidden">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle>{nomination.officeTitle}</CardTitle>
+          {myNominations.map((nomination) => (
+            <Card key={nomination.id} depth={2} className="p-5">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <p className="eyebrow">You&rsquo;ve been nominated</p>
                     <NominationStatusBadge status={nomination.status} />
                   </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor={`statement-${nomination.id}`}>
-                      Candidate Statement
-                    </Label>
-                    <Textarea
-                      id={`statement-${nomination.id}`}
-                      placeholder="Write your candidate statement..."
-                      value={state.statement}
-                      onChange={(e) =>
-                        updateResponse(nomination.id, {
-                          statement: e.target.value,
-                        })
-                      }
-                      rows={4}
-                    />
-                  </div>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor={`year-${nomination.id}`}>
-                        Year Level
-                      </Label>
-                      <Input
-                        id={`year-${nomination.id}`}
-                        type="number"
-                        placeholder="e.g. 3"
-                        value={state.yearLevel}
-                        onChange={(e) =>
-                          updateResponse(nomination.id, {
-                            yearLevel: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor={`program-${nomination.id}`}>
-                        Program
-                      </Label>
-                      <Input
-                        id={`program-${nomination.id}`}
-                        placeholder="e.g. Software Engineering"
-                        value={state.program}
-                        onChange={(e) =>
-                          updateResponse(nomination.id, {
-                            program: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-                  </div>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    {(
-                      [
-                        [
-                          "canRemainEnrolledFullYear",
-                          "Can remain enrolled full academic year",
-                        ],
-                        [
-                          "canRemainEnrolledNextTerm",
-                          "Can remain enrolled next term",
-                        ],
-                        ["isOnCampus", "On campus at RIT Henrietta"],
-                        ["isOnCoop", "On co-op during the term"],
-                      ] as const
-                    ).map(([key, label]) => (
-                      <div key={key} className="flex items-center gap-3">
-                        <Checkbox
-                          id={`${key}-${nomination.id}`}
-                          checked={state[key]}
-                          onCheckedChange={(checked) =>
-                            updateResponse(nomination.id, {
-                              [key]: Boolean(checked),
-                            })
-                          }
-                        />
-                        <Label
-                          htmlFor={`${key}-${nomination.id}`}
-                          className="text-sm cursor-pointer"
-                        >
-                          {label}
-                        </Label>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex flex-wrap gap-2 pt-2">
-                    <Button
-                      onClick={() =>
-                        respondToNomination(nomination, "ACCEPTED")
-                      }
-                      disabled={isLoading}
-                    >
-                      <CheckCircle className="mr-2 h-4 w-4" />
-                      Accept
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() =>
-                        respondToNomination(nomination, "DECLINED")
-                      }
-                      disabled={isLoading}
-                    >
-                      Decline
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+                  <p className="mt-1 font-display text-lg font-bold">
+                    {nomination.officeTitle}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Accept or decline on the dedicated response page.
+                  </p>
+                </div>
+                <NeoBrutalistButton
+                  text="Respond"
+                  variant="pink"
+                  size="sm"
+                  icon={<CheckCircle className="h-4 w-4" />}
+                  href={`/elections/${election.slug}/respond/${nomination.id}`}
+                />
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {/* ---- Amendment 12: inbound running-mate invites ---- */}
+      {inboundRunningMateInvites.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-xl font-display font-bold">
+            Running-Mate Invitations
+          </h2>
+          {inboundRunningMateInvites.map((invite) => (
+            <Card key={invite.nominationId} depth={2}>
+              <CardHeader>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <CardTitle>
+                    {invite.presidentNomineeName} invited you to run as VP
+                  </CardTitle>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Accept to appear on the presidential ticket. If the ticket
+                  wins, you become Vice President.
+                </p>
+              </CardHeader>
+              <CardContent className="flex flex-wrap items-center gap-4">
+                <NeoBrutalistButton
+                  text="Accept"
+                  variant="green"
+                  size="sm"
+                  icon={<CheckCircle className="h-4 w-4" />}
+                  onClick={() =>
+                    respondToRunningMateInvite(invite.nominationId, "ACCEPT")
+                  }
+                />
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    respondToRunningMateInvite(invite.nominationId, "DECLINE")
+                  }
+                >
+                  Decline
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {/* ---- Amendment 12: my accepted presidential ticket(s) ---- */}
+      {myAcceptedPresidentNominations.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-xl font-display font-bold">
+            Your Presidential Ticket
+          </h2>
+          {myAcceptedPresidentNominations.map((nomination) => {
+            const invitation =
+              (nomination.runningMateInvitation as
+                | RunningMateInvitation
+                | null
+                | undefined) ?? null;
+            return (
+              <RunningMateInviteCard
+                key={nomination.id}
+                electionId={election.id}
+                nominationId={nomination.id}
+                invitation={invitation}
+                onChange={() => {
+                  // Force a refetch of the election so the invitation state
+                  // is always fresh. The simplest thing here is a full page
+                  // refresh since the server components own the data.
+                  if (typeof window !== "undefined") {
+                    window.location.reload();
+                  }
+                }}
+              />
             );
           })}
         </div>
@@ -646,15 +754,6 @@ export default function ElectionPublicClient({
             IRV voting system
           </span>
         </Tooltip>
-        {isCertified && (
-          <Link
-            href={`/elections/${election.slug}/results`}
-            className="inline-flex items-center gap-1.5 text-primary hover:underline ml-auto"
-          >
-            <Trophy className="h-4 w-4" />
-            View Results
-          </Link>
-        )}
         {(isPresident || isSeAdmin) && (
           <Link
             href={`/dashboard/elections/${election.id}`}
@@ -665,9 +764,57 @@ export default function ElectionPublicClient({
         )}
       </div>
 
+      {/* ---- Prominent Results CTA ----
+           Show to everyone once certified, and to admins/presidents as soon
+           as voting is closed so they can review the tally before certifying. */}
+      {(isCertified ||
+        ((isSeAdmin || isPresident) &&
+          election.status === "VOTING_CLOSED")) && (
+        <Card
+          depth={2}
+          className="flex flex-col items-center gap-3 p-6 text-center"
+        >
+          <p className="eyebrow inline-flex items-center gap-2 justify-center">
+            <Trophy className="h-3 w-3" />{" "}
+            {isCertified
+              ? "Final · Certified"
+              : "Preliminary · Pending certification"}
+          </p>
+          <p className="font-display text-lg font-bold">
+            {isCertified
+              ? "Your new officers have been chosen."
+              : "Round-by-round results are ready."}
+          </p>
+          <p className="max-w-prose text-sm text-muted-foreground">
+            {isCertified
+              ? "Take a moment to meet the winners, then dig into the round-by-round tally."
+              : election.status === "VOTING_CLOSED" && isSeAdmin
+                ? "Review every office before you certify — certification publishes the results."
+                : "The SE Office will certify these results shortly."}
+          </p>
+          <NeoBrutalistButton
+            text={isCertified ? "See who won" : "View results"}
+            variant="orange"
+            icon={<Trophy className="h-[18px] w-[18px]" />}
+            href={
+              isCertified
+                ? `/elections/${election.slug}/reveal`
+                : `/elections/${election.slug}/results`
+            }
+          />
+        </Card>
+      )}
+
       {/* ---- Positions & Candidates (full width) ---- */}
       <div className="grid gap-4 md:grid-cols-2">
-          {election.offices.map((office: SerializedElectionOffice) => {
+          {[...election.offices]
+            .sort((a: SerializedElectionOffice, b: SerializedElectionOffice) =>
+              compareByPrimaryOrder(
+                a.officerPosition.title,
+                b.officerPosition.title
+              )
+            )
+            .map((office: SerializedElectionOffice) => {
             const acceptedNominations = office.nominations.filter(
               (n: SerializedNomination) => n.status === "ACCEPTED"
             );
@@ -730,6 +877,11 @@ export default function ElectionPublicClient({
           })}
       </div>
       </NeoCardContent>
+      <ElectionDevTweaks
+        electionId={election.id}
+        currentStatus={election.status}
+        canAccess={isSeAdmin}
+      />
     </NeoCard>
   );
 }

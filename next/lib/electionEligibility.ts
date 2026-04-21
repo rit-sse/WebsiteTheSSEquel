@@ -19,46 +19,34 @@ function getPreviousAcademicTerm(
 }
 
 function getElectionEligibilityRanges(atDate = new Date()) {
+  // Grace period: for the first 14 days of a new term, still count
+  // previous-term memberships so returning members don't get locked out
+  // while they re-enroll.
   const current = getCurrentAcademicTerm(atDate);
   const currentRange = getAcademicTermDateRange(current.term, current.year);
   const millisSinceCurrentTermStart =
     atDate.getTime() - currentRange.startDate.getTime();
   const inGracePeriod = millisSinceCurrentTermStart < 14 * 24 * 60 * 60 * 1000;
 
-  const previous = getPreviousAcademicTerm(current.term, current.year);
-  const previousRange = getAcademicTermDateRange(previous.term, previous.year);
-
-  return {
-    currentRange,
-    previousRange,
-    inGracePeriod,
-  };
+  return { inGracePeriod };
 }
 
 function buildMembershipWhere(atDate = new Date()) {
-  const { currentRange, previousRange, inGracePeriod } =
-    getElectionEligibilityRanges(atDate);
+  // Memberships now carry an explicit `term` + `year` — match on those
+  // directly rather than inferring the term from `dateGiven`. This also
+  // exercises the new `(term, year)` composite index.
+  const { inGracePeriod } = getElectionEligibilityRanges(atDate);
+  const current = getCurrentAcademicTerm(atDate);
+  const previous = getPreviousAcademicTerm(current.term, current.year);
 
-  return {
-    OR: [
-      {
-        dateGiven: {
-          gte: currentRange.startDate,
-          lte: currentRange.endDate,
-        },
-      },
-      ...(inGracePeriod
-        ? [
-            {
-              dateGiven: {
-                gte: previousRange.startDate,
-                lte: previousRange.endDate,
-              },
-            },
-          ]
-        : []),
-    ],
-  };
+  const clauses: Array<{ term: AcademicTerm; year: number }> = [
+    { term: current.term, year: current.year },
+    ...(inGracePeriod
+      ? [{ term: previous.term, year: previous.year }]
+      : []),
+  ];
+
+  return { OR: clauses };
 }
 
 export async function isActiveMemberForElection(

@@ -52,18 +52,13 @@ describe("election eligibility", () => {
 
     await isActiveMemberForElection(7, new Date("2026-02-20T12:00:00.000Z"));
 
+    // New shape: filter by the explicit (term, year) columns rather than
+    // a `dateGiven` range.
     expect(mockMembershipCount).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
           userId: 7,
-          OR: [
-            {
-              dateGiven: {
-                gte: new Date("2026-01-01T00:00:00.000Z"),
-                lte: new Date("2026-05-31T23:59:59.999Z"),
-              },
-            },
-          ],
+          OR: [{ term: "SPRING", year: 2026 }],
         }),
       })
     );
@@ -80,12 +75,7 @@ describe("election eligibility", () => {
       expect.objectContaining({
         where: expect.objectContaining({
           OR: expect.arrayContaining([
-            {
-              dateGiven: {
-                gte: new Date("2025-08-01T00:00:00.000Z"),
-                lte: new Date("2025-12-31T23:59:59.999Z"),
-              },
-            },
+            { term: "FALL", year: 2025 },
           ]),
         }),
       })
@@ -96,12 +86,7 @@ describe("election eligibility", () => {
           Memberships: expect.objectContaining({
             some: expect.objectContaining({
               OR: expect.arrayContaining([
-                {
-                  dateGiven: {
-                    gte: new Date("2025-08-01T00:00:00.000Z"),
-                    lte: new Date("2025-12-31T23:59:59.999Z"),
-                  },
-                },
+                { term: "FALL", year: 2025 },
               ]),
             }),
           }),

@@ -49,9 +49,12 @@ export async function ActiveElectionBanner() {
   const cta = STATUS_CTA[election.status] ?? STATUS_CTA.VOTING_CLOSED;
 
   return (
+    // `mt-20` clears the 80px-tall fixed navbar (`Navbar` is
+    // `fixed top-0` with `z-50` — without this margin the banner
+    // tucks underneath the nav).
     <Link
       href={`/elections/${election.slug}`}
-      className="group block w-full bg-primary/10 hover:bg-primary/15 transition-colors border-b border-primary/20"
+      className="group block w-full bg-primary/10 hover:bg-primary/15 transition-colors border-b border-primary/20 mt-20"
     >
       <div className="flex items-center justify-center gap-3 px-4 py-2.5 text-sm">
         <span className="flex items-center gap-2">

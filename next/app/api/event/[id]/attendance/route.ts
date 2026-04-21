@@ -2,6 +2,7 @@ import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { getGatewayAuthLevel } from "@/lib/authGateway";
 import { getSessionToken } from "@/lib/sessionToken";
+import { getCurrentAcademicTerm } from "@/lib/academicTerm";
 
 type TxClient = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
 const EARLY_CHECKIN_WINDOW_MINUTES = 15;
@@ -102,6 +103,7 @@ async function reconcileEndedEventMemberships(
         userId,
         reason,
         dateGiven: new Date(),
+        ...getCurrentAcademicTerm(),
       },
     });
   }
@@ -210,7 +212,12 @@ async function ensureMembership(
   }
 
   await db.memberships.create({
-    data: { userId, reason, dateGiven: new Date() },
+    data: {
+      userId,
+      reason,
+      dateGiven: new Date(),
+      ...getCurrentAcademicTerm(),
+    },
   });
   return { granted: true, created: true };
 }

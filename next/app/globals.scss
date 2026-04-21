@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Election-system styles (brutalist treatments scoped to .election-scope).
+   See ./elections.scss for the full set ported from the Claude Design
+   handoff. */
+@import "./elections";
+
 /* ===== CSS Variables for theming (shadcn) ===== */
 
 :root,

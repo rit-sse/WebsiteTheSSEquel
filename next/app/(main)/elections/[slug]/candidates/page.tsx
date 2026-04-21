@@ -10,7 +10,12 @@ import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Tooltip } from "@/components/ui/tooltip";
 import { NominationStatusBadge } from "@/components/elections/NominationStatusBadge";
-import { getElectionWithRelations } from "@/lib/elections";
+import {
+  compareByPrimaryOrder,
+  getElectionWithRelations,
+  isTicketDerivedOffice,
+} from "@/lib/elections";
+import { electionAvatarStyle } from "@/components/elections/electionAvatarColor";
 import { getAuthLevel } from "@/lib/services/authLevelService";
 import type { ElectionNominationStatus } from "@prisma/client";
 
@@ -39,7 +44,7 @@ export default async function ElectionCandidatesPage({
   const currentUserId = authLevel.userId;
 
   return (
-    <section className="w-full max-w-5xl space-y-6">
+    <section className="election-scope w-full max-w-5xl space-y-6">
       {/* Breadcrumbs */}
       <nav className="flex items-center gap-1.5 text-sm text-muted-foreground">
         <Link
@@ -59,8 +64,19 @@ export default async function ElectionCandidatesPage({
         <span className="text-foreground font-medium">Candidates</span>
       </nav>
 
-      {/* Per-position cards */}
-      {election.offices.map((office) => {
+      {/* Per-position cards (VP is ticket-derived; its card is rendered as a
+          running-mate chip under each President candidate instead) */}
+      {[...election.offices]
+        .filter(
+          (office) => !isTicketDerivedOffice(office.officerPosition.title)
+        )
+        .sort((a, b) =>
+          compareByPrimaryOrder(
+            a.officerPosition.title,
+            b.officerPosition.title
+          )
+        )
+        .map((office) => {
         const visibleNominations = office.nominations.filter((nomination) => {
           if (nomination.status === ("ACCEPTED" as ElectionNominationStatus)) {
             return true;
@@ -99,8 +115,14 @@ export default async function ElectionCandidatesPage({
                     >
                       {/* Avatar + Name + Status */}
                       <div className="flex items-center gap-3">
-                        <Avatar className="h-16 w-16">
-                          <AvatarFallback className="text-lg font-semibold">
+                        <Avatar
+                          className="h-16 w-16 border-2 border-black"
+                          style={electionAvatarStyle(nomination.nominee.id)}
+                        >
+                          <AvatarFallback
+                            className="text-lg font-bold font-display"
+                            style={electionAvatarStyle(nomination.nominee.id)}
+                          >
                             {getInitials(nomination.nominee.name)}
                           </AvatarFallback>
                         </Avatar>
@@ -114,6 +136,30 @@ export default async function ElectionCandidatesPage({
                           />
                         </div>
                       </div>
+
+                      {/* Running-mate (VP) chip — only for presidential
+                          tickets where the VP has accepted. Uses the
+                          design's brutalist "pair" pill. */}
+                      {office.officerPosition.title === "President" &&
+                        nomination.runningMateInvitation?.status ===
+                          "ACCEPTED" && (
+                          <div className="flex items-center gap-2">
+                            <span className="wvp-label">W/ VP</span>
+                            <span className="pair">
+                              <span
+                                className="pair-avatar"
+                                style={electionAvatarStyle(
+                                  nomination.runningMateInvitation.invitee.id
+                                )}
+                              >
+                                {getInitials(
+                                  nomination.runningMateInvitation.invitee.name
+                                )}
+                              </span>
+                              {nomination.runningMateInvitation.invitee.name}
+                            </span>
+                          </div>
+                        )}
 
                       {/* Eligibility info */}
                       {(nomination.program || nomination.yearLevel) && (

@@ -76,6 +76,15 @@ enum ElectionEmailKind {
   NOMINATION_NOTICE
   BALLOT_ANNOUNCEMENT
   BALLOT_REMINDER
+  RUNNING_MATE_INVITE
+}
+
+enum ElectionRunningMateStatus {
+  INVITED
+  ACCEPTED
+  DECLINED
+  EXPIRED
+  WITHDRAWN
 }
 
 enum PositionCategory {
@@ -140,6 +149,7 @@ model User {
   reviewedElectionNominations ElectionNomination[]      @relation("ElectionEligibilityReviewer")
   electionBallots             ElectionBallot[]
   electionEmailLogs           ElectionEmailLog[]
+  runningMateInvitations      ElectionRunningMateInvitation[] @relation("RunningMateInvitee")
 }
 
 model Alumni {
@@ -900,8 +910,18 @@ model Memberships {
   reason    String
   dateGiven DateTime
 
+  // Academic term this membership is granted for. Filled in by API
+  // helpers from `lib/academicTerm.ts::getCurrentAcademicTerm()` when
+  // not explicitly provided. Lets us archive-by-term instead of
+  // wholesale-wiping on new-semester handover.
+  term AcademicTerm
+  year Int
+
   // Relational Fields
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, term, year])
+  @@index([term, year])
 }
 
 model Amendment {
@@ -1190,7 +1210,32 @@ model ElectionNomination {
   reviewedBy     User?          @relation("ElectionEligibilityReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
   ballotRankings ElectionBallotRanking[]
 
+  // Amendment 12: the President's running-mate invitation. Null for every
+  // other position.
+  runningMateInvitation ElectionRunningMateInvitation?
+
   @@unique([electionOfficeId, nomineeUserId])
+}
+
+// Amendment 12: Vice President is chosen as a running mate by the
+// President nominee after their nomination is accepted. One invitation per
+// presidential nomination; the presidentNominationId unique constraint
+// enforces that.
+model ElectionRunningMateInvitation {
+  id                    Int                      @id @default(autoincrement())
+  presidentNominationId Int                      @unique
+  inviteeUserId         Int
+  status                ElectionRunningMateStatus @default(INVITED)
+  respondedAt           DateTime?
+  expiresAt             DateTime
+  declineReason         String?                   @db.Text
+  createdAt             DateTime                  @default(now())
+  updatedAt             DateTime                  @updatedAt
+
+  presidentNomination ElectionNomination @relation(fields: [presidentNominationId], references: [id], onDelete: Cascade)
+  invitee             User               @relation("RunningMateInvitee", fields: [inviteeUserId], references: [id], onDelete: Cascade)
+
+  @@index([inviteeUserId, status])
 }
 
 model ElectionBallot {

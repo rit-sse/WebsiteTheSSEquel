@@ -89,16 +89,20 @@ async function seedOfficerPosition() {
     // Primary Officers (4)
     { title: "President", is_primary: true, email: "sse-president@rit.edu" },
     {
+      // Post-Amendment 12: VP is chosen as a running mate, not separately
+      // elected. Still a role held by an officer, but not a "primary" in
+      // the election sense.
       title: "Vice President",
-      is_primary: true,
+      is_primary: false,
       email: "sse-vicepresident@rit.edu",
     },
     { title: "Treasurer", is_primary: true, email: "sse-treasurer@rit.edu" },
     { title: "Secretary", is_primary: true, email: "sse-secretary@rit.edu" },
     // Committee Heads (11)
     {
+      // Post-Amendment 13: Mentoring Head is now a Primary Officer.
       title: "Mentoring Head",
-      is_primary: false,
+      is_primary: true,
       email: "sse-mentoring@rit.edu",
     },
     {
@@ -1263,53 +1267,39 @@ async function seedEvents() {
 }
 
 async function seedMemberships() {
-  const membership1 = await prisma.memberships.create({
-    data: {
-      userId: 1,
-      reason: "Test1",
-      dateGiven: new Date("2025-10-1 12:00:00"),
-    },
-  });
-
-  const membership2 = await prisma.memberships.create({
-    data: {
-      userId: 2,
-      reason: "Test2",
-      dateGiven: new Date("2025-10-2 12:00:00"),
-    },
-  });
-
-  const membership3 = await prisma.memberships.create({
-    data: {
-      userId: 1,
-      reason: "Test3",
-      dateGiven: new Date("2025-10-2 12:00:00"),
-    },
-  });
-
-  const membership4 = await prisma.memberships.create({
-    data: {
-      userId: 1,
-      reason: "Test4",
-      dateGiven: new Date("2025-10-3 12:00:00"),
-    },
-  });
-
-  const membership5 = await prisma.memberships.create({
-    data: {
-      userId: 3,
-      reason: "Test5",
-      dateGiven: new Date("2025-10-4 12:00:00"),
-    },
-  });
-
-  console.log({
-    membership1,
-    membership2,
-    membership3,
-    membership4,
-    membership5,
-  });
+  // Spread across three terms so the (userId, term, year) composite
+  // unique constraint is satisfied and the fixtures exercise the
+  // historical-by-term lookup paths.
+  const rows: Array<{
+    userId: number;
+    reason: string;
+    dateGiven: Date;
+    term: "SPRING" | "SUMMER" | "FALL";
+    year: number;
+  }> = [
+    { userId: 1, reason: "Test1", dateGiven: new Date("2024-10-01 12:00:00"), term: "FALL", year: 2024 },
+    { userId: 2, reason: "Test2", dateGiven: new Date("2024-10-02 12:00:00"), term: "FALL", year: 2024 },
+    { userId: 1, reason: "Test3", dateGiven: new Date("2025-02-02 12:00:00"), term: "SPRING", year: 2025 },
+    { userId: 1, reason: "Test4", dateGiven: new Date("2025-10-03 12:00:00"), term: "FALL", year: 2025 },
+    { userId: 3, reason: "Test5", dateGiven: new Date("2026-02-04 12:00:00"), term: "SPRING", year: 2026 },
+  ];
+  for (const row of rows) {
+    await prisma.memberships.upsert({
+      where: {
+        userId_term_year: {
+          userId: row.userId,
+          term: row.term,
+          year: row.year,
+        },
+      },
+      update: {},
+      create: row,
+    });
+  }
+  console.log(
+    `seedMemberships: ${rows.length} memberships across ` +
+      `Fall 2024 / Spring 2025 / Fall 2025 / Spring 2026`
+  );
 }
 
 async function seedSponsors() {
@@ -1474,6 +1464,298 @@ async function seedCategories() {
   });
 }
 
+/**
+ * Dev-only demo election — a competitive election that has just finished
+ * voting and is waiting on SE Office certification. Shows off:
+ *   - Four primary offices (post-Amendment 13)
+ *   - Amendment 12 running-mate tickets (one accepted, one pending)
+ *   - A competitive 3-way President race that goes to IRV round 2 with
+ *     vote transfers (so the Sankey actually flows)
+ *   - 2-way races for Secretary / Treasurer / Mentoring Head
+ *   - 90 ballots cast, none counted yet — SE Office needs to certify.
+ *
+ * The function nukes the previous demo election each time so the seed
+ * stays deterministic regardless of prior Tweaks-panel fiddling.
+ */
+async function seedDemoElection() {
+  const demoSlug = "spring-2026-demo";
+  const now = new Date();
+  const past = (minutesAgo: number) =>
+    new Date(now.getTime() - minutesAgo * 60 * 1000);
+  const future = (minutesAhead: number) =>
+    new Date(now.getTime() + minutesAhead * 60 * 1000);
+
+  // 1. Cascading delete of the existing demo (if any). FK cascades handle
+  //    offices → nominations → ballot rankings → ballots → running-mate
+  //    invitations. Voter users stay around — deleting them is messy and
+  //    they're cheap to leave behind.
+  await prisma.election.deleteMany({ where: { slug: demoSlug } });
+
+  // 2. Upsert the cast of named nominees + running mates.
+  const demoNames = [
+    { email: "ari.chen@rit.edu", name: "Ari Chen" }, // 0 · pres (wins)
+    { email: "jordan.park@rit.edu", name: "Jordan Park" }, // 1 · pres (runner-up)
+    { email: "sam.delacroix@rit.edu", name: "Sam Delacroix" }, // 2 · pres (eliminated round 1)
+    { email: "mel.okonkwo@rit.edu", name: "Mel Okonkwo" }, // 3 · Ari's accepted VP
+    { email: "kai.bergstrom@rit.edu", name: "Kai Bergstrom" }, // 4 · sec + Jordan's pending VP
+    { email: "liv.amara@rit.edu", name: "Liv Amara" }, // 5 · treasurer
+    { email: "nova.ashcroft@rit.edu", name: "Nova Ashcroft" }, // 6 · mentoring head
+    { email: "tam.robinson@rit.edu", name: "Tam Robinson" }, // 7 · secretary
+    { email: "zee.patel@rit.edu", name: "Zee Patel" }, // 8 · treasurer
+    { email: "omar.velez@rit.edu", name: "Omar Velez" }, // 9 · mentoring head
+  ];
+  const users: { id: number; name: string; email: string }[] = [];
+  for (const u of demoNames) {
+    const row = await prisma.user.upsert({
+      where: { email: u.email },
+      update: {},
+      create: { name: u.name, email: u.email },
+    });
+    users.push({ id: row.id, name: row.name, email: row.email });
+  }
+  const uid = (ix: number) => users[ix]!.id;
+
+  // 3. Primary officer positions keyed by the canonical titles.
+  // Vice President is included so the ElectionOffice exists even though
+  // it carries no nominations — it's ticket-derived and the tally
+  // helpers / reveal slide depend on the office row being present.
+  const officeTitles = [
+    "President",
+    "Vice President",
+    "Secretary",
+    "Treasurer",
+    "Mentoring Head",
+  ];
+  const positions = await prisma.officerPosition.findMany({
+    where: { title: { in: officeTitles } },
+  });
+  if (positions.length !== officeTitles.length) {
+    console.warn(
+      `seedDemoElection: expected ${officeTitles.length} positions (inc. VP), ` +
+        `found ${positions.length}. Skipping demo election seed.`
+    );
+    return;
+  }
+
+  // 4. Create the election in VOTING_CLOSED state with all cutoffs in the
+  //    past. Certification is the last step — we intentionally leave
+  //    `certifiedById` null so the SE Office certify CTA surfaces.
+  const election = await prisma.election.create({
+    data: {
+      title: "Spring 2026 Primary Elections",
+      slug: demoSlug,
+      description:
+        "Voting has closed — the SE Office must certify these results.",
+      status: "VOTING_CLOSED",
+      nominationsOpenAt: past(60 * 24 * 7), // 1 week ago
+      nominationsCloseAt: past(60 * 24 * 4), // 4 days ago
+      votingOpenAt: past(60 * 24 * 2), // 2 days ago
+      votingCloseAt: past(60), // 1 hour ago
+      createdById: uid(0),
+    },
+  });
+
+  // 5. Create one ElectionOffice per primary title.
+  const officeByTitle = new Map<string, number>();
+  for (const position of positions) {
+    const office = await prisma.electionOffice.create({
+      data: {
+        electionId: election.id,
+        officerPositionId: position.id,
+      },
+    });
+    officeByTitle.set(position.title, office.id);
+  }
+
+  // 6. Nominations — all ACCEPTED + APPROVED. Keyed map so we can look
+  //    up nomination ids by (office, nominee) when building ballots.
+  const nomPlan: Array<{
+    office: string;
+    nominees: number[];
+    nominator: number;
+    statements: Record<number, string>;
+  }> = [
+    {
+      office: "President",
+      nominees: [uid(0), uid(1), uid(2)],
+      nominator: uid(7),
+      statements: {
+        [uid(0)]:
+          "Current Talks Head. 2 terms as a mentor. Big on sustainability and paying it forward.",
+        [uid(1)]:
+          "Current VP. Built the new scoreboard. Wants SSE to feel like home for first-years.",
+        [uid(2)]:
+          "Lab Ops Head. Runs Rapid Dev. Self-described \"library gremlin\".",
+      },
+    },
+    {
+      office: "Secretary",
+      nominees: [uid(4), uid(7)],
+      nominator: uid(0),
+      statements: {
+        [uid(4)]:
+          "Runs the SSE discord & socials. Brand-obsessed.",
+        [uid(7)]:
+          "Minutes-taker extraordinaire. Good writer.",
+      },
+    },
+    {
+      office: "Treasurer",
+      nominees: [uid(5), uid(8)],
+      nominator: uid(0),
+      statements: {
+        [uid(5)]:
+          "Already runs merch ops. QuickBooks enjoyer.",
+        [uid(8)]:
+          "Winter Ball budget lead for 2 years.",
+      },
+    },
+    {
+      office: "Mentoring Head",
+      nominees: [uid(6), uid(9)],
+      nominator: uid(0),
+      statements: {
+        [uid(6)]:
+          "Mentor for 5 terms. Invented \"office hours bingo\".",
+        [uid(9)]:
+          "SWEN-262 TA. Patient, methodical.",
+      },
+    },
+  ];
+
+  // nominationIdByUser[officeTitle][userId] → nomination id
+  const nomId = new Map<string, Map<number, number>>();
+  for (const slot of nomPlan) {
+    const officeId = officeByTitle.get(slot.office)!;
+    const innerMap = new Map<number, number>();
+    for (const nomineeId of slot.nominees) {
+      const row = await prisma.electionNomination.create({
+        data: {
+          electionOfficeId: officeId,
+          nomineeUserId: nomineeId,
+          nominatorUserId: slot.nominator,
+          status: "ACCEPTED",
+          eligibilityStatus: "APPROVED",
+          statement:
+            slot.statements[nomineeId] ??
+            "Seeded demo nominee.",
+          yearLevel: 3,
+          program: "Software Engineering",
+          canRemainEnrolledFullYear: true,
+          canRemainEnrolledNextTerm: true,
+          isOnCampus: true,
+          isOnCoop: false,
+          reviewedAt: past(60 * 48),
+          reviewedById: uid(0),
+        },
+      });
+      innerMap.set(nomineeId, row.id);
+    }
+    nomId.set(slot.office, innerMap);
+  }
+
+  // 7. Amendment 12 running-mate invitations.
+  //    Ari (uid 0) → Mel (uid 3) ACCEPTED
+  //    Jordan (uid 1) → Kai (uid 4) INVITED (pending)
+  //    Sam (uid 2) → no invitation
+  const presMap = nomId.get("President")!;
+  await prisma.electionRunningMateInvitation.create({
+    data: {
+      presidentNominationId: presMap.get(uid(0))!,
+      inviteeUserId: uid(3),
+      status: "ACCEPTED",
+      respondedAt: past(60 * 36),
+      expiresAt: past(60 * 35),
+    },
+  });
+  await prisma.electionRunningMateInvitation.create({
+    data: {
+      presidentNominationId: presMap.get(uid(1))!,
+      inviteeUserId: uid(4),
+      status: "INVITED",
+      expiresAt: future(60 * 4),
+    },
+  });
+
+  // 8. Create 90 anonymous voter users (upsert so repeat seed runs reuse
+  //    them). These represent active members who cast ballots.
+  const voters: number[] = [];
+  for (let i = 0; i < 90; i++) {
+    const email = `demo-voter-${String(i + 1).padStart(2, "0")}@sse-demo.rit.edu`;
+    const row = await prisma.user.upsert({
+      where: { email },
+      update: {},
+      create: { name: `Demo Voter ${i + 1}`, email },
+    });
+    voters.push(row.id);
+  }
+
+  // 9. Ballot pattern generator. Each voter gets a ranking for every
+  //    office. Distributions are chosen to produce a competitive IRV
+  //    runoff on the President race (Ari 42 → 54, Jordan 28 → 36, Sam 20
+  //    eliminated round 1 with votes transferring 12 → Ari, 8 → Jordan).
+  const pres = (i: number): number[] => {
+    if (i < 32) return [uid(0), uid(1), uid(2)]; // 32 × Ari > Jordan > Sam
+    if (i < 42) return [uid(0), uid(2), uid(1)]; // 10 × Ari > Sam > Jordan
+    if (i < 62) return [uid(1), uid(0), uid(2)]; // 20 × Jordan > Ari > Sam
+    if (i < 70) return [uid(1), uid(2), uid(0)]; //  8 × Jordan > Sam > Ari
+    if (i < 82) return [uid(2), uid(0), uid(1)]; // 12 × Sam > Ari > Jordan
+    return [uid(2), uid(1), uid(0)]; //  8 × Sam > Jordan > Ari
+  };
+  // Secretary: Kai 50, Tam 40 — simple majority, 1 round.
+  const sec = (i: number): number[] =>
+    i < 50 ? [uid(4), uid(7)] : [uid(7), uid(4)];
+  // Treasurer: Liv 48, Zee 42 — simple majority, 1 round.
+  const treas = (i: number): number[] =>
+    i < 48 ? [uid(5), uid(8)] : [uid(8), uid(5)];
+  // Mentoring Head: Nova 55, Omar 35 — comfortable majority, 1 round.
+  const ment = (i: number): number[] =>
+    i < 55 ? [uid(6), uid(9)] : [uid(9), uid(6)];
+
+  // 10. Insert ballots + rankings. Use createMany per ballot for speed.
+  for (let i = 0; i < voters.length; i++) {
+    const voterId = voters[i]!;
+    const ballot = await prisma.electionBallot.create({
+      data: { electionId: election.id, voterId },
+    });
+
+    const rankings: {
+      ballotId: number;
+      electionOfficeId: number;
+      nominationId: number;
+      rank: number;
+    }[] = [];
+    const pushOffice = (
+      officeTitle: string,
+      nomineeOrder: number[]
+    ) => {
+      const officeId = officeByTitle.get(officeTitle)!;
+      const innerMap = nomId.get(officeTitle)!;
+      nomineeOrder.forEach((nomineeUserId, idx) => {
+        const nominationId = innerMap.get(nomineeUserId);
+        if (!nominationId) return;
+        rankings.push({
+          ballotId: ballot.id,
+          electionOfficeId: officeId,
+          nominationId,
+          rank: idx + 1,
+        });
+      });
+    };
+    pushOffice("President", pres(i));
+    pushOffice("Secretary", sec(i));
+    pushOffice("Treasurer", treas(i));
+    pushOffice("Mentoring Head", ment(i));
+    await prisma.electionBallotRanking.createMany({ data: rankings });
+  }
+
+  console.log(
+    `seedDemoElection: created competitive VOTING_CLOSED /elections/${demoSlug} ` +
+      `— 5 offices (incl. ticket-derived VP), ${nomPlan.reduce((a, s) => a + s.nominees.length, 0)} nominees, ` +
+      `${voters.length} ballots cast, awaiting SE Office certification.`
+  );
+}
+
 async function main() {
   try {
     // Core data seeding
@@ -1506,6 +1788,7 @@ async function main() {
     await seedEvents();
     await seedMemberships();
     await seedSponsors();
+    await seedDemoElection();
   } catch (e) {
     console.error(e);
     throw e;

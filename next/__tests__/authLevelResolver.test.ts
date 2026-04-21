@@ -89,7 +89,7 @@ describe("authLevelResolver", () => {
       linkedIn: "sse",
       mentor: [{ id: 1 }],
       officers: [
-        { id: 1, position: { title: "Mentoring Head", is_primary: false } },
+        { id: 1, position: { title: "Mentoring Head", is_primary: true } },
         { id: 2, position: { title: "Tech Head", is_primary: false } },
         {
           id: 4,
