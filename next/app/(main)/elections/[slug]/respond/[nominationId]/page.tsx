@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { getAuthLevel } from "@/lib/services/authLevelService";
 import { getElectionWithRelations, serializeElectionForClient } from "@/lib/elections";
-import { resolveUserImage } from "@/lib/s3Utils";
 import NomineeAcceptClient from "./NomineeAcceptClient";
 import type {
   SerializedElection,
@@ -32,6 +31,14 @@ export default async function RespondToNominationPage({
     redirect("/elections");
   }
 
+  // Serialize up-front so every user reference (nominee, nominator,
+  // running mate) already has its `image` URL resolved via the
+  // shared image-resolution pipeline. The live preview + nominator
+  // chip rely on `nominee.image` / `nominator.image` being populated.
+  const serializedElection = serializeElectionForClient(
+    election
+  ) as unknown as SerializedElection;
+
   // Find the nomination across offices.
   const nominationIdNum = Number(nominationId);
   let nomination: SerializedNomination | null = null;
@@ -41,25 +48,19 @@ export default async function RespondToNominationPage({
     name: string;
     image: string | null;
   }[] = [];
-  for (const office of election.offices) {
+  for (const office of serializedElection.offices) {
     const match = office.nominations.find((n) => n.id === nominationIdNum);
     if (match) {
-      nomination = match as unknown as SerializedNomination;
+      nomination = match;
       officeTitle = office.officerPosition.title;
-      // Pull every nomination row pointing at this nominee across this
-      // office so we can show "nominated by X, Y, Z" — in the current
-      // schema each (office, nominee) pair is a single row so we rely
-      // on the single nominator. Pre-compute it here so the client has
-      // ready data — including a resolved profile image URL so the
-      // nominator chip can show the person's actual photo.
+      // Each (office, nominee) pair is a single row in the current
+      // schema, so the single nominator is sufficient. Image is
+      // already resolved by the serializer.
       nominators = [
         {
           id: match.nominator.id,
           name: match.nominator.name,
-          image: resolveUserImage(
-            match.nominator.profileImageKey ?? null,
-            match.nominator.googleImageURL ?? null
-          ),
+          image: match.nominator.image ?? null,
         },
       ];
       break;
@@ -73,10 +74,6 @@ export default async function RespondToNominationPage({
     // Don't leak other people's nominations — bounce to the election.
     redirect(`/elections/${slug}`);
   }
-
-  const serializedElection = serializeElectionForClient(
-    election
-  ) as unknown as SerializedElection;
 
   return (
     <NomineeAcceptClient

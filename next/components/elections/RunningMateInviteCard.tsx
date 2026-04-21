@@ -2,24 +2,27 @@
 
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import { CheckCircle, Clock, Mail, Search, Send, X } from "lucide-react";
+import { CheckCircle } from "lucide-react";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import NeoBrutalistButton from "@/components/neo-brutalist-button";
 import { ElectionAvatar } from "@/components/elections/ElectionAvatar";
+import UserInviteSlot from "@/components/common/UserInviteSlot";
+import UserSearchInviteModal, {
+  type UserSearchResult,
+} from "@/components/common/UserSearchInviteModal";
 
 /**
  * Amendment 12: presidential nominees pick their own VP running mate after
  * their nomination is accepted + approved. This card is shown on the
  * presidential nominee's election detail page (ElectionPublicClient).
+ *
+ * UI matches the officers/positions admin pattern — a three-state slot
+ * (empty / pending / filled) with an "Invite" button that opens the
+ * shared `<UserSearchInviteModal>` for picking an active member.
  */
 
 type InviteStatus =
@@ -49,14 +52,6 @@ interface Props {
   onChange?: () => void;
 }
 
-interface UserSearchResult {
-  id: number;
-  name: string;
-  email: string;
-  /** Resolved profile image URL from `/api/user/search`. */
-  image?: string | null;
-}
-
 function formatExpiry(iso: string): string {
   const target = new Date(iso).getTime();
   const now = Date.now();
@@ -76,37 +71,12 @@ export default function RunningMateInviteCard({
   invitation,
   onChange,
 }: Props) {
-  const [query, setQuery] = useState("");
-  const [results, setResults] = useState<UserSearchResult[]>([]);
-  const [searching, setSearching] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const active =
     invitation &&
     (invitation.status === "INVITED" || invitation.status === "ACCEPTED");
-
-  const doSearch = useCallback(async () => {
-    if (!query.trim()) {
-      setResults([]);
-      return;
-    }
-    setSearching(true);
-    try {
-      const response = await fetch(
-        `/api/user/search?q=${encodeURIComponent(query.trim())}`
-      );
-      if (!response.ok) {
-        toast.error((await response.text()) || "Failed to search members");
-        return;
-      }
-      const data = await response.json();
-      setResults(data.items ?? []);
-    } catch {
-      toast.error("Failed to search members");
-    } finally {
-      setSearching(false);
-    }
-  }, [query]);
 
   const invite = useCallback(
     async (inviteeUserId: number) => {
@@ -121,17 +91,13 @@ export default function RunningMateInviteCard({
           }
         );
         if (!response.ok) {
-          toast.error(
-            (await response.text()) || "Failed to send running-mate invite"
-          );
-          return;
+          const msg =
+            (await response.text()) || "Failed to send running-mate invite";
+          toast.error(msg);
+          throw new Error(msg);
         }
         toast.success("Running-mate invite sent");
-        setQuery("");
-        setResults([]);
         onChange?.();
-      } catch {
-        toast.error("Failed to send running-mate invite");
       } finally {
         setSubmitting(false);
       }
@@ -161,6 +127,40 @@ export default function RunningMateInviteCard({
     }
   }, [electionId, nominationId, onChange]);
 
+  // Map the invitation into UserInviteSlot's three states.
+  const filled =
+    active && invitation && invitation.status === "ACCEPTED"
+      ? {
+          primary: invitation.invitee.name,
+          secondary: "Accepted — you are running as a ticket",
+          avatar: (
+            <ElectionAvatar
+              user={invitation.invitee}
+              className="h-8 w-8 border-2 border-black"
+              fallbackClassName="text-xs"
+            />
+          ),
+        }
+      : null;
+
+  const pending =
+    active && invitation && invitation.status === "INVITED"
+      ? {
+          primary: invitation.invitee.name,
+          secondary: `Pending · ${formatExpiry(invitation.expiresAt)}`,
+          // Show the real person with an amber ring so the yellow
+          // state reads visually while still identifying them.
+          avatar: (
+            <ElectionAvatar
+              user={invitation.invitee}
+              className="h-8 w-8 border-2 border-amber-500 ring-2 ring-amber-200 dark:ring-amber-700/40"
+              fallbackClassName="text-xs"
+            />
+          ),
+          badgeLabel: "Invited",
+        }
+      : null;
+
   return (
     <Card depth={2} className="overflow-hidden">
       <CardHeader>
@@ -173,122 +173,55 @@ export default function RunningMateInviteCard({
           the ballot as a ticket.
         </p>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {invitation && active ? (
-          <div className="flex items-center gap-3 rounded-lg bg-surface-2 p-3">
-            <ElectionAvatar
-              user={invitation.invitee}
-              className="h-10 w-10 border-2 border-black"
-              fallbackClassName="text-xs"
-            />
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold">
-                {invitation.invitee.name}
-              </p>
-              <p className="truncate text-xs text-muted-foreground">
-                {invitation.status === "ACCEPTED" ? (
-                  <>
-                    <CheckCircle className="mr-1 inline h-3 w-3 text-emerald-500" />
-                    Accepted &mdash; you are running as a ticket
-                  </>
-                ) : (
-                  <>
-                    <Clock className="mr-1 inline h-3 w-3 text-amber-500" />
-                    Invitation pending &middot; {formatExpiry(invitation.expiresAt)}
-                  </>
-                )}
-              </p>
-            </div>
-            {invitation.status === "ACCEPTED" ? (
-              <Badge className="bg-emerald-600 text-white hover:bg-emerald-700">
-                Accepted
-              </Badge>
-            ) : (
-              <Badge variant="outline" className="border-amber-500 text-amber-600">
-                Pending
-              </Badge>
-            )}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={revoke}
-              disabled={submitting}
-              aria-label="Revoke running-mate invitation"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        ) : (
-          <>
-            {invitation && (
-              <div className="rounded-lg bg-surface-2 p-3 text-sm text-muted-foreground">
-                Previous invite to{" "}
-                <strong className="text-foreground">
-                  {invitation.invitee.name}
-                </strong>{" "}
-                was <em>{invitation.status.toLowerCase()}</em>. You can invite
-                someone else.
-              </div>
-            )}
-            <div className="space-y-2">
-              <Label htmlFor="running-mate-search">Search active members</Label>
-              <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="running-mate-search"
-                    className="pl-9"
-                    placeholder="Search by name or email..."
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        doSearch();
-                      }
-                    }}
-                  />
-                </div>
-                <NeoBrutalistButton
-                  text="Search"
-                  variant="pink"
-                  size="sm"
-                  icon={<Mail className="h-4 w-4" />}
-                  onClick={doSearch}
-                  disabled={searching || !query.trim()}
-                />
-              </div>
-            </div>
-            {results.length > 0 && (
-              <div className="space-y-1 rounded-lg border border-border/40 p-1">
-                {results.map((r) => (
-                  <button
-                    type="button"
-                    key={r.id}
-                    onClick={() => invite(r.id)}
-                    disabled={submitting}
-                    className="flex w-full items-center gap-3 rounded-md p-2 text-left transition-colors hover:bg-muted/50 disabled:opacity-50"
-                  >
-                    <ElectionAvatar
-                      user={r}
-                      className="h-8 w-8 border-2 border-black"
-                      fallbackClassName="text-xs"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium">{r.name}</p>
-                      <p className="truncate text-xs text-muted-foreground">
-                        {r.email}
-                      </p>
-                    </div>
-                    <Send className="h-4 w-4 text-muted-foreground" />
-                  </button>
-                ))}
-              </div>
-            )}
-          </>
+      <CardContent className="space-y-3">
+        <UserInviteSlot
+          user={filled}
+          pendingInvitation={pending}
+          emptyLabel="No running mate invited"
+          inviteLabel="Invite running mate"
+          removeTitle="Withdraw running mate"
+          cancelTitle="Revoke invitation"
+          onInvite={() => setModalOpen(true)}
+          onRemove={revoke}
+          onCancelInvitation={revoke}
+          disabled={submitting}
+        />
+
+        {invitation && !active && (
+          <p className="rounded-lg bg-surface-2 p-3 text-xs text-muted-foreground">
+            Previous invite to{" "}
+            <strong className="text-foreground">
+              {invitation.invitee.name}
+            </strong>{" "}
+            was <em>{invitation.status.toLowerCase()}</em>. You can invite
+            someone else.
+          </p>
+        )}
+
+        {filled && (
+          <p className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400">
+            <CheckCircle className="h-3 w-3" />
+            You&rsquo;ll appear together on the ballot as a ticket.
+          </p>
         )}
       </CardContent>
+
+      <UserSearchInviteModal
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+        title="Invite a running mate"
+        description="Pick an active member to run as Vice President on your ticket. They'll receive an email and must accept for the ticket to appear on the ballot."
+        confirmLabel="Send invite"
+        onInvite={invite}
+        renderAvatar={(user: UserSearchResult) => (
+          <ElectionAvatar
+            user={user}
+            className="h-9 w-9 border-2 border-black shrink-0"
+            fallbackClassName="text-xs"
+          />
+        )}
+        searchPlaceholder="Search active members by name or email…"
+      />
     </Card>
   );
 }
