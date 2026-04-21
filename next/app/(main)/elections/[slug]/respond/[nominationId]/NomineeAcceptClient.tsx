@@ -329,17 +329,23 @@ function DecideStep({
       <NeoCardContent className="space-y-8 p-6 pb-10 md:p-10 md:pb-12">
         <div className="space-y-6">
           <p className="eyebrow">You&rsquo;ve been nominated</p>
-          <h1 className="font-display text-3xl font-bold leading-tight text-left md:text-4xl">
-            The SSE thinks you&rsquo;d make {article} <em>great</em>
-          </h1>
-          <DancingLetters
-            text={
-              officeTitle.charAt(0).toUpperCase() +
-              officeTitle.slice(1).toLowerCase()
-            }
-            className="justify-start"
-            letterClassName="text-3xl md:text-4xl font-display font-bold leading-tight text-primary"
-          />
+          {/* h1 + dancing-letters are the single composed title — group
+              them under their own tight `space-y-2` so the generous
+              `space-y-6` above only applies between this unit, the
+              eyebrow, and the paragraph below. */}
+          <div className="space-y-2">
+            <h1 className="font-display text-3xl font-bold leading-tight text-left md:text-4xl">
+              The SSE thinks you&rsquo;d make {article} <em>great</em>
+            </h1>
+            <DancingLetters
+              text={
+                officeTitle.charAt(0).toUpperCase() +
+                officeTitle.slice(1).toLowerCase()
+              }
+              className="justify-start"
+              letterClassName="text-6xl md:text-7xl lg:text-8xl font-display font-bold leading-none text-primary"
+            />
+          </div>
 
           <p className="text-muted-foreground max-w-prose">
             {nominatorText} {nominators.length === 1 ? "thinks" : "think"} you&rsquo;d
