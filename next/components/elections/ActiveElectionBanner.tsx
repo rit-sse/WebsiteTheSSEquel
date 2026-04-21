@@ -51,14 +51,10 @@ export async function ActiveElectionBanner() {
   return (
     // `mt-20` clears the 80px-tall fixed navbar (`Navbar` is
     // `fixed top-0` with `z-50` — without this margin the banner
-    // tucks underneath the nav).
-    //
-    // The navbar drops its own `border-b-[2px] border-black` when an
-    // active election exists (see `Navbar.tsx`), so the banner here
-    // picks up that border on its bottom edge — the overall effect is
-    // that the single black separator line moves from under the navbar
-    // to under the banner, and the banner reads as an extension of
-    // the navbar itself rather than a disconnected strip.
+    // tucks underneath the nav). The banner carries the same heavy
+    // `border-b-[2px] border-black` as the navbar so its separator
+    // line reads as a continuation of the nav's own border rather
+    // than a lighter secondary divider.
     <Link
       href={`/elections/${election.slug}`}
       className="group block w-full bg-primary/10 hover:bg-primary/15 transition-colors border-b-[2px] border-black mt-20"

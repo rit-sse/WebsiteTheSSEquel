@@ -259,18 +259,10 @@ const Navbar: React.FC<NavbarProps> = ({
     }
   };
 
-  // When there's a live election, the ActiveElectionBanner sits flush
-  // underneath the navbar — drop the navbar's black bottom border so the
-  // banner visually extends out of the navbar instead of being separated
-  // by a seam.
-  const hasBanner = Boolean(serverActiveElection);
   return (
     <nav
       id="navbar"
-      className={cn(
-        "fixed left-0 top-0 w-screen z-50 flex items-center justify-center bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60",
-        hasBanner ? "border-b-0" : "border-b-[2px] border-black"
-      )}
+      className="fixed left-0 top-0 w-screen z-50 flex items-center justify-center bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b-[2px] border-black"
     >
       <div
         id="nav-content"
