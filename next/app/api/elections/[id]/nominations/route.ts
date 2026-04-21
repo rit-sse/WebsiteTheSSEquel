@@ -126,11 +126,18 @@ export async function POST(
 
     if (isEmailConfigured()) {
       try {
+        const electionUrl = getElectionUrl(request, election.slug);
+        const positionTitle = office.officerPosition.title;
+        const nominatorName = nomination.nominator.name;
         await sendEmail({
           to: nominee.email,
-          subject: `[SSE Elections] You were nominated for ${office.officerPosition.title}`,
-          text: `You were nominated for ${office.officerPosition.title} in the SSE primary election. View the election and respond here: ${getElectionUrl(request, election.slug)}`,
-          html: `<p>You were nominated for <strong>${office.officerPosition.title}</strong> in the SSE primary election.</p><p>View the election and respond here: <a href="${getElectionUrl(request, election.slug)}">${getElectionUrl(request, election.slug)}</a></p>`,
+          subject: `You've been nominated for ${positionTitle}`,
+          html: `<p>Hi ${nominee.name},</p>
+<p><strong>${nominatorName}</strong> nominated you for <strong>${positionTitle}</strong> in the SSE primary election.</p>
+<p>If you&apos;d like to run, accept the nomination on the SSE website. You&apos;ll appear on the ballot once your eligibility is confirmed. Otherwise, feel free to decline — no obligation.</p>
+<p><a href="${electionUrl}">Open the election on the SSE website</a> to accept or decline.</p>
+<p>— The Society of Software Engineers</p>`,
+          text: `${nominatorName} nominated you for ${positionTitle} in the SSE primary election. Open ${electionUrl} to accept or decline.`,
         });
       } catch (error) {
         console.error("Failed to send nomination email:", error);
