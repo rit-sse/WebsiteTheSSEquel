@@ -110,7 +110,7 @@ export default function PositionsSection({
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [category]);
 
   useEffect(() => {
     fetchPositions();
