@@ -2,14 +2,16 @@ import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 import { getAuthLevel } from "@/lib/services/authLevelService";
 import { serializeElectionForClient } from "@/lib/elections";
-import { canManageElections, isUserCurrentPresident, isUserSeAdmin } from "@/lib/seAdmin";
+import { isUserCurrentPresident, isUserSeAdmin } from "@/lib/seAdmin";
 import DashboardElectionsClient from "./DashboardElectionsClient";
 import type { ElectionListItem } from "@/components/elections/types";
 
 export default async function DashboardElectionsPage() {
   const authLevel = await getAuthLevel();
-  if (!(await canManageElections(authLevel))) {
-    redirect("/dashboard");
+  // Non-primary officers have no business on the elections dashboard —
+  // bounce them to the home page instead of /dashboard (which 404s).
+  if (!authLevel.isPrimary) {
+    redirect("/");
   }
 
   const [elections, primaryPositions, isPresident, isSeAdminFlag] =

@@ -5,7 +5,6 @@ import {
   serializeElectionForClient,
 } from "@/lib/elections";
 import {
-  canManageElections,
   isUserCurrentPresident,
   isUserSeAdmin,
   getElectionApprovalRole,
@@ -19,8 +18,10 @@ export default async function ElectionDashboardDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const authLevel = await getAuthLevel();
-  if (!(await canManageElections(authLevel))) {
-    redirect("/dashboard");
+  // Only primaries (or SE admins, via the stagingElevated path) can view
+  // the admin detail. Everyone else bounces to the home page.
+  if (!authLevel.isPrimary) {
+    redirect("/");
   }
 
   const { id } = await params;
