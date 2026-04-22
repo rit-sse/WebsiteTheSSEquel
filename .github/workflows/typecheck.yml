@@ -41,6 +41,15 @@ jobs:
         working-directory: ./next
         run: npm ci
 
+      # Generate the Prisma client explicitly. `@prisma/client`'s own
+      # postinstall does this in theory, but we've seen it flake between
+      # push and pull_request triggers on the same commit (TS2305 on
+      # ElectionStatus, AmendmentStatus, etc). Running the generator
+      # ourselves makes typecheck deterministic.
+      - name: Generate Prisma client
+        working-directory: ./next
+        run: npx prisma generate
+
       - name: Run typecheck
         working-directory: ./next
         run: npm run typecheck

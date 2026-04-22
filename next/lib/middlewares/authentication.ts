@@ -46,14 +46,20 @@ const nonGetVerifier = (innerVerifier: AuthVerifier): AuthVerifier => {
  * Auth verifier that makes sure the user is an officer
  */
 const officerVerifier = authVerifierFactory((permissions) => {
-  return { isAllowed: permissions.isOfficer, authType: "Officer" };
+  return {
+    isAllowed: permissions.isOfficer || permissions.isSeAdmin,
+    authType: "Officer",
+  };
 });
 
 /**
  * Auth verifier that makes sure the user is a mentor
  */
 const mentorVerifier = authVerifierFactory((permissions) => {
-  return { isAllowed: permissions.isMentor, authType: "Mentor" };
+  return {
+    isAllowed: permissions.isMentor || permissions.isSeAdmin,
+    authType: "Mentor",
+  };
 });
 
 /**
@@ -61,7 +67,8 @@ const mentorVerifier = authVerifierFactory((permissions) => {
  */
 const mentorOrOfficerVerifier = authVerifierFactory((permissions) => {
   return {
-    isAllowed: permissions.isMentor || permissions.isOfficer,
+    isAllowed:
+      permissions.isMentor || permissions.isOfficer || permissions.isSeAdmin,
     authType: "Mentor or Officer",
   };
 });
@@ -71,7 +78,10 @@ const mentorOrOfficerVerifier = authVerifierFactory((permissions) => {
  * Used for sensitive management operations like officer/position CRUD.
  */
 const primaryOfficerVerifier = authVerifierFactory((permissions) => {
-  return { isAllowed: permissions.isPrimary, authType: "Primary Officer" };
+  return {
+    isAllowed: permissions.isPrimary || permissions.isSeAdmin,
+    authType: "Primary Officer",
+  };
 });
 
 /**
@@ -333,6 +343,7 @@ const ROUTES: { [key: string]: AuthVerifier } = {
   courseTaken: nonGetMentorVerifier,
   departments: nonGetOfficerVerifier,
   email: officerVerifier,
+  elections: nonGetVerifier(signedInVerifier),
   event: eventVerifier,
   go: allowAllVerifier,
   golinks: goLinkVerifier,

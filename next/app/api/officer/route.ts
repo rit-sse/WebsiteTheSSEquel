@@ -5,6 +5,7 @@ import { NextRequest } from "next/server";
 import { resolveUserImage } from "@/lib/s3Utils";
 import { getPublicBaseUrl } from "@/lib/baseUrl";
 import { getGatewayAuthLevel } from "@/lib/authGateway";
+import { getCurrentAcademicTerm } from "@/lib/academicTerm";
 
 export const dynamic = "force-dynamic";
 
@@ -139,12 +140,14 @@ export async function POST(request: NextRequest) {
     },
   });
 
-  // Grant a membership for becoming an officer
+  // Grant a membership for becoming an officer — tagged with the current
+  // academic term so it scopes properly alongside the officer row.
   await prisma.memberships.create({
     data: {
       userId: user.id,
       reason: `Officer: ${positionRecord.title}`,
       dateGiven: new Date(),
+      ...getCurrentAcademicTerm(),
     },
   });
 

@@ -1,9 +1,14 @@
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { UserPlus, X, Mail, Clock } from "lucide-react";
 import { getInitials } from "@/lib/userDisplay";
+import UserInviteSlot from "@/components/common/UserInviteSlot";
+
+/**
+ * Officer-specific wrapper around the shared `<UserInviteSlot>`. Accepts
+ * the officer + pending-invitation data shapes this admin page already
+ * uses and maps them into the generic slot's filled / pending display.
+ */
 
 interface Officer {
   id: number;
@@ -69,96 +74,45 @@ export default function OfficerAssignmentCard({
   disabled = false,
   readOnly = false,
 }: OfficerAssignmentCardProps) {
-  // State 1: Officer is assigned
-  if (officer) {
-    return (
-      <div className="flex items-center gap-3 p-2 rounded-lg bg-surface-2 border border-border/30">
-        <Avatar className="h-8 w-8">
-          {officer.image ? (
-            <AvatarImage src={officer.image} alt={officer.name} />
-          ) : null}
-          <AvatarFallback className="text-xs">
-            {getInitials(officer.name)}
-          </AvatarFallback>
-        </Avatar>
-        <div className="flex-1 min-w-0">
-          <div className="font-medium text-sm truncate">{officer.name}</div>
-          <div className="text-xs text-muted-foreground truncate">
-            {formatDate(officer.start_date)} — {formatDate(officer.end_date)}
-          </div>
-        </div>
-        {!readOnly && (
-          <Button
-            size="xs"
-            variant="destructiveGhost"
-            onClick={onRemove}
-            disabled={disabled}
-            title="Remove officer"
-          >
-            <X className="h-3 w-3" />
-          </Button>
-        )}
-      </div>
-    );
-  }
+  const filled = officer
+    ? {
+        primary: officer.name,
+        secondary: `${formatDate(officer.start_date)} — ${formatDate(
+          officer.end_date
+        )}`,
+        avatar: (
+          <Avatar className="h-8 w-8">
+            {officer.image ? (
+              <AvatarImage src={officer.image} alt={officer.name} />
+            ) : null}
+            <AvatarFallback className="text-xs">
+              {getInitials(officer.name)}
+            </AvatarFallback>
+          </Avatar>
+        ),
+      }
+    : null;
 
-  // State 2: Pending invitation
-  if (pendingInvitation) {
-    return (
-      <div className="flex items-center gap-3 p-2 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/30">
-        <div className="h-8 w-8 rounded-full bg-amber-200 dark:bg-amber-800 flex items-center justify-center">
-          <Mail className="h-4 w-4 text-amber-700 dark:text-amber-300" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="font-medium text-sm truncate text-amber-900 dark:text-amber-100">
-            {pendingInvitation.invitedEmail}
-          </div>
-          <div className="flex items-center gap-1 text-xs text-amber-700 dark:text-amber-400">
-            <Clock className="h-3 w-3" />
-            <span>Invited {formatTimeAgo(pendingInvitation.createdAt)}</span>
-          </div>
-        </div>
-        <span className="px-2 py-0.5 rounded text-xs font-medium bg-amber-200 dark:bg-amber-800 text-amber-800 dark:text-amber-200">
-          Pending
-        </span>
-        {!readOnly && (
-          <Button
-            size="xs"
-            variant="ghost"
-            onClick={onCancelInvitation}
-            disabled={disabled}
-            title="Cancel invitation"
-            className="text-amber-700 hover:text-amber-900 dark:text-amber-400 dark:hover:text-amber-200"
-          >
-            <X className="h-3 w-3" />
-          </Button>
-        )}
-      </div>
-    );
-  }
+  const pending = pendingInvitation
+    ? {
+        primary: pendingInvitation.invitedEmail,
+        secondary: `Invited ${formatTimeAgo(pendingInvitation.createdAt)}`,
+      }
+    : null;
 
-  // State 3: No officer assigned
   return (
-    <div className="flex items-center gap-3 p-2 rounded-lg border border-dashed border-border/50 bg-surface-1/50">
-      <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
-        <UserPlus className="h-4 w-4 text-muted-foreground" />
-      </div>
-      <div className="flex-1">
-        <span className="text-sm text-muted-foreground italic">
-          No officer assigned
-        </span>
-      </div>
-      {!readOnly && (
-        <Button
-          size="xs"
-          variant="outline"
-          onClick={onInvite}
-          disabled={disabled}
-        >
-          <UserPlus className="h-3 w-3 mr-1" />
-          Invite
-        </Button>
-      )}
-    </div>
+    <UserInviteSlot
+      user={filled}
+      pendingInvitation={pending}
+      emptyLabel="No officer assigned"
+      inviteLabel="Invite"
+      removeTitle="Remove officer"
+      cancelTitle="Cancel invitation"
+      onInvite={onInvite}
+      onRemove={onRemove}
+      onCancelInvitation={onCancelInvitation}
+      disabled={disabled}
+      readOnly={readOnly}
+    />
   );
 }

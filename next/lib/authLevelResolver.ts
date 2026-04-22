@@ -31,6 +31,7 @@ function getDefaultAuthLevel(includeProfileComplete: boolean): AuthLevel {
     isTechCommitteeDivisionManager: false,
     techCommitteeManagedDivision: null,
     isPrimary: false,
+    isPrimaryOfficer: false,
     isSeAdmin: false,
   };
 
@@ -140,24 +141,42 @@ export async function resolveAuthLevelFromToken(
   }
 
   const membershipCount = user._count.Memberships;
+  const isSeAdmin = user.officers.some(
+    (officer) => officer.position.title === SE_ADMIN_POSITION_TITLE
+  );
   authLevel.userId = user.id;
   authLevel.isUser = true;
   authLevel.membershipCount = membershipCount;
   authLevel.isMember = membershipCount >= 1;
 
+  // `isPrimaryOfficer` is ALWAYS the ground-truth DB state and is NOT
+  // affected by staging elevation. Use this (not `isPrimary`) when the
+  // UI must reflect the user's real-world role even on ssedev.
+  authLevel.isPrimaryOfficer = user.officers.some(
+    (officer) => officer.position.is_primary
+  );
+
+  // NOTE: `isSeAdmin` is intentionally NOT assigned here. When
+  // `stagingElevated` is true we want the top-of-function `true` default
+  // (lines 85-95) to survive so dev tools gated on `isSeAdmin` still
+  // work under STAGING_PROXY_AUTH. Outside staging it's assigned below
+  // inside the `!stagingElevated` branch.
+
   if (!stagingElevated) {
-    authLevel.isMentor = user.mentor.length > 0;
-    authLevel.isOfficer = user.officers.length > 0;
-    authLevel.isMentoringHead = user.officers.some(
+    authLevel.isMentor = isSeAdmin || user.mentor.length > 0;
+    authLevel.isOfficer = isSeAdmin || user.officers.length > 0;
+    authLevel.isMentoringHead = isSeAdmin || user.officers.some(
       (officer) => officer.position.title === MENTOR_HEAD_TITLE
     );
-    authLevel.isProjectsHead = user.officers.some(
+    authLevel.isProjectsHead = isSeAdmin || user.officers.some(
       (officer) => officer.position.title === PROJECTS_HEAD_TITLE
     );
-    authLevel.isTechCommitteeHead = user.officers.some(
+    authLevel.isTechCommitteeHead = isSeAdmin || user.officers.some(
       (officer) => officer.position.title === TECH_COMMITTEE_HEAD_TITLE
     );
-    authLevel.isTechCommitteeDivisionManager = user.officers.some((officer) =>
+    authLevel.isTechCommitteeDivisionManager =
+      isSeAdmin ||
+      user.officers.some((officer) =>
       TECH_COMMITTEE_DIVISION_MANAGER_TITLES.includes(
         officer.position
           .title as (typeof TECH_COMMITTEE_DIVISION_MANAGER_TITLES)[number]
@@ -175,12 +194,10 @@ export async function resolveAuthLevelFromToken(
             .title as keyof typeof TECH_COMMITTEE_DIVISION_MANAGER_BY_TITLE
         ]
       : null;
-    authLevel.isPrimary = user.officers.some(
+    authLevel.isPrimary = isSeAdmin || user.officers.some(
       (officer) => officer.position.is_primary
     );
-    authLevel.isSeAdmin = user.officers.some(
-      (officer) => officer.position.title === SE_ADMIN_POSITION_TITLE
-    );
+    authLevel.isSeAdmin = isSeAdmin;
   }
 
   if (includeProfileComplete) {

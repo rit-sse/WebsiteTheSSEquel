@@ -5,6 +5,7 @@ import {
   MANUAL_MEMBERSHIP_REASONS,
   normalizeMembershipDateInput,
 } from "@/lib/membershipUtils";
+import { getAcademicTermFromDate } from "@/lib/academicTerm";
 
 const CreateMembershipSchema = z.object({
   userId: z.number().positive(),
@@ -126,11 +127,19 @@ export async function POST(request: Request) {
     return new Response("Invalid membership payload.", { status: 400 });
   }
 
+  // Derive term/year from dateGiven so admin backfills for past terms
+  // land in the correct bucket rather than always the current term.
+  const dateGivenDate = new Date(normalizedDateGiven);
+  const term = getAcademicTermFromDate(dateGivenDate);
+  const year = dateGivenDate.getFullYear();
+
   const created = await prisma.memberships.create({
     data: {
       userId: parsed.data.userId,
       reason: parsed.data.reason,
       dateGiven: normalizedDateGiven,
+      term,
+      year,
     },
     select: { id: true, userId: true, reason: true, dateGiven: true },
   });

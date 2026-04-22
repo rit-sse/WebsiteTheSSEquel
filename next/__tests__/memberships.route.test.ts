@@ -114,11 +114,14 @@ describe("/api/memberships route", () => {
     const res = await POST(req);
 
     expect(res.status).toBe(201);
+    // term/year are derived from `dateGiven` — 2026-02-01 → SPRING 2026.
     expect(mockMembershipsCreate).toHaveBeenCalledWith({
       data: {
         userId: 15,
         reason: "Event Attendance",
         dateGiven: "2026-02-01T00:00:00.000Z",
+        term: "SPRING",
+        year: 2026,
       },
       select: { id: true, userId: true, reason: true, dateGiven: true },
     });

@@ -30,6 +30,7 @@ export async function getAuthLevel(): Promise<AuthLevel> {
     isTechCommitteeDivisionManager: false,
     techCommitteeManagedDivision: null,
     isPrimary: false,
+    isPrimaryOfficer: false,
     isSeAdmin: false,
     profileComplete: true,
   };
@@ -104,6 +105,7 @@ export async function getAuthLevel(): Promise<AuthLevel> {
         ]
       : null,
     isPrimary: user.officers.some((o) => o.position.is_primary),
+    isPrimaryOfficer: user.officers.some((o) => o.position.is_primary),
     isSeAdmin: user.officers.some((o) => o.position.title === SE_ADMIN_POSITION_TITLE),
     profileComplete: !!(
       user.graduationTerm &&

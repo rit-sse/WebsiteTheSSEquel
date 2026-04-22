@@ -2,14 +2,35 @@
 
 import DancingLetters from "@/components/dancing-letters";
 import NeoBrutalistButton from "@/components/neo-brutalist-button";
-import { Send, Rocket, Calendar, Clock } from "lucide-react";
+import { Send, Rocket, Calendar, Clock, Vote } from "lucide-react";
 import { NeoCard } from "@/components/ui/neo-card";
+import type { ActiveElectionSummary } from "@/lib/elections";
 
 interface HeroCTAProps {
   description: string;
   labHoursCallout: string;
   weeklyMeetingCallout: string;
   discordLink: string;
+  /** If set, render an Elections CTA button pointing at the live election.
+   * The button label adapts to the election's current phase. */
+  activeElection?: ActiveElectionSummary | null;
+}
+
+/** Phase-aware CTA label for the Elections hero button. */
+function electionCtaLabel(status: ActiveElectionSummary["status"]): string {
+  switch (status) {
+    case "NOMINATIONS_OPEN":
+      return "Nominate Now";
+    case "VOTING_OPEN":
+      return "Vote Now";
+    case "CERTIFIED":
+    case "VOTING_CLOSED":
+      return "View Results";
+    case "NOMINATIONS_CLOSED":
+    case "TIE_RUNOFF_REQUIRED":
+    default:
+      return "View Election";
+  }
 }
 
 export const HeroCTA = ({
@@ -17,6 +38,7 @@ export const HeroCTA = ({
   labHoursCallout,
   weeklyMeetingCallout,
   discordLink,
+  activeElection = null,
 }: HeroCTAProps) => {
   return (
     <div className="text-center lg:text-left w-full lg:w-[45%] lg:flex-shrink-0">
@@ -58,6 +80,14 @@ export const HeroCTA = ({
           variant="blue"
           icon={<Rocket className="h-[18px] w-[18px]" />}
         />
+        {activeElection && (
+          <NeoBrutalistButton
+            href={`/elections/${activeElection.slug}`}
+            text={electionCtaLabel(activeElection.status)}
+            variant="pink"
+            icon={<Vote className="h-[18px] w-[18px]" />}
+          />
+        )}
       </div>
     </div>
   );

@@ -30,6 +30,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
+import type { ActiveElectionSummary } from "@/lib/elections";
 
 const aboutItems = [
   {
@@ -116,6 +117,11 @@ const dashboardItems = [
     href: "/dashboard/alumni",
     description: "Review alumni requests and auto-generated candidates.",
   },
+  {
+    title: "Elections",
+    href: "/dashboard/elections",
+    description: "Create and manage primary-officer election cycles.",
+  },
 ];
 
 interface NavbarProps {
@@ -123,12 +129,16 @@ interface NavbarProps {
   serverUserId?: number | null;
   serverShowDashboard?: boolean;
   serverProfileComplete?: boolean;
+  /** When set, the navbar shows a top-level "Elections" link pointing at the
+   * live election. Rendered on the server so the first paint is correct. */
+  serverActiveElection?: ActiveElectionSummary | null;
 }
 
 const Navbar: React.FC<NavbarProps> = ({
   serverUserId = null,
   serverShowDashboard = false,
   serverProfileComplete = true,
+  serverActiveElection = null,
 }) => {
   const [open, setOpen] = React.useState(false);
   const { data: session } = useSession();
@@ -144,6 +154,7 @@ const Navbar: React.FC<NavbarProps> = ({
     React.useState(false);
   const [canViewTechCommitteeDashboard, setCanViewTechCommitteeDashboard] =
     React.useState(false);
+  const [isPrimary, setIsPrimary] = React.useState(false);
 
   // Background refresh so dynamic changes (e.g. profile completion) still propagate
   React.useEffect(() => {
@@ -151,6 +162,7 @@ const Navbar: React.FC<NavbarProps> = ({
       setShowDashboard(false);
       setUserId(null);
       setCanViewTechCommitteeDashboard(false);
+      setIsPrimary(false);
       return;
     }
 
@@ -161,6 +173,11 @@ const Navbar: React.FC<NavbarProps> = ({
         setShowDashboard(data.isOfficer || data.isMentor);
         setUserId(data.userId ?? null);
         setProfileComplete(data.profileComplete ?? true);
+        // Use the DB-truth flag, NOT `data.isPrimary` — the latter is
+        // set to true by STAGING_PROXY_AUTH for every signed-in user,
+        // which makes the Elections dropdown item show up for everyone
+        // on ssedev (including non-primaries like the Tech Head).
+        setIsPrimary(!!data.isPrimaryOfficer);
         setCanViewTechCommitteeDashboard(
           !!(
             data.isTechCommitteeHead ||
@@ -190,18 +207,23 @@ const Navbar: React.FC<NavbarProps> = ({
       } catch (error) {
         console.error("Error checking auth level:", error);
         setCanViewTechCommitteeDashboard(false);
+        setIsPrimary(false);
       }
     })();
   }, [session]);
 
   const visibleDashboardItems = React.useMemo(
     () =>
-      dashboardItems.filter(
-        (item) =>
-          item.href !== "/dashboard/tech-committee" ||
-          canViewTechCommitteeDashboard
-      ),
-    [canViewTechCommitteeDashboard]
+      dashboardItems.filter((item) => {
+        if (item.href === "/dashboard/tech-committee") {
+          return canViewTechCommitteeDashboard;
+        }
+        if (item.href === "/dashboard/elections") {
+          return isPrimary;
+        }
+        return true;
+      }),
+    [canViewTechCommitteeDashboard, isPrimary]
   );
 
   React.useEffect(() => {
@@ -329,6 +351,19 @@ const Navbar: React.FC<NavbarProps> = ({
                 </NavigationMenuLink>
               </NavigationMenuItem>
 
+              {serverActiveElection && (
+                <NavigationMenuItem>
+                  <NavigationMenuLink
+                    asChild
+                    className={navigationMenuTriggerStyle()}
+                  >
+                    <Link href={`/elections/${serverActiveElection.slug}`}>
+                      Elections
+                    </Link>
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+              )}
+
               <NavigationMenuItem value="about">
                 <NavigationMenuTrigger onClick={handleTriggerClick("about")}>
                   About
@@ -437,6 +472,15 @@ const Navbar: React.FC<NavbarProps> = ({
                 <MobileNavLink href="/go" onClick={() => setOpen(false)}>
                   Go Links
                 </MobileNavLink>
+
+                {serverActiveElection && (
+                  <MobileNavLink
+                    href={`/elections/${serverActiveElection.slug}`}
+                    onClick={() => setOpen(false)}
+                  >
+                    Elections
+                  </MobileNavLink>
+                )}
 
                 <MobileNavCollapsible title="About">
                   {aboutItems.map((item) => (
@@ -620,7 +664,7 @@ function ListItem({
           <div className="text-sm font-bold font-heading leading-none text-foreground">
             {title}
           </div>
-          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground mt-1">
+          <p className="line-clamp-2 min-h-[2lh] text-sm leading-snug text-muted-foreground mt-1">
             {children}
           </p>
         </Link>

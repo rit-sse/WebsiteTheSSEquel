@@ -60,6 +60,7 @@ describe("authLevelResolver", () => {
       isTechCommitteeDivisionManager: false,
       techCommitteeManagedDivision: null,
       isPrimary: false,
+      isPrimaryOfficer: false,
       isSeAdmin: false,
     });
   });
@@ -77,6 +78,9 @@ describe("authLevelResolver", () => {
     expect(auth.techCommitteeManagedDivision).toBe("Lab Division");
     expect(auth.isPrimary).toBe(true);
     expect(auth.isSeAdmin).toBe(true);
+    // `isPrimaryOfficer` is NEVER elevated — without a DB record there is
+    // no real primary position, so it stays false even in staging mode.
+    expect(auth.isPrimaryOfficer).toBe(false);
   });
 
   it("computes auth flags and profile completeness from user record", async () => {
@@ -89,7 +93,7 @@ describe("authLevelResolver", () => {
       linkedIn: "sse",
       mentor: [{ id: 1 }],
       officers: [
-        { id: 1, position: { title: "Mentoring Head", is_primary: false } },
+        { id: 1, position: { title: "Mentoring Head", is_primary: true } },
         { id: 2, position: { title: "Tech Head", is_primary: false } },
         {
           id: 4,
@@ -148,5 +152,16 @@ describe("authLevelResolver", () => {
     expect(auth.isTechCommitteeDivisionManager).toBe(true);
     expect(auth.techCommitteeManagedDivision).toBe("Lab Division");
     expect(auth.isPrimary).toBe(true);
+    // Regression guard: staging elevation must keep isSeAdmin=true even
+    // when the logged-in user has no real SE Admin Officer row. An
+    // unconditional `authLevel.isSeAdmin = …` assignment in
+    // resolveAuthLevelFromToken used to silently flip this back to false
+    // and lock staging devs out of isSeAdmin-gated dev endpoints.
+    expect(auth.isSeAdmin).toBe(true);
+    // `isPrimaryOfficer` must reflect DB truth even under staging — the
+    // mocked user has no primary-officer position, so the flag stays
+    // false. (Prevents regressions where the dashboard Elections item
+    // would leak to non-primary staging users like the Tech Head.)
+    expect(auth.isPrimaryOfficer).toBe(false);
   });
 });

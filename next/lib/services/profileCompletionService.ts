@@ -73,6 +73,8 @@ export async function maybeGrantProfileCompletionMembership(
         userId,
         reason: PROFILE_COMPLETION_REASON,
         dateGiven: new Date(),
+        term: current.term,
+        year: current.year,
       },
     });
 
