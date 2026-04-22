@@ -44,6 +44,7 @@ import type {
   SerializedElection,
   SerializedElectionOffice,
   SerializedNomination,
+  SerializedRunningMateInvitation,
   UserRef,
 } from "@/components/elections/types";
 import {
@@ -188,41 +189,9 @@ export default function ElectionPublicClient({
           }))
       );
 
-  const respondToRunningMateInvite = useCallback(
-    async (
-      nominationId: number,
-      action: "ACCEPT" | "DECLINE"
-    ) => {
-      try {
-        const response = await fetch(
-          `/api/elections/${election.id}/nominations/${nominationId}/running-mate/respond`,
-          {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action }),
-          }
-        );
-        if (!response.ok) {
-          toast.error(
-            (await response.text()) ||
-              "Failed to respond to running-mate invite"
-          );
-          return;
-        }
-        toast.success(
-          action === "ACCEPT"
-            ? "You're now running as VP on this ticket"
-            : "Invitation declined"
-        );
-        if (typeof window !== "undefined") {
-          window.location.reload();
-        }
-      } catch {
-        toast.error("Failed to respond to running-mate invite");
-      }
-    },
-    [election.id]
-  );
+  // Inline accept/decline used to live on this page; the VP now goes
+  // through the dedicated `/respond/running-mate/[nominationId]` flow
+  // so they can also write a candidate blurb.
 
   const totalNominations = election.offices.reduce(
     (acc: number, o: SerializedElectionOffice) => acc + o.nominations.length,
@@ -624,44 +593,36 @@ export default function ElectionPublicClient({
         </div>
       )}
 
-      {/* ---- Amendment 12: inbound running-mate invites ---- */}
+      {/* ---- Amendment 12: inbound running-mate invites ----
+           VPs now get the same dedicated accept-and-write-a-blurb flow
+           as direct nominees, so this banner just punts them to the
+           full page rather than offering an inline accept/decline. */}
       {inboundRunningMateInvites.length > 0 && (
         <div className="space-y-4">
           <h2 className="text-xl font-display font-bold">
             Running-Mate Invitations
           </h2>
           {inboundRunningMateInvites.map((invite) => (
-            <Card key={invite.nominationId} depth={2}>
-              <CardHeader>
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <CardTitle>
-                    {invite.presidentNomineeName} invited you to run as VP
-                  </CardTitle>
+            <Card key={invite.nominationId} depth={2} className="p-5">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="min-w-0 flex-1">
+                  <p className="eyebrow">You&rsquo;ve been invited to run</p>
+                  <p className="mt-1 font-display text-lg font-bold">
+                    Run as VP with {invite.presidentNomineeName}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Accept and write your candidate blurb on the response page.
+                  </p>
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  Accept to appear on the presidential ticket. If the ticket
-                  wins, you become Vice President.
-                </p>
-              </CardHeader>
-              <CardContent className="flex flex-wrap items-center gap-4">
-                <NeoBrutalistButton
-                  text="Accept"
-                  variant="green"
-                  size="sm"
-                  icon={<CheckCircle className="h-4 w-4" />}
-                  onClick={() =>
-                    respondToRunningMateInvite(invite.nominationId, "ACCEPT")
-                  }
-                />
-                <Button
-                  variant="outline"
-                  onClick={() =>
-                    respondToRunningMateInvite(invite.nominationId, "DECLINE")
-                  }
-                >
-                  Decline
+                <Button asChild size="sm">
+                  <Link
+                    href={`/elections/${election.slug}/respond/running-mate/${invite.nominationId}`}
+                  >
+                    <CheckCircle className="mr-2 h-4 w-4" />
+                    Respond
+                  </Link>
                 </Button>
-              </CardContent>
+              </div>
             </Card>
           ))}
         </div>
@@ -824,10 +785,10 @@ export default function ElectionPublicClient({
                   )}
                   {acceptedNominations.map(
                     (nomination: SerializedNomination) => {
-                      const runningMate =
+                      const acceptedRunningMate =
                         isPresidentOffice &&
                         nomination.runningMateInvitation?.status === "ACCEPTED"
-                          ? nomination.runningMateInvitation.invitee
+                          ? nomination.runningMateInvitation
                           : null;
                       return (
                         <Card
@@ -842,8 +803,10 @@ export default function ElectionPublicClient({
                             yearLevel={nomination.yearLevel}
                             status={nomination.status}
                           />
-                          {runningMate && (
-                            <RunningMateBlock runningMate={runningMate} />
+                          {acceptedRunningMate && (
+                            <RunningMateBlock
+                              invitation={acceptedRunningMate}
+                            />
                           )}
                         </Card>
                       );
@@ -931,29 +894,60 @@ function CandidateBlock({
 
 /**
  * Amendment 12 ticket view: render the president's running mate with the
- * same visual weight as the presidential nominee. VPs don't have their
- * own statement/program/year (they were invited, not nominated) so the
- * block degrades to avatar + name + a "Running mate" eyebrow + context
- * note — still a first-class candidate, just with lighter metadata.
+ * same visual weight as the presidential nominee. VPs now fill out their
+ * own statement / program / year on the dedicated running-mate accept
+ * page, so this block surfaces the same chips and bio as a regular
+ * `CandidateBlock` — they're a first-class candidate.
  */
-function RunningMateBlock({ runningMate }: { runningMate: UserRef }) {
+function RunningMateBlock({
+  invitation,
+}: {
+  invitation: SerializedRunningMateInvitation;
+}) {
   return (
-    <div className="relative rounded-lg border border-dashed border-muted-foreground/30 bg-muted/20 p-4">
-      <p className="eyebrow mb-3">Vice President · Running mate</p>
+    <div className="relative rounded-lg border border-dashed border-muted-foreground/30 bg-muted/20 p-4 space-y-3">
+      <p className="eyebrow">Vice President · Running mate</p>
       <div className="flex items-center gap-3">
         <ElectionAvatar
-          user={runningMate}
+          user={invitation.invitee}
           className="h-16 w-16 border-2 border-black"
           fallbackClassName="text-lg"
         />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-base font-semibold">{runningMate.name}</p>
+          <p className="truncate text-base font-semibold">
+            {invitation.invitee.name}
+          </p>
           <Badge variant="outline" className="mt-1">
             Accepted
           </Badge>
         </div>
       </div>
-      <p className="mt-3 text-xs text-muted-foreground">
+      {(invitation.program || invitation.yearLevel) && (
+        <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-sm text-muted-foreground">
+          {invitation.program && (
+            <Tooltip content={<p>Academic program</p>} size="sm">
+              <span className="inline-flex items-center gap-1.5">
+                <GraduationCap className="h-4 w-4 shrink-0" />
+                {invitation.program}
+              </span>
+            </Tooltip>
+          )}
+          {invitation.yearLevel && (
+            <Tooltip content={<p>Year level</p>} size="sm">
+              <span className="inline-flex items-center gap-1.5">
+                <Calendar className="h-4 w-4 shrink-0" />
+                Year {invitation.yearLevel}
+              </span>
+            </Tooltip>
+          )}
+        </div>
+      )}
+      {invitation.statement && (
+        <div className="rounded-lg bg-muted/40 p-4">
+          <p className="whitespace-pre-wrap text-sm">{invitation.statement}</p>
+        </div>
+      )}
+      <p className="text-xs text-muted-foreground">
         A vote for the presidential ticket is a vote for this pair. If the
         ticket wins, they take office together.
       </p>
