@@ -41,6 +41,15 @@ jobs:
         working-directory: ./next
         run: npm ci
 
+      # Generate the Prisma client explicitly. `@prisma/client`'s own
+      # postinstall does this in theory, but we've seen it flake between
+      # push and pull_request triggers on the same commit (tests fail
+      # with `@prisma/client did not initialize yet` and `Prisma.X is
+      # not a constructor`). Mirrors the same step in typecheck.yml.
+      - name: Generate Prisma client
+        working-directory: ./next
+        run: npx prisma generate
+
       - name: Run tests
         working-directory: ./next
         run: npm run test
