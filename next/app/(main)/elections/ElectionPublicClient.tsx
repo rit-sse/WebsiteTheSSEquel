@@ -228,7 +228,18 @@ export default function ElectionPublicClient({
           toast.error(msg);
           throw new Error(msg);
         }
-        toast.success("Nomination submitted");
+        // Server returns 201 for a brand-new nomination and 200 when the
+        // nominee was already nominated for this office (the duplicate
+        // attempt is recorded as a "second" — same row, second-nominator
+        // email goes out). Surface the distinction so people who second
+        // an existing nomination don't think their click did nothing.
+        if (response.status === 200) {
+          toast.success(
+            "Nomination seconded — they were already up for this office."
+          );
+        } else {
+          toast.success("Nomination submitted");
+        }
         // Reload so the freshly-created pending slot renders with
         // server-truth data (avoids hand-rolled optimistic merging).
         if (typeof window !== "undefined") {
@@ -391,15 +402,16 @@ export default function ElectionPublicClient({
                 )
               )
               .map((office: SerializedElectionOffice) => {
-                // Only surface the CURRENT user's outbound nominations
-                // to this office — active ones only (no declined /
-                // expired clutter). Gives the slot pattern per-office
-                // the same "you own this slot" vibe as the officer page.
-                const myOutbound = office.nominations.filter(
+                // Show every active nomination for this office regardless
+                // of who submitted it — the previous "your-outbound only"
+                // filter meant a member who tried to second an existing
+                // nomination saw their slot stay empty (the API correctly
+                // collapses the duplicate but doesn't reassign ownership),
+                // making it look like their click did nothing.
+                const activeNominations = office.nominations.filter(
                   (n: SerializedNomination) =>
-                    n.nominatorUserId === currentUserId &&
-                    (n.status === "PENDING_RESPONSE" ||
-                      n.status === "ACCEPTED")
+                    n.status === "PENDING_RESPONSE" ||
+                    n.status === "ACCEPTED"
                 );
                 const isPresidentOffice =
                   office.officerPosition.title === "President";
@@ -418,8 +430,13 @@ export default function ElectionPublicClient({
                       )}
                     </div>
                     <div className="space-y-1.5">
-                      {myOutbound.map((nomination) => {
+                      {activeNominations.map((nomination) => {
                         const isAccepted = nomination.status === "ACCEPTED";
+                        const isMine =
+                          nomination.nominatorUserId === currentUserId;
+                        const nominatedByLabel = isMine
+                          ? "Nominated by you"
+                          : `Nominated by ${nomination.nominator.name}`;
                         const avatar = (
                           <ElectionAvatar
                             user={nomination.nominee}
@@ -438,7 +455,7 @@ export default function ElectionPublicClient({
                               isAccepted
                                 ? {
                                     primary: nomination.nominee.name,
-                                    secondary: "Accepted the nomination",
+                                    secondary: `Accepted · ${nominatedByLabel}`,
                                     avatar,
                                   }
                                 : null
@@ -448,8 +465,7 @@ export default function ElectionPublicClient({
                                 ? null
                                 : {
                                     primary: nomination.nominee.name,
-                                    secondary:
-                                      "Awaiting nominee response",
+                                    secondary: `Awaiting response · ${nominatedByLabel}`,
                                     avatar,
                                     badgeLabel: "Invited",
                                   }
@@ -465,12 +481,14 @@ export default function ElectionPublicClient({
                         user={null}
                         pendingInvitation={null}
                         emptyLabel={
-                          myOutbound.length > 0
+                          activeNominations.length > 0
                             ? "Nominate another candidate"
                             : "No nominee invited yet"
                         }
                         inviteLabel={
-                          myOutbound.length > 0 ? "Invite another" : "Invite"
+                          activeNominations.length > 0
+                            ? "Invite another"
+                            : "Invite"
                         }
                         onInvite={() => setInviteOfficeId(office.id)}
                         disabled={submittingNomination}
@@ -493,6 +511,29 @@ export default function ElectionPublicClient({
         const inviteOfficeTitle =
           inviteOffice?.officerPosition.title ?? "this office";
         const isPresidentInvite = inviteOfficeTitle === "President";
+        // Surface every active nomination for this office in the search
+        // modal so members can see who's already up and decide whether
+        // to second or pick someone else, instead of clicking blindly
+        // and getting back a slot that looks empty.
+        const existingNominees = inviteOffice
+          ? inviteOffice.nominations
+              .filter(
+                (n: SerializedNomination) =>
+                  n.status === "PENDING_RESPONSE" ||
+                  n.status === "ACCEPTED"
+              )
+              .map((n: SerializedNomination) => ({
+                userId: n.nomineeUserId,
+                nominatorName:
+                  n.nominatorUserId === currentUserId
+                    ? "you"
+                    : n.nominator.name,
+                badgeLabel:
+                  n.status === "ACCEPTED"
+                    ? "Already accepted"
+                    : "Already nominated",
+              }))
+          : [];
         return (
           <UserSearchInviteModal
             open={inviteOfficeId !== null}
@@ -518,6 +559,7 @@ export default function ElectionPublicClient({
               />
             )}
             searchPlaceholder="Search SSE members by name or email…"
+            existingNominees={existingNominees}
           />
         );
       })()}
