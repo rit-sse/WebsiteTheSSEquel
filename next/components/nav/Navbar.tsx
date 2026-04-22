@@ -173,7 +173,11 @@ const Navbar: React.FC<NavbarProps> = ({
         setShowDashboard(data.isOfficer || data.isMentor);
         setUserId(data.userId ?? null);
         setProfileComplete(data.profileComplete ?? true);
-        setIsPrimary(!!data.isPrimary);
+        // Use the DB-truth flag, NOT `data.isPrimary` — the latter is
+        // set to true by STAGING_PROXY_AUTH for every signed-in user,
+        // which makes the Elections dropdown item show up for everyone
+        // on ssedev (including non-primaries like the Tech Head).
+        setIsPrimary(!!data.isPrimaryOfficer);
         setCanViewTechCommitteeDashboard(
           !!(
             data.isTechCommitteeHead ||

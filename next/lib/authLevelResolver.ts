@@ -31,6 +31,7 @@ function getDefaultAuthLevel(includeProfileComplete: boolean): AuthLevel {
     isTechCommitteeDivisionManager: false,
     techCommitteeManagedDivision: null,
     isPrimary: false,
+    isPrimaryOfficer: false,
     isSeAdmin: false,
   };
 
@@ -147,6 +148,13 @@ export async function resolveAuthLevelFromToken(
   authLevel.isUser = true;
   authLevel.membershipCount = membershipCount;
   authLevel.isMember = membershipCount >= 1;
+
+  // `isPrimaryOfficer` is ALWAYS the ground-truth DB state and is NOT
+  // affected by staging elevation. Use this (not `isPrimary`) when the
+  // UI must reflect the user's real-world role even on ssedev.
+  authLevel.isPrimaryOfficer = user.officers.some(
+    (officer) => officer.position.is_primary
+  );
 
   // NOTE: `isSeAdmin` is intentionally NOT assigned here. When
   // `stagingElevated` is true we want the top-of-function `true` default

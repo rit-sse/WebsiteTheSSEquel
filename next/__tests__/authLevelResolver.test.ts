@@ -60,6 +60,7 @@ describe("authLevelResolver", () => {
       isTechCommitteeDivisionManager: false,
       techCommitteeManagedDivision: null,
       isPrimary: false,
+      isPrimaryOfficer: false,
       isSeAdmin: false,
     });
   });
@@ -77,6 +78,9 @@ describe("authLevelResolver", () => {
     expect(auth.techCommitteeManagedDivision).toBe("Lab Division");
     expect(auth.isPrimary).toBe(true);
     expect(auth.isSeAdmin).toBe(true);
+    // `isPrimaryOfficer` is NEVER elevated — without a DB record there is
+    // no real primary position, so it stays false even in staging mode.
+    expect(auth.isPrimaryOfficer).toBe(false);
   });
 
   it("computes auth flags and profile completeness from user record", async () => {
@@ -154,5 +158,10 @@ describe("authLevelResolver", () => {
     // resolveAuthLevelFromToken used to silently flip this back to false
     // and lock staging devs out of isSeAdmin-gated dev endpoints.
     expect(auth.isSeAdmin).toBe(true);
+    // `isPrimaryOfficer` must reflect DB truth even under staging — the
+    // mocked user has no primary-officer position, so the flag stays
+    // false. (Prevents regressions where the dashboard Elections item
+    // would leak to non-primary staging users like the Tech Head.)
+    expect(auth.isPrimaryOfficer).toBe(false);
   });
 });

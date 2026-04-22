@@ -18,9 +18,10 @@ export default async function ElectionDashboardDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const authLevel = await getAuthLevel();
-  // Only primaries (or SE admins, via the stagingElevated path) can view
-  // the admin detail. Everyone else bounces to the home page.
-  if (!authLevel.isPrimary) {
+  // Only real primary officers can view the admin detail. Everyone else
+  // bounces to home. `isPrimaryOfficer` is DB truth and NOT affected by
+  // STAGING_PROXY_AUTH, so staging devs aren't silently let through.
+  if (!authLevel.isPrimaryOfficer) {
     redirect("/");
   }
 
