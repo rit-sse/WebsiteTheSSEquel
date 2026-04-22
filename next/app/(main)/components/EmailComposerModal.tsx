@@ -51,6 +51,12 @@ interface EmailComposerModalProps {
   onClose: () => void;
   /** Explicit recipients. When omitted, onSend must be provided. */
   recipients?: EmailRecipient[];
+  /**
+   * Override the count shown in the recipient summary + send button when
+   * the recipient list lives on the server (e.g. broadcast emails). Falls
+   * back to `recipients.length` when omitted.
+   */
+  recipientCount?: number;
   /** Override default send logic. Receives the composed payload; return { sent, failed?, message? }. */
   onSend?: (
     payload: EmailComposerSendPayload
@@ -83,11 +89,13 @@ export default function EmailComposerModal({
   open,
   onClose,
   recipients = [],
+  recipientCount,
   onSend,
   recipientSummary,
   defaultSubject = "",
   title = "Send Email",
 }: EmailComposerModalProps) {
+  const displayCount = recipientCount ?? recipients.length;
   const [subject, setSubject] = useState(defaultSubject);
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
@@ -257,8 +265,8 @@ export default function EmailComposerModal({
             <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/40 rounded-md px-3 py-2">
               <Mail className="h-4 w-4 shrink-0" />
               <span>
-                Sending to <strong>{recipients.length}</strong> recipient
-                {recipients.length !== 1 ? "s" : ""}
+                Sending to <strong>{displayCount}</strong> recipient
+                {displayCount !== 1 ? "s" : ""}
               </span>
             </div>
           )}
@@ -410,8 +418,8 @@ export default function EmailComposerModal({
             )}
             {sending
               ? "Sending..."
-              : recipients.length > 0
-                ? `Send to ${recipients.length}`
+              : displayCount > 0
+                ? `Send to ${displayCount}`
                 : "Send"}
           </Button>
         </ModalFooter>
@@ -422,7 +430,7 @@ export default function EmailComposerModal({
         open={confirmOpen}
         onOpenChange={(o) => !o && setConfirmOpen(false)}
         title="Confirm Send"
-        description={`Send "${subject}" to ${recipients.length} recipient${recipients.length !== 1 ? "s" : ""}?`}
+        description={`Send "${subject}" to ${displayCount} recipient${displayCount !== 1 ? "s" : ""}?`}
         className="max-w-sm"
       >
         <ModalFooter>

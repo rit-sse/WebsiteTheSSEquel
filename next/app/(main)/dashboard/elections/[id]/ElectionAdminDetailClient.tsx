@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import {
@@ -106,6 +106,9 @@ export default function ElectionAdminDetailClient({
   const [advanceLoading, setAdvanceLoading] = useState(false);
   const [emailOpen, setEmailOpen] = useState(false);
   const [emailKind, setEmailKind] = useState("BALLOT_ANNOUNCEMENT");
+  const [emailRecipientCount, setEmailRecipientCount] = useState<
+    number | undefined
+  >(undefined);
 
   // Settings state
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -402,6 +405,30 @@ export default function ElectionAdminDetailClient({
   /* ─── Computed values ─── */
 
   const nextPhase = getNextPhase(election.status);
+
+  /* ─── Email recipient count fetch ───
+       Run when the modal opens so the admin sees "Sending to N recipients"
+       before they hit Send. Recipients themselves live server-side. */
+  useEffect(() => {
+    if (!emailOpen) return;
+    let cancelled = false;
+    setEmailRecipientCount(undefined);
+    (async () => {
+      try {
+        const response = await fetch(`/api/elections/${election.id}/send-email`);
+        if (!response.ok) return;
+        const data: { count?: number } = await response.json();
+        if (!cancelled && typeof data.count === "number") {
+          setEmailRecipientCount(data.count);
+        }
+      } catch {
+        // Non-fatal — modal still works, the count just stays unknown.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [emailOpen, election.id]);
 
   /* ─── Render ─── */
 
@@ -775,6 +802,7 @@ export default function ElectionAdminDetailClient({
         onClose={() => setEmailOpen(false)}
         title="Email Eligible Voters"
         defaultSubject={`[SSE Election] ${election.title}`}
+        recipientCount={emailRecipientCount}
         onSend={sendEmail}
       />
       </NeoCardContent>

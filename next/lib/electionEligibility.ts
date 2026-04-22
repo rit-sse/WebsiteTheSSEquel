@@ -79,3 +79,26 @@ export async function listEligibleElectionVoters(atDate = new Date()) {
   });
 }
 
+/**
+ * Recipient pool for election BROADCAST emails (ballot announcement,
+ * reminder, nomination notice).
+ *
+ * Unlike `listEligibleElectionVoters`, this is NOT term-scoped — every
+ * user with at least one Memberships row is included. Per Jakob/Cayden:
+ * "everyone with a membership should be included in voter email blasts."
+ * Term-based eligibility still gates VOTING (see `isActiveMemberForElection`).
+ */
+export async function listElectionEmailRecipients() {
+  return prisma.user.findMany({
+    where: {
+      Memberships: { some: {} },
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+    },
+    orderBy: { name: "asc" },
+  });
+}
+
