@@ -1,7 +1,7 @@
 import prisma from "@/lib/prisma";
 import { getGatewayAuthLevel } from "@/lib/authGateway";
 import { getElectionUrl } from "@/lib/elections";
-import { listEligibleElectionVoters } from "@/lib/electionEligibility";
+import { listElectionEmailRecipients } from "@/lib/electionEligibility";
 import { sendEmail, isEmailConfigured, type EmailAttachment } from "@/lib/email";
 import { NextRequest } from "next/server";
 import { remark } from "remark";
@@ -13,6 +13,37 @@ import { ElectionEmailKind } from "@prisma/client";
 import { canManageElections } from "@/lib/seAdmin";
 
 export const dynamic = "force-dynamic";
+
+/**
+ * GET /api/elections/:id/send-email
+ *
+ * Returns just the count of broadcast-email recipients (every user with
+ * at least one Memberships row). Used by the dashboard EmailComposerModal
+ * so admins see "Sending to N recipients" before they hit Send.
+ *
+ * Uses `prisma.user.count` rather than `listElectionEmailRecipients` so
+ * we don't load every recipient's id/name/email just to discard them —
+ * the POST handler is the only path that actually needs the row data.
+ */
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const authLevel = await getGatewayAuthLevel(request);
+  if (!(await canManageElections(authLevel))) {
+    return new Response("Forbidden", { status: 403 });
+  }
+  const { id } = await params;
+  const electionId = Number(id);
+  if (!Number.isInteger(electionId)) {
+    return new Response("Invalid election ID", { status: 400 });
+  }
+
+  const count = await prisma.user.count({
+    where: { Memberships: { some: {} } },
+  });
+  return Response.json({ count });
+}
 
 async function markdownToHtml(md: string): Promise<string> {
   const result = await remark()
@@ -87,7 +118,7 @@ export async function POST(
     return new Response("subject and message are required", { status: 400 });
   }
 
-  const recipients = await listEligibleElectionVoters();
+  const recipients = await listElectionEmailRecipients();
   const excludeSubmitted = Boolean(body.excludeSubmitted);
   const submittedVoterIds = excludeSubmitted
     ? new Set(

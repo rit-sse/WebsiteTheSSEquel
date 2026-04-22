@@ -19,7 +19,20 @@ async function parseIds(
 
 /**
  * Running-mate invitee accepts or declines their invitation.
- * Body: { action: "ACCEPT" | "DECLINE", reason?: string }
+ *
+ * Body: {
+ *   action: "ACCEPT" | "DECLINE",
+ *   reason?: string,
+ *   // Candidate-profile fields (only honored on ACCEPT, all optional —
+ *   // omitted fields are unchanged):
+ *   statement?: string,
+ *   yearLevel?: number | null,
+ *   program?: string | null,
+ *   canRemainEnrolledFullYear?: boolean | null,
+ *   canRemainEnrolledNextTerm?: boolean | null,
+ *   isOnCampus?: boolean | null,
+ *   isOnCoop?: boolean | null,
+ * }
  */
 export async function PATCH(
   request: Request,
@@ -32,7 +45,17 @@ export async function PATCH(
     });
   }
 
-  let body: { action?: unknown; reason?: unknown };
+  let body: {
+    action?: unknown;
+    reason?: unknown;
+    statement?: unknown;
+    yearLevel?: unknown;
+    program?: unknown;
+    canRemainEnrolledFullYear?: unknown;
+    canRemainEnrolledNextTerm?: unknown;
+    isOnCampus?: unknown;
+    isOnCoop?: unknown;
+  };
   try {
     body = await request.json();
   } catch {
@@ -96,6 +119,38 @@ export async function PATCH(
         ? ElectionRunningMateStatus.ACCEPTED
         : ElectionRunningMateStatus.DECLINED;
 
+    // Candidate-profile fields are only honored on ACCEPT and only when
+    // the field is present in the body — that lets the same endpoint handle
+    // both "accept + initial profile" and a later "edit my profile" PATCH
+    // without forcing the caller to resend every field.
+    const profilePatch: Record<string, unknown> = {};
+    if (action === "ACCEPT") {
+      if (typeof body.statement === "string") {
+        profilePatch.statement = body.statement;
+      }
+      if (body.yearLevel === null) {
+        profilePatch.yearLevel = null;
+      } else if (typeof body.yearLevel === "number") {
+        profilePatch.yearLevel = body.yearLevel;
+      }
+      if (body.program === null) {
+        profilePatch.program = null;
+      } else if (typeof body.program === "string") {
+        profilePatch.program = body.program.trim() || null;
+      }
+      for (const key of [
+        "canRemainEnrolledFullYear",
+        "canRemainEnrolledNextTerm",
+        "isOnCampus",
+        "isOnCoop",
+      ] as const) {
+        const v = body[key];
+        if (typeof v === "boolean" || v === null) {
+          profilePatch[key] = v;
+        }
+      }
+    }
+
     const updated = await prisma.electionRunningMateInvitation.update({
       where: { id: invitation.id },
       data: {
@@ -105,6 +160,7 @@ export async function PATCH(
           action === "DECLINE" && typeof body.reason === "string"
             ? body.reason.trim() || null
             : null,
+        ...profilePatch,
       },
     });
 

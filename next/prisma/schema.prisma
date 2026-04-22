@@ -914,13 +914,19 @@ model Memberships {
   // helpers from `lib/academicTerm.ts::getCurrentAcademicTerm()` when
   // not explicitly provided. Lets us archive-by-term instead of
   // wholesale-wiping on new-semester handover.
+  //
+  // Multiple rows per (userId, term, year) are intentional — historical
+  // data showed members earning more than one membership in the same
+  // term (multi-event swipes, officer-grant + earned, etc.). The earlier
+  // unique constraint on this tuple was dropped after it silently
+  // collapsed every legitimate duplicate to a single row.
   term AcademicTerm
   year Int
 
   // Relational Fields
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, term, year])
+  @@index([userId, term, year])
   @@index([term, year])
 }
 
@@ -1229,6 +1235,18 @@ model ElectionRunningMateInvitation {
   respondedAt           DateTime?
   expiresAt             DateTime
   declineReason         String?                   @db.Text
+  // Amendment 12 follow-up: VP candidates also fill out a candidate
+  // profile when they accept their running-mate invitation. Mirrors the
+  // fields on `ElectionNomination` so the public election page and
+  // ballot can render the VP with the same statement/program/eligibility
+  // chips as a directly-nominated candidate.
+  statement                 String   @default("") @db.Text
+  yearLevel                 Int?
+  program                   String?  @db.VarChar(100)
+  canRemainEnrolledFullYear Boolean?
+  canRemainEnrolledNextTerm Boolean?
+  isOnCampus                Boolean?
+  isOnCoop                  Boolean?
   createdAt             DateTime                  @default(now())
   updatedAt             DateTime                  @updatedAt
 

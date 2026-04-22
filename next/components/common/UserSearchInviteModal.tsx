@@ -23,6 +23,20 @@ export interface UserSearchResult {
   image?: string | null;
 }
 
+/** Caller-supplied annotation rendered next to a search-result row.
+ *  The election flow uses this to flag users who have already been
+ *  nominated for the office being filled, so a member doesn't blindly
+ *  re-submit a duplicate (the API silently no-ops + sends a "second"
+ *  email; the slot UI never reflects the click as a fresh nomination). */
+export interface ExistingNominee {
+  userId: number;
+  /** Display name of the original nominator, or "you" when self. */
+  nominatorName: string;
+  /** Optional verb override — e.g. "Already accepted" once the nominee
+   *  has accepted. Defaults to "Already nominated". */
+  badgeLabel?: string;
+}
+
 interface UserSearchInviteModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -44,6 +58,12 @@ interface UserSearchInviteModalProps {
   renderAvatar?: (user: UserSearchResult) => ReactNode;
   /** Placeholder for the search input. */
   searchPlaceholder?: string;
+  /** Users that already have an active nomination/invitation in this
+   *  context. Rows for these users render a yellow "already nominated"
+   *  badge so the picker can decide whether to second or pick someone
+   *  else. Selection is still allowed — the API treats a duplicate as
+   *  a "second" and re-pings the nominee. */
+  existingNominees?: ExistingNominee[];
 }
 
 export default function UserSearchInviteModal({
@@ -56,7 +76,11 @@ export default function UserSearchInviteModal({
   preface,
   renderAvatar,
   searchPlaceholder = "Search by name or email…",
+  existingNominees = [],
 }: UserSearchInviteModalProps) {
+  const existingByUserId = new Map<number, ExistingNominee>(
+    existingNominees.map((entry) => [entry.userId, entry])
+  );
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<UserSearchResult[]>([]);
   const [searching, setSearching] = useState(false);
@@ -173,6 +197,7 @@ export default function UserSearchInviteModal({
             <ul className="divide-y divide-border/40">
               {results.map((user) => {
                 const isSelected = selectedId === user.id;
+                const existing = existingByUserId.get(user.id);
                 return (
                   <li key={user.id}>
                     <button
@@ -193,13 +218,27 @@ export default function UserSearchInviteModal({
                         </div>
                       )}
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium">
-                          {user.name}
-                        </p>
-                        {user.email && (
-                          <p className="truncate text-xs text-muted-foreground">
-                            {user.email}
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="truncate text-sm font-medium">
+                            {user.name}
                           </p>
+                          {existing && (
+                            <span className="inline-flex shrink-0 items-center rounded-md border border-amber-400/60 bg-amber-100/60 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-700 dark:border-amber-500/40 dark:bg-amber-500/15 dark:text-amber-300">
+                              {existing.badgeLabel ?? "Already nominated"}
+                            </span>
+                          )}
+                        </div>
+                        {existing ? (
+                          <p className="truncate text-xs text-amber-700 dark:text-amber-300">
+                            By {existing.nominatorName} — picking again
+                            sends a &ldquo;seconded&rdquo; email.
+                          </p>
+                        ) : (
+                          user.email && (
+                            <p className="truncate text-xs text-muted-foreground">
+                              {user.email}
+                            </p>
+                          )
                         )}
                       </div>
                     </button>

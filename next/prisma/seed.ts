@@ -89,11 +89,14 @@ async function seedOfficerPosition() {
     // Primary Officers (4)
     { title: "President", is_primary: true, email: "sse-president@rit.edu" },
     {
-      // Post-Amendment 12: VP is chosen as a running mate, not separately
-      // elected. Still a role held by an officer, but not a "primary" in
-      // the election sense.
+      // VP is chosen as a running mate (Amendment 12) but is still a
+      // primary officer once they take office — they need primary-only
+      // dashboard access (e.g. the Elections panel) like the rest of
+      // the executive team. The election system filters VP out of the
+      // direct-nomination grid via `isTicketDerivedOffice`, so flipping
+      // is_primary back on doesn't make them separately nominatable.
       title: "Vice President",
-      is_primary: false,
+      is_primary: true,
       email: "sse-vicepresident@rit.edu",
     },
     { title: "Treasurer", is_primary: true, email: "sse-treasurer@rit.edu" },
@@ -1267,9 +1270,9 @@ async function seedEvents() {
 }
 
 async function seedMemberships() {
-  // Spread across three terms so the (userId, term, year) composite
-  // unique constraint is satisfied and the fixtures exercise the
-  // historical-by-term lookup paths.
+  // Spread across multiple terms so fixtures exercise the per-term
+  // lookup paths. Multiple rows per (userId, term, year) are allowed —
+  // there's intentionally no unique constraint on that tuple.
   const rows: Array<{
     userId: number;
     reason: string;
@@ -1283,18 +1286,23 @@ async function seedMemberships() {
     { userId: 1, reason: "Test4", dateGiven: new Date("2025-10-03 12:00:00"), term: "FALL", year: 2025 },
     { userId: 3, reason: "Test5", dateGiven: new Date("2026-02-04 12:00:00"), term: "SPRING", year: 2026 },
   ];
+  // Idempotent re-seed: skip rows whose exact (userId, reason, term, year)
+  // already exists. Without a unique constraint we can't use upsert, but
+  // the (reason, term, year) tuple is distinctive enough across the
+  // fixture set above to act as a stable "have we seeded this?" key.
   for (const row of rows) {
-    await prisma.memberships.upsert({
+    const existing = await prisma.memberships.findFirst({
       where: {
-        userId_term_year: {
-          userId: row.userId,
-          term: row.term,
-          year: row.year,
-        },
+        userId: row.userId,
+        reason: row.reason,
+        term: row.term,
+        year: row.year,
       },
-      update: {},
-      create: row,
+      select: { id: true },
     });
+    if (!existing) {
+      await prisma.memberships.create({ data: row });
+    }
   }
   console.log(
     `seedMemberships: ${rows.length} memberships across ` +

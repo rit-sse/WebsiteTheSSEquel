@@ -48,6 +48,15 @@ export interface SerializedRunningMateInvitation {
   expiresAt: string;
   respondedAt: string | null;
   declineReason: string | null;
+  /** VP candidate-profile fields. Mirror `SerializedNomination`. Empty
+   *  string / null until the VP fills them in on the accept page. */
+  statement: string;
+  yearLevel: number | null;
+  program: string | null;
+  canRemainEnrolledFullYear: boolean | null;
+  canRemainEnrolledNextTerm: boolean | null;
+  isOnCampus: boolean | null;
+  isOnCoop: boolean | null;
   createdAt: string;
   updatedAt: string;
   invitee: UserRef;

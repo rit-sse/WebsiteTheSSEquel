@@ -26,6 +26,7 @@ vi.mock("@/lib/academicTerm", () => ({
 
 import {
   isActiveMemberForElection,
+  listElectionEmailRecipients,
   listEligibleElectionVoters,
 } from "@/lib/electionEligibility";
 
@@ -93,6 +94,35 @@ describe("election eligibility", () => {
         }),
       })
     );
+  });
+
+  it("listElectionEmailRecipients returns every user with any membership row", async () => {
+    // Two users with memberships across very different historical
+    // terms — both should still be in the broadcast pool because the
+    // filter is `Memberships: { some: {} }` (no term/year).
+    const mockRows = [
+      { id: 1, name: "Aaron Adams", email: "aaron@example.com" },
+      { id: 2, name: "Beth Brown", email: "beth@example.com" },
+    ];
+    mockUserFindMany.mockResolvedValue(mockRows);
+
+    const result = await listElectionEmailRecipients();
+
+    expect(result).toEqual(mockRows);
+    expect(mockUserFindMany).toHaveBeenCalledTimes(1);
+    const callArg = mockUserFindMany.mock.calls[0][0];
+    // The query MUST be untouched by term/year — broadcast emails go
+    // to "everyone with at least one membership ever," per the SE
+    // Office. A regression that re-narrows this would silently drop
+    // recipients (which is exactly what was reported as the bug).
+    expect(callArg).toEqual({
+      where: { Memberships: { some: {} } },
+      select: { id: true, name: true, email: true },
+      orderBy: { name: "asc" },
+    });
+    // And the academic-term helpers must not have been consulted.
+    expect(mockGetCurrentAcademicTerm).not.toHaveBeenCalled();
+    expect(mockGetAcademicTermDateRange).not.toHaveBeenCalled();
   });
 });
 
