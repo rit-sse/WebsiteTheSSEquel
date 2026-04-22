@@ -800,7 +800,7 @@ export default function ElectionAdminDetailClient({
       <EmailComposerModal
         open={emailOpen}
         onClose={() => setEmailOpen(false)}
-        title="Email Eligible Voters"
+        title="Email Members"
         defaultSubject={`[SSE Election] ${election.title}`}
         recipientCount={emailRecipientCount}
         onSend={sendEmail}

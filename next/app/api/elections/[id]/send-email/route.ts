@@ -20,6 +20,10 @@ export const dynamic = "force-dynamic";
  * Returns just the count of broadcast-email recipients (every user with
  * at least one Memberships row). Used by the dashboard EmailComposerModal
  * so admins see "Sending to N recipients" before they hit Send.
+ *
+ * Uses `prisma.user.count` rather than `listElectionEmailRecipients` so
+ * we don't load every recipient's id/name/email just to discard them —
+ * the POST handler is the only path that actually needs the row data.
  */
 export async function GET(
   request: NextRequest,
@@ -35,8 +39,10 @@ export async function GET(
     return new Response("Invalid election ID", { status: 400 });
   }
 
-  const recipients = await listElectionEmailRecipients();
-  return Response.json({ count: recipients.length });
+  const count = await prisma.user.count({
+    where: { Memberships: { some: {} } },
+  });
+  return Response.json({ count });
 }
 
 async function markdownToHtml(md: string): Promise<string> {

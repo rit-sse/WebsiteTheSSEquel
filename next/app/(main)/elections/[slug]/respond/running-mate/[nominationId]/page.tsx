@@ -69,7 +69,10 @@ export default async function RespondToRunningMatePage({
       electionTitle={serializedElection.title}
       presidentNomination={presidentNomination}
       invitation={invitation}
-      responseDeadline={serializedElection.votingOpenAt}
+      // Use the invitation's own TTL (~22h) rather than the election's
+      // votingOpenAt — the API enforces `expiresAt` exactly and bumps
+      // declined/expired invitations to the EXPIRED state.
+      responseDeadline={invitation.expiresAt}
     />
   );
 }

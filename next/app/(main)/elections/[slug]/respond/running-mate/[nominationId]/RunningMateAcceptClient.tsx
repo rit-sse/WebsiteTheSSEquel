@@ -10,7 +10,6 @@ import {
   ChevronRight,
   Info,
   Rocket,
-  Undo2,
   X,
 } from "lucide-react";
 import {
@@ -223,8 +222,8 @@ export default function RunningMateAcceptClient({
 
       {step === "declined" && (
         <DeclinedStep
+          electionSlug={electionSlug}
           presidentName={presidentNomination.nominee.name}
-          onUndo={() => setStep("decide")}
         />
       )}
     </section>
@@ -533,11 +532,11 @@ function DoneStep({
 }
 
 function DeclinedStep({
+  electionSlug,
   presidentName,
-  onUndo,
 }: {
+  electionSlug: string;
   presidentName: string;
-  onUndo: () => void;
 }) {
   return (
     <NeoCard depth={1}>
@@ -547,12 +546,17 @@ function DeclinedStep({
         </h2>
         <p className="mx-auto max-w-prose text-sm text-muted-foreground">
           You&rsquo;ve declined the running-mate invitation from{" "}
-          {presidentName}. Thanks for letting them know.
+          {presidentName}. Thanks for letting them know — if you change your
+          mind, ask them to send a fresh invitation (declined invitations
+          can&rsquo;t be re-opened in place).
         </p>
         <div className="flex justify-center pt-2">
-          <Button variant="outline" className="gap-2" onClick={onUndo}>
-            <Undo2 className="h-4 w-4" /> Changed your mind? Undo decline
-          </Button>
+          <Link
+            href={`/elections/${electionSlug}`}
+            className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
+          >
+            Back to election <ArrowRight className="h-4 w-4" />
+          </Link>
         </div>
       </NeoCardContent>
     </NeoCard>
