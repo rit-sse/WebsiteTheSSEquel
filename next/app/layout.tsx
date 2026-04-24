@@ -67,7 +67,7 @@ export default async function RootLayout({
     // Also: https://www.reddit.com/r/nextjs/comments/138smpm/how_to_fix_extra_attributes_from_the_server_error/
     <html
       lang="en"
-      data-theme="dark"
+      data-theme="light"
       data-style="neo"
       data-font="pt-serif"
       className={`${inter.variable} ${rethinkSans.variable} ${ptSerif.variable}`}
