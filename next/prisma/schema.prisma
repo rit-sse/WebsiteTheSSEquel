@@ -1008,6 +1008,52 @@ model Sponsor {
   updatedAt DateTime @updatedAt
 }
 
+model SponsorshipInquiry {
+  // Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
+
+  // Company information
+  companyName  String
+  contactName  String
+  contactEmail String
+  contactPhone String?
+
+  // Interested sponsorship tier: "tier1", "tier2", "tier3", or "custom"
+  interestedTier String
+
+  // Additional message from the company
+  message String?
+
+  // Status: pending, contacted, approved, declined
+  status String @default("pending")
+
+  // Timestamp when inquiry was created
+  createdAt DateTime @default(now())
+}
+
+model RecruitingTalkRequest {
+  // Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
+
+  // Company information
+  companyName  String
+  contactName  String
+  contactEmail String
+  contactPhone String?
+
+  // Talk details
+  preferredDates    String // Comma-separated preferred dates
+  talkType          String // "tech_talk", "interview_session", "workshop", "info_session"
+  expectedAttendees Int?
+  description       String?
+
+  // Status: pending, scheduled, completed, declined
+  status String @default("pending")
+
+  // Timestamp when request was created
+  createdAt DateTime @default(now())
+}
+
 model PurchaseRequest {
   // Store an automatically generated unique int for id
   id Int @id @default(autoincrement())

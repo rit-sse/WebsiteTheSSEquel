@@ -364,6 +364,15 @@ const Navbar: React.FC<NavbarProps> = ({
                 </NavigationMenuItem>
               )}
 
+              <NavigationMenuItem>
+                <NavigationMenuLink
+                  asChild
+                  className={navigationMenuTriggerStyle()}
+                >
+                  <Link href="/sponsors">Sponsors</Link>
+                </NavigationMenuLink>
+              </NavigationMenuItem>
+
               <NavigationMenuItem value="about">
                 <NavigationMenuTrigger onClick={handleTriggerClick("about")}>
                   About
@@ -481,6 +490,10 @@ const Navbar: React.FC<NavbarProps> = ({
                     Elections
                   </MobileNavLink>
                 )}
+
+                <MobileNavLink href="/sponsors" onClick={() => setOpen(false)}>
+                  Sponsors
+                </MobileNavLink>
 
                 <MobileNavCollapsible title="About">
                   {aboutItems.map((item) => (
