@@ -4,13 +4,14 @@ import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Building2, Handshake, Calendar } from "lucide-react";
+import { Plus, Building2, Handshake, Calendar, Mic } from "lucide-react";
 import { Modal, ModalFooter } from "@/components/ui/modal";
 import SponsorCard, { Sponsor } from "./SponsorCard";
 import AddSponsorModal from "./AddSponsorModal";
 import EditSponsorModal from "./EditSponsorModal";
 import SponsorInquiriesSection from "./SponsorInquiriesSection";
 import RecruitingTalkRequestsSection from "./RecruitingTalkRequestsSection";
+import ViseTalkRequestsSection from "./ViseTalkRequestsSection";
 
 export default function SponsorsPageContent() {
   const [sponsors, setSponsors] = useState<Sponsor[]>([]);
@@ -102,6 +103,11 @@ export default function SponsorsPageContent() {
               <span className="hidden sm:inline">Recruiting Talks</span>
               <span className="sm:hidden">Talks</span>
             </TabsTrigger>
+            <TabsTrigger value="vise" className="flex items-center gap-2">
+              <Mic className="h-4 w-4" />
+              <span className="hidden sm:inline">ViSE Proposals</span>
+              <span className="sm:hidden">ViSE</span>
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="sponsors">
@@ -148,6 +154,10 @@ export default function SponsorsPageContent() {
 
           <TabsContent value="talks">
             <RecruitingTalkRequestsSection />
+          </TabsContent>
+
+          <TabsContent value="vise">
+            <ViseTalkRequestsSection />
           </TabsContent>
         </Tabs>
       </Card>

@@ -1054,6 +1054,36 @@ model RecruitingTalkRequest {
   createdAt DateTime @default(now())
 }
 
+model ViseTalkRequest {
+  // Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
+
+  // Speaker information
+  speakerName  String
+  speakerEmail String
+  speakerPhone String?
+
+  // Company, school, or independent affiliation (optional)
+  affiliation String?
+
+  // Talk details
+  talkTitle    String
+  talkAbstract String // What the talk is about
+  speakerBio   String // Who the speaker is
+
+  // Preferred date range or specific dates (free-form)
+  preferredDates String
+
+  // Talk format: "in_person", "virtual", "hybrid"
+  talkFormat String
+
+  // Status: pending, scheduled, completed, declined
+  status String @default("pending")
+
+  // Timestamp when request was created
+  createdAt DateTime @default(now())
+}
+
 model PurchaseRequest {
   // Store an automatically generated unique int for id
   id Int @id @default(autoincrement())

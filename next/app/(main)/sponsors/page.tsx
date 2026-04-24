@@ -3,6 +3,7 @@ import { NeoCard } from "@/components/ui/neo-card";
 import SponsorshipTiers from "./SponsorshipTiers";
 import BecomeSponsorForm from "./BecomeSponsorForm";
 import RecruitingTalkForm from "./RecruitingTalkForm";
+import ViseTalkForm from "./ViseTalkForm";
 
 export default function SponsorsPage() {
   return (
@@ -41,13 +42,15 @@ export default function SponsorsPage() {
             Ready to Partner?
           </h2>
           <p className="text-muted-foreground mb-8">
-            Whether you&apos;re interested in sponsoring SSE or scheduling a recruiting talk, 
-            we&apos;d love to hear from you. Fill out one of the forms below and our team will 
-            get back to you shortly.
+            Whether you&apos;re interested in sponsoring SSE, scheduling a
+            recruiting talk, or proposing a ViSE talk, we&apos;d love to hear
+            from you. Fill out one of the forms below and our team will get
+            back to you shortly.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center flex-wrap">
             <BecomeSponsorForm />
             <RecruitingTalkForm />
+            <ViseTalkForm />
           </div>
         </div>
       </Card>
@@ -97,6 +100,63 @@ export default function SponsorsPage() {
               <li className="flex items-start gap-2">
                 <span className="text-primary mt-1">•</span>
                 <span>Flexible scheduling to fit your needs</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </Card>
+
+      {/* Voices in Software Engineering (ViSE) Section */}
+      <Card className="w-full p-6 md:p-10">
+        <h2 className="text-3xl font-bold font-display mb-2">
+          Voices in Software Engineering (ViSE)
+        </h2>
+        <p className="text-muted-foreground mb-6">
+          Our speaker series brings industry professionals, alumni, researchers,
+          and independent engineers into the SSE community to share their
+          stories, work, and insights. If you have something to say, we want
+          to hear it.
+        </p>
+        <div className="grid md:grid-cols-2 gap-8">
+          <div>
+            <h3 className="text-xl font-semibold mb-3">Who We&apos;re Looking For</h3>
+            <ul className="space-y-2 text-muted-foreground">
+              <li className="flex items-start gap-2">
+                <span className="text-primary mt-1">•</span>
+                <span>Engineers talking about work they&apos;re proud of</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-primary mt-1">•</span>
+                <span>Researchers sharing current projects</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-primary mt-1">•</span>
+                <span>Alumni reflecting on career paths</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-primary mt-1">•</span>
+                <span>Independent voices with a technical story to tell</span>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h3 className="text-xl font-semibold mb-3">What to Expect</h3>
+            <ul className="space-y-2 text-muted-foreground">
+              <li className="flex items-start gap-2">
+                <span className="text-primary mt-1">•</span>
+                <span>A curious, engaged audience of CS/SE students</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-primary mt-1">•</span>
+                <span>In-person (GOL-1670), virtual, or hybrid formats</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-primary mt-1">•</span>
+                <span>Typical talks run 30–60 minutes with Q&amp;A</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-primary mt-1">•</span>
+                <span>No sales pitches &mdash; ViSE is about ideas, not recruiting</span>
               </li>
             </ul>
           </div>
