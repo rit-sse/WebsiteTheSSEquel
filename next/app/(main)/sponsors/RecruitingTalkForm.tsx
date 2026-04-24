@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import NeoBrutalistButton from "@/components/neo-brutalist-button";
 import {
   Select,
   SelectContent,
@@ -98,10 +99,12 @@ export default function RecruitingTalkForm() {
 
   return (
     <>
-      <Button onClick={() => setOpen(true)} variant="secondary" size="lg">
-        <Calendar className="h-5 w-5 mr-2" />
-        Schedule a Talk
-      </Button>
+      <NeoBrutalistButton
+        onClick={() => setOpen(true)}
+        text="Schedule a Talk"
+        variant="blue"
+        icon={<Calendar className="h-[18px] w-[18px]" />}
+      />
 
       <Modal
         open={open}

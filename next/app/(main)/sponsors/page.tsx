@@ -173,11 +173,11 @@ export default function SponsorsPage() {
             Have questions about sponsorship or recruiting opportunities? 
             Reach out to us directly.
           </p>
-          <a 
-            href="mailto:sse@rit.edu" 
+          <a
+            href="mailto:societyofsoftwareengineers@gmail.com"
             className="text-primary hover:underline font-medium text-lg"
           >
-            sse@rit.edu
+            societyofsoftwareengineers@gmail.com
           </a>
         </div>
       </Card>
