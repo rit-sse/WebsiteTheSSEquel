@@ -236,7 +236,11 @@ If SMTP is missing or invalid, email endpoints will fail with configuration/auth
 
 If you run the project now, you'll encounter schema errors. This is because the local database hasn't been built. We use Prisma for managing the Postgres database, so we'll use [Prisma's migrate command](https://www.prisma.io/docs/concepts/components/prisma-migrate/migrate-development-production) to build the db tables using the schema defined in the [schema.prisma](../next/prisma/schema.prisma) file.
 
-In the /next/ directory, run `npx prisma migrate dev`. Then run `npx prisma db seed` to populate the database with test data.
+In the /next/ directory, run the following commands to build and push the schema to the database: 
+`npx prisma migrate dev`
+`npx prisma db push`
+`npx prisma generate`
+then finally, run `npx prisma db seed` to populate the database with test data.
 
 That's it! You should now be able to run `npm run dev` and view the website at `localhost:3000` with authentication and access to your local database instance. Try logging in with your RIT email.
 
