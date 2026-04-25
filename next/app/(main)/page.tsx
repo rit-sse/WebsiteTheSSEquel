@@ -10,6 +10,8 @@ import { Sponsor } from "@/components/common/Sponsor";
 import { HeroCTA } from "../HeroCTA";
 import { HeroImage } from "../HeroImage";
 import { NeoCard } from "@/components/ui/neo-card";
+import NeoBrutalistButton from "@/components/neo-brutalist-button";
+import { Handshake, Building2, Mic, ArrowRight } from "lucide-react";
 import prisma from "@/lib/prisma";
 import { getActiveElection } from "@/lib/elections";
 
@@ -125,6 +127,66 @@ export default async function Home() {
           </div>
         </NeoCard>
       )}
+
+      {/* Partner With SSE CTA */}
+      <NeoCard className="w-full p-6 md:p-10">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold font-display mb-3">
+            Partner With SSE
+          </h2>
+          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+            Whether you&apos;re an alum with a story to tell, a company looking
+            to hire great engineers, or an organization wanting to support the
+            next generation of developers &mdash; we&apos;d love to work with
+            you.
+          </p>
+        </div>
+
+        <div className="grid gap-6 grid-cols-1 md:grid-cols-3 mb-8">
+          <NeoCard depth={2} className="p-5">
+            <div className="flex items-center gap-3 mb-2">
+              <Handshake className="h-6 w-6 text-primary flex-shrink-0" />
+              <h3 className="text-lg font-semibold">Sponsors</h3>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Support SSE financially and get visibility with motivated CS/SE
+              students. Tiered options available.
+            </p>
+          </NeoCard>
+
+          <NeoCard depth={2} className="p-5">
+            <div className="flex items-center gap-3 mb-2">
+              <Building2 className="h-6 w-6 text-primary flex-shrink-0" />
+              <h3 className="text-lg font-semibold">Companies</h3>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Host a tech talk, interview session, or workshop in our lab.
+              Direct access to engineers ready for internships and full-time
+              roles.
+            </p>
+          </NeoCard>
+
+          <NeoCard depth={2} className="p-5">
+            <div className="flex items-center gap-3 mb-2">
+              <Mic className="h-6 w-6 text-primary flex-shrink-0" />
+              <h3 className="text-lg font-semibold">Alumni &amp; Speakers</h3>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Propose a Voices in Software Engineering (ViSE) talk. Share your
+              path, your work, or an idea with the community that shaped you.
+            </p>
+          </NeoCard>
+        </div>
+
+        <div className="flex justify-center">
+          <NeoBrutalistButton
+            href="/sponsors"
+            text="Get Involved"
+            variant="green"
+            icon={<ArrowRight className="h-[18px] w-[18px]" />}
+          />
+        </div>
+      </NeoCard>
     </div>
   );
 }

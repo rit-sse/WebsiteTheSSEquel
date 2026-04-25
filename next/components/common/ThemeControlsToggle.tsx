@@ -9,7 +9,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
 export default function ThemeControlsToggle() {
-  const { theme, setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
   const { fontMode, setFontMode } = useFontMode();
   const { styleMode, setStyleMode } = useStyleMode();
   const isMobile = useIsMobile();
@@ -55,7 +55,7 @@ export default function ThemeControlsToggle() {
       return;
     }
 
-    setTheme(theme === "dark" ? "light" : "dark");
+    setTheme(resolvedTheme === "dark" ? "light" : "dark");
     if (isMobile) {
       setIsExpanded(false);
     }
@@ -72,15 +72,15 @@ export default function ThemeControlsToggle() {
     >
       <button
         type="button"
-        aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
-        title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+        aria-label={`Switch to ${resolvedTheme === "dark" ? "light" : "dark"} mode`}
+        title={`Switch to ${resolvedTheme === "dark" ? "light" : "dark"} mode`}
         onClick={handleThemeClick}
         className={cn(
           "inline-flex h-7 w-7 items-center justify-center rounded-full transition-colors hover:bg-muted/60",
           isNudging && "animate-shake"
         )}
       >
-        {theme === "dark" ? (
+        {resolvedTheme === "dark" ? (
           <Moon className="h-4 w-4" />
         ) : (
           <Sun className="h-4 w-4" />

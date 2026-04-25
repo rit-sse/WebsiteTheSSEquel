@@ -25,8 +25,8 @@ export function Providers({
           <FontModeProvider defaultMode="pt-serif">
             <ThemeProvider
               attribute="data-theme"
-              defaultTheme="dark"
-              enableSystem={false}
+              defaultTheme="system"
+              enableSystem
               disableTransitionOnChange
               nonce={nonce}
             >
