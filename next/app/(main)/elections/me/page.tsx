@@ -128,6 +128,40 @@ export default async function MyElectionsPage() {
               elections. Edit your candidate profile or respond to outstanding
               invitations from here.
             </p>
+            {/* Surface the per-election profile sync so candidates running
+                for more than one office (very common in primaries) don't
+                think they need to re-type their bio per role. */}
+            {(() => {
+              const positionsByElection = new Map<number, number>();
+              for (const n of nominations) {
+                const eid = n.electionOffice.election.id;
+                positionsByElection.set(
+                  eid,
+                  (positionsByElection.get(eid) ?? 0) + 1
+                );
+              }
+              for (const i of runningMateInvites) {
+                const eid =
+                  i.presidentNomination.electionOffice.election.id;
+                positionsByElection.set(
+                  eid,
+                  (positionsByElection.get(eid) ?? 0) + 1
+                );
+              }
+              const hasMultiInAnyElection = Array.from(
+                positionsByElection.values()
+              ).some((c) => c > 1);
+              if (!hasMultiInAnyElection) return null;
+              return (
+                <p className="text-xs text-muted-foreground bg-muted/40 rounded-md px-3 py-2 inline-flex items-center gap-2">
+                  <Pencil className="h-3.5 w-3.5 shrink-0" />
+                  You&rsquo;re running for more than one office in the same
+                  election — your bio, program, year, and eligibility are
+                  shared across all of those positions, so editing once
+                  updates them everywhere.
+                </p>
+              );
+            })()}
           </div>
 
           {/* ─── Nominations (you've been nominated for an office) ─── */}

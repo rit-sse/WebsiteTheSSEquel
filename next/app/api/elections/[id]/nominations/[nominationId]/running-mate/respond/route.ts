@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
 import { getGatewayAuthLevel } from "@/lib/authGateway";
 import { isActiveMemberForElection } from "@/lib/electionEligibility";
+import { propagateCandidateProfile } from "@/lib/electionCandidateProfile";
 import { ElectionRunningMateStatus } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
@@ -191,6 +192,32 @@ export async function PATCH(
         ...profilePatch,
       },
     });
+
+    // VPs who are also direct candidates (running for President /
+    // Treasurer / etc. in the same election) should see one consistent
+    // candidate profile — propagate the just-saved blurb across all
+    // their other open nominations + invitations. Only on ACCEPT, since
+    // declined rows have no profile to share.
+    if (action === "ACCEPT") {
+      try {
+        await propagateCandidateProfile(
+          electionId,
+          authLevel.userId,
+          {
+            statement: updated.statement,
+            yearLevel: updated.yearLevel,
+            program: updated.program,
+            canRemainEnrolledFullYear: updated.canRemainEnrolledFullYear,
+            canRemainEnrolledNextTerm: updated.canRemainEnrolledNextTerm,
+            isOnCampus: updated.isOnCampus,
+            isOnCoop: updated.isOnCoop,
+          },
+          { excludeRunningMateInvitationId: invitation.id }
+        );
+      } catch (error) {
+        console.error("Failed to propagate candidate profile:", error);
+      }
+    }
 
     return Response.json(updated);
   } catch (error) {
