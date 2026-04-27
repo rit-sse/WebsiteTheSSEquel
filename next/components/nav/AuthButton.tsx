@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { signIn, signOut, useSession } from "next-auth/react";
-import { User, LogOut, Vote } from "lucide-react";
+import { User, LogOut, Vote, Mail } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -104,11 +104,22 @@ export default function AuthButton({
           {userId && (
             <DropdownMenuItem asChild>
               <Link
-                href="/elections/me"
+                href="/elections/me#nominations"
                 className="cursor-pointer flex items-center"
               >
                 <Vote className="mr-2 h-4 w-4" />
                 My Nominations
+              </Link>
+            </DropdownMenuItem>
+          )}
+          {userId && (
+            <DropdownMenuItem asChild>
+              <Link
+                href="/elections/me#invitations"
+                className="cursor-pointer flex items-center"
+              >
+                <Mail className="mr-2 h-4 w-4" />
+                My Invitations
               </Link>
             </DropdownMenuItem>
           )}

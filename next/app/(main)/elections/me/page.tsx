@@ -165,7 +165,7 @@ export default async function MyElectionsPage() {
           </div>
 
           {/* ─── Nominations (you've been nominated for an office) ─── */}
-          <div className="space-y-3">
+          <div id="nominations" className="space-y-3 scroll-mt-24">
             <h2 className="font-display text-xl font-bold">
               Nominations
             </h2>
@@ -241,7 +241,7 @@ export default async function MyElectionsPage() {
           </div>
 
           {/* ─── VP running-mate invitations ─── */}
-          <div className="space-y-3">
+          <div id="invitations" className="space-y-3 scroll-mt-24">
             <h2 className="font-display text-xl font-bold">
               Running-mate invitations
             </h2>
