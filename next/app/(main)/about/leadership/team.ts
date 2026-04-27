@@ -14,6 +14,10 @@ export interface OfficerPosition {
   id: number;
   title: string;
   is_primary: boolean;
+  /** PRIMARY_OFFICER (default) or SE_OFFICE (Admin Asst / Dean / SE
+   *  Office Head / Undergraduate Dean). Used by the leadership page
+   *  to split SE Office out of the Committee Heads bucket. */
+  category?: "PRIMARY_OFFICER" | "SE_OFFICE";
 }
 
 export interface PositionWithOfficer {
@@ -23,5 +27,6 @@ export interface PositionWithOfficer {
 
 export interface Team {
   primary_officers: PositionWithOfficer[];
+  se_office: PositionWithOfficer[];
   committee_heads: PositionWithOfficer[];
 }

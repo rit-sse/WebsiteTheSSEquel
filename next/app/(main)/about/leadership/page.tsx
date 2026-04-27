@@ -74,6 +74,7 @@ export default function Leadership() {
   // State list of all positions with their officers
   const [teamData, setTeamData] = useState<Team>({
     primary_officers: [],
+    se_office: [],
     committee_heads: [],
   });
   // Loading state
@@ -90,7 +91,11 @@ export default function Leadership() {
 
   const getOfficers = async () => {
     setIsLoading(true);
-    const team: Team = { primary_officers: [], committee_heads: [] };
+    const team: Team = {
+      primary_officers: [],
+      se_office: [],
+      committee_heads: [],
+    };
 
     try {
       // Fetch all positions and active officers in parallel
@@ -123,7 +128,13 @@ export default function Leadership() {
         officerByPosition.set(officer.position.title, teamMember);
       });
 
-      // Map positions to PositionWithOfficer
+      // Map positions to PositionWithOfficer. Three buckets:
+      //   - primary_officers: position.is_primary === true
+      //   - se_office:        position.category === "SE_OFFICE"
+      //   - committee_heads:  everything else
+      // SE Office positions don't carry is_primary, so they would have
+      // landed in Committee Heads under the old two-bucket logic — the
+      // SE Office wants their own dedicated section per the SE Office.
       positions.forEach((position) => {
         const positionWithOfficer: PositionWithOfficer = {
           position,
@@ -132,12 +143,17 @@ export default function Leadership() {
 
         if (position.is_primary) {
           team.primary_officers.push(positionWithOfficer);
+        } else if (position.category === "SE_OFFICE") {
+          team.se_office.push(positionWithOfficer);
         } else {
           team.committee_heads.push(positionWithOfficer);
         }
       });
 
-      // Sort committee heads by title
+      // Sort each non-primary bucket by title for stable rendering.
+      team.se_office.sort((a, b) =>
+        a.position.title.localeCompare(b.position.title)
+      );
       team.committee_heads.sort((a, b) =>
         a.position.title.localeCompare(b.position.title)
       );
@@ -187,6 +203,36 @@ export default function Leadership() {
               )}
             </div>
           </div>
+
+          {/* SE Office — distinct from Committee Heads per the SE Office.
+              Filled positions render normally; empty slots only show to
+              members + officers, like the other buckets. The whole
+              section is hidden if there are zero positions configured
+              (so deployments without SE Office seeding don't get an
+              empty header). */}
+          {teamData.se_office.length > 0 && (
+            <div className="mb-10">
+              <h2 className="text-center text-primary mb-6">SE Office</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 justify-items-center">
+                {isLoading ? (
+                  <>
+                    <OfficerCardSkeleton />
+                    <OfficerCardSkeleton />
+                    <OfficerCardSkeleton />
+                    <OfficerCardSkeleton />
+                  </>
+                ) : (
+                  teamData.se_office.map((item, idx) =>
+                    item.officer ? (
+                      <OfficerCard key={idx} teamMember={item.officer} />
+                    ) : canSeeUnfilledPositions ? (
+                      <EmptyOfficerCard key={idx} position={item.position} />
+                    ) : null
+                  )
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Committee Heads */}
           <div>

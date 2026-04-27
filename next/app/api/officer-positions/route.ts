@@ -58,6 +58,11 @@ export async function GET(request: Request) {
       id: pos.id,
       title: pos.title,
       is_primary: pos.is_primary,
+      // Surface the position category so the public leadership page
+      // can split SE Office positions out of the Committee Heads grid
+      // (and any other consumer can branch on PRIMARY_OFFICER vs
+      // SE_OFFICE without an extra round-trip).
+      category: pos.category,
       email: pos.email, // Position alias email (e.g., sse-president@rit.edu)
       isFilled: pos.officers.length > 0,
       currentOfficer: activeOfficer
