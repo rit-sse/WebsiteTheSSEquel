@@ -7,7 +7,6 @@ import remarkGfm from "remark-gfm";
 import remarkRehype from "remark-rehype";
 import rehypeSanitize from "rehype-sanitize";
 import rehypeStringify from "rehype-stringify";
-import { SE_ADMIN_POSITION_TITLE } from "@/lib/seAdmin";
 
 export const dynamic = "force-dynamic";
 
@@ -68,7 +67,9 @@ export async function POST(request: NextRequest) {
       officers: {
         where: { is_active: true },
         select: {
-          position: { select: { is_primary: true, title: true } },
+          position: {
+            select: { is_primary: true, title: true, category: true },
+          },
         },
       },
       mentor: {
@@ -83,8 +84,11 @@ export async function POST(request: NextRequest) {
 
   const isOfficer = user.officers.length > 0;
   const isMentor = user.mentor.length > 0;
+  // Treat any SE Office position (Administrative Assistant / Dean /
+  // SE Office Head / Undergraduate Dean) as an "SE Admin" for the
+  // email-send permission check, mirroring the auth-level helpers.
   const isSeAdmin = user.officers.some(
-    (officer) => officer.position.title === SE_ADMIN_POSITION_TITLE
+    (officer) => officer.position.category === "SE_OFFICE"
   );
 
   if (!isOfficer && !isMentor && !isSeAdmin) {

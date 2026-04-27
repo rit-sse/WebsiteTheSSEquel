@@ -1,6 +1,14 @@
 import prisma from "@/lib/prisma";
 import type { AuthLevel } from "@/lib/authLevel";
 
+/**
+ * Legacy constant — the original "SE Admin" position title. Kept around
+ * because amendmentService still references it for backwards-compat in
+ * old data. New code should use the `SE_OFFICE` category check instead
+ * (any active officer whose position has `category = SE_OFFICE` counts
+ * as an "SE Admin" for permission purposes — Administrative Assistant,
+ * Dean, SE Office Head, Undergraduate Dean).
+ */
 export const SE_ADMIN_POSITION_TITLE = "SE Admin";
 
 /**
@@ -28,13 +36,19 @@ export async function isUserCurrentPresident(userId: number | null) {
   return !!officer;
 }
 
+/**
+ * Anyone holding ANY active SE Office position counts as an "SE Admin"
+ * for permission purposes. Per the SE Office: Administrative Assistant,
+ * Dean, SE Office Head, and Undergraduate Dean all have the same
+ * elevated access — including the ability to certify election results.
+ */
 export async function isUserSeAdmin(userId: number | null) {
   if (!userId) return false;
   const officer = await prisma.officer.findFirst({
     where: {
       user_id: userId,
       is_active: true,
-      position: { title: SE_ADMIN_POSITION_TITLE },
+      position: { category: "SE_OFFICE" },
     },
     select: { id: true },
   });
