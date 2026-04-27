@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { signIn, signOut, useSession } from "next-auth/react";
-import { User, LogOut } from "lucide-react";
+import { User, LogOut, Vote, Mail } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -85,19 +85,36 @@ export default function AuthButton({
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
+          {/* DropdownMenuItem already provides `flex items-center gap-2`
+              to its child (via Radix asChild), so adding `mr-2` to the
+              icons would double-space them — let the inherited gap do
+              the work and keep the three rows visually aligned. The
+              optional alert dot pushes itself to the right with
+              `ml-auto` instead of a `justify-between` swap. */}
           {userId && (
             <DropdownMenuItem asChild>
-              <Link
-                href={`/profile/${userId}`}
-                className="cursor-pointer flex items-center justify-between"
-              >
-                <span className="flex items-center">
-                  <User className="mr-2 h-4 w-4" />
-                  My Profile
-                </span>
+              <Link href={`/profile/${userId}`} className="cursor-pointer">
+                <User className="h-4 w-4" />
+                My Profile
                 {!profileComplete && (
-                  <span className="h-2 w-2 rounded-full bg-destructive" />
+                  <span className="ml-auto h-2 w-2 rounded-full bg-destructive" />
                 )}
+              </Link>
+            </DropdownMenuItem>
+          )}
+          {userId && (
+            <DropdownMenuItem asChild>
+              <Link href="/elections/me" className="cursor-pointer">
+                <Vote className="h-4 w-4" />
+                My Nominations
+              </Link>
+            </DropdownMenuItem>
+          )}
+          {userId && (
+            <DropdownMenuItem asChild>
+              <Link href="/accept-invitation" className="cursor-pointer">
+                <Mail className="h-4 w-4" />
+                My Invitations
               </Link>
             </DropdownMenuItem>
           )}

@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
 import { getGatewayAuthLevel } from "@/lib/authGateway";
 import { isActiveMemberForElection } from "@/lib/electionEligibility";
+import { propagateCandidateProfile } from "@/lib/electionCandidateProfile";
 import { ElectionRunningMateStatus } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
@@ -92,12 +93,30 @@ export async function PATCH(
         status: 403,
       });
     }
-    if (invitation.status !== ElectionRunningMateStatus.INVITED) {
+
+    // VP candidates need to come back later and edit their blurb /
+    // program / eligibility — that's a PATCH with action=ACCEPT against
+    // an already-ACCEPTED row. Allow it. Anything else (DECLINE on an
+    // ACCEPTED row, any action on EXPIRED/WITHDRAWN/DECLINED) is still
+    // 409.
+    const isProfileEdit =
+      action === "ACCEPT" &&
+      invitation.status === ElectionRunningMateStatus.ACCEPTED;
+    if (!isProfileEdit && invitation.status !== ElectionRunningMateStatus.INVITED) {
       return new Response("This invitation is no longer open", { status: 409 });
     }
+
+    // The invitation TTL only governs the initial accept/decline. Once
+    // someone has already accepted, profile edits are allowed indefinitely
+    // (or until the regular nomination response deadline elsewhere takes
+    // over) — auto-expiring would otherwise lock VPs out of editing once
+    // ~22h have passed.
     const now = new Date();
-    if (now >= invitation.expiresAt) {
-      // Treat as expired — flip state and refuse.
+    if (
+      !isProfileEdit &&
+      invitation.status === ElectionRunningMateStatus.INVITED &&
+      now >= invitation.expiresAt
+    ) {
       await prisma.electionRunningMateInvitation.update({
         where: { id: invitation.id },
         data: { status: ElectionRunningMateStatus.EXPIRED },
@@ -105,7 +124,7 @@ export async function PATCH(
       return new Response("This invitation has expired", { status: 409 });
     }
 
-    if (action === "ACCEPT") {
+    if (action === "ACCEPT" && !isProfileEdit) {
       if (!(await isActiveMemberForElection(authLevel.userId))) {
         return new Response(
           "You must be an active member to accept a running-mate invitation",
@@ -114,8 +133,11 @@ export async function PATCH(
       }
     }
 
-    const nextStatus =
-      action === "ACCEPT"
+    // On a profile-edit PATCH, status stays ACCEPTED — only the
+    // candidate-profile fields below get persisted.
+    const nextStatus = isProfileEdit
+      ? ElectionRunningMateStatus.ACCEPTED
+      : action === "ACCEPT"
         ? ElectionRunningMateStatus.ACCEPTED
         : ElectionRunningMateStatus.DECLINED;
 
@@ -155,14 +177,47 @@ export async function PATCH(
       where: { id: invitation.id },
       data: {
         status: nextStatus,
-        respondedAt: now,
-        declineReason:
-          action === "DECLINE" && typeof body.reason === "string"
-            ? body.reason.trim() || null
-            : null,
+        // Don't overwrite the original respondedAt timestamp when this
+        // is just a profile edit on an already-ACCEPTED invitation.
+        ...(isProfileEdit ? {} : { respondedAt: now }),
+        // Same for declineReason — only relevant on a fresh DECLINE.
+        ...(isProfileEdit
+          ? {}
+          : {
+              declineReason:
+                action === "DECLINE" && typeof body.reason === "string"
+                  ? body.reason.trim() || null
+                  : null,
+            }),
         ...profilePatch,
       },
     });
+
+    // VPs who are also direct candidates (running for President /
+    // Treasurer / etc. in the same election) should see one consistent
+    // candidate profile — propagate the just-saved blurb across all
+    // their other open nominations + invitations. Only on ACCEPT, since
+    // declined rows have no profile to share.
+    if (action === "ACCEPT") {
+      try {
+        await propagateCandidateProfile(
+          electionId,
+          authLevel.userId,
+          {
+            statement: updated.statement,
+            yearLevel: updated.yearLevel,
+            program: updated.program,
+            canRemainEnrolledFullYear: updated.canRemainEnrolledFullYear,
+            canRemainEnrolledNextTerm: updated.canRemainEnrolledNextTerm,
+            isOnCampus: updated.isOnCampus,
+            isOnCoop: updated.isOnCoop,
+          },
+          { excludeRunningMateInvitationId: invitation.id }
+        );
+      } catch (error) {
+        console.error("Failed to propagate candidate profile:", error);
+      }
+    }
 
     return Response.json(updated);
   } catch (error) {
