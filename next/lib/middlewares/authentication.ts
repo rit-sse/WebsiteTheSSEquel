@@ -110,6 +110,7 @@ const signedInVerifier = authVerifierFactory((permissions) => {
 /**
  * Auth verifier for AWS-backed asset routes:
  * - public GETs for the shared image proxy
+ * - public POSTs for alumni-request photo uploads
  * - signed-in users for profile picture upload/update
  * - mentor/officer for library book upload/update
  * - officer for any remaining aws routes
@@ -118,6 +119,13 @@ const awsVerifier: AuthVerifier = async (request: NextRequest) => {
   const pathname = request.nextUrl.pathname;
 
   if (request.method === "GET" && pathname === "/api/aws/image") {
+    return { isAllowed: true, authType: "None" };
+  }
+
+  if (
+    request.method === "POST" &&
+    pathname === "/api/aws/alumni-request-pictures"
+  ) {
     return { isAllowed: true, authType: "None" };
   }
 

@@ -79,6 +79,13 @@ describe("authMiddleware", () => {
     expect((res as any).kind).toBe("next");
   });
 
+  it("allows anonymous alumni-request picture uploads", async () => {
+    const res = await authMiddleware(
+      req("/api/aws/alumni-request-pictures", "POST")
+    );
+    expect((res as any).kind).toBe("next");
+  });
+
   it("denies profile picture uploads when user is not signed in", async () => {
     const res = await authMiddleware(req("/api/aws/profilePictures", "POST"));
     expect((res as any).status).toBe(403);
