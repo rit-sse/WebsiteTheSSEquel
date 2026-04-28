@@ -159,6 +159,7 @@ model User {
   electionBallots             ElectionBallot[]
   electionEmailLogs           ElectionEmailLog[]
   runningMateInvitations      ElectionRunningMateInvitation[] @relation("RunningMateInvitee")
+  uploadedPhotos              Photo[]
 }
 
 model Alumni {
@@ -807,6 +808,45 @@ model Event {
   // Relational fields
   attendees        EventAttendance[]
   purchaseRequests PurchaseRequest[]
+  photos           Photo[]
+}
+
+model Photo {
+  id Int @id @default(autoincrement())
+
+  originalKey String @unique @db.VarChar(500)
+  galleryKey  String @unique @db.VarChar(500)
+
+  originalFilename  String @db.VarChar(255)
+  originalMimeType  String @db.VarChar(100)
+  originalSizeBytes Int
+  galleryMimeType   String @default("image/webp") @db.VarChar(100)
+  gallerySizeBytes  Int
+
+  caption  String? @db.VarChar(500)
+  altText  String? @db.VarChar(500)
+  category String  @default("general") @db.VarChar(80)
+
+  eventId String?
+  event   Event?  @relation(fields: [eventId], references: [id], onDelete: SetNull)
+
+  uploadedById Int?
+  uploadedBy   User? @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  exifTakenAt   DateTime?
+  manualTakenAt DateTime?
+  uploadedAt    DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  sortDate DateTime
+  status   String   @default("published") @db.VarChar(40)
+
+  batchId String @db.VarChar(80)
+
+  @@index([status, sortDate])
+  @@index([eventId])
+  @@index([category])
+  @@index([batchId])
 }
 
 model EventAttendance {
