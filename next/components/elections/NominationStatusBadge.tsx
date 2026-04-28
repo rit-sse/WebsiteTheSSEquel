@@ -29,6 +29,12 @@ const nominationConfig: Record<
     text: "text-stone-500 dark:text-stone-400",
     dot: "bg-stone-400",
   },
+  WITHDRAWN: {
+    label: "Withdrawn",
+    bg: "bg-stone-100 dark:bg-stone-800/50",
+    text: "text-stone-600 dark:text-stone-300",
+    dot: "bg-stone-500",
+  },
 };
 
 const eligibilityConfig: Record<

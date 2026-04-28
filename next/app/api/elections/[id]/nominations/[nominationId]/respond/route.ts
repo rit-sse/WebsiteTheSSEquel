@@ -2,7 +2,7 @@ import prisma from "@/lib/prisma";
 import { getGatewayAuthLevel } from "@/lib/authGateway";
 import { getNominationResponseDeadline } from "@/lib/elections";
 import { propagateCandidateProfile } from "@/lib/electionCandidateProfile";
-import { ElectionNominationStatus } from "@prisma/client";
+import { ElectionNominationStatus, ElectionStatus } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
@@ -39,9 +39,12 @@ export async function POST(
   const status = body.status as string | undefined;
   if (
     status !== ElectionNominationStatus.ACCEPTED &&
-    status !== ElectionNominationStatus.DECLINED
+    status !== ElectionNominationStatus.DECLINED &&
+    status !== ElectionNominationStatus.WITHDRAWN
   ) {
-    return new Response("status must be ACCEPTED or DECLINED", { status: 400 });
+    return new Response("status must be ACCEPTED, DECLINED, or WITHDRAWN", {
+      status: 400,
+    });
   }
 
   try {
@@ -62,10 +65,42 @@ export async function POST(
     if (nomination.nomineeUserId !== authLevel.userId) {
       return new Response("Only the nominee can respond", { status: 403 });
     }
-    if (new Date() >= getNominationResponseDeadline(nomination.electionOffice.election)) {
-      return new Response("The response deadline for this nomination has passed", {
-        status: 409,
-      });
+
+    const election = nomination.electionOffice.election;
+    const now = new Date();
+
+    if (status === ElectionNominationStatus.WITHDRAWN) {
+      // Withdraw is a separate window from accept/decline. Per the SE
+      // Office: candidates can pull out at any point up until voting
+      // CLOSES (not just before voting opens). Only ACCEPTED rows can
+      // be withdrawn — pulling out a still-pending nomination is just
+      // DECLINING.
+      if (nomination.status !== ElectionNominationStatus.ACCEPTED) {
+        return new Response(
+          "Only an accepted nomination can be withdrawn",
+          { status: 409 }
+        );
+      }
+      if (
+        election.status === ElectionStatus.VOTING_CLOSED ||
+        election.status === ElectionStatus.CERTIFIED ||
+        election.status === ElectionStatus.CANCELLED ||
+        now >= election.votingCloseAt
+      ) {
+        return new Response(
+          "Voting has already closed — nominations can no longer be withdrawn",
+          { status: 409 }
+        );
+      }
+    } else {
+      // Regular accept/decline flow uses the response deadline (24h
+      // before voting opens), unchanged from before.
+      if (now >= getNominationResponseDeadline(election)) {
+        return new Response(
+          "The response deadline for this nomination has passed",
+          { status: 409 }
+        );
+      }
     }
 
     // Build the candidate-profile patch once so the primary update and
@@ -93,11 +128,15 @@ export async function POST(
       isOnCoop: body.isOnCoop !== undefined ? Boolean(body.isOnCoop) : null,
     };
 
+    // On a fresh ACCEPT the candidate's blurb / eligibility comes from
+    // the form. On WITHDRAWN there's nothing in the request body — we
+    // want to preserve the existing profile (so the audit trail keeps
+    // showing what they had before pulling out) instead of blanking it.
     const updated = await prisma.electionNomination.update({
       where: { id: nominationId },
       data: {
         status: status as ElectionNominationStatus,
-        ...profile,
+        ...(status === ElectionNominationStatus.WITHDRAWN ? {} : profile),
       },
       include: {
         nominee: {

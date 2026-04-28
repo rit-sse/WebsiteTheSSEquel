@@ -18,6 +18,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ElectionAvatar } from "@/components/elections/ElectionAvatar";
 import { NominationStatusBadge } from "@/components/elections/NominationStatusBadge";
+import WithdrawButton from "./WithdrawButton";
 
 export const dynamic = "force-dynamic";
 
@@ -59,6 +60,7 @@ export default async function MyElectionsPage() {
                 slug: true,
                 status: true,
                 votingOpenAt: true,
+                votingCloseAt: true,
               },
             },
             officerPosition: { select: { title: true } },
@@ -93,6 +95,7 @@ export default async function MyElectionsPage() {
                     slug: true,
                     status: true,
                     votingOpenAt: true,
+                    votingCloseAt: true,
                   },
                 },
               },
@@ -178,6 +181,16 @@ export default async function MyElectionsPage() {
                 {nominations.map((nomination) => {
                   const election = nomination.electionOffice.election;
                   const isAccepted = nomination.status === "ACCEPTED";
+                  // Withdraw is only offered while the candidate is on
+                  // the ballot AND voting is still open. Same window the
+                  // server enforces — surfacing the button afterwards
+                  // would just show a 409 toast.
+                  const canWithdraw =
+                    isAccepted &&
+                    election.status !== "VOTING_CLOSED" &&
+                    election.status !== "CERTIFIED" &&
+                    election.status !== "CANCELLED" &&
+                    new Date() < new Date(election.votingCloseAt);
                   return (
                     <Card
                       key={nomination.id}
@@ -210,23 +223,33 @@ export default async function MyElectionsPage() {
                             className="mt-1"
                           />
                         </div>
-                        <Button asChild size="sm">
-                          <Link
-                            href={`/elections/${election.slug}/respond/${nomination.id}`}
-                          >
-                            {isAccepted ? (
-                              <>
-                                <Pencil className="mr-2 h-4 w-4" />
-                                Edit profile
-                              </>
-                            ) : (
-                              <>
-                                <CheckCircle className="mr-2 h-4 w-4" />
-                                Respond
-                              </>
-                            )}
-                          </Link>
-                        </Button>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Button asChild size="sm">
+                            <Link
+                              href={`/elections/${election.slug}/respond/${nomination.id}`}
+                            >
+                              {isAccepted ? (
+                                <>
+                                  <Pencil className="mr-2 h-4 w-4" />
+                                  Edit profile
+                                </>
+                              ) : (
+                                <>
+                                  <CheckCircle className="mr-2 h-4 w-4" />
+                                  Respond
+                                </>
+                              )}
+                            </Link>
+                          </Button>
+                          {canWithdraw && (
+                            <WithdrawButton
+                              kind="nomination"
+                              electionId={election.id}
+                              nominationId={nomination.id}
+                              contextLabel={`the ${nomination.electionOffice.officerPosition.title} race in ${election.title}`}
+                            />
+                          )}
+                        </div>
                       </div>
                       {isAccepted && nomination.statement && (
                         <p className="line-clamp-2 rounded-md bg-muted/40 p-3 text-xs text-muted-foreground">
@@ -260,6 +283,12 @@ export default async function MyElectionsPage() {
                     president.googleImageURL
                   );
                   const isAccepted = invite.status === "ACCEPTED";
+                  const canWithdraw =
+                    isAccepted &&
+                    election.status !== "VOTING_CLOSED" &&
+                    election.status !== "CERTIFIED" &&
+                    election.status !== "CANCELLED" &&
+                    new Date() < new Date(election.votingCloseAt);
                   return (
                     <Card key={invite.id} depth={2} className="space-y-3 p-5">
                       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -295,23 +324,33 @@ export default async function MyElectionsPage() {
                             </p>
                           </div>
                         </div>
-                        <Button asChild size="sm">
-                          <Link
-                            href={`/elections/${election.slug}/respond/running-mate/${invite.presidentNominationId}`}
-                          >
-                            {isAccepted ? (
-                              <>
-                                <Pencil className="mr-2 h-4 w-4" />
-                                Edit profile
-                              </>
-                            ) : (
-                              <>
-                                <CheckCircle className="mr-2 h-4 w-4" />
-                                Respond
-                              </>
-                            )}
-                          </Link>
-                        </Button>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Button asChild size="sm">
+                            <Link
+                              href={`/elections/${election.slug}/respond/running-mate/${invite.presidentNominationId}`}
+                            >
+                              {isAccepted ? (
+                                <>
+                                  <Pencil className="mr-2 h-4 w-4" />
+                                  Edit profile
+                                </>
+                              ) : (
+                                <>
+                                  <CheckCircle className="mr-2 h-4 w-4" />
+                                  Respond
+                                </>
+                              )}
+                            </Link>
+                          </Button>
+                          {canWithdraw && (
+                            <WithdrawButton
+                              kind="running-mate"
+                              electionId={election.id}
+                              nominationId={invite.presidentNominationId}
+                              contextLabel={`running with ${president.name} in ${election.title}`}
+                            />
+                          )}
+                        </div>
                       </div>
                       {isAccepted && invite.statement && (
                         <p className="line-clamp-2 rounded-md bg-muted/40 p-3 text-xs text-muted-foreground">

@@ -2,7 +2,7 @@ import prisma from "@/lib/prisma";
 import { getGatewayAuthLevel } from "@/lib/authGateway";
 import { isActiveMemberForElection } from "@/lib/electionEligibility";
 import { propagateCandidateProfile } from "@/lib/electionCandidateProfile";
-import { ElectionRunningMateStatus } from "@prisma/client";
+import { ElectionRunningMateStatus, ElectionStatus } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
@@ -64,8 +64,8 @@ export async function PATCH(
   }
 
   const action = String(body.action ?? "").toUpperCase();
-  if (action !== "ACCEPT" && action !== "DECLINE") {
-    return new Response('action must be "ACCEPT" or "DECLINE"', {
+  if (action !== "ACCEPT" && action !== "DECLINE" && action !== "WITHDRAW") {
+    return new Response('action must be "ACCEPT", "DECLINE", or "WITHDRAW"', {
       status: 400,
     });
   }
@@ -77,7 +77,9 @@ export async function PATCH(
       include: {
         presidentNomination: {
           include: {
-            electionOffice: true,
+            electionOffice: {
+              include: { election: true },
+            },
           },
         },
       },
@@ -102,7 +104,37 @@ export async function PATCH(
     const isProfileEdit =
       action === "ACCEPT" &&
       invitation.status === ElectionRunningMateStatus.ACCEPTED;
-    if (!isProfileEdit && invitation.status !== ElectionRunningMateStatus.INVITED) {
+    const isWithdraw = action === "WITHDRAW";
+
+    if (isWithdraw) {
+      // Withdraw is only legal on an ACCEPTED invitation, and only
+      // before voting actually closes — same window as direct
+      // nominations. Pulling out of an INVITED row is just a DECLINE.
+      if (invitation.status !== ElectionRunningMateStatus.ACCEPTED) {
+        return new Response(
+          "Only an accepted running-mate invitation can be withdrawn",
+          { status: 409 }
+        );
+      }
+      const electionStatus =
+        invitation.presidentNomination.electionOffice.election.status;
+      const votingCloseAt =
+        invitation.presidentNomination.electionOffice.election.votingCloseAt;
+      if (
+        electionStatus === ElectionStatus.VOTING_CLOSED ||
+        electionStatus === ElectionStatus.CERTIFIED ||
+        electionStatus === ElectionStatus.CANCELLED ||
+        new Date() >= votingCloseAt
+      ) {
+        return new Response(
+          "Voting has already closed — running-mate invitations can no longer be withdrawn",
+          { status: 409 }
+        );
+      }
+    } else if (
+      !isProfileEdit &&
+      invitation.status !== ElectionRunningMateStatus.INVITED
+    ) {
       return new Response("This invitation is no longer open", { status: 409 });
     }
 
@@ -137,9 +169,11 @@ export async function PATCH(
     // candidate-profile fields below get persisted.
     const nextStatus = isProfileEdit
       ? ElectionRunningMateStatus.ACCEPTED
-      : action === "ACCEPT"
-        ? ElectionRunningMateStatus.ACCEPTED
-        : ElectionRunningMateStatus.DECLINED;
+      : isWithdraw
+        ? ElectionRunningMateStatus.WITHDRAWN
+        : action === "ACCEPT"
+          ? ElectionRunningMateStatus.ACCEPTED
+          : ElectionRunningMateStatus.DECLINED;
 
     // Candidate-profile fields are only honored on ACCEPT and only when
     // the field is present in the body — that lets the same endpoint handle

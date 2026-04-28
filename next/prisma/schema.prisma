@@ -64,6 +64,11 @@ enum ElectionNominationStatus {
   ACCEPTED
   DECLINED
   EXPIRED
+  // Candidate accepted, then later pulled out — distinct from
+  // DECLINED ("never said yes"). The IRV tally drops them the same
+  // way as eliminated candidates: their preference rows just stop
+  // counting, and ballots that ranked them flow to the next choice.
+  WITHDRAWN
 }
 
 enum ElectionEligibilityStatus {
