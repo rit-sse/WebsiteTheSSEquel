@@ -2,7 +2,7 @@
 
 import { Settings, Trash2, Calendar } from "lucide-react";
 import { Quote } from "./Quotes";
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Modal, ModalFooter } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
@@ -22,20 +22,14 @@ function formatDate(dateStr: string): string {
     });
 }
 
-export const QuoteCard = (quote: Quote) => {
+type QuoteCardProps = Quote & {
+    isOfficer: boolean;
+};
+
+export const QuoteCard = ({ isOfficer, ...quote }: QuoteCardProps) => {
     const [editOpen, setEditOpen] = useState(false);
     const [deleteOpen, setDeleteOpen] = useState(false);
     const [editableQuotes, setEditableQuotes] = useState<{ quote: string, author: string }[]>([]);
-    const [isOfficer, setIsOfficer] = useState(false);
-
-    const fetchData = useCallback(async () => {
-        const data = await fetch("/api/authLevel").then((r) => r.json());
-        setIsOfficer(data.isOfficer);
-    }, []);
-
-    useEffect(() => {
-        fetchData();
-    }, [fetchData]);
 
     const updateEditableQuoteField = (
         index: number,

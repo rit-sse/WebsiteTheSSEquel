@@ -45,12 +45,25 @@ const QuoteList = () => {
     const [quotes, setQuotes] = useState<Quote[]>([])
     const [search, setSearch] = useState("");
     const [isLoading, setIsLoading] = useState(true);
+    const [isOfficer, setIsOfficer] = useState(false);
+    const [userId, setUserId] = useState(0);
 
     useEffect(() => {
         fetchQuotes().then((data) => {
             setQuotes(data);
             setIsLoading(false);
         });
+
+        fetch("/api/authLevel")
+            .then((response) => response.ok ? response.json() : null)
+            .then((data) => {
+                setIsOfficer(Boolean(data?.isOfficer));
+                setUserId(Number(data?.userId) || 0);
+            })
+            .catch(() => {
+                setIsOfficer(false);
+                setUserId(0);
+            });
     }, []);
 
     const filteredQuotes = quotes.filter(q =>
@@ -69,7 +82,7 @@ const QuoteList = () => {
                             The legendary quote database of the Society of Software Engineers.
                         </p>
                         <div className="mt-4">
-                            <MakeNewQuote />
+                            <MakeNewQuote isOfficer={isOfficer} userId={userId} />
                         </div>
                     </div>
 
@@ -108,7 +121,7 @@ const QuoteList = () => {
                             </p>
                         ) : (
                             filteredQuotes.map((quote) => (
-                                <QuoteCard key={quote.id} {...quote} />
+                                <QuoteCard key={quote.id} {...quote} isOfficer={isOfficer} />
                             ))
                         )}
                     </div>

@@ -1,27 +1,20 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Modal, ModalFooter } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 
-export const MakeNewQuote = () => {
+type MakeNewQuoteProps = {
+  isOfficer: boolean;
+  userId: number;
+};
+
+export const MakeNewQuote = ({ isOfficer, userId }: MakeNewQuoteProps) => {
   const [open, setOpen] = useState(false);
   const [quotes, setQuotes] = useState([{ quote: "", author: "" }]);
-  const [userId, setUserID] = useState(0);
-  const [isOfficer, setIsOfficer] = useState(false);
-
-  const fetchData = useCallback(async () => {
-    const data = await fetch("/api/authLevel").then((r) => r.json());
-    setIsOfficer(data.isOfficer);
-    setUserID(data.userId);
-  }, []);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
 
   const handleQuoteChange = (
     index: number,
