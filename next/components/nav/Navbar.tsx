@@ -282,7 +282,7 @@ const Navbar: React.FC<NavbarProps> = ({
   return (
     <nav
       id="navbar"
-      className="fixed left-0 top-0 w-screen z-50 flex items-center justify-center bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b-[2px] border-black"
+      className="flex w-full items-center justify-center border-b-[2px] border-black"
     >
       <div
         id="nav-content"
