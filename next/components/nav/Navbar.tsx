@@ -122,6 +122,11 @@ const dashboardItems = [
     href: "/dashboard/elections",
     description: "Create and manage primary-officer election cycles.",
   },
+  {
+    title: "Announcements",
+    href: "/dashboard/announcements",
+    description: "Manage site-wide announcement banners.",
+  },
 ];
 
 interface NavbarProps {
@@ -218,7 +223,10 @@ const Navbar: React.FC<NavbarProps> = ({
         if (item.href === "/dashboard/tech-committee") {
           return canViewTechCommitteeDashboard;
         }
-        if (item.href === "/dashboard/elections") {
+        if (
+          item.href === "/dashboard/elections" ||
+          item.href === "/dashboard/announcements"
+        ) {
           return isPrimary;
         }
         return true;

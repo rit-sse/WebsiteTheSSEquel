@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma";
-import { getSessionToken } from "@/lib/sessionToken";
+import { resolveAuthLevelFromRequest } from "@/lib/authLevelResolver";
 import { NextRequest } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -11,6 +11,13 @@ export const dynamic = "force-dynamic";
  */
 export async function GET(request: NextRequest) {
   const showAll = request.nextUrl.searchParams.get("all") === "true";
+
+  if (showAll) {
+    const auth = await resolveAuthLevelFromRequest(request);
+    if (!auth.isPrimary) {
+      return new Response("Primary officers only", { status: 403 });
+    }
+  }
 
   const announcements = await prisma.announcement.findMany({
     where: showAll ? {} : { active: true },
@@ -26,21 +33,8 @@ export async function GET(request: NextRequest) {
  * Body: { message: string, category?: string }
  */
 export async function POST(request: NextRequest) {
-  const authToken = getSessionToken(request);
-  if (!authToken) {
-    return new Response("Unauthorized", { status: 401 });
-  }
-
-  // Verify the user is an officer
-  const user = await prisma.user.findFirst({
-    where: {
-      session: { some: { sessionToken: authToken } },
-      officers: { some: { is_active: true } },
-    },
-  });
-  if (!user) {
-    return new Response("Forbidden – officers only", { status: 403 });
-  }
+  const auth = await resolveAuthLevelFromRequest(request);
+  if (!auth.isPrimary) return new Response("Primary officers only", { status: 403 });
 
   let body;
   try {
@@ -70,20 +64,8 @@ export async function POST(request: NextRequest) {
  * Body: { id: number, message?: string, category?: string, active?: boolean }
  */
 export async function PUT(request: NextRequest) {
-  const authToken = getSessionToken(request);
-  if (!authToken) {
-    return new Response("Unauthorized", { status: 401 });
-  }
-
-  const user = await prisma.user.findFirst({
-    where: {
-      session: { some: { sessionToken: authToken } },
-      officers: { some: { is_active: true } },
-    },
-  });
-  if (!user) {
-    return new Response("Forbidden – officers only", { status: 403 });
-  }
+  const auth = await resolveAuthLevelFromRequest(request);
+  if (!auth.isPrimary) return new Response("Primary officers only", { status: 403 });
 
   let body;
   try {
@@ -118,20 +100,8 @@ export async function PUT(request: NextRequest) {
  * Body: { id: number }
  */
 export async function DELETE(request: NextRequest) {
-  const authToken = getSessionToken(request);
-  if (!authToken) {
-    return new Response("Unauthorized", { status: 401 });
-  }
-
-  const user = await prisma.user.findFirst({
-    where: {
-      session: { some: { sessionToken: authToken } },
-      officers: { some: { is_active: true } },
-    },
-  });
-  if (!user) {
-    return new Response("Forbidden – officers only", { status: 403 });
-  }
+  const auth = await resolveAuthLevelFromRequest(request);
+  if (!auth.isPrimary) return new Response("Primary officers only", { status: 403 });
 
   let body;
   try {
