@@ -2,7 +2,6 @@ import prisma from "@/lib/prisma";
 import { AmendmentStatus } from "@prisma/client";
 import { getSessionToken } from "@/lib/sessionToken";
 import { resolveUserImage } from "@/lib/s3Utils";
-import { SE_ADMIN_POSITION_TITLE } from "@/lib/seAdmin";
 import { NextRequest } from "next/server";
 
 type Actor = {
@@ -59,6 +58,7 @@ async function resolveActorFromToken(sessionToken: string | null): Promise<Actor
             select: {
               is_primary: true,
               title: true,
+              category: true,
             },
           },
         },
@@ -74,7 +74,12 @@ async function resolveActorFromToken(sessionToken: string | null): Promise<Actor
     isMember: user._count.Memberships >= 1,
     isOfficer: user.officers.length > 0,
     isPrimary: user.officers.some((officer) => officer.position.is_primary),
-    isSeAdmin: user.officers.some((officer) => officer.position.title === SE_ADMIN_POSITION_TITLE),
+    // Any active SE Office position grants the same amendment-management
+    // privileges, not just the literal "SE Admin" title (which doesn't
+    // exist in the seeded position list anymore).
+    isSeAdmin: user.officers.some(
+      (officer) => officer.position.category === "SE_OFFICE"
+    ),
   };
 }
 

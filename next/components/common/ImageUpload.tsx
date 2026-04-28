@@ -36,6 +36,15 @@ interface ImageUploadProps {
   hint?: string;
   /** If true, the component is rendered compactly (avatar + button, no drop zone). */
   compact?: boolean;
+  /**
+   * Override the API endpoint the cropped image is POSTed to. Defaults
+   * to `/api/aws/profilePictures` (signed-in users only). Public flows
+   * like the alumni-request form can pass
+   * `/api/aws/alumni-request-pictures` so unauthenticated submitters
+   * can still attach a photo (the SE Office reviews every request
+   * before any record is created from it).
+   */
+  uploadEndpoint?: string;
 }
 
 function getCroppedImage(
@@ -80,14 +89,21 @@ function getCroppedImage(
 }
 
 /**
- * Upload a blob to S3 using presigned URL
- * @returns The S3 key for the uploaded image
+ * Upload a blob to S3 via the supplied endpoint and return the S3 key.
+ * Endpoint is parameterized so the alumni-request flow can route
+ * through `/api/aws/alumni-request-pictures` (anonymous, no session
+ * needed) while the default profile-picture flow keeps requiring
+ * authentication via `/api/aws/profilePictures`.
  */
-async function uploadToS3(blob: Blob, filename: string): Promise<string> {
+async function uploadToS3(
+  blob: Blob,
+  filename: string,
+  endpoint: string
+): Promise<string> {
   const formData = new FormData();
   formData.append("file", blob, filename);
 
-  const response = await fetch("/api/aws/profilePictures", {
+  const response = await fetch(endpoint, {
     method: "POST",
     body: formData,
   });
@@ -111,6 +127,7 @@ export default function ImageUpload({
   showRemove = true,
   hint,
   compact = false,
+  uploadEndpoint = "/api/aws/profilePictures",
 }: ImageUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
@@ -185,7 +202,8 @@ export default function ImageUpload({
       // Upload to S3 and get the key
       const s3Key = await uploadToS3(
         croppedBlob,
-        cropFilename || "profile-picture.jpg"
+        cropFilename || "profile-picture.jpg",
+        uploadEndpoint
       );
 
       // Update the parent component with the S3 key
@@ -193,7 +211,7 @@ export default function ImageUpload({
 
       setCropDialogOpen(false);
       setCropSource(null);
-      toast.success("Profile picture uploaded successfully!");
+      toast.success("Photo uploaded successfully!");
     } catch (error) {
       console.error("Upload error:", error);
       toast.error(
@@ -202,7 +220,14 @@ export default function ImageUpload({
     } finally {
       setUploading(false);
     }
-  }, [cropSource, croppedAreaPixels, outputSize, cropFilename, onChange]);
+  }, [
+    cropSource,
+    croppedAreaPixels,
+    outputSize,
+    cropFilename,
+    onChange,
+    uploadEndpoint,
+  ]);
 
   const handleCropCancel = useCallback(() => {
     setCropDialogOpen(false);

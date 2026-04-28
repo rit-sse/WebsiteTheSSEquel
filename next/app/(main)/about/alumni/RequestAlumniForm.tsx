@@ -253,6 +253,12 @@ export default function RequestAlumniForm({
                   avatarSize="h-16 w-16"
                   compact
                   hint="JPG, PNG, or GIF up to 5 MB"
+                  // The default endpoint requires a session — alumni
+                  // submitting the public request form usually aren't
+                  // signed in, so route through the anonymous endpoint.
+                  // The SE Office reviews every submission before any
+                  // record gets created from it.
+                  uploadEndpoint="/api/aws/alumni-request-pictures"
                 />
               </div>
 
