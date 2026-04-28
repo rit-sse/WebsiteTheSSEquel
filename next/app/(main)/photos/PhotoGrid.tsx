@@ -63,11 +63,15 @@ function PhotoTile({
       type="button"
       onClick={onClick}
       className={[
-        "group relative aspect-square overflow-hidden rounded-md text-left",
+        // `block w-full` is load-bearing: <button> defaults to display:
+        // inline-block, and inline-block items in a CSS grid track don't
+        // anchor their width to the column track — so `aspect-square`
+        // collapses to ~0px and the photo renders as a thin strip.
+        "group relative block w-full aspect-square overflow-hidden rounded-md text-left",
         "bg-surface-2",
         "neo:border-2 neo:border-border/40 neo:hover:border-border",
         "clean:border clean:border-border/20 clean:hover:border-border/50",
-        "transition-all duration-150",
+        "transition-colors duration-150",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
       ].join(" ")}
     >
