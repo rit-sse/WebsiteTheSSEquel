@@ -127,6 +127,11 @@ const dashboardItems = [
     href: "/dashboard/announcements",
     description: "Manage site-wide announcement banners.",
   },
+  {
+    title: "Photos",
+    href: "/dashboard/photos",
+    description: "Upload and manage SSE photo library images.",
+  },
 ];
 
 interface NavbarProps {
@@ -159,16 +164,18 @@ const Navbar: React.FC<NavbarProps> = ({
     React.useState(false);
   const [canViewTechCommitteeDashboard, setCanViewTechCommitteeDashboard] =
     React.useState(false);
+  const [canManagePhotos, setCanManagePhotos] = React.useState(false);
   const [isPrimary, setIsPrimary] = React.useState(false);
 
   // Background refresh so dynamic changes (e.g. profile completion) still propagate
   React.useEffect(() => {
     if (!session) {
-      setShowDashboard(false);
-      setUserId(null);
-      setCanViewTechCommitteeDashboard(false);
-      setIsPrimary(false);
-      return;
+        setShowDashboard(false);
+        setUserId(null);
+        setCanViewTechCommitteeDashboard(false);
+        setCanManagePhotos(false);
+        setIsPrimary(false);
+        return;
     }
 
     (async () => {
@@ -178,6 +185,7 @@ const Navbar: React.FC<NavbarProps> = ({
         setShowDashboard(data.isOfficer || data.isMentor);
         setUserId(data.userId ?? null);
         setProfileComplete(data.profileComplete ?? true);
+        setCanManagePhotos(!!(data.isOfficer || data.isSeAdmin));
         // Use the DB-truth flag, NOT `data.isPrimary` — the latter is
         // set to true by STAGING_PROXY_AUTH for every signed-in user,
         // which makes the Elections dropdown item show up for everyone
@@ -212,6 +220,7 @@ const Navbar: React.FC<NavbarProps> = ({
       } catch (error) {
         console.error("Error checking auth level:", error);
         setCanViewTechCommitteeDashboard(false);
+        setCanManagePhotos(false);
         setIsPrimary(false);
       }
     })();
@@ -229,9 +238,12 @@ const Navbar: React.FC<NavbarProps> = ({
         ) {
           return isPrimary;
         }
+        if (item.href === "/dashboard/photos") {
+          return canManagePhotos;
+        }
         return true;
       }),
-    [canViewTechCommitteeDashboard, isPrimary]
+    [canManagePhotos, canViewTechCommitteeDashboard, isPrimary]
   );
 
   React.useEffect(() => {
@@ -320,6 +332,15 @@ const Navbar: React.FC<NavbarProps> = ({
                   className={navigationMenuTriggerStyle()}
                 >
                   <Link href="/events/calendar">Events</Link>
+                </NavigationMenuLink>
+              </NavigationMenuItem>
+
+              <NavigationMenuItem>
+                <NavigationMenuLink
+                  asChild
+                  className={navigationMenuTriggerStyle()}
+                >
+                  <Link href="/photos">Photos</Link>
                 </NavigationMenuLink>
               </NavigationMenuItem>
 
@@ -466,6 +487,10 @@ const Navbar: React.FC<NavbarProps> = ({
                   onClick={() => setOpen(false)}
                 >
                   Events
+                </MobileNavLink>
+
+                <MobileNavLink href="/photos" onClick={() => setOpen(false)}>
+                  Photos
                 </MobileNavLink>
 
                 <MobileNavLink
