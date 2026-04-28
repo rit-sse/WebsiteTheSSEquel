@@ -1,6 +1,7 @@
 import {
   ListObjectsV2Command,
   GetObjectCommand,
+  HeadObjectCommand,
   PutObjectCommand,
   DeleteObjectCommand,
 } from "@aws-sdk/client-s3";
@@ -17,6 +18,9 @@ export interface IS3Service {
   ): Promise<string>;
   putObject(key: string, body: Uint8Array, contentType: string): Promise<void>;
   deleteObject(key: string): Promise<void>;
+  headObject(
+    key: string
+  ): Promise<{ contentType?: string; contentLength?: number }>;
 }
 
 export class S3Service implements IS3Service {
@@ -75,6 +79,20 @@ export class S3Service implements IS3Service {
       Key: key,
     });
     await this.client.send(command);
+  }
+
+  async headObject(
+    key: string
+  ): Promise<{ contentType?: string; contentLength?: number }> {
+    const command = new HeadObjectCommand({
+      Bucket: this.bucket,
+      Key: key,
+    });
+    const response = await this.client.send(command);
+    return {
+      contentType: response.ContentType,
+      contentLength: response.ContentLength,
+    };
   }
 }
 
