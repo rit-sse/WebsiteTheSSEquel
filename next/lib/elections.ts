@@ -98,6 +98,30 @@ export function compareByPrimaryOrder(a: string, b: string): number {
   return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
 }
 
+/**
+ * Office priority used when the same person wins more than one race —
+ * they take the seat highest in this list and forfeit the lower ones,
+ * which fall to the next-best candidate in those races. Per the SE
+ * Office: President > Vice President > Secretary > Treasurer >
+ * Mentoring Head. Note this differs from `PRIMARY_OFFICE_ORDER` (which
+ * is purely a display ordering) — Treasurer and Secretary are
+ * intentionally swapped here.
+ */
+export const WINNER_PRIORITY_ORDER = [
+  "President",
+  "Vice President",
+  "Secretary",
+  "Treasurer",
+  "Mentoring Head",
+] as const;
+
+function compareByWinnerPriority(a: string, b: string): number {
+  const order = WINNER_PRIORITY_ORDER as readonly string[];
+  const ai = order.indexOf(a);
+  const bi = order.indexOf(b);
+  return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+}
+
 export function getNominationResponseDeadline(election: {
   votingOpenAt: Date;
 }) {
@@ -482,6 +506,7 @@ export function tallyInstantRunoffElection(params: {
       status: "no_candidates" as const,
       winner: null,
       runnerUp: null,
+      rankedNominations: [],
       rounds: [],
     };
   }
@@ -549,6 +574,7 @@ export function tallyInstantRunoffElection(params: {
           status: "tie" as const,
           winner: null,
           runnerUp: null,
+          rankedNominations: [],
           rounds,
         };
       }
@@ -573,6 +599,7 @@ export function tallyInstantRunoffElection(params: {
       status: "tie" as const,
       winner: null,
       runnerUp: null,
+      rankedNominations: [],
       rounds,
     };
   }
@@ -588,12 +615,33 @@ export function tallyInstantRunoffElection(params: {
       eligibleNominations.find((nomination) => nomination.id !== winnerId) ?? null;
   }
 
+  // Full ranking, winner first → last-place last. Built by walking
+  // `eliminationOrder` (first eliminated = worst) in reverse and
+  // prepending the winner. Used by the multi-office winner dedupe pass
+  // in `tallyElectionResults` so that when the top finisher takes a
+  // higher-priority seat, we can reach further down this list to find
+  // the next eligible person for THIS race instead of just runner-up.
+  const rankedNominations = [
+    winner,
+    ...eliminationOrder
+      .slice()
+      .reverse()
+      .map(
+        (id) =>
+          eligibleNominations.find((nomination) => nomination.id === id) ?? null
+      ),
+  ].filter(
+    (nomination): nomination is (typeof eligibleNominations)[number] =>
+      nomination !== null
+  );
+
   return {
     officeId: params.office.id,
     officeTitle: params.office.officerPosition.title,
     status: "ok" as const,
     winner,
     runnerUp,
+    rankedNominations,
     rounds,
   };
 }
@@ -631,6 +679,85 @@ export function getAcceptedRunningMate(
     return null;
   }
   return nomination.runningMateInvitation.invitee;
+}
+
+/**
+ * Resolve the case where the same person finishes first in more than
+ * one race in the same primary. Walks the supplied results array in
+ * `WINNER_PRIORITY_ORDER` (Pres > VP > Sec > Treas > MH) and assigns
+ * each candidate to the highest-priority seat they won. When a top
+ * finisher takes a higher seat, fall through their `rankedNominations`
+ * to the next-best unclaimed candidate for the displaced seat.
+ *
+ * Mutates the results in place. Sets:
+ *   - `winner` / `runnerUp` to the FINAL (post-dedupe) values
+ *   - `displaced: true` when the original IRV winner moved up
+ *   - `originalWinner` to the IRV winner that was bumped (so UI can
+ *     show "X actually won this but took a higher seat")
+ *   - `status` to "no_candidates" if every ranked candidate is now
+ *     serving somewhere higher (rare but possible with tiny ballots)
+ *
+ * Ticket-derived VP: only assigns the running mate if they're not
+ * already claimed (which can't happen given VP's priority slot, but
+ * the same set-membership check applies). Subsequent offices skip
+ * the VP user automatically.
+ */
+export function dedupeMultiOfficeWinners(
+  results: Array<{
+    officeTitle: string;
+    status: string;
+    winner: { nomineeUserId: number; [key: string]: unknown } | null;
+    runnerUp: unknown;
+    rankedNominations?: Array<{
+      id: number;
+      nomineeUserId: number;
+      nominee: { id: number; name: string; email: string };
+    }>;
+    ticketDerived?: boolean;
+    displaced?: boolean;
+    originalWinner?: unknown;
+  }>
+) {
+  const claimed = new Set<number>();
+  for (const result of [...results].sort((a, b) =>
+    compareByWinnerPriority(a.officeTitle, b.officeTitle)
+  )) {
+    if (result.status !== "ok" || !result.winner) continue;
+
+    if (result.ticketDerived) {
+      const vpUserId = result.winner.nomineeUserId;
+      if (claimed.has(vpUserId)) {
+        result.winner = null;
+        result.status = "no_candidates";
+        result.displaced = true;
+      } else {
+        claimed.add(vpUserId);
+      }
+      continue;
+    }
+
+    const ranked = result.rankedNominations ?? [];
+    const originalWinnerUserId = result.winner.nomineeUserId;
+    const newWinner = ranked.find((n) => !claimed.has(n.nomineeUserId)) ?? null;
+
+    if (!newWinner) {
+      result.winner = null;
+      result.runnerUp = null;
+      result.status = "no_candidates";
+      result.displaced = true;
+    } else if (newWinner.nomineeUserId !== originalWinnerUserId) {
+      result.originalWinner = result.winner;
+      result.winner = newWinner;
+      result.runnerUp =
+        ranked
+          .slice(ranked.indexOf(newWinner) + 1)
+          .find((n) => !claimed.has(n.nomineeUserId)) ?? null;
+      result.displaced = true;
+      claimed.add(newWinner.nomineeUserId);
+    } else {
+      claimed.add(newWinner.nomineeUserId);
+    }
+  }
 }
 
 export async function tallyElectionResults(electionId: number) {
@@ -720,6 +847,8 @@ export async function tallyElectionResults(electionId: number) {
       rounds: [],
     });
   }
+
+  dedupeMultiOfficeWinners(results);
 
   // Canonical primary-office order, applied site-wide via the tally
   // consumers (results page, reveal page, certify).
@@ -984,6 +1113,20 @@ export async function tallyElectionForDisplay(slug: string) {
       nomineeNames.set(-winningNomination!.id, invitee.name);
     }
   }
+
+  // Same dedupe pass the certify path uses — make sure the displayed
+  // winners reflect the multi-office tie-break (one person can't hold
+  // two seats, so they take the highest-priority race they won and
+  // the others fall to the next-best candidate). The synthetic VP
+  // entry above carries `ticketDerived: false` here (the display
+  // pipeline marks it later in the .map below), so add a temporary
+  // hint for the helper.
+  for (const r of rawResults as Array<{ officeTitle: string; ticketDerived?: boolean }>) {
+    if (r.officeTitle === VICE_PRESIDENT_TITLE) r.ticketDerived = true;
+  }
+  dedupeMultiOfficeWinners(
+    rawResults as unknown as Parameters<typeof dedupeMultiOfficeWinners>[0]
+  );
 
   // Transform into client-friendly IRVOfficeResult rows. The result
   // shape matches `next/components/elections/types.ts::IRVOfficeResult`

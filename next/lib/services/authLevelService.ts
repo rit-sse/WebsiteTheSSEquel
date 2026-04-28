@@ -9,7 +9,6 @@ import {
   TECH_COMMITTEE_DIVISION_MANAGER_BY_TITLE,
   TECH_COMMITTEE_DIVISION_MANAGER_TITLES,
 } from "@/lib/utils";
-import { SE_ADMIN_POSITION_TITLE } from "@/lib/seAdmin";
 
 /**
  * Resolve auth level for the current user.
@@ -57,7 +56,7 @@ export async function getAuthLevel(): Promise<AuthLevel> {
         select: {
           id: true,
           position: {
-            select: { is_primary: true, title: true },
+            select: { is_primary: true, title: true, category: true },
           },
         },
       },
@@ -106,7 +105,12 @@ export async function getAuthLevel(): Promise<AuthLevel> {
       : null,
     isPrimary: user.officers.some((o) => o.position.is_primary),
     isPrimaryOfficer: user.officers.some((o) => o.position.is_primary),
-    isSeAdmin: user.officers.some((o) => o.position.title === SE_ADMIN_POSITION_TITLE),
+    // "SE Admin" historically meant the literal `title = "SE Admin"`
+    // position, but per the SE Office every SE Office position
+    // (Administrative Assistant / Dean / SE Office Head / Undergraduate
+    // Dean) should grant the same elevated access. Check the category
+    // so all four roles count.
+    isSeAdmin: user.officers.some((o) => o.position.category === "SE_OFFICE"),
     profileComplete: !!(
       user.graduationTerm &&
       user.graduationYear &&

@@ -122,6 +122,11 @@ const dashboardItems = [
     href: "/dashboard/elections",
     description: "Create and manage primary-officer election cycles.",
   },
+  {
+    title: "Announcements",
+    href: "/dashboard/announcements",
+    description: "Manage site-wide announcement banners.",
+  },
 ];
 
 interface NavbarProps {
@@ -218,7 +223,10 @@ const Navbar: React.FC<NavbarProps> = ({
         if (item.href === "/dashboard/tech-committee") {
           return canViewTechCommitteeDashboard;
         }
-        if (item.href === "/dashboard/elections") {
+        if (
+          item.href === "/dashboard/elections" ||
+          item.href === "/dashboard/announcements"
+        ) {
           return isPrimary;
         }
         return true;
@@ -274,7 +282,7 @@ const Navbar: React.FC<NavbarProps> = ({
   return (
     <nav
       id="navbar"
-      className="fixed left-0 top-0 w-screen z-50 flex items-center justify-center bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b-[2px] border-black"
+      className="flex w-full items-center justify-center border-b-[2px] border-black"
     >
       <div
         id="nav-content"
@@ -363,6 +371,15 @@ const Navbar: React.FC<NavbarProps> = ({
                   </NavigationMenuLink>
                 </NavigationMenuItem>
               )}
+
+              <NavigationMenuItem>
+                <NavigationMenuLink
+                  asChild
+                  className={navigationMenuTriggerStyle()}
+                >
+                  <Link href="/sponsors">Sponsors</Link>
+                </NavigationMenuLink>
+              </NavigationMenuItem>
 
               <NavigationMenuItem value="about">
                 <NavigationMenuTrigger onClick={handleTriggerClick("about")}>
@@ -481,6 +498,10 @@ const Navbar: React.FC<NavbarProps> = ({
                     Elections
                   </MobileNavLink>
                 )}
+
+                <MobileNavLink href="/sponsors" onClick={() => setOpen(false)}>
+                  Sponsors
+                </MobileNavLink>
 
                 <MobileNavCollapsible title="About">
                   {aboutItems.map((item) => (

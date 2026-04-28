@@ -2,11 +2,9 @@ import { getGatewayAuthLevel } from "@/lib/authGateway";
 import {
   certifyElection,
   serializeElectionForClient,
-  stageHasRequiredApprovals,
 } from "@/lib/elections";
 import prisma from "@/lib/prisma";
-import { ElectionApprovalStage, ElectionStatus } from "@prisma/client";
-import { canManageElections } from "@/lib/seAdmin";
+import { ElectionStatus } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
@@ -15,8 +13,13 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const authLevel = await getGatewayAuthLevel(request);
-  if (!(await canManageElections(authLevel)) || !authLevel.userId) {
-    return new Response("Only the President or an SE Admin can certify elections", {
+  // Certification is a single-action SE Office button — drop the old
+  // "President + distinct SE Admin" dual-approval gate that made it
+  // impossible to actually click certify (one person can't satisfy
+  // both halves of a 2-person approval, and the dashboard only ever
+  // had a single Certify button anyway).
+  if (!authLevel.isSeAdmin || !authLevel.userId) {
+    return new Response("Only an SE Admin can certify elections", {
       status: 403,
     });
   }
@@ -36,17 +39,6 @@ export async function POST(
   }
   if (election.status !== ElectionStatus.VOTING_CLOSED) {
     return new Response("Only closed elections can be certified", { status: 409 });
-  }
-  if (
-    !(await stageHasRequiredApprovals(
-      electionId,
-      ElectionApprovalStage.CERTIFICATION
-    ))
-  ) {
-    return new Response(
-      "CERTIFICATION approval requires the President and one distinct SE Admin",
-      { status: 409 }
-    );
   }
 
   try {

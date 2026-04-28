@@ -19,6 +19,7 @@ export async function GET() {
       user_id: true,
       author: true,
     },
+    orderBy: { date_added: 'desc' },
   });
   return Response.json(quotes);
 }

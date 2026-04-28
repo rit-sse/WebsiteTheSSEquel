@@ -64,6 +64,11 @@ enum ElectionNominationStatus {
   ACCEPTED
   DECLINED
   EXPIRED
+  // Candidate accepted, then later pulled out — distinct from
+  // DECLINED ("never said yes"). The IRV tally drops them the same
+  // way as eliminated candidates: their preference rows just stop
+  // counting, and ballots that ranked them flow to the next choice.
+  WITHDRAWN
 }
 
 enum ElectionEligibilityStatus {
@@ -117,6 +122,10 @@ model User {
   googleImageURL  String? @db.VarChar(500)
 
   emailVerified DateTime?
+
+  // True for stub users created from the legacy database import. Cleared
+  // when a real Google sign-in provides current profile details.
+  isImported Boolean @default(false)
 
   // relational fields
   mentor               Mentor[]
@@ -272,15 +281,16 @@ model Quote {
   //Store quote as a String
   quote String @db.VarChar(2000)
 
-  //References userId of person who submitted the quote
-  user_id Int
+  //References userId of person who submitted the quote. Optional for legacy
+  //quotes imported without a matching submitter.
+  user_id Int?
 
   //Store author, person who said the qoute, as a String, default to anonymous
   author String @default("Anonymous") @db.VarChar(100)
 
   //Relational fields
   //Refrences user_id
-  user User @relation(fields: [user_id], references: [id])
+  user User? @relation(fields: [user_id], references: [id])
 }
 
 model OfficerPosition {
@@ -297,6 +307,10 @@ model OfficerPosition {
   email String @unique
 
   category PositionCategory @default(PRIMARY_OFFICER)
+
+  // Historical-only positions imported from old officer records. These
+  // appear in history, but are hidden from current fillable positions.
+  is_defunct Boolean @default(false)
 
   //Relational fields
   officers         Officer[]
@@ -781,6 +795,7 @@ model Event {
 
   title       String   @db.VarChar(200)
   date        DateTime @db.Timestamptz(3)
+  endDate     DateTime? @db.Timestamptz(3)
   location    String?  @db.VarChar(200)
   image       String?  @db.VarChar(500)
   description String   @db.VarChar(2000)
@@ -1008,6 +1023,82 @@ model Sponsor {
   updatedAt DateTime @updatedAt
 }
 
+model SponsorshipInquiry {
+  // Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
+
+  // Company information
+  companyName  String
+  contactName  String
+  contactEmail String
+  contactPhone String?
+
+  // Interested sponsorship tier: "tier1", "tier2", "tier3", or "custom"
+  interestedTier String
+
+  // Additional message from the company
+  message String?
+
+  // Status: pending, contacted, approved, declined
+  status String @default("pending")
+
+  // Timestamp when inquiry was created
+  createdAt DateTime @default(now())
+}
+
+model RecruitingTalkRequest {
+  // Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
+
+  // Company information
+  companyName  String
+  contactName  String
+  contactEmail String
+  contactPhone String?
+
+  // Talk details
+  preferredDates    String // Comma-separated preferred dates
+  talkType          String // "tech_talk", "interview_session", "workshop", "info_session"
+  expectedAttendees Int?
+  description       String?
+
+  // Status: pending, scheduled, completed, declined
+  status String @default("pending")
+
+  // Timestamp when request was created
+  createdAt DateTime @default(now())
+}
+
+model ViseTalkRequest {
+  // Store an automatically generated unique int for id
+  id Int @id @default(autoincrement())
+
+  // Speaker information
+  speakerName  String
+  speakerEmail String
+  speakerPhone String?
+
+  // Company, school, or independent affiliation (optional)
+  affiliation String?
+
+  // Talk details
+  talkTitle    String
+  talkAbstract String // What the talk is about
+  speakerBio   String // Who the speaker is
+
+  // Preferred date range or specific dates (free-form)
+  preferredDates String
+
+  // Talk format: "in_person", "virtual", "hybrid"
+  talkFormat String
+
+  // Status: pending, scheduled, completed, declined
+  status String @default("pending")
+
+  // Timestamp when request was created
+  createdAt DateTime @default(now())
+}
+
 model PurchaseRequest {
   // Store an automatically generated unique int for id
   id Int @id @default(autoincrement())
@@ -1093,6 +1184,15 @@ model Invitation {
 
   // Unique constraint: one pending invitation per email per type
   @@unique([invitedEmail, type])
+}
+
+model Announcement {
+  id        Int      @id @default(autoincrement())
+  message   String
+  category  String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // Library Database

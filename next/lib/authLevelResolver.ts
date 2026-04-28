@@ -10,7 +10,6 @@ import {
   TECH_COMMITTEE_DIVISION_MANAGER_BY_TITLE,
   TECH_COMMITTEE_DIVISION_MANAGER_TITLES,
 } from "@/lib/utils";
-import { SE_ADMIN_POSITION_TITLE } from "@/lib/seAdmin";
 
 type ResolveOptions = {
   includeProfileComplete?: boolean;
@@ -126,6 +125,7 @@ export async function resolveAuthLevelFromToken(
             select: {
               title: true,
               is_primary: true,
+              category: true,
             },
           },
         },
@@ -141,8 +141,13 @@ export async function resolveAuthLevelFromToken(
   }
 
   const membershipCount = user._count.Memberships;
+  // "SE Admin" historically meant the literal `title = "SE Admin"`
+  // position, but per the SE Office every position in the SE Office
+  // category (Administrative Assistant / Dean / SE Office Head /
+  // Undergraduate Dean) should grant the same elevated access. Check
+  // the category so all four roles count.
   const isSeAdmin = user.officers.some(
-    (officer) => officer.position.title === SE_ADMIN_POSITION_TITLE
+    (officer) => officer.position.category === "SE_OFFICE"
   );
   authLevel.userId = user.id;
   authLevel.isUser = true;
