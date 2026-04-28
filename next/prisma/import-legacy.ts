@@ -197,6 +197,13 @@ function estimateEndDate(startDate: Date): Date {
   return month >= 7 ? new Date(year + 1, 4, 15) : new Date(year, 4, 15);
 }
 
+function getAcademicTermFromDate(date: Date): "SPRING" | "SUMMER" | "FALL" {
+  const month = date.getMonth() + 1;
+  if (month >= 1 && month <= 5) return "SPRING";
+  if (month >= 6 && month <= 7) return "SUMMER";
+  return "FALL";
+}
+
 // ─── Cleanup ──────────────────────────────────────────────────
 
 /**
@@ -499,9 +506,11 @@ async function importMemberships(db: Map<string, Row[]>) {
     if (!user) { skipped++; continue; }
 
     const dateGiven = toDate(m.startDate) ?? new Date();
+    const term = getAcademicTermFromDate(dateGiven);
+    const year = dateGiven.getFullYear();
     try {
       const existing = await prisma.memberships.findFirst({
-        where: { userId: user.id, reason: m.reason ?? "", dateGiven },
+        where: { userId: user.id, reason: m.reason ?? "", dateGiven, term, year },
       });
       if (existing) { skipped++; continue; }
 
@@ -510,6 +519,8 @@ async function importMemberships(db: Map<string, Row[]>) {
           userId: user.id,
           reason: m.reason ?? "Legacy membership",
           dateGiven,
+          term,
+          year,
         },
       });
       created++;
