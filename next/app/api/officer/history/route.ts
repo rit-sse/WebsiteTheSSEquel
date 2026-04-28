@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 /**
  * GET /api/officer/history
  * Returns all non-active officers grouped by semester (most recent first).
- * Each semester entry contains primary officers and committee heads.
+ * Each semester entry contains primary officers, SE Office, and committee heads.
  */
 export async function GET() {
   const officers = await prisma.officer.findMany({
@@ -35,6 +35,7 @@ export async function GET() {
           id: true,
           title: true,
           is_primary: true,
+          category: true,
           is_defunct: true,
         },
       },
@@ -58,7 +59,7 @@ export async function GET() {
       }));
 
     const committee_heads = items
-      .filter((o) => !o.position.is_primary)
+      .filter((o) => !o.position.is_primary && o.position.category !== "SE_OFFICE")
       .sort((a, b) => a.position.title.localeCompare(b.position.title))
       .map((o) => ({
         ...o,
@@ -68,7 +69,18 @@ export async function GET() {
         },
       }));
 
-    return { year: label, primary_officers, committee_heads };
+    const se_office = items
+      .filter((o) => !o.position.is_primary && o.position.category === "SE_OFFICE")
+      .sort((a, b) => a.position.title.localeCompare(b.position.title))
+      .map((o) => ({
+        ...o,
+        user: {
+          ...o.user,
+          image: resolveUserImage(o.user.profileImageKey, o.user.googleImageURL),
+        },
+      }));
+
+    return { year: label, primary_officers, se_office, committee_heads };
   });
 
   return Response.json(years);
@@ -78,11 +90,11 @@ export async function GET() {
  * POST /api/officer/history
  * Manually add a historical (inactive) officer record.
  * Body: { email, name?, position_title, start_date, end_date }
- * Requires officer auth.
+ * Requires primary-officer auth.
  */
 export async function POST(req: NextRequest) {
   const auth = await resolveAuthLevelFromRequest(req);
-  if (!auth.isOfficer) return new Response("Officers only", { status: 403 });
+  if (!auth.isPrimary) return new Response("Primary officers only", { status: 403 });
 
   let body: { email: string; name?: string; position_title: string; start_date: string; end_date: string };
   try { body = await req.json(); } catch { return new Response("Invalid JSON", { status: 400 }); }
@@ -90,6 +102,15 @@ export async function POST(req: NextRequest) {
   const { email, name, position_title, start_date, end_date } = body;
   if (!email || !position_title || !start_date || !end_date) {
     return new Response("email, position_title, start_date, and end_date are required", { status: 400 });
+  }
+
+  const startDate = new Date(start_date);
+  const endDate = new Date(end_date);
+  if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
+    return new Response("start_date and end_date must be valid dates", { status: 400 });
+  }
+  if (endDate <= startDate) {
+    return new Response("end_date must be after start_date", { status: 400 });
   }
 
   const position = await prisma.officerPosition.findUnique({ where: { title: position_title } });
@@ -107,15 +128,15 @@ export async function POST(req: NextRequest) {
       user_id: user.id,
       position_id: position.id,
       is_active: false,
-      start_date: new Date(start_date),
-      end_date: new Date(end_date),
+      start_date: startDate,
+      end_date: endDate,
     },
     select: {
       id: true,
       start_date: true,
       end_date: true,
       user: { select: { id: true, name: true, email: true, profileImageKey: true, googleImageURL: true } },
-      position: { select: { id: true, title: true, is_primary: true, is_defunct: true } },
+      position: { select: { id: true, title: true, is_primary: true, category: true, is_defunct: true } },
     },
   });
 
@@ -129,11 +150,11 @@ export async function POST(req: NextRequest) {
  * PUT /api/officer/history
  * Update a historical officer's dates.
  * Body: { id, start_date?, end_date? }
- * Requires officer auth.
+ * Requires primary-officer auth.
  */
 export async function PUT(req: NextRequest) {
   const auth = await resolveAuthLevelFromRequest(req);
-  if (!auth.isOfficer) return new Response("Officers only", { status: 403 });
+  if (!auth.isPrimary) return new Response("Primary officers only", { status: 403 });
 
   let body: { id: number; start_date?: string; end_date?: string };
   try { body = await req.json(); } catch { return new Response("Invalid JSON", { status: 400 }); }
@@ -141,12 +162,29 @@ export async function PUT(req: NextRequest) {
   if (!body.id) return new Response("id is required", { status: 400 });
 
   const data: { start_date?: Date; end_date?: Date } = {};
-  if (body.start_date) data.start_date = new Date(body.start_date);
-  if (body.end_date) data.end_date = new Date(body.end_date);
+  if (body.start_date) {
+    data.start_date = new Date(body.start_date);
+    if (Number.isNaN(data.start_date.getTime())) return new Response("start_date must be valid", { status: 400 });
+  }
+  if (body.end_date) {
+    data.end_date = new Date(body.end_date);
+    if (Number.isNaN(data.end_date.getTime())) return new Response("end_date must be valid", { status: 400 });
+  }
 
   try {
-    const officer = await prisma.officer.update({
+    const existing = await prisma.officer.findFirst({
       where: { id: body.id, is_active: false },
+      select: { id: true, start_date: true, end_date: true },
+    });
+    if (!existing) return new Response("Historical officer not found", { status: 404 });
+    const effectiveStart = data.start_date ?? existing.start_date;
+    const effectiveEnd = data.end_date ?? existing.end_date;
+    if (effectiveEnd <= effectiveStart) {
+      return new Response("end_date must be after start_date", { status: 400 });
+    }
+
+    const officer = await prisma.officer.update({
+      where: { id: body.id },
       data,
     });
     return Response.json(officer);
@@ -158,17 +196,23 @@ export async function PUT(req: NextRequest) {
 /**
  * DELETE /api/officer/history?id=123
  * Delete a historical officer record.
- * Requires officer auth.
+ * Requires primary-officer auth.
  */
 export async function DELETE(req: NextRequest) {
   const auth = await resolveAuthLevelFromRequest(req);
-  if (!auth.isOfficer) return new Response("Officers only", { status: 403 });
+  if (!auth.isPrimary) return new Response("Primary officers only", { status: 403 });
 
   const id = Number(new URL(req.url).searchParams.get("id"));
   if (!id) return new Response("id query param is required", { status: 400 });
 
   try {
-    await prisma.officer.delete({ where: { id, is_active: false } });
+    const existing = await prisma.officer.findFirst({
+      where: { id, is_active: false },
+      select: { id: true },
+    });
+    if (!existing) return new Response("Historical officer not found", { status: 404 });
+
+    await prisma.officer.delete({ where: { id } });
     return new Response(null, { status: 204 });
   } catch {
     return new Response("Historical officer not found", { status: 404 });

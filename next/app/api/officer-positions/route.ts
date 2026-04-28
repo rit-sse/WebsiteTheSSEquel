@@ -13,8 +13,20 @@ export const dynamic = "force-dynamic";
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const categoryFilter = searchParams.get("category");
+  const includeDefunct = searchParams.get("includeDefunct") === "true";
 
-  const where: Record<string, unknown> = {};
+  if (includeDefunct) {
+    const authLevel = await getGatewayAuthLevel(request);
+    if (!authLevel.isPrimary) {
+      return new Response("Only primary officers can include defunct positions", {
+        status: 403,
+      });
+    }
+  }
+
+  const where: Record<string, unknown> = includeDefunct
+    ? {}
+    : { is_defunct: false };
   if (categoryFilter === "PRIMARY_OFFICER" || categoryFilter === "SE_OFFICE") {
     where.category = categoryFilter;
   }
@@ -27,6 +39,7 @@ export async function GET(request: Request) {
       is_primary: true,
       email: true,
       category: true,
+      is_defunct: true,
       officers: {
         where: { is_active: true },
         select: {
@@ -63,6 +76,7 @@ export async function GET(request: Request) {
       // (and any other consumer can branch on PRIMARY_OFFICER vs
       // SE_OFFICE without an extra round-trip).
       category: pos.category,
+      is_defunct: pos.is_defunct,
       email: pos.email, // Position alias email (e.g., sse-president@rit.edu)
       isFilled: pos.officers.length > 0,
       currentOfficer: activeOfficer

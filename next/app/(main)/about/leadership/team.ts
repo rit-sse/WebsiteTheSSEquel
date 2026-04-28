@@ -49,6 +49,7 @@ export interface HistoricalOfficer {
     id: number;
     title: string;
     is_primary: boolean;
+    category?: "PRIMARY_OFFICER" | "SE_OFFICE";
     is_defunct?: boolean;
   };
 }
@@ -57,5 +58,6 @@ export interface HistoricalOfficer {
 export interface HistoricalYear {
   year: string;
   primary_officers: HistoricalOfficer[];
+  se_office: HistoricalOfficer[];
   committee_heads: HistoricalOfficer[];
 }

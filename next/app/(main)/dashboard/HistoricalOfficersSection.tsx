@@ -18,12 +18,18 @@ interface HistoricalOfficer {
   start_date: string;
   end_date: string;
   user: { id: number; name: string; email: string; image: string | null };
-  position: { id: number; title: string; is_primary: boolean };
+  position: {
+    id: number;
+    title: string;
+    is_primary: boolean;
+    category?: "PRIMARY_OFFICER" | "SE_OFFICE";
+  };
 }
 
 interface HistoricalSemester {
   year: string;
   primary_officers: HistoricalOfficer[];
+  se_office: HistoricalOfficer[];
   committee_heads: HistoricalOfficer[];
 }
 
@@ -45,26 +51,19 @@ function formatDate(d: string) {
 // ─── Photo upload helper ──────────────────────────────────────────────────────
 
 async function uploadOfficerPhoto(userId: number, file: File): Promise<string> {
-  // 1. Get presigned URL
-  const res = await fetch("/api/aws/officerPictures", {
+  const formData = new FormData();
+  formData.append("userId", String(userId));
+  formData.append("file", file);
+
+  const res = await fetch("/api/officer/history/photo", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ userId, filename: file.name, contentType: file.type }),
+    body: formData,
   });
-  if (!res.ok) throw new Error(await res.text());
-  const { uploadUrl, key } = await res.json();
-
-  // 2. Upload directly to S3
-  const upload = await fetch(uploadUrl, { method: "PUT", body: file, headers: { "Content-Type": file.type } });
-  if (!upload.ok) throw new Error("S3 upload failed");
-
-  // 3. Save key to user record
-  const save = await fetch("/api/aws/officerPictures", {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ userId, key }),
-  });
-  if (!save.ok) throw new Error(await save.text());
+  if (!res.ok) {
+    const body = await res.json().catch(async () => ({ error: await res.text() }));
+    throw new Error(body.error ?? "Upload failed");
+  }
+  const { key } = await res.json();
   return key;
 }
 
@@ -74,10 +73,12 @@ function OfficerRow({
   officer,
   onDelete,
   onPhotoUpdated,
+  readOnly,
 }: {
   officer: HistoricalOfficer;
   onDelete: () => void;
   onPhotoUpdated: () => void;
+  readOnly: boolean;
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -107,13 +108,15 @@ function OfficerRow({
         </Avatar>
         <button
           onClick={() => fileRef.current?.click()}
-          disabled={uploading}
+          disabled={uploading || readOnly}
           title="Upload photo"
           className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover/photo:opacity-100 flex items-center justify-center transition-opacity"
         >
           <Camera className="h-3.5 w-3.5 text-white" />
         </button>
-        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePhoto} />
+        {!readOnly && (
+          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePhoto} />
+        )}
       </div>
 
       <div className="flex-1 min-w-0">
@@ -123,14 +126,16 @@ function OfficerRow({
         </div>
       </div>
 
-      <Button
-        size="xs"
-        variant="destructiveGhost"
-        onClick={onDelete}
-        title="Delete record"
-      >
-        <Trash2 className="h-3 w-3" />
-      </Button>
+      {!readOnly && (
+        <Button
+          size="xs"
+          variant="destructiveGhost"
+          onClick={onDelete}
+          title="Delete record"
+        >
+          <Trash2 className="h-3 w-3" />
+        </Button>
+      )}
     </div>
   );
 }
@@ -238,13 +243,19 @@ function SemesterSection({
   semester,
   onDelete,
   onPhotoUpdated,
+  readOnly,
 }: {
   semester: HistoricalSemester;
   onDelete: (id: number) => void;
   onPhotoUpdated: () => void;
+  readOnly: boolean;
 }) {
   const [open, setOpen] = useState(false);
-  const all = [...semester.primary_officers, ...semester.committee_heads];
+  const all = [
+    ...semester.primary_officers,
+    ...semester.se_office,
+    ...semester.committee_heads,
+  ];
 
   return (
     <div className="border border-border/50 rounded-lg overflow-hidden">
@@ -267,6 +278,7 @@ function SemesterSection({
               officer={o}
               onDelete={() => onDelete(o.id)}
               onPhotoUpdated={onPhotoUpdated}
+              readOnly={readOnly}
             />
           ))}
         </div>
@@ -277,7 +289,11 @@ function SemesterSection({
 
 // ─── Main Section ─────────────────────────────────────────────────────────────
 
-export default function HistoricalOfficersSection() {
+export default function HistoricalOfficersSection({
+  readOnly = false,
+}: {
+  readOnly?: boolean;
+}) {
   const [semesters, setSemesters] = useState<HistoricalSemester[]>([]);
   const [positions, setPositions] = useState<Position[]>([]);
   const [loading, setLoading] = useState(true);
@@ -288,7 +304,7 @@ export default function HistoricalOfficersSection() {
     try {
       const [histRes, posRes] = await Promise.all([
         fetch("/api/officer/history"),
-        fetch("/api/officer-positions"),
+        fetch("/api/officer-positions?includeDefunct=true"),
       ]);
       if (histRes.ok) setSemesters(await histRes.json());
       if (posRes.ok) {
@@ -320,10 +336,12 @@ export default function HistoricalOfficersSection() {
           <h2 className="text-lg font-semibold">Historical Officers</h2>
           <p className="text-sm text-muted-foreground">Manage past officer records and photos</p>
         </div>
-        <Button size="sm" onClick={() => setAddOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Officer
-        </Button>
+        {!readOnly && (
+          <Button size="sm" onClick={() => setAddOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Officer
+          </Button>
+        )}
       </div>
 
       {loading ? (
@@ -340,17 +358,20 @@ export default function HistoricalOfficersSection() {
               semester={s}
               onDelete={handleDelete}
               onPhotoUpdated={load}
+              readOnly={readOnly}
             />
           ))}
         </div>
       )}
 
-      <AddOfficerModal
-        open={addOpen}
-        onOpenChange={setAddOpen}
-        positions={positions}
-        onSuccess={load}
-      />
+      {!readOnly && (
+        <AddOfficerModal
+          open={addOpen}
+          onOpenChange={setAddOpen}
+          positions={positions}
+          onSuccess={load}
+        />
+      )}
     </div>
   );
 }
