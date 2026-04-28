@@ -8,10 +8,10 @@ export const metadata: Metadata = {
   description: "Browse SSE event and community photos.",
 };
 
-const PAGE_SIZE = 60;
+const PAGE_SIZE = 90;
 
 export default async function PhotosPage() {
-  const [photos, events, years] = await Promise.all([
+  const [photos, events, years, totalPhotoCount] = await Promise.all([
     prisma.photo.findMany({
       where: { status: "published" },
       take: PAGE_SIZE + 1,
@@ -30,20 +30,14 @@ export default async function PhotosPage() {
       select: { sortDate: true },
       orderBy: { sortDate: "desc" },
     }),
+    prisma.photo.count({ where: { status: "published" } }),
   ]);
 
   const initialPhotos = photos.slice(0, PAGE_SIZE);
 
   return (
-    <section className="px-4 py-8 md:px-8">
-      <div className="mx-auto max-w-screen-xl space-y-6">
-        <div>
-          <h1 className="text-primary">Photos</h1>
-          <p className="mt-2 max-w-2xl text-muted-foreground">
-            Browse moments from SSE events, projects, mentoring, and community
-            gatherings.
-          </p>
-        </div>
+    <section className="mt-16 pb-16 w-full">
+      <div className="w-full max-w-screen-xl mx-auto px-4 md:px-8">
         <PhotosClient
           initialPhotos={initialPhotos.map(toPhotoDto)}
           initialNextCursor={
@@ -56,6 +50,7 @@ export default async function PhotosPage() {
             new Set(years.map((row) => row.sortDate.getUTCFullYear()))
           )}
           categories={[...PHOTO_CATEGORIES]}
+          totalPhotoCount={totalPhotoCount}
         />
       </div>
     </section>

@@ -1,96 +1,166 @@
 "use client";
 
 import Image from "next/image";
-import { CheckCircle2, Loader2, XCircle } from "lucide-react";
+import { CheckCircle2, Loader2, X, XCircle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
-type UploadItem = {
-  clientId: string;
-  file: File;
-  previewUrl: string;
-  exifTakenAt: string | null;
-  manualTakenAt: string;
-  caption: string;
-  status: "ready" | "uploading" | "uploaded" | "failed";
-  error?: string;
-};
+import { Progress } from "@/components/ui/progress";
+import type { UploadItem } from "./PhotoBatchUploader";
 
 export function PhotoUploadQueue({
   items,
   onChange,
+  onRemove,
 }: {
   items: UploadItem[];
   onChange: (clientId: string, patch: Partial<UploadItem>) => void;
+  onRemove: (clientId: string) => void;
 }) {
   return (
-    <div className="max-h-[560px] space-y-3 overflow-auto pr-1">
-      {items.map((item) => (
-        <div
-          key={item.clientId}
-          className="grid gap-3 rounded-md border border-border/50 bg-background p-3 md:grid-cols-[72px_1fr_170px]"
-        >
-          <div className="relative aspect-square overflow-hidden rounded-md border border-border">
-            <Image
-              src={item.previewUrl}
-              alt={item.file.name}
-              fill
-              className="object-cover"
-            />
-          </div>
-          <div className="min-w-0 space-y-2">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <p className="truncate font-medium">{item.file.name}</p>
-                <p className="text-xs text-muted-foreground">
-                  {(item.file.size / (1024 * 1024)).toFixed(1)} MB
-                  {item.exifTakenAt
-                    ? ` • EXIF ${formatPhotoDate(item.exifTakenAt)}`
-                    : " • no EXIF date"}
-                </p>
+    <ul className="max-h-[640px] space-y-3 overflow-auto pr-1">
+      {items.map((item) => {
+        const locked = item.status === "uploading" || item.status === "uploaded";
+        return (
+          <li
+            key={item.clientId}
+            className={[
+              "rounded-lg border bg-surface-1 p-3 transition-colors",
+              item.status === "failed"
+                ? "border-destructive/40 bg-destructive/5"
+                : item.status === "uploaded"
+                  ? "border-emerald-500/40 bg-emerald-500/5"
+                  : "border-border/40",
+            ].join(" ")}
+          >
+            <div className="grid gap-3 md:grid-cols-[88px_minmax(0,1fr)_minmax(0,200px)_auto]">
+              {/* Preview */}
+              <div className="relative aspect-square w-22 overflow-hidden rounded-md border border-border/40 bg-black">
+                <Image
+                  src={item.previewUrl}
+                  alt={item.file.name}
+                  fill
+                  className="object-cover"
+                  sizes="88px"
+                />
+                {item.status === "uploaded" && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-emerald-500/40">
+                    <CheckCircle2 className="size-7 text-white drop-shadow" />
+                  </div>
+                )}
               </div>
-              <Status status={item.status} />
+
+              {/* Caption + filename */}
+              <div className="min-w-0 space-y-2">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="truncate font-medium">{item.file.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {(item.file.size / (1024 * 1024)).toFixed(1)} MB
+                      {item.exifTakenAt
+                        ? ` · EXIF ${formatPhotoDate(item.exifTakenAt)}`
+                        : " · no EXIF date"}
+                    </p>
+                  </div>
+                  <StatusPill item={item} />
+                </div>
+
+                <Input
+                  value={item.caption}
+                  onChange={(event) =>
+                    onChange(item.clientId, { caption: event.target.value })
+                  }
+                  placeholder="Caption (optional)"
+                  disabled={locked}
+                  className="h-9"
+                />
+
+                {item.status === "uploading" && (
+                  <Progress value={item.progress} className="h-1.5" />
+                )}
+                {item.error && (
+                  <p className="text-sm text-destructive">{item.error}</p>
+                )}
+              </div>
+
+              {/* Per-photo override date */}
+              <div className="space-y-1.5">
+                <Label
+                  htmlFor={`override-${item.clientId}`}
+                  className="text-xs font-medium text-muted-foreground"
+                >
+                  Override date
+                </Label>
+                <Input
+                  id={`override-${item.clientId}`}
+                  type="date"
+                  value={item.manualTakenAt}
+                  onChange={(event) =>
+                    onChange(item.clientId, {
+                      manualTakenAt: event.target.value,
+                    })
+                  }
+                  disabled={locked}
+                  className="h-9"
+                />
+              </div>
+
+              {/* Remove */}
+              <div className="flex items-start justify-end">
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => onRemove(item.clientId)}
+                  disabled={locked}
+                  aria-label="Remove from queue"
+                  className="text-muted-foreground hover:text-destructive"
+                >
+                  <X className="size-4" />
+                </Button>
+              </div>
             </div>
-            <Input
-              value={item.caption}
-              onChange={(event) =>
-                onChange(item.clientId, { caption: event.target.value })
-              }
-              placeholder="Caption"
-              disabled={item.status === "uploading"}
-            />
-            {item.error && (
-              <p className="text-sm text-destructive">{item.error}</p>
-            )}
-          </div>
-          <div className="space-y-2">
-            <Label>Override date</Label>
-            <Input
-              type="date"
-              value={item.manualTakenAt}
-              onChange={(event) =>
-                onChange(item.clientId, { manualTakenAt: event.target.value })
-              }
-              disabled={item.status === "uploading"}
-            />
-          </div>
-        </div>
-      ))}
-    </div>
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 
-function Status({ status }: { status: UploadItem["status"] }) {
-  if (status === "uploading") {
-    return <Loader2 className="size-5 animate-spin text-muted-foreground" />;
+function StatusPill({ item }: { item: UploadItem }) {
+  if (item.status === "uploading") {
+    return (
+      <Badge variant="secondary" className="shrink-0">
+        <Loader2 className="mr-1 size-3 animate-spin" />
+        {Math.round(item.progress)}%
+      </Badge>
+    );
   }
-  if (status === "uploaded") {
-    return <CheckCircle2 className="size-5 text-green-600" />;
+  if (item.status === "uploaded") {
+    return (
+      <Badge
+        variant="outline"
+        className="shrink-0 border-emerald-500/40 text-emerald-600 dark:text-emerald-400"
+      >
+        <CheckCircle2 className="mr-1 size-3" />
+        Uploaded
+      </Badge>
+    );
   }
-  if (status === "failed") {
-    return <XCircle className="size-5 text-destructive" />;
+  if (item.status === "failed") {
+    return (
+      <Badge variant="destructive" className="shrink-0">
+        <XCircle className="mr-1 size-3" />
+        Failed
+      </Badge>
+    );
   }
-  return <span className="text-xs text-muted-foreground">Ready</span>;
+  return (
+    <Badge variant="outline" className="shrink-0">
+      Ready
+    </Badge>
+  );
 }
 
 function formatPhotoDate(value: string) {
@@ -98,5 +168,6 @@ function formatPhotoDate(value: string) {
     month: "short",
     day: "numeric",
     year: "numeric",
+    timeZone: "UTC",
   }).format(new Date(value));
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { Search } from "lucide-react";
+import { Search, SlidersHorizontal, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -10,19 +10,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { PhotoEventOption } from "./PhotosClient";
-
-type Filters = {
-  year: string;
-  eventId: string;
-  category: string;
-  q: string;
-};
+import type { PhotoEventOption, Filters } from "./PhotosClient";
 
 export function PhotoFilters({
   filters,
   onChange,
   onApply,
+  onClear,
+  isFiltered,
   events,
   years,
   categories,
@@ -31,6 +26,8 @@ export function PhotoFilters({
   filters: Filters;
   onChange: (filters: Filters) => void;
   onApply: () => void;
+  onClear: () => void;
+  isFiltered: boolean;
   events: PhotoEventOption[];
   years: number[];
   categories: string[];
@@ -41,7 +38,7 @@ export function PhotoFilters({
   }
 
   return (
-    <div className="grid gap-3 rounded-lg border border-border/50 bg-secondary-background p-4 md:grid-cols-[1fr_160px_180px_180px_auto]">
+    <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,150px)_minmax(0,180px)_minmax(0,160px)_auto_auto]">
       <div className="relative">
         <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
@@ -50,28 +47,33 @@ export function PhotoFilters({
           onKeyDown={(event) => {
             if (event.key === "Enter") onApply();
           }}
-          placeholder="Search captions or filenames"
+          placeholder="Search captions, alt text, or filenames…"
           className="pl-9"
           disabled={disabled}
         />
       </div>
+
       <Select
         value={filters.year || "all"}
         onValueChange={(value) => update("year", value === "all" ? "" : value)}
         disabled={disabled}
       >
         <SelectTrigger>
-          <SelectValue placeholder="Year" />
+          <SelectValue placeholder="All years" />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">All years</SelectItem>
-          {years.map((year) => (
-            <SelectItem key={year} value={String(year)}>
-              {year}
-            </SelectItem>
-          ))}
+          {years
+            .slice()
+            .sort((a, b) => b - a)
+            .map((year) => (
+              <SelectItem key={year} value={String(year)}>
+                {year}
+              </SelectItem>
+            ))}
         </SelectContent>
       </Select>
+
       <Select
         value={filters.eventId || "all"}
         onValueChange={(value) =>
@@ -80,7 +82,7 @@ export function PhotoFilters({
         disabled={disabled}
       >
         <SelectTrigger>
-          <SelectValue placeholder="Event" />
+          <SelectValue placeholder="All events" />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">All events</SelectItem>
@@ -91,6 +93,7 @@ export function PhotoFilters({
           ))}
         </SelectContent>
       </Select>
+
       <Select
         value={filters.category || "all"}
         onValueChange={(value) =>
@@ -99,20 +102,34 @@ export function PhotoFilters({
         disabled={disabled}
       >
         <SelectTrigger>
-          <SelectValue placeholder="Category" />
+          <SelectValue placeholder="All categories" />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">All categories</SelectItem>
           {categories.map((category) => (
             <SelectItem key={category} value={category}>
-              {category}
+              <span className="capitalize">{category}</span>
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
+
       <Button onClick={onApply} disabled={disabled}>
+        <SlidersHorizontal className="size-4" />
         Apply
       </Button>
+
+      {isFiltered && (
+        <Button
+          type="button"
+          variant="neutral"
+          onClick={onClear}
+          disabled={disabled}
+        >
+          <X className="size-4" />
+          Clear
+        </Button>
+      )}
     </div>
   );
 }
