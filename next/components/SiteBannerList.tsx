@@ -13,7 +13,7 @@ export default function SiteBannerList({ banners }: { banners: SiteBanner[] }) {
   if (visible.length === 0) return null;
 
   return (
-    <div className="mt-20 border-b-[2px] border-black">
+    <div className="border-b-[2px] border-black">
       {visible.map((banner, index) => {
         const content = (
           <div
