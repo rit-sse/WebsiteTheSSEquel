@@ -3,10 +3,24 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSession, signIn } from "next-auth/react";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
-import { CheckCircle, Calendar, MapPin, Loader2, LogIn, AlertCircle } from "lucide-react";
+import {
+  CheckCircle,
+  Calendar,
+  MapPin,
+  Loader2,
+  LogIn,
+  AlertCircle,
+} from "lucide-react";
 import { toast } from "sonner";
 
 interface EventDetails {
@@ -32,6 +46,8 @@ export default function AttendEventPage() {
   const [attending, setAttending] = useState(false);
   const [attended, setAttended] = useState(false);
   const [membershipGranted, setMembershipGranted] = useState(false);
+  const [membershipPending, setMembershipPending] = useState(false);
+  const [nowMs, setNowMs] = useState(() => Date.now());
 
   const fetchEvent = useCallback(async () => {
     try {
@@ -58,6 +74,11 @@ export default function AttendEventPage() {
     fetchEvent();
   }, [fetchEvent]);
 
+  useEffect(() => {
+    const timer = setInterval(() => setNowMs(Date.now()), 30 * 1000);
+    return () => clearInterval(timer);
+  }, []);
+
   const handleAttend = async () => {
     if (!session) {
       signIn("google", { callbackUrl: window.location.href });
@@ -75,12 +96,29 @@ export default function AttendEventPage() {
       if (response.ok) {
         setAttended(true);
         setMembershipGranted(!!data.membershipGranted);
+        setMembershipPending(!!data.membershipPending);
         if (data.membershipGranted) {
           toast.success("Membership added to your account!");
+        } else if (data.membershipPending) {
+          toast.info(
+            "Check-in recorded. Membership will be awarded after the event ends."
+          );
         }
       } else if (response.status === 409 && data.alreadyAttended) {
         setAttended(true);
         setMembershipGranted(!!data.membershipGranted);
+        setMembershipPending(!!data.membershipPending);
+      } else if (response.status === 403 && data.earlyCheckin) {
+        const openAt = data.checkinOpensAt
+          ? new Date(data.checkinOpensAt).toLocaleString("en-US", {
+              timeZone: "America/New_York",
+            })
+          : null;
+        setError(
+          openAt
+            ? `Check-in opens at ${openAt} ET.`
+            : "Check-in is not open yet for this event."
+        );
       } else {
         setError(data.error || "Failed to mark attendance");
       }
@@ -105,6 +143,24 @@ export default function AttendEventPage() {
     });
   };
 
+  const checkinWindow = event
+    ? {
+        opensAt: new Date(new Date(event.date).getTime() - 15 * 60 * 1000),
+      }
+    : null;
+  const isBeforeCheckinWindow = checkinWindow
+    ? nowMs < checkinWindow.opensAt.getTime()
+    : false;
+  const formatOpensAt = (date: Date) =>
+    date.toLocaleString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      timeZone: "America/New_York",
+    });
+
   if (loading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
@@ -119,7 +175,10 @@ export default function AttendEventPage() {
         <CardContent className="flex flex-col items-center gap-4 pt-6">
           <AlertCircle className="h-12 w-12 text-destructive" />
           <p className="text-lg font-medium text-destructive">{error}</p>
-          <Button variant="outline" onClick={() => router.push("/events/calendar")}>
+          <Button
+            variant="outline"
+            onClick={() => router.push("/events/calendar")}
+          >
             Go to Events Calendar
           </Button>
         </CardContent>
@@ -136,8 +195,13 @@ export default function AttendEventPage() {
       <Card className="max-w-lg mx-auto mt-12 p-6">
         <CardContent className="flex flex-col items-center gap-4 pt-6">
           <AlertCircle className="h-12 w-12 text-muted-foreground" />
-          <p className="text-lg font-medium">Attendance tracking is not enabled for this event.</p>
-          <Button variant="outline" onClick={() => router.push("/events/calendar")}>
+          <p className="text-lg font-medium">
+            Attendance tracking is not enabled for this event.
+          </p>
+          <Button
+            variant="outline"
+            onClick={() => router.push("/events/calendar")}
+          >
             Go to Events Calendar
           </Button>
         </CardContent>
@@ -179,11 +243,12 @@ export default function AttendEventPage() {
 
         <CardContent>
           <p className="text-muted-foreground">{event.description}</p>
-          
+
           {event.grantsMembership && !attended && (
             <div className="mt-4 p-3 bg-primary/10 rounded-lg">
               <p className="text-sm text-primary font-medium">
-                This event grants membership! Attending will add to your membership count.
+                This event grants membership! Attending will add to your
+                membership count.
               </p>
             </div>
           )}
@@ -193,10 +258,18 @@ export default function AttendEventPage() {
           {attended ? (
             <div className="w-full flex flex-col items-center gap-3 py-4">
               <CheckCircle className="h-16 w-16 text-green-500" />
-              <p className="text-xl font-medium text-green-600">You&apos;re checked in!</p>
+              <p className="text-xl font-medium text-green-600">
+                You&apos;re checked in!
+              </p>
               {membershipGranted && (
                 <p className="text-sm text-primary">
                   A membership has been added to your account.
+                </p>
+              )}
+              {membershipPending && !membershipGranted && (
+                <p className="text-sm text-muted-foreground">
+                  Check-in recorded. Membership will be added after the event
+                  ends.
                 </p>
               )}
             </div>
@@ -206,14 +279,21 @@ export default function AttendEventPage() {
               Loading...
             </Button>
           ) : !session ? (
-            <Button onClick={handleAttend} className="w-full" size="lg">
+            <Button
+              onClick={handleAttend}
+              disabled={isBeforeCheckinWindow}
+              className="w-full"
+              size="lg"
+            >
               <LogIn className="h-4 w-4 mr-2" />
-              Sign in to Mark Attendance
+              {isBeforeCheckinWindow
+                ? "Check-in Not Open Yet"
+                : "Sign in to Mark Attendance"}
             </Button>
           ) : (
             <Button
               onClick={handleAttend}
-              disabled={attending}
+              disabled={attending || isBeforeCheckinWindow}
               className="w-full"
               size="lg"
             >
@@ -222,10 +302,18 @@ export default function AttendEventPage() {
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
                   Checking in...
                 </>
+              ) : isBeforeCheckinWindow ? (
+                "Check-in Not Open Yet"
               ) : (
                 "Mark Attendance"
               )}
             </Button>
+          )}
+
+          {isBeforeCheckinWindow && checkinWindow && (
+            <p className="text-sm text-muted-foreground">
+              Check-in opens {formatOpensAt(checkinWindow.opensAt)} ET.
+            </p>
           )}
 
           {error && attended === false && (

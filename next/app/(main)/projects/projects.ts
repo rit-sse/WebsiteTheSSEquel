@@ -2,7 +2,7 @@ import internal from "stream";
 
 const placeholder_w = 400;
 const placeholder_h = 240;
-const defaultImage = `https://dummyimage.com/${placeholder_w}x${placeholder_h}`
+const defaultImage = `https://dummyimage.com/${placeholder_w}x${placeholder_h}`;
 // export interface Project{
 //     id: number,
 //     logo: string;
@@ -18,16 +18,16 @@ const defaultImage = `https://dummyimage.com/${placeholder_w}x${placeholder_h}`
 //     projectImage: string;
 //     content
 // }
-export interface Project{
-    id: number,
-    title: string,
-    description: string,
-    leadid: number,
-    progress: string,
-    repoLink: string,
-    contentURL: string,
-    projectImage: string,
-    completed: boolean
+export interface Project {
+  id: number;
+  title: string;
+  description: string;
+  leadid: number;
+  progress: string;
+  repoLink: string;
+  contentURL: string;
+  projectImage: string;
+  completed: boolean;
 }
 
 // export const projectsData: Project[] = [
@@ -134,4 +134,4 @@ export interface Project{
 //         repoLink: "https://github.com/pybash/SSE-Display",
 //         completed: true,
 //     },
-// ] 
+// ]

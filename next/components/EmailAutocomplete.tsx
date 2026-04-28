@@ -31,7 +31,7 @@ function useDebouncedValue<T>(value: T, delay: number) {
 /**
  * EmailAutocomplete - an input that searches for existing users while allowing
  * custom email addresses to be typed in.
- * 
+ *
  * - Searches users by name or email as user types
  * - Shows matching users in a dropdown
  * - Allows selecting a user (uses their email)
@@ -45,29 +45,20 @@ export function EmailAutocomplete({
   emailDomain = "@g.rit.edu",
   className,
 }: EmailAutocompleteProps) {
-  const [query, setQuery] = useState(value);
+  const [query, setQuery] = useState("");
   const debouncedQuery = useDebouncedValue(query, 250);
   const [users, setUsers] = useState<UserOption[]>([]);
-  const [isOpen, setIsOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const [isSelected, setIsSelected] = useState(!!value);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
-
-  // Sync external value changes
-  useEffect(() => {
-    if (value !== query && value) {
-      setQuery(value);
-      setIsSelected(true);
-    }
-  }, [value]);
+  const effectiveQuery = isSelected ? value : query;
+  const shouldSearch = !isSelected && debouncedQuery.length >= 2;
 
   // Search for users when query changes
   useEffect(() => {
-    if (isSelected) return;
-    if (!debouncedQuery || debouncedQuery.length < 2) {
-      setUsers([]);
-      setIsOpen(false);
+    if (!shouldSearch) {
       return;
     }
 
@@ -81,18 +72,27 @@ export function EmailAutocomplete({
         if (!res.ok) return;
         const data = await res.json();
         setUsers(data.items ?? []);
-        setIsOpen(true);
+        setMenuOpen(true);
         setHighlightedIndex(0);
       } catch {
         // Aborted or error
       }
     })();
-    return () => ac.abort();
-  }, [debouncedQuery, isSelected]);
+    return () => {
+      ac.abort();
+      setUsers([]);
+      setMenuOpen(false);
+    };
+  }, [debouncedQuery, shouldSearch]);
 
   // Build options list: users + custom email option
-  const options: { type: "user" | "custom"; user?: UserOption; email: string; label: string }[] = [];
-  
+  const options: {
+    type: "user" | "custom";
+    user?: UserOption;
+    email: string;
+    label: string;
+  }[] = [];
+
   // Add matching users
   users.forEach((user) => {
     options.push({
@@ -104,16 +104,17 @@ export function EmailAutocomplete({
   });
 
   // Add custom email option if valid
-  const trimmedQuery = query.trim();
+  const trimmedQuery = effectiveQuery.trim();
   const isValidCustomEmail = emailDomain
-    ? trimmedQuery.endsWith(emailDomain) && trimmedQuery.length > emailDomain.length
+    ? trimmedQuery.endsWith(emailDomain) &&
+      trimmedQuery.length > emailDomain.length
     : trimmedQuery.includes("@") && trimmedQuery.includes(".");
-  
+
   // Only show custom option if it's not already in the users list
   const emailAlreadyInList = users.some(
     (u) => u.email.toLowerCase() === trimmedQuery.toLowerCase()
   );
-  
+
   if (isValidCustomEmail && !emailAlreadyInList && !isSelected) {
     options.push({
       type: "custom",
@@ -122,10 +123,12 @@ export function EmailAutocomplete({
     });
   }
 
+  const isOpen = menuOpen && options.length > 0;
+
   function selectOption(email: string) {
     setQuery(email);
     onChange(email);
-    setIsOpen(false);
+    setMenuOpen(false);
     setUsers([]);
     setIsSelected(true);
   }
@@ -134,7 +137,7 @@ export function EmailAutocomplete({
     const newValue = e.target.value;
     setQuery(newValue);
     setIsSelected(false);
-    
+
     // If the input is cleared or changed, clear the selection
     if (!newValue) {
       onChange("");
@@ -167,7 +170,7 @@ export function EmailAutocomplete({
         }
         break;
       case "Escape":
-        setIsOpen(false);
+        setMenuOpen(false);
         break;
       case "Tab":
         if (options[highlightedIndex]) {
@@ -180,7 +183,7 @@ export function EmailAutocomplete({
   function handleBlur() {
     // Delay to allow click on option
     setTimeout(() => {
-      setIsOpen(false);
+      setMenuOpen(false);
       // If we have a partial query that's a valid email, use it
       if (!isSelected && isValidCustomEmail) {
         selectOption(trimmedQuery);
@@ -194,11 +197,11 @@ export function EmailAutocomplete({
         ref={inputRef}
         type="text"
         placeholder={placeholder}
-        value={query}
+        value={effectiveQuery}
         onChange={handleInputChange}
         onFocus={() => {
           if (users.length > 0 && !isSelected) {
-            setIsOpen(true);
+            setMenuOpen(true);
           }
         }}
         onBlur={handleBlur}
@@ -209,7 +212,7 @@ export function EmailAutocomplete({
         role="combobox"
         autoComplete="off"
       />
-      
+
       {isOpen && options.length > 0 && (
         <ul
           ref={listRef}
@@ -218,7 +221,9 @@ export function EmailAutocomplete({
         >
           {options.map((option, index) => (
             <li
-              key={option.type === "user" ? `user-${option.user?.id}` : "custom"}
+              key={
+                option.type === "user" ? `user-${option.user?.id}` : "custom"
+              }
               role="option"
               aria-selected={index === highlightedIndex}
               className={cn(
@@ -236,12 +241,19 @@ export function EmailAutocomplete({
               {option.type === "user" ? (
                 <div className="flex flex-col">
                   <span className="font-medium">{option.user?.name}</span>
-                  <span className="text-xs text-muted-foreground">{option.user?.email}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {option.user?.email}
+                  </span>
                 </div>
               ) : (
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <span>+</span>
-                  <span>Invite <span className="font-medium text-foreground">{option.email}</span></span>
+                  <span>
+                    Invite{" "}
+                    <span className="font-medium text-foreground">
+                      {option.email}
+                    </span>
+                  </span>
                 </div>
               )}
             </li>

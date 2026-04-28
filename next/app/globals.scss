@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Election-system styles (brutalist treatments scoped to .election-scope).
+   See ./elections.scss for the full set ported from the Claude Design
+   handoff. */
+@import "./elections";
+
 /* ===== CSS Variables for theming (shadcn) ===== */
 
 :root,
@@ -71,17 +76,25 @@
   --cat-fg-18: #1f2937;
   --cat-fg-19: #ffffff;
   --cat-fg-20: #1f2937;
-  
+
+  /* Vote visualization colors */
+  --vote-approve: 152 68% 42%;
+  --vote-reject: 0 72% 55%;
+  --vote-not-voted: 220 10% 54%;
+  --vote-approve-hover: 152 75% 48%;
+  --vote-reject-hover: 0 80% 62%;
+  --vote-not-voted-hover: 220 15% 62%;
+
   /* Depth/Surface system - blue tones with clear distinction */
-  --surface-0: 220 25% 82%;  /* Page background - muted blue-gray */
-  --surface-1: 225 40% 90%;  /* Level 1 - light periwinkle */
-  --surface-2: 220 45% 85%;  /* Level 2 - soft blue */
-  --surface-3: 215 50% 78%;  /* Level 3 - medium blue */
-  --surface-4: 210 55% 72%;  /* Level 4 - deeper blue */
-  
+  --surface-0: 220 25% 82%; /* Page background - muted blue-gray */
+  --surface-1: 225 40% 90%; /* Level 1 - light periwinkle */
+  --surface-2: 220 45% 85%; /* Level 2 - soft blue */
+  --surface-3: 215 50% 78%; /* Level 3 - medium blue */
+  --surface-4: 210 55% 72%; /* Level 4 - deeper blue */
+
   /* Dropdown/popover specific */
-  --dropdown: 225 45% 92%;  /* Light blue for dropdowns */
-  
+  --dropdown: 225 45% 92%; /* Light blue for dropdowns */
+
   /* Neobrutalism variables */
   --main: 220 35% 82%;
   --main-foreground: 220 30% 15%;
@@ -93,7 +106,7 @@
   --box-shadow-y: 4px;
   --reverse-box-shadow-x: -4px;
   --reverse-box-shadow-y: -4px;
-  
+
   color-scheme: light;
 }
 
@@ -162,17 +175,25 @@
   --cat-fg-18: #0f172a;
   --cat-fg-19: #ffffff;
   --cat-fg-20: #0f172a;
-  
+
+  /* Vote visualization colors - brighter for dark backgrounds */
+  --vote-approve: 152 60% 50%;
+  --vote-reject: 0 65% 60%;
+  --vote-not-voted: 220 15% 50%;
+  --vote-approve-hover: 152 68% 56%;
+  --vote-reject-hover: 0 72% 66%;
+  --vote-not-voted-hover: 220 20% 58%;
+
   /* Depth/Surface system - deep rich blues with color accents */
-  --surface-0: 225 40% 8%;   /* Page background - deep navy */
-  --surface-1: 220 50% 14%;  /* Level 1 - rich blue */
-  --surface-2: 215 55% 20%;  /* Level 2 - brighter blue */
-  --surface-3: 210 60% 26%;  /* Level 3 - vibrant blue */
-  --surface-4: 200 65% 32%;  /* Level 4 - teal-blue */
-  
+  --surface-0: 225 40% 8%; /* Page background - deep navy */
+  --surface-1: 220 50% 14%; /* Level 1 - rich blue */
+  --surface-2: 215 55% 20%; /* Level 2 - brighter blue */
+  --surface-3: 210 60% 26%; /* Level 3 - vibrant blue */
+  --surface-4: 200 65% 32%; /* Level 4 - teal-blue */
+
   /* Dropdown/popover specific */
-  --dropdown: 215 55% 22%;  /* Deep blue for dropdowns */
-  
+  --dropdown: 215 55% 22%; /* Deep blue for dropdowns */
+
   /* Neobrutalism variables */
   --main: 225 45% 14%;
   --main-foreground: 220 20% 92%;
@@ -184,7 +205,7 @@
   --box-shadow-y: 4px;
   --reverse-box-shadow-x: -4px;
   --reverse-box-shadow-y: -4px;
-  
+
   color-scheme: dark;
 }
 
@@ -211,7 +232,10 @@
   --card-border-color: 0 0% 0%;
   --button-translate-x: 4px;
   --button-translate-y: 4px;
-  --hover-transform: translate(var(--button-translate-x), var(--button-translate-y));
+  --hover-transform: translate(
+    var(--button-translate-x),
+    var(--button-translate-y)
+  );
 }
 
 /* Clean mode - softer, modern shadcn styling */
@@ -231,7 +255,8 @@
 /* Dark mode overrides for clean style */
 [data-theme="dark"][data-style="clean"] {
   --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.3), 0 1px 2px -1px rgb(0 0 0 / 0.3);
-  --card-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.2), 0 2px 4px -2px rgb(0 0 0 / 0.2);
+  --card-shadow:
+    0 4px 6px -1px rgb(0 0 0 / 0.2), 0 2px 4px -2px rgb(0 0 0 / 0.2);
 }
 
 /* ===== Base layer ===== */
@@ -239,7 +264,7 @@
   * {
     @apply border-border;
   }
-  
+
   body {
     @apply bg-background text-foreground antialiased font-sans;
   }

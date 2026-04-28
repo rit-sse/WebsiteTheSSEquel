@@ -39,7 +39,9 @@ export async function GET() {
   } catch (e) {
     console.error("GET /api/alumni/active failed:", e);
     return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : "Failed to fetch alumni" }),
+      JSON.stringify({
+        error: e instanceof Error ? e.message : "Failed to fetch alumni",
+      }),
       { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }

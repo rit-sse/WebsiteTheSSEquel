@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useState } from "react";
 import { UserPlus } from "lucide-react";
@@ -14,7 +14,9 @@ interface RequestAlumniFormProps {
   onSuccess?: () => void;
 }
 
-export default function RequestAlumniForm({ onSuccess }: RequestAlumniFormProps) {
+export default function RequestAlumniForm({
+  onSuccess,
+}: RequestAlumniFormProps) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [quote, setQuote] = useState("");
@@ -63,8 +65,8 @@ export default function RequestAlumniForm({ onSuccess }: RequestAlumniFormProps)
 
     try {
       const response = await fetch("/api/alumni-requests", {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name,
           email,
@@ -77,8 +79,8 @@ export default function RequestAlumniForm({ onSuccess }: RequestAlumniFormProps)
           end_date,
           image: image || undefined,
           showEmail,
-          receiveEmails
-        })
+          receiveEmails,
+        }),
       });
 
       if (response.ok) {
@@ -110,19 +112,22 @@ export default function RequestAlumniForm({ onSuccess }: RequestAlumniFormProps)
         Request to be Added
       </button>
 
-      <Modal 
-        open={open} 
-        onOpenChange={setOpen} 
-        title="Request to be Added as Alumni" 
+      <Modal
+        open={open}
+        onOpenChange={setOpen}
+        title="Request to be Added as Alumni"
         description="Submit your information to be reviewed by SSE officers. Once approved, you'll appear on the alumni page."
         className="max-w-2xl max-h-[90vh]"
       >
         {success ? (
           <div className="py-8 text-center">
             <div className="text-4xl mb-4">✓</div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">Request Submitted!</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-2">
+              Request Submitted!
+            </h3>
             <p className="text-muted-foreground">
-              Thank you for your submission. An officer will review your request soon.
+              Thank you for your submission. An officer will review your request
+              soon.
             </p>
           </div>
         ) : (
@@ -156,14 +161,21 @@ export default function RequestAlumniForm({ onSuccess }: RequestAlumniFormProps)
                   <Checkbox
                     id="request-receiveEmails"
                     checked={receiveEmails}
-                    onCheckedChange={(checked) => setReceiveEmails(checked === true)}
+                    onCheckedChange={(checked) =>
+                      setReceiveEmails(checked === true)
+                    }
                   />
                   <div className="space-y-0.5 leading-none">
-                    <Label htmlFor="request-receiveEmails" className="text-sm font-medium cursor-pointer">
+                    <Label
+                      htmlFor="request-receiveEmails"
+                      className="text-sm font-medium cursor-pointer"
+                    >
                       Help us rebuild the alumni network
                     </Label>
                     <p className="text-xs text-muted-foreground">
-                      Our alumni are the most important part of this club and we&apos;re working hard to reconnect everyone. We&apos;ll only reach out sparingly: but it means a lot.
+                      Our alumni are the most important part of this club and
+                      we&apos;re working hard to reconnect everyone. We&apos;ll
+                      only reach out sparingly: but it means a lot.
                     </p>
                   </div>
                 </div>
@@ -171,14 +183,20 @@ export default function RequestAlumniForm({ onSuccess }: RequestAlumniFormProps)
                   <Checkbox
                     id="request-showEmail"
                     checked={showEmail}
-                    onCheckedChange={(checked) => setShowEmail(checked === true)}
+                    onCheckedChange={(checked) =>
+                      setShowEmail(checked === true)
+                    }
                   />
                   <div className="space-y-0.5 leading-none">
-                    <Label htmlFor="request-showEmail" className="text-sm font-medium cursor-pointer">
+                    <Label
+                      htmlFor="request-showEmail"
+                      className="text-sm font-medium cursor-pointer"
+                    >
                       Let other alumni reach out to me
                     </Label>
                     <p className="text-xs text-muted-foreground">
-                      Your email will be visible on your card so fellow alumni can reconnect with you.
+                      Your email will be visible on your card so fellow alumni
+                      can reconnect with you.
                     </p>
                   </div>
                 </div>
@@ -221,10 +239,26 @@ export default function RequestAlumniForm({ onSuccess }: RequestAlumniFormProps)
                 <ImageUpload
                   value={image}
                   onChange={setImage}
-                  initials={name ? name.split(" ").map(n => n[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() : "?"}
+                  initials={
+                    name
+                      ? name
+                          .split(" ")
+                          .map((n) => n[0])
+                          .filter(Boolean)
+                          .slice(0, 2)
+                          .join("")
+                          .toUpperCase()
+                      : "?"
+                  }
                   avatarSize="h-16 w-16"
                   compact
                   hint="JPG, PNG, or GIF up to 5 MB"
+                  // The default endpoint requires a session — alumni
+                  // submitting the public request form usually aren't
+                  // signed in, so route through the anonymous endpoint.
+                  // The SE Office reviews every submission before any
+                  // record gets created from it.
+                  uploadEndpoint="/api/aws/alumni-request-pictures"
                 />
               </div>
 
@@ -236,7 +270,9 @@ export default function RequestAlumniForm({ onSuccess }: RequestAlumniFormProps)
                   value={quote}
                   onChange={(e) => setQuote(e.target.value)}
                 />
-                <p className="text-xs text-muted-foreground">This will show up on your alumni card.</p>
+                <p className="text-xs text-muted-foreground">
+                  This will show up on your alumni card.
+                </p>
               </div>
 
               <div className="space-y-2">
@@ -257,7 +293,10 @@ export default function RequestAlumniForm({ onSuccess }: RequestAlumniFormProps)
 
               <div className="space-y-2 rounded-lg border border-primary/20 bg-primary/5 p-3">
                 <Label htmlFor="request-github" className="text-sm font-medium">
-                  GitHub <span className="text-xs font-normal text-primary ml-1">Highly recommended</span>
+                  GitHub{" "}
+                  <span className="text-xs font-normal text-primary ml-1">
+                    Highly recommended
+                  </span>
                 </Label>
                 <div className="flex">
                   <span className="inline-flex items-center px-3 text-sm text-muted-foreground bg-muted neo:rounded-l-base neo:border-2 neo:border-r-0 neo:border-border clean:rounded-l-md clean:border clean:border-r-0 clean:border-border/50">
@@ -272,7 +311,10 @@ export default function RequestAlumniForm({ onSuccess }: RequestAlumniFormProps)
                   />
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Adding your GitHub makes your alumni card significantly richer: we automatically pull your company, location, website, top repos, languages, and organizations. Your card stays up to date without you ever touching it again.
+                  Adding your GitHub makes your alumni card significantly
+                  richer: we automatically pull your company, location, website,
+                  top repos, languages, and organizations. Your card stays up to
+                  date without you ever touching it again.
                 </p>
               </div>
 
@@ -284,16 +326,20 @@ export default function RequestAlumniForm({ onSuccess }: RequestAlumniFormProps)
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                 />
-                <p className="text-xs text-muted-foreground">This may be featured on the SSE homepage.</p>
+                <p className="text-xs text-muted-foreground">
+                  This may be featured on the SSE homepage.
+                </p>
               </div>
             </div>
 
-            {error && (
-              <p className="text-destructive text-sm mt-2">{error}</p>
-            )}
+            {error && <p className="text-destructive text-sm mt-2">{error}</p>}
 
             <ModalFooter>
-              <Button variant="neutral" onClick={handleCancel} disabled={isSubmitting}>
+              <Button
+                variant="neutral"
+                onClick={handleCancel}
+                disabled={isSubmitting}
+              >
                 Cancel
               </Button>
               <Button onClick={handleSubmit} disabled={isSubmitting}>

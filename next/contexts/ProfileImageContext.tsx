@@ -10,7 +10,9 @@ interface ProfileImageContextType {
   setProfileImage: (url: string | null) => void;
 }
 
-const ProfileImageContext = React.createContext<ProfileImageContextType | undefined>(undefined);
+const ProfileImageContext = React.createContext<
+  ProfileImageContextType | undefined
+>(undefined);
 
 interface ProfileImageProviderProps {
   children: React.ReactNode;
@@ -18,7 +20,9 @@ interface ProfileImageProviderProps {
 
 export function ProfileImageProvider({ children }: ProfileImageProviderProps) {
   const { data: session } = useSession();
-  const [profileImage, setProfileImageState] = React.useState<string | null>(null);
+  const [profileImage, setProfileImageState] = React.useState<string | null>(
+    null
+  );
 
   // Sync from session whenever it changes (login, session refresh, etc.)
   React.useEffect(() => {
@@ -51,7 +55,9 @@ export function ProfileImageProvider({ children }: ProfileImageProviderProps) {
 export function useProfileImage() {
   const context = React.useContext(ProfileImageContext);
   if (context === undefined) {
-    throw new Error("useProfileImage must be used within a ProfileImageProvider");
+    throw new Error(
+      "useProfileImage must be used within a ProfileImageProvider"
+    );
   }
   return context;
 }

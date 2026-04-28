@@ -1,8 +1,11 @@
 import { NextRequest } from "next/server";
 import { hasStagingElevatedAccess } from "@/lib/proxyAuth";
-import { resolveAuthLevelFromRequest, resolveAuthLevelFromToken } from "@/lib/authLevelResolver";
+import {
+  resolveAuthLevelFromRequest,
+  resolveAuthLevelFromToken,
+} from "@/lib/authLevelResolver";
 
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
 /**
  * Handles a PUT request to update or retrieve authorization level details for a user.

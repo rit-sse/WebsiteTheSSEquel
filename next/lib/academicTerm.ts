@@ -19,7 +19,11 @@ export const ACADEMIC_CALENDAR_CONFIG = {
   },
 } as const;
 
-function monthInRange(month: number, startMonth: number, endMonth: number): boolean {
+function monthInRange(
+  month: number,
+  startMonth: number,
+  endMonth: number
+): boolean {
   return month >= startMonth && month <= endMonth;
 }
 
@@ -65,7 +69,8 @@ export function hasTermPassed(
 }
 
 export function formatAcademicTerm(term: AcademicTerm, year: number): string {
-  const label = term === "SPRING" ? "Spring" : term === "SUMMER" ? "Summer" : "Fall";
+  const label =
+    term === "SPRING" ? "Spring" : term === "SUMMER" ? "Summer" : "Fall";
   return `${label} ${year}`;
 }
 
@@ -79,12 +84,19 @@ export function parseAcademicTermLabel(label: string): TermYear | null {
   if (Number.isNaN(year)) return null;
 
   const term: AcademicTerm =
-    termLabel === "spring" ? "SPRING" : termLabel === "summer" ? "SUMMER" : "FALL";
+    termLabel === "spring"
+      ? "SPRING"
+      : termLabel === "summer"
+        ? "SUMMER"
+        : "FALL";
 
   return { term, year };
 }
 
-export function getAcademicTermDateRange(term: AcademicTerm, year: number): {
+export function getAcademicTermDateRange(
+  term: AcademicTerm,
+  year: number
+): {
   startDate: Date;
   endDate: Date;
 } {
@@ -97,7 +109,48 @@ export function getAcademicTermDateRange(term: AcademicTerm, year: number): {
 export function getAcademicTermEndDate(date: Date): Date {
   const term = getAcademicTermFromDate(date);
   const termConfig = ACADEMIC_CALENDAR_CONFIG[term];
-  return new Date(date.getFullYear(), termConfig.endMonth - 1, termConfig.endDay);
+  return new Date(
+    date.getFullYear(),
+    termConfig.endMonth - 1,
+    termConfig.endDay
+  );
+}
+
+/**
+ * The next academic semester after `referenceDate` (advances
+ * SPRING→SUMMER→FALL, then wraps to SPRING of the next year).
+ *
+ * Used by the handover orchestrator when creating a new MentorSemester
+ * row so the fresh cycle is keyed to the upcoming term, not the one
+ * that's currently ending.
+ */
+export function getNextSemester(referenceDate = new Date()): TermYear {
+  const current = getCurrentAcademicTerm(referenceDate);
+  const order: AcademicTerm[] = ["SPRING", "SUMMER", "FALL"];
+  const i = order.indexOf(current.term);
+  if (i < order.length - 1) {
+    return { term: order[i + 1]!, year: current.year };
+  }
+  // Currently FALL — next semester is SPRING of the following calendar year.
+  return { term: "SPRING", year: current.year + 1 };
+}
+
+/**
+ * The officer-term date range for the cycle that *follows* the one we're
+ * in today. `getDefaultOfficerTermDateRange()` hands back the cycle
+ * whose start is the most recent Aug 1 — which is the cycle already in
+ * progress. When a new semester is kicked off mid-term the freshly
+ * elected officers should be installed into the *next* cycle, not this
+ * one. This helper shifts both endpoints forward by a year.
+ */
+export function getNextOfficerTermDateRange(referenceDate = new Date()): {
+  startDate: Date;
+  endDate: Date;
+} {
+  const current = getDefaultOfficerTermDateRange(referenceDate);
+  const shift = (d: Date) =>
+    new Date(d.getFullYear() + 1, d.getMonth(), d.getDate());
+  return { startDate: shift(current.startDate), endDate: shift(current.endDate) };
 }
 
 export function getDefaultOfficerTermDateRange(referenceDate = new Date()): {

@@ -55,7 +55,9 @@ function markdownToPlainText(md: string): string {
 export async function POST(request: NextRequest) {
   const authLevel = await getGatewayAuthLevel(request);
   if (!authLevel.isPrimary) {
-    return new Response("Only primary officers can send alumni emails", { status: 403 });
+    return new Response("Only primary officers can send alumni emails", {
+      status: 403,
+    });
   }
 
   // Parse the request body
@@ -69,7 +71,9 @@ export async function POST(request: NextRequest) {
   const { subject, message, attachments: rawAttachments } = body;
 
   if (!subject || !message) {
-    return new Response('"subject" and "message" are required', { status: 400 });
+    return new Response('"subject" and "message" are required', {
+      status: 400,
+    });
   }
 
   // Check email is configured
@@ -146,7 +150,9 @@ export async function POST(request: NextRequest) {
       sent++;
     } catch (err) {
       failed++;
-      errors.push(`${alum.email}: ${err instanceof Error ? err.message : String(err)}`);
+      errors.push(
+        `${alum.email}: ${err instanceof Error ? err.message : String(err)}`
+      );
       console.error(`Failed to send alumni email to ${alum.email}:`, err);
     }
   }

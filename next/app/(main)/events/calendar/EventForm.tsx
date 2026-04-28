@@ -1,12 +1,12 @@
-"use client"
+"use client";
 
-import { Event } from "../event"
-import { useEffect, useState, useCallback } from "react"
-import { formatDate } from "./utils"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Card } from "@/components/ui/card"
+import { Event } from "../event";
+import { useEffect, useState, useCallback } from "react";
+import { formatDate } from "./utils";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import {
   Users,
   ExternalLink,
@@ -17,23 +17,23 @@ import {
   Award,
   Loader2,
   QrCode,
-} from "lucide-react"
+} from "lucide-react";
 
 interface Attendee {
-  id: number
-  userId: number
-  name: string
-  email: string
-  attendedAt: string
+  id: number;
+  userId: number;
+  name: string;
+  email: string;
+  attendedAt: string;
 }
 
 interface FormProps {
-  onClose: () => void
-  isOpen: boolean
-  event: Event
-  openEditModal: () => void
-  events: Event[]
-  setEvents: (event: Event[]) => void
+  onClose: () => void;
+  isOpen: boolean;
+  event: Event;
+  openEditModal: () => void;
+  events: Event[];
+  setEvents: (event: Event[]) => void;
 }
 
 export default function EventForm({
@@ -44,70 +44,72 @@ export default function EventForm({
   events,
   setEvents,
 }: FormProps) {
-  const [confirming, setConfirming] = useState(false)
-  const [deleting, setDeleting] = useState(false)
-  const [attendees, setAttendees] = useState<Attendee[]>([])
-  const [attendanceCount, setAttendanceCount] = useState(0)
-  const [showAttendees, setShowAttendees] = useState(false)
-  const [loadingAttendees, setLoadingAttendees] = useState(false)
-  const [deletingAttendeeId, setDeletingAttendeeId] = useState<number | null>(null)
+  const [confirming, setConfirming] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [attendees, setAttendees] = useState<Attendee[]>([]);
+  const [attendanceCount, setAttendanceCount] = useState(0);
+  const [showAttendees, setShowAttendees] = useState(false);
+  const [loadingAttendees, setLoadingAttendees] = useState(false);
+  const [deletingAttendeeId, setDeletingAttendeeId] = useState<number | null>(
+    null
+  );
 
   const fetchAttendance = useCallback(async () => {
-    if (!event.id || !event.attendanceEnabled) return
+    if (!event.id || !event.attendanceEnabled) return;
 
-    setLoadingAttendees(true)
+    setLoadingAttendees(true);
     try {
-      const response = await fetch(`/api/event/${event.id}/attendance`)
+      const response = await fetch(`/api/event/${event.id}/attendance`);
       if (response.ok) {
-        const data = await response.json()
-        setAttendees(data.attendees || [])
-        setAttendanceCount(data.count || 0)
+        const data = await response.json();
+        setAttendees(data.attendees || []);
+        setAttendanceCount(data.count || 0);
       }
     } catch (error) {
-      console.error("Error fetching attendance:", error)
+      console.error("Error fetching attendance:", error);
     } finally {
-      setLoadingAttendees(false)
+      setLoadingAttendees(false);
     }
-  }, [event.id, event.attendanceEnabled])
+  }, [event.id, event.attendanceEnabled]);
 
   useEffect(() => {
     if (isOpen && event.attendanceEnabled) {
-      fetchAttendance()
+      fetchAttendance();
     }
-  }, [isOpen, event.attendanceEnabled, fetchAttendance])
+  }, [isOpen, event.attendanceEnabled, fetchAttendance]);
 
   const openFlyerPage = () => {
-    if (!event.id) return
-    window.open(`/events/${event.id}/flyer`, "_blank")
-  }
+    if (!event.id) return;
+    window.open(`/events/${event.id}/flyer`, "_blank");
+  };
 
   const openAttendancePage = () => {
-    if (!event.id) return
-    window.open(`/events/${event.id}/attend`, "_blank")
-  }
+    if (!event.id) return;
+    window.open(`/events/${event.id}/attend`, "_blank");
+  };
 
   const deleteAttendee = async (userId: number) => {
-    if (!event.id) return
-    setDeletingAttendeeId(userId)
+    if (!event.id) return;
+    setDeletingAttendeeId(userId);
     try {
       const response = await fetch(`/api/event/${event.id}/attendance`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId }),
-      })
+      });
       if (response.ok) {
-        setAttendees(attendees.filter(a => a.userId !== userId))
-        setAttendanceCount(attendanceCount - 1)
+        setAttendees(attendees.filter((a) => a.userId !== userId));
+        setAttendanceCount(attendanceCount - 1);
       }
     } catch (error) {
-      console.error("Error deleting attendee:", error)
+      console.error("Error deleting attendee:", error);
     } finally {
-      setDeletingAttendeeId(null)
+      setDeletingAttendeeId(null);
     }
-  }
+  };
 
   const handleDelete = async () => {
-    setDeleting(true)
+    setDeleting(true);
 
     try {
       // Delete from Prisma
@@ -115,34 +117,34 @@ export default function EventForm({
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: event.id }),
-      })
+      });
 
       // Delete from Google Calendar
       await fetch("/api/calendar", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: event.id ?? "" }),
-      }).catch(console.warn) // Don't fail if GCal delete fails
+      }).catch(console.warn); // Don't fail if GCal delete fails
 
       // Find and remove the deleted event, then update state
-      const updatedEvents = events.filter((e: Event) => e.id !== event.id)
-      setEvents(updatedEvents)
-      onClose()
+      const updatedEvents = events.filter((e: Event) => e.id !== event.id);
+      setEvents(updatedEvents);
+      onClose();
     } catch (error) {
-      console.error("Error deleting event:", error)
+      console.error("Error deleting event:", error);
     } finally {
-      setDeleting(false)
-      setConfirming(false)
+      setDeleting(false);
+      setConfirming(false);
     }
-  }
+  };
 
   // Reset state when modal closes
   useEffect(() => {
     if (!isOpen) {
-      setConfirming(false)
-      setShowAttendees(false)
+      setConfirming(false);
+      setShowAttendees(false);
     }
-  }, [isOpen])
+  }, [isOpen]);
 
   return (
     <div className="space-y-4">
@@ -223,7 +225,7 @@ export default function EventForm({
             />
           ) : (
             <Image
-              src="/icon.png"
+              src="/icon"
               alt="SSE Logo"
               fill
               className="object-contain p-2"
@@ -276,7 +278,9 @@ export default function EventForm({
                   Loading attendees...
                 </div>
               ) : attendees.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No attendees yet</p>
+                <p className="text-sm text-muted-foreground">
+                  No attendees yet
+                </p>
               ) : (
                 <ul className="space-y-1 text-sm">
                   {attendees.map((attendee, index) => (
@@ -333,5 +337,5 @@ export default function EventForm({
         </Button>
       </div>
     </div>
-  )
+  );
 }

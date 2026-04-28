@@ -101,9 +101,7 @@ export default function UserInviteModal({
           </p>
         </div>
 
-        {error && (
-          <p className="text-sm text-destructive">{error}</p>
-        )}
+        {error && <p className="text-sm text-destructive">{error}</p>}
 
         <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-md">
           <p className="font-medium mb-1">What happens next?</p>

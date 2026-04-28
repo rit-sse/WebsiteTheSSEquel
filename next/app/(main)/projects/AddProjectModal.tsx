@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -39,7 +39,7 @@ const AddProjectModal = ({ enabled, setEnabled }: AddProjectModalProps) => {
 
   useEffect(() => {
     fetch("/api/user")
-      .then(resp => resp.json())
+      .then((resp) => resp.json())
       .then(setUsers);
   }, []);
 
@@ -82,9 +82,9 @@ const AddProjectModal = ({ enabled, setEnabled }: AddProjectModalProps) => {
   };
 
   return (
-    <Modal 
-      open={enabled} 
-      onOpenChange={setEnabled} 
+    <Modal
+      open={enabled}
+      onOpenChange={setEnabled}
       title="Add Project"
       className="max-w-2xl max-h-[90vh]"
     >
@@ -172,12 +172,16 @@ const AddProjectModal = ({ enabled, setEnabled }: AddProjectModalProps) => {
             checked={completed}
             onCheckedChange={(checked) => setCompleted(checked === true)}
           />
-          <Label htmlFor="project-completed" className="cursor-pointer">Completed</Label>
+          <Label htmlFor="project-completed" className="cursor-pointer">
+            Completed
+          </Label>
         </div>
       </div>
 
       <ModalFooter>
-        <Button variant="neutral" onClick={handleClose}>Cancel</Button>
+        <Button variant="neutral" onClick={handleClose}>
+          Cancel
+        </Button>
         <Button onClick={upload}>Add</Button>
       </ModalFooter>
     </Modal>

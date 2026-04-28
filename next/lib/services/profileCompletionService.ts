@@ -21,10 +21,10 @@ export function isProfileCompletionEligible(user: {
 }): boolean {
   return Boolean(
     user.graduationTerm &&
-      user.graduationYear &&
-      user.major?.trim() &&
-      user.gitHub?.trim() &&
-      user.linkedIn?.trim()
+    user.graduationYear &&
+    user.major?.trim() &&
+    user.gitHub?.trim() &&
+    user.linkedIn?.trim()
   );
 }
 
@@ -73,6 +73,8 @@ export async function maybeGrantProfileCompletionMembership(
         userId,
         reason: PROFILE_COMPLETION_REASON,
         dateGiven: new Date(),
+        term: current.term,
+        year: current.year,
       },
     });
 
@@ -119,6 +121,10 @@ export async function maybeGrantProfileCompletionMembership(
   return { membershipAwarded: false, membershipRevoked: false };
 }
 
-export async function maybeGrantProfileCompletionMembershipWithTx(userId: number) {
-  return prisma.$transaction(async (tx) => maybeGrantProfileCompletionMembership(tx, userId));
+export async function maybeGrantProfileCompletionMembershipWithTx(
+  userId: number
+) {
+  return prisma.$transaction(async (tx) =>
+    maybeGrantProfileCompletionMembership(tx, userId)
+  );
 }

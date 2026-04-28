@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -10,13 +11,13 @@ export const dynamic = "force-dynamic";
  */
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const status = searchParams.get('status');
+  const status = searchParams.get("status");
 
   const where = status ? { status } : {};
 
   const requests = await prisma.alumniRequest.findMany({
     where,
-    orderBy: { created_at: 'desc' }
+    orderBy: { created_at: "desc" },
   });
 
   return Response.json(requests);
@@ -36,35 +37,44 @@ export async function POST(request: Request) {
   }
 
   // Validate required fields
-  if (!("name" in body && "email" in body && "start_date" in body && "end_date" in body)) {
+  if (
+    !(
+      "name" in body &&
+      "email" in body &&
+      "start_date" in body &&
+      "end_date" in body
+    )
+  ) {
     return new Response(
       '"name", "email", "start_date" and "end_date" are all required',
       { status: 400 }
     );
   }
 
-  const { 
-    name, 
-    email, 
-    linkedIn, 
-    gitHub, 
-    description, 
-    image, 
-    start_date, 
-    end_date, 
-    quote, 
+  const {
+    name,
+    email,
+    linkedIn,
+    gitHub,
+    description,
+    image,
+    start_date,
+    end_date,
+    quote,
     previous_roles,
     showEmail,
     receiveEmails,
-    alumniId
+    alumniId,
   } = body;
 
   try {
     // If this is an update request, verify the alumni exists
     if (alumniId) {
-      const existingAlumni = await prisma.alumni.findUnique({ where: { id: alumniId } });
+      const existingAlumni = await prisma.alumni.findUnique({
+        where: { id: alumniId },
+      });
       if (!existingAlumni) {
-        return new Response('Alumni record not found', { status: 404 });
+        return new Response("Alumni record not found", { status: 404 });
       }
     }
 
@@ -83,13 +93,15 @@ export async function POST(request: Request) {
         showEmail: showEmail === true,
         receiveEmails: receiveEmails === true,
         alumniId: alumniId ?? null,
-        status: 'pending'
-      }
+        status: "pending",
+      },
     });
     return Response.json(newRequest, { status: 201 });
   } catch (e) {
-    console.error('Error creating alumni request:', e);
-    return new Response(`Failed to create alumni request: ${e}`, { status: 500 });
+    console.error("Error creating alumni request:", e);
+    return new Response(`Failed to create alumni request: ${e}`, {
+      status: 500,
+    });
   }
 }
 
@@ -108,27 +120,31 @@ export async function PUT(request: Request) {
   }
 
   if (!("id" in body) || !("status" in body)) {
-    return new Response('`id` and `status` must be included in request body', { status: 400 });
+    return new Response("`id` and `status` must be included in request body", {
+      status: 400,
+    });
   }
 
   const { id, status } = body;
 
-  if (!['approved', 'rejected', 'pending'].includes(status)) {
-    return new Response('Status must be "approved", "rejected", or "pending"', { status: 400 });
+  if (!["approved", "rejected", "pending"].includes(status)) {
+    return new Response('Status must be "approved", "rejected", or "pending"', {
+      status: 400,
+    });
   }
 
   try {
     // Get the request first
     const alumniRequest = await prisma.alumniRequest.findUnique({
-      where: { id }
+      where: { id },
     });
 
     if (!alumniRequest) {
-      return new Response('Alumni request not found', { status: 404 });
+      return new Response("Alumni request not found", { status: 404 });
     }
 
     // If approving, create or update the Alumni record
-    if (status === 'approved' && alumniRequest.status !== 'approved') {
+    if (status === "approved" && alumniRequest.status !== "approved") {
       const alumniData = {
         name: alumniRequest.name,
         email: alumniRequest.email,
@@ -141,19 +157,21 @@ export async function PUT(request: Request) {
         quote: alumniRequest.quote,
         previous_roles: alumniRequest.previous_roles,
         showEmail: alumniRequest.showEmail,
-        receiveEmails: alumniRequest.receiveEmails
+        receiveEmails: alumniRequest.receiveEmails,
       };
 
       if (alumniRequest.alumniId) {
         // Update existing alumni record
         await prisma.alumni.update({
           where: { id: alumniRequest.alumniId },
-          data: alumniData
+          data: alumniData,
         });
       } else {
         // Create new alumni record
         // Reset the Alumni sequence if it's out of sync with existing data
-        await prisma.$executeRawUnsafe(`SELECT setval('"Alumni_id_seq"', GREATEST((SELECT MAX(id) FROM "Alumni"), 1))`);
+        await prisma.$executeRaw(
+          Prisma.sql`SELECT setval('"Alumni_id_seq"', GREATEST((SELECT MAX(id) FROM "Alumni"), 1))`
+        );
         await prisma.alumni.create({ data: alumniData });
       }
     }
@@ -161,13 +179,15 @@ export async function PUT(request: Request) {
     // Update the request status
     const updatedRequest = await prisma.alumniRequest.update({
       where: { id },
-      data: { status }
+      data: { status },
     });
 
     return Response.json(updatedRequest);
   } catch (e) {
-    console.error('Error updating alumni request:', e);
-    return new Response(`Failed to update alumni request: ${e}`, { status: 500 });
+    console.error("Error updating alumni request:", e);
+    return new Response(`Failed to update alumni request: ${e}`, {
+      status: 500,
+    });
   }
 }
 
@@ -184,19 +204,21 @@ export async function DELETE(request: Request) {
     return new Response("Invalid JSON", { status: 400 });
   }
 
-  if (!("id" in body) || typeof body.id !== 'number') {
-    return new Response('A numeric `id` must be included in the request body', { status: 400 });
+  if (!("id" in body) || typeof body.id !== "number") {
+    return new Response("A numeric `id` must be included in the request body", {
+      status: 400,
+    });
   }
 
   const { id } = body;
 
   try {
     const deletedRequest = await prisma.alumniRequest.delete({
-      where: { id }
+      where: { id },
     });
     return Response.json(deletedRequest);
   } catch (e) {
-    console.error('Error deleting alumni request:', e);
-    return new Response('Failed to delete alumni request', { status: 500 });
+    console.error("Error deleting alumni request:", e);
+    return new Response("Failed to delete alumni request", { status: 500 });
   }
 }

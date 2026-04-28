@@ -1,13 +1,17 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { signIn, useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { NeoCard, NeoCardContent, NeoCardHeader, NeoCardTitle } from "@/components/ui/neo-card";
+import {
+  NeoCard,
+  NeoCardContent,
+  NeoCardHeader,
+  NeoCardTitle,
+} from "@/components/ui/neo-card";
 import { toast } from "sonner";
 
 interface Mentor {
@@ -59,7 +63,6 @@ const DEFAULT_COURSES = [
 ];
 
 export default function MenteeHeadcountPage() {
-  const { data: session, status } = useSession();
   const [mentors, setMentors] = useState<Mentor[]>([]);
   const [semester, setSemester] = useState<MentorSemester | null>(null);
   const [courses, setCourses] = useState<Course[]>([]);
@@ -74,13 +77,18 @@ export default function MenteeHeadcountPage() {
 
   const activeMentors = useMemo(() => {
     const now = new Date();
-    return mentors.filter((mentor) => mentor.isActive && new Date(mentor.expirationDate) >= now);
+    return mentors.filter(
+      (mentor) => mentor.isActive && new Date(mentor.expirationDate) >= now
+    );
   }, [mentors]);
 
   const courseCodeMap = useMemo(() => {
     const map = new Map<string, number>();
     courses.forEach((course) => {
-      map.set(`${course.department.shortTitle}-${course.code}`.toUpperCase(), course.id);
+      map.set(
+        `${course.department.shortTitle}-${course.code}`.toUpperCase(),
+        course.id
+      );
     });
     return map;
   }, [courses]);
@@ -95,8 +103,6 @@ export default function MenteeHeadcountPage() {
   }, []);
 
   useEffect(() => {
-    if (status !== "authenticated") return;
-
     const loadData = async () => {
       try {
         const [mentorRes, semesterRes, courseRes] = await Promise.all([
@@ -125,11 +131,13 @@ export default function MenteeHeadcountPage() {
     };
 
     loadData();
-  }, [status]);
+  }, []);
 
   const toggleMentor = (mentorId: number) => {
     setSelectedMentors((prev) =>
-      prev.includes(mentorId) ? prev.filter((id) => id !== mentorId) : [...prev, mentorId]
+      prev.includes(mentorId)
+        ? prev.filter((id) => id !== mentorId)
+        : [...prev, mentorId]
     );
   };
 
@@ -220,24 +228,12 @@ export default function MenteeHeadcountPage() {
     }
   };
 
-  if (status === "loading") {
-    return <div className="p-8 text-muted-foreground">Loading headcount form...</div>;
-  }
-
-  if (status !== "authenticated") {
-    return (
-      <div className="p-8 text-center space-y-4">
-        <h1 className="text-2xl font-bold">Mentee Headcount</h1>
-        <p className="text-muted-foreground">Please sign in to submit headcount.</p>
-        <Button onClick={() => signIn("google")}>Sign in</Button>
-      </div>
-    );
-  }
-
   return (
     <div className="w-full max-w-3xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">55-minute SSE Mentoring Mentee Headcount</h1>
+        <h1 className="text-2xl font-bold">
+          55-minute SSE Mentoring Mentee Headcount
+        </h1>
         <p className="text-muted-foreground mt-1">
           {semester ? `${semester.name} •` : ""} Capture mentee support metrics.
         </p>
@@ -270,27 +266,33 @@ export default function MenteeHeadcountPage() {
           <NeoCardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="studentsMentored">
-                SELECT COUNT(DISTINCT student) FROM students_mentored_or_mentoring;
+                SELECT COUNT(DISTINCT student) FROM
+                students_mentored_or_mentoring;
               </Label>
               <Input
                 id="studentsMentored"
                 type="number"
                 min={0}
                 value={studentsMentoredCount}
-                onChange={(event) => setStudentsMentoredCount(event.target.value)}
+                onChange={(event) =>
+                  setStudentsMentoredCount(event.target.value)
+                }
                 placeholder="Number of students mentored"
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="testsCheckedOut">
-                SELECT COUNT(DISTINCT student) FROM students_who_checked_out_tests;
+                SELECT COUNT(DISTINCT student) FROM
+                students_who_checked_out_tests;
               </Label>
               <Input
                 id="testsCheckedOut"
                 type="number"
                 min={0}
                 value={testsCheckedOutCount}
-                onChange={(event) => setTestsCheckedOutCount(event.target.value)}
+                onChange={(event) =>
+                  setTestsCheckedOutCount(event.target.value)
+                }
                 placeholder="Number of students who checked out tests"
               />
             </div>
@@ -299,7 +301,9 @@ export default function MenteeHeadcountPage() {
 
         <NeoCard>
           <NeoCardHeader>
-            <NeoCardTitle>Which classes did the mentee(s) need help with?</NeoCardTitle>
+            <NeoCardTitle>
+              Which classes did the mentee(s) need help with?
+            </NeoCardTitle>
           </NeoCardHeader>
           <NeoCardContent className="space-y-4">
             <div className="grid sm:grid-cols-2 gap-3">
@@ -316,7 +320,10 @@ export default function MenteeHeadcountPage() {
             </div>
 
             <label className="flex items-center gap-2">
-              <Checkbox checked={noClassHelp} onCheckedChange={handleNoClassHelp} />
+              <Checkbox
+                checked={noClassHelp}
+                onCheckedChange={handleNoClassHelp}
+              />
               <span>N/A</span>
             </label>
 

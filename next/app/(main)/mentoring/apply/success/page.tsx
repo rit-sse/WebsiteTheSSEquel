@@ -1,41 +1,43 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import { CheckCircle2, Home, Calendar } from "lucide-react"
+} from "@/components/ui/card";
+import { CheckCircle2, Home, Calendar } from "lucide-react";
 
 interface MentorSemester {
-  id: number
-  name: string
+  id: number;
+  name: string;
 }
 
 export default function ApplicationSuccessPage() {
-  const [activeSemester, setActiveSemester] = useState<MentorSemester | null>(null)
+  const [activeSemester, setActiveSemester] = useState<MentorSemester | null>(
+    null
+  );
 
   useEffect(() => {
     const fetchSemester = async () => {
       try {
-        const res = await fetch("/api/mentor-semester?activeOnly=true")
+        const res = await fetch("/api/mentor-semester?activeOnly=true");
         if (res.ok) {
-          const semesters = await res.json()
+          const semesters = await res.json();
           if (semesters.length > 0) {
-            setActiveSemester(semesters[0])
+            setActiveSemester(semesters[0]);
           }
         }
       } catch (error) {
-        console.error("Error fetching semester:", error)
+        console.error("Error fetching semester:", error);
       }
-    }
-    fetchSemester()
-  }, [])
+    };
+    fetchSemester();
+  }, []);
 
   return (
     <div className="min-h-screen py-12 px-4 flex items-center justify-center">
@@ -51,8 +53,8 @@ export default function ApplicationSuccessPage() {
         <CardContent className="space-y-6">
           <div className="text-center text-muted-foreground">
             <p>
-              We will review your application and get back to you soon. Keep an eye on your
-              email for updates!
+              We will review your application and get back to you soon. Keep an
+              eye on your email for updates!
             </p>
           </div>
 
@@ -60,8 +62,8 @@ export default function ApplicationSuccessPage() {
             <Calendar className="h-8 w-8 mx-auto text-primary mb-2" />
             <p className="font-medium mb-1">Availability Saved</p>
             <p className="text-sm text-muted-foreground">
-              Your availability has been recorded with your application. We&apos;ll use this to
-              create the mentor schedule.
+              Your availability has been recorded with your application.
+              We&apos;ll use this to create the mentor schedule.
             </p>
           </div>
 
@@ -91,5 +93,5 @@ export default function ApplicationSuccessPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

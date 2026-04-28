@@ -109,7 +109,9 @@ export async function POST(request: NextRequest) {
 
   // Validate type
   if (type !== "officer" && type !== "user" && type !== "mentor") {
-    return new Response('Type must be "officer", "user", or "mentor"', { status: 400 });
+    return new Response('Type must be "officer", "user", or "mentor"', {
+      status: 400,
+    });
   }
 
   // For officer invitations, validate required fields
@@ -159,7 +161,9 @@ export async function POST(request: NextRequest) {
     });
 
     if (existingUser && existingUser.mentor.length > 0) {
-      return new Response("This user is already an active mentor", { status: 409 });
+      return new Response("This user is already an active mentor", {
+        status: 409,
+      });
     }
   }
 
@@ -216,7 +220,12 @@ export async function POST(request: NextRequest) {
       positionId: type === "officer" ? positionId : null,
       applicationId: type === "mentor" && applicationId ? applicationId : null,
       startDate: type === "officer" ? new Date(startDate) : null,
-      endDate: type === "officer" ? new Date(endDate) : (type === "mentor" ? mentorExpirationDate : null),
+      endDate:
+        type === "officer"
+          ? new Date(endDate)
+          : type === "mentor"
+            ? mentorExpirationDate
+            : null,
       invitedBy: loggedInUser.id,
       expiresAt,
     },
@@ -247,7 +256,7 @@ export async function POST(request: NextRequest) {
   // Send invitation email
   if (isEmailConfigured()) {
     const baseUrl = getPublicBaseUrl(request);
-    const acceptUrl = `${baseUrl}/accept-invitation`;
+    const acceptUrl = `${baseUrl}/accept-invitation?email=${encodeURIComponent(email)}`;
 
     try {
       if (type === "officer" && invitation.position) {
@@ -276,7 +285,9 @@ export async function POST(request: NextRequest) {
         });
       } else if (type === "mentor") {
         // Mentor invitation email
-        const expirationDate = invitation.endDate ? new Date(invitation.endDate).toLocaleDateString() : "1 year from acceptance";
+        const expirationDate = invitation.endDate
+          ? new Date(invitation.endDate).toLocaleDateString()
+          : "1 year from acceptance";
         await sendEmail({
           to: email,
           subject: "You've been invited to become an SSE Mentor!",

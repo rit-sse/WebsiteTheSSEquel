@@ -1,0 +1,119 @@
+name: Discord CI Failures
+
+on:
+  workflow_run:
+    workflows: ["Lint", "Test", "Typecheck", "Knip", "Docker CI"]
+    types: [completed]
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: discord-ci-failures-${{ github.event.workflow_run.head_repository.full_name }}-${{ github.event.workflow_run.head_branch }}
+  cancel-in-progress: false
+
+jobs:
+  notify-discord:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Evaluate workflow results
+        id: evaluate
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const expectedWorkflows = new Set(["Lint", "Test", "Typecheck", "Knip", "Docker CI"]);
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const headSha = context.payload.workflow_run.head_sha;
+
+            const runs = await github.paginate(github.rest.actions.listWorkflowRunsForRepo, {
+              owner,
+              repo,
+              head_sha: headSha,
+              per_page: 100,
+            });
+
+            const ciRuns = runs.filter((run) => expectedWorkflows.has(run.name));
+            const latestByName = new Map();
+
+            for (const run of ciRuns) {
+              const previous = latestByName.get(run.name);
+              if (!previous || new Date(run.run_started_at) > new Date(previous.run_started_at)) {
+                latestByName.set(run.name, run);
+              }
+            }
+
+            const latestRuns = Array.from(latestByName.values());
+            const allCompleted = expectedWorkflows.size === latestRuns.length
+              && latestRuns.every((run) => run.status === "completed");
+
+            const failedRuns = latestRuns.filter((run) => run.conclusion === "failure");
+            const shouldNotify = allCompleted && failedRuns.length > 0;
+
+            core.setOutput("should_notify", shouldNotify ? "true" : "false");
+            core.setOutput(
+              "failed_workflows",
+              failedRuns.map((run) => `- ${run.name}`).join("\n")
+            );
+            core.setOutput(
+              "summary_url",
+              `https://github.com/${owner}/${repo}/actions?query=branch%3A${encodeURIComponent(context.payload.workflow_run.head_branch)}`
+            );
+
+      - name: Check webhook configuration
+        id: webhook
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          if [ -n "$DISCORD_WEBHOOK_URL" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Send Discord notification
+        if: ${{ steps.evaluate.outputs.should_notify == 'true' && steps.webhook.outputs.configured == 'true' }}
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          REPOSITORY: ${{ github.event.workflow_run.head_repository.full_name }}
+          BRANCH: ${{ github.event.workflow_run.head_branch }}
+          EVENT_NAME: ${{ github.event.workflow_run.event }}
+          ACTOR: ${{ github.event.workflow_run.actor.login }}
+          FAILED_WORKFLOWS: ${{ steps.evaluate.outputs.failed_workflows }}
+          SUMMARY_URL: ${{ steps.evaluate.outputs.summary_url }}
+        run: |
+          payload=$(python3 - <<'PY'
+          import json
+          import os
+
+          repository = os.environ["REPOSITORY"]
+          branch = os.environ["BRANCH"]
+          event_name = os.environ["EVENT_NAME"]
+          actor = os.environ["ACTOR"]
+          failed_workflows = os.environ["FAILED_WORKFLOWS"]
+          summary_url = os.environ["SUMMARY_URL"]
+
+          print(json.dumps({
+              "embeds": [
+                  {
+                      "title": "CI Failure",
+                      "color": 15158332,
+                      "fields": [
+                          {"name": "Repository", "value": repository, "inline": True},
+                          {"name": "Branch", "value": branch, "inline": True},
+                          {"name": "Event", "value": event_name, "inline": True},
+                          {"name": "Actor", "value": actor, "inline": True},
+                          {"name": "Failed Workflows", "value": failed_workflows or "None", "inline": False},
+                          {"name": "Actions", "value": summary_url, "inline": False},
+                      ],
+                  }
+              ]
+          }))
+          PY
+          )
+
+          curl -fsSL -H "Content-Type: application/json" \
+            -d "$payload" \
+            "$DISCORD_WEBHOOK_URL"

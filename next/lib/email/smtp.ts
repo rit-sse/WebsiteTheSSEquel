@@ -3,7 +3,7 @@ import { SendEmailOptions } from "./index";
 
 /**
  * Send an email using SMTP via nodemailer
- * 
+ *
  * Required environment variables:
  * - SMTP_HOST: SMTP server hostname
  * - SMTP_PORT: SMTP server port (optional, defaults to 587)
@@ -11,7 +11,9 @@ import { SendEmailOptions } from "./index";
  * - SMTP_PASS: SMTP password
  * - SMTP_FROM: Default from address (optional, can be overridden)
  */
-export async function sendEmailViaSMTP(options: SendEmailOptions): Promise<void> {
+export async function sendEmailViaSMTP(
+  options: SendEmailOptions
+): Promise<void> {
   const { to, subject, html, text, attachments } = options;
 
   // Validate SMTP configuration
@@ -43,7 +45,7 @@ export async function sendEmailViaSMTP(options: SendEmailOptions): Promise<void>
   const nodemailerAttachments = attachments?.map((attachment) => ({
     filename: attachment.filename,
     content: attachment.content,
-    encoding: attachment.encoding as BufferEncoding || "base64",
+    encoding: (attachment.encoding as BufferEncoding) || "base64",
   }));
 
   // Send email

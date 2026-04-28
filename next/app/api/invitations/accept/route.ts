@@ -1,20 +1,27 @@
 import prisma from "@/lib/prisma";
 import { getSessionToken } from "@/lib/sessionToken";
+import { getCurrentAcademicTerm } from "@/lib/academicTerm";
 import { NextRequest } from "next/server";
 
 export const dynamic = "force-dynamic";
 
-function parseApplicationCourses(coursesJson: string | null | undefined): string[] {
+function parseApplicationCourses(
+  coursesJson: string | null | undefined
+): string[] {
   if (!coursesJson) return [];
   try {
     const parsed = JSON.parse(coursesJson);
-    return Array.isArray(parsed) ? parsed.filter((value) => typeof value === "string") : [];
+    return Array.isArray(parsed)
+      ? parsed.filter((value) => typeof value === "string")
+      : [];
   } catch {
     return [];
   }
 }
 
-function parseCourseToken(token: string): { department: string; code: number } | null {
+function parseCourseToken(
+  token: string
+): { department: string; code: number } | null {
   const match = token.toUpperCase().match(/([A-Z]+)[-\s]?(\d{3})/);
   if (!match) return null;
   return {
@@ -88,7 +95,11 @@ export async function POST(request: NextRequest) {
 
   // If a mentor invitation was tied to an application that has since been deleted,
   // revoke the stale invitation so it cannot still be accepted.
-  if (invitation.type === "mentor" && invitation.applicationId && !invitation.application) {
+  if (
+    invitation.type === "mentor" &&
+    invitation.applicationId &&
+    !invitation.application
+  ) {
     await prisma.invitation.delete({
       where: { id: invitationId },
     });
@@ -97,10 +108,9 @@ export async function POST(request: NextRequest) {
 
   // Verify the invitation email matches the logged-in user's email
   if (invitation.invitedEmail !== loggedInUser.email) {
-    return new Response(
-      "This invitation is for a different email address",
-      { status: 403 }
-    );
+    return new Response("This invitation is for a different email address", {
+      status: 403,
+    });
   }
 
   // Check if invitation has expired
@@ -115,7 +125,11 @@ export async function POST(request: NextRequest) {
   try {
     if (invitation.type === "officer") {
       // Create officer record
-      if (!invitation.positionId || !invitation.startDate || !invitation.endDate) {
+      if (
+        !invitation.positionId ||
+        !invitation.startDate ||
+        !invitation.endDate
+      ) {
         return new Response("Invalid officer invitation data", { status: 400 });
       }
 
@@ -128,10 +142,9 @@ export async function POST(request: NextRequest) {
       });
 
       if (activeOfficer) {
-        return new Response(
-          "This position already has an active officer",
-          { status: 409 }
-        );
+        return new Response("This position already has an active officer", {
+          status: 409,
+        });
       }
 
       // Create the officer record and grant a membership in a transaction
@@ -146,12 +159,14 @@ export async function POST(request: NextRequest) {
           },
         });
 
-        // Grant membership for becoming an officer
+        // Grant membership for becoming an officer — tagged with the
+        // current academic term so it stays scoped to this cycle.
         const mem = await tx.memberships.create({
           data: {
             userId: loggedInUser.id,
             reason: `Officer: ${invitation.position?.title ?? "Unknown Position"}`,
             dateGiven: new Date(),
+            ...getCurrentAcademicTerm(),
           },
         });
 
@@ -175,7 +190,8 @@ export async function POST(request: NextRequest) {
       });
     } else if (invitation.type === "mentor") {
       // Use endDate from invitation as expiration, or default to 1 year from now
-      const expirationDate = invitation.endDate || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+      const expirationDate =
+        invitation.endDate || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
 
       // Check if user already has an active mentor record
       const existingMentor = await prisma.mentor.findFirst({
@@ -186,7 +202,9 @@ export async function POST(request: NextRequest) {
       });
 
       if (existingMentor) {
-        return new Response("You are already an active mentor", { status: 409 });
+        return new Response("You are already an active mentor", {
+          status: 409,
+        });
       }
 
       const mentor = await prisma.$transaction(async (tx) => {
@@ -199,7 +217,9 @@ export async function POST(request: NextRequest) {
         });
 
         // Backfill courses from the accepted application into CourseTaken when possible.
-        const submittedCourses = parseApplicationCourses(invitation.application?.coursesJson);
+        const submittedCourses = parseApplicationCourses(
+          invitation.application?.coursesJson
+        );
         if (submittedCourses.length > 0) {
           const allCourses = await tx.course.findMany({
             select: {
@@ -275,12 +295,13 @@ export async function POST(request: NextRequest) {
         mentor,
       });
     } else if (invitation.type === "user") {
-      // Create a membership record for the user
+      // Create a membership record for the user (current-term scoped).
       const membership = await prisma.memberships.create({
         data: {
           userId: loggedInUser.id,
           reason: "Accepted membership invitation",
           dateGiven: new Date(),
+          ...getCurrentAcademicTerm(),
         },
       });
 

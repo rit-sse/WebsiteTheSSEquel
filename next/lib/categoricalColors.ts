@@ -19,38 +19,41 @@ export const TABLEAU_20 = [
   "#D4A6C8",
   "#9D7660",
   "#D7B5A6",
-] as const
+] as const;
 
-export const CATEGORICAL_COLOR_COUNT = TABLEAU_20.length
+export const CATEGORICAL_COLOR_COUNT = TABLEAU_20.length;
 
 function normalizeIndex(index: number): number {
-  const n = Math.floor(index)
-  return ((n % CATEGORICAL_COLOR_COUNT) + CATEGORICAL_COLOR_COUNT) % CATEGORICAL_COLOR_COUNT
+  const n = Math.floor(index);
+  return (
+    ((n % CATEGORICAL_COLOR_COUNT) + CATEGORICAL_COLOR_COUNT) %
+    CATEGORICAL_COLOR_COUNT
+  );
 }
 
 function hashString(value: string): number {
-  let hash = 0
+  let hash = 0;
   for (let i = 0; i < value.length; i++) {
-    hash = (hash << 5) - hash + value.charCodeAt(i)
-    hash |= 0
+    hash = (hash << 5) - hash + value.charCodeAt(i);
+    hash |= 0;
   }
-  return hash
+  return hash;
 }
 
 export function getCategoricalColorByIndex(index: number) {
-  const normalized = normalizeIndex(index)
-  const cssIndex = normalized + 1
+  const normalized = normalizeIndex(index);
+  const cssIndex = normalized + 1;
   return {
     index: normalized,
     fill: `var(--cat-${cssIndex})`,
     foreground: `var(--cat-fg-${cssIndex})`,
     hex: TABLEAU_20[normalized],
-  }
+  };
 }
 
 export function getCategoricalColorFromSeed(seed: string | number) {
   if (typeof seed === "number") {
-    return getCategoricalColorByIndex(seed)
+    return getCategoricalColorByIndex(seed);
   }
-  return getCategoricalColorByIndex(hashString(seed))
+  return getCategoricalColorByIndex(hashString(seed));
 }

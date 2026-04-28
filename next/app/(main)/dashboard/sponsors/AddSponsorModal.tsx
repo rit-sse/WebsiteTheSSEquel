@@ -1,55 +1,59 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { toast } from "sonner"
-import { Modal, ModalFooter } from "@/components/ui/modal"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
+import { useState } from "react";
+import { toast } from "sonner";
+import { Modal, ModalFooter } from "@/components/ui/modal";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 
 interface AddSponsorModalProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onSuccess: () => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSuccess: () => void;
 }
 
-export default function AddSponsorModal({ open, onOpenChange, onSuccess }: AddSponsorModalProps) {
-  const [name, setName] = useState("")
-  const [description, setDescription] = useState("")
-  const [logoUrl, setLogoUrl] = useState("")
-  const [websiteUrl, setWebsiteUrl] = useState("")
-  const [isActive, setIsActive] = useState(true)
-  const [isSubmitting, setIsSubmitting] = useState(false)
+export default function AddSponsorModal({
+  open,
+  onOpenChange,
+  onSuccess,
+}: AddSponsorModalProps) {
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [logoUrl, setLogoUrl] = useState("");
+  const [websiteUrl, setWebsiteUrl] = useState("");
+  const [isActive, setIsActive] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const resetForm = () => {
-    setName("")
-    setDescription("")
-    setLogoUrl("")
-    setWebsiteUrl("")
-    setIsActive(true)
-  }
+    setName("");
+    setDescription("");
+    setLogoUrl("");
+    setWebsiteUrl("");
+    setIsActive(true);
+  };
 
   const handleClose = () => {
-    resetForm()
-    onOpenChange(false)
-  }
+    resetForm();
+    onOpenChange(false);
+  };
 
   const handleSubmit = async () => {
     // Validate required fields
-    const invalidFields = []
-    if (name.trim() === "") invalidFields.push("name")
-    if (description.trim() === "") invalidFields.push("description")
-    if (logoUrl.trim() === "") invalidFields.push("logo URL")
-    if (websiteUrl.trim() === "") invalidFields.push("website URL")
+    const invalidFields = [];
+    if (name.trim() === "") invalidFields.push("name");
+    if (description.trim() === "") invalidFields.push("description");
+    if (logoUrl.trim() === "") invalidFields.push("logo URL");
+    if (websiteUrl.trim() === "") invalidFields.push("website URL");
 
     if (invalidFields.length > 0) {
-      toast.error(`Required fields are empty: ${invalidFields.join(", ")}`)
-      return
+      toast.error(`Required fields are empty: ${invalidFields.join(", ")}`);
+      return;
     }
 
-    setIsSubmitting(true)
+    setIsSubmitting(true);
 
     try {
       const response = await fetch("/api/sponsor", {
@@ -62,33 +66,33 @@ export default function AddSponsorModal({ open, onOpenChange, onSuccess }: AddSp
           websiteUrl: websiteUrl.trim(),
           isActive,
         }),
-      })
+      });
 
       if (response.ok) {
-        toast.success("Sponsor added successfully")
-        handleClose()
-        onSuccess()
+        toast.success("Sponsor added successfully");
+        handleClose();
+        onSuccess();
       } else {
-        const errorText = await response.text()
-        console.error("API Error:", response.status, errorText)
+        const errorText = await response.text();
+        console.error("API Error:", response.status, errorText);
         toast.error(`Failed to add sponsor: ${errorText}`, {
           duration: 5000,
-        })
+        });
       }
     } catch (error) {
-      console.error("Error adding sponsor:", error)
-      toast.error("An error occurred while adding the sponsor")
+      console.error("Error adding sponsor:", error);
+      toast.error("An error occurred while adding the sponsor");
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   return (
     <Modal
       open={open}
       onOpenChange={(isOpen) => {
-        if (!isOpen) handleClose()
-        else onOpenChange(isOpen)
+        if (!isOpen) handleClose();
+        else onOpenChange(isOpen);
       }}
       title="Add Sponsor"
       className="max-w-lg"
@@ -124,7 +128,8 @@ export default function AddSponsorModal({ open, onOpenChange, onSuccess }: AddSp
             placeholder="/images/sponsors/logo.png or https://example.com/logo.png"
           />
           <p className="text-xs text-muted-foreground">
-            Enter the URL or path to the sponsor&apos;s logo image (e.g., /images/sponsors/logo.png or https://example.com/logo.png)
+            Enter the URL or path to the sponsor&apos;s logo image (e.g.,
+            /images/sponsors/logo.png or https://example.com/logo.png)
           </p>
         </div>
 
@@ -159,5 +164,5 @@ export default function AddSponsorModal({ open, onOpenChange, onSuccess }: AddSp
         </Button>
       </ModalFooter>
     </Modal>
-  )
+  );
 }

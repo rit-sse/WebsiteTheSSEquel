@@ -1,13 +1,17 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { signIn, useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { NeoCard, NeoCardContent, NeoCardHeader, NeoCardTitle } from "@/components/ui/neo-card";
+import {
+  NeoCard,
+  NeoCardContent,
+  NeoCardHeader,
+  NeoCardTitle,
+} from "@/components/ui/neo-card";
 import { toast } from "sonner";
 
 interface Mentor {
@@ -27,7 +31,6 @@ interface MentorSemester {
 }
 
 export default function MentorHeadcountPage() {
-  const { data: session, status } = useSession();
   const [mentors, setMentors] = useState<Mentor[]>([]);
   const [semester, setSemester] = useState<MentorSemester | null>(null);
   const [selectedMentors, setSelectedMentors] = useState<number[]>([]);
@@ -37,12 +40,12 @@ export default function MentorHeadcountPage() {
 
   const activeMentors = useMemo(() => {
     const now = new Date();
-    return mentors.filter((mentor) => mentor.isActive && new Date(mentor.expirationDate) >= now);
+    return mentors.filter(
+      (mentor) => mentor.isActive && new Date(mentor.expirationDate) >= now
+    );
   }, [mentors]);
 
   useEffect(() => {
-    if (status !== "authenticated") return;
-
     const loadData = async () => {
       try {
         const [mentorRes, semesterRes] = await Promise.all([
@@ -65,11 +68,13 @@ export default function MentorHeadcountPage() {
     };
 
     loadData();
-  }, [status]);
+  }, []);
 
   const toggleMentor = (mentorId: number) => {
     setSelectedMentors((prev) =>
-      prev.includes(mentorId) ? prev.filter((id) => id !== mentorId) : [...prev, mentorId]
+      prev.includes(mentorId)
+        ? prev.filter((id) => id !== mentorId)
+        : [...prev, mentorId]
     );
   };
 
@@ -123,26 +128,15 @@ export default function MentorHeadcountPage() {
     }
   };
 
-  if (status === "loading") {
-    return <div className="p-8 text-muted-foreground">Loading headcount form...</div>;
-  }
-
-  if (status !== "authenticated") {
-    return (
-      <div className="p-8 text-center space-y-4">
-        <h1 className="text-2xl font-bold">Mentor Headcount</h1>
-        <p className="text-muted-foreground">Please sign in to submit headcount.</p>
-        <Button onClick={() => signIn("google")}>Sign in</Button>
-      </div>
-    );
-  }
-
   return (
     <div className="w-full max-w-3xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">30-minute SSE Mentoring Lab Headcount</h1>
+        <h1 className="text-2xl font-bold">
+          30-minute SSE Mentoring Lab Headcount
+        </h1>
         <p className="text-muted-foreground mt-1">
-          {semester ? `${semester.name} •` : ""} Quick check-in for mentors on duty.
+          {semester ? `${semester.name} •` : ""} Quick check-in for mentors on
+          duty.
         </p>
       </div>
 
@@ -172,7 +166,9 @@ export default function MentorHeadcountPage() {
           </NeoCardHeader>
           <NeoCardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="peopleInLab">Number of people in the lab right now</Label>
+              <Label htmlFor="peopleInLab">
+                Number of people in the lab right now
+              </Label>
               <Input
                 id="peopleInLab"
                 type="number"
@@ -183,7 +179,9 @@ export default function MentorHeadcountPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="feeling">How are you doing? (Answer this, or else)</Label>
+              <Label htmlFor="feeling">
+                How are you doing? (Answer this, or else)
+              </Label>
               <Textarea
                 id="feeling"
                 value={feeling}

@@ -67,7 +67,9 @@ export async function POST(request: NextRequest) {
       officers: {
         where: { is_active: true },
         select: {
-          position: { select: { is_primary: true, title: true } },
+          position: {
+            select: { is_primary: true, title: true, category: true },
+          },
         },
       },
       mentor: {
@@ -82,9 +84,17 @@ export async function POST(request: NextRequest) {
 
   const isOfficer = user.officers.length > 0;
   const isMentor = user.mentor.length > 0;
+  // Treat any SE Office position (Administrative Assistant / Dean /
+  // SE Office Head / Undergraduate Dean) as an "SE Admin" for the
+  // email-send permission check, mirroring the auth-level helpers.
+  const isSeAdmin = user.officers.some(
+    (officer) => officer.position.category === "SE_OFFICE"
+  );
 
-  if (!isOfficer && !isMentor) {
-    return new Response("Only officers and mentors can send emails", { status: 403 });
+  if (!isOfficer && !isMentor && !isSeAdmin) {
+    return new Response("Only officers, mentors, and SE Admins can send emails", {
+      status: 403,
+    });
   }
 
   let body;
@@ -97,11 +107,15 @@ export async function POST(request: NextRequest) {
   const { subject, message, recipients, attachments: rawAttachments } = body;
 
   if (!subject || !message) {
-    return new Response('"subject" and "message" are required', { status: 400 });
+    return new Response('"subject" and "message" are required', {
+      status: 400,
+    });
   }
 
   if (!Array.isArray(recipients) || recipients.length === 0) {
-    return new Response('"recipients" must be a non-empty array', { status: 400 });
+    return new Response('"recipients" must be a non-empty array', {
+      status: 400,
+    });
   }
 
   const validRecipients = recipients.filter(
@@ -162,7 +176,9 @@ export async function POST(request: NextRequest) {
       sent++;
     } catch (err) {
       failed++;
-      errors.push(`${recipient.email}: ${err instanceof Error ? err.message : String(err)}`);
+      errors.push(
+        `${recipient.email}: ${err instanceof Error ? err.message : String(err)}`
+      );
     }
   }
 

@@ -7,9 +7,38 @@ This repo contains the source code for the Society of Software Engineers' websit
 - `next` directory holds the Next.js application bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 - `documentation` directory contains project documentation including wireframes, domain models, ERDs, etc.
 
+## Quickstart
+
+From the repository root:
+
+1. Bootstrap local development:
+
+   `npm run setup:dev`
+
+   This command installs app dependencies, starts local Docker services, and runs database setup commands.
+
+2. Start the app:
+
+   `npm run dev`
+
+3. Open the app at:
+
+   `http://localhost:3000`
+
+## Developer Commands (from repo root)
+
+- `npm run dev` — start local development server
+- `npm run lint` — run lint checks
+- `npm run test` — run tests
+- `npm run typecheck` — run TypeScript type checks
+- `npm run build` — run production build
+- `npm run check` — run lint + test + typecheck
+
 ## Environment Setup
 
 Follow our [environment setup guide](documentation/EnvironmentSetup.md) to get started with the project.
+
+After installing dependencies in `next/`, copy `.env.example` to `.env` and run `npm run env:check` before starting the dev server.
 
 ## Required VSCode Extensions
 - [Tailwind CSS IntelliSense](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss): bradlc.vscode-tailwindcss (Tailwind CSS IntelliSense)

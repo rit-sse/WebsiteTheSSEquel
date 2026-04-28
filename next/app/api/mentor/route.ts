@@ -2,6 +2,8 @@ import prisma from "@/lib/prisma";
 import { NextRequest } from "next/server";
 import { resolveUserImage } from "@/lib/s3Utils";
 import { getGatewayAuthLevel } from "@/lib/authGateway";
+import { CreateMentorSchema, UpdateMentorSchema } from "@/lib/schemas/mentor";
+import { ApiError } from "@/lib/apiError";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +21,9 @@ function parseCourses(coursesJson: string | null | undefined): string[] {
   if (!coursesJson) return [];
   try {
     const parsed = JSON.parse(coursesJson);
-    return Array.isArray(parsed) ? parsed.filter((value) => typeof value === "string") : [];
+    return Array.isArray(parsed)
+      ? parsed.filter((value) => typeof value === "string")
+      : [];
   } catch {
     return [];
   }
@@ -124,37 +128,39 @@ export async function GET(request: NextRequest) {
         },
       }),
     },
-    orderBy: [
-      { isActive: "desc" },
-      { user: { name: "asc" } },
-    ],
+    orderBy: [{ isActive: "desc" }, { user: { name: "asc" } }],
   });
 
   const mentorsWithImage = allMentors.map((mentor) => {
     const latestApplication =
-      "mentorApplications" in mentor.user ? mentor.user.mentorApplications?.[0] : undefined;
-    const applicationCourseCount = parseCourseCount(latestApplication?.coursesJson);
+      "mentorApplications" in mentor.user
+        ? mentor.user.mentorApplications?.[0]
+        : undefined;
+    const applicationCourseCount = parseCourseCount(
+      latestApplication?.coursesJson
+    );
     const applicationCourses = parseCourses(latestApplication?.coursesJson);
 
-    const { mentorApplications, ...userWithoutApplications } = mentor.user as typeof mentor.user & {
-      mentorApplications?: Array<{
-        id: number;
-        discordUsername: string;
-        pronouns: string;
-        major: string;
-        yearLevel: string;
-        coursesJson: string;
-        skillsText: string;
-        toolsComfortable: string;
-        toolsLearning: string;
-        previousSemesters: number;
-        whyMentor: string;
-        comments: string | null;
-        createdAt: Date;
-        status: string;
-        semester: { id: number; name: string };
-      }>;
-    };
+    const { mentorApplications, ...userWithoutApplications } =
+      mentor.user as typeof mentor.user & {
+        mentorApplications?: Array<{
+          id: number;
+          discordUsername: string;
+          pronouns: string;
+          major: string;
+          yearLevel: string;
+          coursesJson: string;
+          skillsText: string;
+          toolsComfortable: string;
+          toolsLearning: string;
+          previousSemesters: number;
+          whyMentor: string;
+          comments: string | null;
+          createdAt: Date;
+          status: string;
+          semester: { id: number; name: string };
+        }>;
+      };
 
     return {
       ...mentor,
@@ -167,7 +173,10 @@ export async function GET(request: NextRequest) {
         : null,
       user: {
         ...userWithoutApplications,
-        image: resolveUserImage(mentor.user.profileImageKey, mentor.user.googleImageURL),
+        image: resolveUserImage(
+          mentor.user.profileImageKey,
+          mentor.user.googleImageURL
+        ),
       },
     };
   });
@@ -186,25 +195,21 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return new Response("Invalid JSON", { status: 422 });
+    return ApiError.validationError("Invalid JSON");
   }
 
-  // make sure the expirationDate, isActive, and mentorId properties are included
-  if (!("expirationDate" in body && "isActive" in body && "userId" in body)) {
-    return new Response(
-      '"expirationDate", "isActive", and "userId" must be included in request body',
-      { status: 400 }
+  const parsed = CreateMentorSchema.safeParse(body);
+  if (!parsed.success)
+    return ApiError.validationError(
+      "Validation failed",
+      parsed.error.flatten()
     );
-  }
-  const expirationDate = body.expirationDate;
-  const isActive = body.isActive;
-  const user_Id = body.userId;
+
+  const { expirationDate, isActive, userId } = parsed.data;
 
   // Only Mentoring Head or Primary Officers may modify mentors
   if (!(await canManageMentors(request))) {
-    return new Response("Only the Mentoring Head or Primary Officers may modify mentorships", {
-      status: 403,
-    });
+    return ApiError.forbidden();
   }
 
   try {
@@ -212,12 +217,12 @@ export async function POST(request: NextRequest) {
       data: {
         expirationDate,
         isActive,
-        user_Id,
+        user_Id: userId,
       },
     });
     return Response.json(mentor, { status: 201 });
   } catch (e) {
-    return new Response(`Failed to create mentor: ${e}`, { status: 500 });
+    return ApiError.internal();
   }
 }
 
@@ -231,28 +236,26 @@ export async function DELETE(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return new Response("Invalid JSON", { status: 422 });
+    return ApiError.validationError("Invalid JSON");
   }
 
   // verify the id is included
   if (!("id" in body)) {
-    return new Response("ID must be included", { status: 400 });
+    return ApiError.badRequest("ID must be included");
   }
   const id = body.id;
 
   // Only Mentoring Head or Primary Officers may modify mentors
   if (!(await canManageMentors(request))) {
-    return new Response("Only the Mentoring Head or Primary Officers may modify mentorships", {
-      status: 403,
-    });
+    return ApiError.forbidden();
   }
 
   // mentor object from database
   const mentorExists = await prisma.mentor.findUnique({ where: { id: id } });
   if (mentorExists == null) {
-    return new Response(`Couldn't find mentor ID ${id}`, { status: 404 });
+    return ApiError.notFound("Mentor");
   }
-  
+
   const mentor = await prisma.$transaction(async (tx) => {
     const mentorRecord = await tx.mentor.findUnique({
       where: { id },
@@ -313,22 +316,21 @@ export async function PUT(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return new Response("Invalid JSON", { status: 422 });
+    return ApiError.validationError("Invalid JSON");
   }
 
-  // verify that the id is included in the request
-  if (!("id" in body)) {
-    return new Response("`id` must be included in request body", {
-      status: 400,
-    });
-  }
-  const id = body.id;
+  const parsed = UpdateMentorSchema.safeParse(body);
+  if (!parsed.success)
+    return ApiError.validationError(
+      "Validation failed",
+      parsed.error.flatten()
+    );
+
+  const { id, expirationDate, isActive, userId } = parsed.data;
 
   // Only Mentoring Head or Primary Officers may modify mentors
   if (!(await canManageMentors(request))) {
-    return new Response("Only the Mentoring Head or Primary Officers may modify mentorships", {
-      status: 403,
-    });
+    return ApiError.forbidden();
   }
 
   // only update included fields
@@ -337,15 +339,9 @@ export async function PUT(request: NextRequest) {
     isActive?: boolean;
     user_Id?: number;
   } = {};
-  if ("expirationDate" in body) {
-    data.expirationDate = body.expirationDate;
-  }
-  if ("isActive" in body) {
-    data.isActive = body.isActive;
-  }
-  if ("userId" in body) {
-    data.user_Id = body.userId;
-  }
+  if (expirationDate !== undefined) data.expirationDate = expirationDate;
+  if (isActive !== undefined) data.isActive = isActive;
+  if (userId !== undefined) data.user_Id = userId;
 
   try {
     const mentor = await prisma.mentor.update({
@@ -354,7 +350,6 @@ export async function PUT(request: NextRequest) {
     });
     return Response.json(mentor);
   } catch (e) {
-    // make sure the selected mentor exists
-    return new Response(`Failed to update mentor: ${e}`, { status: 500 });
+    return ApiError.internal();
   }
 }

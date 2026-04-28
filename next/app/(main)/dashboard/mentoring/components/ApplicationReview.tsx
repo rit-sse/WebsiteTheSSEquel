@@ -1,19 +1,19 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useCallback } from "react"
-import { DataTable, Column } from "@/components/ui/data-table"
-import { Button } from "@/components/ui/button"
-import { Modal, ModalFooter } from "@/components/ui/modal"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useState, useEffect, useCallback } from "react";
+import { DataTable, Column } from "@/components/ui/data-table";
+import { Button } from "@/components/ui/button";
+import { Modal, ModalFooter } from "@/components/ui/modal";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { toast } from "sonner"
+} from "@/components/ui/select";
+import { toast } from "sonner";
 import {
   Check,
   X,
@@ -22,39 +22,40 @@ import {
   ChevronDown,
   ChevronUp,
   UserPlus,
-} from "lucide-react"
+} from "lucide-react";
+import { getInitials } from "@/lib/userDisplay";
 
 interface MentorApplication {
-  id: number
-  discordUsername: string
-  pronouns: string
-  major: string
-  yearLevel: string
-  coursesJson: string
-  skillsText: string
-  toolsComfortable: string
-  toolsLearning: string
-  previousSemesters: number
-  whyMentor: string
-  comments: string | null
-  status: string
-  createdAt: string
+  id: number;
+  discordUsername: string;
+  pronouns: string;
+  major: string;
+  yearLevel: string;
+  coursesJson: string;
+  skillsText: string;
+  toolsComfortable: string;
+  toolsLearning: string;
+  previousSemesters: number;
+  whyMentor: string;
+  comments: string | null;
+  status: string;
+  createdAt: string;
   user: {
-    id: number
-    name: string
-    email: string
-    image: string
-  }
+    id: number;
+    name: string;
+    email: string;
+    image: string;
+  };
   semester: {
-    id: number
-    name: string
-  }
+    id: number;
+    name: string;
+  };
 }
 
 interface MentorSemester {
-  id: number
-  name: string
-  isActive: boolean
+  id: number;
+  name: string;
+  isActive: boolean;
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -62,116 +63,113 @@ const STATUS_COLORS: Record<string, string> = {
   approved: "bg-green-500/20 text-green-700 dark:text-green-400",
   rejected: "bg-red-500/20 text-red-700 dark:text-red-400",
   invited: "bg-blue-500/20 text-blue-700 dark:text-blue-400",
-}
-
-const getInitials = (name: string) =>
-  name
-    .split(" ")
-    .filter(Boolean)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("")
-    .slice(0, 2) || "?"
+};
 
 export default function ApplicationReview() {
-  const [applications, setApplications] = useState<MentorApplication[]>([])
-  const [semesters, setSemesters] = useState<MentorSemester[]>([])
-  const [selectedSemester, setSelectedSemester] = useState<string>("all")
-  const [selectedStatus, setSelectedStatus] = useState<string>("all")
-  const [isLoading, setIsLoading] = useState(true)
+  const [applications, setApplications] = useState<MentorApplication[]>([]);
+  const [semesters, setSemesters] = useState<MentorSemester[]>([]);
+  const [selectedSemester, setSelectedSemester] = useState<string>("all");
+  const [selectedStatus, setSelectedStatus] = useState<string>("all");
+  const [isLoading, setIsLoading] = useState(true);
 
   // View modal state
-  const [viewModalOpen, setViewModalOpen] = useState(false)
-  const [viewApplication, setViewApplication] = useState<MentorApplication | null>(null)
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [viewApplication, setViewApplication] =
+    useState<MentorApplication | null>(null);
 
   // Invite modal state
-  const [inviteModalOpen, setInviteModalOpen] = useState(false)
-  const [inviteApplication, setInviteApplication] = useState<MentorApplication | null>(null)
-  const [isInviting, setIsInviting] = useState(false)
+  const [inviteModalOpen, setInviteModalOpen] = useState(false);
+  const [inviteApplication, setInviteApplication] =
+    useState<MentorApplication | null>(null);
+  const [isInviting, setIsInviting] = useState(false);
 
   // Expanded rows
-  const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set())
+  const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
 
   const fetchSemesters = useCallback(async () => {
     try {
-      const response = await fetch("/api/mentor-semester")
+      const response = await fetch("/api/mentor-semester");
       if (response.ok) {
-        const data = await response.json()
-        setSemesters(data)
+        const data = await response.json();
+        setSemesters(data);
         // Default to active semester
-        const active = data.find((s: MentorSemester) => s.isActive)
+        const active = data.find((s: MentorSemester) => s.isActive);
         if (active) {
-          setSelectedSemester(active.id.toString())
+          setSelectedSemester(active.id.toString());
         }
       }
     } catch (error) {
-      console.error("Failed to fetch semesters:", error)
+      console.error("Failed to fetch semesters:", error);
     }
-  }, [])
+  }, []);
 
   const fetchApplications = useCallback(async () => {
     try {
-      let url = "/api/mentor-application"
-      const params = new URLSearchParams()
+      let url = "/api/mentor-application";
+      const params = new URLSearchParams();
       if (selectedSemester !== "all") {
-        params.set("semesterId", selectedSemester)
+        params.set("semesterId", selectedSemester);
       }
       if (selectedStatus !== "all") {
-        params.set("status", selectedStatus)
+        params.set("status", selectedStatus);
       }
       if (params.toString()) {
-        url += `?${params.toString()}`
+        url += `?${params.toString()}`;
       }
 
-      const response = await fetch(url)
+      const response = await fetch(url);
       if (response.ok) {
-        const data = await response.json()
-        setApplications(data)
+        const data = await response.json();
+        setApplications(data);
       }
     } catch (error) {
-      console.error("Failed to fetch applications:", error)
+      console.error("Failed to fetch applications:", error);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }, [selectedSemester, selectedStatus])
+  }, [selectedSemester, selectedStatus]);
 
   useEffect(() => {
-    fetchSemesters()
-  }, [fetchSemesters])
+    fetchSemesters();
+  }, [fetchSemesters]);
 
   useEffect(() => {
-    setIsLoading(true)
-    fetchApplications()
-  }, [fetchApplications])
+    setIsLoading(true);
+    fetchApplications();
+  }, [fetchApplications]);
 
-  const handleUpdateStatus = async (applicationId: number, newStatus: string) => {
+  const handleUpdateStatus = async (
+    applicationId: number,
+    newStatus: string
+  ) => {
     try {
       const response = await fetch("/api/mentor-application", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: applicationId, status: newStatus }),
-      })
+      });
 
       if (response.ok) {
-        toast.success(`Application ${newStatus}`)
-        fetchApplications()
+        toast.success(`Application ${newStatus}`);
+        fetchApplications();
       } else {
-        const data = await response.json()
-        toast.error(data.error || "Failed to update application")
+        const data = await response.json();
+        toast.error(data.error || "Failed to update application");
       }
     } catch (error) {
-      console.error("Failed to update application:", error)
-      toast.error("An error occurred")
+      console.error("Failed to update application:", error);
+      toast.error("An error occurred");
     }
-  }
+  };
 
   const handleSendInvite = async () => {
-    if (!inviteApplication) return
+    if (!inviteApplication) return;
 
-    setIsInviting(true)
+    setIsInviting(true);
     try {
       // Send the mentor invitation (applicationId will auto-update application status)
-      const expirationDate = new Date()
-      expirationDate.setFullYear(expirationDate.getFullYear() + 1)
+      const expirationDate = new Date();
+      expirationDate.setFullYear(expirationDate.getFullYear() + 1);
 
       const response = await fetch("/api/invitations", {
         method: "POST",
@@ -182,59 +180,61 @@ export default function ApplicationReview() {
           endDate: expirationDate.toISOString(),
           applicationId: inviteApplication.id,
         }),
-      })
+      });
 
       if (response.ok) {
-        toast.success(`Invitation sent to ${inviteApplication.user.name}`)
-        fetchApplications()
-        setInviteModalOpen(false)
-        setInviteApplication(null)
+        toast.success(`Invitation sent to ${inviteApplication.user.name}`);
+        fetchApplications();
+        setInviteModalOpen(false);
+        setInviteApplication(null);
       } else {
-        const data = await response.json()
+        const data = await response.json();
         if (data.needsGmailAuth) {
-          toast.warning("Invitation created but email not sent - Gmail authorization required")
-          fetchApplications()
-          setInviteModalOpen(false)
-          setInviteApplication(null)
+          toast.warning(
+            "Invitation created but email not sent - Gmail authorization required"
+          );
+          fetchApplications();
+          setInviteModalOpen(false);
+          setInviteApplication(null);
         } else {
-          toast.error(data.error || "Failed to send invitation")
+          toast.error(data.error || "Failed to send invitation");
         }
       }
     } catch (error) {
-      console.error("Failed to send invitation:", error)
-      toast.error("An error occurred")
+      console.error("Failed to send invitation:", error);
+      toast.error("An error occurred");
     } finally {
-      setIsInviting(false)
+      setIsInviting(false);
     }
-  }
+  };
 
   const toggleRowExpand = (id: number) => {
     setExpandedRows((prev) => {
-      const newSet = new Set(prev)
+      const newSet = new Set(prev);
       if (newSet.has(id)) {
-        newSet.delete(id)
+        newSet.delete(id);
       } else {
-        newSet.add(id)
+        newSet.add(id);
       }
-      return newSet
-    })
-  }
+      return newSet;
+    });
+  };
 
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
       year: "numeric",
-    })
-  }
+    });
+  };
 
   const parseCourses = (coursesJson: string): string[] => {
     try {
-      return JSON.parse(coursesJson)
+      return JSON.parse(coursesJson);
     } catch {
-      return []
+      return [];
     }
-  }
+  };
 
   const columns: Column<MentorApplication>[] = [
     {
@@ -281,9 +281,12 @@ export default function ApplicationReview() {
       header: "Details",
       render: (app) => (
         <div className="text-sm">
-          <p>{app.major} • {app.yearLevel}</p>
+          <p>
+            {app.major} • {app.yearLevel}
+          </p>
           <p className="text-xs text-muted-foreground">
-            {parseCourses(app.coursesJson).length} courses • {app.previousSemesters} prev semesters
+            {parseCourses(app.coursesJson).length} courses •{" "}
+            {app.previousSemesters} prev semesters
           </p>
         </div>
       ),
@@ -317,8 +320,8 @@ export default function ApplicationReview() {
             size="xs"
             variant="ghost"
             onClick={() => {
-              setViewApplication(app)
-              setViewModalOpen(true)
+              setViewApplication(app);
+              setViewModalOpen(true);
             }}
             title="View details"
           >
@@ -351,8 +354,8 @@ export default function ApplicationReview() {
               size="xs"
               variant="outline"
               onClick={() => {
-                setInviteApplication(app)
-                setInviteModalOpen(true)
+                setInviteApplication(app);
+                setInviteModalOpen(true);
               }}
               title="Send invite"
             >
@@ -362,7 +365,7 @@ export default function ApplicationReview() {
         </div>
       ),
     },
-  ]
+  ];
 
   // Stats
   const stats = {
@@ -371,14 +374,14 @@ export default function ApplicationReview() {
     approved: applications.filter((a) => a.status === "approved").length,
     rejected: applications.filter((a) => a.status === "rejected").length,
     invited: applications.filter((a) => a.status === "invited").length,
-  }
+  };
 
   if (isLoading) {
     return (
       <div className="text-muted-foreground text-sm py-8 text-center">
         Loading applications...
       </div>
-    )
+    );
   }
 
   return (
@@ -418,9 +421,7 @@ export default function ApplicationReview() {
         </div>
         <div className="flex-1" />
         <div className="flex items-center gap-3 text-sm">
-          <span className="text-muted-foreground">
-            {stats.total} total
-          </span>
+          <span className="text-muted-foreground">{stats.total} total</span>
           <Badge variant="outline" className={STATUS_COLORS.pending}>
             {stats.pending} pending
           </Badge>
@@ -452,7 +453,11 @@ export default function ApplicationReview() {
                   <p className="font-medium mb-1">Courses Taken</p>
                   <div className="flex flex-wrap gap-1">
                     {parseCourses(app.coursesJson).map((course) => (
-                      <Badge key={course} variant="secondary" className="text-xs">
+                      <Badge
+                        key={course}
+                        variant="secondary"
+                        className="text-xs"
+                      >
                         {course}
                       </Badge>
                     ))}
@@ -482,17 +487,25 @@ export default function ApplicationReview() {
             <div className="flex items-center gap-4">
               <Avatar className="w-16 h-16">
                 {viewApplication.user.image ? (
-                  <AvatarImage src={viewApplication.user.image} alt={viewApplication.user.name} />
+                  <AvatarImage
+                    src={viewApplication.user.image}
+                    alt={viewApplication.user.name}
+                  />
                 ) : null}
                 <AvatarFallback className="text-base">
                   {getInitials(viewApplication.user.name)}
                 </AvatarFallback>
               </Avatar>
               <div>
-                <h3 className="font-semibold text-lg">{viewApplication.user.name}</h3>
-                <p className="text-muted-foreground">{viewApplication.user.email}</p>
+                <h3 className="font-semibold text-lg">
+                  {viewApplication.user.name}
+                </h3>
+                <p className="text-muted-foreground">
+                  {viewApplication.user.email}
+                </p>
                 <Badge className={STATUS_COLORS[viewApplication.status]}>
-                  {viewApplication.status.charAt(0).toUpperCase() + viewApplication.status.slice(1)}
+                  {viewApplication.status.charAt(0).toUpperCase() +
+                    viewApplication.status.slice(1)}
                 </Badge>
               </div>
             </div>
@@ -500,11 +513,15 @@ export default function ApplicationReview() {
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <p className="font-medium">Discord</p>
-                <p className="text-muted-foreground">{viewApplication.discordUsername}</p>
+                <p className="text-muted-foreground">
+                  {viewApplication.discordUsername}
+                </p>
               </div>
               <div>
                 <p className="font-medium">Pronouns</p>
-                <p className="text-muted-foreground">{viewApplication.pronouns}</p>
+                <p className="text-muted-foreground">
+                  {viewApplication.pronouns}
+                </p>
               </div>
               <div>
                 <p className="font-medium">Major</p>
@@ -512,15 +529,21 @@ export default function ApplicationReview() {
               </div>
               <div>
                 <p className="font-medium">Year Level</p>
-                <p className="text-muted-foreground">{viewApplication.yearLevel}</p>
+                <p className="text-muted-foreground">
+                  {viewApplication.yearLevel}
+                </p>
               </div>
               <div>
                 <p className="font-medium">Previous Semesters</p>
-                <p className="text-muted-foreground">{viewApplication.previousSemesters}</p>
+                <p className="text-muted-foreground">
+                  {viewApplication.previousSemesters}
+                </p>
               </div>
               <div>
                 <p className="font-medium">Applied</p>
-                <p className="text-muted-foreground">{formatDate(viewApplication.createdAt)}</p>
+                <p className="text-muted-foreground">
+                  {formatDate(viewApplication.createdAt)}
+                </p>
               </div>
             </div>
 
@@ -550,14 +573,18 @@ export default function ApplicationReview() {
             </div>
 
             <div>
-              <p className="font-medium text-sm mb-1">Tools Currently Learning</p>
+              <p className="font-medium text-sm mb-1">
+                Tools Currently Learning
+              </p>
               <p className="text-sm text-muted-foreground whitespace-pre-wrap">
                 {viewApplication.toolsLearning || "—"}
               </p>
             </div>
 
             <div>
-              <p className="font-medium text-sm mb-1">Why They Want to Mentor</p>
+              <p className="font-medium text-sm mb-1">
+                Why They Want to Mentor
+              </p>
               <p className="text-sm text-muted-foreground whitespace-pre-wrap">
                 {viewApplication.whyMentor}
               </p>
@@ -582,16 +609,16 @@ export default function ApplicationReview() {
               <Button
                 variant="destructive"
                 onClick={() => {
-                  handleUpdateStatus(viewApplication.id, "rejected")
-                  setViewModalOpen(false)
+                  handleUpdateStatus(viewApplication.id, "rejected");
+                  setViewModalOpen(false);
                 }}
               >
                 Reject
               </Button>
               <Button
                 onClick={() => {
-                  handleUpdateStatus(viewApplication.id, "approved")
-                  setViewModalOpen(false)
+                  handleUpdateStatus(viewApplication.id, "approved");
+                  setViewModalOpen(false);
                 }}
               >
                 Approve
@@ -601,9 +628,9 @@ export default function ApplicationReview() {
           {viewApplication && viewApplication.status === "approved" && (
             <Button
               onClick={() => {
-                setInviteApplication(viewApplication)
-                setViewModalOpen(false)
-                setInviteModalOpen(true)
+                setInviteApplication(viewApplication);
+                setViewModalOpen(false);
+                setInviteModalOpen(true);
               }}
             >
               <Mail className="h-4 w-4 mr-2" />
@@ -623,12 +650,13 @@ export default function ApplicationReview() {
         {inviteApplication && (
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Send a mentor invitation to <strong>{inviteApplication.user.name}</strong> at{" "}
+              Send a mentor invitation to{" "}
+              <strong>{inviteApplication.user.name}</strong> at{" "}
               <strong>{inviteApplication.user.email}</strong>?
             </p>
             <p className="text-sm text-muted-foreground">
-              They will receive an email with instructions to accept the invitation and become
-              an active mentor.
+              They will receive an email with instructions to accept the
+              invitation and become an active mentor.
             </p>
           </div>
         )}
@@ -642,5 +670,5 @@ export default function ApplicationReview() {
         </ModalFooter>
       </Modal>
     </div>
-  )
+  );
 }

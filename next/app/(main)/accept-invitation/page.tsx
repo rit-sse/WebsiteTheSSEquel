@@ -1,9 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { signIn, useSession } from "next-auth/react";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -32,31 +39,27 @@ interface Invitation {
 export default function AcceptInvitationPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const emailHint = searchParams.get("email");
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState<number | null>(null);
 
-  useEffect(() => {
-    if (status === "loading") return;
-
-    if (status === "unauthenticated") {
-      // Redirect to sign in, then back here
-      signIn("google", { callbackUrl: "/accept-invitation" });
-      return;
-    }
-
-    // Fetch pending invitations
-    fetchInvitations();
-  }, [status]);
-
-  const fetchInvitations = async () => {
+  const fetchInvitations = useCallback(async () => {
     try {
       const response = await fetch("/api/invitations/pending");
       if (response.ok) {
         const data = await response.json();
         setInvitations(data);
       } else if (response.status === 401) {
-        signIn("google", { callbackUrl: "/accept-invitation" });
+        const callbackUrl = emailHint
+          ? `/accept-invitation?email=${encodeURIComponent(emailHint)}`
+          : "/accept-invitation";
+        signIn(
+          "google",
+          { callbackUrl },
+          emailHint ? { login_hint: emailHint } : {}
+        );
       }
     } catch (error) {
       console.error("Error fetching invitations:", error);
@@ -64,7 +67,27 @@ export default function AcceptInvitationPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [emailHint]);
+
+  useEffect(() => {
+    if (status === "loading") return;
+
+    if (status === "unauthenticated") {
+      // Redirect to sign in, then back here
+      const callbackUrl = emailHint
+        ? `/accept-invitation?email=${encodeURIComponent(emailHint)}`
+        : "/accept-invitation";
+      signIn(
+        "google",
+        { callbackUrl },
+        emailHint ? { login_hint: emailHint } : {}
+      );
+      return;
+    }
+
+    // Fetch pending invitations
+    fetchInvitations();
+  }, [status, emailHint, fetchInvitations]);
 
   const handleAccept = async (invitationId: number) => {
     setProcessing(invitationId);
@@ -146,6 +169,20 @@ export default function AcceptInvitationPage() {
             <CardTitle>No Pending Invitations</CardTitle>
             <CardDescription>
               You don&apos;t have any pending invitations at this time.
+              {session?.user?.email && (
+                <span className="block mt-2 text-xs">
+                  Signed in as: {session.user.email}
+                </span>
+              )}
+              {emailHint &&
+                session?.user?.email &&
+                emailHint.toLowerCase() !==
+                  session.user.email.toLowerCase() && (
+                  <span className="block mt-2 text-xs text-destructive">
+                    The invitation was sent to {emailHint}. Try signing in with
+                    that account.
+                  </span>
+                )}
             </CardDescription>
           </CardHeader>
           <CardFooter className="justify-center">
@@ -177,19 +214,23 @@ export default function AcceptInvitationPage() {
                       invitation.type === "officer"
                         ? "bg-primary/20 text-primary"
                         : invitation.type === "mentor"
-                        ? "bg-green-500/20 text-green-700 dark:text-green-400"
-                        : "bg-accent/20 text-accent-foreground"
+                          ? "bg-green-500/20 text-green-700 dark:text-green-400"
+                          : "bg-accent/20 text-accent-foreground"
                     }`}
                   >
-                    {invitation.type === "officer" ? "Officer Position" : invitation.type === "mentor" ? "Mentor Position" : "Membership"}
+                    {invitation.type === "officer"
+                      ? "Officer Position"
+                      : invitation.type === "mentor"
+                        ? "Mentor Position"
+                        : "Membership"}
                   </span>
                 </div>
                 <CardTitle>
                   {invitation.type === "officer" && invitation.position
                     ? invitation.position.title
                     : invitation.type === "mentor"
-                    ? "Join SSE as a Mentor"
-                    : "Join SSE as a Member"}
+                      ? "Join SSE as a Mentor"
+                      : "Join SSE as a Member"}
                 </CardTitle>
                 <CardDescription>
                   Invited by {invitation.inviter.name}
@@ -205,7 +246,8 @@ export default function AcceptInvitationPage() {
                     </p>
                     {invitation.startDate && invitation.endDate && (
                       <div className="text-sm text-muted-foreground">
-                        <strong>Term:</strong> {formatDate(invitation.startDate)} —{" "}
+                        <strong>Term:</strong>{" "}
+                        {formatDate(invitation.startDate)} —{" "}
                         {formatDate(invitation.endDate)}
                       </div>
                     )}
@@ -218,29 +260,31 @@ export default function AcceptInvitationPage() {
                 ) : invitation.type === "mentor" ? (
                   <div className="space-y-3">
                     <p className="text-sm">
-                      You&apos;ve been invited to join the Society of Software Engineers
-                      as a <strong>Mentor</strong>.
+                      You&apos;ve been invited to join the Society of Software
+                      Engineers as a <strong>Mentor</strong>.
                     </p>
                     {invitation.endDate && (
                       <div className="text-sm text-muted-foreground">
-                        <strong>Mentorship expires:</strong> {formatDate(invitation.endDate)}
+                        <strong>Mentorship expires:</strong>{" "}
+                        {formatDate(invitation.endDate)}
                       </div>
                     )}
                     <p className="text-sm text-muted-foreground">
-                      As a mentor, you&apos;ll help fellow students with coursework,
-                      assignments, and test preparation in the SSE lab.
+                      As a mentor, you&apos;ll help fellow students with
+                      coursework, assignments, and test preparation in the SSE
+                      lab.
                     </p>
                   </div>
                 ) : (
                   <div className="space-y-3">
                     <p className="text-sm">
-                      You&apos;ve been invited to join the Society of Software Engineers
-                      as a member.
+                      You&apos;ve been invited to join the Society of Software
+                      Engineers as a member.
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      As a member, you&apos;ll have access to mentoring programs,
-                      exclusive workshops, networking opportunities, and project
-                      collaboration.
+                      As a member, you&apos;ll have access to mentoring
+                      programs, exclusive workshops, networking opportunities,
+                      and project collaboration.
                     </p>
                   </div>
                 )}

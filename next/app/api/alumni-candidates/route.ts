@@ -42,7 +42,11 @@ export async function PUT(request: NextRequest) {
     return new Response("Unauthorized", { status: 401 });
   }
 
-  let body: { id?: number; status?: AlumniCandidateStatus; reviewNotes?: string };
+  let body: {
+    id?: number;
+    status?: AlumniCandidateStatus;
+    reviewNotes?: string;
+  };
   try {
     body = await request.json();
   } catch {
@@ -76,7 +80,10 @@ export async function PUT(request: NextRequest) {
           start_date: "Unknown",
           end_date:
             candidate.graduationTerm && candidate.graduationYear
-              ? formatAcademicTerm(candidate.graduationTerm, candidate.graduationYear)
+              ? formatAcademicTerm(
+                  candidate.graduationTerm,
+                  candidate.graduationYear
+                )
               : "Unknown",
           source: AlumniSource.from_user,
           userId: candidate.userId,
@@ -117,6 +124,8 @@ export async function PUT(request: NextRequest) {
     if (error instanceof Error && error.message === "NOT_FOUND") {
       return new Response("Candidate not found", { status: 404 });
     }
-    return new Response(`Failed to review candidate: ${error}`, { status: 500 });
+    return new Response(`Failed to review candidate: ${error}`, {
+      status: 500,
+    });
   }
 }

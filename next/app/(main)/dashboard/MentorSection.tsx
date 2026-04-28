@@ -1,155 +1,151 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useCallback } from "react"
-import { DataTable, Column } from "@/components/ui/data-table"
-import { Button } from "@/components/ui/button"
-import { Modal, ModalFooter } from "@/components/ui/modal"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useState, useEffect, useCallback } from "react";
+import { DataTable, Column } from "@/components/ui/data-table";
+import { Button } from "@/components/ui/button";
+import { Modal, ModalFooter } from "@/components/ui/modal";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { toast } from "sonner"
-import { Pencil, Trash2, UserCheck, UserX, Mail, Clock } from "lucide-react"
-import MentorInviteModal from "./MentorInviteModal"
+} from "@/components/ui/select";
+import { toast } from "sonner";
+import { Pencil, Trash2, UserCheck, UserX, Mail, Clock } from "lucide-react";
+import MentorInviteModal from "./MentorInviteModal";
+import { getInitials } from "@/lib/userDisplay";
 
 interface Mentor {
-  id: number
-  isActive: boolean
-  expirationDate: string
+  id: number;
+  isActive: boolean;
+  expirationDate: string;
   user: {
-    id: number
-    name: string
-    email: string
-    image: string
-  }
+    id: number;
+    name: string;
+    email: string;
+    image: string;
+  };
 }
 
 interface PendingInvitation {
-  id: number
-  invitedEmail: string
-  type: string
-  endDate: string | null
-  createdAt: string
-  expiresAt: string
+  id: number;
+  invitedEmail: string;
+  type: string;
+  endDate: string | null;
+  createdAt: string;
+  expiresAt: string;
   inviter: {
-    id: number
-    name: string
-    email: string
-  }
+    id: number;
+    name: string;
+    email: string;
+  };
 }
 
-const getInitials = (name: string) =>
-  name
-    .split(" ")
-    .filter(Boolean)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("")
-    .slice(0, 2) || "?"
-
 export default function MentorSection() {
-  const [mentors, setMentors] = useState<Mentor[]>([])
-  const [pendingInvitations, setPendingInvitations] = useState<PendingInvitation[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [mentors, setMentors] = useState<Mentor[]>([]);
+  const [pendingInvitations, setPendingInvitations] = useState<
+    PendingInvitation[]
+  >([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Modal states
-  const [inviteModalOpen, setInviteModalOpen] = useState(false)
+  const [inviteModalOpen, setInviteModalOpen] = useState(false);
 
-  const [editModalOpen, setEditModalOpen] = useState(false)
-  const [editMentor, setEditMentor] = useState<Mentor | null>(null)
-  const [editIsActive, setEditIsActive] = useState(true)
-  const [editExpirationDate, setEditExpirationDate] = useState("")
-  const [isEditing, setIsEditing] = useState(false)
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editMentor, setEditMentor] = useState<Mentor | null>(null);
+  const [editIsActive, setEditIsActive] = useState(true);
+  const [editExpirationDate, setEditExpirationDate] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
 
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
-  const [deleteMentor, setDeleteMentor] = useState<Mentor | null>(null)
-  const [isDeleting, setIsDeleting] = useState(false)
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteMentor, setDeleteMentor] = useState<Mentor | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  const [cancelInvitation, setCancelInvitation] = useState<PendingInvitation | null>(null)
-  const [isCancellingInvitation, setIsCancellingInvitation] = useState(false)
-  const [isSendingSwipe, setIsSendingSwipe] = useState(false)
-  const [swipeModalOpen, setSwipeModalOpen] = useState(false)
+  const [cancelInvitation, setCancelInvitation] =
+    useState<PendingInvitation | null>(null);
+  const [isCancellingInvitation, setIsCancellingInvitation] = useState(false);
+  const [isSendingSwipe, setIsSendingSwipe] = useState(false);
+  const [swipeModalOpen, setSwipeModalOpen] = useState(false);
 
   // Fetch mentors
   const fetchMentors = useCallback(async () => {
     try {
-      const response = await fetch("/api/mentor")
+      const response = await fetch("/api/mentor");
       if (response.ok) {
-        const data = await response.json()
-        setMentors(data)
+        const data = await response.json();
+        setMentors(data);
       }
     } catch (error) {
-      console.error("Failed to fetch mentors:", error)
+      console.error("Failed to fetch mentors:", error);
     }
-  }, [])
+  }, []);
 
   // Fetch pending mentor invitations
   const fetchInvitations = useCallback(async () => {
     try {
-      const response = await fetch("/api/invitations?type=mentor")
+      const response = await fetch("/api/invitations?type=mentor");
       if (response.ok) {
-        const data = await response.json()
-        setPendingInvitations(data)
+        const data = await response.json();
+        setPendingInvitations(data);
       }
     } catch (error) {
-      console.error("Failed to fetch invitations:", error)
+      console.error("Failed to fetch invitations:", error);
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
     const loadData = async () => {
-      setIsLoading(true)
-      await Promise.all([fetchMentors(), fetchInvitations()])
-      setIsLoading(false)
-    }
-    loadData()
-  }, [fetchMentors, fetchInvitations])
+      setIsLoading(true);
+      await Promise.all([fetchMentors(), fetchInvitations()]);
+      setIsLoading(false);
+    };
+    loadData();
+  }, [fetchMentors, fetchInvitations]);
 
   // Handle cancel invitation
   const handleCancelInvitation = async () => {
-    if (!cancelInvitation) return
+    if (!cancelInvitation) return;
 
-    setIsCancellingInvitation(true)
+    setIsCancellingInvitation(true);
     try {
       const response = await fetch("/api/invitations", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: cancelInvitation.id }),
-      })
+      });
 
       if (response.ok) {
-        toast.success("Invitation cancelled")
-        fetchInvitations()
-        setCancelInvitation(null)
+        toast.success("Invitation cancelled");
+        fetchInvitations();
+        setCancelInvitation(null);
       } else {
-        const text = await response.text()
-        toast.error(text || "Failed to cancel invitation")
+        const text = await response.text();
+        toast.error(text || "Failed to cancel invitation");
       }
     } catch (error) {
-      console.error("Failed to cancel invitation:", error)
-      toast.error("An error occurred")
+      console.error("Failed to cancel invitation:", error);
+      toast.error("An error occurred");
     } finally {
-      setIsCancellingInvitation(false)
+      setIsCancellingInvitation(false);
     }
-  }
+  };
 
   // Handle open edit modal
   const handleOpenEditModal = (mentor: Mentor) => {
-    setEditMentor(mentor)
-    setEditIsActive(mentor.isActive)
-    setEditExpirationDate(mentor.expirationDate.split("T")[0])
-    setEditModalOpen(true)
-  }
+    setEditMentor(mentor);
+    setEditIsActive(mentor.isActive);
+    setEditExpirationDate(mentor.expirationDate.split("T")[0]);
+    setEditModalOpen(true);
+  };
 
   // Handle edit mentor
   const handleEditMentor = async () => {
-    if (!editMentor) return
+    if (!editMentor) return;
 
-    setIsEditing(true)
+    setIsEditing(true);
     try {
       const response = await fetch("/api/mentor", {
         method: "PUT",
@@ -159,24 +155,24 @@ export default function MentorSection() {
           isActive: editIsActive,
           expirationDate: new Date(editExpirationDate).toISOString(),
         }),
-      })
+      });
 
       if (response.ok) {
-        toast.success("Mentor updated successfully")
-        fetchMentors()
-        setEditModalOpen(false)
-        setEditMentor(null)
+        toast.success("Mentor updated successfully");
+        fetchMentors();
+        setEditModalOpen(false);
+        setEditMentor(null);
       } else {
-        const text = await response.text()
-        toast.error(text || "Failed to update mentor")
+        const text = await response.text();
+        toast.error(text || "Failed to update mentor");
       }
     } catch (error) {
-      console.error("Failed to update mentor:", error)
-      toast.error("An error occurred")
+      console.error("Failed to update mentor:", error);
+      toast.error("An error occurred");
     } finally {
-      setIsEditing(false)
+      setIsEditing(false);
     }
-  }
+  };
 
   // Handle toggle active status
   const handleToggleActive = async (mentor: Mentor) => {
@@ -188,62 +184,64 @@ export default function MentorSection() {
           id: mentor.id,
           isActive: !mentor.isActive,
         }),
-      })
+      });
 
       if (response.ok) {
-        toast.success(mentor.isActive ? "Mentor deactivated" : "Mentor activated")
-        fetchMentors()
+        toast.success(
+          mentor.isActive ? "Mentor deactivated" : "Mentor activated"
+        );
+        fetchMentors();
       } else {
-        const text = await response.text()
-        toast.error(text || "Failed to update mentor")
+        const text = await response.text();
+        toast.error(text || "Failed to update mentor");
       }
     } catch (error) {
-      console.error("Failed to toggle mentor:", error)
-      toast.error("An error occurred")
+      console.error("Failed to toggle mentor:", error);
+      toast.error("An error occurred");
     }
-  }
+  };
 
   // Handle delete mentor
   const handleDeleteMentor = async () => {
-    if (!deleteMentor) return
+    if (!deleteMentor) return;
 
-    setIsDeleting(true)
+    setIsDeleting(true);
     try {
       const response = await fetch("/api/mentor", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: deleteMentor.id }),
-      })
+      });
 
       if (response.ok) {
-        toast.success("Mentor removed")
-        fetchMentors()
-        setDeleteModalOpen(false)
-        setDeleteMentor(null)
+        toast.success("Mentor removed");
+        fetchMentors();
+        setDeleteModalOpen(false);
+        setDeleteMentor(null);
       } else {
-        const text = await response.text()
-        toast.error(text || "Failed to remove mentor")
+        const text = await response.text();
+        toast.error(text || "Failed to remove mentor");
       }
     } catch (error) {
-      console.error("Failed to delete mentor:", error)
-      toast.error("An error occurred")
+      console.error("Failed to delete mentor:", error);
+      toast.error("An error occurred");
     } finally {
-      setIsDeleting(false)
+      setIsDeleting(false);
     }
-  }
+  };
 
   const handleSendSwipeAccess = async () => {
     const people = activeMentors.map((mentor) => ({
       name: mentor.user.name,
       email: mentor.user.email,
-    }))
+    }));
 
     if (people.length === 0) {
-      toast.error("No active mentors to include in swipe request")
-      return
+      toast.error("No active mentors to include in swipe request");
+      return;
     }
 
-    setIsSendingSwipe(true)
+    setIsSendingSwipe(true);
     try {
       const response = await fetch("/api/swipe-access", {
         method: "POST",
@@ -252,26 +250,26 @@ export default function MentorSection() {
           context: "Mentors Tab",
           people,
         }),
-      })
+      });
 
-      const data = await response.json()
+      const data = await response.json();
       if (response.ok) {
-        toast.success("Swipe access request sent")
+        toast.success("Swipe access request sent");
       } else if (data.needsGmailAuth) {
         toast.warning(
           data.message ||
             "Swipe request created but Gmail authorization is required to send"
-        )
+        );
       } else {
-        toast.error(data.error || "Failed to send swipe access request")
+        toast.error(data.error || "Failed to send swipe access request");
       }
     } catch (error) {
-      console.error("Failed to send swipe access request:", error)
-      toast.error("An error occurred while sending swipe request")
+      console.error("Failed to send swipe access request:", error);
+      toast.error("An error occurred while sending swipe request");
     } finally {
-      setIsSendingSwipe(false)
+      setIsSendingSwipe(false);
     }
-  }
+  };
 
   // Format date
   const formatDate = (dateStr: string) => {
@@ -279,25 +277,27 @@ export default function MentorSection() {
       year: "numeric",
       month: "short",
       day: "numeric",
-    })
-  }
+    });
+  };
 
   // Check if expiration is approaching (within 30 days)
   const isExpirationApproaching = (dateStr: string) => {
-    const expiration = new Date(dateStr)
-    const now = new Date()
-    const daysUntil = Math.ceil((expiration.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-    return daysUntil <= 30 && daysUntil > 0
-  }
+    const expiration = new Date(dateStr);
+    const now = new Date();
+    const daysUntil = Math.ceil(
+      (expiration.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+    );
+    return daysUntil <= 30 && daysUntil > 0;
+  };
 
   // Check if expired
   const isExpired = (dateStr: string) => {
-    return new Date(dateStr) < new Date()
-  }
+    return new Date(dateStr) < new Date();
+  };
 
   // Separate active and inactive mentors
-  const activeMentors = mentors.filter((m) => m.isActive)
-  const inactiveMentors = mentors.filter((m) => !m.isActive)
+  const activeMentors = mentors.filter((m) => m.isActive);
+  const inactiveMentors = mentors.filter((m) => !m.isActive);
 
   const columns: Column<Mentor>[] = [
     {
@@ -338,21 +338,21 @@ export default function MentorSection() {
       sortable: true,
       className: "w-[140px]",
       render: (mentor) => {
-        const expired = isExpired(mentor.expirationDate)
-        const approaching = isExpirationApproaching(mentor.expirationDate)
+        const expired = isExpired(mentor.expirationDate);
+        const approaching = isExpirationApproaching(mentor.expirationDate);
         return (
           <span
             className={`text-sm ${
               expired
                 ? "text-destructive font-medium"
                 : approaching
-                ? "text-orange-500 font-medium"
-                : "text-muted-foreground"
+                  ? "text-orange-500 font-medium"
+                  : "text-muted-foreground"
             }`}
           >
             {formatDate(mentor.expirationDate)}
           </span>
-        )
+        );
       },
     },
     {
@@ -385,8 +385,8 @@ export default function MentorSection() {
             size="xs"
             variant="destructiveGhost"
             onClick={() => {
-              setDeleteMentor(mentor)
-              setDeleteModalOpen(true)
+              setDeleteMentor(mentor);
+              setDeleteModalOpen(true);
             }}
             title="Remove mentor"
           >
@@ -395,14 +395,14 @@ export default function MentorSection() {
         </div>
       ),
     },
-  ]
+  ];
 
   if (isLoading) {
     return (
       <div className="text-muted-foreground text-sm py-8 text-center">
         Loading mentors...
       </div>
-    )
+    );
   }
 
   return (
@@ -473,7 +473,7 @@ export default function MentorSection() {
         open={inviteModalOpen}
         onOpenChange={setInviteModalOpen}
         onSuccess={() => {
-          fetchInvitations()
+          fetchInvitations();
         }}
       />
 
@@ -501,7 +501,9 @@ export default function MentorSection() {
             </Select>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Expiration Date</label>
+            <label className="block text-sm font-medium mb-1">
+              Expiration Date
+            </label>
             <input
               type="date"
               value={editExpirationDate}
@@ -528,14 +530,19 @@ export default function MentorSection() {
         className="max-w-md"
       >
         <p className="text-sm text-muted-foreground">
-          Are you sure you want to remove <strong>{deleteMentor?.user.name}</strong> as a
-          mentor? This will also remove all their schedule assignments.
+          Are you sure you want to remove{" "}
+          <strong>{deleteMentor?.user.name}</strong> as a mentor? This will also
+          remove all their schedule assignments.
         </p>
         <ModalFooter>
           <Button variant="ghost" onClick={() => setDeleteModalOpen(false)}>
             Cancel
           </Button>
-          <Button variant="destructive" onClick={handleDeleteMentor} disabled={isDeleting}>
+          <Button
+            variant="destructive"
+            onClick={handleDeleteMentor}
+            disabled={isDeleting}
+          >
             {isDeleting ? "Removing..." : "Remove Mentor"}
           </Button>
         </ModalFooter>
@@ -549,7 +556,8 @@ export default function MentorSection() {
         className="max-w-md"
       >
         <p className="text-sm text-muted-foreground">
-          Cancel the mentor invitation sent to <strong>{cancelInvitation?.invitedEmail}</strong>?
+          Cancel the mentor invitation sent to{" "}
+          <strong>{cancelInvitation?.invitedEmail}</strong>?
         </p>
         <ModalFooter>
           <Button variant="ghost" onClick={() => setCancelInvitation(null)}>
@@ -580,8 +588,8 @@ export default function MentorSection() {
           </Button>
           <Button
             onClick={() => {
-              setSwipeModalOpen(false)
-              handleSendSwipeAccess()
+              setSwipeModalOpen(false);
+              handleSendSwipeAccess();
             }}
             disabled={isSendingSwipe}
           >
@@ -590,5 +598,5 @@ export default function MentorSection() {
         </ModalFooter>
       </Modal>
     </div>
-  )
+  );
 }

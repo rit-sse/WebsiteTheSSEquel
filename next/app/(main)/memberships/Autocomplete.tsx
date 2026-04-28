@@ -32,34 +32,23 @@ export function UserAutocomplete({
   onChange,
   placeholder = "Search Users...",
 }: AutocompleteOptionProps) {
-  const [query, setQuery] = useState(option?.name ?? "");
+  const [query, setQuery] = useState("");
   const debounced = useDebouncedValue(query, 250);
   const [opts, setOpts] = useState<AutocompleteOption[]>([]);
-  const [open, setOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const [hi, setHi] = useState(0);
-  const [locked, setLocked] = useState(false);
-
-  useEffect(() => {
-    if (option) {
-      setQuery(option.name);
-      setLocked(true);
-    }
-    else {
-      setLocked(false);
-    }
-  }, [option])
+  const locked = Boolean(option);
+  const displayedQuery = option?.name ?? query;
+  const open = isOpen && opts.length > 0;
 
   useEffect(() => {
     if (locked) return;
 
     if (!debounced || debounced.length < 2) {
-      setOpts([]);
-      setOpen(false);
       return;
     }
 
     if (option && debounced === option.name) return;
-
 
     const ac = new AbortController();
     (async () => {
@@ -72,17 +61,20 @@ export function UserAutocomplete({
       }
       const data = await res.json();
       setOpts(data.items ?? []);
-      setOpen(true);
+      setIsOpen(true);
     })().catch(() => {});
-    return () => ac.abort();
+    return () => {
+      ac.abort();
+      setOpts([]);
+      setIsOpen(false);
+    };
   }, [option, debounced, locked]);
 
   function select(opt: AutocompleteOption) {
     onChange(opt);
     setQuery(opt.name);
-    setOpen(false);
+    setIsOpen(false);
     setOpts([]);
-    setLocked(true);
   }
 
   function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
@@ -97,32 +89,32 @@ export function UserAutocomplete({
       e.preventDefault();
       select(opts[hi]);
     } else if (e.key == "Escape") {
-      setOpen(false);
+      setIsOpen(false);
     }
   }
 
   return (
     <div className="relative w-full">
-            <input
-                className="input input-bordered w-full"
-                placeholder={placeholder}
-                value={query}
-                onChange={(e) => {
-                setQuery(e.target.value);
-                onChange(null);
-                }}
-                onFocus={() => opts.length > 0 && setOpen(true)}
-                onKeyDown={onKeyDown}
-                aria-autocomplete="list"
-                aria-expanded={open}
-                // eslint-disable-next-line jsx-a11y/role-has-required-aria-props
-                role="combobox"
-            />
+      <input
+        className="input input-bordered w-full"
+        placeholder={placeholder}
+        value={displayedQuery}
+        onChange={(e) => {
+          setQuery(e.target.value);
+          onChange(null);
+        }}
+        onFocus={() => opts.length > 0 && setIsOpen(true)}
+        onKeyDown={onKeyDown}
+        aria-autocomplete="list"
+        aria-expanded={open}
+        // eslint-disable-next-line jsx-a11y/role-has-required-aria-props
+        role="combobox"
+      />
       {open && (
-        <ul 
-        id="user-listbox"
-        role="listbox"
-        className="
+        <ul
+          id="user-listbox"
+          role="listbox"
+          className="
         absolute top-full left-0 right-0 mt-1
         bg-background border border-border rounded-box shadow-lg
         max-h-64 z-[90]
@@ -147,7 +139,6 @@ export function UserAutocomplete({
                   }}
                 >
                   <div className="flex items-center gap-2">
-                    <span className="ml-auto text-xs opacity-60">ID: {o.id}</span>
                     <div className="flex flex-row items-center gap-2">
                       <span className="text-sm">{o.name}</span>
                       {o.email && (

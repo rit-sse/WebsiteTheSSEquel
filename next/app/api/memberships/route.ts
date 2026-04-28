@@ -1,13 +1,17 @@
 import prisma from "@/lib/prisma";
 import { z } from "zod";
 import { resolveUserImage } from "@/lib/s3Utils";
-
+import {
+  MANUAL_MEMBERSHIP_REASONS,
+  normalizeMembershipDateInput,
+} from "@/lib/membershipUtils";
+import { getAcademicTermFromDate } from "@/lib/academicTerm";
 
 const CreateMembershipSchema = z.object({
-    userId: z.number().positive(),
-    reason: z.string().min(1),
-    dateGiven: z.string().datetime(),
-})
+  userId: z.number().positive(),
+  reason: z.enum(MANUAL_MEMBERSHIP_REASONS),
+  dateGiven: z.string().min(1),
+});
 
 /**
  * Handles GET requests to the `/api/memberships/` endpoint.
@@ -25,49 +29,51 @@ const CreateMembershipSchema = z.object({
  * @returns {Promise<Response>} A JSON response containing the aggregated membership data per user.
  */
 export async function GET() {
-    console.log("GET /api/memberships/")
-    const grouped = await prisma.memberships.groupBy({
-        by: ['userId'],
-        _count: {
-            userId: true // memberships per user
-        },
-        _max: {
-            dateGiven: true // most recent membership the user got
-        },
-        orderBy: [
-            { _count: { userId: 'desc' } }, // first ordering priority
-            { _max:   { dateGiven: 'desc' } } // second ordering priority
-        ],
-    });
+  console.log("GET /api/memberships/");
+  const grouped = await prisma.memberships.groupBy({
+    by: ["userId"],
+    _count: {
+      userId: true, // memberships per user
+    },
+    _max: {
+      dateGiven: true, // most recent membership the user got
+    },
+    orderBy: [
+      { _count: { userId: "desc" } }, // first ordering priority
+      { _max: { dateGiven: "desc" } }, // second ordering priority
+    ],
+  });
 
-    const userIds = grouped.map((g: any) => g.userId);
-    const users = await prisma.user.findMany({
-        where: {
-            id: {
-                in: userIds
-            }
-        },
-        select: {
-            id: true,
-            name: true,
-            profileImageKey: true,
-            googleImageURL: true,
-        }
-    });
+  const userIds = grouped.map((g: any) => g.userId);
+  const users = await prisma.user.findMany({
+    where: {
+      id: {
+        in: userIds,
+      },
+    },
+    select: {
+      id: true,
+      name: true,
+      profileImageKey: true,
+      googleImageURL: true,
+    },
+  });
 
-    const byId = new Map<number, typeof users[0]>(users.map((u: any) => [u.id, u]))
-    ;
+  const byId = new Map<number, (typeof users)[0]>(
+    users.map((u: any) => [u.id, u])
+  );
+  const items = grouped.map((g: any) => ({
+    userId: g.userId,
+    name: byId.get(g.userId)?.name ?? `User ${g.userId}`,
+    image: resolveUserImage(
+      byId.get(g.userId)?.profileImageKey,
+      byId.get(g.userId)?.googleImageURL
+    ),
+    membershipCount: g._count.userId,
+    lastMembershipAt: g._max.dateGiven,
+  }));
 
-    const items = grouped.map((g: any) => ({
-        userId: g.userId,
-        name: byId.get(g.userId)?.name ?? `User ${g.userId}`,
-        image: resolveUserImage(byId.get(g.userId)?.profileImageKey, byId.get(g.userId)?.googleImageURL),
-        membershipCount: g._count.userId,
-        lastMembershipAt: g._max.dateGiven,
-    }))
-
-    return Response.json(items)
-
+  return Response.json(items);
 }
 
 /**
@@ -93,31 +99,50 @@ export async function GET() {
  *         unless handled by surrounding middleware).
  */
 export async function POST(request: Request) {
-    console.log("POST /api/memberships/")
+  console.log("POST /api/memberships/");
 
-    let body: any;
-    try {
-        body = await request.json();
-    } catch (err) {
-        console.error("Failed to parse JSON:", err);
-        return new Response("Invalid JSON Payload", {status: 400});
-    }
+  let body: any;
+  try {
+    body = await request.json();
+  } catch (err) {
+    console.error("Failed to parse JSON:", err);
+    return new Response("Invalid JSON Payload", { status: 400 });
+  }
 
-    if (!("userId" in body && "reason" in body && "dateGiven" in body)) {
-        return new Response("Body is missing 'userId', 'reason', or 'dateGiven'.", { status: 400 });
-    }
-
-    const input = CreateMembershipSchema.parse(body);
-    
-    const created = await prisma.memberships.create({
-        data: {
-            userId: input.userId,
-            reason: input.reason,
-            dateGiven: input.dateGiven,
-        },
-        select: {id: true, userId: true, reason: true, dateGiven: true},
+  if (!("userId" in body && "reason" in body && "dateGiven" in body)) {
+    return new Response("Body is missing 'userId', 'reason', or 'dateGiven'.", {
+      status: 400,
     });
+  }
 
-    return Response.json(created, { status: 201 });
+  const parsed = CreateMembershipSchema.safeParse(body);
+  if (!parsed.success) {
+    return new Response("Invalid membership payload.", { status: 400 });
+  }
 
+  let normalizedDateGiven: string;
+  try {
+    normalizedDateGiven = normalizeMembershipDateInput(parsed.data.dateGiven);
+  } catch {
+    return new Response("Invalid membership payload.", { status: 400 });
+  }
+
+  // Derive term/year from dateGiven so admin backfills for past terms
+  // land in the correct bucket rather than always the current term.
+  const dateGivenDate = new Date(normalizedDateGiven);
+  const term = getAcademicTermFromDate(dateGivenDate);
+  const year = dateGivenDate.getFullYear();
+
+  const created = await prisma.memberships.create({
+    data: {
+      userId: parsed.data.userId,
+      reason: parsed.data.reason,
+      dateGiven: normalizedDateGiven,
+      term,
+      year,
+    },
+    select: { id: true, userId: true, reason: true, dateGiven: true },
+  });
+
+  return Response.json(created, { status: 201 });
 }

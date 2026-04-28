@@ -1,0 +1,55 @@
+name: Test
+
+on:
+  pull_request:
+    branches: [main, development]
+    paths:
+      - "next/**"
+      - ".github/workflows/**"
+      - "package.json"
+      - "next/package.json"
+      - "next/package-lock.json"
+  push:
+    branches: [main, development]
+    paths:
+      - "next/**"
+      - ".github/workflows/**"
+      - "package.json"
+      - "next/package.json"
+      - "next/package-lock.json"
+
+concurrency:
+  group: test-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: next/.nvmrc
+          cache: npm
+          cache-dependency-path: next/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./next
+        run: npm ci
+
+      # Generate the Prisma client explicitly. `@prisma/client`'s own
+      # postinstall does this in theory, but we've seen it flake between
+      # push and pull_request triggers on the same commit (tests fail
+      # with `@prisma/client did not initialize yet` and `Prisma.X is
+      # not a constructor`). Mirrors the same step in typecheck.yml.
+      - name: Generate Prisma client
+        working-directory: ./next
+        run: npx prisma generate
+
+      - name: Run tests
+        working-directory: ./next
+        run: npm run test

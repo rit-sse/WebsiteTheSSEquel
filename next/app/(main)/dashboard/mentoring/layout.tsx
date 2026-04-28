@@ -1,60 +1,20 @@
-"use client"
+import { redirect } from "next/navigation";
+import { getAuthLevel } from "@/lib/services/authLevelService";
 
-import { useEffect, useState, useCallback } from "react"
-import { useRouter } from "next/navigation"
-import { useSession } from "next-auth/react"
-
-export default function MentoringDashboardLayout({
+export default async function MentoringDashboardLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
-  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null)
-  const router = useRouter()
-  const { data: session, status } = useSession()
+  const authLevel = await getAuthLevel();
 
-  const checkAuth = useCallback(async () => {
-    // If still loading session, wait
-    if (status === "loading") {
-      return
-    }
-
-    // If not logged in, not authorized
-    if (status === "unauthenticated" || !session) {
-      setIsAuthorized(false)
-      return
-    }
-
-    try {
-      const response = await fetch("/api/authLevel")
-      const data = await response.json()
-      // Only allow Mentoring Head or Primary Officers
-      setIsAuthorized(data.isMentoringHead || data.isPrimary)
-    } catch (error) {
-      console.error("Error checking auth:", error)
-      setIsAuthorized(false)
-    }
-  }, [session, status])
-
-  useEffect(() => {
-    checkAuth()
-  }, [checkAuth])
-
-  useEffect(() => {
-    // Redirect to dashboard if not authorized
-    if (isAuthorized === false) {
-      router.push("/dashboard/positions")
-    }
-  }, [isAuthorized, router])
-
-  // Loading state or redirecting
-  if (isAuthorized === null || isAuthorized === false) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-muted-foreground">Loading...</div>
-      </div>
-    )
+  // Allow any officer, mentor, or primary officer to view
+  if (
+    !authLevel.isUser ||
+    !(authLevel.isOfficer || authLevel.isMentor || authLevel.isPrimary)
+  ) {
+    redirect("/dashboard/positions");
   }
 
-  return <>{children}</>
+  return <>{children}</>;
 }

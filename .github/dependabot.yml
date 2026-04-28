@@ -1,0 +1,51 @@
+version: 2
+
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    target-branch: "development"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "America/New_York"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "deps"
+    groups:
+      root-types:
+        patterns:
+          - "@types/*"
+          - "typescript"
+
+  - package-ecosystem: "npm"
+    directory: "/next"
+    target-branch: "development"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:15"
+      timezone: "America/New_York"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "deps"
+    groups:
+      next-react:
+        patterns:
+          - "next"
+          - "react"
+          - "react-dom"
+      lint-tooling:
+        patterns:
+          - "eslint*"
+          - "prettier"
+          - "lint-staged"
+          - "husky"
+      test-tooling:
+        patterns:
+          - "vitest*"
+          - "@testing-library/*"

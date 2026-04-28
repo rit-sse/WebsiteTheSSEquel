@@ -3,7 +3,7 @@ import { getSessionToken } from "@/lib/sessionToken";
 import { NextRequest } from "next/server";
 import { sendEmail } from "@/lib/email";
 
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
 // Required email recipient that is always included and cannot be removed
 const REQUIRED_RECIPIENT = "softwareengineering@rit.edu";
@@ -36,9 +36,9 @@ export async function POST(
         },
       },
     },
-    select: { 
-      id: true, 
-      email: true, 
+    select: {
+      id: true,
+      email: true,
       name: true,
     },
   });
@@ -75,26 +75,32 @@ export async function POST(
 
   const validTypes = ["checkout", "receipt"];
   if (!validTypes.includes(body.type)) {
-    return new Response(`'type' must be one of: ${validTypes.join(", ")}`, { status: 422 });
+    return new Response(`'type' must be one of: ${validTypes.join(", ")}`, {
+      status: 422,
+    });
   }
 
   try {
     // Determine recipient emails (always include required recipient)
-    const userEmail = body.type === "checkout" 
-      ? purchaseRequest.notifyEmail 
-      : purchaseRequest.receiptEmail || purchaseRequest.notifyEmail;
+    const userEmail =
+      body.type === "checkout"
+        ? purchaseRequest.notifyEmail
+        : purchaseRequest.receiptEmail || purchaseRequest.notifyEmail;
 
     // Combine required recipient with user-specified email(s), avoiding duplicates
     const allRecipients = new Set([REQUIRED_RECIPIENT]);
     if (userEmail) {
-      userEmail.split(",").forEach((email: string) => allRecipients.add(email.trim()));
+      userEmail
+        .split(",")
+        .forEach((email: string) => allRecipients.add(email.trim()));
     }
     const toEmail = Array.from(allRecipients).join(", ");
 
     // Build email content based on type
     let subject: string;
     let htmlContent: string;
-    let attachments: { filename: string; content: string; encoding: string }[] = [];
+    let attachments: { filename: string; content: string; encoding: string }[] =
+      [];
 
     if (body.type === "checkout") {
       subject = `PCard Checkout Request: ${purchaseRequest.description.substring(0, 50)}`;
@@ -102,12 +108,15 @@ export async function POST(
     } else {
       subject = `PCard Receipt Submission: ${purchaseRequest.eventName || purchaseRequest.description.substring(0, 50)}`;
       htmlContent = buildReceiptEmail(purchaseRequest);
-      
+
       // Add receipt image as attachment if present
       if (purchaseRequest.receiptImage) {
         attachments.push({
           filename: "receipt.png",
-          content: purchaseRequest.receiptImage.replace(/^data:image\/\w+;base64,/, ""),
+          content: purchaseRequest.receiptImage.replace(
+            /^data:image\/\w+;base64,/,
+            ""
+          ),
           encoding: "base64",
         });
       }
@@ -116,7 +125,10 @@ export async function POST(
       if (purchaseRequest.attendanceImage) {
         attachments.push({
           filename: "attendance.png",
-          content: purchaseRequest.attendanceImage.replace(/^data:image\/\w+;base64,/, ""),
+          content: purchaseRequest.attendanceImage.replace(
+            /^data:image\/\w+;base64,/,
+            ""
+          ),
           encoding: "base64",
         });
       }
@@ -173,7 +185,7 @@ function buildCheckoutEmail(request: any): string {
 
 function buildReceiptEmail(request: any): string {
   let attendanceHtml = "";
-  
+
   if (request.attendanceData) {
     try {
       const attendees = JSON.parse(request.attendanceData);
@@ -186,13 +198,17 @@ function buildReceiptEmail(request: any): string {
               <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">Last Name</th>
               <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">Email</th>
             </tr>
-            ${attendees.map((a: any) => `
+            ${attendees
+              .map(
+                (a: any) => `
               <tr>
                 <td style="padding: 8px; border: 1px solid #ddd;">${a.firstName || ""}</td>
                 <td style="padding: 8px; border: 1px solid #ddd;">${a.lastName || ""}</td>
                 <td style="padding: 8px; border: 1px solid #ddd;">${a.email || ""}</td>
               </tr>
-            `).join("")}
+            `
+              )
+              .join("")}
           </table>
           <p style="margin-top: 10px; color: #666;">Total Attendees: ${attendees.length}</p>
         `;

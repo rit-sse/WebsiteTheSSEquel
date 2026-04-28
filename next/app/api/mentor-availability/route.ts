@@ -1,25 +1,27 @@
-import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth/next"
-import { authOptions } from "@/lib/authOptions"
-import prisma from "@/lib/prisma"
-import { getGatewayAuthLevel } from "@/lib/authGateway"
-import { resolveUserImage } from "@/lib/s3Utils"
-import { recordMentorAvailabilityEvent } from "@/lib/mentorAvailabilityEvents"
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/authOptions";
+import prisma from "@/lib/prisma";
+import { getGatewayAuthLevel } from "@/lib/authGateway";
+import { resolveUserImage } from "@/lib/s3Utils";
+import { recordMentorAvailabilityEvent } from "@/lib/mentorAvailabilityEvents";
 
-export const dynamic = "force-dynamic"
+export const dynamic = "force-dynamic";
 
 interface AvailabilitySlot {
-  weekday: number // 1-5 (Monday-Friday)
-  hour: number    // 10-17 (10am-5pm)
+  weekday: number; // 1-5 (Monday-Friday)
+  hour: number; // 10-17 (10am-5pm)
 }
 
 /**
  * Check if the current user can manage all availability
  * (Must be Mentoring Head or Primary Officer)
  */
-async function canManageAllAvailability(request: NextRequest): Promise<boolean> {
-  const authLevel = await getGatewayAuthLevel(request)
-  return authLevel.isMentoringHead || authLevel.isPrimary
+async function canManageAllAvailability(
+  request: NextRequest
+): Promise<boolean> {
+  const authLevel = await getGatewayAuthLevel(request);
+  return authLevel.isMentoringHead || authLevel.isPrimary;
 }
 
 /**
@@ -27,30 +29,32 @@ async function canManageAllAvailability(request: NextRequest): Promise<boolean> 
  * Get availability for a semester (optionally filtered by user)
  */
 export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams
-  const semesterId = searchParams.get("semesterId")
-  const userId = searchParams.get("userId")
-  const my = searchParams.get("my") === "true"
+  const searchParams = request.nextUrl.searchParams;
+  const semesterId = searchParams.get("semesterId");
+  const userId = searchParams.get("userId");
+  const my = searchParams.get("my") === "true";
 
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession(authOptions);
 
     // If fetching own availability
     if (my) {
       if (!session?.user?.email) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
 
       const user = await prisma.user.findUnique({
         where: { email: session.user.email },
-      })
+      });
 
       if (!user) {
-        return NextResponse.json({ error: "User not found" }, { status: 404 })
+        return NextResponse.json({ error: "User not found" }, { status: 404 });
       }
 
-      const where: { userId: number; semesterId?: number } = { userId: user.id }
-      if (semesterId) where.semesterId = parseInt(semesterId)
+      const where: { userId: number; semesterId?: number } = {
+        userId: user.id,
+      };
+      if (semesterId) where.semesterId = parseInt(semesterId);
 
       const availability = await prisma.mentorAvailability.findMany({
         where,
@@ -64,9 +68,9 @@ export async function GET(request: NextRequest) {
           },
         },
         orderBy: { updatedAt: "desc" },
-      })
+      });
 
-      return NextResponse.json(availability)
+      return NextResponse.json(availability);
     }
 
     // For fetching all availability (requires management permission for full list)
@@ -74,7 +78,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(
         { error: "semesterId is required" },
         { status: 400 }
-      )
+      );
     }
 
     // Anyone can view aggregated availability for scheduling purposes
@@ -91,7 +95,7 @@ export async function GET(request: NextRequest) {
           },
         },
       },
-    })
+    });
 
     // Parse slots and return structured data
     const result = availability.map((a) => ({
@@ -103,15 +107,15 @@ export async function GET(request: NextRequest) {
       semesterId: a.semesterId,
       slots: JSON.parse(a.slots) as AvailabilitySlot[],
       updatedAt: a.updatedAt,
-    }))
+    }));
 
-    return NextResponse.json(result)
+    return NextResponse.json(result);
   } catch (error) {
-    console.error("Error fetching availability:", error)
+    console.error("Error fetching availability:", error);
     return NextResponse.json(
       { error: "Failed to fetch availability" },
       { status: 500 }
-    )
+    );
   }
 }
 
@@ -121,34 +125,34 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-    })
+    });
 
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 })
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const body = await request.json()
-    const { semesterId, slots } = body
+    const body = await request.json();
+    const { semesterId, slots } = body;
 
     if (!semesterId) {
       return NextResponse.json(
         { error: "semesterId is required" },
         { status: 400 }
-      )
+      );
     }
 
     if (!Array.isArray(slots)) {
       return NextResponse.json(
         { error: "slots must be an array" },
         { status: 400 }
-      )
+      );
     }
 
     // Validate slots format
@@ -162,19 +166,25 @@ export async function POST(request: NextRequest) {
         slot.hour > 17
       ) {
         return NextResponse.json(
-          { error: "Invalid slot format. weekday must be 1-5, hour must be 10-17" },
+          {
+            error:
+              "Invalid slot format. weekday must be 1-5, hour must be 10-17",
+          },
           { status: 400 }
-        )
+        );
       }
     }
 
     // Check if semester exists
     const semester = await prisma.mentorSemester.findUnique({
       where: { id: semesterId },
-    })
+    });
 
     if (!semester) {
-      return NextResponse.json({ error: "Semester not found" }, { status: 404 })
+      return NextResponse.json(
+        { error: "Semester not found" },
+        { status: 404 }
+      );
     }
 
     // Upsert availability
@@ -201,18 +211,18 @@ export async function POST(request: NextRequest) {
           },
         },
       },
-    })
+    });
 
     const mentor = await prisma.mentor.findFirst({
       where: { user_Id: user.id },
       select: { id: true },
-    })
+    });
 
     const slotSet = new Set(
       slots.map((slot: AvailabilitySlot) => `${slot.weekday}-${slot.hour}`)
-    )
+    );
 
-    let removedBlocks: Array<{ weekday: number; startHour: number }> = []
+    let removedBlocks: Array<{ weekday: number; startHour: number }> = [];
     if (mentor && semester.scheduleId) {
       const existingBlocks = await prisma.scheduleBlock.findMany({
         where: {
@@ -224,24 +234,24 @@ export async function POST(request: NextRequest) {
           weekday: true,
           startHour: true,
         },
-      })
+      });
 
       const blocksToRemove = existingBlocks.filter(
         (block) => !slotSet.has(`${block.weekday}-${block.startHour}`)
-      )
+      );
 
       if (blocksToRemove.length > 0) {
         await prisma.scheduleBlock.deleteMany({
           where: {
             id: { in: blocksToRemove.map((block) => block.id) },
           },
-        })
+        });
       }
 
       removedBlocks = blocksToRemove.map((block) => ({
         weekday: block.weekday,
         startHour: block.startHour,
-      }))
+      }));
     }
 
     recordMentorAvailabilityEvent({
@@ -249,19 +259,19 @@ export async function POST(request: NextRequest) {
       userId: user.id,
       updatedAt: availability.updatedAt.toISOString(),
       removedBlocks,
-    })
+    });
 
     return NextResponse.json({
       ...availability,
       slots: JSON.parse(availability.slots),
       removedBlocks,
-    })
+    });
   } catch (error) {
-    console.error("Error saving availability:", error)
+    console.error("Error saving availability:", error);
     return NextResponse.json(
       { error: "Failed to save availability" },
       { status: 500 }
-    )
+    );
   }
 }
 
@@ -271,40 +281,43 @@ export async function POST(request: NextRequest) {
  */
 export async function DELETE(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await request.json()
-    const { id, semesterId } = body
+    const body = await request.json();
+    const { id, semesterId } = body;
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-    })
+    });
 
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 })
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     // If deleting by ID
     if (id) {
       const existing = await prisma.mentorAvailability.findUnique({
         where: { id },
-      })
+      });
 
       if (!existing) {
-        return NextResponse.json({ error: "Availability not found" }, { status: 404 })
+        return NextResponse.json(
+          { error: "Availability not found" },
+          { status: 404 }
+        );
       }
 
       // Check permissions
-      const canManage = await canManageAllAvailability(request)
+      const canManage = await canManageAllAvailability(request);
       if (!canManage && existing.userId !== user.id) {
-        return NextResponse.json({ error: "Access denied" }, { status: 403 })
+        return NextResponse.json({ error: "Access denied" }, { status: 403 });
       }
 
-      await prisma.mentorAvailability.delete({ where: { id } })
-      return NextResponse.json({ success: true })
+      await prisma.mentorAvailability.delete({ where: { id } });
+      return NextResponse.json({ success: true });
     }
 
     // If deleting by semesterId (own availability)
@@ -314,19 +327,19 @@ export async function DELETE(request: NextRequest) {
           userId: user.id,
           semesterId,
         },
-      })
-      return NextResponse.json({ success: true })
+      });
+      return NextResponse.json({ success: true });
     }
 
     return NextResponse.json(
       { error: "id or semesterId is required" },
       { status: 400 }
-    )
+    );
   } catch (error) {
-    console.error("Error deleting availability:", error)
+    console.error("Error deleting availability:", error);
     return NextResponse.json(
       { error: "Failed to delete availability" },
       { status: 500 }
-    )
+    );
   }
 }

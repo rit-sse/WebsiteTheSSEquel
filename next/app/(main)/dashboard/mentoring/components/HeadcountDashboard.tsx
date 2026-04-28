@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ResponsiveContainer,
   LineChart,
@@ -13,25 +13,25 @@ import {
   Tooltip,
   Legend,
   ReferenceLine,
-} from "recharts"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Progress } from "@/components/ui/progress"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+} from "recharts";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
 import {
   TrendingUp,
   TrendingDown,
@@ -44,400 +44,542 @@ import {
   Copy,
   Check,
   Expand,
-} from "lucide-react"
-import { toast } from "sonner"
-import type { SemesterTrend } from "@/app/api/headcount-trends/route"
+} from "lucide-react";
+import { toast } from "sonner";
+import type { SemesterTrend } from "@/app/api/headcount-trends/route";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface TrafficDatum {
-  weekday: number
-  hour: number
-  averagePeopleInLab: number
-  sampleCount: number
+  weekday: number;
+  hour: number;
+  averagePeopleInLab: number;
+  sampleCount: number;
 }
 
 interface MentorEntry {
-  id: number
-  peopleInLab: number
-  feeling: string
-  createdAt: string
-  mentors: { mentor: { user: { name: string } } }[]
+  id: number;
+  peopleInLab: number;
+  feeling: string;
+  createdAt: string;
+  mentors: { mentor: { user: { name: string } } }[];
 }
 
 interface MenteeEntry {
-  id: number
-  studentsMentoredCount: number
-  testsCheckedOutCount: number
-  createdAt: string
-  otherClassText: string | null
-  classes: { course: { id: number; title: string; code: number; department: { shortTitle: string } } }[]
+  id: number;
+  studentsMentoredCount: number;
+  testsCheckedOutCount: number;
+  createdAt: string;
+  otherClassText: string | null;
+  classes: {
+    course: {
+      id: number;
+      title: string;
+      code: number;
+      department: { shortTitle: string };
+    };
+  }[];
 }
 
 interface MentorSemester {
-  id: number
-  name: string
-  isActive: boolean
+  id: number;
+  name: string;
+  isActive: boolean;
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri"]
-const DAY_NAMES = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
-const HOURS = [10, 11, 12, 13, 14, 15, 16, 17]
+const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri"];
+const DAY_NAMES = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+const HOURS = [10, 11, 12, 13, 14, 15, 16, 17];
+const TRAFFIC_LEGEND = [
+  { label: "≤6", swatchClassName: "bg-sky-100 dark:bg-sky-950/50" },
+  { label: "7–10", swatchClassName: "bg-sky-200 dark:bg-sky-900/60" },
+  { label: "11–15", swatchClassName: "bg-sky-300 dark:bg-sky-800/70" },
+  { label: "16–20", swatchClassName: "bg-sky-400 dark:bg-sky-700/80" },
+  { label: "21+", swatchClassName: "bg-sky-500 dark:bg-sky-600" },
+];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatHour(h: number) {
-  if (h === 12) return "12p"
-  return h > 12 ? `${h - 12}p` : `${h}a`
+  if (h === 12) return "12p";
+  return h > 12 ? `${h - 12}p` : `${h}a`;
 }
 
 function heatColor(avg: number) {
-  if (avg <= 6) return "bg-blue-200 text-foreground"
-  if (avg <= 10) return "bg-blue-300 text-foreground"
-  if (avg <= 15) return "bg-blue-400 text-foreground"
-  if (avg <= 20) return "bg-blue-500 text-white"
-  return "bg-blue-600 text-white"
+  if (avg <= 6)
+    return "bg-sky-100 text-sky-900 dark:bg-sky-950/50 dark:text-sky-300";
+  if (avg <= 10)
+    return "bg-sky-200 text-sky-950 dark:bg-sky-900/60 dark:text-sky-200";
+  if (avg <= 15)
+    return "bg-sky-300 text-sky-950 dark:bg-sky-800/70 dark:text-sky-100";
+  if (avg <= 20)
+    return "bg-sky-400 text-white dark:bg-sky-700/80 dark:text-sky-50";
+  return "bg-sky-500 text-white dark:bg-sky-600 dark:text-white";
 }
 
 function shortLabel(name: string): string {
-  const m = name.match(/^(Spring|Fall|Summer|Winter)\s+(\d{4})$/i)
-  if (!m) return name.slice(0, 7)
-  const abbr: Record<string, string> = { spring: "Sp", fall: "Fa", summer: "Su", winter: "Wi" }
-  return `${abbr[m[1].toLowerCase()] ?? m[1].slice(0, 2)} '${m[2].slice(2)}`
+  const m = name.match(/^(Spring|Fall|Summer|Winter)\s+(\d{4})$/i);
+  if (!m) return name.slice(0, 7);
+  const abbr: Record<string, string> = {
+    spring: "Sp",
+    fall: "Fa",
+    summer: "Su",
+    winter: "Wi",
+  };
+  return `${abbr[m[1].toLowerCase()] ?? m[1].slice(0, 2)} '${m[2].slice(2)}`;
 }
 
 function semesterSortKey(name: string): string {
-  const m = name.match(/^(Spring|Fall|Summer|Winter)\s+(\d{4})$/i)
-  if (!m) return name
-  const termRank: Record<string, number> = { spring: 1, summer: 0, fall: 2, winter: 3 }
-  return `${m[2]}-${termRank[m[1].toLowerCase()] ?? 0}`
+  const m = name.match(/^(Spring|Fall|Summer|Winter)\s+(\d{4})$/i);
+  if (!m) return name;
+  const termRank: Record<string, number> = {
+    spring: 1,
+    summer: 0,
+    fall: 2,
+    winter: 3,
+  };
+  return `${m[2]}-${termRank[m[1].toLowerCase()] ?? 0}`;
 }
 
 function pct(current: number, previous: number): number | null {
-  if (previous === 0) return null
-  return Math.round(((current - previous) / previous) * 100)
+  if (previous === 0) return null;
+  return Math.round(((current - previous) / previous) * 100);
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-interface DeltaProps { value: number | null; suffix?: string }
+interface DeltaProps {
+  value: number | null;
+  suffix?: string;
+}
 function Delta({ value, suffix = "%" }: DeltaProps) {
-  if (value === null) return null
-  if (value === 0) return (
-    <span className="inline-flex items-center gap-0.5 text-xs text-muted-foreground">
-      <Minus className="h-3 w-3" /> flat
-    </span>
-  )
-  const up = value > 0
+  if (value === null) return null;
+  if (value === 0)
+    return (
+      <span className="inline-flex items-center gap-0.5 text-xs text-muted-foreground">
+        <Minus className="h-3 w-3" /> flat
+      </span>
+    );
+  const up = value > 0;
   return (
-    <span className={`inline-flex items-center gap-0.5 text-xs font-medium ${up ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
-      {up ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-      {up ? "+" : ""}{value}{suffix}
+    <span
+      className={`inline-flex items-center gap-0.5 text-xs font-medium ${up ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}
+    >
+      {up ? (
+        <TrendingUp className="h-3 w-3" />
+      ) : (
+        <TrendingDown className="h-3 w-3" />
+      )}
+      {up ? "+" : ""}
+      {value}
+      {suffix}
     </span>
-  )
+  );
 }
 
 interface StatCardProps {
-  icon: React.ReactNode
-  label: string
-  value: string | number
-  delta?: number | null
-  accent: string
-  sub?: string
-  prevValue?: string | number
-  prevLabel?: string
+  icon: React.ReactNode;
+  label: string;
+  value: string | number;
+  delta?: number | null;
+  accent: string;
+  sub?: string;
+  prevValue?: string | number;
+  prevLabel?: string;
 }
-function StatCard({ icon, label, value, delta, accent, sub, prevValue, prevLabel }: StatCardProps) {
+function StatCard({
+  icon,
+  label,
+  value,
+  delta,
+  accent,
+  sub,
+  prevValue,
+  prevLabel,
+}: StatCardProps) {
   return (
     <Card depth={2} className="neo:border-0">
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-2">
-          <div className={`h-8 w-8 rounded-lg ${accent} flex items-center justify-center shrink-0 mt-0.5`}>
+          <div
+            className={`h-8 w-8 rounded-lg ${accent} flex items-center justify-center shrink-0 mt-0.5`}
+          >
             {icon}
           </div>
           {delta !== undefined && <Delta value={delta ?? null} />}
         </div>
         <div className="mt-3">
-          <div className="text-2xl font-bold tabular-nums tracking-tight">{value}</div>
-          <div className="text-xs text-muted-foreground mt-0.5 font-medium uppercase tracking-wide">{label}</div>
-          {sub && <div className="text-xs text-muted-foreground mt-1">{sub}</div>}
+          <div className="text-2xl font-bold tabular-nums tracking-tight">
+            {value}
+          </div>
+          <div className="text-xs text-muted-foreground mt-0.5 font-medium uppercase tracking-wide">
+            {label}
+          </div>
+          {sub && (
+            <div className="text-xs text-muted-foreground mt-1">{sub}</div>
+          )}
           {prevValue !== undefined && (
             <div className="text-sm text-muted-foreground mt-1.5 tabular-nums">
-              {prevLabel ?? "prev"}: <span className="font-medium text-foreground/70">{prevValue}</span>
+              {prevLabel ?? "prev"}:{" "}
+              <span className="font-medium text-foreground/70">
+                {prevValue}
+              </span>
             </div>
           )}
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
 
 // Custom recharts tooltip
 const ChartTooltip = ({
-  active, payload, label, labelMap,
+  active,
+  payload,
+  label,
+  labelMap,
 }: {
-  active?: boolean
-  payload?: Array<{ name: string; value: number; color: string }>
-  label?: string
-  labelMap?: Record<string, string>
+  active?: boolean;
+  payload?: Array<{ name: string; value: number; color: string }>;
+  label?: string;
+  labelMap?: Record<string, string>;
 }) => {
-  if (!active || !payload?.length) return null
-  const fullLabel = labelMap?.[label ?? ""] ?? label
+  if (!active || !payload?.length) return null;
+  const fullLabel = labelMap?.[label ?? ""] ?? label;
   return (
     <div className="rounded-lg border border-border bg-background/95 backdrop-blur-sm px-3 py-2 shadow-lg text-xs">
       <p className="font-semibold mb-1.5 text-foreground">{fullLabel}</p>
       {payload.map((item) => (
-        <div key={item.name} className="flex items-center gap-2 text-muted-foreground">
-          <span className="h-2 w-2 rounded-full shrink-0" style={{ background: item.color }} />
+        <div
+          key={item.name}
+          className="flex items-center gap-2 text-muted-foreground"
+        >
+          <span
+            className="h-2 w-2 rounded-full shrink-0"
+            style={{ background: item.color }}
+          />
           <span>{item.name}:</span>
-          <span className="font-medium text-foreground tabular-nums">{item.value}</span>
+          <span className="font-medium text-foreground tabular-nums">
+            {item.value}
+          </span>
         </div>
       ))}
     </div>
-  )
-}
+  );
+};
 
-function CheckInCard({ entry, copiedId, onCopy, onClick }: {
-  entry: MentorEntry; copiedId: number | null; onCopy: (e: MentorEntry) => void; onClick?: (e: MentorEntry) => void
+function CheckInCard({
+  entry,
+  copiedId,
+  onCopy,
+  onClick,
+}: {
+  entry: MentorEntry;
+  copiedId: number | null;
+  onCopy: (e: MentorEntry) => void;
+  onClick?: (e: MentorEntry) => void;
 }) {
   return (
-    <Card depth={3} className="neo:border-0 hover:bg-muted/30 group cursor-pointer" onClick={() => onClick?.(entry)}>
+    <Card
+      depth={3}
+      className="neo:border-0 hover:bg-muted/30 group cursor-pointer"
+      onClick={() => onClick?.(entry)}
+    >
       <CardContent className="p-2.5 space-y-1">
         <div className="flex items-center justify-between gap-2">
           <span className="text-[11px] text-muted-foreground">
             {new Date(entry.createdAt).toLocaleString("en-US", {
-              month: "short", day: "numeric", hour: "numeric", minute: "2-digit",
+              month: "short",
+              day: "numeric",
+              hour: "numeric",
+              minute: "2-digit",
             })}
           </span>
           <div className="flex items-center gap-1.5">
-            <Badge variant="outline" className="text-[10px] tabular-nums h-5 px-1.5">
+            <Badge
+              variant="outline"
+              className="text-[10px] tabular-nums h-5 px-1.5"
+            >
               {entry.peopleInLab} in lab
             </Badge>
             <Button
               variant="ghost"
               size="sm"
               className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100"
-              onClick={(e) => { e.stopPropagation(); onCopy(entry) }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onCopy(entry);
+              }}
             >
-              {copiedId === entry.id ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+              {copiedId === entry.id ? (
+                <Check className="h-3 w-3 text-green-500" />
+              ) : (
+                <Copy className="h-3 w-3" />
+              )}
             </Button>
           </div>
         </div>
         <div className="text-xs font-semibold text-foreground">
           {entry.mentors.map((m) => m.mentor.user.name).join(", ")}
         </div>
-        <div className="text-xs leading-snug text-muted-foreground">{entry.feeling}</div>
+        <div className="text-xs leading-snug text-muted-foreground">
+          {entry.feeling}
+        </div>
       </CardContent>
     </Card>
-  )
+  );
 }
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
 interface HeadcountDashboardProps {
-  ToolbarPortal?: React.ComponentType<{ target: HTMLElement | null; children: React.ReactNode }>
-  toolbarNode?: HTMLElement | null
+  ToolbarPortal?: React.ComponentType<{
+    target: HTMLElement | null;
+    children: React.ReactNode;
+  }>;
+  toolbarNode?: HTMLElement | null;
 }
 
-export default function HeadcountDashboard({ ToolbarPortal, toolbarNode }: HeadcountDashboardProps) {
+export default function HeadcountDashboard({
+  ToolbarPortal,
+  toolbarNode,
+}: HeadcountDashboardProps) {
   // Semesters & selection
-  const [semesters, setSemesters] = useState<MentorSemester[]>([])
-  const [selectedId, setSelectedId] = useState<string>("all")
+  const [semesters, setSemesters] = useState<MentorSemester[]>([]);
+  const [selectedId, setSelectedId] = useState<string>("all");
 
   const sortedSemesters = useMemo(
-    () => [...semesters].sort((a, b) => semesterSortKey(b.name).localeCompare(semesterSortKey(a.name))),
+    () =>
+      [...semesters].sort((a, b) =>
+        semesterSortKey(b.name).localeCompare(semesterSortKey(a.name))
+      ),
     [semesters]
-  )
+  );
 
   // All-time trends (used by All Time + Past Semesters tabs)
-  const [trends, setTrends] = useState<SemesterTrend[]>([])
+  const [trends, setTrends] = useState<SemesterTrend[]>([]);
 
   // This-semester data
-  const [trafficData, setTrafficData] = useState<TrafficDatum[]>([])
-  const [mentorEntries, setMentorEntries] = useState<MentorEntry[]>([])
-  const [menteeEntries, setMenteeEntries] = useState<MenteeEntry[]>([])
+  const [trafficData, setTrafficData] = useState<TrafficDatum[]>([]);
+  const [mentorEntries, setMentorEntries] = useState<MentorEntry[]>([]);
+  const [menteeEntries, setMenteeEntries] = useState<MenteeEntry[]>([]);
 
   // Check-ins modal
-  const [checkInsOpen, setCheckInsOpen] = useState(false)
-  const [allMentorEntries, setAllMentorEntries] = useState<MentorEntry[]>([])
-  const [loadingAll, setLoadingAll] = useState(false)
-  const [copiedId, setCopiedId] = useState<number | null>(null)
-  const [selectedEntry, setSelectedEntry] = useState<MentorEntry | null>(null)
+  const [checkInsOpen, setCheckInsOpen] = useState(false);
+  const [allMentorEntries, setAllMentorEntries] = useState<MentorEntry[]>([]);
+  const [loadingAll, setLoadingAll] = useState(false);
+  const [copiedId, setCopiedId] = useState<number | null>(null);
+  const [selectedEntry, setSelectedEntry] = useState<MentorEntry | null>(null);
 
   // Sort state for comparison table
-  const [sortKey, setSortKey] = useState<keyof SemesterTrend>("chronologicalIndex")
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc")
+  const [sortKey, setSortKey] =
+    useState<keyof SemesterTrend>("chronologicalIndex");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [semestersLoaded, setSemestersLoaded] = useState(false);
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setNow(Date.now());
+    }, 60_000);
+
+    return () => window.clearInterval(intervalId);
+  }, []);
 
   // ── Fetch semesters once ────────────────────────────────────────────────────
   useEffect(() => {
     fetch("/api/mentor-semester")
       .then((r) => (r.ok ? r.json() : []))
       .then((data: MentorSemester[]) => {
-        setSemesters(data)
-        const active = data.find((s) => s.isActive)
-        if (active) setSelectedId(String(active.id))
-        setSemestersLoaded(true)
+        setSemesters(data);
+        const active = data.find((s) => s.isActive);
+        if (active) setSelectedId(String(active.id));
+        setSemestersLoaded(true);
       })
-      .catch(() => setSemestersLoaded(true))
-  }, [])
+      .catch(() => setSemestersLoaded(true));
+  }, []);
 
   // ── Fetch all-time trends once ──────────────────────────────────────────────
   useEffect(() => {
     fetch("/api/headcount-trends")
       .then((r) => (r.ok ? r.json() : []))
       .then(setTrends)
-      .catch(() => {})
-  }, [])
+      .catch(() => {});
+  }, []);
 
   // ── Fetch semester-specific data when selection changes ─────────────────────
   // Wait for semesters to load before fetching so we default to the active
   // semester instead of accidentally fetching all-time data.
-  const [semestersLoaded, setSemestersLoaded] = useState(false)
-
   useEffect(() => {
-    if (!semestersLoaded) return
-    const param = selectedId !== "all" ? `&semesterId=${selectedId}` : ""
+    if (!semestersLoaded) return;
+    const param = selectedId !== "all" ? `&semesterId=${selectedId}` : "";
     Promise.all([
-      fetch(`/api/mentoring-headcount?traffic=true${param}`).then((r) => (r.ok ? r.json() : [])),
-      fetch(`/api/mentoring-headcount?limit=20${param}`).then((r) => (r.ok ? r.json() : [])),
+      fetch(`/api/mentoring-headcount?traffic=true${param}`).then((r) =>
+        r.ok ? r.json() : []
+      ),
+      fetch(`/api/mentoring-headcount?limit=20${param}`).then((r) =>
+        r.ok ? r.json() : []
+      ),
       selectedId !== "all"
-        ? fetch(`/api/mentee-headcount?semesterId=${selectedId}`).then((r) => (r.ok ? r.json() : []))
+        ? fetch(`/api/mentee-headcount?semesterId=${selectedId}`).then((r) =>
+            r.ok ? r.json() : []
+          )
         : fetch("/api/mentee-headcount").then((r) => (r.ok ? r.json() : [])),
     ])
       .then(([traffic, entries, mentee]) => {
-        setTrafficData(traffic)
-        setMentorEntries(entries)
-        setMenteeEntries(mentee)
+        setTrafficData(traffic);
+        setMentorEntries(entries);
+        setMenteeEntries(mentee);
       })
-      .catch(() => {})
-  }, [selectedId, semestersLoaded])
+      .catch(() => {});
+  }, [selectedId, semestersLoaded]);
 
   const openAllCheckIns = useCallback(() => {
-    setCheckInsOpen(true)
-    setLoadingAll(true)
-    const param = selectedId !== "all" ? `&semesterId=${selectedId}` : ""
+    setCheckInsOpen(true);
+    setLoadingAll(true);
+    const param = selectedId !== "all" ? `&semesterId=${selectedId}` : "";
     fetch(`/api/mentoring-headcount?limit=500${param}`)
       .then((r) => (r.ok ? r.json() : []))
       .then(setAllMentorEntries)
       .catch(() => {})
-      .finally(() => setLoadingAll(false))
-  }, [selectedId])
+      .finally(() => setLoadingAll(false));
+  }, [selectedId]);
 
   const copyCheckIn = useCallback((entry: MentorEntry) => {
     const date = new Date(entry.createdAt).toLocaleString("en-US", {
-      month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit",
-    })
-    const mentors = entry.mentors.map((m) => m.mentor.user.name).join(", ")
-    const text = `${date} — Submitted by: ${mentors} — ${entry.peopleInLab} in lab — "${entry.feeling}"`
-    navigator.clipboard.writeText(text)
-    setCopiedId(entry.id)
-    toast.success("Copied to clipboard")
-    setTimeout(() => setCopiedId(null), 1500)
-  }, [])
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    });
+    const mentors = entry.mentors.map((m) => m.mentor.user.name).join(", ");
+    const text = `${date} — Submitted by: ${mentors} — ${entry.peopleInLab} in lab — "${entry.feeling}"`;
+    navigator.clipboard.writeText(text);
+    setCopiedId(entry.id);
+    toast.success("Copied to clipboard");
+    setTimeout(() => setCopiedId(null), 1500);
+  }, []);
 
   // ── Derived: heatmap lookup ─────────────────────────────────────────────────
   const heatmapLookup = useMemo(() => {
-    const m = new Map<string, number>()
-    trafficData.forEach((d) => m.set(`${d.weekday}-${d.hour}`, d.averagePeopleInLab))
-    return m
-  }, [trafficData])
+    const m = new Map<string, number>();
+    trafficData.forEach((d) =>
+      m.set(`${d.weekday}-${d.hour}`, d.averagePeopleInLab)
+    );
+    return m;
+  }, [trafficData]);
 
   const maxHeat = useMemo(
-    () => (trafficData.length ? Math.max(...trafficData.map((d) => d.averagePeopleInLab)) : 0),
+    () =>
+      trafficData.length
+        ? Math.max(...trafficData.map((d) => d.averagePeopleInLab))
+        : 0,
     [trafficData]
-  )
+  );
 
   const avgPeopleInLab = useMemo(() => {
-    if (!trafficData.length) return 0
-    const slots = trafficData.filter((d) => d.sampleCount > 0)
-    if (!slots.length) return 0
-    return slots.reduce((s, d) => s + d.averagePeopleInLab, 0) / slots.length
-  }, [trafficData])
+    if (!trafficData.length) return 0;
+    const slots = trafficData.filter((d) => d.sampleCount > 0);
+    if (!slots.length) return 0;
+    return slots.reduce((s, d) => s + d.averagePeopleInLab, 0) / slots.length;
+  }, [trafficData]);
 
   // ── Derived: day-of-week averages ───────────────────────────────────────────
   const dayAverages = useMemo(() => {
-    const totals = [0, 0, 0, 0, 0]
-    const counts = [0, 0, 0, 0, 0]
+    const totals = [0, 0, 0, 0, 0];
+    const counts = [0, 0, 0, 0, 0];
     trafficData.forEach((d) => {
       if (d.weekday >= 1 && d.weekday <= 5) {
-        totals[d.weekday - 1] += d.averagePeopleInLab
-        counts[d.weekday - 1] += 1
+        totals[d.weekday - 1] += d.averagePeopleInLab;
+        counts[d.weekday - 1] += 1;
       }
-    })
+    });
     return DAY_LABELS.map((day, i) => ({
       day,
       avg: counts[i] > 0 ? Math.round((totals[i] / counts[i]) * 10) / 10 : 0,
-    }))
-  }, [trafficData])
+    }));
+  }, [trafficData]);
 
   // ── Derived: course demand ──────────────────────────────────────────────────
   const courseDemand = useMemo(() => {
-    const counts = new Map<string, number>()
+    const counts = new Map<string, number>();
     menteeEntries.forEach((e) => {
       e.classes.forEach((c) => {
-        if (!c.course?.department?.shortTitle) return
-        const key = `${c.course.department.shortTitle} ${c.course.code}`
-        counts.set(key, (counts.get(key) ?? 0) + 1)
-      })
-    })
+        if (!c.course?.department?.shortTitle) return;
+        const key = `${c.course.department.shortTitle} ${c.course.code}`;
+        counts.set(key, (counts.get(key) ?? 0) + 1);
+      });
+    });
     return Array.from(counts.entries())
       .sort((a, b) => b[1] - a[1])
       .slice(0, 10)
-      .map(([course, count]) => ({ course, count }))
-  }, [menteeEntries])
+      .map(([course, count]) => ({ course, count }));
+  }, [menteeEntries]);
 
   const maxCourseCount = useMemo(
     () => (courseDemand.length ? courseDemand[0].count : 1),
     [courseDemand]
-  )
+  );
 
   // ── Derived: this-semester mentee stats ────────────────────────────────────
   const menteeStats = useMemo(() => {
-    const submissions = menteeEntries.length
-    const totalStudents = menteeEntries.reduce((s, e) => s + e.studentsMentoredCount, 0)
-    const totalTests = menteeEntries.reduce((s, e) => s + e.testsCheckedOutCount, 0)
-    const avgStudents = submissions ? Math.round((totalStudents / submissions) * 10) / 10 : 0
-    return { submissions, totalStudents, totalTests, avgStudents }
-  }, [menteeEntries])
+    const submissions = menteeEntries.length;
+    const totalStudents = menteeEntries.reduce(
+      (s, e) => s + e.studentsMentoredCount,
+      0
+    );
+    const totalTests = menteeEntries.reduce(
+      (s, e) => s + e.testsCheckedOutCount,
+      0
+    );
+    const avgStudents = submissions
+      ? Math.round((totalStudents / submissions) * 10) / 10
+      : 0;
+    return { submissions, totalStudents, totalTests, avgStudents };
+  }, [menteeEntries]);
 
   // ── Derived: busiest slots ─────────────────────────────────────────────────
   const busiestSlots = useMemo(
-    () => [...trafficData].sort((a, b) => b.averagePeopleInLab - a.averagePeopleInLab).slice(0, 5),
+    () =>
+      [...trafficData]
+        .sort((a, b) => b.averagePeopleInLab - a.averagePeopleInLab)
+        .slice(0, 5),
     [trafficData]
-  )
+  );
 
   // ── Derived: all-time trend delta (current vs previous semester) ────────────
   const currentTrend = useMemo(() => {
-    if (selectedId === "all" || !trends.length) return null
-    const idx = trends.findIndex((t) => String(t.semesterId) === selectedId)
-    if (idx < 0) return null
-    const curr = trends[idx]
-    const prev = idx > 0 ? trends[idx - 1] : null
-    return { curr, prev }
-  }, [trends, selectedId])
+    if (selectedId === "all" || !trends.length) return null;
+    const idx = trends.findIndex((t) => String(t.semesterId) === selectedId);
+    if (idx < 0) return null;
+    const curr = trends[idx];
+    const prev = idx > 0 ? trends[idx - 1] : null;
+    return { curr, prev };
+  }, [trends, selectedId]);
 
   // ── Derived: semester progress for pace annotations ──────────────────────────
   const semesterPace = useMemo(() => {
-    if (!currentTrend) return null
-    const { curr, prev } = currentTrend
-    if (!curr.isActive || !curr.semesterStart || !curr.semesterEnd) return null
-    const start = new Date(curr.semesterStart).getTime()
-    const end = new Date(curr.semesterEnd).getTime()
-    if (end <= start) return null
-    const progress = Math.max(0, Math.min(1, (Date.now() - start) / (end - start)))
-    const pctStr = `${Math.round(progress * 100)}%`
+    if (!currentTrend) return null;
+    const { curr, prev } = currentTrend;
+    if (!curr.isActive || !curr.semesterStart || !curr.semesterEnd) return null;
+    const start = new Date(curr.semesterStart).getTime();
+    const end = new Date(curr.semesterEnd).getTime();
+    if (end <= start) return null;
+    const progress = Math.max(0, Math.min(1, (now - start) / (end - start)));
+    const pctStr = `${Math.round(progress * 100)}%`;
     const note = (prevTotal: number | undefined) => {
-      if (prevTotal == null) return undefined
-      return `${pctStr} through · prev had ~${Math.round(prevTotal * progress)}`
-    }
+      if (prevTotal == null) return undefined;
+      return `${pctStr} through · prev had ~${Math.round(prevTotal * progress)}`;
+    };
     const prevAtPace = (prevTotal: number | undefined): number | undefined => {
-      if (prevTotal == null) return undefined
-      return Math.round(prevTotal * progress)
-    }
-    return { progress, pctStr, note, prevAtPace }
-  }, [currentTrend])
+      if (prevTotal == null) return undefined;
+      return Math.round(prevTotal * progress);
+    };
+    return { progress, pctStr, note, prevAtPace };
+  }, [currentTrend, now]);
 
   // ── Derived: chart data for all-time tabs ──────────────────────────────────
   const chartData = useMemo(
@@ -446,47 +588,53 @@ export default function HeadcountDashboard({ ToolbarPortal, toolbarNode }: Headc
         .filter((t) => t.mentorSubmissions > 0 || t.menteeSubmissions > 0)
         .map((t) => ({ ...t, short: shortLabel(t.semesterName) })),
     [trends]
-  )
+  );
 
   const shortLabelMap = useMemo(() => {
-    const m: Record<string, string> = {}
-    chartData.forEach((d) => { m[d.short] = d.semesterName })
-    return m
-  }, [chartData])
+    const m: Record<string, string> = {};
+    chartData.forEach((d) => {
+      m[d.short] = d.semesterName;
+    });
+    return m;
+  }, [chartData]);
 
-  const hasTrendData = chartData.length >= 2
+  const hasTrendData = chartData.length >= 2;
 
   // ── Derived: comparison table ──────────────────────────────────────────────
   const sortedTrends = useMemo(() => {
     return [...trends].sort((a, b) => {
-      const av = a[sortKey] ?? 0
-      const bv = b[sortKey] ?? 0
-      const cmp = typeof av === "number" && typeof bv === "number"
-        ? av - bv
-        : String(av).localeCompare(String(bv))
-      return sortDir === "asc" ? cmp : -cmp
-    })
-  }, [trends, sortKey, sortDir])
+      const av = a[sortKey] ?? 0;
+      const bv = b[sortKey] ?? 0;
+      const cmp =
+        typeof av === "number" && typeof bv === "number"
+          ? av - bv
+          : String(av).localeCompare(String(bv));
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+  }, [trends, sortKey, sortDir]);
 
   function toggleSort(key: keyof SemesterTrend) {
     if (sortKey === key) {
-      setSortDir((d) => (d === "asc" ? "desc" : "asc"))
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
     } else {
-      setSortKey(key)
-      setSortDir("desc")
+      setSortKey(key);
+      setSortDir("desc");
     }
   }
 
   const sortIndicator = (key: keyof SemesterTrend) =>
-    sortKey === key ? (sortDir === "asc" ? " ↑" : " ↓") : ""
+    sortKey === key ? (sortDir === "asc" ? " ↑" : " ↓") : "";
 
   // ── Lifetime totals ────────────────────────────────────────────────────────
-  const lifetimeTotals = useMemo(() => ({
-    submissions30: trends.reduce((s, t) => s + t.mentorSubmissions, 0),
-    submissions55: trends.reduce((s, t) => s + t.menteeSubmissions, 0),
-    students: trends.reduce((s, t) => s + t.totalStudentsMentored, 0),
-    tests: trends.reduce((s, t) => s + t.totalTestsCheckedOut, 0),
-  }), [trends])
+  const lifetimeTotals = useMemo(
+    () => ({
+      submissions30: trends.reduce((s, t) => s + t.mentorSubmissions, 0),
+      submissions55: trends.reduce((s, t) => s + t.menteeSubmissions, 0),
+      students: trends.reduce((s, t) => s + t.totalStudentsMentored, 0),
+      tests: trends.reduce((s, t) => s + t.totalTestsCheckedOut, 0),
+    }),
+    [trends]
+  );
 
   // ─────────────────────────────────────────────────────────────────────────
   // Render
@@ -504,13 +652,15 @@ export default function HeadcountDashboard({ ToolbarPortal, toolbarNode }: Headc
         Compare
       </TabsTrigger>
     </TabsList>
-  )
+  );
 
   return (
     <div className="space-y-0">
       <Tabs defaultValue="semester">
         {ToolbarPortal ? (
-          <ToolbarPortal target={toolbarNode ?? null}>{toolbarContent}</ToolbarPortal>
+          <ToolbarPortal target={toolbarNode ?? null}>
+            {toolbarContent}
+          </ToolbarPortal>
         ) : (
           <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-2 mb-5">
             {toolbarContent}
@@ -528,25 +678,33 @@ export default function HeadcountDashboard({ ToolbarPortal, toolbarNode }: Headc
             </h3>
             <div className="grid gap-3 grid-cols-2 sm:grid-cols-4">
               <StatCard
-                icon={<Activity className="h-4 w-4 text-amber-600 dark:text-amber-400" />}
+                icon={
+                  <Activity className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                }
                 label="30-min check-ins"
                 value={lifetimeTotals.submissions30.toLocaleString()}
                 accent="bg-amber-500/10"
               />
               <StatCard
-                icon={<Clock className="h-4 w-4 text-blue-600 dark:text-blue-400" />}
+                icon={
+                  <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                }
                 label="55-min check-ins"
                 value={lifetimeTotals.submissions55.toLocaleString()}
                 accent="bg-blue-500/10"
               />
               <StatCard
-                icon={<BookOpen className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />}
+                icon={
+                  <BookOpen className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                }
                 label="Students mentored"
                 value={lifetimeTotals.students.toLocaleString()}
                 accent="bg-emerald-500/10"
               />
               <StatCard
-                icon={<FlaskConical className="h-4 w-4 text-violet-600 dark:text-violet-400" />}
+                icon={
+                  <FlaskConical className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+                }
                 label="Tests checked out"
                 value={lifetimeTotals.tests.toLocaleString()}
                 accent="bg-violet-500/10"
@@ -557,7 +715,8 @@ export default function HeadcountDashboard({ ToolbarPortal, toolbarNode }: Headc
           {!hasTrendData ? (
             <Card depth={2} className="neo:border-0">
               <CardContent className="py-12 text-center text-sm text-muted-foreground">
-                Import data from at least 2 semesters to see historical trend charts.
+                Import data from at least 2 semesters to see historical trend
+                charts.
               </CardContent>
             </Card>
           ) : (
@@ -571,11 +730,19 @@ export default function HeadcountDashboard({ ToolbarPortal, toolbarNode }: Headc
                 </CardHeader>
                 <CardContent className="px-2 pb-4">
                   <ResponsiveContainer width="100%" height={220}>
-                    <LineChart data={chartData} margin={{ top: 4, right: 20, left: -8, bottom: 4 }}>
-                      <CartesianGrid strokeDasharray="3 3" className="stroke-border/40" />
+                    <LineChart
+                      data={chartData}
+                      margin={{ top: 4, right: 20, left: -8, bottom: 4 }}
+                    >
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        className="stroke-border/40"
+                      />
                       <XAxis dataKey="short" tick={{ fontSize: 11 }} />
                       <YAxis tick={{ fontSize: 11 }} />
-                      <Tooltip content={<ChartTooltip labelMap={shortLabelMap} />} />
+                      <Tooltip
+                        content={<ChartTooltip labelMap={shortLabelMap} />}
+                      />
                       <Line
                         type="monotone"
                         dataKey="avgPeopleInLab"
@@ -599,14 +766,32 @@ export default function HeadcountDashboard({ ToolbarPortal, toolbarNode }: Headc
                 </CardHeader>
                 <CardContent className="px-2 pb-4">
                   <ResponsiveContainer width="100%" height={240}>
-                    <BarChart data={chartData} margin={{ top: 4, right: 20, left: -8, bottom: 4 }}>
-                      <CartesianGrid strokeDasharray="3 3" className="stroke-border/40" />
+                    <BarChart
+                      data={chartData}
+                      margin={{ top: 4, right: 20, left: -8, bottom: 4 }}
+                    >
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        className="stroke-border/40"
+                      />
                       <XAxis dataKey="short" tick={{ fontSize: 11 }} />
                       <YAxis tick={{ fontSize: 11 }} />
-                      <Tooltip content={<ChartTooltip labelMap={shortLabelMap} />} />
+                      <Tooltip
+                        content={<ChartTooltip labelMap={shortLabelMap} />}
+                      />
                       <Legend wrapperStyle={{ fontSize: 11 }} />
-                      <Bar dataKey="totalStudentsMentored" name="Students mentored" fill="#10b981" radius={[3, 3, 0, 0]} />
-                      <Bar dataKey="totalTestsCheckedOut" name="Tests checked out" fill="#8b5cf6" radius={[3, 3, 0, 0]} />
+                      <Bar
+                        dataKey="totalStudentsMentored"
+                        name="Students mentored"
+                        fill="#10b981"
+                        radius={[3, 3, 0, 0]}
+                      />
+                      <Bar
+                        dataKey="totalTestsCheckedOut"
+                        name="Tests checked out"
+                        fill="#8b5cf6"
+                        radius={[3, 3, 0, 0]}
+                      />
                     </BarChart>
                   </ResponsiveContainer>
                 </CardContent>
@@ -621,14 +806,32 @@ export default function HeadcountDashboard({ ToolbarPortal, toolbarNode }: Headc
                 </CardHeader>
                 <CardContent className="px-2 pb-4">
                   <ResponsiveContainer width="100%" height={220}>
-                    <BarChart data={chartData} margin={{ top: 4, right: 20, left: -8, bottom: 4 }}>
-                      <CartesianGrid strokeDasharray="3 3" className="stroke-border/40" />
+                    <BarChart
+                      data={chartData}
+                      margin={{ top: 4, right: 20, left: -8, bottom: 4 }}
+                    >
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        className="stroke-border/40"
+                      />
                       <XAxis dataKey="short" tick={{ fontSize: 11 }} />
                       <YAxis tick={{ fontSize: 11 }} />
-                      <Tooltip content={<ChartTooltip labelMap={shortLabelMap} />} />
+                      <Tooltip
+                        content={<ChartTooltip labelMap={shortLabelMap} />}
+                      />
                       <Legend wrapperStyle={{ fontSize: 11 }} />
-                      <Bar dataKey="mentorSubmissions" name="30-min (mentor)" fill="#f59e0b" radius={[3, 3, 0, 0]} />
-                      <Bar dataKey="menteeSubmissions" name="55-min (mentee)" fill="#3b82f6" radius={[3, 3, 0, 0]} />
+                      <Bar
+                        dataKey="mentorSubmissions"
+                        name="30-min (mentor)"
+                        fill="#f59e0b"
+                        radius={[3, 3, 0, 0]}
+                      />
+                      <Bar
+                        dataKey="menteeSubmissions"
+                        name="55-min (mentee)"
+                        fill="#3b82f6"
+                        radius={[3, 3, 0, 0]}
+                      />
                     </BarChart>
                   </ResponsiveContainer>
                 </CardContent>
@@ -650,76 +853,186 @@ export default function HeadcountDashboard({ ToolbarPortal, toolbarNode }: Headc
                     <SelectValue placeholder="Select semester" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all" className="text-xs">All time</SelectItem>
+                    <SelectItem value="all" className="text-xs">
+                      All time
+                    </SelectItem>
                     {sortedSemesters.map((s) => (
-                      <SelectItem key={s.id} value={String(s.id)} className="text-xs">
-                        {s.name}{s.isActive ? " (active)" : ""}
+                      <SelectItem
+                        key={s.id}
+                        value={String(s.id)}
+                        className="text-xs"
+                      >
+                        {s.name}
+                        {s.isActive ? " (active)" : ""}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
                 {currentTrend?.prev && (
-                  <span className="text-xs text-muted-foreground">vs {shortLabel(currentTrend.prev.semesterName)}</span>
+                  <span className="text-xs text-muted-foreground">
+                    vs {shortLabel(currentTrend.prev.semesterName)}
+                  </span>
                 )}
               </div>
               {semesterPace && (
                 <div className="flex items-center gap-2">
-                  <Progress value={Math.round(semesterPace.progress * 100)} className="w-20 h-1.5" />
-                  <span className="text-xs font-medium text-muted-foreground tabular-nums">{semesterPace.pctStr}</span>
+                  <Progress
+                    value={Math.round(semesterPace.progress * 100)}
+                    className="w-20 h-1.5"
+                  />
+                  <span className="text-xs font-medium text-muted-foreground tabular-nums">
+                    {semesterPace.pctStr}
+                  </span>
                 </div>
               )}
             </div>
             <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
               <StatCard
-                icon={<Activity className="h-4 w-4 text-amber-600 dark:text-amber-400" />}
+                icon={
+                  <Activity className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                }
                 label="30-min check-ins"
-                value={currentTrend ? currentTrend.curr.mentorSubmissions : mentorEntries.length}
-                delta={currentTrend?.prev ? pct(currentTrend.curr.mentorSubmissions, currentTrend.prev.mentorSubmissions) : undefined}
+                value={
+                  currentTrend
+                    ? currentTrend.curr.mentorSubmissions
+                    : mentorEntries.length
+                }
+                delta={
+                  currentTrend?.prev
+                    ? pct(
+                        currentTrend.curr.mentorSubmissions,
+                        currentTrend.prev.mentorSubmissions
+                      )
+                    : undefined
+                }
                 accent="bg-amber-500/10"
-                prevValue={semesterPace?.prevAtPace(currentTrend?.prev?.mentorSubmissions) != null ? `~${semesterPace.prevAtPace(currentTrend?.prev?.mentorSubmissions)}` : undefined}
+                prevValue={
+                  semesterPace?.prevAtPace(
+                    currentTrend?.prev?.mentorSubmissions
+                  ) != null
+                    ? `~${semesterPace.prevAtPace(currentTrend?.prev?.mentorSubmissions)}`
+                    : undefined
+                }
                 prevLabel="prev at this point"
               />
               <StatCard
-                icon={<Users className="h-4 w-4 text-blue-600 dark:text-blue-400" />}
+                icon={
+                  <Users className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                }
                 label="Avg people in lab"
-                value={currentTrend ? currentTrend.curr.avgPeopleInLab : avgPeopleInLab.toFixed(1)}
-                delta={currentTrend?.prev ? pct(currentTrend.curr.avgPeopleInLab, currentTrend.prev.avgPeopleInLab) : undefined}
+                value={
+                  currentTrend
+                    ? currentTrend.curr.avgPeopleInLab
+                    : avgPeopleInLab.toFixed(1)
+                }
+                delta={
+                  currentTrend?.prev
+                    ? pct(
+                        currentTrend.curr.avgPeopleInLab,
+                        currentTrend.prev.avgPeopleInLab
+                      )
+                    : undefined
+                }
                 accent="bg-blue-500/10"
-                prevValue={currentTrend?.prev ? currentTrend.prev.avgPeopleInLab.toFixed(1) : undefined}
+                prevValue={
+                  currentTrend?.prev
+                    ? currentTrend.prev.avgPeopleInLab.toFixed(1)
+                    : undefined
+                }
                 prevLabel="prev semester avg"
               />
               <StatCard
-                icon={<Clock className="h-4 w-4 text-sky-600 dark:text-sky-400" />}
+                icon={
+                  <Clock className="h-4 w-4 text-sky-600 dark:text-sky-400" />
+                }
                 label="55-min check-ins"
-                value={currentTrend ? currentTrend.curr.menteeSubmissions : menteeEntries.length}
-                delta={currentTrend?.prev ? pct(currentTrend.curr.menteeSubmissions, currentTrend.prev.menteeSubmissions) : undefined}
+                value={
+                  currentTrend
+                    ? currentTrend.curr.menteeSubmissions
+                    : menteeEntries.length
+                }
+                delta={
+                  currentTrend?.prev
+                    ? pct(
+                        currentTrend.curr.menteeSubmissions,
+                        currentTrend.prev.menteeSubmissions
+                      )
+                    : undefined
+                }
                 accent="bg-sky-500/10"
-                prevValue={semesterPace?.prevAtPace(currentTrend?.prev?.menteeSubmissions) != null ? `~${semesterPace.prevAtPace(currentTrend?.prev?.menteeSubmissions)}` : undefined}
+                prevValue={
+                  semesterPace?.prevAtPace(
+                    currentTrend?.prev?.menteeSubmissions
+                  ) != null
+                    ? `~${semesterPace.prevAtPace(currentTrend?.prev?.menteeSubmissions)}`
+                    : undefined
+                }
                 prevLabel="prev at this point"
               />
               <StatCard
-                icon={<BookOpen className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />}
+                icon={
+                  <BookOpen className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                }
                 label="Students mentored"
-                value={currentTrend ? currentTrend.curr.totalStudentsMentored : menteeStats.totalStudents}
-                delta={currentTrend?.prev ? pct(currentTrend.curr.totalStudentsMentored, currentTrend.prev.totalStudentsMentored) : undefined}
+                value={
+                  currentTrend
+                    ? currentTrend.curr.totalStudentsMentored
+                    : menteeStats.totalStudents
+                }
+                delta={
+                  currentTrend?.prev
+                    ? pct(
+                        currentTrend.curr.totalStudentsMentored,
+                        currentTrend.prev.totalStudentsMentored
+                      )
+                    : undefined
+                }
                 accent="bg-emerald-500/10"
-                prevValue={semesterPace?.prevAtPace(currentTrend?.prev?.totalStudentsMentored) != null ? `~${semesterPace.prevAtPace(currentTrend?.prev?.totalStudentsMentored)}` : undefined}
+                prevValue={
+                  semesterPace?.prevAtPace(
+                    currentTrend?.prev?.totalStudentsMentored
+                  ) != null
+                    ? `~${semesterPace.prevAtPace(currentTrend?.prev?.totalStudentsMentored)}`
+                    : undefined
+                }
                 prevLabel="prev at this point"
               />
               <StatCard
-                icon={<FlaskConical className="h-4 w-4 text-violet-600 dark:text-violet-400" />}
+                icon={
+                  <FlaskConical className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+                }
                 label="Tests checked out"
-                value={currentTrend ? currentTrend.curr.totalTestsCheckedOut : menteeStats.totalTests}
-                delta={currentTrend?.prev ? pct(currentTrend.curr.totalTestsCheckedOut, currentTrend.prev.totalTestsCheckedOut) : undefined}
+                value={
+                  currentTrend
+                    ? currentTrend.curr.totalTestsCheckedOut
+                    : menteeStats.totalTests
+                }
+                delta={
+                  currentTrend?.prev
+                    ? pct(
+                        currentTrend.curr.totalTestsCheckedOut,
+                        currentTrend.prev.totalTestsCheckedOut
+                      )
+                    : undefined
+                }
                 accent="bg-violet-500/10"
-                prevValue={semesterPace?.prevAtPace(currentTrend?.prev?.totalTestsCheckedOut) != null ? `~${semesterPace.prevAtPace(currentTrend?.prev?.totalTestsCheckedOut)}` : undefined}
+                prevValue={
+                  semesterPace?.prevAtPace(
+                    currentTrend?.prev?.totalTestsCheckedOut
+                  ) != null
+                    ? `~${semesterPace.prevAtPace(currentTrend?.prev?.totalTestsCheckedOut)}`
+                    : undefined
+                }
                 prevLabel="prev at this point"
               />
             </div>
           </div>
 
           {/* Heatmap + day-of-week chart */}
-          <div className="grid gap-4 lg:grid-cols-[1fr_260px]" style={{ alignItems: "start" }}>
+          <div
+            className="grid gap-4 lg:grid-cols-[1fr_260px]"
+            style={{ alignItems: "start" }}
+          >
             {/* Heatmap */}
             <Card depth={2} className="neo:border-0">
               <CardHeader className="pb-2 px-5 pt-5">
@@ -734,7 +1047,12 @@ export default function HeadcountDashboard({ ToolbarPortal, toolbarNode }: Headc
                       <tr>
                         <th className="p-1.5 text-left text-muted-foreground font-medium w-10" />
                         {DAY_LABELS.map((day) => (
-                          <th key={day} className="p-1.5 text-center text-muted-foreground font-medium">{day}</th>
+                          <th
+                            key={day}
+                            className="p-1.5 text-center text-muted-foreground font-medium"
+                          >
+                            {day}
+                          </th>
                         ))}
                       </tr>
                     </thead>
@@ -745,20 +1063,26 @@ export default function HeadcountDashboard({ ToolbarPortal, toolbarNode }: Headc
                             {formatHour(hour)}
                           </td>
                           {DAY_LABELS.map((_, di) => {
-                            const weekday = di + 1
-                            const avg = heatmapLookup.get(`${weekday}-${hour}`)
+                            const weekday = di + 1;
+                            const avg = heatmapLookup.get(`${weekday}-${hour}`);
                             return (
                               <td key={di} className="p-0.5">
                                 <div
                                   className={`rounded p-1.5 sm:p-2 text-center font-semibold tabular-nums transition-colors ${
-                                    avg !== undefined ? heatColor(avg) : "bg-muted/20 text-muted-foreground/30"
+                                    avg !== undefined
+                                      ? heatColor(avg)
+                                      : "bg-muted/20 text-muted-foreground/30 dark:bg-muted/40 dark:text-muted-foreground/50"
                                   }`}
-                                  title={avg !== undefined ? `${avg.toFixed(1)} avg` : "No data"}
+                                  title={
+                                    avg !== undefined
+                                      ? `${avg.toFixed(1)} avg`
+                                      : "No data"
+                                  }
                                 >
                                   {avg !== undefined ? avg.toFixed(0) : "—"}
                                 </div>
                               </td>
-                            )
+                            );
                           })}
                         </tr>
                       ))}
@@ -766,11 +1090,14 @@ export default function HeadcountDashboard({ ToolbarPortal, toolbarNode }: Headc
                   </table>
                 </div>
                 <div className="flex flex-wrap items-center gap-3 mt-3 text-[10px] text-muted-foreground justify-end">
-                  <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-sm bg-blue-200" /> ≤6</span>
-                  <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-sm bg-blue-300" /> 7–10</span>
-                  <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-sm bg-blue-400" /> 11–15</span>
-                  <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-sm bg-blue-500" /> 16–20</span>
-                  <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-sm bg-blue-600" /> 21+</span>
+                  {TRAFFIC_LEGEND.map((level) => (
+                    <span key={level.label} className="flex items-center gap-1">
+                      <span
+                        className={`h-3 w-3 rounded-sm ${level.swatchClassName}`}
+                      />
+                      {level.label}
+                    </span>
+                  ))}
                 </div>
               </CardContent>
             </Card>
@@ -785,23 +1112,37 @@ export default function HeadcountDashboard({ ToolbarPortal, toolbarNode }: Headc
                 </CardHeader>
                 <CardContent className="px-5 pb-4 space-y-2.5">
                   {busiestSlots.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No data yet.</p>
-                  ) : busiestSlots.map((slot, i) => {
-                    const dayName = DAY_NAMES[slot.weekday - 1]
-                    const intensity = Math.min(100, (slot.averagePeopleInLab / (maxHeat || 1)) * 100)
-                    return (
-                      <div key={`${slot.weekday}-${slot.hour}`} className="space-y-1">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="flex items-center gap-1.5">
-                            <span className="text-muted-foreground tabular-nums w-3 text-right">{i + 1}.</span>
-                            {dayName} {formatHour(slot.hour)}
-                          </span>
-                          <span className="tabular-nums font-semibold">{slot.averagePeopleInLab.toFixed(1)}</span>
+                    <p className="text-sm text-muted-foreground">
+                      No data yet.
+                    </p>
+                  ) : (
+                    busiestSlots.map((slot, i) => {
+                      const dayName = DAY_NAMES[slot.weekday - 1];
+                      const intensity = Math.min(
+                        100,
+                        (slot.averagePeopleInLab / (maxHeat || 1)) * 100
+                      );
+                      return (
+                        <div
+                          key={`${slot.weekday}-${slot.hour}`}
+                          className="space-y-1"
+                        >
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="flex items-center gap-1.5">
+                              <span className="text-muted-foreground tabular-nums w-3 text-right">
+                                {i + 1}.
+                              </span>
+                              {dayName} {formatHour(slot.hour)}
+                            </span>
+                            <span className="tabular-nums font-semibold">
+                              {slot.averagePeopleInLab.toFixed(1)}
+                            </span>
+                          </div>
+                          <Progress value={intensity} className="h-1" />
                         </div>
-                        <Progress value={intensity} className="h-1" />
-                      </div>
-                    )
-                  })}
+                      );
+                    })
+                  )}
                 </CardContent>
               </Card>
 
@@ -813,11 +1154,22 @@ export default function HeadcountDashboard({ ToolbarPortal, toolbarNode }: Headc
                 </CardHeader>
                 <CardContent className="px-2 pb-4">
                   <ResponsiveContainer width="100%" height={140}>
-                    <BarChart data={dayAverages} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+                    <BarChart
+                      data={dayAverages}
+                      margin={{ top: 4, right: 8, left: -20, bottom: 0 }}
+                    >
                       <XAxis dataKey="day" tick={{ fontSize: 10 }} />
                       <YAxis tick={{ fontSize: 10 }} />
-                      <Tooltip contentStyle={{ fontSize: 11 }} formatter={(v) => [v ?? 0, "Avg people"]} />
-                      <Bar dataKey="avg" name="Avg people" fill="#3b82f6" radius={[3, 3, 0, 0]} />
+                      <Tooltip
+                        contentStyle={{ fontSize: 11 }}
+                        formatter={(v) => [v ?? 0, "Avg people"]}
+                      />
+                      <Bar
+                        dataKey="avg"
+                        name="Avg people"
+                        fill="#3b82f6"
+                        radius={[3, 3, 0, 0]}
+                      />
                     </BarChart>
                   </ResponsiveContainer>
                 </CardContent>
@@ -826,7 +1178,10 @@ export default function HeadcountDashboard({ ToolbarPortal, toolbarNode }: Headc
           </div>
 
           {/* Course demand + recent check-ins */}
-          <div className="grid gap-4 lg:grid-cols-[1fr_300px]" style={{ alignItems: "start" }}>
+          <div
+            className="grid gap-4 lg:grid-cols-[1fr_300px]"
+            style={{ alignItems: "start" }}
+          >
             {/* Course demand */}
             <Card depth={2} className="neo:border-0">
               <CardHeader className="pb-2 px-5 pt-5">
@@ -835,13 +1190,17 @@ export default function HeadcountDashboard({ ToolbarPortal, toolbarNode }: Headc
                     Course Demand
                   </CardTitle>
                   {menteeStats.submissions > 0 && (
-                    <span className="text-xs text-muted-foreground">{menteeStats.submissions} 55-min submissions</span>
+                    <span className="text-xs text-muted-foreground">
+                      {menteeStats.submissions} 55-min submissions
+                    </span>
                   )}
                 </div>
               </CardHeader>
               <CardContent className="px-5 pb-4">
                 {courseDemand.length === 0 ? (
-                  <p className="text-sm text-muted-foreground py-4 text-center">No mentee data yet.</p>
+                  <p className="text-sm text-muted-foreground py-4 text-center">
+                    No mentee data yet.
+                  </p>
                 ) : (
                   <div className="space-y-2">
                     {courseDemand.map(({ course, count }) => (
@@ -870,7 +1229,12 @@ export default function HeadcountDashboard({ ToolbarPortal, toolbarNode }: Headc
                   Recent Check-ins
                 </CardTitle>
                 {mentorEntries.length > 0 && (
-                  <Button variant="ghost" size="sm" className="h-7 px-2 text-xs gap-1" onClick={openAllCheckIns}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 text-xs gap-1"
+                    onClick={openAllCheckIns}
+                  >
                     <Expand className="h-3.5 w-3.5" />
                     View All
                   </Button>
@@ -879,10 +1243,20 @@ export default function HeadcountDashboard({ ToolbarPortal, toolbarNode }: Headc
               <CardContent className="px-3 pb-3">
                 <div className="space-y-1.5 max-h-[520px] overflow-y-auto pr-1">
                   {mentorEntries.length === 0 ? (
-                    <p className="text-sm text-muted-foreground py-4 text-center">No entries yet.</p>
-                  ) : mentorEntries.map((entry) => (
-                    <CheckInCard key={entry.id} entry={entry} copiedId={copiedId} onCopy={copyCheckIn} onClick={setSelectedEntry} />
-                  ))}
+                    <p className="text-sm text-muted-foreground py-4 text-center">
+                      No entries yet.
+                    </p>
+                  ) : (
+                    mentorEntries.map((entry) => (
+                      <CheckInCard
+                        key={entry.id}
+                        entry={entry}
+                        copiedId={copiedId}
+                        onCopy={copyCheckIn}
+                        onClick={setSelectedEntry}
+                      />
+                    ))
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -894,17 +1268,34 @@ export default function HeadcountDashboard({ ToolbarPortal, toolbarNode }: Headc
                 </DialogHeader>
                 <div className="space-y-1.5 overflow-y-auto flex-1 pr-1">
                   {loadingAll ? (
-                    <p className="text-sm text-muted-foreground py-8 text-center">Loading...</p>
+                    <p className="text-sm text-muted-foreground py-8 text-center">
+                      Loading...
+                    </p>
                   ) : allMentorEntries.length === 0 ? (
-                    <p className="text-sm text-muted-foreground py-8 text-center">No entries found.</p>
-                  ) : allMentorEntries.map((entry) => (
-                    <CheckInCard key={entry.id} entry={entry} copiedId={copiedId} onCopy={copyCheckIn} onClick={setSelectedEntry} />
-                  ))}
+                    <p className="text-sm text-muted-foreground py-8 text-center">
+                      No entries found.
+                    </p>
+                  ) : (
+                    allMentorEntries.map((entry) => (
+                      <CheckInCard
+                        key={entry.id}
+                        entry={entry}
+                        copiedId={copiedId}
+                        onCopy={copyCheckIn}
+                        onClick={setSelectedEntry}
+                      />
+                    ))
+                  )}
                 </div>
               </DialogContent>
             </Dialog>
 
-            <Dialog open={selectedEntry !== null} onOpenChange={(open) => { if (!open) setSelectedEntry(null) }}>
+            <Dialog
+              open={selectedEntry !== null}
+              onOpenChange={(open) => {
+                if (!open) setSelectedEntry(null);
+              }}
+            >
               <DialogContent className="max-w-sm">
                 {selectedEntry && (
                   <>
@@ -914,25 +1305,48 @@ export default function HeadcountDashboard({ ToolbarPortal, toolbarNode }: Headc
                     <div className="space-y-4">
                       <div className="space-y-3">
                         <div>
-                          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Date & Time</div>
+                          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
+                            Date & Time
+                          </div>
                           <div className="text-sm">
-                            {new Date(selectedEntry.createdAt).toLocaleString("en-US", {
-                              weekday: "long", month: "long", day: "numeric", year: "numeric",
-                              hour: "numeric", minute: "2-digit",
-                            })}
+                            {new Date(selectedEntry.createdAt).toLocaleString(
+                              "en-US",
+                              {
+                                weekday: "long",
+                                month: "long",
+                                day: "numeric",
+                                year: "numeric",
+                                hour: "numeric",
+                                minute: "2-digit",
+                              }
+                            )}
                           </div>
                         </div>
                         <div>
-                          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Mentors on Duty</div>
-                          <div className="text-sm font-medium">{selectedEntry.mentors.map((m) => m.mentor.user.name).join(", ")}</div>
+                          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
+                            Mentors on Duty
+                          </div>
+                          <div className="text-sm font-medium">
+                            {selectedEntry.mentors
+                              .map((m) => m.mentor.user.name)
+                              .join(", ")}
+                          </div>
                         </div>
                         <div>
-                          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">People in Lab</div>
-                          <div className="text-2xl font-bold tabular-nums">{selectedEntry.peopleInLab}</div>
+                          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
+                            People in Lab
+                          </div>
+                          <div className="text-2xl font-bold tabular-nums">
+                            {selectedEntry.peopleInLab}
+                          </div>
                         </div>
                         <div>
-                          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">How are you feeling?</div>
-                          <div className="text-sm leading-relaxed">{selectedEntry.feeling}</div>
+                          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
+                            How are you feeling?
+                          </div>
+                          <div className="text-sm leading-relaxed">
+                            {selectedEntry.feeling}
+                          </div>
                         </div>
                       </div>
                       <Button
@@ -941,8 +1355,14 @@ export default function HeadcountDashboard({ ToolbarPortal, toolbarNode }: Headc
                         className="w-full gap-1.5"
                         onClick={() => copyCheckIn(selectedEntry)}
                       >
-                        {copiedId === selectedEntry.id ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
-                        {copiedId === selectedEntry.id ? "Copied" : "Copy to clipboard"}
+                        {copiedId === selectedEntry.id ? (
+                          <Check className="h-3.5 w-3.5 text-green-500" />
+                        ) : (
+                          <Copy className="h-3.5 w-3.5" />
+                        )}
+                        {copiedId === selectedEntry.id
+                          ? "Copied"
+                          : "Copy to clipboard"}
                       </Button>
                     </div>
                   </>
@@ -961,7 +1381,8 @@ export default function HeadcountDashboard({ ToolbarPortal, toolbarNode }: Headc
               All Semesters · Side-by-Side
             </h3>
             <p className="text-xs text-muted-foreground mb-4">
-              Click column headers to sort. Rows highlight relative to the best semester per metric.
+              Click column headers to sort. Rows highlight relative to the best
+              semester per metric.
             </p>
           </div>
 
@@ -984,7 +1405,10 @@ export default function HeadcountDashboard({ ToolbarPortal, toolbarNode }: Headc
                           { key: "avgPeopleInLab", label: "Avg Lab" },
                           { key: "menteeSubmissions", label: "55-min" },
                           { key: "avgStudentsMentored", label: "Avg Students" },
-                          { key: "totalStudentsMentored", label: "Total Students" },
+                          {
+                            key: "totalStudentsMentored",
+                            label: "Total Students",
+                          },
                           { key: "avgTestsCheckedOut", label: "Avg Tests" },
                           { key: "totalTestsCheckedOut", label: "Total Tests" },
                         ] as { key: keyof SemesterTrend; label: string }[]
@@ -994,32 +1418,39 @@ export default function HeadcountDashboard({ ToolbarPortal, toolbarNode }: Headc
                           onClick={() => toggleSort(key)}
                           className="px-3 py-2.5 text-left font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap cursor-pointer select-none hover:text-foreground transition-colors"
                         >
-                          {label}{sortIndicator(key)}
+                          {label}
+                          {sortIndicator(key)}
                         </th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {sortedTrends.map((row, i) => {
-                      const isActive = row.isActive
-                      const prevRow = i < sortedTrends.length - 1 ? sortedTrends[i + 1] : null
+                      const isActive = row.isActive;
+                      const prevRow =
+                        i < sortedTrends.length - 1
+                          ? sortedTrends[i + 1]
+                          : null;
 
-                      let progress: number | null = null
+                      let progress: number | null = null;
                       if (isActive && row.semesterStart && row.semesterEnd) {
-                        const start = new Date(row.semesterStart).getTime()
-                        const end = new Date(row.semesterEnd).getTime()
-                        const now = Date.now()
+                        const start = new Date(row.semesterStart).getTime();
+                        const end = new Date(row.semesterEnd).getTime();
                         if (end > start) {
-                          progress = Math.max(0, Math.min(1, (now - start) / (end - start)))
+                          progress = Math.max(
+                            0,
+                            Math.min(1, (now - start) / (end - start))
+                          );
                         }
                       }
 
                       const paceNote = (prevTotal: number | undefined) => {
-                        if (progress == null || prevTotal == null) return undefined
-                        const pctStr = `${Math.round(progress * 100)}%`
-                        const prevAtPace = Math.round(prevTotal * progress)
-                        return `${pctStr} through · prev had ~${prevAtPace}`
-                      }
+                        if (progress == null || prevTotal == null)
+                          return undefined;
+                        const pctStr = `${Math.round(progress * 100)}%`;
+                        const prevAtPace = Math.round(prevTotal * progress);
+                        return `${pctStr} through · prev had ~${prevAtPace}`;
+                      };
 
                       return (
                         <tr
@@ -1029,18 +1460,53 @@ export default function HeadcountDashboard({ ToolbarPortal, toolbarNode }: Headc
                           <td className="px-3 py-2.5 font-medium whitespace-nowrap">
                             {row.semesterName}
                             {isActive && (
-                              <Badge variant="outline" className="ml-2 text-[9px] h-4 px-1">active</Badge>
+                              <Badge
+                                variant="outline"
+                                className="ml-2 text-[9px] h-4 px-1"
+                              >
+                                active
+                              </Badge>
                             )}
                           </td>
-                          <CompareCell value={row.mentorSubmissions} prev={prevRow?.mentorSubmissions} paceNote={paceNote(prevRow?.mentorSubmissions)} />
-                          <CompareCell value={row.avgPeopleInLab} prev={prevRow?.avgPeopleInLab} decimals={1} />
-                          <CompareCell value={row.menteeSubmissions} prev={prevRow?.menteeSubmissions} paceNote={paceNote(prevRow?.menteeSubmissions)} />
-                          <CompareCell value={row.avgStudentsMentored} prev={prevRow?.avgStudentsMentored} decimals={1} />
-                          <CompareCell value={row.totalStudentsMentored} prev={prevRow?.totalStudentsMentored} highlight paceNote={paceNote(prevRow?.totalStudentsMentored)} />
-                          <CompareCell value={row.avgTestsCheckedOut} prev={prevRow?.avgTestsCheckedOut} decimals={1} />
-                          <CompareCell value={row.totalTestsCheckedOut} prev={prevRow?.totalTestsCheckedOut} highlight paceNote={paceNote(prevRow?.totalTestsCheckedOut)} />
+                          <CompareCell
+                            value={row.mentorSubmissions}
+                            prev={prevRow?.mentorSubmissions}
+                            paceNote={paceNote(prevRow?.mentorSubmissions)}
+                          />
+                          <CompareCell
+                            value={row.avgPeopleInLab}
+                            prev={prevRow?.avgPeopleInLab}
+                            decimals={1}
+                          />
+                          <CompareCell
+                            value={row.menteeSubmissions}
+                            prev={prevRow?.menteeSubmissions}
+                            paceNote={paceNote(prevRow?.menteeSubmissions)}
+                          />
+                          <CompareCell
+                            value={row.avgStudentsMentored}
+                            prev={prevRow?.avgStudentsMentored}
+                            decimals={1}
+                          />
+                          <CompareCell
+                            value={row.totalStudentsMentored}
+                            prev={prevRow?.totalStudentsMentored}
+                            highlight
+                            paceNote={paceNote(prevRow?.totalStudentsMentored)}
+                          />
+                          <CompareCell
+                            value={row.avgTestsCheckedOut}
+                            prev={prevRow?.avgTestsCheckedOut}
+                            decimals={1}
+                          />
+                          <CompareCell
+                            value={row.totalTestsCheckedOut}
+                            prev={prevRow?.totalTestsCheckedOut}
+                            highlight
+                            paceNote={paceNote(prevRow?.totalTestsCheckedOut)}
+                          />
                         </tr>
-                      )
+                      );
                     })}
                   </tbody>
                 </table>
@@ -1058,16 +1524,34 @@ export default function HeadcountDashboard({ ToolbarPortal, toolbarNode }: Headc
               </CardHeader>
               <CardContent className="px-2 pb-4">
                 <ResponsiveContainer width="100%" height={200}>
-                  <LineChart data={chartData} margin={{ top: 4, right: 20, left: -8, bottom: 4 }}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-border/40" />
+                  <LineChart
+                    data={chartData}
+                    margin={{ top: 4, right: 20, left: -8, bottom: 4 }}
+                  >
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      className="stroke-border/40"
+                    />
                     <XAxis dataKey="short" tick={{ fontSize: 11 }} />
                     <YAxis tick={{ fontSize: 11 }} />
-                    <Tooltip content={<ChartTooltip labelMap={shortLabelMap} />} />
+                    <Tooltip
+                      content={<ChartTooltip labelMap={shortLabelMap} />}
+                    />
                     <ReferenceLine
-                      y={chartData.reduce((s, d) => s + d.avgStudentsMentored, 0) / (chartData.length || 1)}
+                      y={
+                        chartData.reduce(
+                          (s, d) => s + d.avgStudentsMentored,
+                          0
+                        ) / (chartData.length || 1)
+                      }
                       stroke="#94a3b8"
                       strokeDasharray="4 2"
-                      label={{ value: "avg", position: "right", fontSize: 10, fill: "#94a3b8" }}
+                      label={{
+                        value: "avg",
+                        position: "right",
+                        fontSize: 10,
+                        fill: "#94a3b8",
+                      }}
                     />
                     <Line
                       type="monotone"
@@ -1095,7 +1579,7 @@ export default function HeadcountDashboard({ ToolbarPortal, toolbarNode }: Headc
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }
 
 // ─── CompareCell: table cell with optional delta indicator ────────────────────
@@ -1106,26 +1590,28 @@ function CompareCell({
   highlight = false,
   paceNote,
 }: {
-  value: number
-  prev?: number
-  decimals?: number
-  highlight?: boolean
-  paceNote?: string
+  value: number;
+  prev?: number;
+  decimals?: number;
+  highlight?: boolean;
+  paceNote?: string;
 }) {
-  const delta = prev !== undefined ? pct(value, prev) : null
-  const formatted = decimals ? value.toFixed(decimals) : value.toLocaleString()
+  const delta = prev !== undefined ? pct(value, prev) : null;
+  const formatted = decimals ? value.toFixed(decimals) : value.toLocaleString();
 
   return (
-    <td className={`px-3 py-2.5 tabular-nums whitespace-nowrap ${highlight && value > 0 ? "font-semibold" : ""}`}>
+    <td
+      className={`px-3 py-2.5 tabular-nums whitespace-nowrap ${highlight && value > 0 ? "font-semibold" : ""}`}
+    >
       <div className="flex items-center gap-1.5">
         <span>{formatted}</span>
-        {delta !== null && (
-          <Delta value={delta} />
-        )}
+        {delta !== null && <Delta value={delta} />}
       </div>
       {paceNote && (
-        <div className="text-[10px] text-muted-foreground mt-0.5 leading-tight">{paceNote}</div>
+        <div className="text-[10px] text-muted-foreground mt-0.5 leading-tight">
+          {paceNote}
+        </div>
       )}
     </td>
-  )
+  );
 }

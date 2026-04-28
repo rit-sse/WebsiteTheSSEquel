@@ -1,20 +1,20 @@
-import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth/next"
-import { Prisma } from "@prisma/client"
-import { authOptions } from "@/lib/authOptions"
-import prisma from "@/lib/prisma"
-import { resolveUserImage } from "@/lib/s3Utils"
-import { getGatewayAuthLevel } from "@/lib/authGateway"
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth/next";
+import { Prisma } from "@prisma/client";
+import { authOptions } from "@/lib/authOptions";
+import prisma from "@/lib/prisma";
+import { resolveUserImage } from "@/lib/s3Utils";
+import { getGatewayAuthLevel } from "@/lib/authGateway";
 
-export const dynamic = "force-dynamic"
+export const dynamic = "force-dynamic";
 
 /**
  * Check if the current user can manage mentor applications
  * (Must be Mentoring Head or Primary Officer)
  */
 async function canManageApplications(request: NextRequest): Promise<boolean> {
-  const authLevel = await getGatewayAuthLevel(request)
-  return authLevel.isMentoringHead || authLevel.isPrimary
+  const authLevel = await getGatewayAuthLevel(request);
+  return authLevel.isMentoringHead || authLevel.isPrimary;
 }
 
 /**
@@ -22,28 +22,28 @@ async function canManageApplications(request: NextRequest): Promise<boolean> {
  * Returns applications (filtered by semester, status, or user)
  */
 export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams
-  const id = searchParams.get("id")
-  const semesterId = searchParams.get("semesterId")
-  const status = searchParams.get("status")
-  const userId = searchParams.get("userId")
-  const myApplications = searchParams.get("my") === "true"
+  const searchParams = request.nextUrl.searchParams;
+  const id = searchParams.get("id");
+  const semesterId = searchParams.get("semesterId");
+  const status = searchParams.get("status");
+  const userId = searchParams.get("userId");
+  const myApplications = searchParams.get("my") === "true";
 
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession(authOptions);
 
     // If fetching own applications
     if (myApplications) {
       if (!session?.user?.email) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
 
       const user = await prisma.user.findUnique({
         where: { email: session.user.email },
-      })
+      });
 
       if (!user) {
-        return NextResponse.json({ error: "User not found" }, { status: 404 })
+        return NextResponse.json({ error: "User not found" }, { status: 404 });
       }
 
       const applications = await prisma.mentorApplication.findMany({
@@ -58,9 +58,9 @@ export async function GET(request: NextRequest) {
           },
         },
         orderBy: { createdAt: "desc" },
-      })
+      });
 
-      return NextResponse.json(applications)
+      return NextResponse.json(applications);
     }
 
     // For single application by ID
@@ -84,24 +84,27 @@ export async function GET(request: NextRequest) {
             },
           },
         },
-      })
+      });
 
       if (!application) {
-        return NextResponse.json({ error: "Application not found" }, { status: 404 })
+        return NextResponse.json(
+          { error: "Application not found" },
+          { status: 404 }
+        );
       }
 
       // Check if user owns this application or can manage
-      const canManage = await canManageApplications(request)
+      const canManage = await canManageApplications(request);
       if (session?.user?.email) {
         const user = await prisma.user.findUnique({
           where: { email: session.user.email },
-        })
+        });
 
         if (!canManage && user?.id !== application.userId) {
-          return NextResponse.json({ error: "Access denied" }, { status: 403 })
+          return NextResponse.json({ error: "Access denied" }, { status: 403 });
         }
       } else if (!canManage) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
 
       const applicationWithImage = {
@@ -113,26 +116,29 @@ export async function GET(request: NextRequest) {
             application.user.googleImageURL
           ),
         },
-      }
+      };
 
-      return NextResponse.json(applicationWithImage)
+      return NextResponse.json(applicationWithImage);
     }
 
     // For listing applications (requires management permission)
-    const canManage = await canManageApplications(request)
+    const canManage = await canManageApplications(request);
     if (!session?.user?.email && !canManage) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     if (!canManage) {
       return NextResponse.json(
-        { error: "Only Mentoring Head or Primary Officers can view all applications" },
+        {
+          error:
+            "Only Mentoring Head or Primary Officers can view all applications",
+        },
         { status: 403 }
-      )
+      );
     }
 
-    const where: Prisma.MentorApplicationWhereInput = {}
+    const where: Prisma.MentorApplicationWhereInput = {};
 
-    if (semesterId) where.semesterId = parseInt(semesterId)
+    if (semesterId) where.semesterId = parseInt(semesterId);
     if (status) {
       if (status === "invited") {
         where.AND = [
@@ -144,9 +150,9 @@ export async function GET(request: NextRequest) {
               },
             },
           },
-        ]
+        ];
       } else {
-        where.status = status
+        where.status = status;
       }
     } else {
       // Keep accepted/closed applications out of the review queue by default.
@@ -164,9 +170,9 @@ export async function GET(request: NextRequest) {
             },
           ],
         },
-      ]
+      ];
     }
-    if (userId) where.userId = parseInt(userId)
+    if (userId) where.userId = parseInt(userId);
 
     const applications = await prisma.mentorApplication.findMany({
       where,
@@ -188,7 +194,7 @@ export async function GET(request: NextRequest) {
         },
       },
       orderBy: { createdAt: "desc" },
-    })
+    });
 
     const applicationsWithImage = applications.map((application) => ({
       ...application,
@@ -199,15 +205,15 @@ export async function GET(request: NextRequest) {
           application.user.googleImageURL
         ),
       },
-    }))
+    }));
 
-    return NextResponse.json(applicationsWithImage)
+    return NextResponse.json(applicationsWithImage);
   } catch (error) {
-    console.error("Error fetching applications:", error)
+    console.error("Error fetching applications:", error);
     return NextResponse.json(
       { error: "Failed to fetch applications" },
       { status: 500 }
-    )
+    );
   }
 }
 
@@ -217,20 +223,23 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      return NextResponse.json({ error: "Unauthorized - please sign in" }, { status: 401 })
+      return NextResponse.json(
+        { error: "Unauthorized - please sign in" },
+        { status: 401 }
+      );
     }
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-    })
+    });
 
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 })
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const body = await request.json()
+    const body = await request.json();
     const {
       semesterId,
       discordUsername,
@@ -244,35 +253,41 @@ export async function POST(request: NextRequest) {
       previousSemesters,
       whyMentor,
       comments,
-    } = body
+    } = body;
 
     // Validate required fields
     if (!semesterId) {
-      return NextResponse.json({ error: "Semester is required" }, { status: 400 })
+      return NextResponse.json(
+        { error: "Semester is required" },
+        { status: 400 }
+      );
     }
 
     // Check if semester exists and is accepting applications
     const semester = await prisma.mentorSemester.findUnique({
       where: { id: semesterId },
-    })
+    });
 
     if (!semester) {
-      return NextResponse.json({ error: "Semester not found" }, { status: 404 })
+      return NextResponse.json(
+        { error: "Semester not found" },
+        { status: 404 }
+      );
     }
 
     // Check if applications are open
-    const now = new Date()
+    const now = new Date();
     if (semester.applicationOpen && now < semester.applicationOpen) {
       return NextResponse.json(
         { error: "Applications have not opened yet" },
         { status: 400 }
-      )
+      );
     }
     if (semester.applicationClose && now > semester.applicationClose) {
       return NextResponse.json(
         { error: "Applications have closed" },
         { status: 400 }
-      )
+      );
     }
 
     // Check if user already applied for this semester
@@ -283,30 +298,42 @@ export async function POST(request: NextRequest) {
           semesterId,
         },
       },
-    })
+    });
 
     if (existingApplication) {
       return NextResponse.json(
         { error: "You have already applied for this semester" },
         { status: 409 }
-      )
+      );
     }
 
     // Validate required form fields
     if (!discordUsername?.trim()) {
-      return NextResponse.json({ error: "Discord username is required" }, { status: 400 })
+      return NextResponse.json(
+        { error: "Discord username is required" },
+        { status: 400 }
+      );
     }
     if (!pronouns?.trim()) {
-      return NextResponse.json({ error: "Pronouns are required" }, { status: 400 })
+      return NextResponse.json(
+        { error: "Pronouns are required" },
+        { status: 400 }
+      );
     }
     if (!major?.trim()) {
-      return NextResponse.json({ error: "Major is required" }, { status: 400 })
+      return NextResponse.json({ error: "Major is required" }, { status: 400 });
     }
     if (!yearLevel?.trim()) {
-      return NextResponse.json({ error: "Year level is required" }, { status: 400 })
+      return NextResponse.json(
+        { error: "Year level is required" },
+        { status: 400 }
+      );
     }
     if (!whyMentor?.trim()) {
-      return NextResponse.json({ error: "Please explain why you want to be a mentor" }, { status: 400 })
+      return NextResponse.json(
+        { error: "Please explain why you want to be a mentor" },
+        { status: 400 }
+      );
     }
 
     // Create the application
@@ -335,15 +362,15 @@ export async function POST(request: NextRequest) {
           },
         },
       },
-    })
+    });
 
-    return NextResponse.json(application, { status: 201 })
+    return NextResponse.json(application, { status: 201 });
   } catch (error) {
-    console.error("Error creating application:", error)
+    console.error("Error creating application:", error);
     return NextResponse.json(
       { error: "Failed to submit application" },
       { status: 500 }
-    )
+    );
   }
 }
 
@@ -353,35 +380,50 @@ export async function POST(request: NextRequest) {
  */
 export async function PUT(request: NextRequest) {
   try {
-    const canManage = await canManageApplications(request)
+    const canManage = await canManageApplications(request);
     if (!canManage) {
       return NextResponse.json(
-        { error: "Only Mentoring Head or Primary Officers can update applications" },
+        {
+          error:
+            "Only Mentoring Head or Primary Officers can update applications",
+        },
         { status: 403 }
-      )
+      );
     }
 
-    const body = await request.json()
-    const { id, status } = body
+    const body = await request.json();
+    const { id, status } = body;
 
     if (!id) {
-      return NextResponse.json({ error: "Application ID is required" }, { status: 400 })
+      return NextResponse.json(
+        { error: "Application ID is required" },
+        { status: 400 }
+      );
     }
 
-    if (!status || !["pending", "approved", "rejected", "invited", "closed"].includes(status)) {
+    if (
+      !status ||
+      !["pending", "approved", "rejected", "invited", "closed"].includes(status)
+    ) {
       return NextResponse.json(
-        { error: "Valid status is required (pending, approved, rejected, invited, closed)" },
+        {
+          error:
+            "Valid status is required (pending, approved, rejected, invited, closed)",
+        },
         { status: 400 }
-      )
+      );
     }
 
     // Check if application exists
     const existingApplication = await prisma.mentorApplication.findUnique({
       where: { id },
-    })
+    });
 
     if (!existingApplication) {
-      return NextResponse.json({ error: "Application not found" }, { status: 404 })
+      return NextResponse.json(
+        { error: "Application not found" },
+        { status: 404 }
+      );
     }
 
     const application = await prisma.mentorApplication.update({
@@ -404,7 +446,7 @@ export async function PUT(request: NextRequest) {
           },
         },
       },
-    })
+    });
 
     const applicationWithImage = {
       ...application,
@@ -415,15 +457,15 @@ export async function PUT(request: NextRequest) {
           application.user.googleImageURL
         ),
       },
-    }
+    };
 
-    return NextResponse.json(applicationWithImage)
+    return NextResponse.json(applicationWithImage);
   } catch (error) {
-    console.error("Error updating application:", error)
+    console.error("Error updating application:", error);
     return NextResponse.json(
       { error: "Failed to update application" },
       { status: 500 }
-    )
+    );
   }
 }
 
@@ -433,21 +475,21 @@ export async function PUT(request: NextRequest) {
  */
 export async function PATCH(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
       select: { id: true },
-    })
+    });
 
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 })
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const body = await request.json()
+    const body = await request.json();
     const {
       id,
       discordUsername,
@@ -461,10 +503,13 @@ export async function PATCH(request: NextRequest) {
       previousSemesters,
       whyMentor,
       comments,
-    } = body ?? {}
+    } = body ?? {};
 
     if (!id || Number.isNaN(Number(id))) {
-      return NextResponse.json({ error: "Valid application id is required" }, { status: 400 })
+      return NextResponse.json(
+        { error: "Valid application id is required" },
+        { status: 400 }
+      );
     }
 
     const existingApplication = await prisma.mentorApplication.findUnique({
@@ -473,36 +518,54 @@ export async function PATCH(request: NextRequest) {
         id: true,
         userId: true,
       },
-    })
+    });
 
     if (!existingApplication) {
-      return NextResponse.json({ error: "Application not found" }, { status: 404 })
+      return NextResponse.json(
+        { error: "Application not found" },
+        { status: 404 }
+      );
     }
 
     if (existingApplication.userId !== user.id) {
-      return NextResponse.json({ error: "Access denied" }, { status: 403 })
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
     if (!discordUsername?.trim()) {
-      return NextResponse.json({ error: "Discord username is required" }, { status: 400 })
+      return NextResponse.json(
+        { error: "Discord username is required" },
+        { status: 400 }
+      );
     }
     if (!pronouns?.trim()) {
-      return NextResponse.json({ error: "Pronouns are required" }, { status: 400 })
+      return NextResponse.json(
+        { error: "Pronouns are required" },
+        { status: 400 }
+      );
     }
     if (!major?.trim()) {
-      return NextResponse.json({ error: "Major is required" }, { status: 400 })
+      return NextResponse.json({ error: "Major is required" }, { status: 400 });
     }
     if (!yearLevel?.trim()) {
-      return NextResponse.json({ error: "Year level is required" }, { status: 400 })
+      return NextResponse.json(
+        { error: "Year level is required" },
+        { status: 400 }
+      );
     }
     if (!whyMentor?.trim()) {
-      return NextResponse.json({ error: "Please explain why you want to be a mentor" }, { status: 400 })
+      return NextResponse.json(
+        { error: "Please explain why you want to be a mentor" },
+        { status: 400 }
+      );
     }
 
-    const parsedPreviousSemesters = Number.parseInt(String(previousSemesters), 10)
+    const parsedPreviousSemesters = Number.parseInt(
+      String(previousSemesters),
+      10
+    );
     const safePreviousSemesters = Number.isNaN(parsedPreviousSemesters)
       ? 0
-      : Math.max(0, Math.min(parsedPreviousSemesters, 5))
+      : Math.max(0, Math.min(parsedPreviousSemesters, 5));
 
     const updated = await prisma.mentorApplication.update({
       where: { id: Number(id) },
@@ -528,15 +591,15 @@ export async function PATCH(request: NextRequest) {
           },
         },
       },
-    })
+    });
 
-    return NextResponse.json(updated)
+    return NextResponse.json(updated);
   } catch (error) {
-    console.error("Error patching application:", error)
+    console.error("Error patching application:", error);
     return NextResponse.json(
       { error: "Failed to update application" },
       { status: 500 }
-    )
+    );
   }
 }
 
@@ -546,40 +609,46 @@ export async function PATCH(request: NextRequest) {
  */
 export async function DELETE(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { id } = body
+    const body = await request.json();
+    const { id } = body;
 
     if (!id) {
-      return NextResponse.json({ error: "Application ID is required" }, { status: 400 })
+      return NextResponse.json(
+        { error: "Application ID is required" },
+        { status: 400 }
+      );
     }
 
     // Check if application exists
     const existingApplication = await prisma.mentorApplication.findUnique({
       where: { id },
-    })
+    });
 
     if (!existingApplication) {
-      return NextResponse.json({ error: "Application not found" }, { status: 404 })
+      return NextResponse.json(
+        { error: "Application not found" },
+        { status: 404 }
+      );
     }
 
     // Users can delete their own applications; managers can delete any application.
-    const canManage = await canManageApplications(request)
+    const canManage = await canManageApplications(request);
     if (!canManage) {
-      const session = await getServerSession(authOptions)
+      const session = await getServerSession(authOptions);
       if (!session?.user?.email) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
 
       const user = await prisma.user.findUnique({
         where: { email: session.user.email },
-      })
+      });
 
       if (!user) {
-        return NextResponse.json({ error: "User not found" }, { status: 404 })
+        return NextResponse.json({ error: "User not found" }, { status: 404 });
       }
 
       if (existingApplication.userId !== user.id) {
-        return NextResponse.json({ error: "Access denied" }, { status: 403 })
+        return NextResponse.json({ error: "Access denied" }, { status: 403 });
       }
     }
 
@@ -587,19 +656,19 @@ export async function DELETE(request: NextRequest) {
       // Revoke any pending invitation tied to this application so it can no longer be accepted.
       await tx.invitation.deleteMany({
         where: { applicationId: id },
-      })
+      });
 
       await tx.mentorApplication.delete({
         where: { id },
-      })
-    })
+      });
+    });
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deleting application:", error)
+    console.error("Error deleting application:", error);
     return NextResponse.json(
       { error: "Failed to delete application" },
       { status: 500 }
-    )
+    );
   }
 }
