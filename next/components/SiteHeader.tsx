@@ -6,6 +6,8 @@ import type { SiteBanner } from "@/lib/siteBanners";
 import Navbar from "@/components/nav/Navbar";
 import SiteBannerList from "@/components/SiteBannerList";
 
+const HEADER_CONTENT_GUTTER_PX = 12;
+
 type SiteHeaderProps = {
   serverUserId?: number | null;
   serverShowDashboard?: boolean;
@@ -59,8 +61,12 @@ export default function SiteHeader({
       </header>
       <div
         aria-hidden="true"
-        className={banners.length > 0 ? "h-32 lg:h-36" : "h-20"}
-        style={headerHeight == null ? undefined : { height: headerHeight }}
+        className={banners.length > 0 ? "h-36 lg:h-40" : "h-24"}
+        style={
+          headerHeight == null
+            ? undefined
+            : { height: headerHeight + HEADER_CONTENT_GUTTER_PX }
+        }
       />
     </>
   );
