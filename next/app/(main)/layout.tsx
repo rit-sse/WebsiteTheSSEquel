@@ -5,8 +5,9 @@ import Footer from "@/components/Footer";
 import ScrollToTopButton from "@/components/nav/ScrollToTopButton";
 import { Toaster } from "@/components/ui/sonner";
 import { getAuthLevel } from "@/lib/services/authLevelService";
-import { ActiveElectionBanner } from "@/components/elections/ActiveElectionBanner";
 import { getActiveElection } from "@/lib/elections";
+import { getSiteBanners } from "@/lib/siteBanners";
+import SiteBannerList from "@/components/SiteBannerList";
 
 export default async function MainLayout({
   children,
@@ -17,6 +18,7 @@ export default async function MainLayout({
     getAuthLevel(),
     getActiveElection(),
   ]);
+  const banners = await getSiteBanners(activeElection);
 
   return (
     <>
@@ -28,8 +30,12 @@ export default async function MainLayout({
         serverProfileComplete={authLevel.profileComplete}
         serverActiveElection={activeElection}
       />
-      <ActiveElectionBanner />
-      <main className="flex flex-col grow items-center px-2 pb-2 pt-20 md:px-3 md:pb-3 md:pt-20 lg:px-4 lg:pb-4 lg:pt-20 w-full overflow-x-hidden">
+      <SiteBannerList banners={banners} />
+      <main
+        className={`flex flex-col grow items-center px-2 pb-2 md:px-3 md:pb-3 lg:px-4 lg:pb-4 w-full overflow-x-hidden ${
+          banners.length === 0 ? "pt-20 md:pt-20 lg:pt-20" : ""
+        }`}
+      >
         {children}
       </main>
       <ScrollToTopButton />
