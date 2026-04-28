@@ -245,7 +245,9 @@ function ManageTile({
   return (
     <div
       className={[
-        "group relative aspect-square overflow-hidden rounded-md bg-surface-2",
+        // Explicit `w-full` keeps aspect-square stable across browsers
+        // when the parent is a CSS grid track.
+        "group relative w-full aspect-square overflow-hidden rounded-md bg-surface-2",
         "neo:border-2 neo:border-border/40",
         "clean:border clean:border-border/20",
         isHidden && "ring-2 ring-amber-500/60",
@@ -392,7 +394,7 @@ function EditPhotoModal({
     >
       <div className="grid gap-5 md:grid-cols-[200px_minmax(0,1fr)]">
         <div className="space-y-3">
-          <div className="relative aspect-square overflow-hidden rounded-md border border-border/40 bg-black">
+          <div className="relative w-full aspect-square overflow-hidden rounded-md border border-border/40 bg-black">
             <Image
               src={photo.imageUrl}
               alt={altText || caption || photo.originalFilename}

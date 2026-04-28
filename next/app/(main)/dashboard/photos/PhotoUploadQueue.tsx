@@ -35,8 +35,10 @@ export function PhotoUploadQueue({
             ].join(" ")}
           >
             <div className="grid gap-3 md:grid-cols-[88px_minmax(0,1fr)_minmax(0,200px)_auto]">
-              {/* Preview */}
-              <div className="relative aspect-square w-22 overflow-hidden rounded-md border border-border/40 bg-black">
+              {/* Preview — explicit pixel width so the aspect-square box
+                  resolves on both the mobile single-column layout and the
+                  `md:` 88px grid track without collapsing. */}
+              <div className="relative aspect-square w-full md:w-[88px] overflow-hidden rounded-md border border-border/40 bg-black">
                 <Image
                   src={item.previewUrl}
                   alt={item.file.name}
