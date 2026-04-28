@@ -35,10 +35,16 @@ export function PhotoUploadQueue({
             ].join(" ")}
           >
             <div className="grid gap-3 md:grid-cols-[88px_minmax(0,1fr)_minmax(0,200px)_auto]">
-              {/* Preview — explicit pixel width so the aspect-square box
-                  resolves on both the mobile single-column layout and the
-                  `md:` 88px grid track without collapsing. */}
-              <div className="relative aspect-square w-full md:w-[88px] overflow-hidden rounded-md border border-border/40 bg-black">
+              {/* Preview — percentage padding-bottom hack keeps the box
+                  square regardless of where it sits in the responsive
+                  layout (full-width on mobile, 88px on `md:`). Bare
+                  `aspect-square` collapses to 0 height in some grid
+                  contexts; padding-bottom resolves against parent
+                  width and is rock-solid. */}
+              <div
+                className="relative w-full md:w-[88px] overflow-hidden rounded-md border border-border/40 bg-black"
+                style={{ paddingBottom: "100%" }}
+              >
                 <Image
                   src={item.previewUrl}
                   alt={item.file.name}

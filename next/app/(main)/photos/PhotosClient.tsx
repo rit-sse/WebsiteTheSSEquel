@@ -320,7 +320,13 @@ function PhotoGridSkeleton() {
           <Skeleton className="h-6 w-48" />
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
             {Array.from({ length: 12 }).map((_, i) => (
-              <Skeleton key={i} className="aspect-square w-full" />
+              <div
+                key={i}
+                className="relative w-full"
+                style={{ paddingBottom: "100%" }}
+              >
+                <Skeleton className="absolute inset-0" />
+              </div>
             ))}
           </div>
         </div>
