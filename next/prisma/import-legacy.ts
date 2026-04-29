@@ -4,6 +4,10 @@
  * Imports ~10 years of SSE data (2015-2025) from an old Sequelize/Postgres
  * SQL dump file directly into the new Prisma schema.
  *
+ * Intentionally does not import legacy membership rows. Historical
+ * membership grants affect current member status and should only be migrated
+ * through a separate, explicit migration with a reviewed product decision.
+ *
  * Officer titles are normalized so legacy variations (e.g. "Events",
  * "Events Head", "PR", "Public Relations") all map to a single canonical
  * position.  Positions that no longer exist in the current org are created
@@ -551,13 +555,15 @@ async function main() {
   // Clean up the previous import's officer data
   await cleanupPreviousImport();
 
-  // Re-import everything (idempotent for users/events/links/quotes/memberships)
+  // Re-import legacy content. Memberships are intentionally skipped; historical
+  // membership grants should not affect current member status.
   await importUsers(db);
   await importEvents(db);
   await importGoLinks(db);
   await importQuotes(db);
   await importOfficers(db);
-  await importMemberships(db);
+  console.log("\n═══ Skipping Memberships ═══");
+  console.log("  Legacy membership rows are not imported by design.");
 
   const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
   console.log(`\n══════════════════════════════════════════`);
