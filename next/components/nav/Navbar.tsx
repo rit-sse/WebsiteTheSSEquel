@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ChevronDown, Menu, User, LogOut } from "lucide-react";
+import { ChevronDown, Menu, User, LogOut, LayoutDashboard } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import SSELogoFull from "../common/SSELogoFull";
 import AuthButton from "./AuthButton";
@@ -76,64 +76,6 @@ const aboutItems = [
   },
 ];
 
-const dashboardItems = [
-  {
-    title: "Purchasing",
-    href: "/purchasing",
-    description: "Request PCard checkout and submit receipts.",
-  },
-  {
-    title: "Attendance",
-    href: "/attendance",
-    description: "View event attendance lists and QR flyers.",
-  },
-  {
-    title: "Mentoring",
-    href: "/dashboard/mentoring",
-    description: "Manage mentor schedules and roster.",
-  },
-  {
-    title: "Tech Committee Apps",
-    href: "/dashboard/tech-committee",
-    description: "Review Tech Committee applications and manage availability.",
-  },
-  {
-    title: "Positions & Officers",
-    href: "/dashboard/positions",
-    description: "Manage officer positions and assignments.",
-  },
-  {
-    title: "Users",
-    href: "/dashboard/users",
-    description: "Manage user accounts.",
-  },
-  {
-    title: "Sponsors",
-    href: "/dashboard/sponsors",
-    description: "Manage sponsor information.",
-  },
-  {
-    title: "Alumni Review",
-    href: "/dashboard/alumni",
-    description: "Review alumni requests and auto-generated candidates.",
-  },
-  {
-    title: "Elections",
-    href: "/dashboard/elections",
-    description: "Create and manage primary-officer election cycles.",
-  },
-  {
-    title: "Announcements",
-    href: "/dashboard/announcements",
-    description: "Manage site-wide announcement banners.",
-  },
-  {
-    title: "Photos",
-    href: "/dashboard/photos",
-    description: "Upload and manage SSE photo library images.",
-  },
-];
-
 interface NavbarProps {
   /** Resolved on the server so the first paint already includes Dashboard / profile link. */
   serverUserId?: number | null;
@@ -160,22 +102,17 @@ const Navbar: React.FC<NavbarProps> = ({
   const [profileComplete, setProfileComplete] = React.useState(
     serverProfileComplete
   );
-  const [hasMentorAvailabilityUpdates, setHasMentorAvailabilityUpdates] =
-    React.useState(false);
-  const [canViewTechCommitteeDashboard, setCanViewTechCommitteeDashboard] =
-    React.useState(false);
-  const [canManagePhotos, setCanManagePhotos] = React.useState(false);
-  const [isPrimary, setIsPrimary] = React.useState(false);
 
-  // Background refresh so dynamic changes (e.g. profile completion) still propagate
+  // Background refresh so dynamic changes (e.g. profile completion) still
+  // propagate. The navbar no longer renders a dashboard dropdown, so we only
+  // need the top-level "is this user an officer/mentor?" gate plus the
+  // profile fields — the dashboard page itself owns the per-section
+  // visibility now.
   React.useEffect(() => {
     if (!session) {
-        setShowDashboard(false);
-        setUserId(null);
-        setCanViewTechCommitteeDashboard(false);
-        setCanManagePhotos(false);
-        setIsPrimary(false);
-        return;
+      setShowDashboard(false);
+      setUserId(null);
+      return;
     }
 
     (async () => {
@@ -185,82 +122,11 @@ const Navbar: React.FC<NavbarProps> = ({
         setShowDashboard(data.isOfficer || data.isMentor);
         setUserId(data.userId ?? null);
         setProfileComplete(data.profileComplete ?? true);
-        setCanManagePhotos(!!(data.isOfficer || data.isSeAdmin));
-        // Use the DB-truth flag, NOT `data.isPrimary` — the latter is
-        // set to true by STAGING_PROXY_AUTH for every signed-in user,
-        // which makes the Elections dropdown item show up for everyone
-        // on ssedev (including non-primaries like the Tech Head).
-        setIsPrimary(!!data.isPrimaryOfficer);
-        setCanViewTechCommitteeDashboard(
-          !!(
-            data.isTechCommitteeHead ||
-            data.isPrimary ||
-            data.isTechCommitteeDivisionManager
-          )
-        );
-        if (data.isMentoringHead) {
-          const updatesResponse = await fetch(
-            "/api/mentor-availability/updates"
-          );
-          if (updatesResponse.ok) {
-            const updatesData = await updatesResponse.json();
-            const latestUpdatedAt = updatesData?.latestUpdatedAt
-              ? Date.parse(updatesData.latestUpdatedAt)
-              : 0;
-            const seenAt = Number(
-              localStorage.getItem("mentor-availability-last-seen") || "0"
-            );
-            setHasMentorAvailabilityUpdates(latestUpdatedAt > seenAt);
-          } else {
-            setHasMentorAvailabilityUpdates(false);
-          }
-        } else {
-          setHasMentorAvailabilityUpdates(false);
-        }
       } catch (error) {
         console.error("Error checking auth level:", error);
-        setCanViewTechCommitteeDashboard(false);
-        setCanManagePhotos(false);
-        setIsPrimary(false);
       }
     })();
   }, [session]);
-
-  const visibleDashboardItems = React.useMemo(
-    () =>
-      dashboardItems.filter((item) => {
-        if (item.href === "/dashboard/tech-committee") {
-          return canViewTechCommitteeDashboard;
-        }
-        if (
-          item.href === "/dashboard/elections" ||
-          item.href === "/dashboard/announcements"
-        ) {
-          return isPrimary;
-        }
-        if (item.href === "/dashboard/photos") {
-          return canManagePhotos;
-        }
-        return true;
-      }),
-    [canManagePhotos, canViewTechCommitteeDashboard, isPrimary]
-  );
-
-  React.useEffect(() => {
-    const handleMentorAvailabilitySeen = () => {
-      setHasMentorAvailabilityUpdates(false);
-    };
-    window.addEventListener(
-      "mentor-availability-seen",
-      handleMentorAvailabilitySeen
-    );
-    return () => {
-      window.removeEventListener(
-        "mentor-availability-seen",
-        handleMentorAvailabilitySeen
-      );
-    };
-  }, []);
 
   // Controlled state for navigation menu - click to activate, then hover works
   const [menuValue, setMenuValue] = React.useState<string>("");
@@ -421,46 +287,12 @@ const Navbar: React.FC<NavbarProps> = ({
                 </NavigationMenuContent>
               </NavigationMenuItem>
 
-              {showDashboard && (
-                <NavigationMenuItem value="dashboard">
-                  <NavigationMenuTrigger
-                    onClick={handleTriggerClick("dashboard")}
-                  >
-                    <span className="inline-flex items-center gap-2">
-                      Dashboard
-                      {hasMentorAvailabilityUpdates && (
-                        <span className="h-2 w-2 rounded-full bg-destructive" />
-                      )}
-                    </span>
-                  </NavigationMenuTrigger>
-                  <NavigationMenuContent>
-                    <ul className="grid gap-3 p-4 md:w-[400px] lg:w-[500px] lg:grid-cols-2">
-                      {visibleDashboardItems.map((item) => (
-                        <ListItem
-                          key={item.title}
-                          title={
-                            item.href === "/dashboard/mentoring" &&
-                            hasMentorAvailabilityUpdates ? (
-                              <span className="inline-flex items-center gap-2">
-                                {item.title}
-                                <span className="h-2 w-2 rounded-full bg-destructive" />
-                              </span>
-                            ) : (
-                              item.title
-                            )
-                          }
-                          href={item.href}
-                        >
-                          {item.description}
-                        </ListItem>
-                      ))}
-                    </ul>
-                  </NavigationMenuContent>
-                </NavigationMenuItem>
-              )}
-
               <NavigationMenuItem className="flex items-center ml-1">
-                <AuthButton userId={userId} profileComplete={profileComplete} />
+                <AuthButton
+                  userId={userId}
+                  profileComplete={profileComplete}
+                  showOfficerDashboard={showDashboard}
+                />
               </NavigationMenuItem>
             </NavigationMenuList>
           </NavigationMenu>
@@ -541,34 +373,6 @@ const Navbar: React.FC<NavbarProps> = ({
                   ))}
                 </MobileNavCollapsible>
 
-                {showDashboard && (
-                  <MobileNavCollapsible
-                    title={
-                      <span className="inline-flex items-center gap-2">
-                        Dashboard
-                        {hasMentorAvailabilityUpdates && (
-                          <span className="h-2 w-2 rounded-full bg-destructive" />
-                        )}
-                      </span>
-                    }
-                  >
-                    {visibleDashboardItems.map((item) => (
-                      <MobileNavLink
-                        key={item.title}
-                        href={item.href}
-                        onClick={() => setOpen(false)}
-                        className="pl-4"
-                      >
-                        {item.title}
-                        {item.href === "/dashboard/mentoring" &&
-                          hasMentorAvailabilityUpdates && (
-                            <span className="ml-auto h-2 w-2 rounded-full bg-destructive" />
-                          )}
-                      </MobileNavLink>
-                    ))}
-                  </MobileNavCollapsible>
-                )}
-
                 <div className="pt-4 border-t border-border mt-2">
                   {session ? (
                     <div className="flex flex-col gap-1">
@@ -602,6 +406,15 @@ const Navbar: React.FC<NavbarProps> = ({
                           {!profileComplete && (
                             <span className="ml-auto h-2 w-2 rounded-full bg-destructive" />
                           )}
+                        </MobileNavLink>
+                      )}
+                      {showDashboard && (
+                        <MobileNavLink
+                          href="/dashboard"
+                          onClick={() => setOpen(false)}
+                        >
+                          <LayoutDashboard className="h-4 w-4 mr-2" />
+                          Officer Dashboard
                         </MobileNavLink>
                       )}
                       <button
