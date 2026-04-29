@@ -1077,20 +1077,23 @@ export async function tallyElectionForDisplay(slug: string) {
   const presidentOffice = election.offices.find(
     (o) => o.officerPosition.title === PRESIDENT_TITLE
   );
-  const vpOffice = election.offices.find(
-    (o) => o.officerPosition.title === VICE_PRESIDENT_TITLE
-  );
   const presidentResult = rawResults.find(
     (r) => r.officeTitle === PRESIDENT_TITLE
   );
-  if (presidentResult?.winner && presidentOffice && vpOffice) {
+  if (presidentResult?.winner && presidentOffice) {
     const winningNomination = presidentOffice.nominations.find(
       (n) => n.id === presidentResult.winner!.id
     );
     const invitee = getAcceptedRunningMate(winningNomination);
     if (invitee) {
+      const vpOffice = election.offices.find(
+        (o) => o.officerPosition.title === VICE_PRESIDENT_TITLE
+      );
       rawResults.push({
-        officeId: vpOffice.id,
+        // Modern elections do not include Vice President as a ballotable
+        // office row. Use a stable synthetic id for display-only surfaces
+        // when the legacy row is absent.
+        officeId: vpOffice?.id ?? -presidentOffice.id,
         officeTitle: VICE_PRESIDENT_TITLE,
         status: "ok" as const,
         winner: {
