@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import {
-  PRESIDENT_TITLE,
   VICE_PRESIDENT_TITLE,
   compareByPrimaryOrder,
   tallyElectionForDisplay,
@@ -54,33 +53,13 @@ export default async function ElectionResultsRevealPage({
     if (!r.winner) continue;
 
     if (r.ticketDerived && r.officeTitle === VICE_PRESIDENT_TITLE) {
-      // VP slide — no nomination record; pull the invitee from the
-      // presidential office's running-mate invitation.
-      const presidentOffice = election.offices.find(
-        (o) => o.officerPosition.title === PRESIDENT_TITLE
-      );
-      let inviteeUserId = 0;
-      let inviteeName = r.winner.name;
-      let inviteeImage: string | null = null;
-      if (presidentOffice) {
-        for (const nomination of presidentOffice.nominations) {
-          const inv = nomination.runningMateInvitation;
-          if (inv && inv.status === "ACCEPTED" && inv.invitee) {
-            inviteeUserId = inv.invitee.id;
-            inviteeName = inv.invitee.name;
-            inviteeImage = resolveUserImage(
-              inv.invitee.profileImageKey ?? null,
-              inv.invitee.googleImageURL ?? null
-            );
-            break;
-          }
-        }
-      }
+      // VP slide — no nomination record. The display tally already resolves
+      // the winning presidential ticket's accepted running mate.
       slides.push({
         officeTitle: VICE_PRESIDENT_TITLE,
-        winnerName: inviteeName,
-        winnerUserId: inviteeUserId,
-        winnerImage: inviteeImage,
+        winnerName: r.winner.name,
+        winnerUserId: r.winner.userId,
+        winnerImage: r.winner.image,
         statement:
           "Elected as the running mate on the winning presidential ticket.",
         yearLevel: null,
