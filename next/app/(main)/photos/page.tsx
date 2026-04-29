@@ -4,7 +4,7 @@ import { getPhotoImageUrl, PHOTO_CATEGORIES } from "@/lib/photos";
 import { PhotosClient, type PhotoDto, type PhotoEventOption } from "./PhotosClient";
 
 export const metadata: Metadata = {
-  title: "Photos",
+  title: "Historians",
   description: "Browse SSE event and community photos.",
 };
 
