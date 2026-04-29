@@ -131,9 +131,13 @@ export default async function MyElectionsPage() {
               elections. Edit your candidate profile or respond to outstanding
               invitations from here.
             </p>
-            {/* Surface the per-election profile sync so candidates running
-                for more than one office (very common in primaries) don't
-                think they need to re-type their bio per role. */}
+            {/* Each nomination + running-mate invitation has its OWN bio,
+                program, year, and eligibility — running for more than
+                one office in the same election lets you tailor a
+                separate pitch per race. Edits stay open until the
+                election is certified, so you can keep refining your
+                profile while voting is open and even after voting
+                closes. */}
             {(() => {
               const positionsByElection = new Map<number, number>();
               for (const n of nominations) {
@@ -159,9 +163,9 @@ export default async function MyElectionsPage() {
                 <p className="text-xs text-muted-foreground bg-muted/40 rounded-md px-3 py-2 inline-flex items-center gap-2">
                   <Pencil className="h-3.5 w-3.5 shrink-0" />
                   You&rsquo;re running for more than one office in the same
-                  election — your bio, program, year, and eligibility are
-                  shared across all of those positions, so editing once
-                  updates them everywhere.
+                  election — each nomination has its own bio, program,
+                  year, and eligibility, so you can pitch separately for
+                  each race.
                 </p>
               );
             })()}
@@ -191,6 +195,15 @@ export default async function MyElectionsPage() {
                     election.status !== "CERTIFIED" &&
                     election.status !== "CANCELLED" &&
                     new Date() < new Date(election.votingCloseAt);
+                  // Profile edits stay open right up until the election
+                  // is locked in. Mirrors the new server-side rule that
+                  // accepts profile-edit POSTs throughout
+                  // VOTING_OPEN / VOTING_CLOSED / TIE_RUNOFF_REQUIRED
+                  // and rejects them once we hit CERTIFIED / CANCELLED.
+                  const canEditProfile =
+                    isAccepted &&
+                    election.status !== "CERTIFIED" &&
+                    election.status !== "CANCELLED";
                   return (
                     <Card
                       key={nomination.id}
@@ -224,23 +237,25 @@ export default async function MyElectionsPage() {
                           />
                         </div>
                         <div className="flex flex-wrap items-center gap-2">
-                          <Button asChild size="sm">
-                            <Link
-                              href={`/elections/${election.slug}/respond/${nomination.id}`}
-                            >
-                              {isAccepted ? (
-                                <>
-                                  <Pencil className="mr-2 h-4 w-4" />
-                                  Edit profile
-                                </>
-                              ) : (
-                                <>
-                                  <CheckCircle className="mr-2 h-4 w-4" />
-                                  Respond
-                                </>
-                              )}
-                            </Link>
-                          </Button>
+                          {(!isAccepted || canEditProfile) && (
+                            <Button asChild size="sm">
+                              <Link
+                                href={`/elections/${election.slug}/respond/${nomination.id}`}
+                              >
+                                {isAccepted ? (
+                                  <>
+                                    <Pencil className="mr-2 h-4 w-4" />
+                                    Edit profile
+                                  </>
+                                ) : (
+                                  <>
+                                    <CheckCircle className="mr-2 h-4 w-4" />
+                                    Respond
+                                  </>
+                                )}
+                              </Link>
+                            </Button>
+                          )}
                           {canWithdraw && (
                             <WithdrawButton
                               kind="nomination"
@@ -289,6 +304,13 @@ export default async function MyElectionsPage() {
                     election.status !== "CERTIFIED" &&
                     election.status !== "CANCELLED" &&
                     new Date() < new Date(election.votingCloseAt);
+                  // Same rule as direct nominations — VPs can edit
+                  // their bio right up until the election is certified
+                  // / cancelled.
+                  const canEditProfile =
+                    isAccepted &&
+                    election.status !== "CERTIFIED" &&
+                    election.status !== "CANCELLED";
                   return (
                     <Card key={invite.id} depth={2} className="space-y-3 p-5">
                       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -325,23 +347,25 @@ export default async function MyElectionsPage() {
                           </div>
                         </div>
                         <div className="flex flex-wrap items-center gap-2">
-                          <Button asChild size="sm">
-                            <Link
-                              href={`/elections/${election.slug}/respond/running-mate/${invite.presidentNominationId}`}
-                            >
-                              {isAccepted ? (
-                                <>
-                                  <Pencil className="mr-2 h-4 w-4" />
-                                  Edit profile
-                                </>
-                              ) : (
-                                <>
-                                  <CheckCircle className="mr-2 h-4 w-4" />
-                                  Respond
-                                </>
-                              )}
-                            </Link>
-                          </Button>
+                          {(!isAccepted || canEditProfile) && (
+                            <Button asChild size="sm">
+                              <Link
+                                href={`/elections/${election.slug}/respond/running-mate/${invite.presidentNominationId}`}
+                              >
+                                {isAccepted ? (
+                                  <>
+                                    <Pencil className="mr-2 h-4 w-4" />
+                                    Edit profile
+                                  </>
+                                ) : (
+                                  <>
+                                    <CheckCircle className="mr-2 h-4 w-4" />
+                                    Respond
+                                  </>
+                                )}
+                              </Link>
+                            </Button>
+                          )}
                           {canWithdraw && (
                             <WithdrawButton
                               kind="running-mate"

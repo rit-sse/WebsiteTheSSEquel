@@ -445,7 +445,8 @@ function MaterialsStep({
               disabled={submitting || materials.statement.trim().length === 0}
             />
             <p className="text-xs text-muted-foreground">
-              You can edit this any time before voting opens.
+              You can edit this any time until the election is certified —
+              including while voting is open and after voting closes.
             </p>
           </div>
         </NeoCardContent>
@@ -516,7 +517,7 @@ function DoneStep({
         </h2>
         <p className="mx-auto max-w-prose text-sm text-muted-foreground">
           Members can now see you alongside {presidentName} on their candidate
-          card. Edit your materials any time before voting opens.
+          card. Edit your materials any time until the election is certified.
         </p>
         <div className="flex justify-center gap-4 pt-2">
           <Link

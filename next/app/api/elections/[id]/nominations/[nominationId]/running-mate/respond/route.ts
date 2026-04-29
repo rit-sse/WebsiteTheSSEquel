@@ -1,7 +1,6 @@
 import prisma from "@/lib/prisma";
 import { getGatewayAuthLevel } from "@/lib/authGateway";
 import { isActiveMemberForElection } from "@/lib/electionEligibility";
-import { propagateCandidateProfile } from "@/lib/electionCandidateProfile";
 import { ElectionRunningMateStatus, ElectionStatus } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
@@ -105,6 +104,8 @@ export async function PATCH(
       action === "ACCEPT" &&
       invitation.status === ElectionRunningMateStatus.ACCEPTED;
     const isWithdraw = action === "WITHDRAW";
+    const electionStatus =
+      invitation.presidentNomination.electionOffice.election.status;
 
     if (isWithdraw) {
       // Withdraw is only legal on an ACCEPTED invitation, and only
@@ -116,8 +117,6 @@ export async function PATCH(
           { status: 409 }
         );
       }
-      const electionStatus =
-        invitation.presidentNomination.electionOffice.election.status;
       const votingCloseAt =
         invitation.presidentNomination.electionOffice.election.votingCloseAt;
       if (
@@ -131,10 +130,21 @@ export async function PATCH(
           { status: 409 }
         );
       }
-    } else if (
-      !isProfileEdit &&
-      invitation.status !== ElectionRunningMateStatus.INVITED
-    ) {
+    } else if (isProfileEdit) {
+      // Already-accepted VP editing their candidate profile from
+      // /elections/me. Mirror the direct-nomination respond endpoint:
+      // allowed throughout the election right up until certification
+      // / cancellation locks the bio in for the public record.
+      if (
+        electionStatus === ElectionStatus.CERTIFIED ||
+        electionStatus === ElectionStatus.CANCELLED
+      ) {
+        return new Response(
+          "This election is closed — candidate profiles can no longer be edited",
+          { status: 409 }
+        );
+      }
+    } else if (invitation.status !== ElectionRunningMateStatus.INVITED) {
       return new Response("This invitation is no longer open", { status: 409 });
     }
 
@@ -227,31 +237,12 @@ export async function PATCH(
       },
     });
 
-    // VPs who are also direct candidates (running for President /
-    // Treasurer / etc. in the same election) should see one consistent
-    // candidate profile — propagate the just-saved blurb across all
-    // their other open nominations + invitations. Only on ACCEPT, since
-    // declined rows have no profile to share.
-    if (action === "ACCEPT") {
-      try {
-        await propagateCandidateProfile(
-          electionId,
-          authLevel.userId,
-          {
-            statement: updated.statement,
-            yearLevel: updated.yearLevel,
-            program: updated.program,
-            canRemainEnrolledFullYear: updated.canRemainEnrolledFullYear,
-            canRemainEnrolledNextTerm: updated.canRemainEnrolledNextTerm,
-            isOnCampus: updated.isOnCampus,
-            isOnCoop: updated.isOnCoop,
-          },
-          { excludeRunningMateInvitationId: invitation.id }
-        );
-      } catch (error) {
-        console.error("Failed to propagate candidate profile:", error);
-      }
-    }
+    // Per-position candidate profiles: each running-mate invitation
+    // and direct nomination keeps its own bio independently so a
+    // candidate running multiple races (e.g. President + standalone
+    // Treasurer, or VP invitee + Mentoring Head) can pitch separately
+    // for each one. Editing this row no longer touches their other
+    // nominations or invitations.
 
     return Response.json(updated);
   } catch (error) {

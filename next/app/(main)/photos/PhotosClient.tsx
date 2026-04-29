@@ -1,8 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Camera, ImageOff, Loader2 } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { ImageOff, Loader2 } from "lucide-react";
+import { NeoCard, NeoCardContent } from "@/components/ui/neo-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PhotoFilters } from "./PhotoFilters";
 import { PhotoGrid } from "./PhotoGrid";
@@ -165,13 +165,11 @@ export function PhotosClient({
   };
 
   return (
-    <Card depth={1} className="p-6 md:p-8">
+    <NeoCard depth={1}>
+      <NeoCardContent className="p-6 md:p-8">
       <div className="space-y-2 mb-6">
         <div className="flex items-end justify-between flex-wrap gap-3">
-          <div className="flex items-center gap-3">
-            <Camera className="h-7 w-7 text-primary shrink-0" />
-            <h1 className="text-primary leading-none">Photos</h1>
-          </div>
+          <h1 className="text-primary leading-none">Historians</h1>
           {totalPhotoCount > 0 && (
             <p className="text-sm text-muted-foreground">
               {showingAll ? (
@@ -195,10 +193,6 @@ export function PhotosClient({
             </p>
           )}
         </div>
-        <p className="text-base md:text-lg text-muted-foreground max-w-2xl">
-          Moments from SSE events, projects, mentoring, and community
-          gatherings — sorted by the date the photo was taken.
-        </p>
       </div>
 
       {/* Year quick-chips. Active year is filled, the rest are outline. */}
@@ -281,7 +275,8 @@ export function PhotosClient({
           paginating={paginating}
         />
       )}
-    </Card>
+      </NeoCardContent>
+    </NeoCard>
   );
 }
 

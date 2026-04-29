@@ -1,7 +1,6 @@
 import prisma from "@/lib/prisma";
 import { getGatewayAuthLevel } from "@/lib/authGateway";
 import { getNominationResponseDeadline } from "@/lib/elections";
-import { propagateCandidateProfile } from "@/lib/electionCandidateProfile";
 import { ElectionNominationStatus, ElectionStatus } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
@@ -69,6 +68,17 @@ export async function POST(
     const election = nomination.electionOffice.election;
     const now = new Date();
 
+    // Per-nomination candidate profiles can be edited any time after
+    // accept and right up until the election is certified — the SE
+    // Office wants candidates to be able to refine their bio while
+    // voting is open and even after voting closes (during the runoff /
+    // pre-certify window). We detect a profile edit by the request
+    // status being ACCEPTED while the nomination is already ACCEPTED,
+    // i.e. the status isn't actually transitioning.
+    const isProfileEdit =
+      status === ElectionNominationStatus.ACCEPTED &&
+      nomination.status === ElectionNominationStatus.ACCEPTED;
+
     if (status === ElectionNominationStatus.WITHDRAWN) {
       // Withdraw is a separate window from accept/decline. Per the SE
       // Office: candidates can pull out at any point up until voting
@@ -92,9 +102,25 @@ export async function POST(
           { status: 409 }
         );
       }
+    } else if (isProfileEdit) {
+      // Already-accepted candidates editing their bio / program /
+      // eligibility. Allowed throughout NOMINATIONS_OPEN/CLOSED,
+      // VOTING_OPEN/CLOSED, and TIE_RUNOFF_REQUIRED — only blocked
+      // once the election is locked in (CERTIFIED) or killed
+      // (CANCELLED). This is the new "edit my profile from /elections/me
+      // any time until the election is certified" flow.
+      if (
+        election.status === ElectionStatus.CERTIFIED ||
+        election.status === ElectionStatus.CANCELLED
+      ) {
+        return new Response(
+          "This election is closed — candidate profiles can no longer be edited",
+          { status: 409 }
+        );
+      }
     } else {
-      // Regular accept/decline flow uses the response deadline (24h
-      // before voting opens), unchanged from before.
+      // Initial accept / decline transition from PENDING_RESPONSE.
+      // Still gated on the response deadline (24h before voting opens).
       if (now >= getNominationResponseDeadline(election)) {
         return new Response(
           "The response deadline for this nomination has passed",
@@ -103,8 +129,9 @@ export async function POST(
       }
     }
 
-    // Build the candidate-profile patch once so the primary update and
-    // the cross-nomination propagation share the exact same values.
+    // Candidate profile fields. Each nomination keeps its own copy —
+    // running for more than one office in the same election now lets
+    // the candidate pitch separately per race.
     const profile = {
       statement: String(body.statement ?? "").trim(),
       yearLevel:
@@ -145,24 +172,11 @@ export async function POST(
       },
     });
 
-    // The same person frequently runs for multiple offices in the
-    // same election (and may also be someone's VP invitee). Mirror
-    // the profile they just saved across every other open nomination
-    // and running-mate invitation they hold so they don't have to
-    // re-type their bio for each acceptance, and the public page
-    // shows them with one consistent blurb. Only propagate on ACCEPT
-    // — declined rows have no meaningful profile to share.
-    if (status === ElectionNominationStatus.ACCEPTED) {
-      try {
-        await propagateCandidateProfile(electionId, authLevel.userId, profile, {
-          excludeNominationId: nominationId,
-        });
-      } catch (error) {
-        // Non-fatal: the primary write already succeeded. Log so we
-        // notice if the propagation path starts failing in prod.
-        console.error("Failed to propagate candidate profile:", error);
-      }
-    }
+    // Per-nomination candidate profiles: each ElectionNomination row
+    // holds its own bio / program / year / eligibility independently
+    // so a candidate running for multiple offices in the same primary
+    // can pitch differently for each race. We deliberately do NOT
+    // mirror the just-saved profile to their other nominations.
 
     return Response.json(updated);
   } catch (error) {
