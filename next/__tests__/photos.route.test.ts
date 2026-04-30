@@ -56,6 +56,63 @@ describe("/api/photos route", () => {
     );
   });
 
+  it("returns a cursor that includes sort date and id", async () => {
+    mockPhotoFindMany.mockResolvedValue([
+      photo(3, new Date("2026-03-01T00:00:00Z")),
+      photo(2, new Date("2026-02-01T00:00:00Z")),
+      photo(1, new Date("2026-01-01T00:00:00Z")),
+    ]);
+
+    const res = await GET(req("http://localhost/api/photos?limit=2"));
+    const body = await res.json();
+    const cursor = JSON.parse(
+      Buffer.from(body.nextCursor, "base64url").toString("utf8")
+    );
+
+    expect(body.photos.map((p: any) => p.id)).toEqual([3, 2]);
+    expect(cursor).toEqual({
+      id: 2,
+      sortDate: "2026-02-01T00:00:00.000Z",
+    });
+  });
+
+  it("uses sort date and id for cursor pagination", async () => {
+    const cursor = Buffer.from(
+      JSON.stringify({
+        id: 10,
+        sortDate: "2026-02-01T00:00:00.000Z",
+      })
+    ).toString("base64url");
+
+    await GET(req(`http://localhost/api/photos?cursor=${cursor}`));
+
+    expect(mockPhotoFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          AND: [
+            { status: "published" },
+            {
+              OR: [
+                { sortDate: { lt: new Date("2026-02-01T00:00:00.000Z") } },
+                {
+                  sortDate: new Date("2026-02-01T00:00:00.000Z"),
+                  id: { lt: 10 },
+                },
+              ],
+            },
+          ],
+        },
+      })
+    );
+  });
+
+  it("rejects invalid cursors", async () => {
+    const res = await GET(req("http://localhost/api/photos?cursor=not-valid"));
+
+    expect(res.status).toBe(400);
+    expect(mockPhotoFindMany).not.toHaveBeenCalled();
+  });
+
   it("requires officer auth for admin listing", async () => {
     mockResolveAuthLevelFromRequest.mockResolvedValue({
       isOfficer: false,

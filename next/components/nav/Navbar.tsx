@@ -62,6 +62,13 @@ interface NavItem {
   description: string;
 }
 
+type NavGroup = {
+  value: string;
+  label: string;
+  items: NavItem[];
+  align?: "start" | "end";
+};
+
 const studentsItems: NavItem[] = [
   {
     title: "Get Involved",
@@ -249,8 +256,13 @@ const Navbar: React.FC<NavbarProps> = ({
       { value: "students", label: "Students", items: studentsItems },
       { value: "alumni", label: "Alumni", items: alumniItems },
       { value: "companies", label: "Companies", items: companiesItems },
-      { value: "se-office", label: "SE Office", items: seOfficeWithElection },
-    ] as const;
+      {
+        value: "se-office",
+        label: "SE Office",
+        items: seOfficeWithElection,
+        align: "end",
+      },
+    ] satisfies NavGroup[];
   }, [serverActiveElection]);
 
   return (
@@ -277,6 +289,7 @@ const Navbar: React.FC<NavbarProps> = ({
             value={menuValue}
             onValueChange={handleValueChange}
             delayDuration={isMenuActive ? 100 : 1000000}
+            viewport={false}
           >
             <NavigationMenuList>
               {/* Top-level shortcut: About is its own page, no
@@ -314,7 +327,11 @@ const Navbar: React.FC<NavbarProps> = ({
                     >
                       {group.label}
                     </NavigationMenuTrigger>
-                    <NavigationMenuContent>
+                    <NavigationMenuContent
+                      className={cn(
+                        group.align === "end" && "lg:left-auto lg:right-0"
+                      )}
+                    >
                       <ul
                         className={cn(
                           "grid gap-3 p-4",

@@ -8,6 +8,11 @@ export const dynamic = "force-dynamic";
 const DEFAULT_LIMIT = 60;
 const MAX_LIMIT = 100;
 
+type PhotoCursor = {
+  sortDate: string;
+  id: number;
+};
+
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const requestedLimit = Number.parseInt(
@@ -18,7 +23,10 @@ export async function GET(request: NextRequest) {
     ? Math.min(Math.max(requestedLimit, 1), MAX_LIMIT)
     : DEFAULT_LIMIT;
   const cursor = searchParams.get("cursor");
-  const cursorId = cursor ? Number.parseInt(cursor, 10) : null;
+  const decodedCursor = cursor ? decodePhotoCursor(cursor) : null;
+  if (cursor && !decodedCursor) {
+    return NextResponse.json({ error: "Invalid cursor" }, { status: 400 });
+  }
   const includeHidden = searchParams.get("admin") === "true";
 
   if (includeHidden) {
@@ -50,12 +58,26 @@ export async function GET(request: NextRequest) {
     ];
   }
 
+  const effectiveWhere = decodedCursor
+    ? {
+        AND: [
+          where,
+          {
+            OR: [
+              { sortDate: { lt: new Date(decodedCursor.sortDate) } },
+              {
+                sortDate: new Date(decodedCursor.sortDate),
+                id: { lt: decodedCursor.id },
+              },
+            ],
+          },
+        ],
+      }
+    : where;
+
   const photos = await prisma.photo.findMany({
-    where,
+    where: effectiveWhere,
     take: limit + 1,
-    ...(cursorId && Number.isInteger(cursorId)
-      ? { cursor: { id: cursorId }, skip: 1 }
-      : {}),
     orderBy: [{ sortDate: "desc" }, { id: "desc" }],
     include: {
       event: {
@@ -63,12 +85,6 @@ export async function GET(request: NextRequest) {
           id: true,
           title: true,
           date: true,
-        },
-      },
-      uploadedBy: {
-        select: {
-          id: true,
-          name: true,
         },
       },
     },
@@ -91,7 +107,6 @@ export async function GET(request: NextRequest) {
             date: photo.event.date.toISOString(),
           }
         : null,
-      uploadedBy: photo.uploadedBy,
       photoDate:
         photo.exifTakenAt?.toISOString() ??
         photo.manualTakenAt?.toISOString() ??
@@ -101,6 +116,31 @@ export async function GET(request: NextRequest) {
       status: photo.status,
       originalFilename: photo.originalFilename,
     })),
-    nextCursor: hasMore ? String(page[page.length - 1]?.id) : null,
+    nextCursor: hasMore ? encodePhotoCursor(page[page.length - 1]) : null,
   });
+}
+
+function encodePhotoCursor(photo: { sortDate: Date; id: number }) {
+  return Buffer.from(
+    JSON.stringify({
+      sortDate: photo.sortDate.toISOString(),
+      id: photo.id,
+    } satisfies PhotoCursor)
+  ).toString("base64url");
+}
+
+function decodePhotoCursor(cursor: string): PhotoCursor | null {
+  try {
+    const parsed = JSON.parse(Buffer.from(cursor, "base64url").toString("utf8"));
+    if (!parsed || typeof parsed !== "object") return null;
+    const id = Number.parseInt(String(parsed.id), 10);
+    const sortDate =
+      typeof parsed.sortDate === "string" ? parsed.sortDate : null;
+    if (!Number.isInteger(id) || id < 1 || !sortDate) return null;
+    const date = new Date(sortDate);
+    if (Number.isNaN(date.getTime())) return null;
+    return { id, sortDate: date.toISOString() };
+  } catch {
+    return null;
+  }
 }
