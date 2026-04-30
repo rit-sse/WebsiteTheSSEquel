@@ -124,6 +124,29 @@ enum CommitteeHeadThirdPartyNominationStatus {
   DECLINED
 }
 
+// Lifecycle of an officer-editable Page in the page-builder system.
+// DRAFT     – exists but is not served publicly; visible in /dashboard/pages
+//             and at /<slug>?preview=1 to officers.
+// PUBLISHED – served to anonymous visitors via the [...slug] catch-all.
+// ARCHIVED  – soft-deleted; the public route returns 410 Gone, but the row
+//             is preserved so officers can restore it from the trash.
+enum PageStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+// Where a Page surfaces in the site navigation when `showInNav = true`.
+// HIDDEN means the page is reachable by URL only — no nav entry is generated.
+enum NavSection {
+  TOP_LEVEL
+  STUDENTS
+  ALUMNI
+  COMPANIES
+  SE_OFFICE
+  HIDDEN
+}
+
 model User {
   //Store an automatically generated unique int for id
   id Int @id @default(autoincrement())
@@ -164,33 +187,39 @@ model User {
   projects             Project[]
   textbookCopies       TextbookCopies[]
 
-  Memberships               Memberships[]
-  purchaseRequests          PurchaseRequest[]
-  invitationsSent           Invitation[]
-  eventAttendances          EventAttendance[]
-  mentorApplications        MentorApplication[]
-  techCommitteeApplications TechCommitteeApplication[]
-  mentorAvailability        MentorAvailability[]
-  alumni                    Alumni?
-  alumniCandidates          AlumniCandidate[]          @relation("AlumniCandidateOwner")
-  reviewedAlumniCandidates  AlumniCandidate[]          @relation("AlumniCandidateReviewer")
-  amendments                Amendment[]
-  amendmentVotes            AmendmentVote[]
-  amendmentComments         AmendmentComment[]
-  createdElections            Election[]                @relation("ElectionCreator")
-  certifiedElections          Election[]                @relation("ElectionCertifier")
+  Memberships                 Memberships[]
+  purchaseRequests            PurchaseRequest[]
+  invitationsSent             Invitation[]
+  eventAttendances            EventAttendance[]
+  mentorApplications          MentorApplication[]
+  techCommitteeApplications   TechCommitteeApplication[]
+  mentorAvailability          MentorAvailability[]
+  alumni                      Alumni?
+  alumniCandidates            AlumniCandidate[]               @relation("AlumniCandidateOwner")
+  reviewedAlumniCandidates    AlumniCandidate[]               @relation("AlumniCandidateReviewer")
+  amendments                  Amendment[]
+  amendmentVotes              AmendmentVote[]
+  amendmentComments           AmendmentComment[]
+  createdElections            Election[]                      @relation("ElectionCreator")
+  certifiedElections          Election[]                      @relation("ElectionCertifier")
   electionApprovals           ElectionApproval[]
-  electionNominationsMade     ElectionNomination[]      @relation("ElectionNominator")
-  electionNominations         ElectionNomination[]      @relation("ElectionNominee")
-  reviewedElectionNominations ElectionNomination[]      @relation("ElectionEligibilityReviewer")
+  electionNominationsMade     ElectionNomination[]            @relation("ElectionNominator")
+  electionNominations         ElectionNomination[]            @relation("ElectionNominee")
+  reviewedElectionNominations ElectionNomination[]            @relation("ElectionEligibilityReviewer")
   electionBallots             ElectionBallot[]
   electionEmailLogs           ElectionEmailLog[]
   runningMateInvitations      ElectionRunningMateInvitation[] @relation("RunningMateInvitee")
   uploadedPhotos              Photo[]
-  committeeHeadApplications   CommitteeHeadApplication[]      @relation("CommitteeHeadApplicant")
-  committeeHeadSelections     CommitteeHeadApplication[]      @relation("CommitteeHeadSelector")
+  committeeHeadApplications    CommitteeHeadApplication[]          @relation("CommitteeHeadApplicant")
+  committeeHeadSelections      CommitteeHeadApplication[]          @relation("CommitteeHeadSelector")
   committeeHeadNominationsMade CommitteeHeadThirdPartyNomination[] @relation("CommitteeHeadNominator")
   committeeHeadNominations     CommitteeHeadThirdPartyNomination[] @relation("CommitteeHeadNominee")
+
+  // Page builder relations
+  pagesCreated          Page[]        @relation("PageCreatedBy")
+  pagesPublished        Page[]        @relation("PagePublishedBy")
+  pagesArchived         Page[]        @relation("PageArchivedBy")
+  pageVersionsPublished PageVersion[]
 }
 
 model Alumni {
@@ -920,12 +949,12 @@ model GoLinks {
 model Event {
   id String @id
 
-  title       String   @db.VarChar(200)
-  date        DateTime @db.Timestamptz(3)
+  title       String    @db.VarChar(200)
+  date        DateTime  @db.Timestamptz(3)
   endDate     DateTime? @db.Timestamptz(3)
-  location    String?  @db.VarChar(200)
-  image       String?  @db.VarChar(500)
-  description String   @db.VarChar(2000)
+  location    String?   @db.VarChar(200)
+  image       String?   @db.VarChar(500)
+  description String    @db.VarChar(2000)
 
   // Attendance tracking fields
   attendanceEnabled Boolean @default(false)
@@ -949,9 +978,14 @@ model Photo {
   galleryMimeType   String @default("image/webp") @db.VarChar(100)
   gallerySizeBytes  Int
 
-  caption  String? @db.VarChar(500)
-  altText  String? @db.VarChar(500)
-  category String  @default("general") @db.VarChar(80)
+  caption     String?       @db.VarChar(500)
+  altText     String?       @db.VarChar(500)
+  // FK to PhotoCategory.slug, ON UPDATE CASCADE so officers can rename
+  // a category in one click. ON DELETE RESTRICT prevents accidentally
+  // dropping a category that still has photos — the dashboard surfaces
+  // a "merge into …" picker instead.
+  category    String        @default("general") @db.VarChar(80)
+  categoryRef PhotoCategory @relation("PhotoCategoryRel", fields: [category], references: [slug], onUpdate: Cascade, onDelete: Restrict)
 
   eventId String?
   event   Event?  @relation(fields: [eventId], references: [id], onDelete: SetNull)
@@ -1141,13 +1175,13 @@ model Amendment {
 }
 
 model AmendmentVote {
-  id                Int              @id @default(autoincrement())
+  id                Int      @id @default(autoincrement())
   amendmentId       Int
   userId            Int
   approve           Boolean
-  phase             String           @default("VOTING")
+  phase             String   @default("VOTING")
   officerPositionId Int?
-  createdAt         DateTime         @default(now())
+  createdAt         DateTime @default(now())
 
   amendment       Amendment        @relation(fields: [amendmentId], references: [id], onDelete: Cascade)
   user            User             @relation(fields: [userId], references: [id])
@@ -1378,17 +1412,17 @@ model Textbooks {
   // Textbook id for our internal reasons. This is NOT the ISBN!
   id Int @id @default(autoincrement())
 
-  name            String  // Book title
-  authors         String  // Author(s) separated by commas
-  image           String  // Book Image (legacy local path, e.g. /library-assets/ISBN.jpg)
-  imageKey        String? // S3 object key for book cover image
-  description     String  // Book description
-  publisher       String  // Publisher
-  edition         String  // Edition
-  ISBN            String  @unique // ISBN-13 of the textbook
-  keyWords        String  // Any keywords that could be of interest
-  classInterest   String  // Each course separated by commas (i.e SWEN-256, SWEN-261, SWEN-262, CSCI-331, etc.)
-  yearPublished   String  // Publishing date
+  name          String // Book title
+  authors       String // Author(s) separated by commas
+  image         String // Book Image (legacy local path, e.g. /library-assets/ISBN.jpg)
+  imageKey      String? // S3 object key for book cover image
+  description   String // Book description
+  publisher     String // Publisher
+  edition       String // Edition
+  ISBN          String  @unique // ISBN-13 of the textbook
+  keyWords      String // Any keywords that could be of interest
+  classInterest String // Each course separated by commas (i.e SWEN-256, SWEN-261, SWEN-262, CSCI-331, etc.)
+  yearPublished String // Publishing date
 
   copies TextbookCopies[]
 }
@@ -1408,21 +1442,21 @@ model TextbookCopies {
 }
 
 model Election {
-  id                Int            @id @default(autoincrement())
-  title             String         @db.VarChar(200)
-  slug              String         @unique @db.VarChar(200)
-  description       String         @default("") @db.Text
-  kind              ElectionKind   @default(PRIMARY_OFFICER)
-  status            ElectionStatus @default(DRAFT)
-  nominationsOpenAt DateTime
+  id                 Int            @id @default(autoincrement())
+  title              String         @db.VarChar(200)
+  slug               String         @unique @db.VarChar(200)
+  description        String         @default("") @db.Text
+  kind               ElectionKind   @default(PRIMARY_OFFICER)
+  status             ElectionStatus @default(DRAFT)
+  nominationsOpenAt  DateTime
   nominationsCloseAt DateTime
-  votingOpenAt      DateTime
-  votingCloseAt     DateTime
-  createdById       Int
-  certifiedById     Int?
-  certifiedAt       DateTime?
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
+  votingOpenAt       DateTime
+  votingCloseAt      DateTime
+  createdById        Int
+  certifiedById      Int?
+  certifiedAt        DateTime?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
 
   createdBy   User               @relation("ElectionCreator", fields: [createdById], references: [id], onDelete: Cascade)
   certifiedBy User?              @relation("ElectionCertifier", fields: [certifiedById], references: [id], onDelete: SetNull)
@@ -1439,8 +1473,8 @@ model ElectionOffice {
   officerPositionId Int
   createdAt         DateTime @default(now())
 
-  election        Election            @relation(fields: [electionId], references: [id], onDelete: Cascade)
-  officerPosition OfficerPosition     @relation(fields: [officerPositionId], references: [id], onDelete: Cascade)
+  election        Election                @relation(fields: [electionId], references: [id], onDelete: Cascade)
+  officerPosition OfficerPosition         @relation(fields: [officerPositionId], references: [id], onDelete: Cascade)
   nominations     ElectionNomination[]
   ballotRankings  ElectionBallotRanking[]
 
@@ -1461,29 +1495,29 @@ model ElectionApproval {
 }
 
 model ElectionNomination {
-  id                         Int                        @id @default(autoincrement())
-  electionOfficeId           Int
-  nomineeUserId              Int
-  nominatorUserId            Int
-  statement                  String                     @default("") @db.Text
-  yearLevel                  Int?
-  program                    String?                    @db.VarChar(100)
-  canRemainEnrolledFullYear  Boolean?
-  canRemainEnrolledNextTerm  Boolean?
-  isOnCampus                 Boolean?
-  isOnCoop                   Boolean?
-  status                     ElectionNominationStatus   @default(PENDING_RESPONSE)
-  eligibilityStatus          ElectionEligibilityStatus  @default(PENDING)
-  reviewNotes                String?                    @db.Text
-  reviewedById               Int?
-  reviewedAt                 DateTime?
-  createdAt                  DateTime                   @default(now())
-  updatedAt                  DateTime                   @updatedAt
+  id                        Int                       @id @default(autoincrement())
+  electionOfficeId          Int
+  nomineeUserId             Int
+  nominatorUserId           Int
+  statement                 String                    @default("") @db.Text
+  yearLevel                 Int?
+  program                   String?                   @db.VarChar(100)
+  canRemainEnrolledFullYear Boolean?
+  canRemainEnrolledNextTerm Boolean?
+  isOnCampus                Boolean?
+  isOnCoop                  Boolean?
+  status                    ElectionNominationStatus  @default(PENDING_RESPONSE)
+  eligibilityStatus         ElectionEligibilityStatus @default(PENDING)
+  reviewNotes               String?                   @db.Text
+  reviewedById              Int?
+  reviewedAt                DateTime?
+  createdAt                 DateTime                  @default(now())
+  updatedAt                 DateTime                  @updatedAt
 
-  electionOffice ElectionOffice @relation(fields: [electionOfficeId], references: [id], onDelete: Cascade)
-  nominee        User           @relation("ElectionNominee", fields: [nomineeUserId], references: [id], onDelete: Cascade)
-  nominator      User           @relation("ElectionNominator", fields: [nominatorUserId], references: [id], onDelete: Cascade)
-  reviewedBy     User?          @relation("ElectionEligibilityReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  electionOffice ElectionOffice          @relation(fields: [electionOfficeId], references: [id], onDelete: Cascade)
+  nominee        User                    @relation("ElectionNominee", fields: [nomineeUserId], references: [id], onDelete: Cascade)
+  nominator      User                    @relation("ElectionNominator", fields: [nominatorUserId], references: [id], onDelete: Cascade)
+  reviewedBy     User?                   @relation("ElectionEligibilityReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
   ballotRankings ElectionBallotRanking[]
 
   // Amendment 12: the President's running-mate invitation. Null for every
@@ -1498,27 +1532,27 @@ model ElectionNomination {
 // presidential nomination; the presidentNominationId unique constraint
 // enforces that.
 model ElectionRunningMateInvitation {
-  id                    Int                      @id @default(autoincrement())
-  presidentNominationId Int                      @unique
-  inviteeUserId         Int
-  status                ElectionRunningMateStatus @default(INVITED)
-  respondedAt           DateTime?
-  expiresAt             DateTime
-  declineReason         String?                   @db.Text
+  id                        Int                       @id @default(autoincrement())
+  presidentNominationId     Int                       @unique
+  inviteeUserId             Int
+  status                    ElectionRunningMateStatus @default(INVITED)
+  respondedAt               DateTime?
+  expiresAt                 DateTime
+  declineReason             String?                   @db.Text
   // Amendment 12 follow-up: VP candidates also fill out a candidate
   // profile when they accept their running-mate invitation. Mirrors the
   // fields on `ElectionNomination` so the public election page and
   // ballot can render the VP with the same statement/program/eligibility
   // chips as a directly-nominated candidate.
-  statement                 String   @default("") @db.Text
+  statement                 String                    @default("") @db.Text
   yearLevel                 Int?
-  program                   String?  @db.VarChar(100)
+  program                   String?                   @db.VarChar(100)
   canRemainEnrolledFullYear Boolean?
   canRemainEnrolledNextTerm Boolean?
   isOnCampus                Boolean?
   isOnCoop                  Boolean?
-  createdAt             DateTime                  @default(now())
-  updatedAt             DateTime                  @updatedAt
+  createdAt                 DateTime                  @default(now())
+  updatedAt                 DateTime                  @updatedAt
 
   presidentNomination ElectionNomination @relation(fields: [presidentNominationId], references: [id], onDelete: Cascade)
   invitee             User               @relation("RunningMateInvitee", fields: [inviteeUserId], references: [id], onDelete: Cascade)
@@ -1567,4 +1601,127 @@ model ElectionEmailLog {
 
   election Election @relation(fields: [electionId], references: [id], onDelete: Cascade)
   sentBy   User     @relation(fields: [sentById], references: [id], onDelete: Cascade)
+}
+
+// ────────────────────────────────────────────────────────────────────
+// Page builder
+//
+// A `Page` is an officer-editable site page. Content is a JSON document
+// (`{ version: 1, blocks: BlockNode[] }`) shaped at the application
+// layer by the Zod registry in `lib/pageBuilder/blocks.ts`. We chose
+// JSON over a relational PageBlock table because every block type
+// has a different prop shape — a relational schema would degrade into
+// EAV. The trade-off: no FK from carousel blocks to PhotoCategory, so
+// we walk the JSON at write time and validate semantically.
+//
+// Two content fields exist: `draftContent` is what officers edit and
+// see in preview; `publishedContent` is what anonymous visitors see.
+// On `publish` the draft is copied to published and a `PageVersion`
+// snapshot is taken for rollback.
+// ────────────────────────────────────────────────────────────────────
+model Page {
+  id   Int    @id @default(autoincrement())
+  slug String @unique @db.VarChar(200) // e.g. "about" or "about/get-involved"
+
+  title  String     @db.VarChar(200)
+  status PageStatus @default(DRAFT)
+
+  // System-locked pages render through the new pipeline but cannot be
+  // edited from the dashboard. Used for content owned by other systems
+  // (e.g. the constitution, which is sourced from governing-docs and
+  // mutated through the amendment process).
+  systemLocked Boolean @default(false)
+
+  // Block JSON. See lib/pageBuilder/blocks.ts for the shape.
+  draftContent     Json
+  publishedContent Json?
+
+  publishedAt   DateTime?
+  publishedById Int?
+
+  // SEO. Defaults are auto-generated from title + first text block on save.
+  seoTitle       String? @db.VarChar(200)
+  seoDescription String? @db.VarChar(500)
+
+  // Navigation. `showInNav = true` makes the page appear under the
+  // chosen `navSection` at `navOrder`. `navLabel` overrides `title`.
+  showInNav  Boolean    @default(false)
+  navSection NavSection @default(HIDDEN)
+  navLabel   String?    @db.VarChar(80)
+  navOrder   Int        @default(0)
+
+  createdById Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  archivedAt   DateTime?
+  archivedById Int?
+
+  createdBy   User  @relation("PageCreatedBy", fields: [createdById], references: [id])
+  publishedBy User? @relation("PagePublishedBy", fields: [publishedById], references: [id], onDelete: SetNull)
+  archivedBy  User? @relation("PageArchivedBy", fields: [archivedById], references: [id], onDelete: SetNull)
+
+  versions PageVersion[]
+
+  @@index([status, slug])
+  @@index([archivedAt])
+  @@index([navSection, navOrder])
+}
+
+// Snapshot of `Page.publishedContent` taken on every publish.
+// `contentHash` is sha256(JSON) so the publish route can short-circuit
+// no-op publishes and the editor can show "draft is unchanged".
+model PageVersion {
+  id            Int      @id @default(autoincrement())
+  pageId        Int
+  version       Int // monotonically increasing per page; first publish = 1
+  content       Json
+  contentHash   String   @db.VarChar(64)
+  publishedAt   DateTime @default(now())
+  publishedById Int?
+
+  page        Page  @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  publishedBy User? @relation(fields: [publishedById], references: [id], onDelete: SetNull)
+
+  @@unique([pageId, version])
+  @@index([pageId, publishedAt])
+}
+
+// Promoted from a free-string column on Photo to a managed table so
+// officers can rename, add, and merge categories without code changes.
+// `Photo.category` is now a foreign key to `PhotoCategory.slug` with
+// ON UPDATE CASCADE — renaming a category propagates automatically.
+// Built-ins (the original 6) cannot be deleted, only renamed.
+model PhotoCategory {
+  id          Int      @id @default(autoincrement())
+  slug        String   @unique @db.VarChar(80)
+  label       String   @db.VarChar(120)
+  description String?  @db.VarChar(500)
+  isBuiltIn   Boolean  @default(false)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  photos Photo[] @relation("PhotoCategoryRel")
+}
+
+// Site navigation tree. Top-level groups have `parentId = null`. Each
+// item links either to a Page (slug copied into href) or a custom URL.
+// The hardcoded NavItem arrays in `components/nav/Navbar.tsx` are
+// seeded into this table by the migration so Day-1 nav matches the
+// existing site exactly.
+model NavItem {
+  id          Int     @id @default(autoincrement())
+  parentId    Int?
+  label       String  @db.VarChar(80)
+  href        String  @db.VarChar(500)
+  description String? @db.VarChar(500)
+  sortOrder   Int     @default(0)
+  isVisible   Boolean @default(true)
+  alignment   String? @db.VarChar(10) // "start" | "end" — drives align="end" on the SE Office dropdown
+
+  parent   NavItem?  @relation("NavItemChildren", fields: [parentId], references: [id], onDelete: Cascade)
+  children NavItem[] @relation("NavItemChildren")
+
+  @@index([parentId, sortOrder])
 }
