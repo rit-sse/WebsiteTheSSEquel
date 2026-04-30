@@ -95,6 +95,20 @@ const RATE_LIMIT_RULES: RateLimitRule[] = [
     pathname: /^\/api\/alumni-requests$/,
   },
   {
+    id: "photo-upload-request-init",
+    limit: 5,
+    windowMs: 3_600_000,
+    method: "POST",
+    pathname: /^\/api\/photo-upload-requests\/uploads$/,
+  },
+  {
+    id: "photo-upload-request-complete",
+    limit: 5,
+    windowMs: 3_600_000,
+    method: "POST",
+    pathname: /^\/api\/photo-upload-requests\/batches\/[^/]+\/complete$/,
+  },
+  {
     id: "email-send-post",
     limit: 5,
     windowMs: 60_000,
@@ -126,7 +140,7 @@ export function resolveClientIp(request: Pick<NextRequest, "headers">): string {
 }
 
 export function getRateLimitRule(
-  request: Pick<NextRequest, "method" | "nextUrl">
+  request: Pick<NextRequest, "method" | "nextUrl">,
 ) {
   return (
     RATE_LIMIT_RULES.find((rule) => {
@@ -180,7 +194,7 @@ export async function rateLimitMiddleware(request: NextRequest) {
 
   const retryAfterSeconds = Math.max(
     1,
-    Math.ceil((bucket.resetAt - now) / 1000)
+    Math.ceil((bucket.resetAt - now) / 1000),
   );
 
   return NextResponse.json(
@@ -190,6 +204,6 @@ export async function rateLimitMiddleware(request: NextRequest) {
       headers: {
         "Retry-After": String(retryAfterSeconds),
       },
-    }
+    },
   );
 }

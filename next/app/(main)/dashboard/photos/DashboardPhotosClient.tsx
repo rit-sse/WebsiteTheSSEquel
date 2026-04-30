@@ -1,11 +1,18 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { Camera, ImagePlus } from "lucide-react";
+import { Camera, ImagePlus, Inbox } from "lucide-react";
 import { NeoCard, NeoCardContent } from "@/components/ui/neo-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PhotoBatchUploader } from "./PhotoBatchUploader";
-import { PhotoManagementTable, type ManagedPhoto } from "./PhotoManagementTable";
+import {
+  PhotoManagementTable,
+  type ManagedPhoto,
+} from "./PhotoManagementTable";
+import {
+  PhotoRequestReviewTable,
+  type PhotoUploadRequestDto,
+} from "./PhotoRequestReviewTable";
 
 export type DashboardPhotoEvent = {
   id: string;
@@ -19,18 +26,21 @@ export function DashboardPhotosClient({
   events,
   categories,
   totalPhotoCount,
+  initialRequests,
 }: {
   initialPhotos: ManagedPhoto[];
   initialNextCursor: string | null;
   events: DashboardPhotoEvent[];
   categories: string[];
   totalPhotoCount: number;
+  initialRequests: PhotoUploadRequestDto[];
 }) {
   const [photos, setPhotos] = useState(initialPhotos);
+  const [requests, setRequests] = useState(initialRequests);
   const [nextCursor, setNextCursor] = useState<string | null>(
-    initialNextCursor
+    initialNextCursor,
   );
-  const [tab, setTab] = useState<"upload" | "manage">("upload");
+  const [tab, setTab] = useState<"upload" | "manage" | "requests">("upload");
   const [count, setCount] = useState(totalPhotoCount);
 
   const refreshPhotos = useCallback(async () => {
@@ -38,12 +48,23 @@ export function DashboardPhotosClient({
     if (!response.ok) return;
     const data = await response.json();
     setPhotos(
-      data.photos.map((photo: ManagedPhoto & { event: DashboardPhotoEvent | null }) => ({
-        ...photo,
-        eventId: photo.event?.id ?? null,
-      }))
+      data.photos.map(
+        (photo: ManagedPhoto & { event: DashboardPhotoEvent | null }) => ({
+          ...photo,
+          eventId: photo.event?.id ?? null,
+        }),
+      ),
     );
     setNextCursor(data.nextCursor ?? null);
+  }, []);
+
+  const refreshRequests = useCallback(async () => {
+    const response = await fetch(
+      "/api/photo-upload-requests?status=pending&limit=100",
+    );
+    if (!response.ok) return;
+    const data = await response.json();
+    setRequests(data.requests);
   }, []);
 
   const handleBatchComplete = useCallback(
@@ -55,7 +76,7 @@ export function DashboardPhotosClient({
       setCount((prev) => prev + createdCount);
       if (createdCount > 0) setTab("manage");
     },
-    [refreshPhotos]
+    [refreshPhotos],
   );
 
   const loadMore = useCallback(async () => {
@@ -74,7 +95,7 @@ export function DashboardPhotosClient({
         (photo: ManagedPhoto & { event: DashboardPhotoEvent | null }) => ({
           ...photo,
           eventId: photo.event?.id ?? null,
-        })
+        }),
       ),
     ]);
     setNextCursor(data.nextCursor ?? null);
@@ -97,10 +118,10 @@ export function DashboardPhotosClient({
 
         <Tabs
           value={tab}
-          onValueChange={(value) => setTab(value as "upload" | "manage")}
+          onValueChange={(value) => setTab(value as typeof tab)}
           className="space-y-6"
         >
-          <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsList className="grid w-full max-w-2xl grid-cols-3">
             <TabsTrigger value="upload" className="flex items-center gap-2">
               <ImagePlus className="h-4 w-4" />
               Upload
@@ -109,13 +130,22 @@ export function DashboardPhotosClient({
               <Camera className="h-4 w-4" />
               Manage
             </TabsTrigger>
+            <TabsTrigger value="requests" className="flex items-center gap-2">
+              <Inbox className="h-4 w-4" />
+              Requests
+              {requests.length > 0 && (
+                <span className="rounded-full bg-primary px-1.5 py-0.5 text-[10px] leading-none text-primary-foreground">
+                  {requests.length}
+                </span>
+              )}
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="upload" className="space-y-4">
             <PhotoBatchUploader
               events={events}
               categories={categories}
-              onBatchComplete={handleBatchComplete}
+              onComplete={handleBatchComplete}
             />
           </TabsContent>
 
@@ -128,6 +158,17 @@ export function DashboardPhotosClient({
               onLoadMore={nextCursor ? loadMore : undefined}
               hasMore={Boolean(nextCursor)}
               totalPhotoCount={count}
+            />
+          </TabsContent>
+
+          <TabsContent value="requests" className="space-y-4">
+            <PhotoRequestReviewTable
+              requests={requests}
+              events={events}
+              categories={categories}
+              onChange={async () => {
+                await Promise.all([refreshRequests(), refreshPhotos()]);
+              }}
             />
           </TabsContent>
         </Tabs>

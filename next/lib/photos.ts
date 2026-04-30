@@ -2,7 +2,11 @@ import { randomUUID } from "node:crypto";
 
 export const PHOTO_ORIGINAL_PREFIX = "uploads/photos/originals";
 export const PHOTO_GALLERY_PREFIX = "uploads/photos/gallery";
+export const PHOTO_REQUEST_ORIGINAL_PREFIX =
+  "uploads/photos/requests/originals";
+export const PHOTO_REQUEST_GALLERY_PREFIX = "uploads/photos/requests/gallery";
 export const PHOTO_UPLOAD_LIMIT = 500;
+export const PHOTO_REQUEST_UPLOAD_LIMIT = 20;
 export const MAX_ORIGINAL_PHOTO_SIZE_BYTES = 25 * 1024 * 1024;
 export const MAX_GALLERY_PHOTO_SIZE_BYTES = 5 * 1024 * 1024;
 export const PHOTO_UPLOAD_URL_TTL_SECONDS = 10 * 60;
@@ -104,17 +108,48 @@ export function buildPhotoObjectKeys(input: {
   };
 }
 
+export function buildPhotoRequestObjectKeys(input: {
+  batchId: string;
+  filename: string;
+  originalContentType: string;
+  now?: Date;
+}) {
+  const now = input.now ?? new Date();
+  const year = String(now.getUTCFullYear());
+  const id = randomUUID();
+  const extension = PHOTO_EXTENSION_BY_MIME[input.originalContentType] ?? "jpg";
+  const sanitized = sanitizePhotoFilename(input.filename);
+
+  return {
+    originalKey: `${PHOTO_REQUEST_ORIGINAL_PREFIX}/${year}/${input.batchId}/${id}-${sanitized}.${extension}`,
+    galleryKey: `${PHOTO_REQUEST_GALLERY_PREFIX}/${year}/${input.batchId}/${id}.webp`,
+  };
+}
+
 export function keyBelongsToPhotoBatch(key: string, batchId: string): boolean {
   return (
-    key.startsWith(`${PHOTO_ORIGINAL_PREFIX}/`) ||
-    key.startsWith(`${PHOTO_GALLERY_PREFIX}/`)
-  ) && key.includes(`/${batchId}/`);
+    (key.startsWith(`${PHOTO_ORIGINAL_PREFIX}/`) ||
+      key.startsWith(`${PHOTO_GALLERY_PREFIX}/`)) &&
+    key.includes(`/${batchId}/`)
+  );
+}
+
+export function keyBelongsToPhotoRequestBatch(
+  key: string,
+  batchId: string,
+): boolean {
+  return (
+    (key.startsWith(`${PHOTO_REQUEST_ORIGINAL_PREFIX}/`) ||
+      key.startsWith(`${PHOTO_REQUEST_GALLERY_PREFIX}/`)) &&
+    key.includes(`/${batchId}/`)
+  );
 }
 
 export function isMissingS3ObjectError(error: unknown): boolean {
   if (!error || typeof error !== "object") return false;
   const name = "name" in error ? String(error.name) : "";
-  const code = "$metadata" in error ? (error as any).$metadata?.httpStatusCode : null;
+  const code =
+    "$metadata" in error ? (error as any).$metadata?.httpStatusCode : null;
   return name === "NoSuchKey" || name === "NotFound" || code === 404;
 }
 

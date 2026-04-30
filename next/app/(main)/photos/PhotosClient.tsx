@@ -1,7 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ImageOff, Loader2 } from "lucide-react";
+import { ImageOff, Loader2, Upload } from "lucide-react";
+import { PhotoBatchUploader } from "@/components/photos/PhotoBatchUploader";
+import { Button } from "@/components/ui/button";
+import { Modal } from "@/components/ui/modal";
 import { NeoCard, NeoCardContent } from "@/components/ui/neo-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PhotoFilters } from "./PhotoFilters";
@@ -65,29 +68,28 @@ export function PhotosClient({
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [paginating, setPaginating] = useState(false);
+  const [requestOpen, setRequestOpen] = useState(false);
+  const [requestSubmitted, setRequestSubmitted] = useState(false);
 
   const isFiltered = useMemo(
     () =>
       Boolean(
         appliedFilters.year ||
-          appliedFilters.eventId ||
-          appliedFilters.category ||
-          appliedFilters.q.trim()
+        appliedFilters.eventId ||
+        appliedFilters.category ||
+        appliedFilters.q.trim(),
       ),
-    [appliedFilters]
+    [appliedFilters],
   );
 
-  const buildQuery = useCallback(
-    (source: Filters) => {
-      const params = new URLSearchParams();
-      if (source.year) params.set("year", source.year);
-      if (source.eventId) params.set("eventId", source.eventId);
-      if (source.category) params.set("category", source.category);
-      if (source.q.trim()) params.set("q", source.q.trim());
-      return params;
-    },
-    []
-  );
+  const buildQuery = useCallback((source: Filters) => {
+    const params = new URLSearchParams();
+    if (source.year) params.set("year", source.year);
+    if (source.eventId) params.set("eventId", source.eventId);
+    if (source.category) params.set("category", source.category);
+    if (source.q.trim()) params.set("q", source.q.trim());
+    return params;
+  }, []);
 
   const fetchPhotos = useCallback(
     async (source: Filters, cursor: string | null, append: boolean) => {
@@ -98,11 +100,11 @@ export function PhotosClient({
       if (!response.ok) throw new Error("Failed to load photos");
       const data = await response.json();
       setPhotos((prev) =>
-        append ? [...prev, ...(data.photos as PhotoDto[])] : data.photos
+        append ? [...prev, ...(data.photos as PhotoDto[])] : data.photos,
       );
       setNextCursor(data.nextCursor);
     },
-    [buildQuery]
+    [buildQuery],
   );
 
   const applyFilters = useCallback(
@@ -115,7 +117,7 @@ export function PhotosClient({
         setLoading(false);
       }
     },
-    [fetchPhotos]
+    [fetchPhotos],
   );
 
   const loadMore = useCallback(async () => {
@@ -141,7 +143,7 @@ export function PhotosClient({
           void loadMore();
         }
       },
-      { rootMargin: "800px 0px" }
+      { rootMargin: "800px 0px" },
     );
     observer.observe(node);
     return () => observer.disconnect();
@@ -150,10 +152,7 @@ export function PhotosClient({
   const groups = useMemo(() => groupPhotosByMonth(photos), [photos]);
   const visibleCount = photos.length;
   const showingAll = !isFiltered && totalPhotoCount > 0;
-  const yearChips = useMemo(
-    () => years.slice().sort((a, b) => b - a),
-    [years]
-  );
+  const yearChips = useMemo(() => years.slice().sort((a, b) => b - a), [years]);
 
   const handleQuickYear = (year: string) => {
     const next = { ...filters, year };
@@ -169,117 +168,156 @@ export function PhotosClient({
   return (
     <NeoCard depth={1}>
       <NeoCardContent className="p-6 md:p-8">
-      <div className="space-y-2 mb-6">
-        <div className="flex items-end justify-between flex-wrap gap-3">
-          <h1 className="text-primary leading-none">Historians</h1>
-          {totalPhotoCount > 0 && (
-            <p className="text-sm text-muted-foreground">
-              {showingAll ? (
-                <>
-                  Browsing{" "}
-                  <span className="font-semibold text-foreground">
-                    {totalPhotoCount.toLocaleString()}
-                  </span>{" "}
-                  {totalPhotoCount === 1 ? "photo" : "photos"} from the SSE
-                  archive.
-                </>
-              ) : (
-                <>
-                  Showing{" "}
-                  <span className="font-semibold text-foreground">
-                    {visibleCount.toLocaleString()}
-                  </span>{" "}
-                  of {totalPhotoCount.toLocaleString()}
-                </>
+        <div className="space-y-2 mb-6">
+          <div className="flex items-end justify-between flex-wrap gap-3">
+            <h1 className="text-primary leading-none">Historians</h1>
+            <div className="flex flex-wrap items-center justify-end gap-3">
+              {totalPhotoCount > 0 && (
+                <p className="text-sm text-muted-foreground">
+                  {showingAll ? (
+                    <>
+                      Browsing{" "}
+                      <span className="font-semibold text-foreground">
+                        {totalPhotoCount.toLocaleString()}
+                      </span>{" "}
+                      {totalPhotoCount === 1 ? "photo" : "photos"} from the SSE
+                      archive.
+                    </>
+                  ) : (
+                    <>
+                      Showing{" "}
+                      <span className="font-semibold text-foreground">
+                        {visibleCount.toLocaleString()}
+                      </span>{" "}
+                      of {totalPhotoCount.toLocaleString()}
+                    </>
+                  )}
+                </p>
               )}
-            </p>
-          )}
-        </div>
-      </div>
-
-      {/* Year quick-chips. Active year is filled, the rest are outline. */}
-      {yearChips.length > 1 && (
-        <div className="mb-4 flex flex-wrap items-center gap-2">
-          <YearChip
-            label="All years"
-            active={!filters.year}
-            onClick={() => handleQuickYear("")}
-          />
-          {yearChips.map((year) => (
-            <YearChip
-              key={year}
-              label={String(year)}
-              active={filters.year === String(year)}
-              onClick={() => handleQuickYear(String(year))}
-            />
-          ))}
-        </div>
-      )}
-
-      <PhotoFilters
-        filters={filters}
-        onChange={setFilters}
-        onApply={() => void applyFilters(filters)}
-        onClear={clearFilters}
-        isFiltered={isFiltered}
-        events={events}
-        years={years}
-        categories={categories}
-        disabled={loading}
-      />
-
-      {loading ? (
-        <PhotoGridSkeleton />
-      ) : photos.length === 0 ? (
-        <EmptyState isFiltered={isFiltered} onClear={clearFilters} />
-      ) : (
-        <>
-          <div className="mt-6">
-            <PhotoGrid
-              groups={groups}
-              onPhotoClick={(photo) => {
-                const index = photos.findIndex(
-                  (item) => item.id === photo.id
-                );
-                setSelectedIndex(index >= 0 ? index : null);
-              }}
-            />
+              <Button type="button" onClick={() => setRequestOpen(true)}>
+                <Upload className="size-4" />
+                Request photo upload
+              </Button>
+            </div>
           </div>
+        </div>
 
-          <div
-            ref={sentinelRef}
-            aria-hidden
-            className="h-1 w-full"
-          />
+        {/* Year quick-chips. Active year is filled, the rest are outline. */}
+        {yearChips.length > 1 && (
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            <YearChip
+              label="All years"
+              active={!filters.year}
+              onClick={() => handleQuickYear("")}
+            />
+            {yearChips.map((year) => (
+              <YearChip
+                key={year}
+                label={String(year)}
+                active={filters.year === String(year)}
+                onClick={() => handleQuickYear(String(year))}
+              />
+            ))}
+          </div>
+        )}
 
-          {paginating && (
-            <>
-              <PaginationSkeleton />
-              <div className="mt-4 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Loading more photos…
-              </div>
-            </>
-          )}
-
-          {!nextCursor && photos.length > 0 && (
-            <p className="mt-10 text-center text-xs uppercase tracking-wider text-muted-foreground/70">
-              ✦ End of the archive ✦
-            </p>
-          )}
-        </>
-      )}
-
-      {selectedIndex !== null && (
-        <PhotoLightbox
-          photos={photos}
-          selectedIndex={selectedIndex}
-          onSelect={setSelectedIndex}
-          onClose={() => setSelectedIndex(null)}
-          onRequestMore={nextCursor ? loadMore : undefined}
-          paginating={paginating}
+        <PhotoFilters
+          filters={filters}
+          onChange={setFilters}
+          onApply={() => void applyFilters(filters)}
+          onClear={clearFilters}
+          isFiltered={isFiltered}
+          events={events}
+          years={years}
+          categories={categories}
+          disabled={loading}
         />
-      )}
+
+        {loading ? (
+          <PhotoGridSkeleton />
+        ) : photos.length === 0 ? (
+          <EmptyState isFiltered={isFiltered} onClear={clearFilters} />
+        ) : (
+          <>
+            <div className="mt-6">
+              <PhotoGrid
+                groups={groups}
+                onPhotoClick={(photo) => {
+                  const index = photos.findIndex(
+                    (item) => item.id === photo.id,
+                  );
+                  setSelectedIndex(index >= 0 ? index : null);
+                }}
+              />
+            </div>
+
+            <div ref={sentinelRef} aria-hidden className="h-1 w-full" />
+
+            {paginating && (
+              <>
+                <PaginationSkeleton />
+                <div className="mt-4 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Loading more photos…
+                </div>
+              </>
+            )}
+
+            {!nextCursor && photos.length > 0 && (
+              <p className="mt-10 text-center text-xs uppercase tracking-wider text-muted-foreground/70">
+                ✦ End of the archive ✦
+              </p>
+            )}
+          </>
+        )}
+
+        {selectedIndex !== null && (
+          <PhotoLightbox
+            photos={photos}
+            selectedIndex={selectedIndex}
+            onSelect={setSelectedIndex}
+            onClose={() => setSelectedIndex(null)}
+            onRequestMore={nextCursor ? loadMore : undefined}
+            paginating={paginating}
+          />
+        )}
+        <Modal
+          open={requestOpen}
+          onOpenChange={(open) => {
+            setRequestOpen(open);
+            if (!open) setRequestSubmitted(false);
+          }}
+          title="Request photo upload"
+          description="Submit photos for an officer to review before they appear in the Historians gallery."
+          className="max-w-5xl max-h-[90vh]"
+        >
+          {requestSubmitted ? (
+            <div className="py-8 text-center">
+              <h3 className="text-lg font-semibold text-foreground">
+                Request submitted
+              </h3>
+              <p className="mt-2 text-sm text-muted-foreground">
+                An officer will review the photos before they appear on this
+                page.
+              </p>
+            </div>
+          ) : (
+            <div className="max-h-[70vh] overflow-y-auto pr-2">
+              <PhotoBatchUploader
+                mode="request"
+                events={events}
+                categories={categories}
+                uploadInitEndpoint="/api/photo-upload-requests/uploads"
+                completeEndpointForBatch={(batchId) =>
+                  `/api/photo-upload-requests/batches/${batchId}/complete`
+                }
+                onComplete={(count) => {
+                  if (count > 0) setRequestSubmitted(true);
+                }}
+              />
+            </div>
+          )}
+        </Modal>
       </NeoCardContent>
     </NeoCard>
   );

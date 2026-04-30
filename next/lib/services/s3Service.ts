@@ -14,12 +14,13 @@ export interface IS3Service {
   getSignedUploadUrl(
     key: string,
     contentType: string,
-    expiresIn?: number
+    expiresIn?: number,
   ): Promise<string>;
   putObject(key: string, body: Uint8Array, contentType: string): Promise<void>;
   deleteObject(key: string): Promise<void>;
+  getObjectBytes(key: string, maxBytes?: number): Promise<Uint8Array>;
   headObject(
-    key: string
+    key: string,
   ): Promise<{ contentType?: string; contentLength?: number }>;
 }
 
@@ -47,7 +48,7 @@ export class S3Service implements IS3Service {
   async getSignedUploadUrl(
     key: string,
     contentType: string,
-    expiresIn = 3600
+    expiresIn = 3600,
   ): Promise<string> {
     const command = new PutObjectCommand({
       Bucket: process.env.AWS_S3_BUCKET_NAME!,
@@ -61,7 +62,7 @@ export class S3Service implements IS3Service {
   async putObject(
     key: string,
     body: Uint8Array,
-    contentType: string
+    contentType: string,
   ): Promise<void> {
     const command = new PutObjectCommand({
       Bucket: this.bucket,
@@ -81,8 +82,24 @@ export class S3Service implements IS3Service {
     await this.client.send(command);
   }
 
+  async getObjectBytes(key: string, maxBytes = 4096): Promise<Uint8Array> {
+    const command = new GetObjectCommand({
+      Bucket: this.bucket,
+      Key: key,
+      Range: `bytes=0-${Math.max(0, maxBytes - 1)}`,
+    });
+    const response = await this.client.send(command);
+    if (
+      !response.Body ||
+      typeof response.Body.transformToByteArray !== "function"
+    ) {
+      throw new Error("S3 object body is not readable");
+    }
+    return response.Body.transformToByteArray();
+  }
+
   async headObject(
-    key: string
+    key: string,
   ): Promise<{ contentType?: string; contentLength?: number }> {
     const command = new HeadObjectCommand({
       Bucket: this.bucket,

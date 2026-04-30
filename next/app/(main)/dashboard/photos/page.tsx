@@ -12,7 +12,7 @@ export default async function DashboardPhotosPage() {
     redirect("/dashboard");
   }
 
-  const [photos, events, totalPhotoCount] = await Promise.all([
+  const [photos, events, totalPhotoCount, pendingRequests] = await Promise.all([
     prisma.photo.findMany({
       take: INITIAL_LIMIT + 1,
       orderBy: [{ sortDate: "desc" }, { id: "desc" }],
@@ -26,6 +26,14 @@ export default async function DashboardPhotosPage() {
       select: { id: true, title: true, date: true },
     }),
     prisma.photo.count(),
+    prisma.photoUploadRequest.findMany({
+      where: { status: "pending" },
+      take: 100,
+      orderBy: [{ uploadedAt: "desc" }, { id: "desc" }],
+      include: {
+        event: { select: { id: true, title: true, date: true } },
+      },
+    }),
   ]);
 
   const initialPhotos = photos.slice(0, INITIAL_LIMIT);
@@ -68,6 +76,33 @@ export default async function DashboardPhotosPage() {
         }))}
         categories={[...PHOTO_CATEGORIES]}
         totalPhotoCount={totalPhotoCount}
+        initialRequests={pendingRequests.map((request) => ({
+          id: request.id,
+          imageUrl: getPhotoImageUrl(request.galleryKey),
+          caption: request.caption,
+          altText: request.altText,
+          category: request.category,
+          eventId: request.eventId,
+          event: request.event
+            ? {
+                id: request.event.id,
+                title: request.event.title,
+                date: request.event.date.toISOString(),
+              }
+            : null,
+          photoDate:
+            request.exifTakenAt?.toISOString() ??
+            request.manualTakenAt?.toISOString() ??
+            null,
+          uploadedAt: request.uploadedAt.toISOString(),
+          originalFilename: request.originalFilename,
+          originalMimeType: request.originalMimeType,
+          originalSizeBytes: request.originalSizeBytes,
+          submitterName: request.submitterName,
+          submitterEmail: request.submitterEmail,
+          submitterNote: request.submitterNote,
+          status: request.status,
+        }))}
       />
     </section>
   );

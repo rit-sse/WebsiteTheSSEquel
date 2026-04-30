@@ -97,6 +97,12 @@ enum PositionCategory {
   SE_OFFICE
 }
 
+enum PhotoUploadRequestStatus {
+  pending
+  approved
+  rejected
+}
+
 model User {
   //Store an automatically generated unique int for id
   id Int @id @default(autoincrement())
@@ -160,6 +166,7 @@ model User {
   electionEmailLogs           ElectionEmailLog[]
   runningMateInvitations      ElectionRunningMateInvitation[] @relation("RunningMateInvitee")
   uploadedPhotos              Photo[]
+  reviewedPhotoUploadRequests PhotoUploadRequest[]
 }
 
 model Alumni {
@@ -809,6 +816,7 @@ model Event {
   attendees        EventAttendance[]
   purchaseRequests PurchaseRequest[]
   photos           Photo[]
+  photoUploadRequests PhotoUploadRequest[]
 }
 
 model Photo {
@@ -843,6 +851,8 @@ model Photo {
 
   batchId String @db.VarChar(80)
 
+  uploadRequest PhotoUploadRequest?
+
   @@index([status, sortDate])
   @@index([status, sortDate, id])
   @@index([status, category, sortDate, id])
@@ -850,6 +860,53 @@ model Photo {
   @@index([eventId])
   @@index([category])
   @@index([batchId])
+}
+
+model PhotoUploadRequest {
+  id Int @id @default(autoincrement())
+
+  requestToken String @db.VarChar(160)
+  batchId      String @db.VarChar(80)
+
+  originalKey String @unique @db.VarChar(500)
+  galleryKey  String @unique @db.VarChar(500)
+
+  originalFilename  String @db.VarChar(255)
+  originalMimeType  String @db.VarChar(100)
+  originalSizeBytes Int
+  galleryMimeType   String @default("image/webp") @db.VarChar(100)
+  gallerySizeBytes  Int
+
+  caption  String? @db.VarChar(500)
+  altText  String? @db.VarChar(500)
+  category String  @default("general") @db.VarChar(80)
+
+  eventId String?
+  event   Event?  @relation(fields: [eventId], references: [id], onDelete: SetNull)
+
+  submitterName   String? @db.VarChar(100)
+  submitterEmail  String? @db.VarChar(255)
+  submitterNote   String? @db.VarChar(1000)
+  submitterIpHash String? @db.VarChar(128)
+
+  exifTakenAt   DateTime?
+  manualTakenAt DateTime?
+  uploadedAt    DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  status PhotoUploadRequestStatus @default(pending)
+
+  reviewedById Int?
+  reviewedBy   User?     @relation(fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewedAt   DateTime?
+  reviewNotes  String?   @db.VarChar(1000)
+
+  publishedPhotoId Int?   @unique
+  publishedPhoto   Photo? @relation(fields: [publishedPhotoId], references: [id], onDelete: SetNull)
+
+  @@index([status, uploadedAt])
+  @@index([batchId])
+  @@index([eventId])
 }
 
 model EventAttendance {

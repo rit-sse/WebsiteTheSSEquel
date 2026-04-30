@@ -9,7 +9,7 @@ import {
 
 function makeRequest(
   pathname: string,
-  options: { method?: string; headers?: Record<string, string> } = {}
+  options: { method?: string; headers?: Record<string, string> } = {},
 ) {
   return {
     method: options.method ?? "GET",
@@ -39,7 +39,7 @@ describe("rateLimitMiddleware", () => {
     const ip = resolveClientIp(
       makeRequest("/api/quotes", {
         headers: { "x-forwarded-for": "203.0.113.8, 10.0.0.1" },
-      })
+      }),
     );
 
     expect(ip).toBe("203.0.113.8");
@@ -47,13 +47,25 @@ describe("rateLimitMiddleware", () => {
 
   it("recognizes configured routes only", () => {
     expect(
-      getRateLimitRule(makeRequest("/api/quotes", { method: "POST" }))?.id
+      getRateLimitRule(makeRequest("/api/quotes", { method: "POST" }))?.id,
     ).toBe("quotes-post");
     expect(
-      getRateLimitRule(makeRequest("/api/auth/session", { method: "GET" }))?.id
+      getRateLimitRule(makeRequest("/api/auth/session", { method: "GET" }))?.id,
     ).toBe("auth-session");
     expect(
-      getRateLimitRule(makeRequest("/api/library/books", { method: "POST" }))
+      getRateLimitRule(
+        makeRequest("/api/photo-upload-requests/uploads", { method: "POST" }),
+      )?.id,
+    ).toBe("photo-upload-request-init");
+    expect(
+      getRateLimitRule(
+        makeRequest("/api/photo-upload-requests/batches/batch-1/complete", {
+          method: "POST",
+        }),
+      )?.id,
+    ).toBe("photo-upload-request-complete");
+    expect(
+      getRateLimitRule(makeRequest("/api/library/books", { method: "POST" })),
     ).toBeNull();
   });
 
@@ -75,7 +87,7 @@ describe("rateLimitMiddleware", () => {
 
   it("does not affect unrelated routes", async () => {
     const response = await rateLimitMiddleware(
-      makeRequest("/api/library/search", { method: "GET" })
+      makeRequest("/api/library/search", { method: "GET" }),
     );
 
     expect(response.headers.get("x-middleware-next")).toBe("1");

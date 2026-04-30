@@ -19,7 +19,7 @@ const publicAuthOutput: AuthOutput = { isAllowed: true, authType: "None" };
  * @returns an AuthVerifier that checks the relevant permissions for the user
  */
 const authVerifierFactory = (
-  verifier: (permissions: any) => AuthOutput
+  verifier: (permissions: any) => AuthOutput,
 ): AuthVerifier => {
   return async (request: NextRequest) => {
     const permissions = await getGatewayAuthLevel(request);
@@ -196,7 +196,7 @@ const nonGetMentorVerifier = nonGetVerifier(mentorVerifier);
  * the mentor-schedule route handlers.
  */
 const nonGetScheduleManagementVerifier = nonGetVerifier(
-  scheduleManagementVerifier
+  scheduleManagementVerifier,
 );
 
 /**
@@ -246,7 +246,7 @@ const quoteVerifier: AuthVerifier = async (request: NextRequest) => {
  * - PUT/PATCH/DELETE pass through (route enforces owner or mentoringHead/primary)
  */
 const mentorApplicationVerifier: AuthVerifier = async (
-  request: NextRequest
+  request: NextRequest,
 ) => {
   if (request.method === "GET") {
     return { isAllowed: true, authType: "None" };
@@ -261,7 +261,7 @@ const mentorApplicationVerifier: AuthVerifier = async (
  * - POST/PUT require signed-in user for applicant submission/edit flows
  */
 const techCommitteeApplicationVerifier: AuthVerifier = async (
-  request: NextRequest
+  request: NextRequest,
 ) => {
   if (request.method === "GET") {
     return { isAllowed: true, authType: "None" };
@@ -276,9 +276,24 @@ const techCommitteeApplicationVerifier: AuthVerifier = async (
  * - POST is public so anyone staffing the lab can submit the form
  */
 const headcountSubmissionVerifier: AuthVerifier = async (
-  request: NextRequest
+  request: NextRequest,
 ) => {
   if (request.method === "POST") {
+    return { isAllowed: true, authType: "None" };
+  }
+
+  return officerVerifier(request);
+};
+
+const photoUploadRequestsVerifier: AuthVerifier = async (
+  request: NextRequest,
+) => {
+  const pathname = request.nextUrl.pathname;
+  if (
+    request.method === "POST" &&
+    (pathname === "/api/photo-upload-requests/uploads" ||
+      /^\/api\/photo-upload-requests\/batches\/[^/]+\/complete$/.test(pathname))
+  ) {
     return { isAllowed: true, authType: "None" };
   }
 
@@ -297,7 +312,7 @@ const libraryVerifier: AuthVerifier = async (request: NextRequest) => {
   if (request.method === "GET") {
     if (
       /^\/api\/library\/(book|books|categories|search|statistics)$/.test(
-        pathname
+        pathname,
       )
     ) {
       return { isAllowed: true, authType: "None" };
@@ -372,6 +387,7 @@ const ROUTES: { [key: string]: AuthVerifier } = {
   mentorSkill: nonGetMentorVerifier,
   officer: nonGetPrimaryOfficerVerifier,
   "officer-positions": nonGetPrimaryOfficerVerifier,
+  "photo-upload-requests": photoUploadRequestsVerifier,
   project: nonGetOfficerVerifier,
   projectContributor: nonGetOfficerVerifier,
   purchasing: officerVerifier, // All purchasing routes require officer auth
@@ -393,7 +409,7 @@ const accessDenied = (authType: string, request: NextRequest) => {
     {
       error: `Access Denied; need to be ${authType} to access ${request.method} ${pathname}`,
     },
-    { status: 403 }
+    { status: 403 },
   );
 };
 
