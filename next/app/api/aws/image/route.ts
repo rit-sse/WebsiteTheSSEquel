@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 import { getS3Client, getBucketName } from "@/lib/S3Client";
 
 export const dynamic = "force-dynamic";
 
 const ALLOWED_KEY_PREFIXES = ["uploads/", "assets/library/"] as const;
+const IMMUTABLE_PHOTO_GALLERY_PREFIX = "uploads/photos/gallery/";
 
 /**
  * Image proxy for S3 uploads (profile pictures, library book covers, etc.).
@@ -71,14 +74,51 @@ export async function GET(req: NextRequest) {
       status: 200,
       headers: {
         "Content-Type": response.ContentType || "application/octet-stream",
-        "Cache-Control": "public, max-age=300, stale-while-revalidate=600",
+        "Cache-Control": key.startsWith(IMMUTABLE_PHOTO_GALLERY_PREFIX)
+          ? "public, max-age=31536000, immutable"
+          : "public, max-age=300, stale-while-revalidate=600",
       },
     });
   } catch (err: any) {
     if (err.name === "NoSuchKey") {
       return NextResponse.json({ error: "Image not found" }, { status: 404 });
     }
+    const localResponse = await tryReadLocalDevelopmentImage(key);
+    if (localResponse) return localResponse;
+
     console.error("S3 image fetch error:", err);
     return NextResponse.json({ error: "Image fetch failed" }, { status: 500 });
   }
+}
+
+async function tryReadLocalDevelopmentImage(key: string) {
+  if (process.env.NODE_ENV === "production") return null;
+
+  try {
+    const publicRoot = path.join(process.cwd(), "public");
+    const resolved = path.resolve(publicRoot, key);
+    if (!resolved.startsWith(publicRoot + path.sep)) return null;
+
+    const data = await readFile(resolved);
+    return new NextResponse(data, {
+      status: 200,
+      headers: {
+        "Content-Type": contentTypeForKey(key),
+        "Cache-Control": key.startsWith(IMMUTABLE_PHOTO_GALLERY_PREFIX)
+          ? "public, max-age=31536000, immutable"
+          : "public, max-age=300, stale-while-revalidate=600",
+      },
+    });
+  } catch {
+    return null;
+  }
+}
+
+function contentTypeForKey(key: string) {
+  const extension = path.extname(key).toLowerCase();
+  if (extension === ".jpg" || extension === ".jpeg") return "image/jpeg";
+  if (extension === ".png") return "image/png";
+  if (extension === ".webp") return "image/webp";
+  if (extension === ".gif") return "image/gif";
+  return "application/octet-stream";
 }

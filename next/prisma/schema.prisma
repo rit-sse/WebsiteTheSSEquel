@@ -844,6 +844,9 @@ model Photo {
   batchId String @db.VarChar(80)
 
   @@index([status, sortDate])
+  @@index([status, sortDate, id])
+  @@index([status, category, sortDate, id])
+  @@index([status, eventId, sortDate, id])
   @@index([eventId])
   @@index([category])
   @@index([batchId])
