@@ -41,48 +41,37 @@ import { cn } from "@/lib/utils";
 import type { ActiveElectionSummary } from "@/lib/elections";
 
 /**
- * Navbar groups, organized by audience. Each group renders as one
- * dropdown on desktop and one collapsible on mobile. The intent is that
- * a visitor can scan the five top-level labels (About / Students /
- * Alumni / Companies / SE Office) and immediately know which group is
- * theirs. Cross-cutting links (the active-election notice, avatar) sit
- * outside any group.
+ * Audience-grouped dropdowns rendered between the top-level shortcuts
+ * (About, Photos) and the avatar. Each entry's items are rendered in a
+ * single column when there are two or fewer of them — a 2-col grid on
+ * a 2-item dropdown looks empty.
  *
- * Alumni and Companies both link into the existing one-page `/sponsors`
- * via section anchors (`#sponsor`, `#recruit`, `#vise`) instead of
- * duplicating routes — the page itself adds matching `id` attributes
- * with `scroll-mt-24` so the headings clear the navbar after the jump.
+ * Alumni and Companies link into the one-page `/sponsors` via section
+ * anchors (`#sponsor`, `#recruit`, `#vise`) instead of duplicating
+ * routes; that page adds matching `id` + `scroll-mt-24` so headings
+ * clear the navbar after the jump.
+ *
+ * SE Office grows a conditional "Elections" entry when an election is
+ * live (formerly a top-level callout) — wired up inside the component
+ * since it depends on the `serverActiveElection` prop.
  */
 
-const aboutItems = [
-  {
-    title: "About Us",
-    href: "/about",
-    description:
-      "Learn about the Society of Software Engineers and our mission.",
-  },
+interface NavItem {
+  title: string;
+  href: string;
+  description: string;
+}
+
+const studentsItems: NavItem[] = [
   {
     title: "Get Involved",
     href: "/about/get-involved",
     description: "Discover ways to participate and contribute to SSE.",
   },
   {
-    title: "Credits",
-    href: "/about/credits",
-    description: "Meet the developers who built and maintain this site.",
-  },
-];
-
-const studentsItems = [
-  {
     title: "Events",
     href: "/events/calendar",
     description: "Upcoming SSE meetings, workshops, and socials.",
-  },
-  {
-    title: "Photos",
-    href: "/photos",
-    description: "Browse the SSE photo archive by event and year.",
   },
   {
     title: "Mentor Schedule",
@@ -111,7 +100,7 @@ const studentsItems = [
   },
 ];
 
-const alumniItems = [
+const alumniItems: NavItem[] = [
   {
     title: "Alumni Directory",
     href: "/about/alumni",
@@ -124,7 +113,7 @@ const alumniItems = [
   },
 ];
 
-const companiesItems = [
+const companiesItems: NavItem[] = [
   {
     title: "Sponsor SSE",
     href: "/sponsors#sponsor",
@@ -137,7 +126,7 @@ const companiesItems = [
   },
 ];
 
-const seOfficeItems = [
+const seOfficeItems: NavItem[] = [
   {
     title: "Leadership",
     href: "/about/leadership",
@@ -159,18 +148,6 @@ const seOfficeItems = [
     description: "Officer guidelines and policies.",
   },
 ];
-
-/**
- * Render order for the five audience dropdowns. Centralized so the
- * desktop NavigationMenu and the mobile Sheet stay in sync.
- */
-const NAV_GROUPS = [
-  { value: "about", label: "About", items: aboutItems },
-  { value: "students", label: "Students", items: studentsItems },
-  { value: "alumni", label: "Alumni", items: alumniItems },
-  { value: "companies", label: "Companies", items: companiesItems },
-  { value: "se-office", label: "SE Office", items: seOfficeItems },
-] as const;
 
 interface NavbarProps {
   /** Resolved on the server so the first paint already includes Dashboard / profile link. */
@@ -253,6 +230,29 @@ const Navbar: React.FC<NavbarProps> = ({
     }
   };
 
+  // SE Office gets the live election as a conditional last entry. The
+  // groups array is otherwise stable; we rebuild on prop change so the
+  // first-paint server prop and any subsequent client-side election
+  // updates both flow through.
+  const navGroups = React.useMemo(() => {
+    const seOfficeWithElection: NavItem[] = serverActiveElection
+      ? [
+          ...seOfficeItems,
+          {
+            title: "Elections",
+            href: `/elections/${serverActiveElection.slug}`,
+            description: "Cast your ballot in the active SSE election.",
+          },
+        ]
+      : seOfficeItems;
+    return [
+      { value: "students", label: "Students", items: studentsItems },
+      { value: "alumni", label: "Alumni", items: alumniItems },
+      { value: "companies", label: "Companies", items: companiesItems },
+      { value: "se-office", label: "SE Office", items: seOfficeWithElection },
+    ] as const;
+  }, [serverActiveElection]);
+
   return (
     <nav
       id="navbar"
@@ -279,44 +279,64 @@ const Navbar: React.FC<NavbarProps> = ({
             delayDuration={isMenuActive ? 100 : 1000000}
           >
             <NavigationMenuList>
-              {NAV_GROUPS.map((group) => (
-                <NavigationMenuItem key={group.value} value={group.value}>
-                  <NavigationMenuTrigger
-                    onClick={handleTriggerClick(group.value)}
-                  >
-                    {group.label}
-                  </NavigationMenuTrigger>
-                  <NavigationMenuContent>
-                    <ul className="grid gap-3 p-4 md:w-[400px] lg:w-[500px] lg:grid-cols-2">
-                      {group.items.map((item) => (
-                        <ListItem
-                          key={item.title}
-                          title={item.title}
-                          href={item.href}
-                        >
-                          {item.description}
-                        </ListItem>
-                      ))}
-                    </ul>
-                  </NavigationMenuContent>
-                </NavigationMenuItem>
-              ))}
+              {/* Top-level shortcut: About is its own page, no
+                  dropdown needed now that Credits / Get Involved live
+                  elsewhere. */}
+              <NavigationMenuItem>
+                <NavigationMenuLink
+                  asChild
+                  className={navigationMenuTriggerStyle()}
+                >
+                  <Link href="/about">About</Link>
+                </NavigationMenuLink>
+              </NavigationMenuItem>
 
-              {/* Active-election callout sits outside the audience groups —
-                  it's time-sensitive and applies to every audience, so it
-                  shouldn't be buried in a dropdown. */}
-              {serverActiveElection && (
-                <NavigationMenuItem>
-                  <NavigationMenuLink
-                    asChild
-                    className={navigationMenuTriggerStyle()}
-                  >
-                    <Link href={`/elections/${serverActiveElection.slug}`}>
-                      Elections
-                    </Link>
-                  </NavigationMenuLink>
-                </NavigationMenuItem>
-              )}
+              {/* Top-level shortcut: Photos is the most-visited page
+                  outside of Events, so it earns its own slot rather
+                  than living inside the Students dropdown. */}
+              <NavigationMenuItem>
+                <NavigationMenuLink
+                  asChild
+                  className={navigationMenuTriggerStyle()}
+                >
+                  <Link href="/photos">Photos</Link>
+                </NavigationMenuLink>
+              </NavigationMenuItem>
+
+              {navGroups.map((group) => {
+                // Two-or-fewer-item groups render single-column so the
+                // dropdown panel doesn't show a half-empty 2-col grid.
+                const single = group.items.length <= 2;
+                return (
+                  <NavigationMenuItem key={group.value} value={group.value}>
+                    <NavigationMenuTrigger
+                      onClick={handleTriggerClick(group.value)}
+                    >
+                      {group.label}
+                    </NavigationMenuTrigger>
+                    <NavigationMenuContent>
+                      <ul
+                        className={cn(
+                          "grid gap-3 p-4",
+                          single
+                            ? "w-[280px]"
+                            : "md:w-[400px] lg:w-[500px] lg:grid-cols-2"
+                        )}
+                      >
+                        {group.items.map((item) => (
+                          <ListItem
+                            key={item.title}
+                            title={item.title}
+                            href={item.href}
+                          >
+                            {item.description}
+                          </ListItem>
+                        ))}
+                      </ul>
+                    </NavigationMenuContent>
+                  </NavigationMenuItem>
+                );
+              })}
 
               <NavigationMenuItem className="flex items-center ml-1">
                 <AuthButton
@@ -345,18 +365,18 @@ const Navbar: React.FC<NavbarProps> = ({
                 <SheetTitle className="text-left">Menu</SheetTitle>
               </SheetHeader>
               <nav className="flex flex-col gap-2 mt-6">
-                {/* Active-election callout pinned at the top of the sheet —
-                    same rationale as the desktop top-level link. */}
-                {serverActiveElection && (
-                  <MobileNavLink
-                    href={`/elections/${serverActiveElection.slug}`}
-                    onClick={() => setOpen(false)}
-                  >
-                    Elections
-                  </MobileNavLink>
-                )}
+                {/* Top-level shortcuts mirror desktop: About + Photos
+                    sit above the audience collapsibles so they're a
+                    single tap on mobile. */}
+                <MobileNavLink href="/about" onClick={() => setOpen(false)}>
+                  About
+                </MobileNavLink>
 
-                {NAV_GROUPS.map((group) => (
+                <MobileNavLink href="/photos" onClick={() => setOpen(false)}>
+                  Photos
+                </MobileNavLink>
+
+                {navGroups.map((group) => (
                   <MobileNavCollapsible key={group.value} title={group.label}>
                     {group.items.map((item) => (
                       <MobileNavLink
