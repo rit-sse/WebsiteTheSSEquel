@@ -2,7 +2,15 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ChevronDown, Menu, User, LogOut, LayoutDashboard } from "lucide-react";
+import {
+  ChevronDown,
+  Menu,
+  User,
+  LogOut,
+  LayoutDashboard,
+  Vote,
+  Mail,
+} from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import SSELogoFull from "../common/SSELogoFull";
 import AuthButton from "./AuthButton";
@@ -396,6 +404,15 @@ const Navbar: React.FC<NavbarProps> = ({
                           </span>
                         </div>
                       </div>
+                      {showDashboard && (
+                        <MobileNavLink
+                          href="/dashboard"
+                          onClick={() => setOpen(false)}
+                        >
+                          <LayoutDashboard className="h-4 w-4 mr-2" />
+                          Officer Dashboard
+                        </MobileNavLink>
+                      )}
                       {userId && (
                         <MobileNavLink
                           href={`/profile/${userId}`}
@@ -408,13 +425,22 @@ const Navbar: React.FC<NavbarProps> = ({
                           )}
                         </MobileNavLink>
                       )}
-                      {showDashboard && (
+                      {userId && (
                         <MobileNavLink
-                          href="/dashboard"
+                          href="/elections/me"
                           onClick={() => setOpen(false)}
                         >
-                          <LayoutDashboard className="h-4 w-4 mr-2" />
-                          Officer Dashboard
+                          <Vote className="h-4 w-4 mr-2" />
+                          My Nominations
+                        </MobileNavLink>
+                      )}
+                      {userId && (
+                        <MobileNavLink
+                          href="/accept-invitation"
+                          onClick={() => setOpen(false)}
+                        >
+                          <Mail className="h-4 w-4 mr-2" />
+                          My Invitations
                         </MobileNavLink>
                       )}
                       <button
