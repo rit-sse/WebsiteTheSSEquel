@@ -331,6 +331,27 @@ const invitationsVerifier: AuthVerifier = async (request: NextRequest) => {
 };
 
 /**
+ * Auth verifier for election routes:
+ *  - GET is public (election results / nomination listing).
+ *  - POST /api/elections/auto-kickoff is the cron-secret guarded
+ *    endpoint that creates a fresh election at semester boundaries.
+ *    The route handler does its own `x-cron-secret` check, so the
+ *    middleware needs to *let it through* — sign-in isn't possible
+ *    in a scheduler context.
+ *  - All other mutations require a signed-in user (the route
+ *    handlers run finer-grained checks like active membership).
+ */
+const electionsVerifier: AuthVerifier = async (request: NextRequest) => {
+  if (request.method === "GET") {
+    return { isAllowed: true, authType: "None" };
+  }
+  if (request.nextUrl.pathname === "/api/elections/auto-kickoff") {
+    return { isAllowed: true, authType: "None" };
+  }
+  return signedInVerifier(request);
+};
+
+/**
  * Map from API route name to authorization verifier. The verifier should be run against any request that
  * goes through that route.
  * Keys are the second element in the path segment; for example, the path "/api/golinks/officer" would
@@ -351,7 +372,7 @@ const ROUTES: { [key: string]: AuthVerifier } = {
   courseTaken: nonGetMentorVerifier,
   departments: nonGetOfficerVerifier,
   email: officerVerifier,
-  elections: nonGetVerifier(signedInVerifier),
+  elections: electionsVerifier,
   event: eventVerifier,
   go: allowAllVerifier,
   golinks: goLinkVerifier,

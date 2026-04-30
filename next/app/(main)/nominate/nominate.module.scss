@@ -1,0 +1,1149 @@
+/* =============================================================
+   /nominate — Letterpress Civic Poster
+   Page-scoped CSS. All variables, animations, and class names are
+   contained inside `.root` (CSS module) so nothing leaks site-wide.
+   ============================================================= */
+
+.root {
+  --paper: #f4efe6;
+  --paper-deep: #ebe2d2;
+  --ink: #0e0e0c;
+  --ink-soft: rgba(14, 14, 12, 0.08);
+  --ink-mid: rgba(14, 14, 12, 0.55);
+  --cobalt: #1f2bff;
+  --cobalt-deep: #1620c2;
+  --acid: #f4d224;
+  --riso-red: #e03a3a;
+
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body), Georgia, "Times New Roman", serif;
+  overflow-x: clip;
+  isolation: isolate;
+  margin-left: -0.5rem;
+  margin-right: -0.5rem;
+
+  @media (min-width: 768px) {
+    margin-left: -0.75rem;
+    margin-right: -0.75rem;
+  }
+
+  @media (min-width: 1024px) {
+    margin-left: -1rem;
+    margin-right: -1rem;
+  }
+
+  /* Paper grain overlay — fixed, non-interactive */
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' seed='3'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.6 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/></svg>");
+    opacity: 0.18;
+    mix-blend-mode: multiply;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Halftone gutters */
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 8px 8px, var(--ink-soft) 1.6px, transparent 2px),
+      radial-gradient(
+        circle at 8px 8px,
+        var(--ink-soft) 1.6px,
+        transparent 2px
+      );
+    background-size: 16px 16px;
+    background-position: left top, right top;
+    background-repeat: repeat-y;
+    background-clip: border-box;
+    -webkit-mask-image: linear-gradient(
+      to right,
+      black 0,
+      black 36px,
+      transparent 36px,
+      transparent calc(100% - 36px),
+      black calc(100% - 36px),
+      black 100%
+    );
+    mask-image: linear-gradient(
+      to right,
+      black 0,
+      black 36px,
+      transparent 36px,
+      transparent calc(100% - 36px),
+      black calc(100% - 36px),
+      black 100%
+    );
+    pointer-events: none;
+    opacity: 0.7;
+    z-index: 0;
+  }
+}
+
+/* All children sit on top of grain + halftone */
+.layer {
+  position: relative;
+  z-index: 1;
+}
+
+/* ─────────────── Marquee ─────────────── */
+.marquee {
+  width: 100%;
+  background: var(--cobalt);
+  color: var(--paper);
+  border-bottom: 3px solid var(--ink);
+  overflow: hidden;
+  font-family: var(--font-mono-stub), ui-monospace, monospace;
+  font-size: 0.9rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 500;
+
+  &:hover .marqueeTrack {
+    animation-play-state: paused;
+  }
+}
+
+.marqueeTrack {
+  display: inline-flex;
+  gap: 3rem;
+  padding-block: 0.7rem;
+  white-space: nowrap;
+  animation: scroll 38s linear infinite;
+  will-change: transform;
+}
+
+.marqueeItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+
+  &::before {
+    content: "★";
+    color: var(--acid);
+    font-size: 1.05em;
+  }
+}
+
+@keyframes scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* ─────────────── Hero ─────────────── */
+.hero {
+  position: relative;
+  padding: clamp(2.5rem, 5vw, 5rem) clamp(1.25rem, 4vw, 4rem) clamp(2rem, 4vw, 4rem);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2rem;
+
+  @media (min-width: 1024px) {
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    gap: 3rem;
+    align-items: end;
+  }
+}
+
+.heroEyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  align-self: flex-start;
+  padding: 0.5rem 0.9rem;
+  background: var(--paper);
+  border: 2.5px solid var(--ink);
+  box-shadow: 4px 4px 0 var(--ink);
+  font-family: var(--font-mono-stub), ui-monospace, monospace;
+  font-size: 0.78rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 700;
+  transform: rotate(-2deg);
+  position: relative;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: -8px;
+    left: 18px;
+    width: 38px;
+    height: 14px;
+    background: var(--acid);
+    border: 2px solid var(--ink);
+    transform: rotate(-7deg);
+  }
+}
+
+.heroEyebrowDot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--riso-red);
+  box-shadow: 0 0 0 2px var(--ink);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.35);
+    opacity: 0.65;
+  }
+}
+
+.heroHeadline {
+  font-family: var(--font-display), "Helvetica Neue", sans-serif;
+  font-weight: 900;
+  text-transform: uppercase;
+  font-size: clamp(3.5rem, 11vw, 11rem);
+  line-height: 0.86;
+  letter-spacing: -0.02em;
+  margin: 1.25rem 0 1rem;
+  color: var(--ink);
+  word-spacing: 0.04em;
+  /* Allow last word to clip toward the right edge for that broken-grid feel */
+  margin-right: clamp(-3rem, -3vw, 0rem);
+}
+
+.heroHeadlineWord {
+  display: inline-block;
+  margin-right: 0.18em;
+  vertical-align: bottom;
+  position: relative;
+
+  &.heroAccent {
+    color: var(--cobalt);
+    font-style: italic;
+    -webkit-text-stroke: 1px var(--ink);
+  }
+}
+
+.heroSub {
+  font-family: var(--font-body), Georgia, serif;
+  font-size: clamp(1.05rem, 1.4vw, 1.4rem);
+  font-weight: 400;
+  font-variation-settings: "opsz" 72;
+  line-height: 1.45;
+  max-width: 36ch;
+  color: var(--ink);
+  margin-top: 0.5rem;
+
+  & em {
+    color: var(--cobalt);
+    font-style: italic;
+    font-weight: 600;
+  }
+}
+
+.heroSide {
+  position: relative;
+  padding: 1.25rem;
+  background: var(--paper);
+  border: 3px solid var(--ink);
+  box-shadow: 8px 8px 0 var(--ink);
+  transform: rotate(0.6deg);
+
+  & h3 {
+    font-family: var(--font-mono-stub), ui-monospace, monospace;
+    font-size: 0.78rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin: 0 0 0.75rem;
+    color: var(--ink);
+  }
+}
+
+.heroStamp {
+  position: absolute;
+  top: -22px;
+  right: -18px;
+  width: 92px;
+  height: 92px;
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+/* ─────────────── Microtype dividers ─────────────── */
+.microtypeDivider {
+  width: 100%;
+  font-family: var(--font-mono-stub), ui-monospace, monospace;
+  text-transform: uppercase;
+  font-size: 0.62rem;
+  letter-spacing: 0.4em;
+  color: var(--ink-mid);
+  text-align: center;
+  padding-block: 0.5rem;
+  border-top: 2px dashed var(--ink-soft);
+  border-bottom: 2px dashed var(--ink-soft);
+  user-select: none;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+/* ─────────────── Procedural sections ─────────────── */
+.procedural {
+  padding: clamp(2rem, 5vw, 4rem) clamp(1.25rem, 4vw, 4rem);
+  border-top: 3px solid var(--ink);
+}
+
+.proceduralHeader {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: clamp(1rem, 2vw, 2.5rem);
+  align-items: end;
+  margin-bottom: clamp(1.25rem, 3vw, 2rem);
+  border-bottom: 4px solid var(--ink);
+  padding-bottom: 0.75rem;
+}
+
+.proceduralNumeral {
+  font-family: var(--font-mono-stub), ui-monospace, monospace;
+  font-weight: 700;
+  font-size: clamp(2.75rem, 7vw, 6rem);
+  line-height: 0.9;
+  color: var(--ink);
+  letter-spacing: -0.05em;
+}
+
+.proceduralTitle {
+  font-family: var(--font-display), sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: clamp(1.4rem, 3vw, 2.6rem);
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  padding-bottom: 0.4rem;
+}
+
+.proceduralBody {
+  display: grid;
+  gap: clamp(0.85rem, 1.5vw, 1.5rem);
+}
+
+/* ─────────────── Office option list ─────────────── */
+.officeList {
+  display: grid;
+  gap: 0;
+  border: 3px solid var(--ink);
+  background: var(--paper);
+  box-shadow: 8px 8px 0 var(--ink);
+}
+
+.officeOption {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  border-bottom: 2px solid var(--ink);
+  background: var(--paper);
+  cursor: pointer;
+  transition:
+    background 0.18s ease,
+    padding-left 0.18s ease;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 0;
+    background: var(--cobalt);
+    transition: width 0.18s ease;
+  }
+
+  &:hover {
+    background: var(--paper-deep);
+    padding-left: 2rem;
+
+    &::before {
+      width: 6px;
+    }
+
+    .officeChevron {
+      transform: translateX(-4px);
+      opacity: 1;
+    }
+  }
+}
+
+.officeOptionSelected {
+  background: var(--ink);
+  color: var(--paper);
+
+  &::before {
+    width: 6px;
+    background: var(--acid);
+  }
+
+  .officeBullet {
+    background: var(--acid);
+    border-color: var(--paper);
+  }
+
+  .officeOptionDesc {
+    color: rgba(244, 239, 230, 0.75);
+  }
+
+  .officeChevron {
+    color: var(--acid);
+    opacity: 1;
+  }
+
+  &:hover {
+    background: var(--ink);
+    padding-left: 1.25rem;
+  }
+}
+
+.officeBullet {
+  width: 22px;
+  height: 22px;
+  border: 3px solid var(--ink);
+  background: var(--paper);
+  border-radius: 50%;
+  flex-shrink: 0;
+  position: relative;
+
+  .officeOptionSelected &::after {
+    content: "";
+    position: absolute;
+    inset: 4px;
+    border-radius: 50%;
+    background: var(--ink);
+  }
+}
+
+.officeOptionTitle {
+  font-family: var(--font-display), sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: clamp(1.05rem, 2vw, 1.5rem);
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+.officeOptionDesc {
+  font-family: var(--font-body), serif;
+  font-size: 0.92rem;
+  font-variation-settings: "opsz" 14;
+  margin-top: 0.25rem;
+  color: var(--ink-mid);
+  line-height: 1.4;
+}
+
+.officeChevron {
+  font-family: var(--font-mono-stub), ui-monospace, monospace;
+  font-size: 1.5rem;
+  font-weight: 700;
+  opacity: 0;
+  transform: translateX(-12px);
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.officeIncumbentChip {
+  font-family: var(--font-mono-stub), ui-monospace, monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-mid);
+  margin-top: 0.4rem;
+}
+
+/* ─────────────── User search ─────────────── */
+.searchSelf {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: var(--cobalt);
+  color: var(--paper);
+  border: 3px solid var(--ink);
+  box-shadow: 6px 6px 0 var(--ink);
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+
+  & .searchSelfMain {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  & .searchSelfHead {
+    font-family: var(--font-display), sans-serif;
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 1.1rem;
+    letter-spacing: 0.02em;
+  }
+
+  & .searchSelfSub {
+    font-family: var(--font-body), serif;
+    font-size: 0.86rem;
+    opacity: 0.85;
+  }
+
+  & .searchSelfArrow {
+    font-family: var(--font-mono-stub), monospace;
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+
+  &:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 8px 8px 0 var(--ink);
+  }
+
+  &:active {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+}
+
+.searchInputWrap {
+  position: relative;
+  border: 3px solid var(--ink);
+  background: var(--paper);
+  box-shadow: 6px 6px 0 var(--ink);
+  transition: box-shadow 0.18s ease;
+
+  &:focus-within {
+    box-shadow: 8px 8px 0 var(--ink);
+  }
+}
+
+.searchLabel {
+  display: block;
+  font-family: var(--font-mono-stub), monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 700;
+  padding: 0.6rem 1rem 0;
+  color: var(--ink-mid);
+}
+
+.searchInput {
+  width: 100%;
+  border: none;
+  background: transparent;
+  font-family: var(--font-body), serif;
+  font-size: 1.1rem;
+  font-weight: 500;
+  padding: 0.4rem 1rem 0.85rem;
+  color: var(--ink);
+  outline: none;
+
+  &::placeholder {
+    color: var(--ink-mid);
+    font-style: italic;
+  }
+}
+
+.searchResults {
+  border-top: 2px solid var(--ink);
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.searchResult {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.85rem;
+  align-items: center;
+  padding: 0.7rem 1rem;
+  cursor: pointer;
+  border-bottom: 1px solid var(--ink-soft);
+  background: var(--paper);
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover,
+  &[data-active="true"] {
+    background: var(--acid);
+  }
+}
+
+.searchResultAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid var(--ink);
+  background: var(--paper-deep);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.searchResultName {
+  font-family: var(--font-display), sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.searchResultMeta {
+  font-family: var(--font-mono-stub), monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  color: var(--ink-mid);
+  text-transform: uppercase;
+  margin-top: 0.2rem;
+}
+
+.searchResultStub {
+  font-family: var(--font-mono-stub), monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--ink-mid);
+}
+
+.searchEmpty {
+  padding: 1.25rem 1rem;
+  font-family: var(--font-body), serif;
+  font-style: italic;
+  color: var(--ink-mid);
+  text-align: center;
+}
+
+.nomineePicked {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: var(--ink);
+  color: var(--paper);
+  border: 3px solid var(--ink);
+  box-shadow: 6px 6px 0 var(--cobalt);
+
+  & .nomineeName {
+    font-family: var(--font-display), sans-serif;
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: 1.5rem;
+    letter-spacing: 0.02em;
+  }
+
+  & .nomineeMeta {
+    font-family: var(--font-mono-stub), monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--acid);
+    margin-top: 0.2rem;
+  }
+}
+
+.nomineeUnpick {
+  margin-left: auto;
+  background: transparent;
+  border: 2px solid var(--paper);
+  color: var(--paper);
+  padding: 0.4rem 0.7rem;
+  font-family: var(--font-mono-stub), monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: var(--paper);
+    color: var(--ink);
+  }
+}
+
+/* ─────────────── Submit button (rubber stamp) ─────────────── */
+.submitWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.submit {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.85rem;
+  background: var(--cobalt);
+  color: var(--paper);
+  border: 4px solid var(--ink);
+  box-shadow: 8px 8px 0 var(--ink);
+  padding: 1.1rem 1.75rem;
+  font-family: var(--font-display), sans-serif;
+  font-weight: 900;
+  text-transform: uppercase;
+  font-size: clamp(1.2rem, 2vw, 1.8rem);
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    background 0.18s ease;
+
+  &:hover:not(:disabled) {
+    background: var(--cobalt-deep);
+    transform: translate(-3px, -3px);
+    box-shadow: 11px 11px 0 var(--ink);
+  }
+
+  &:active:not(:disabled) {
+    transform: translate(3px, 3px);
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: var(--ink-mid);
+  }
+}
+
+.submitArrow {
+  font-family: var(--font-mono-stub), monospace;
+  font-size: 1.2em;
+}
+
+.submitHelp {
+  font-family: var(--font-body), serif;
+  font-style: italic;
+  font-size: 0.92rem;
+  color: var(--ink-mid);
+  max-width: 50ch;
+}
+
+/* ─────────────── Sign-in / non-member states ─────────────── */
+.signinCard {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 2rem 1.5rem;
+  background: var(--paper);
+  border: 3px solid var(--ink);
+  box-shadow: 8px 8px 0 var(--ink);
+  text-align: center;
+
+  & .signinTitle {
+    font-family: var(--font-display), sans-serif;
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: clamp(1.6rem, 3vw, 2.4rem);
+    letter-spacing: 0.02em;
+    line-height: 1;
+  }
+
+  & .signinSub {
+    font-family: var(--font-body), serif;
+    font-style: italic;
+    font-size: 1rem;
+    color: var(--ink-mid);
+    max-width: 48ch;
+    margin: 0 auto;
+  }
+}
+
+.disabledStamp {
+  position: relative;
+
+  &::after {
+    content: "MEMBERSHIP REQUIRED";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display), sans-serif;
+    font-weight: 900;
+    font-size: clamp(1.4rem, 3.5vw, 2.6rem);
+    color: var(--riso-red);
+    letter-spacing: 0.08em;
+    background: rgba(244, 239, 230, 0.55);
+    border: 4px dashed var(--riso-red);
+    transform: rotate(-7deg) scale(0.95);
+    pointer-events: none;
+    z-index: 2;
+    box-shadow: 0 0 0 2px rgba(224, 58, 58, 0.18);
+  }
+
+  & > * {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+}
+
+/* ─────────────── Tiles ─────────────── */
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: 1.5rem;
+  padding: clamp(2rem, 4vw, 3rem) clamp(1.25rem, 4vw, 4rem);
+}
+
+.tile {
+  position: relative;
+  padding: 1.5rem 1.5rem 1.75rem;
+  background: var(--paper);
+  border: 3px solid var(--ink);
+  box-shadow: 7px 7px 0 var(--ink);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: translate(-2px, -3px) rotate(0deg) !important;
+  }
+
+  & h3 {
+    font-family: var(--font-display), sans-serif;
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 1.4rem;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    margin: 0;
+  }
+
+  & p {
+    font-family: var(--font-body), serif;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--ink);
+    margin: 0;
+  }
+
+  & .tileNumber {
+    font-family: var(--font-mono-stub), monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--cobalt);
+    font-weight: 700;
+  }
+}
+
+.tileA {
+  transform: rotate(-1.5deg);
+}
+.tileB {
+  transform: rotate(0.5deg);
+}
+.tileC {
+  transform: rotate(-0.8deg);
+}
+
+/* ─────────────── Role manifest ─────────────── */
+.manifest {
+  padding: clamp(2rem, 4vw, 3rem) clamp(1.25rem, 4vw, 4rem);
+  border-top: 3px solid var(--ink);
+
+  & h2 {
+    font-family: var(--font-display), sans-serif;
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: clamp(2rem, 5vw, 4rem);
+    line-height: 1;
+    letter-spacing: 0.02em;
+    margin: 0 0 1.5rem;
+  }
+}
+
+.manifestList {
+  display: grid;
+  gap: 1rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  counter-reset: role;
+}
+
+.manifestItem {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 1.25rem;
+  align-items: center;
+  padding: 1rem 0;
+  border-bottom: 2px solid var(--ink-soft);
+  counter-increment: role;
+
+  &::before {
+    content: counter(role, decimal-leading-zero);
+    font-family: var(--font-mono-stub), monospace;
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: var(--ink-mid);
+  }
+}
+
+.manifestRole {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.manifestRoleTitle {
+  font-family: var(--font-display), sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: clamp(1.1rem, 2vw, 1.6rem);
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+.manifestRoleDesc {
+  font-family: var(--font-body), serif;
+  font-style: italic;
+  font-size: 0.95rem;
+  color: var(--ink-mid);
+  font-variation-settings: "opsz" 14;
+}
+
+.manifestIncumbent {
+  font-family: var(--font-mono-stub), monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-mid);
+  text-align: right;
+
+  & strong {
+    display: block;
+    color: var(--ink);
+    margin-top: 0.15rem;
+  }
+}
+
+/* ─────────────── Receipt (success state) ─────────────── */
+.receipt {
+  position: relative;
+  max-width: 520px;
+  margin: 1rem auto 0;
+  padding: 2.5rem 2rem 2rem;
+  background: var(--paper);
+  border: 4px solid var(--ink);
+  box-shadow: 12px 12px 0 var(--cobalt);
+  /* Perforated tear-off edge along the top */
+  -webkit-mask-image: radial-gradient(
+      circle at 6px 0,
+      transparent 6px,
+      black 7px
+    ),
+    linear-gradient(black, black);
+  -webkit-mask-size:
+    12px 12px,
+    100% 100%;
+  -webkit-mask-position:
+    0 0,
+    0 0;
+  -webkit-mask-repeat:
+    repeat-x,
+    no-repeat;
+  -webkit-mask-composite: source-over;
+  mask-image: radial-gradient(circle at 6px 0, transparent 6px, black 7px),
+    linear-gradient(black, black);
+  mask-size:
+    12px 12px,
+    100% 100%;
+  mask-position:
+    0 0,
+    0 0;
+  mask-repeat:
+    repeat-x,
+    no-repeat;
+}
+
+.receiptHead {
+  font-family: var(--font-display), sans-serif;
+  font-weight: 900;
+  text-transform: uppercase;
+  font-size: 1.1rem;
+  letter-spacing: 0.16em;
+  text-align: center;
+  border-bottom: 3px double var(--ink);
+  padding-bottom: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.receiptSerial {
+  font-family: var(--font-mono-stub), monospace;
+  font-size: 0.85rem;
+  letter-spacing: 0.18em;
+  color: var(--ink-mid);
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.receiptBody {
+  font-family: var(--font-body), serif;
+  font-size: 1.1rem;
+  line-height: 1.5;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.receiptNominee {
+  display: block;
+  font-family: var(--font-display), sans-serif;
+  font-weight: 900;
+  text-transform: uppercase;
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  line-height: 1;
+  margin: 0.5rem 0;
+  letter-spacing: 0.01em;
+}
+
+.receiptPosition {
+  display: inline-block;
+  background: var(--ink);
+  color: var(--paper);
+  padding: 0.3rem 0.7rem;
+  font-family: var(--font-mono-stub), monospace;
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.receiptStamp {
+  position: absolute;
+  top: 12%;
+  right: -10px;
+  width: 160px;
+  pointer-events: none;
+  user-select: none;
+}
+
+.receiptActions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  border-top: 2px dashed var(--ink-soft);
+  padding-top: 1rem;
+  align-items: center;
+}
+
+.receiptAction {
+  font-family: var(--font-mono-stub), monospace;
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cobalt);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  background: none;
+  border: none;
+  padding: 0.4rem 0.5rem;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--cobalt-deep);
+  }
+}
+
+/* ─────────────── Waiting state ─────────────── */
+.waitingHero {
+  padding: clamp(2.5rem, 5vw, 5rem) clamp(1.25rem, 4vw, 4rem);
+  text-align: left;
+
+  & h1 {
+    font-family: var(--font-display), sans-serif;
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: clamp(2.5rem, 7vw, 6rem);
+    line-height: 0.95;
+    letter-spacing: -0.01em;
+    margin: 1rem 0;
+    max-width: 16ch;
+  }
+}
+
+.waitingDate {
+  display: inline-block;
+  background: var(--acid);
+  border: 3px solid var(--ink);
+  padding: 0.6rem 1rem;
+  font-family: var(--font-mono-stub), monospace;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-size: 0.95rem;
+  box-shadow: 4px 4px 0 var(--ink);
+  transform: rotate(-1.5deg);
+}
+
+/* ─────────────── Reduced motion ─────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .marqueeTrack {
+    animation: none;
+  }
+  .heroEyebrowDot {
+    animation: none;
+  }
+  /* Scope the universal under `.root` so this remains a pure local
+     selector (CSS modules disallow bare `*`). The inner space turns
+     it into ".root *" — every descendant of the page root. */
+  .root * {
+    transition-duration: 0.001ms !important;
+    animation-duration: 0.001ms !important;
+  }
+}
+
+/* ─────────────── Small screens tighten ─────────────── */
+@media (max-width: 640px) {
+  .root::after {
+    display: none;
+  }
+
+  .heroSide {
+    transform: none;
+  }
+
+  .tile {
+    transform: none !important;
+  }
+
+  .manifestItem {
+    grid-template-columns: auto minmax(0, 1fr);
+
+    & .manifestIncumbent {
+      grid-column: 2;
+      text-align: left;
+    }
+  }
+}

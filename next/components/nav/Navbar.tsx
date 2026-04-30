@@ -240,7 +240,9 @@ const Navbar: React.FC<NavbarProps> = ({
   // SE Office gets the live election as a conditional last entry. The
   // groups array is otherwise stable; we rebuild on prop change so the
   // first-paint server prop and any subsequent client-side election
-  // updates both flow through.
+  // updates both flow through. When nominations are open we also
+  // surface a "Nominate" entry alongside Elections so new members can
+  // jump straight into the public funnel.
   const navGroups = React.useMemo(() => {
     const seOfficeWithElection: NavItem[] = serverActiveElection
       ? [
@@ -250,6 +252,16 @@ const Navbar: React.FC<NavbarProps> = ({
             href: `/elections/${serverActiveElection.slug}`,
             description: "Cast your ballot in the active SSE election.",
           },
+          ...(serverActiveElection.status === "NOMINATIONS_OPEN"
+            ? [
+                {
+                  title: "Nominate",
+                  href: "/nominate",
+                  description:
+                    "Nominate a candidate (or yourself) for the open ballot.",
+                },
+              ]
+            : []),
         ]
       : seOfficeItems;
     return [
