@@ -1,5 +1,3 @@
-"use client";
-
 import * as React from "react";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
@@ -8,64 +6,43 @@ import {
   filterVisibleSections,
   type DashboardSection,
 } from "@/lib/dashboardSections";
-import { useDashboardAuth } from "./DashboardAuthProvider";
+import {
+  getDashboardSummary,
+  type DashboardSummary,
+} from "@/lib/dashboardSummary";
+import { getAuthLevel } from "@/lib/services/authLevelService";
 import SectionPreview from "./_components/SectionPreview";
+import MentorAvailabilityDot from "./_components/MentorAvailabilityDot";
 
 /**
  * Officer Dashboard landing page.
  *
  * Replaces the old navbar "Dashboard" dropdown. Renders one card per
  * dashboard section the user has access to, each with a stylized preview
- * of the destination. Auth flags are read from the dashboard layout's
- * server-resolved context — no extra `/api/authLevel` round-trip.
+ * of the destination plus a small slice of live data (counts, recent rows,
+ * thumbnails). All queries run server-side in parallel inside
+ * `getDashboardSummary()`, so the page is rendered with real numbers on
+ * first paint — no client-side fan-out.
+ *
+ * Auth comes straight from the server-side `getAuthLevel()` (the layout
+ * already gates non-officers, so reaching this code means the user is at
+ * least an officer / mentor / SE admin).
  */
-export default function OfficerDashboardPage() {
-  const auth = useDashboardAuth();
+export default async function OfficerDashboardPage() {
+  const [authLevel, summary] = await Promise.all([
+    getAuthLevel(),
+    getDashboardSummary(),
+  ]);
 
-  const sections = React.useMemo(() => filterVisibleSections(auth), [auth]);
-
-  // Mentor-availability indicator. Only fetched for mentoring heads, mirroring
-  // the navbar logic that previously owned this dot.
-  const [hasMentorAvailabilityUpdates, setHasMentorAvailabilityUpdates] =
-    React.useState(false);
-
-  React.useEffect(() => {
-    if (!auth.isMentoringHead) {
-      setHasMentorAvailabilityUpdates(false);
-      return;
-    }
-
-    let cancelled = false;
-    (async () => {
-      try {
-        const response = await fetch("/api/mentor-availability/updates");
-        if (!response.ok) return;
-        const data = await response.json();
-        if (cancelled) return;
-        const latestUpdatedAt = data?.latestUpdatedAt
-          ? Date.parse(data.latestUpdatedAt)
-          : 0;
-        const seenAt = Number(
-          localStorage.getItem("mentor-availability-last-seen") || "0"
-        );
-        setHasMentorAvailabilityUpdates(latestUpdatedAt > seenAt);
-      } catch (error) {
-        console.error("Error checking mentor availability:", error);
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [auth.isMentoringHead]);
-
-  React.useEffect(() => {
-    const handleSeen = () => setHasMentorAvailabilityUpdates(false);
-    window.addEventListener("mentor-availability-seen", handleSeen);
-    return () => {
-      window.removeEventListener("mentor-availability-seen", handleSeen);
-    };
-  }, []);
+  const sections = filterVisibleSections({
+    isOfficer: authLevel.isOfficer,
+    isMentor: authLevel.isMentor,
+    isPrimary: authLevel.isPrimary,
+    isMentoringHead: authLevel.isMentoringHead,
+    isSeAdmin: authLevel.isSeAdmin,
+    isTechCommitteeHead: authLevel.isTechCommitteeHead,
+    isTechCommitteeDivisionManager: authLevel.isTechCommitteeDivisionManager,
+  });
 
   return (
     <div className="w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
@@ -83,8 +60,9 @@ export default function OfficerDashboardPage() {
           <SectionCard
             key={section.id}
             section={section}
-            showRedDot={
-              section.id === "mentoring" && hasMentorAvailabilityUpdates
+            summary={summary[section.id]}
+            mountMentorDot={
+              section.id === "mentoring" && authLevel.isMentoringHead
             }
           />
         ))}
@@ -95,10 +73,12 @@ export default function OfficerDashboardPage() {
 
 function SectionCard({
   section,
-  showRedDot,
+  summary,
+  mountMentorDot,
 }: {
   section: DashboardSection;
-  showRedDot: boolean;
+  summary: DashboardSummary[typeof section.id];
+  mountMentorDot: boolean;
 }) {
   return (
     <Link
@@ -111,26 +91,24 @@ function SectionCard({
       <Card
         depth={1}
         className={cn(
-          "p-4 sm:p-5 transition-all duration-150",
+          "relative p-4 sm:p-5 transition-all duration-150",
           "neo:group-hover:-translate-x-0.5 neo:group-hover:-translate-y-0.5",
           "neo:group-hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]",
           "clean:group-hover:shadow-lg clean:group-hover:-translate-y-0.5"
         )}
       >
-        <SectionPreview
-          id={section.id}
-          accentClass={section.accentClass}
-          showRedDot={showRedDot}
-        />
+        <div className="relative">
+          <SectionPreview
+            id={section.id}
+            accentClass={section.accentClass}
+            data={summary}
+          />
+          {mountMentorDot && <MentorAvailabilityDot />}
+        </div>
         <div className="mt-3 sm:mt-4 flex items-start justify-between gap-2">
           <h2 className="font-display text-lg font-bold leading-tight">
             {section.title}
           </h2>
-          {showRedDot && (
-            <span className="mt-1 inline-flex shrink-0 items-center gap-1 rounded-full bg-destructive/10 px-2 py-0.5 text-[10px] font-semibold text-destructive">
-              New
-            </span>
-          )}
         </div>
         <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
           {section.description}
