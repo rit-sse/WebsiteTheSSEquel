@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowLeft, ArrowRight, Trophy, Home } from "lucide-react";
+import { ArrowLeft, ArrowRight, Trophy, Home, Minus } from "lucide-react";
 import DancingLetters from "@/components/common/DancingLetters";
 import NeoBrutalistButton from "@/components/neo-brutalist-button";
 import { NeoCard, NeoCardContent } from "@/components/ui/neo-card";
@@ -22,10 +22,17 @@ import { ElectionAvatar } from "@/components/elections/ElectionAvatar";
 
 export interface RevealSlide {
   officeTitle: string;
-  winnerName: string;
-  winnerUserId: number;
+  /**
+   * Tally outcome for this office. `"ok"` = a winner was elected;
+   * `"no_candidates"` = no eligible candidate ran; `"tie"` = an
+   * unresolved tie that requires a runoff. Drives whether we render the
+   * dancing-letters celebration or the quieter "no winner" panel.
+   */
+  status: "ok" | "no_candidates" | "tie";
+  winnerName: string | null;
+  winnerUserId: number | null;
   winnerImage: string | null;
-  statement: string;
+  statement: string | null;
   yearLevel: number | null;
   program: string | null;
   isTicketDerived: boolean;
@@ -153,6 +160,10 @@ export default function ElectionResultsReveal({
 /* ---------------------------------------------------------------------- */
 
 function SlideAnnouncement({ slide }: { slide: RevealSlide }) {
+  if (slide.status !== "ok" || !slide.winnerName) {
+    return <SlideNoWinner slide={slide} />;
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
@@ -184,7 +195,7 @@ function SlideAnnouncement({ slide }: { slide: RevealSlide }) {
           >
             <ElectionAvatar
               user={{
-                id: slide.winnerUserId || slide.winnerName,
+                id: slide.winnerUserId ?? slide.winnerName,
                 name: slide.winnerName,
                 image: slide.winnerImage,
               }}
@@ -223,6 +234,61 @@ function SlideAnnouncement({ slide }: { slide: RevealSlide }) {
 }
 
 /* ---------------------------------------------------------------------- */
+/* No-winner slide — quieter sibling for offices with no candidates / tie  */
+/* ---------------------------------------------------------------------- */
+
+function SlideNoWinner({ slide }: { slide: RevealSlide }) {
+  // Status-aware copy so the audience knows WHY there's no winner. The
+  // tally pipeline is the source of truth for `slide.status`.
+  const { headline, subline } = (() => {
+    if (slide.status === "tie") {
+      return {
+        headline: "Tie — runoff required",
+        subline:
+          "This race ended in a tie that the instant-runoff tally couldn't break. A runoff is required before a winner can be declared.",
+      };
+    }
+    // "no_candidates" or any unexpected status falls through here.
+    return {
+      headline: "No candidates ran",
+      subline: slide.isTicketDerived
+        ? "The winning presidential ticket did not include an accepted running mate, so this seat is unfilled."
+        : "No eligible candidate ran for this office, so this seat is unfilled.",
+    };
+  })();
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -16 }}
+      transition={{ duration: 0.4 }}
+      className="w-full"
+    >
+      <NeoCard depth={1}>
+        <NeoCardContent className="flex flex-col items-center gap-6 px-6 py-10 text-center md:px-12 md:py-14">
+          <p className="eyebrow text-sm !text-black/60">
+            {slide.officeTitle.toUpperCase()}
+          </p>
+          <div
+            aria-hidden
+            className="flex h-[140px] w-[140px] items-center justify-center rounded-full border-[3px] border-dashed border-black/40 bg-muted/40"
+          >
+            <Minus className="h-16 w-16 text-black/40" strokeWidth={3} />
+          </div>
+          <h3 className="font-display text-3xl font-bold !leading-tight text-black/70 md:text-4xl">
+            {headline}
+          </h3>
+          <p className="max-w-prose text-base leading-relaxed text-black/60 md:text-lg">
+            {subline}
+          </p>
+        </NeoCardContent>
+      </NeoCard>
+    </motion.div>
+  );
+}
+
+/* ---------------------------------------------------------------------- */
 /* Summary / CTA slide — mini grid of all winners + View results CTA       */
 /* ---------------------------------------------------------------------- */
 
@@ -247,30 +313,50 @@ function SlideSummary({
       </h2>
 
       <div className="grid w-full grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-5">
-        {slides.map((s) => (
-          <div
-            key={`${s.officeTitle}-${s.winnerName}`}
-            className="flex flex-col items-center gap-2"
-          >
-            <ElectionAvatar
-              user={{
-                id: s.winnerUserId || s.winnerName,
-                name: s.winnerName,
-                image: s.winnerImage,
-              }}
-              className="h-16 w-16 border-2 border-black shadow-[3px_3px_0_0_black]"
-              fallbackClassName="text-lg"
-            />
-            <div className="min-w-0">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-black">
-                {s.officeTitle}
-              </p>
-              <p className="truncate font-display text-sm font-bold text-black">
-                {s.winnerName}
-              </p>
+        {slides.map((s) => {
+          const hasWinner = s.status === "ok" && s.winnerName;
+          return (
+            <div
+              key={`${s.officeTitle}-${s.winnerName ?? s.status}`}
+              className="flex flex-col items-center gap-2"
+            >
+              {hasWinner ? (
+                <ElectionAvatar
+                  user={{
+                    id: s.winnerUserId ?? s.winnerName ?? s.officeTitle,
+                    name: s.winnerName ?? "",
+                    image: s.winnerImage,
+                  }}
+                  className="h-16 w-16 border-2 border-black shadow-[3px_3px_0_0_black]"
+                  fallbackClassName="text-lg"
+                />
+              ) : (
+                <div
+                  aria-hidden
+                  className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-dashed border-black/40 bg-muted/40 shadow-[3px_3px_0_0_rgba(0,0,0,0.25)]"
+                >
+                  <Minus className="h-7 w-7 text-black/40" strokeWidth={3} />
+                </div>
+              )}
+              <div className="min-w-0">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-black">
+                  {s.officeTitle}
+                </p>
+                <p
+                  className={`truncate font-display text-sm font-bold ${
+                    hasWinner ? "text-black" : "italic text-black/50"
+                  }`}
+                >
+                  {hasWinner
+                    ? s.winnerName
+                    : s.status === "tie"
+                    ? "Tie — runoff"
+                    : "No winner"}
+                </p>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <div className="flex flex-wrap items-center justify-center gap-4 pt-4">

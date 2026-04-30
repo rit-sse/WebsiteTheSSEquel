@@ -40,6 +40,20 @@ import {
 import { cn } from "@/lib/utils";
 import type { ActiveElectionSummary } from "@/lib/elections";
 
+/**
+ * Navbar groups, organized by audience. Each group renders as one
+ * dropdown on desktop and one collapsible on mobile. The intent is that
+ * a visitor can scan the five top-level labels (About / Students /
+ * Alumni / Companies / SE Office) and immediately know which group is
+ * theirs. Cross-cutting links (the active-election notice, avatar) sit
+ * outside any group.
+ *
+ * Alumni and Companies both link into the existing one-page `/sponsors`
+ * via section anchors (`#sponsor`, `#recruit`, `#vise`) instead of
+ * duplicating routes — the page itself adds matching `id` attributes
+ * with `scroll-mt-24` so the headings clear the navbar after the jump.
+ */
+
 const aboutItems = [
   {
     title: "About Us",
@@ -53,36 +67,110 @@ const aboutItems = [
     description: "Discover ways to participate and contribute to SSE.",
   },
   {
+    title: "Credits",
+    href: "/about/credits",
+    description: "Meet the developers who built and maintain this site.",
+  },
+];
+
+const studentsItems = [
+  {
+    title: "Events",
+    href: "/events/calendar",
+    description: "Upcoming SSE meetings, workshops, and socials.",
+  },
+  {
+    title: "Photos",
+    href: "/photos",
+    description: "Browse the SSE photo archive by event and year.",
+  },
+  {
+    title: "Mentor Schedule",
+    href: "/mentoring/schedule",
+    description: "See when mentors are available in the lab.",
+  },
+  {
     title: "Become a Mentor",
     href: "/mentoring/apply",
     description: "Apply to help fellow students in the SSE lab.",
   },
   {
-    title: "Leadership",
-    href: "/about/leadership",
-    description: "Meet the team leading SSE this year.",
+    title: "Leaderboard",
+    href: "/memberships",
+    description: "See who's on track to earn membership this term.",
   },
   {
-    title: "Alumni",
+    title: "Projects",
+    href: "/projects",
+    description: "Browse student projects built by the SSE community.",
+  },
+  {
+    title: "Go Links",
+    href: "/go",
+    description: "Quick redirects (go/…) maintained by SSE officers.",
+  },
+];
+
+const alumniItems = [
+  {
+    title: "Alumni Directory",
     href: "/about/alumni",
-    description: "Connect with SSE graduates and their stories.",
+    description: "Stay connected with SSE graduates and their stories.",
+  },
+  {
+    title: "Speak at SSE",
+    href: "/sponsors#vise",
+    description: "Pitch a ViSE talk and share your career or research.",
+  },
+];
+
+const companiesItems = [
+  {
+    title: "Sponsor SSE",
+    href: "/sponsors#sponsor",
+    description: "Back the lab and gain visibility with our members.",
+  },
+  {
+    title: "Recruit Students",
+    href: "/sponsors#recruit",
+    description: "Schedule a recruiting talk and meet our engineers.",
+  },
+];
+
+const seOfficeItems = [
+  {
+    title: "Leadership",
+    href: "/about/leadership",
+    description: "Current officers, SE Office staff, and committee heads.",
   },
   {
     title: "Committees",
     href: "/about/committees",
-    description: "Explore our specialized committees and their work.",
+    description: "Specialized committees and the work they do.",
   },
   {
     title: "Constitution",
     href: "/about/constitution",
-    description: "Read our governing document and bylaws.",
+    description: "Our governing document and bylaws.",
   },
   {
     title: "Primary Officer's Policy",
     href: "/about/primary-officers-policy",
-    description: "View our officer guidelines and policies.",
+    description: "Officer guidelines and policies.",
   },
 ];
+
+/**
+ * Render order for the five audience dropdowns. Centralized so the
+ * desktop NavigationMenu and the mobile Sheet stay in sync.
+ */
+const NAV_GROUPS = [
+  { value: "about", label: "About", items: aboutItems },
+  { value: "students", label: "Students", items: studentsItems },
+  { value: "alumni", label: "Alumni", items: alumniItems },
+  { value: "companies", label: "Companies", items: companiesItems },
+  { value: "se-office", label: "SE Office", items: seOfficeItems },
+] as const;
 
 interface NavbarProps {
   /** Resolved on the server so the first paint already includes Dashboard / profile link. */
@@ -191,69 +279,32 @@ const Navbar: React.FC<NavbarProps> = ({
             delayDuration={isMenuActive ? 100 : 1000000}
           >
             <NavigationMenuList>
-              <NavigationMenuItem>
-                <NavigationMenuLink
-                  asChild
-                  className={navigationMenuTriggerStyle()}
-                >
-                  <Link href="/library">Library</Link>
-                </NavigationMenuLink>
-              </NavigationMenuItem>
+              {NAV_GROUPS.map((group) => (
+                <NavigationMenuItem key={group.value} value={group.value}>
+                  <NavigationMenuTrigger
+                    onClick={handleTriggerClick(group.value)}
+                  >
+                    {group.label}
+                  </NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <ul className="grid gap-3 p-4 md:w-[400px] lg:w-[500px] lg:grid-cols-2">
+                      {group.items.map((item) => (
+                        <ListItem
+                          key={item.title}
+                          title={item.title}
+                          href={item.href}
+                        >
+                          {item.description}
+                        </ListItem>
+                      ))}
+                    </ul>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+              ))}
 
-              <NavigationMenuItem>
-                <NavigationMenuLink
-                  asChild
-                  className={navigationMenuTriggerStyle()}
-                >
-                  <Link href="/events/calendar">Events</Link>
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-
-              <NavigationMenuItem>
-                <NavigationMenuLink
-                  asChild
-                  className={navigationMenuTriggerStyle()}
-                >
-                  <Link href="/photos">Photos</Link>
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-
-              <NavigationMenuItem>
-                <NavigationMenuLink
-                  asChild
-                  className={navigationMenuTriggerStyle()}
-                >
-                  <Link href="/mentoring/schedule">Mentor Schedule</Link>
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-
-              <NavigationMenuItem>
-                <NavigationMenuLink
-                  asChild
-                  className={navigationMenuTriggerStyle()}
-                >
-                  <Link href="/memberships">Leaderboard</Link>
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-
-              <NavigationMenuItem>
-                <NavigationMenuLink
-                  asChild
-                  className={navigationMenuTriggerStyle()}
-                >
-                  <Link href="/projects">Projects</Link>
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-
-              <NavigationMenuItem>
-                <NavigationMenuLink
-                  asChild
-                  className={navigationMenuTriggerStyle()}
-                >
-                  <Link href="/go">Go Links</Link>
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-
+              {/* Active-election callout sits outside the audience groups —
+                  it's time-sensitive and applies to every audience, so it
+                  shouldn't be buried in a dropdown. */}
               {serverActiveElection && (
                 <NavigationMenuItem>
                   <NavigationMenuLink
@@ -266,34 +317,6 @@ const Navbar: React.FC<NavbarProps> = ({
                   </NavigationMenuLink>
                 </NavigationMenuItem>
               )}
-
-              <NavigationMenuItem>
-                <NavigationMenuLink
-                  asChild
-                  className={navigationMenuTriggerStyle()}
-                >
-                  <Link href="/sponsors">Sponsors</Link>
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-
-              <NavigationMenuItem value="about">
-                <NavigationMenuTrigger onClick={handleTriggerClick("about")}>
-                  About
-                </NavigationMenuTrigger>
-                <NavigationMenuContent>
-                  <ul className="grid gap-3 p-4 md:w-[400px] lg:w-[500px] lg:grid-cols-2">
-                    {aboutItems.map((item) => (
-                      <ListItem
-                        key={item.title}
-                        title={item.title}
-                        href={item.href}
-                      >
-                        {item.description}
-                      </ListItem>
-                    ))}
-                  </ul>
-                </NavigationMenuContent>
-              </NavigationMenuItem>
 
               <NavigationMenuItem className="flex items-center ml-1">
                 <AuthButton
@@ -322,39 +345,8 @@ const Navbar: React.FC<NavbarProps> = ({
                 <SheetTitle className="text-left">Menu</SheetTitle>
               </SheetHeader>
               <nav className="flex flex-col gap-2 mt-6">
-                <MobileNavLink
-                  href="/events/calendar"
-                  onClick={() => setOpen(false)}
-                >
-                  Events
-                </MobileNavLink>
-
-                <MobileNavLink href="/photos" onClick={() => setOpen(false)}>
-                  Photos
-                </MobileNavLink>
-
-                <MobileNavLink
-                  href="/mentoring/schedule"
-                  onClick={() => setOpen(false)}
-                >
-                  Mentor Schedule
-                </MobileNavLink>
-
-                <MobileNavLink
-                  href="/memberships"
-                  onClick={() => setOpen(false)}
-                >
-                  Leaderboard
-                </MobileNavLink>
-
-                <MobileNavLink href="/projects" onClick={() => setOpen(false)}>
-                  Projects
-                </MobileNavLink>
-
-                <MobileNavLink href="/go" onClick={() => setOpen(false)}>
-                  Go Links
-                </MobileNavLink>
-
+                {/* Active-election callout pinned at the top of the sheet —
+                    same rationale as the desktop top-level link. */}
                 {serverActiveElection && (
                   <MobileNavLink
                     href={`/elections/${serverActiveElection.slug}`}
@@ -364,22 +356,20 @@ const Navbar: React.FC<NavbarProps> = ({
                   </MobileNavLink>
                 )}
 
-                <MobileNavLink href="/sponsors" onClick={() => setOpen(false)}>
-                  Sponsors
-                </MobileNavLink>
-
-                <MobileNavCollapsible title="About">
-                  {aboutItems.map((item) => (
-                    <MobileNavLink
-                      key={item.title}
-                      href={item.href}
-                      onClick={() => setOpen(false)}
-                      className="pl-4"
-                    >
-                      {item.title}
-                    </MobileNavLink>
-                  ))}
-                </MobileNavCollapsible>
+                {NAV_GROUPS.map((group) => (
+                  <MobileNavCollapsible key={group.value} title={group.label}>
+                    {group.items.map((item) => (
+                      <MobileNavLink
+                        key={item.title}
+                        href={item.href}
+                        onClick={() => setOpen(false)}
+                        className="pl-4"
+                      >
+                        {item.title}
+                      </MobileNavLink>
+                    ))}
+                  </MobileNavCollapsible>
+                ))}
 
                 <div className="pt-4 border-t border-border mt-2">
                   {session ? (
