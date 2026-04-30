@@ -5,7 +5,7 @@ import { ImageOff, Loader2 } from "lucide-react";
 import { NeoCard, NeoCardContent } from "@/components/ui/neo-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PhotoFilters } from "./PhotoFilters";
-import { PhotoGrid } from "./PhotoGrid";
+import { PhotoGrid, PHOTO_GRID_CLASSES } from "./PhotoGrid";
 import { PhotoLightbox } from "./PhotoLightbox";
 
 export type PhotoEventOption = {
@@ -41,6 +41,7 @@ const EMPTY_FILTERS: Filters = {
   category: "",
   q: "",
 };
+const CLIENT_PAGE_SIZE = 90;
 
 export function PhotosClient({
   initialPhotos,
@@ -91,6 +92,7 @@ export function PhotosClient({
   const fetchPhotos = useCallback(
     async (source: Filters, cursor: string | null, append: boolean) => {
       const params = buildQuery(source);
+      params.set("limit", String(CLIENT_PAGE_SIZE));
       if (cursor) params.set("cursor", cursor);
       const response = await fetch(`/api/photos?${params.toString()}`);
       if (!response.ok) throw new Error("Failed to load photos");
@@ -251,10 +253,13 @@ export function PhotosClient({
           />
 
           {paginating && (
-            <div className="mt-8 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Loading more photos…
-            </div>
+            <>
+              <PaginationSkeleton />
+              <div className="mt-4 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Loading more photos…
+              </div>
+            </>
           )}
 
           {!nextCursor && photos.length > 0 && (
@@ -309,23 +314,59 @@ function YearChip({
 
 function PhotoGridSkeleton() {
   return (
-    <div className="mt-6 space-y-8">
-      {[0, 1].map((section) => (
+    <div className="mt-6 space-y-10">
+      {[0, 1, 2].map((section) => (
         <div key={section} className="space-y-3">
-          <Skeleton className="h-6 w-48" />
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-            {Array.from({ length: 12 }).map((_, i) => (
+          <div className="flex items-baseline gap-3">
+            <Skeleton
+              className={[
+                "h-6",
+                section === 0 ? "w-44" : section === 1 ? "w-36" : "w-52",
+              ].join(" ")}
+            />
+            <Skeleton className="h-3 w-16" />
+          </div>
+          <div className={PHOTO_GRID_CLASSES}>
+            {Array.from({ length: section === 0 ? 24 : 16 }).map((_, i) => (
               <div
                 key={i}
                 className="relative w-full"
                 style={{ paddingBottom: "100%" }}
               >
-                <Skeleton className="absolute inset-0" />
+                <Skeleton
+                  className="absolute inset-0"
+                  style={{ opacity: 0.75 + ((i + section) % 4) * 0.06 }}
+                />
               </div>
             ))}
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+function PaginationSkeleton() {
+  return (
+    <div className="mt-8 space-y-3" aria-hidden>
+      <div className="flex items-baseline gap-3">
+        <Skeleton className="h-5 w-40" />
+        <Skeleton className="h-3 w-14" />
+      </div>
+      <div className={PHOTO_GRID_CLASSES}>
+        {Array.from({ length: 12 }).map((_, i) => (
+          <div
+            key={i}
+            className="relative w-full"
+            style={{ paddingBottom: "100%" }}
+          >
+            <Skeleton
+              className="absolute inset-0"
+              style={{ opacity: 0.72 + (i % 4) * 0.06 }}
+            />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

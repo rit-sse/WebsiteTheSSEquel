@@ -41,6 +41,26 @@ describe("/api/aws/image route", () => {
     );
     expect(res.status).toBe(200);
     expect(res.headers.get("content-type")).toBe("image/jpeg");
+    expect(res.headers.get("cache-control")).toBe(
+      "public, max-age=300, stale-while-revalidate=600"
+    );
+  });
+
+  it("serves immutable cache headers for photo gallery keys", async () => {
+    mockSend.mockResolvedValue({
+      Body: { transformToByteArray: () => new Uint8Array([1, 2, 3]) },
+      ContentType: "image/webp",
+    });
+
+    const res = await GET(
+      req(
+        "http://localhost/api/aws/image?key=uploads/photos/gallery/2026/batch/a.webp"
+      )
+    );
+    expect(res.status).toBe(200);
+    expect(res.headers.get("cache-control")).toBe(
+      "public, max-age=31536000, immutable"
+    );
   });
 
   it("allows library asset keys", async () => {
