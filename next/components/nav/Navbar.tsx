@@ -132,6 +132,11 @@ const dashboardItems = [
     href: "/dashboard/photos",
     description: "Upload and manage SSE photo library images.",
   },
+  {
+    title: "Pages",
+    href: "/dashboard/pages",
+    description: "Edit static pages, add carousels, build new ones.",
+  },
 ];
 
 interface NavbarProps {

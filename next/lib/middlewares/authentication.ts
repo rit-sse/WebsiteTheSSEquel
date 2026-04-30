@@ -181,6 +181,44 @@ const eventVerifier: AuthVerifier = async (request: NextRequest) => {
 const nonGetOfficerVerifier = nonGetVerifier(officerVerifier);
 
 /**
+ * Auth verifier for the page builder API:
+ * - Public GETs to `/api/pages/by-slug/...` (the catch-all renderer
+ *   uses these; preview mode is gated inside the handler).
+ * - All other GETs (dashboard list, single page) require officer.
+ * - DELETE on `/api/pages/[id]` requires primary officer (soft-delete).
+ * - POST to `/api/pages` (create) requires primary officer.
+ * - POST to `/api/pages/[id]/restore` requires primary officer.
+ * - All other mutations (PUT, publish, unpublish, rollback) require officer.
+ *
+ * Route handlers re-check auth inside themselves so this middleware
+ * acts as a defence-in-depth bouncer rather than the sole gate.
+ */
+const pageBuilderVerifier: AuthVerifier = async (request: NextRequest) => {
+  const pathname = request.nextUrl.pathname;
+  const method = request.method;
+
+  if (method === "GET") {
+    if (pathname.startsWith("/api/pages/by-slug/")) {
+      return { isAllowed: true, authType: "None" };
+    }
+    return officerVerifier(request);
+  }
+
+  // Primary-only mutations: create page, delete page, restore archived page.
+  if (method === "POST" && pathname === "/api/pages") {
+    return primaryOfficerVerifier(request);
+  }
+  if (method === "DELETE" && /^\/api\/pages\/\d+$/.test(pathname)) {
+    return primaryOfficerVerifier(request);
+  }
+  if (method === "POST" && /^\/api\/pages\/\d+\/restore$/.test(pathname)) {
+    return primaryOfficerVerifier(request);
+  }
+
+  return officerVerifier(request);
+};
+
+/**
  * An auth verifier that allows GET requests but requires primary officer for mutations
  */
 const nonGetPrimaryOfficerVerifier = nonGetVerifier(primaryOfficerVerifier);
@@ -370,8 +408,11 @@ const ROUTES: { [key: string]: AuthVerifier } = {
   "mentoring-headcount": headcountSubmissionVerifier,
   mentorSchedule: nonGetScheduleManagementVerifier,
   mentorSkill: nonGetMentorVerifier,
+  nav: nonGetPrimaryOfficerVerifier,
   officer: nonGetPrimaryOfficerVerifier,
   "officer-positions": nonGetPrimaryOfficerVerifier,
+  pages: pageBuilderVerifier,
+  "photo-categories": nonGetOfficerVerifier,
   project: nonGetOfficerVerifier,
   projectContributor: nonGetOfficerVerifier,
   purchasing: officerVerifier, // All purchasing routes require officer auth
