@@ -82,7 +82,7 @@ const Navbar: React.FC<NavbarProps> = ({
   const [showDashboard, setShowDashboard] = React.useState(serverShowDashboard);
   const [userId, setUserId] = React.useState<number | null>(serverUserId);
   const [profileComplete, setProfileComplete] = React.useState(
-    serverProfileComplete
+    serverProfileComplete,
   );
   const [isSeAdmin, setIsSeAdmin] = React.useState(serverIsSeAdmin);
 
@@ -204,6 +204,15 @@ const Navbar: React.FC<NavbarProps> = ({
                 // Two-or-fewer-item groups render single-column so the
                 // dropdown panel doesn't show a half-empty 2-col grid.
                 const single = group.items.length <= 2;
+                const dropdownGridStyle: React.CSSProperties = {
+                  width: single
+                    ? "min(17.5rem, calc(100vw - 2rem))"
+                    : "min(34rem, calc(100vw - 2rem))",
+                  gridTemplateColumns: single
+                    ? "minmax(0, 1fr)"
+                    : "repeat(auto-fit, minmax(min(15rem, 100%), 1fr))",
+                };
+
                 return (
                   <NavigationMenuItem key={group.value} value={group.value}>
                     <NavigationMenuTrigger
@@ -213,17 +222,10 @@ const Navbar: React.FC<NavbarProps> = ({
                     </NavigationMenuTrigger>
                     <NavigationMenuContent
                       className={cn(
-                        group.align === "end" && "lg:left-auto lg:right-0"
+                        group.align === "end" && "lg:left-auto lg:right-0",
                       )}
                     >
-                      <ul
-                        className={cn(
-                          "grid gap-3 p-4",
-                          single
-                            ? "w-[280px]"
-                            : "md:w-[400px] lg:w-[500px] lg:grid-cols-2"
-                        )}
-                      >
+                      <ul className="grid gap-3 p-4" style={dropdownGridStyle}>
                         {group.items.map((item) => (
                           <ListItem
                             key={item.title}
@@ -251,10 +253,7 @@ const Navbar: React.FC<NavbarProps> = ({
               )}
 
               <NavigationMenuItem className="flex items-center ml-1">
-                <AuthButton
-                  userId={userId}
-                  profileComplete={profileComplete}
-                />
+                <AuthButton userId={userId} profileComplete={profileComplete} />
               </NavigationMenuItem>
             </NavigationMenuList>
           </NavigationMenu>
@@ -409,7 +408,7 @@ function MobileNavLink({
       onClick={onClick}
       className={cn(
         "flex items-center py-2 px-3 text-base font-medium rounded-md hover:bg-accent transition-colors",
-        className
+        className,
       )}
     >
       {children}
@@ -433,7 +432,7 @@ function MobileNavCollapsible({
         <ChevronDown
           className={cn(
             "h-4 w-4 transition-transform duration-200",
-            isOpen && "rotate-180"
+            isOpen && "rotate-180",
           )}
         />
       </CollapsibleTrigger>
@@ -455,20 +454,20 @@ function ListItem({
   title: React.ReactNode;
 }) {
   return (
-    <li {...props}>
+    <li {...props} className="min-w-0">
       <NavigationMenuLink asChild>
         <Link
           href={href}
           className={cn(
-            "block select-none space-y-1 rounded-lg p-3 leading-none no-underline outline-none",
+            "block min-w-0 select-none space-y-1 rounded-lg p-3 leading-none no-underline outline-none",
             "bg-surface-2 border border-border/30",
             "hover:bg-surface-1 hover:border-border/50 hover:shadow-md",
             "focus:bg-surface-2 focus:border-border/50",
             "transition-colors",
-            className
+            className,
           )}
         >
-          <div className="text-sm font-bold font-heading leading-none text-foreground">
+          <div className="min-w-0 text-sm font-bold font-heading leading-tight text-foreground">
             {title}
           </div>
           <p className="line-clamp-2 min-h-[2lh] text-sm leading-snug text-muted-foreground mt-1">
