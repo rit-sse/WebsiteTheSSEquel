@@ -1,39 +1,20 @@
-const supportedMajors = new Set(["20", "22"]);
 const currentVersion = process.versions.node;
-const [majorStr, minorStr, patchStr] = currentVersion.split(".");
-const currentMajor = majorStr;
+const [majorStr, minorStr] = currentVersion.split(".");
+const isSupportedLts = majorStr === "24";
+const isSupportedForwardVersion = majorStr === "25" && minorStr === "9";
 
-if (!supportedMajors.has(currentMajor)) {
+if (!isSupportedLts && !isSupportedForwardVersion) {
   console.error(
     [
       "",
       `Unsupported Node.js version: ${currentVersion}`,
-      "This repo currently supports Node.js 20.x and 22.x.",
-      "CI and Docker use Node.js 20.20.1 by default.",
+      "This repo supports Node.js 24.x LTS and Node.js 25.9.x.",
+      "CI and Docker use Node.js 24.x LTS by default.",
       "Run one of the following before npm ci:",
-      '  source "$HOME/.nvm/nvm.sh"',
-      "  nvm use 20.20.1",
-      "  nvm use 22",
+      "  cd next && fnm install && fnm use",
+      "  cd next && nvm install && nvm use",
       "",
     ].join("\n")
   );
   process.exit(1);
-}
-
-// Node 20 requires >= 20.20.1 to match engines field (^20.20.1 || ^22.0.0)
-if (currentMajor === "20") {
-  const minor = parseInt(minorStr, 10);
-  const patch = parseInt(patchStr, 10);
-  if (minor < 20 || (minor === 20 && patch < 1)) {
-    console.error(
-      [
-        "",
-        `Node.js ${currentVersion} is too old.`,
-        "This repo requires Node.js >= 20.20.1 for the Node 20 line.",
-        "Run: nvm use 20.20.1",
-        "",
-      ].join("\n")
-    );
-    process.exit(1);
-  }
 }
