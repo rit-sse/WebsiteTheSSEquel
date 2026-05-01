@@ -206,11 +206,11 @@ const Navbar: React.FC<NavbarProps> = ({
                 const single = group.items.length <= 2;
                 const dropdownGridStyle: React.CSSProperties = {
                   width: single
-                    ? "min(17.5rem, calc(100vw - 2rem))"
-                    : "min(34rem, calc(100vw - 2rem))",
+                    ? "min(20rem, calc(100vw - 2rem))"
+                    : "min(38rem, calc(100vw - 2rem))",
                   gridTemplateColumns: single
                     ? "minmax(0, 1fr)"
-                    : "repeat(auto-fit, minmax(min(15rem, 100%), 1fr))",
+                    : "repeat(auto-fit, minmax(min(17rem, 100%), 1fr))",
                 };
 
                 return (
@@ -225,7 +225,10 @@ const Navbar: React.FC<NavbarProps> = ({
                         group.align === "end" && "lg:left-auto lg:right-0",
                       )}
                     >
-                      <ul className="grid gap-3 p-4" style={dropdownGridStyle}>
+                      <ul
+                        className="grid auto-rows-fr items-stretch gap-3 p-4"
+                        style={dropdownGridStyle}
+                      >
                         {group.items.map((item) => (
                           <ListItem
                             key={item.title}
@@ -459,7 +462,7 @@ function ListItem({
         <Link
           href={href}
           className={cn(
-            "block min-w-0 select-none space-y-1 rounded-lg p-3 leading-none no-underline outline-none",
+            "flex h-full min-h-[6.75rem] min-w-0 select-none flex-col justify-center rounded-lg p-3 leading-none no-underline outline-none",
             "bg-surface-2 border border-border/30",
             "hover:bg-surface-1 hover:border-border/50 hover:shadow-md",
             "focus:bg-surface-2 focus:border-border/50",
@@ -467,10 +470,10 @@ function ListItem({
             className,
           )}
         >
-          <div className="min-w-0 text-sm font-bold font-heading leading-tight text-foreground">
+          <div className="flex min-h-[2.25rem] min-w-0 items-end justify-center text-sm font-bold font-heading leading-tight text-foreground">
             {title}
           </div>
-          <p className="line-clamp-2 min-h-[2lh] text-sm leading-snug text-muted-foreground mt-1">
+          <p className="mt-1 line-clamp-2 min-h-[2lh] text-sm leading-snug text-muted-foreground">
             {children}
           </p>
         </Link>

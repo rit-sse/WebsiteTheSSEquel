@@ -123,7 +123,7 @@ const seOfficeItems: NavItem[] = [
 ];
 
 function getPublicElectionItem(
-  activeElection?: Pick<ActiveElectionSummary, "slug" | "status"> | null
+  activeElection?: Pick<ActiveElectionSummary, "slug" | "status"> | null,
 ): NavItem | null {
   if (!activeElection || !PUBLIC_ELECTION_STATUSES.has(activeElection.status)) {
     return null;
@@ -149,8 +149,13 @@ export function buildNavGroups({
       label: "Students",
       items: electionItem ? [electionItem, ...studentsItems] : studentsItems,
     },
-    { value: "alumni", label: "Alumni", items: alumniItems },
-    { value: "companies", label: "Companies", items: companiesItems },
+    { value: "alumni", label: "Alumni", items: alumniItems, align: "end" },
+    {
+      value: "companies",
+      label: "Companies",
+      items: companiesItems,
+      align: "end",
+    },
   ];
 
   if (isSeAdmin) {
