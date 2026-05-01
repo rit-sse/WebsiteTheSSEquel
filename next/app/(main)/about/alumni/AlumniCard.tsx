@@ -2,8 +2,6 @@
 
 import { useRef, useEffect, useState } from "react";
 import {
-  Github,
-  Linkedin,
   Mail,
   X,
   Building2,
@@ -12,6 +10,7 @@ import {
   Globe,
   Star,
 } from "lucide-react";
+import { GithubIcon, LinkedinIcon } from "@/components/common/BrandIcons";
 import { motion, AnimatePresence } from "motion/react";
 import { AlumniMember } from "./alumni";
 import Avatar from "boring-avatars";
@@ -80,10 +79,10 @@ function GitHubMiniPreview({ username }: { username: string }) {
 
     Promise.all([
       fetch(
-        `https://api.github.com/users/${username}/repos?per_page=50&sort=pushed`
+        `https://api.github.com/users/${username}/repos?per_page=50&sort=pushed`,
       ).then((r) => (r.ok ? r.json() : [])),
       fetch(`https://api.github.com/users/${username}/orgs`).then((r) =>
-        r.ok ? r.json() : []
+        r.ok ? r.json() : [],
       ),
     ])
       .then(([repoData, orgData]: [MiniRepo[], MiniOrg[]]) => {
@@ -92,7 +91,7 @@ function GitHubMiniPreview({ username }: { username: string }) {
         setRepos(
           [...own]
             .sort((a, b) => b.stargazers_count - a.stargazers_count)
-            .slice(0, 4)
+            .slice(0, 4),
         );
         const langCounts = new Map<string, number>();
         for (const r of own) {
@@ -103,7 +102,7 @@ function GitHubMiniPreview({ username }: { username: string }) {
           Array.from(langCounts.entries())
             .sort((a, b) => b[1] - a[1])
             .slice(0, 6)
-            .map(([name, count]) => ({ name, count }))
+            .map(([name, count]) => ({ name, count })),
         );
         setOrgs(orgData.slice(0, 4));
       })
@@ -404,7 +403,7 @@ export default function AlumniCard({
                 className="text-muted-foreground hover:text-primary transition-colors"
                 title="LinkedIn"
               >
-                <Linkedin className="h-5 w-5" />
+                <LinkedinIcon className="h-5 w-5" />
               </a>
             )}
             {alumniMember.github && (
@@ -415,7 +414,7 @@ export default function AlumniCard({
                 className="text-muted-foreground hover:text-primary transition-colors"
                 title="GitHub"
               >
-                <Github className="h-5 w-5" />
+                <GithubIcon className="h-5 w-5" />
               </a>
             )}
             {ghUser?.blog && (

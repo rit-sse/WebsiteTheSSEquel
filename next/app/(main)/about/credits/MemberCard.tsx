@@ -1,6 +1,7 @@
 import { CommitteeMemberProp } from "./member";
 import { ensureGithubUrl } from "@/lib/utils";
-import { Linkedin, Github, Mail } from "lucide-react";
+import { Mail } from "lucide-react";
+import { GithubIcon, LinkedinIcon } from "@/components/common/BrandIcons";
 import { Card } from "@/components/ui/card";
 import Image from "next/image";
 import Avatar from "boring-avatars";
@@ -66,7 +67,7 @@ export default async function MemberCard({ member }: CommitteeMemberProp) {
             rel="noopener noreferrer"
             className="text-muted-foreground hover:text-primary transition-colors"
           >
-            <Linkedin className="h-4 w-4" />
+            <LinkedinIcon className="h-4 w-4" />
           </a>
         )}
         {member.gitHub && (
@@ -76,7 +77,7 @@ export default async function MemberCard({ member }: CommitteeMemberProp) {
             rel="noopener noreferrer"
             className="text-muted-foreground hover:text-primary transition-colors"
           >
-            <Github className="h-4 w-4" />
+            <GithubIcon className="h-4 w-4" />
           </a>
         )}
         {member.email && (

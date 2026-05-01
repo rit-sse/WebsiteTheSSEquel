@@ -1,6 +1,6 @@
 "use client";
 
-import { Linkedin } from "lucide-react";
+import { LinkedinIcon } from "@/components/common/BrandIcons";
 
 interface LinkedInBadgeProps {
   /** LinkedIn vanity username (e.g. "jjalangtry") */
@@ -33,7 +33,7 @@ export default function LinkedInBadge({
           rel="noopener noreferrer"
           className="shrink-0 w-14 h-14 rounded-full bg-[#0A66C2] flex items-center justify-center"
         >
-          <Linkedin className="w-7 h-7 text-white" />
+          <LinkedinIcon className="w-7 h-7 text-white" />
         </a>
         <div className="min-w-0 flex-1">
           <a
@@ -61,7 +61,7 @@ export default function LinkedInBadge({
           rel="noopener noreferrer"
           className="flex items-center justify-center gap-2 text-sm font-medium text-[#0A66C2] hover:underline"
         >
-          <Linkedin className="w-4 h-4" />
+          <LinkedinIcon className="w-4 h-4" />
           View LinkedIn Profile
         </a>
       </div>
