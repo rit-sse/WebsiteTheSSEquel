@@ -27,7 +27,11 @@ export async function GET(request: Request) {
   const where: Record<string, unknown> = includeDefunct
     ? {}
     : { is_defunct: false };
-  if (categoryFilter === "PRIMARY_OFFICER" || categoryFilter === "SE_OFFICE") {
+  if (
+    categoryFilter === "PRIMARY_OFFICER" ||
+    categoryFilter === "COMMITTEE_HEAD" ||
+    categoryFilter === "SE_OFFICE"
+  ) {
     where.category = categoryFilter;
   }
 
@@ -125,6 +129,12 @@ export async function POST(request: Request) {
   }
 
   const { title, is_primary } = body;
+  const requestedCategory =
+    body.category === "SE_OFFICE" ||
+    body.category === "COMMITTEE_HEAD" ||
+    body.category === "PRIMARY_OFFICER"
+      ? body.category
+      : null;
 
   // Auto-generate email from title if not provided (e.g., "Vice President" -> "sse-vice-president@rit.edu")
   const email =
@@ -140,6 +150,9 @@ export async function POST(request: Request) {
         title,
         email,
         is_primary: is_primary ?? false,
+        category:
+          requestedCategory ??
+          (is_primary ? "PRIMARY_OFFICER" : "COMMITTEE_HEAD"),
       },
     });
     return Response.json(position, { status: 201 });
@@ -181,10 +194,18 @@ export async function PUT(request: Request) {
 
   const { id, title, email, is_primary } = body;
 
-  const data: { title?: string; email?: string; is_primary?: boolean } = {};
+  const data: {
+    title?: string;
+    email?: string;
+    is_primary?: boolean;
+    category?: "PRIMARY_OFFICER" | "COMMITTEE_HEAD";
+  } = {};
   if (title !== undefined) data.title = title;
   if (email !== undefined) data.email = email;
-  if (is_primary !== undefined) data.is_primary = is_primary;
+  if (is_primary !== undefined) {
+    data.is_primary = is_primary;
+    data.category = is_primary ? "PRIMARY_OFFICER" : "COMMITTEE_HEAD";
+  }
 
   try {
     const position = await prisma.officerPosition.update({

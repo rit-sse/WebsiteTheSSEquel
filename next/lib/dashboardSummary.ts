@@ -19,12 +19,29 @@ export type AttendanceSummary = {
   recent: { id: string; title: string; attendeeCount: number }[];
 };
 
+export type GoLinksSummary = {
+  publicCount: number;
+  officerCount: number;
+  pinnedCount: number;
+  recent: {
+    id: number;
+    golink: string;
+    isPublic: boolean;
+    isPinned: boolean;
+  }[];
+};
+
 export type MentoringSummary = {
   activeMentorCount: number;
   scheduleBlockCount: number;
 };
 
 export type TechCommitteeSummary = {
+  pendingCount: number;
+  totalCount: number;
+};
+
+export type CommitteeHeadNominationsSummary = {
   pendingCount: number;
   totalCount: number;
 };
@@ -68,8 +85,10 @@ export type PhotosSummary = {
 export type DashboardSummary = {
   purchasing: PurchasingSummary;
   attendance: AttendanceSummary;
+  "go-links": GoLinksSummary;
   mentoring: MentoringSummary;
   "tech-committee": TechCommitteeSummary;
+  "committee-head-nominations": CommitteeHeadNominationsSummary;
   positions: PositionsSummary;
   users: UsersSummary;
   sponsors: SponsorsSummary;
@@ -104,8 +123,10 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
   const [
     purchasing,
     attendance,
+    goLinks,
     mentoring,
     techCommittee,
+    committeeHeadNominations,
     positions,
     users,
     sponsors,
@@ -120,6 +141,12 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
       recent: [],
     } as PurchasingSummary),
     settle(getAttendanceSummary(), { recent: [] } as AttendanceSummary),
+    settle(getGoLinksSummary(), {
+      publicCount: 0,
+      officerCount: 0,
+      pinnedCount: 0,
+      recent: [],
+    } as GoLinksSummary),
     settle(getMentoringSummary(), {
       activeMentorCount: 0,
       scheduleBlockCount: 0,
@@ -128,6 +155,10 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
       pendingCount: 0,
       totalCount: 0,
     } as TechCommitteeSummary),
+    settle(getCommitteeHeadNominationsSummary(), {
+      pendingCount: 0,
+      totalCount: 0,
+    } as CommitteeHeadNominationsSummary),
     settle(getPositionsSummary(), {
       activeOfficerCount: 0,
       fillablePositionCount: 0,
@@ -162,8 +193,10 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
   return {
     purchasing,
     attendance,
+    "go-links": goLinks,
     mentoring,
     "tech-committee": techCommittee,
+    "committee-head-nominations": committeeHeadNominations,
     positions,
     users,
     sponsors,
@@ -207,6 +240,25 @@ async function getAttendanceSummary(): Promise<AttendanceSummary> {
   };
 }
 
+async function getGoLinksSummary(): Promise<GoLinksSummary> {
+  const [publicCount, officerCount, pinnedCount, recent] = await Promise.all([
+    prisma.goLinks.count({ where: { isPublic: true } }),
+    prisma.goLinks.count({ where: { isPublic: false } }),
+    prisma.goLinks.count({ where: { isPinned: true } }),
+    prisma.goLinks.findMany({
+      take: 3,
+      orderBy: { updatedAt: "desc" },
+      select: {
+        id: true,
+        golink: true,
+        isPublic: true,
+        isPinned: true,
+      },
+    }),
+  ]);
+  return { publicCount, officerCount, pinnedCount, recent };
+}
+
 async function getMentoringSummary(): Promise<MentoringSummary> {
   const [activeMentorCount, scheduleBlockCount] = await Promise.all([
     prisma.mentor.count({ where: { isActive: true } }),
@@ -219,6 +271,25 @@ async function getTechCommitteeSummary(): Promise<TechCommitteeSummary> {
   const [pendingCount, totalCount] = await Promise.all([
     prisma.techCommitteeApplication.count({ where: { status: "PENDING" } }),
     prisma.techCommitteeApplication.count(),
+  ]);
+  return { pendingCount, totalCount };
+}
+
+async function getCommitteeHeadNominationsSummary(): Promise<CommitteeHeadNominationsSummary> {
+  const openCycle = await prisma.committeeHeadNominationCycle.findFirst({
+    where: { status: "OPEN" },
+    select: { id: true },
+    orderBy: { openedAt: "desc" },
+  });
+  if (!openCycle) return { pendingCount: 0, totalCount: 0 };
+
+  const [pendingCount, totalCount] = await Promise.all([
+    prisma.committeeHeadApplication.count({
+      where: { cycleId: openCycle.id, status: "SUBMITTED" },
+    }),
+    prisma.committeeHeadApplication.count({
+      where: { cycleId: openCycle.id },
+    }),
   ]);
   return { pendingCount, totalCount };
 }

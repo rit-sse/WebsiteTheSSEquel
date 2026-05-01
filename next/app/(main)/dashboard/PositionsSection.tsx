@@ -470,6 +470,13 @@ export default function PositionsSection({
         onOpenChange={setModalOpen}
         position={editPosition}
         defaultIsPrimary={newPositionIsPrimary}
+        category={
+          category === "SE_OFFICE"
+            ? "SE_OFFICE"
+            : newPositionIsPrimary
+              ? "PRIMARY_OFFICER"
+              : "COMMITTEE_HEAD"
+        }
         onSuccess={fetchPositions}
       />
 

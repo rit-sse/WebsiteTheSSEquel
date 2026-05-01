@@ -27,6 +27,7 @@ export default async function MainLayout({
           authLevel.isOfficer || authLevel.isMentor || authLevel.isSeAdmin
         }
         serverProfileComplete={authLevel.profileComplete}
+        serverIsSeAdmin={authLevel.isSeAdmin}
         serverActiveElection={activeElection}
         banners={banners}
       />

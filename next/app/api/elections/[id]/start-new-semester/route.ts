@@ -32,6 +32,7 @@ import {
   getAcademicTermDateRange,
   getNextSemester,
 } from "@/lib/academicTerm";
+import { openCommitteeHeadNominationCycleForHandoff } from "@/lib/committeeHeadNominations";
 
 export const dynamic = "force-dynamic";
 
@@ -180,10 +181,16 @@ invitations to the newly-elected primaries.</p>
       }
     }
 
+    const committeeHeadCycle = await openCommitteeHeadNominationCycleForHandoff(
+      electionId,
+      now
+    );
+
     return Response.json({
       ok: true,
       inviteDispatchUrl: `/dashboard/new-semester/${electionId}`,
       seAdminsNotified: seAdmins.length,
+      committeeHeadNominationCycle: committeeHeadCycle,
     });
   } catch (error) {
     return new Response(

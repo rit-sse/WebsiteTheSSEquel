@@ -25,6 +25,7 @@ describe("filterVisibleSections", () => {
       expect.arrayContaining([
         "purchasing",
         "attendance",
+        "go-links",
         "mentoring",
         "positions",
         "users",
@@ -34,6 +35,7 @@ describe("filterVisibleSections", () => {
     );
     // Gated sections must not leak through when flags are off.
     expect(ids).not.toContain("tech-committee");
+    expect(ids).not.toContain("committee-head-nominations");
     expect(ids).not.toContain("elections");
     expect(ids).not.toContain("announcements");
     expect(ids).not.toContain("photos");
@@ -44,8 +46,10 @@ describe("filterVisibleSections", () => {
     expect(ids).toEqual([
       "purchasing",
       "attendance",
+      "go-links",
       "mentoring",
       "tech-committee",
+      "committee-head-nominations",
       "positions",
       "users",
       "sponsors",
@@ -85,7 +89,13 @@ describe("filterVisibleSections", () => {
   it("Elections / Announcements stay primary-only", () => {
     expect(idsFor({ isOfficer: true })).not.toContain("elections");
     expect(idsFor({ isOfficer: true })).not.toContain("announcements");
+    expect(idsFor({ isOfficer: true })).not.toContain(
+      "committee-head-nominations"
+    );
     expect(idsFor({ isPrimary: true })).toContain("elections");
     expect(idsFor({ isPrimary: true })).toContain("announcements");
+    expect(idsFor({ isPrimary: true })).toContain(
+      "committee-head-nominations"
+    );
   });
 });

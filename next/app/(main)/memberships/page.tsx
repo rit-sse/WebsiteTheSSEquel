@@ -116,7 +116,7 @@ export default function Leaderboard() {
           data={items}
           columns={columns}
           keyField="userId"
-          title="Memberships Leaderboard"
+          title="Membership Leaderboard"
           searchPlaceholder="Search members..."
           searchFields={["name"]}
           onAdd={isOfficer ? () => setOpen(true) : undefined}
