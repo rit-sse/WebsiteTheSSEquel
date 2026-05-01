@@ -21,7 +21,60 @@ Before requesting review, validate from the `next/` directory:
 
 If any step fails, fix or document why it is intentionally skipped.
 
-1. Make sure you have Node.js `20.20.1` or newer on the Node 20 line installed. If you use `nvm`, run `cd next && nvm use` to match the version in [`next/.nvmrc`](../next/.nvmrc). You can check your current version with `node -v`. If you don't have Node installed, you can download it [here](https://nodejs.org/en/download/).
+1. Install Node.js. This repo defaults to Node.js `25.9.0` for forward-compatibility testing and also supports Node.js `24.x` LTS for contributors who prefer the current long-term support line.
+
+   > [!NOTE]
+   > We recommend using [`fnm`](https://www.fnmnode.com/guide/install.html) so your shell automatically switches to the default version in [`next/.nvmrc`](../next/.nvmrc) when you enter the app directory.
+
+   On macOS with Homebrew:
+
+   ```bash
+   brew install fnm
+   ```
+
+   On macOS or Linux without Homebrew:
+
+   ```bash
+   curl -fsSL https://fnm.vercel.app/install | bash
+   ```
+
+   On Windows with Winget:
+
+   ```powershell
+   winget install Schniz.fnm
+   ```
+
+   Add fnm auto-switching to your Zsh or Bash profile:
+
+   ```bash
+   eval "$(fnm env --use-on-cd)"
+   ```
+
+   On Windows PowerShell, add fnm auto-switching to your PowerShell profile:
+
+   ```powershell
+   fnm env --use-on-cd --shell powershell | Out-String | Invoke-Expression
+   ```
+
+   Then install and use the project Node version:
+
+   ```bash
+   cd next
+   fnm install
+   fnm use
+   node -v
+   ```
+
+   > [!IMPORTANT]
+   > `node -v` should print `v25.9.0` when using the repo default. If you use another Node version manager, install Node.js `25.9.0` or Node.js `24.x` LTS and switch to it before running npm commands.
+
+   If you already use [`nvm`](https://github.com/nvm-sh/nvm), you can use the same version file instead:
+
+   ```bash
+   cd next
+   nvm install
+   nvm use
+   ```
 
 2. Clone or fork this repository. You can do this by running `git clone https://github.com/rit-sse/WebsiteTheSSEquel.git` in your terminal in the directory you want to clone the repository to.
 
