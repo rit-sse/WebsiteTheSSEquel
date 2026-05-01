@@ -205,28 +205,37 @@ const Navbar: React.FC<NavbarProps> = ({
                 // dropdown panel doesn't show a half-empty 2-col grid.
                 const single = group.items.length <= 2;
                 const dropdownGridStyle: React.CSSProperties = {
-                  width: single
-                    ? "min(20rem, calc(100vw - 2rem))"
-                    : "min(38rem, calc(100vw - 2rem))",
+                  width: "100%",
                   gridTemplateColumns: single
                     ? "minmax(0, 1fr)"
-                    : "repeat(auto-fit, minmax(min(17rem, 100%), 1fr))",
+                    : "repeat(auto-fit, minmax(min(200px, 100%), 1fr))",
+                };
+                const dropdownContentStyle: React.CSSProperties = {
+                  width: single
+                    ? "min(240px, calc(100vw - 32px))"
+                    : "min(500px, calc(100vw - 32px))",
+                  maxHeight: "min(70vh, calc(100vh - 8rem))",
                 };
 
                 return (
-                  <NavigationMenuItem key={group.value} value={group.value}>
+                  <NavigationMenuItem
+                    key={group.value}
+                    value={group.value}
+                    className="static"
+                  >
                     <NavigationMenuTrigger
                       onClick={handleTriggerClick(group.value)}
                     >
                       {group.label}
                     </NavigationMenuTrigger>
                     <NavigationMenuContent
+                      style={dropdownContentStyle}
                       className={cn(
-                        group.align === "end" && "lg:left-auto lg:right-0",
+                        "p-0 overflow-x-hidden overflow-y-auto lg:left-auto lg:right-0",
                       )}
                     >
                       <ul
-                        className="grid auto-rows-fr items-stretch gap-3 p-4"
+                        className="grid auto-rows-fr items-stretch gap-2 p-2"
                         style={dropdownGridStyle}
                       >
                         {group.items.map((item) => (
@@ -458,11 +467,11 @@ function ListItem({
 }) {
   return (
     <li {...props} className="min-w-0">
-      <NavigationMenuLink asChild>
+      <NavigationMenuLink asChild className="h-full p-0">
         <Link
           href={href}
           className={cn(
-            "flex h-full min-h-[6.75rem] min-w-0 select-none flex-col justify-center rounded-lg p-3 leading-none no-underline outline-none",
+            "flex h-full min-h-16 min-w-0 select-none flex-col justify-center rounded-md p-2 leading-none no-underline outline-none",
             "bg-surface-2 border border-border/30",
             "hover:bg-surface-1 hover:border-border/50 hover:shadow-md",
             "focus:bg-surface-2 focus:border-border/50",
@@ -470,10 +479,10 @@ function ListItem({
             className,
           )}
         >
-          <div className="flex min-h-[2.25rem] min-w-0 items-end justify-center text-sm font-bold font-heading leading-tight text-foreground">
+          <div className="line-clamp-2 min-w-0 break-words text-center text-[0.8125rem] font-bold font-heading leading-tight text-foreground">
             {title}
           </div>
-          <p className="mt-1 line-clamp-2 min-h-[2lh] text-sm leading-snug text-muted-foreground">
+          <p className="mt-1 line-clamp-2 min-w-0 break-words text-center text-[0.75rem] leading-snug text-muted-foreground">
             {children}
           </p>
         </Link>

@@ -37,18 +37,18 @@ describe("buildNavGroups", () => {
       "Leadership",
       "Committees",
       "Constitution",
-      "Primary Officer's Policy",
+      "Primary Policy",
     ]);
   });
 
-  it("keeps the requested student links and labels", () => {
+  it("keeps the requested student links with compact labels", () => {
     expect(studentTitles()).toEqual([
-      "Become a Committee Head",
-      "Become a Tech Committee Member",
-      "Become a Mentor",
+      "Committee Head",
+      "Tech Committee",
+      "Mentor",
       "Get Involved",
       "Constitution",
-      "Primary Officer's Policy",
+      "Primary Policy",
       "Projects",
       "Events",
       "Membership Leaderboard",
