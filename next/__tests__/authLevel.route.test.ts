@@ -67,6 +67,7 @@ describe("/api/authLevel route", () => {
 
     expect(mockResolveFromRequest).toHaveBeenCalledWith(req, {
       includeProfileComplete: true,
+      allowStagingElevated: false,
     });
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ isUser: true, profileComplete: true });
