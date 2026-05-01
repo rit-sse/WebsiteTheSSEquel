@@ -3,7 +3,7 @@
 import { useState, useCallback } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { NeoCard, NeoCardContent } from "@/components/ui/neo-card";
 import { Button } from "@/components/ui/button";
 import { ElectionAvatar } from "@/components/elections/ElectionAvatar";
