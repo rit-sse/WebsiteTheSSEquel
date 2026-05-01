@@ -221,7 +221,7 @@ const Navbar: React.FC<NavbarProps> = ({
                   <NavigationMenuItem
                     key={group.value}
                     value={group.value}
-                    className="static"
+                    className={single ? "relative" : "static"}
                   >
                     <NavigationMenuTrigger
                       onClick={handleTriggerClick(group.value)}
@@ -231,11 +231,12 @@ const Navbar: React.FC<NavbarProps> = ({
                     <NavigationMenuContent
                       style={dropdownContentStyle}
                       className={cn(
-                        "p-0 overflow-x-hidden overflow-y-auto lg:left-auto lg:right-0",
+                        "p-0 overflow-x-hidden overflow-y-auto",
+                        !single && "lg:left-auto lg:right-0",
                       )}
                     >
                       <ul
-                        className="grid auto-rows-fr items-stretch gap-3 p-3"
+                        className="grid auto-rows-fr items-stretch gap-4 p-4"
                         style={dropdownGridStyle}
                       >
                         {group.items.map((item) => (
@@ -479,10 +480,10 @@ function ListItem({
             className,
           )}
         >
-          <div className="line-clamp-2 min-w-0 break-words text-center text-[0.8125rem] font-bold font-heading leading-tight text-foreground">
+          <div className="line-clamp-2 min-w-0 break-words text-center text-[0.9375rem] font-bold font-heading leading-tight text-foreground">
             {title}
           </div>
-          <p className="mt-1.5 line-clamp-2 min-w-0 break-words text-center text-[0.75rem] leading-snug text-muted-foreground">
+          <p className="mt-1.5 line-clamp-2 min-w-0 break-words text-center text-[0.8125rem] leading-snug text-muted-foreground">
             {children}
           </p>
         </Link>
