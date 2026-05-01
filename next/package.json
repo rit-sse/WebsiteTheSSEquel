@@ -55,7 +55,7 @@
     "@types/qrcode": "^1.5.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "autoprefixer": "10.4.15",
+    "autoprefixer": "10.4.27",
     "boring-avatars": "^2.0.1",
     "browser-image-compression": "^2.0.2",
     "class-variance-authority": "^0.7.1",
