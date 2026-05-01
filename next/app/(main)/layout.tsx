@@ -7,15 +7,17 @@ import { getAuthLevel } from "@/lib/services/authLevelService";
 import { getActiveElection } from "@/lib/elections";
 import { getSiteBanners } from "@/lib/siteBanners";
 import SiteHeader from "@/components/SiteHeader";
+import { getOpenCommitteeHeadNominationCycle } from "@/lib/committeeHeadNominations";
 
 export default async function MainLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [authLevel, activeElection] = await Promise.all([
+  const [authLevel, activeElection, committeeHeadNominationCycle] = await Promise.all([
     getAuthLevel(),
     getActiveElection(),
+    getOpenCommitteeHeadNominationCycle(),
   ]);
   const banners = await getSiteBanners(activeElection);
 
@@ -28,6 +30,7 @@ export default async function MainLayout({
         }
         serverProfileComplete={authLevel.profileComplete}
         serverActiveElection={activeElection}
+        serverCommitteeHeadNominationsOpen={!!committeeHeadNominationCycle}
         banners={banners}
       />
       <main className="flex flex-col grow items-center px-2 pb-2 md:px-3 md:pb-3 lg:px-4 lg:pb-4 w-full overflow-x-hidden">

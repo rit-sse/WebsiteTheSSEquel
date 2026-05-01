@@ -14,6 +14,7 @@ import type {
   AlumniSummary,
   AnnouncementsSummary,
   AttendanceSummary,
+  CommitteeHeadNominationsSummary,
   DashboardSummary,
   ElectionsSummary,
   MentoringSummary,
@@ -93,6 +94,13 @@ export default function SectionPreview({
         <TechCommitteePreview
           accentClass={accentClass}
           data={data as TechCommitteeSummary | undefined}
+        />
+      );
+    case "committee-head-nominations":
+      return (
+        <TechCommitteePreview
+          accentClass={accentClass}
+          data={data as CommitteeHeadNominationsSummary | undefined}
         />
       );
     case "positions":

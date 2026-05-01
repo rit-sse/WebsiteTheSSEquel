@@ -57,39 +57,6 @@ export const getActiveElection = cache(
 );
 
 /**
- * Same shape as `getActiveElection` but with auto-kickoff: when no
- * live election is found AND the system has crossed into a new
- * academic term since the last CERTIFIED cycle, create one before
- * returning. Intentionally NOT wrapped in `cache()` so it runs at most
- * once per request (the page route that calls it is the only consumer).
- *
- * The navbar and banner deliberately keep using the plain cached
- * `getActiveElection` so we don't trigger DB writes on every page load.
- */
-export async function getActiveElectionWithAutoKickoff(): Promise<ActiveElectionSummary | null> {
-  const existing = await prisma.election.findFirst({
-    where: { status: { in: LIVE_ELECTION_STATUSES } },
-    select: { id: true, title: true, slug: true, status: true },
-    orderBy: { createdAt: "desc" },
-  });
-  if (existing) return existing;
-
-  // Defer the import so this module's startup cost stays the same
-  // for callers that don't need kickoff.
-  const { kickoffElectionForCurrentTerm } = await import(
-    "@/lib/electionAutoKickoff"
-  );
-  const result = await kickoffElectionForCurrentTerm();
-  if (!result.created || !result.electionId) {
-    return null;
-  }
-  return prisma.election.findUnique({
-    where: { id: result.electionId },
-    select: { id: true, title: true, slug: true, status: true },
-  });
-}
-
-/**
  * Post-Amendment 12/13: Vice President is no longer separately elected —
  * it is chosen as a running mate by the President nominee. Mentoring Head
  * is now a Primary Officer elected by the membership.

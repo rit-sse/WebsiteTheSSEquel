@@ -13,6 +13,7 @@ type SiteHeaderProps = {
   serverShowDashboard?: boolean;
   serverProfileComplete?: boolean;
   serverActiveElection?: ActiveElectionSummary | null;
+  serverCommitteeHeadNominationsOpen?: boolean;
   banners: SiteBanner[];
 };
 
@@ -21,6 +22,7 @@ export default function SiteHeader({
   serverShowDashboard,
   serverProfileComplete,
   serverActiveElection,
+  serverCommitteeHeadNominationsOpen,
   banners,
 }: SiteHeaderProps) {
   const headerRef = useRef<HTMLElement | null>(null);
@@ -56,6 +58,7 @@ export default function SiteHeader({
           serverShowDashboard={serverShowDashboard}
           serverProfileComplete={serverProfileComplete}
           serverActiveElection={serverActiveElection}
+          serverCommitteeHeadNominationsOpen={serverCommitteeHeadNominationsOpen}
         />
         <SiteBannerList banners={banners} />
       </header>

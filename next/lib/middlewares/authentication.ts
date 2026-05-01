@@ -333,19 +333,11 @@ const invitationsVerifier: AuthVerifier = async (request: NextRequest) => {
 /**
  * Auth verifier for election routes:
  *  - GET is public (election results / nomination listing).
- *  - POST /api/elections/auto-kickoff is the cron-secret guarded
- *    endpoint that creates a fresh election at semester boundaries.
- *    The route handler does its own `x-cron-secret` check, so the
- *    middleware needs to *let it through* — sign-in isn't possible
- *    in a scheduler context.
- *  - All other mutations require a signed-in user (the route
+ *  - Mutations require a signed-in user (the route
  *    handlers run finer-grained checks like active membership).
  */
 const electionsVerifier: AuthVerifier = async (request: NextRequest) => {
   if (request.method === "GET") {
-    return { isAllowed: true, authType: "None" };
-  }
-  if (request.nextUrl.pathname === "/api/elections/auto-kickoff") {
     return { isAllowed: true, authType: "None" };
   }
   return signedInVerifier(request);
@@ -368,6 +360,7 @@ const ROUTES: { [key: string]: AuthVerifier } = {
   authLevel: allowAllVerifier,
   aws: awsVerifier,
   calendar: nonGetOfficerVerifier,
+  "committee-head-nominations": allowAllVerifier,
   course: nonGetOfficerVerifier,
   courseTaken: nonGetMentorVerifier,
   departments: nonGetOfficerVerifier,

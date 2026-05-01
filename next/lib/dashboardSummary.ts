@@ -29,6 +29,11 @@ export type TechCommitteeSummary = {
   totalCount: number;
 };
 
+export type CommitteeHeadNominationsSummary = {
+  pendingCount: number;
+  totalCount: number;
+};
+
 export type PositionsSummary = {
   activeOfficerCount: number;
   fillablePositionCount: number;
@@ -70,6 +75,7 @@ export type DashboardSummary = {
   attendance: AttendanceSummary;
   mentoring: MentoringSummary;
   "tech-committee": TechCommitteeSummary;
+  "committee-head-nominations": CommitteeHeadNominationsSummary;
   positions: PositionsSummary;
   users: UsersSummary;
   sponsors: SponsorsSummary;
@@ -106,6 +112,7 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
     attendance,
     mentoring,
     techCommittee,
+    committeeHeadNominations,
     positions,
     users,
     sponsors,
@@ -128,6 +135,10 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
       pendingCount: 0,
       totalCount: 0,
     } as TechCommitteeSummary),
+    settle(getCommitteeHeadNominationsSummary(), {
+      pendingCount: 0,
+      totalCount: 0,
+    } as CommitteeHeadNominationsSummary),
     settle(getPositionsSummary(), {
       activeOfficerCount: 0,
       fillablePositionCount: 0,
@@ -164,6 +175,7 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
     attendance,
     mentoring,
     "tech-committee": techCommittee,
+    "committee-head-nominations": committeeHeadNominations,
     positions,
     users,
     sponsors,
@@ -219,6 +231,25 @@ async function getTechCommitteeSummary(): Promise<TechCommitteeSummary> {
   const [pendingCount, totalCount] = await Promise.all([
     prisma.techCommitteeApplication.count({ where: { status: "PENDING" } }),
     prisma.techCommitteeApplication.count(),
+  ]);
+  return { pendingCount, totalCount };
+}
+
+async function getCommitteeHeadNominationsSummary(): Promise<CommitteeHeadNominationsSummary> {
+  const openCycle = await prisma.committeeHeadNominationCycle.findFirst({
+    where: { status: "OPEN" },
+    select: { id: true },
+    orderBy: { openedAt: "desc" },
+  });
+  if (!openCycle) return { pendingCount: 0, totalCount: 0 };
+
+  const [pendingCount, totalCount] = await Promise.all([
+    prisma.committeeHeadApplication.count({
+      where: { cycleId: openCycle.id, status: "SUBMITTED" },
+    }),
+    prisma.committeeHeadApplication.count({
+      where: { cycleId: openCycle.id },
+    }),
   ]);
   return { pendingCount, totalCount };
 }

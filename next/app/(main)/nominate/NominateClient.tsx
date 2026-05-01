@@ -1,505 +1,475 @@
 "use client";
 
-import { useCallback, useState } from "react";
-import Link from "next/link";
+import { useMemo, useState } from "react";
 import { signIn, useSession } from "next-auth/react";
 import { toast } from "sonner";
-import { Calendar, CheckCircle2, GraduationCap, UserPlus, Vote } from "lucide-react";
-
-import { NeoCard, NeoCardContent } from "@/components/ui/neo-card";
-import { Badge } from "@/components/ui/badge";
+import { CheckCircle2, Send, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ElectionPhaseTimeline } from "@/components/elections/ElectionPhaseTimeline";
-import { ElectionAvatar } from "@/components/elections/ElectionAvatar";
-import UserSearchInviteModal, {
-  type UserSearchResult,
-} from "@/components/common/UserSearchInviteModal";
-
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import UserSearchInviteModal from "@/components/common/UserSearchInviteModal";
 import type {
-  NominateData,
-  NominateOpenElection,
-  NominateOffice,
+  CommitteeHeadNominateData,
+  CommitteeHeadPositionOption,
 } from "./types";
 
-interface NominateClientProps {
-  data: NominateData;
+const YEAR_LEVELS = [
+  "1st",
+  "2nd",
+  "3rd",
+  "4th",
+  "5th (Undergrad)",
+  "MS Student",
+  "Other",
+];
+
+type Mode = "self" | "nominate";
+
+interface FormState {
+  yearLevel: string;
+  major: string;
+  experienceText: string;
+  whyInterested: string;
+  weeklyCommitment: string;
+  comments: string;
 }
 
-interface ReceiptState {
-  position: string;
-}
+const emptyForm: FormState = {
+  yearLevel: "",
+  major: "",
+  experienceText: "",
+  whyInterested: "",
+  weeklyCommitment: "",
+  comments: "",
+};
 
-function termLabelFromTitle(title: string): string {
-  // Strip the trailing "Primary Officer Election" so the hero shows just
-  // the term label ("Spring 2026"), reading like a section name rather
-  // than a registry record.
-  return title
-    .replace(/\s+Primary Officer Election\s*$/i, "")
-    .replace(/\s+Election\s*$/i, "")
-    .trim();
-}
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
+export default function NominateClient({
+  data,
+}: {
+  data: CommitteeHeadNominateData;
+}) {
+  const { data: session, status } = useSession();
+  const [mode, setMode] = useState<Mode>("self");
+  const [selectedPositions, setSelectedPositions] = useState<number[]>([]);
+  const [form, setForm] = useState<FormState>({
+    ...emptyForm,
+    major: data.viewer?.major ?? "",
   });
-}
-
-function daysUntil(iso: string): number {
-  const ms = new Date(iso).getTime() - Date.now();
-  return Math.max(0, Math.ceil(ms / (24 * 60 * 60 * 1000)));
-}
-
-export default function NominateClient({ data }: NominateClientProps) {
-  const { data: session, status: sessionStatus } = useSession();
-  const isSignedIn = !!session?.user;
-
-  const [inviteOfficeId, setInviteOfficeId] = useState<number | null>(null);
+  const [nomineeUserId, setNomineeUserId] = useState<number | null>(null);
+  const [nomineeName, setNomineeName] = useState<string>("");
+  const [nominationReason, setNominationReason] = useState("");
+  const [userSearchOpen, setUserSearchOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [receipt, setReceipt] = useState<ReceiptState | null>(null);
+  const [submitted, setSubmitted] = useState(false);
 
-  const election = data.openElection;
-  const nominationsOpen = !!election;
+  const signedIn = !!session?.user;
+  const sortedSelectedPositions = useMemo(
+    () =>
+      selectedPositions
+        .map((id) => data.positions.find((position) => position.id === id))
+        .filter((position): position is CommitteeHeadPositionOption => !!position),
+    [data.positions, selectedPositions]
+  );
 
-  // Submission helper passed into UserSearchInviteModal. Throws on failure
-  // so the modal can surface the inline error; resolves on success and
-  // flips the page to the receipt state.
-  const submitNomination = useCallback(
-    async (officeId: number, nomineeUserId: number) => {
-      if (!election) return;
-      setSubmitting(true);
-      try {
-        const response = await fetch(
-          `/api/elections/${election.id}/nominations`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              electionOfficeId: officeId,
-              nomineeUserId,
-            }),
-          }
-        );
-        if (!response.ok) {
-          const text = await response.text();
-          throw new Error(text || "Could not submit your nomination.");
-        }
-        const office = election.offices.find((o) => o.id === officeId);
-        setReceipt({ position: office?.title ?? "an office" });
-        toast.success("Nomination submitted.");
-      } finally {
-        setSubmitting(false);
+  const togglePosition = (positionId: number) => {
+    setSelectedPositions((prev) =>
+      prev.includes(positionId)
+        ? prev.filter((id) => id !== positionId)
+        : [...prev, positionId]
+    );
+  };
+
+  const movePosition = (positionId: number, direction: -1 | 1) => {
+    setSelectedPositions((prev) => {
+      const index = prev.indexOf(positionId);
+      const nextIndex = index + direction;
+      if (index === -1 || nextIndex < 0 || nextIndex >= prev.length) return prev;
+      const copy = [...prev];
+      [copy[index], copy[nextIndex]] = [copy[nextIndex]!, copy[index]!];
+      return copy;
+    });
+  };
+
+  const updateField = (field: keyof FormState, value: string) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const validate = () => {
+    if (!data.cycle) return "Committee Head nominations are closed.";
+    if (selectedPositions.length === 0) return "Select at least one position.";
+    if (mode === "nominate") {
+      if (!nomineeUserId) return "Choose a nominee.";
+      if (!nominationReason.trim()) return "Add a nomination reason.";
+      return null;
+    }
+    if (!form.yearLevel) return "Year level is required.";
+    if (!form.major.trim()) return "Major is required.";
+    if (!form.experienceText.trim()) return "Experience is required.";
+    if (!form.whyInterested.trim()) return "Interest statement is required.";
+    if (!form.weeklyCommitment.trim()) return "Weekly commitment is required.";
+    return null;
+  };
+
+  const submit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    const error = validate();
+    if (error) {
+      toast.error(error);
+      return;
+    }
+    if (!data.cycle) return;
+
+    setSubmitting(true);
+    try {
+      const response = await fetch("/api/committee-head-nominations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(
+          mode === "self"
+            ? {
+                mode,
+                cycleId: data.cycle.id,
+                preferences: selectedPositions.map((positionId, index) => ({
+                  positionId,
+                  rank: index + 1,
+                })),
+                ...form,
+              }
+            : {
+                mode,
+                cycleId: data.cycle.id,
+                nomineeUserId,
+                suggestedPositionIds: selectedPositions,
+                reason: nominationReason,
+              }
+        ),
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        toast.error(result.error || "Submission failed.");
+        return;
       }
-    },
-    [election]
-  );
+      setSubmitted(true);
+      toast.success(
+        mode === "self"
+          ? "Application submitted."
+          : "Nomination submitted."
+      );
+    } catch (error) {
+      console.error("Failed to submit Committee Head nomination:", error);
+      toast.error("Submission failed.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
-  const inviteOffice =
-    election?.offices.find((o) => o.id === inviteOfficeId) ?? null;
-
-  return (
-    <div className="w-full max-w-5xl mx-auto py-6 md:py-10 space-y-6 px-2 md:px-0">
-      <NeoCard depth={1} className="election-scope w-full">
-        <NeoCardContent className="space-y-8 p-6 md:p-8">
-          {nominationsOpen && election ? (
-            <Hero
-              title={`Nominate the next ${termLabelFromTitle(election.title)} officers`}
-              subtitle={
-                <>
-                  {election.offices.length} seat
-                  {election.offices.length === 1 ? "" : "s"} to fill. Pick a
-                  position, pick a nominee, and ship it. Nominees get an email
-                  asking them to accept or decline — you can nominate as many
-                  people as you like.
-                </>
-              }
-              badge={
-                <>
-                  Nominations open · closes {formatDate(election.nominationsCloseAt)}{" "}
-                  ({daysUntil(election.nominationsCloseAt)} days)
-                </>
-              }
-            />
-          ) : (
-            <Hero
-              title="The next ballot is being drawn up."
-              subtitle={
-                <>
-                  SSE elects new primary officers each semester. The next
-                  nomination window opens with{" "}
-                  <strong>{data.nextSemesterLabel}</strong>. Watch this page —
-                  no emails, no notifications.
-                </>
-              }
-              badge={`Resumes ${data.nextSemesterLabel}`}
-            />
-          )}
-
-          {nominationsOpen && election && (
-            <PhaseTimelineWrap election={election} />
-          )}
-
-          {receipt ? (
-            <ReceiptPanel
-              receipt={receipt}
-              electionSlug={election?.slug ?? ""}
-              onAgain={() => {
-                setReceipt(null);
-                setInviteOfficeId(null);
-              }}
-            />
-          ) : nominationsOpen && election ? (
-            !isSignedIn && sessionStatus !== "loading" ? (
-              <SignInPanel />
-            ) : !data.viewerCanNominate ? (
-              <NotMemberPanel />
-            ) : (
-              <OfficePicker
-                offices={election.offices}
-                onPick={(officeId) => setInviteOfficeId(officeId)}
-              />
-            )
-          ) : (
-            <WaitingPanel nextSemesterLabel={data.nextSemesterLabel} />
-          )}
-        </NeoCardContent>
-      </NeoCard>
-
-      <ExplainerTiles
-        isOpen={nominationsOpen}
-        closesAt={election ? formatDate(election.nominationsCloseAt) : null}
-        votingOpensAt={election ? formatDate(election.votingOpenAt) : null}
-      />
-
-      <RoleManifestCard roles={data.roleManifest} />
-
-      {/* Modal — shared site pattern. Opens when user picks an office. */}
-      {inviteOffice && election && (
-        <UserSearchInviteModal
-          open={inviteOfficeId !== null}
-          onOpenChange={(open) => {
-            if (!open) setInviteOfficeId(null);
-          }}
-          title={`Nominate for ${inviteOffice.title}`}
-          description={
-            inviteOffice.title === "President"
-              ? "Pick an active SSE member to nominate for President. They'll choose their own VP running mate after accepting — no need to nominate a VP separately."
-              : `Pick an active SSE member to nominate for ${inviteOffice.title}. They'll get an email to accept or decline.`
-          }
-          confirmLabel={submitting ? "Submitting…" : "Send Nomination"}
-          onInvite={async (userId) => {
-            await submitNomination(inviteOffice.id, userId);
-            setInviteOfficeId(null);
-          }}
-          renderAvatar={(user: UserSearchResult) => (
-            <ElectionAvatar
-              user={user}
-              className="h-9 w-9 border-2 border-black shrink-0"
-              fallbackClassName="text-xs"
-            />
-          )}
-          searchPlaceholder="Search SSE members by name or email…"
-        />
-      )}
-    </div>
-  );
-}
-
-/* ─────────────────── sub-views ─────────────────── */
-
-function Hero({
-  badge,
-  title,
-  subtitle,
-}: {
-  badge: React.ReactNode;
-  title: string;
-  subtitle: React.ReactNode;
-}) {
-  return (
-    <header className="space-y-3">
-      <Badge variant="default" className="uppercase tracking-wider">
-        {badge}
-      </Badge>
-      <h1 className="text-3xl md:text-4xl font-display font-bold tracking-tight">
-        {title}
-      </h1>
-      <p className="text-base text-muted-foreground max-w-2xl">{subtitle}</p>
-    </header>
-  );
-}
-
-function PhaseTimelineWrap({ election }: { election: NominateOpenElection }) {
-  return (
-    <div className="rounded-lg border border-border/50 bg-surface-2 p-4">
-      <ElectionPhaseTimeline
-        status="NOMINATIONS_OPEN"
-        nominationsOpenAt={election.nominationsOpenAt}
-        nominationsCloseAt={election.nominationsCloseAt}
-        votingOpenAt={election.votingOpenAt}
-        votingCloseAt={election.votingCloseAt}
-      />
-    </div>
-  );
-}
-
-function SignInPanel() {
-  return (
-    <div className="rounded-lg border-2 border-border bg-surface-2 p-6 md:p-8 text-center space-y-4">
-      <h2 className="text-2xl font-display font-bold">Sign in to nominate</h2>
-      <p className="text-muted-foreground max-w-xl mx-auto">
-        Nominations are member-only. One sign-in with your RIT Google account
-        puts the ballot in your hands.
-      </p>
-      <Button size="lg" onClick={() => signIn("google")}>
-        Sign in with RIT Google
-      </Button>
-    </div>
-  );
-}
-
-function NotMemberPanel() {
-  return (
-    <div className="rounded-lg border-2 border-border bg-surface-2 p-6 md:p-8 text-center space-y-3">
-      <h2 className="text-2xl font-display font-bold">Membership required</h2>
-      <p className="text-muted-foreground max-w-xl mx-auto">
-        You&rsquo;re signed in but not on this term&rsquo;s membership rolls.
-        Earn a membership at any SSE event, then come back to nominate.
-      </p>
-      <Button asChild variant="outline">
-        <Link href="/about/get-involved">How to become a member</Link>
-      </Button>
-    </div>
-  );
-}
-
-function WaitingPanel({ nextSemesterLabel }: { nextSemesterLabel: string }) {
-  return (
-    <div className="rounded-lg border border-border/50 bg-surface-2 p-6 space-y-4">
-      <div className="flex flex-col sm:flex-row gap-3">
-        <Button asChild>
-          <Link href="/about/get-involved">
-            <UserPlus className="mr-2 h-4 w-4" /> Get involved
-          </Link>
-        </Button>
-        <Button asChild variant="outline">
-          <Link href="/about/leadership">Meet current officers</Link>
-        </Button>
+  if (!data.cycle) {
+    return (
+      <div className="mx-auto w-full max-w-3xl px-4 py-10">
+        <Card>
+          <CardHeader>
+            <Badge className="w-fit">Closed</Badge>
+            <CardTitle>Committee Head nominations are closed</CardTitle>
+          </CardHeader>
+          <CardContent className="text-muted-foreground">
+            Nominations open after the Primary Officer election handoff for the
+            next semester.
+          </CardContent>
+        </Card>
       </div>
-      <p className="text-sm text-muted-foreground">
-        The next nomination window opens with {nextSemesterLabel}. The page
-        below explains who can nominate, who can run, and what each role does.
-      </p>
-    </div>
-  );
-}
+    );
+  }
 
-function OfficePicker({
-  offices,
-  onPick,
-}: {
-  offices: NominateOffice[];
-  onPick: (officeId: number) => void;
-}) {
-  return (
-    <div className="space-y-3">
-      <h2 className="text-xl font-display font-bold">
-        Pick a position to nominate for
-      </h2>
-      <div className="grid gap-3 md:grid-cols-2">
-        {offices.map((office) => (
-          <OfficeRow key={office.id} office={office} onPick={onPick} />
-        ))}
+  if (status === "loading") {
+    return (
+      <div className="mx-auto w-full max-w-3xl px-4 py-10">
+        <Card>
+          <CardContent className="p-6 text-muted-foreground">
+            Checking sign-in...
+          </CardContent>
+        </Card>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
-function OfficeRow({
-  office,
-  onPick,
-}: {
-  office: NominateOffice;
-  onPick: (officeId: number) => void;
-}) {
-  return (
-    <div className="rounded-lg border-2 border-border bg-surface-2 p-4 space-y-3 flex flex-col">
-      <div className="flex items-start justify-between gap-2">
-        <h3 className="text-lg font-display font-bold leading-tight">
-          {office.title}
-        </h3>
-        {office.incumbent && (
-          <span className="text-xs text-muted-foreground whitespace-nowrap">
-            Currently {office.incumbent.name}
-          </span>
-        )}
+  if (!signedIn) {
+    return (
+      <div className="mx-auto w-full max-w-3xl px-4 py-10">
+        <Card>
+          <CardHeader>
+            <Badge className="w-fit">Open</Badge>
+            <CardTitle>{data.cycle.name}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-muted-foreground">
+              Sign in with your RIT account to apply for a Committee Head role
+              or nominate another member.
+            </p>
+            <Button onClick={() => signIn("google")}>Sign In</Button>
+          </CardContent>
+        </Card>
       </div>
-      <p className="text-sm text-muted-foreground flex-1">
-        {office.description}
-      </p>
-      <Button
-        size="sm"
-        variant="default"
-        onClick={() => onPick(office.id)}
-        className="self-start"
-      >
-        <UserPlus className="mr-2 h-4 w-4" />
-        Nominate
-      </Button>
-    </div>
-  );
-}
+    );
+  }
 
-function ReceiptPanel({
-  receipt,
-  electionSlug,
-  onAgain,
-}: {
-  receipt: ReceiptState;
-  electionSlug: string;
-  onAgain: () => void;
-}) {
-  return (
-    <div className="rounded-lg border-2 border-success bg-success/10 p-6 space-y-4">
-      <div className="flex items-start gap-3">
-        <CheckCircle2 className="h-6 w-6 text-success shrink-0 mt-0.5" />
-        <div className="space-y-1">
-          <h2 className="text-xl font-display font-bold">
-            Nomination submitted
-          </h2>
-          <p className="text-muted-foreground">
-            We&rsquo;ve recorded your nomination for{" "}
-            <strong className="text-foreground">{receipt.position}</strong>.
-            Your nominee will get an email asking them to accept or decline.
-          </p>
-        </div>
-      </div>
-      <div className="flex flex-col sm:flex-row gap-3">
-        {electionSlug && (
-          <Button asChild variant="default">
-            <Link href={`/elections/${electionSlug}`}>
-              <Vote className="mr-2 h-4 w-4" /> View the ballot
-            </Link>
-          </Button>
-        )}
-        <Button variant="outline" onClick={onAgain}>
-          Nominate someone else
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-function ExplainerTiles({
-  isOpen,
-  closesAt,
-  votingOpensAt,
-}: {
-  isOpen: boolean;
-  closesAt: string | null;
-  votingOpensAt: string | null;
-}) {
-  const tiles = isOpen
-    ? [
-        {
-          icon: GraduationCap,
-          title: "Who can nominate?",
-          body: "Any active SSE member — at least one membership earned this term, or last term during the first two weeks of a new one.",
-        },
-        {
-          icon: UserPlus,
-          title: "Who can run?",
-          body: "Any RIT student who'll stay enrolled through the officer year. Eligibility is reviewed once the nominee accepts.",
-        },
-        {
-          icon: Calendar,
-          title: "What happens next?",
-          body: closesAt
-            ? `Nominations close ${closesAt}. Voting opens ${votingOpensAt ?? "soon after"} and runs for one week — ranked-choice.`
-            : "Voting opens after nominations close, and runs for one week using ranked-choice.",
-        },
-      ]
-    : [
-        {
-          icon: GraduationCap,
-          title: "Earn a membership",
-          body: "Show up to any SSE event and swipe in. Memberships are tracked term by term — you'll need at least one to nominate or vote.",
-        },
-        {
-          icon: UserPlus,
-          title: "Read the constitution",
-          body: "Knowing what each role actually does makes you a better nominator (and a better officer if you decide to run).",
-        },
-        {
-          icon: Calendar,
-          title: "Watch this page",
-          body: "When the next ballot opens, this page lights up. No emails, no notifications — just open it in a tab.",
-        },
-      ];
-
-  return (
-    <NeoCard depth={2} className="w-full">
-      <NeoCardContent className="grid gap-4 p-6 md:grid-cols-3">
-        {tiles.map((tile) => (
-          <div key={tile.title} className="space-y-2">
-            <div className="flex items-center gap-2 text-primary">
-              <tile.icon className="h-5 w-5" />
-              <h3 className="text-base font-display font-bold">{tile.title}</h3>
+  if (submitted) {
+    return (
+      <div className="mx-auto w-full max-w-3xl px-4 py-10">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2 text-success">
+              <CheckCircle2 className="h-5 w-5" />
+              <CardTitle>Submitted</CardTitle>
             </div>
-            <p className="text-sm text-muted-foreground">{tile.body}</p>
-          </div>
-        ))}
-      </NeoCardContent>
-    </NeoCard>
-  );
-}
-
-function RoleManifestCard({
-  roles,
-}: {
-  roles: NominateData["roleManifest"];
-}) {
-  return (
-    <NeoCard depth={2} className="w-full">
-      <NeoCardContent className="p-6 space-y-4">
-        <h2 className="text-xl font-display font-bold">The roles</h2>
-        <ul className="divide-y divide-border/50">
-          {roles.map((role) => (
-            <li
-              key={role.title}
-              className="py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-3"
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-muted-foreground">
+              {mode === "self"
+                ? "Your application is in the review pool for the Primary Officers."
+                : "Your nominee will be asked to accept and complete the application before Primary Officers review them."}
+            </p>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setSubmitted(false);
+                setNomineeUserId(null);
+                setNomineeName("");
+                setNominationReason("");
+              }}
             >
-              <div className="space-y-0.5">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-display font-bold">{role.title}</span>
-                  {!role.onBallot && (
-                    <Badge variant="outline" className="text-[10px] uppercase">
-                      Running-mate pick
-                    </Badge>
-                  )}
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  {role.description}
+              Submit another
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mx-auto w-full max-w-4xl px-4 py-10">
+      <Card>
+        <CardHeader>
+          <Badge className="w-fit">Open</Badge>
+          <CardTitle>{data.cycle.name}</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Apply for a Committee Head role or nominate someone who should be
+            considered by the incoming Primary Officers.
+          </p>
+        </CardHeader>
+        <CardContent>
+          <form className="space-y-6" onSubmit={submit}>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Button
+                type="button"
+                variant={mode === "self" ? "default" : "outline"}
+                onClick={() => setMode("self")}
+              >
+                <UserPlus className="mr-2 h-4 w-4" />
+                Apply for myself
+              </Button>
+              <Button
+                type="button"
+                variant={mode === "nominate" ? "default" : "outline"}
+                onClick={() => setMode("nominate")}
+              >
+                <Send className="mr-2 h-4 w-4" />
+                Nominate someone else
+              </Button>
+            </div>
+
+            <section className="space-y-3">
+              <div>
+                <Label>Ranked position preferences</Label>
+                <p className="text-xs text-muted-foreground">
+                  Select every role you would accept. Use the arrows to order
+                  your preferences.
                 </p>
               </div>
-              <div className="text-xs text-muted-foreground whitespace-nowrap">
-                {role.incumbent ? (
-                  <>
-                    Currently{" "}
-                    <span className="text-foreground font-medium">
-                      {role.incumbent.name}
-                    </span>
-                  </>
-                ) : (
-                  <span>Vacant</span>
-                )}
+              <div className="grid gap-2 sm:grid-cols-2">
+                {data.positions.map((position) => (
+                  <label
+                    key={position.id}
+                    className="flex items-center gap-2 rounded-md border p-3 text-sm"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedPositions.includes(position.id)}
+                      onChange={() => togglePosition(position.id)}
+                    />
+                    <span className="font-medium">{position.title}</span>
+                  </label>
+                ))}
               </div>
-            </li>
-          ))}
-        </ul>
-      </NeoCardContent>
-    </NeoCard>
+              {sortedSelectedPositions.length > 0 && (
+                <ol className="space-y-2">
+                  {sortedSelectedPositions.map((position, index) => (
+                    <li
+                      key={position.id}
+                      className="flex items-center justify-between rounded-md bg-muted px-3 py-2 text-sm"
+                    >
+                      <span>
+                        {index + 1}. {position.title}
+                      </span>
+                      <span className="flex gap-1">
+                        <Button
+                          type="button"
+                          size="xs"
+                          variant="outline"
+                          onClick={() => movePosition(position.id, -1)}
+                          disabled={index === 0}
+                        >
+                          Up
+                        </Button>
+                        <Button
+                          type="button"
+                          size="xs"
+                          variant="outline"
+                          onClick={() => movePosition(position.id, 1)}
+                          disabled={index === sortedSelectedPositions.length - 1}
+                        >
+                          Down
+                        </Button>
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </section>
+
+            {mode === "nominate" ? (
+              <section className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Nominee</Label>
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    <Input value={nomineeName} readOnly placeholder="No nominee selected" />
+                    <Button type="button" onClick={() => setUserSearchOpen(true)}>
+                      Choose nominee
+                    </Button>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="reason">Why should they be considered?</Label>
+                  <Textarea
+                    id="reason"
+                    value={nominationReason}
+                    onChange={(event) => setNominationReason(event.target.value)}
+                    rows={5}
+                  />
+                </div>
+              </section>
+            ) : (
+              <section className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="yearLevel">Year level</Label>
+                  <select
+                    id="yearLevel"
+                    className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+                    value={form.yearLevel}
+                    onChange={(event) => updateField("yearLevel", event.target.value)}
+                  >
+                    <option value="">Select year</option>
+                    {YEAR_LEVELS.map((level) => (
+                      <option key={level} value={level}>
+                        {level}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="major">Major</Label>
+                  <Input
+                    id="major"
+                    value={form.major}
+                    onChange={(event) => updateField("major", event.target.value)}
+                  />
+                </div>
+                <TextAreaField
+                  id="experience"
+                  label="Relevant experience"
+                  value={form.experienceText}
+                  onChange={(value) => updateField("experienceText", value)}
+                />
+                <TextAreaField
+                  id="why"
+                  label="Why are you interested?"
+                  value={form.whyInterested}
+                  onChange={(value) => updateField("whyInterested", value)}
+                />
+                <TextAreaField
+                  id="commitment"
+                  label="Weekly commitment / availability"
+                  value={form.weeklyCommitment}
+                  onChange={(value) => updateField("weeklyCommitment", value)}
+                />
+                <TextAreaField
+                  id="comments"
+                  label="Optional notes"
+                  value={form.comments}
+                  onChange={(value) => updateField("comments", value)}
+                  required={false}
+                />
+              </section>
+            )}
+
+            {data.isPrimary && (
+              <p className="rounded-md border border-yellow-500/30 bg-yellow-500/10 p-3 text-sm text-muted-foreground">
+                Active Primary Officers can review nominations, but cannot apply
+                for Committee Head roles.
+              </p>
+            )}
+
+            <Button type="submit" disabled={submitting || data.isPrimary}>
+              {submitting ? "Submitting..." : "Submit"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      <UserSearchInviteModal
+        open={userSearchOpen}
+        onOpenChange={setUserSearchOpen}
+        title="Choose nominee"
+        description="Search for the SSE member you want to nominate."
+        confirmLabel="Use nominee"
+        searchPlaceholder="Search by name or email..."
+        onInvite={async (userId) => {
+          setNomineeUserId(userId);
+          setNomineeName(`User ${userId}`);
+          setUserSearchOpen(false);
+        }}
+      />
+    </div>
+  );
+}
+
+function TextAreaField({
+  id,
+  label,
+  value,
+  onChange,
+  required = true,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  required?: boolean;
+}) {
+  return (
+    <div className="space-y-2 sm:col-span-2">
+      <Label htmlFor={id}>
+        {label}
+        {!required && <span className="text-muted-foreground"> (optional)</span>}
+      </Label>
+      <Textarea
+        id={id}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        rows={4}
+      />
+    </div>
   );
 }

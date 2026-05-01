@@ -27,6 +27,7 @@ interface PositionModalProps {
   onOpenChange: (open: boolean) => void;
   position?: Position | null;
   defaultIsPrimary?: boolean;
+  category?: "PRIMARY_OFFICER" | "COMMITTEE_HEAD" | "SE_OFFICE";
   onSuccess: () => void;
 }
 
@@ -35,6 +36,7 @@ export default function PositionModal({
   onOpenChange,
   position,
   defaultIsPrimary = false,
+  category,
   onSuccess,
 }: PositionModalProps) {
   const [title, setTitle] = useState("");
@@ -94,7 +96,11 @@ export default function PositionModal({
         const response = await fetch("/api/officer-positions", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ title: title.trim(), is_primary: isPrimary }),
+          body: JSON.stringify({
+            title: title.trim(),
+            is_primary: isPrimary,
+            category,
+          }),
         });
 
         if (response.ok) {

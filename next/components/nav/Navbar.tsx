@@ -164,6 +164,7 @@ interface NavbarProps {
   /** When set, the navbar shows a top-level "Elections" link pointing at the
    * live election. Rendered on the server so the first paint is correct. */
   serverActiveElection?: ActiveElectionSummary | null;
+  serverCommitteeHeadNominationsOpen?: boolean;
 }
 
 const Navbar: React.FC<NavbarProps> = ({
@@ -171,6 +172,7 @@ const Navbar: React.FC<NavbarProps> = ({
   serverShowDashboard = false,
   serverProfileComplete = true,
   serverActiveElection = null,
+  serverCommitteeHeadNominationsOpen = false,
 }) => {
   const [open, setOpen] = React.useState(false);
   const { data: session } = useSession();
@@ -240,9 +242,8 @@ const Navbar: React.FC<NavbarProps> = ({
   // SE Office gets the live election as a conditional last entry. The
   // groups array is otherwise stable; we rebuild on prop change so the
   // first-paint server prop and any subsequent client-side election
-  // updates both flow through. When nominations are open we also
-  // surface a "Nominate" entry alongside Elections so new members can
-  // jump straight into the public funnel.
+  // updates both flow through. Committee Head nominations are a separate
+  // post-election appointment workflow and surface under Students.
   const navGroups = React.useMemo(() => {
     const seOfficeWithElection: NavItem[] = serverActiveElection
       ? [
@@ -252,20 +253,22 @@ const Navbar: React.FC<NavbarProps> = ({
             href: `/elections/${serverActiveElection.slug}`,
             description: "Cast your ballot in the active SSE election.",
           },
-          ...(serverActiveElection.status === "NOMINATIONS_OPEN"
-            ? [
-                {
-                  title: "Nominate",
-                  href: "/nominate",
-                  description:
-                    "Nominate a candidate (or yourself) for the open ballot.",
-                },
-              ]
-            : []),
         ]
       : seOfficeItems;
+    const studentsWithNominations: NavItem[] =
+      serverCommitteeHeadNominationsOpen
+        ? [
+            ...studentsItems,
+            {
+              title: "Committee Head Nominations",
+              href: "/nominate",
+              description:
+                "Apply for or nominate someone for a Committee Head role.",
+            },
+          ]
+        : studentsItems;
     return [
-      { value: "students", label: "Students", items: studentsItems },
+      { value: "students", label: "Students", items: studentsWithNominations },
       { value: "alumni", label: "Alumni", items: alumniItems },
       { value: "companies", label: "Companies", items: companiesItems },
       {
@@ -275,7 +278,7 @@ const Navbar: React.FC<NavbarProps> = ({
         align: "end",
       },
     ] satisfies NavGroup[];
-  }, [serverActiveElection]);
+  }, [serverActiveElection, serverCommitteeHeadNominationsOpen]);
 
   return (
     <nav
