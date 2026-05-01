@@ -3,10 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import {
-  NeoCard,
-  NeoCardContent,
-} from "@/components/ui/neo-card";
+import { NeoCard, NeoCardContent } from "@/components/ui/neo-card";
 import { Card } from "@/components/ui/card";
 import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
@@ -65,9 +62,7 @@ interface Props {
   approvalRole: "PRESIDENT" | "SE_ADMIN" | null;
 }
 
-function getNextPhase(
-  status: ElectionStatus
-): {
+function getNextPhase(status: ElectionStatus): {
   nextStatus: ElectionStatus;
   label: string;
 } | null {
@@ -115,16 +110,16 @@ export default function ElectionAdminDetailClient({
   const [editTitle, setEditTitle] = useState(election.title);
   const [editDescription, setEditDescription] = useState(election.description);
   const [editNominationsOpenAt, setEditNominationsOpenAt] = useState(
-    toDateTimeLocalValue(election.nominationsOpenAt)
+    toDateTimeLocalValue(election.nominationsOpenAt),
   );
   const [editNominationsCloseAt, setEditNominationsCloseAt] = useState(
-    toDateTimeLocalValue(election.nominationsCloseAt)
+    toDateTimeLocalValue(election.nominationsCloseAt),
   );
   const [editVotingOpenAt, setEditVotingOpenAt] = useState(
-    toDateTimeLocalValue(election.votingOpenAt)
+    toDateTimeLocalValue(election.votingOpenAt),
   );
   const [editVotingCloseAt, setEditVotingCloseAt] = useState(
-    toDateTimeLocalValue(election.votingCloseAt)
+    toDateTimeLocalValue(election.votingCloseAt),
   );
   const [saving, setSaving] = useState(false);
   const [cancelling, setCancelling] = useState(false);
@@ -152,17 +147,15 @@ export default function ElectionAdminDetailClient({
         body: JSON.stringify({ status }),
       });
       if (!response.ok) {
-        throw new Error(
-          (await response.text()) || "Failed to update status"
-        );
+        throw new Error((await response.text()) || "Failed to update status");
       }
       await refreshElection();
       toast.success(
-        `Election moved to ${ELECTION_PHASE_LABELS[status] ?? status}`
+        `Election moved to ${ELECTION_PHASE_LABELS[status] ?? status}`,
       );
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to update status"
+        error instanceof Error ? error.message : "Failed to update status",
       );
     } finally {
       setAdvanceLoading(false);
@@ -177,14 +170,14 @@ export default function ElectionAdminDetailClient({
       });
       if (!response.ok) {
         throw new Error(
-          (await response.text()) || "Failed to certify election"
+          (await response.text()) || "Failed to certify election",
         );
       }
       await refreshElection();
       toast.success("Election certified");
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to certify election"
+        error instanceof Error ? error.message : "Failed to certify election",
       );
     } finally {
       setAdvanceLoading(false);
@@ -202,27 +195,22 @@ export default function ElectionAdminDetailClient({
     try {
       const response = await fetch(
         `/api/elections/${election.id}/start-new-semester`,
-        { method: "POST" }
+        { method: "POST" },
       );
       if (!response.ok) {
         throw new Error(
-          (await response.text()) || "Failed to start new semester"
+          (await response.text()) || "Failed to start new semester",
         );
       }
       const data = await response.json();
       toast.success(
-        `New semester started — notified ${data.seAdminsNotified} SE admin${
-          data.seAdminsNotified === 1 ? "" : "s"
-        }.`
+        `New semester started — sent ${data.officerInvitationEmailsSent} officer invitation email${
+          data.officerInvitationEmailsSent === 1 ? "" : "s"
+        }.`,
       );
-      if (data.inviteDispatchUrl) {
-        // Navigate the current user (if an SE admin) straight to the
-        // dispatch page. Non-admins will be redirected back by its gate.
-        window.location.href = data.inviteDispatchUrl;
-      }
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to start new semester"
+        error instanceof Error ? error.message : "Failed to start new semester",
       );
     } finally {
       setNewSemesterLoading(false);
@@ -238,15 +226,13 @@ export default function ElectionAdminDetailClient({
         body: JSON.stringify({ status: "CANCELLED" }),
       });
       if (!response.ok) {
-        throw new Error(
-          (await response.text()) || "Failed to cancel election"
-        );
+        throw new Error((await response.text()) || "Failed to cancel election");
       }
       await refreshElection();
       toast.success("Election cancelled");
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to cancel election"
+        error instanceof Error ? error.message : "Failed to cancel election",
       );
     } finally {
       setCancelling(false);
@@ -258,24 +244,19 @@ export default function ElectionAdminDetailClient({
   const handleApprove = async (stage: ElectionApprovalStage) => {
     setApprovalLoading(true);
     try {
-      const response = await fetch(
-        `/api/elections/${election.id}/approvals`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ stage }),
-        }
-      );
+      const response = await fetch(`/api/elections/${election.id}/approvals`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ stage }),
+      });
       if (!response.ok) {
-        throw new Error(
-          (await response.text()) || "Failed to add approval"
-        );
+        throw new Error((await response.text()) || "Failed to add approval");
       }
       await refreshElection();
       toast.success("Approval added");
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to add approval"
+        error instanceof Error ? error.message : "Failed to add approval",
       );
     } finally {
       setApprovalLoading(false);
@@ -285,26 +266,19 @@ export default function ElectionAdminDetailClient({
   const handleRemoveApproval = async (stage: ElectionApprovalStage) => {
     setApprovalLoading(true);
     try {
-      const response = await fetch(
-        `/api/elections/${election.id}/approvals`,
-        {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ stage }),
-        }
-      );
+      const response = await fetch(`/api/elections/${election.id}/approvals`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ stage }),
+      });
       if (!response.ok) {
-        throw new Error(
-          (await response.text()) || "Failed to remove approval"
-        );
+        throw new Error((await response.text()) || "Failed to remove approval");
       }
       await refreshElection();
       toast.success("Approval removed");
     } catch (error) {
       toast.error(
-        error instanceof Error
-          ? error.message
-          : "Failed to remove approval"
+        error instanceof Error ? error.message : "Failed to remove approval",
       );
     } finally {
       setApprovalLoading(false);
@@ -316,7 +290,7 @@ export default function ElectionAdminDetailClient({
   const reviewNomination = async (
     nominationId: number,
     eligibilityStatus: "APPROVED" | "REJECTED",
-    reviewNotes = ""
+    reviewNotes = "",
   ) => {
     try {
       const response = await fetch(
@@ -325,20 +299,18 @@ export default function ElectionAdminDetailClient({
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ eligibilityStatus, reviewNotes }),
-        }
+        },
       );
       if (!response.ok) {
         throw new Error(
-          (await response.text()) || "Failed to review nomination"
+          (await response.text()) || "Failed to review nomination",
         );
       }
       await refreshElection();
       toast.success(`Nomination ${eligibilityStatus.toLowerCase()}`);
     } catch (error) {
       toast.error(
-        error instanceof Error
-          ? error.message
-          : "Failed to review nomination"
+        error instanceof Error ? error.message : "Failed to review nomination",
       );
     }
   };
@@ -346,22 +318,19 @@ export default function ElectionAdminDetailClient({
   /* ─── Email ─── */
 
   const sendEmail = async (payload: EmailComposerSendPayload) => {
-    const response = await fetch(
-      `/api/elections/${election.id}/send-email`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          kind: emailKind,
-          subject: payload.subject,
-          message: payload.message,
-          attachments: payload.attachments,
-        }),
-      }
-    );
+    const response = await fetch(`/api/elections/${election.id}/send-email`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        kind: emailKind,
+        subject: payload.subject,
+        message: payload.message,
+        attachments: payload.attachments,
+      }),
+    });
     if (!response.ok) {
       throw new Error(
-        (await response.text()) || "Failed to send election email"
+        (await response.text()) || "Failed to send election email",
       );
     }
     const data = await response.json();
@@ -387,15 +356,13 @@ export default function ElectionAdminDetailClient({
         }),
       });
       if (!response.ok) {
-        throw new Error(
-          (await response.text()) || "Failed to save settings"
-        );
+        throw new Error((await response.text()) || "Failed to save settings");
       }
       await refreshElection();
       toast.success("Settings saved");
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to save settings"
+        error instanceof Error ? error.message : "Failed to save settings",
       );
     } finally {
       setSaving(false);
@@ -415,7 +382,9 @@ export default function ElectionAdminDetailClient({
     setEmailRecipientCount(undefined);
     (async () => {
       try {
-        const response = await fetch(`/api/elections/${election.id}/send-email`);
+        const response = await fetch(
+          `/api/elections/${election.id}/send-email`,
+        );
         if (!response.ok) return;
         const data: { count?: number } = await response.json();
         if (!cancelled && typeof data.count === "number") {
@@ -435,376 +404,378 @@ export default function ElectionAdminDetailClient({
   return (
     <NeoCard depth={1} className="w-full">
       <NeoCardContent className="space-y-8 p-6 md:p-8">
-      {/* Breadcrumbs */}
-      <nav className="flex items-center gap-1.5 text-sm text-muted-foreground">
-        <Link
-          href="/dashboard/elections"
-          className="hover:text-foreground transition-colors"
-        >
-          Elections
-        </Link>
-        <ChevronRight className="h-3.5 w-3.5" />
-        <span className="text-foreground font-medium truncate">
-          {election.title}
-        </span>
-      </nav>
+        {/* Breadcrumbs */}
+        <nav className="flex items-center gap-1.5 text-sm text-muted-foreground">
+          <Link
+            href="/dashboard/elections"
+            className="hover:text-foreground transition-colors"
+          >
+            Elections
+          </Link>
+          <ChevronRight className="h-3.5 w-3.5" />
+          <span className="text-foreground font-medium truncate">
+            {election.title}
+          </span>
+        </nav>
 
-      {/* Header section */}
-      <div className="space-y-4">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-3 min-w-0">
-            <h1 className="text-3xl font-display font-bold">
-              {election.title}
-            </h1>
-            <ElectionStatusBadge status={election.status} />
-          </div>
-          <div className="flex items-center gap-1">
-            {isPresident && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="shrink-0"
-                onClick={() => setSettingsOpen(true)}
-              >
-                <Settings className="h-4 w-4" />
-              </Button>
-            )}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="shrink-0">
-                  <MoreHorizontal className="h-4 w-4" />
+        {/* Header section */}
+        <div className="space-y-4">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-3 min-w-0">
+              <h1 className="text-3xl font-display font-bold">
+                {election.title}
+              </h1>
+              <ElectionStatusBadge status={election.status} />
+            </div>
+            <div className="flex items-center gap-1">
+              {isPresident && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="shrink-0"
+                  onClick={() => setSettingsOpen(true)}
+                >
+                  <Settings className="h-4 w-4" />
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem asChild>
-                  <Link href={`/elections/${election.slug}`}>
-                    <Eye className="h-4 w-4 mr-2" />
-                    View Public Page
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href={`/elections/${election.slug}/vote`}>
-                    <Vote className="h-4 w-4 mr-2" />
-                    View Ballot
-                  </Link>
-                </DropdownMenuItem>
-                {isPresident && (
-                  <>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={() => {
-                        setEmailKind("BALLOT_ANNOUNCEMENT");
-                        setEmailOpen(true);
-                      }}
-                    >
-                      <Mail className="h-4 w-4 mr-2" />
-                      Email Voters
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => {
-                        setEmailKind("BALLOT_REMINDER");
-                        setEmailOpen(true);
-                      }}
-                    >
-                      <Mail className="h-4 w-4 mr-2" />
-                      Send Reminder
-                    </DropdownMenuItem>
-                  </>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-
-        <ElectionPhaseTimeline
-          status={election.status}
-          nominationsOpenAt={election.nominationsOpenAt}
-          nominationsCloseAt={election.nominationsCloseAt}
-          votingOpenAt={election.votingOpenAt}
-          votingCloseAt={election.votingCloseAt}
-          certifiedAt={election.certifiedAt}
-        />
-
-        {/* Ballot count — surfaced at the top once voting is live / done */}
-        {(election.status === "VOTING_OPEN" ||
-          election.status === "VOTING_CLOSED" ||
-          election.status === "CERTIFIED") &&
-          election.ballots.length > 0 && (
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-display font-bold">
-                {election.ballots.length}
-              </span>
-              <span className="text-sm text-muted-foreground">
-                ballot{election.ballots.length !== 1 ? "s" : ""} cast
-              </span>
+              )}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="shrink-0">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem asChild>
+                    <Link href={`/elections/${election.slug}`}>
+                      <Eye className="h-4 w-4 mr-2" />
+                      View Public Page
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href={`/elections/${election.slug}/vote`}>
+                      <Vote className="h-4 w-4 mr-2" />
+                      View Ballot
+                    </Link>
+                  </DropdownMenuItem>
+                  {isPresident && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => {
+                          setEmailKind("BALLOT_ANNOUNCEMENT");
+                          setEmailOpen(true);
+                        }}
+                      >
+                        <Mail className="h-4 w-4 mr-2" />
+                        Email Voters
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => {
+                          setEmailKind("BALLOT_REMINDER");
+                          setEmailOpen(true);
+                        }}
+                      >
+                        <Mail className="h-4 w-4 mr-2" />
+                        Send Reminder
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
-          )}
-
-        {/* Inline advance button for President (not certification - that has its own section) */}
-        {isPresident && nextPhase && nextPhase.nextStatus !== "CERTIFIED" && (
-          <div className="flex items-center justify-between pt-4 border-t border-border/10 mt-4">
-            <p className="text-sm text-muted-foreground">
-              Next: {nextPhase.label}
-            </p>
-            <Button
-              size="sm"
-              onClick={() => updateStatus(nextPhase.nextStatus)}
-              disabled={advanceLoading}
-            >
-              {advanceLoading ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : null}
-              Advance
-            </Button>
           </div>
-        )}
-      </div>
 
-      {/* ─── OFFICES & NOMINATIONS ─── */}
-      <div className="space-y-6">
-        {election.offices.map((office) => (
-          <div key={office.id} className="space-y-3">
-            <div className="flex items-baseline gap-2">
-              <h2 className="text-base font-display font-bold">
-                {office.officerPosition.title}
-              </h2>
-              <span className="text-sm text-muted-foreground">
-                {office.nominations.length} nomination{office.nominations.length !== 1 ? "s" : ""}
-              </span>
-            </div>
-            {office.nominations.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                No nominations yet.
-              </p>
-            ) : (
-              <div className="flex flex-wrap gap-3">
-                {office.nominations.map((nom) => (
-                  <NominationRow
-                    key={nom.id}
-                    nomination={nom}
-                    isPresident={isPresident}
-                    onApprove={() => reviewNomination(nom.id, "APPROVED")}
-                    onReject={() => reviewNomination(nom.id, "REJECTED")}
-                  />
-                ))}
+          <ElectionPhaseTimeline
+            status={election.status}
+            nominationsOpenAt={election.nominationsOpenAt}
+            nominationsCloseAt={election.nominationsCloseAt}
+            votingOpenAt={election.votingOpenAt}
+            votingCloseAt={election.votingCloseAt}
+            certifiedAt={election.certifiedAt}
+          />
+
+          {/* Ballot count — surfaced at the top once voting is live / done */}
+          {(election.status === "VOTING_OPEN" ||
+            election.status === "VOTING_CLOSED" ||
+            election.status === "CERTIFIED") &&
+            election.ballots.length > 0 && (
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl font-display font-bold">
+                  {election.ballots.length}
+                </span>
+                <span className="text-sm text-muted-foreground">
+                  ballot{election.ballots.length !== 1 ? "s" : ""} cast
+                </span>
               </div>
             )}
-          </div>
-        ))}
 
-        {election.offices.length === 0 && (
-          <p className="text-sm text-muted-foreground">
-            No offices configured for this election.
-          </p>
-        )}
-      </div>
-
-      {/* ─── NEW SEMESTER (CERTIFIED only, President/SE-Admin) ─── */}
-      {election.status === "CERTIFIED" && (isPresident || isSeAdmin) && (
-        <div className="space-y-3">
-          <h2 className="text-base font-display font-bold">
-            Start a new semester
-          </h2>
-          <p className="text-sm text-muted-foreground max-w-prose">
-            Kicks off the new term — wipes every membership, deactivates all
-            mentors and non–SE-Admin officers, then emails the SE Office a
-            link to dispatch fresh officer invitations to the newly-elected
-            primaries.
-          </p>
-          {newSemesterConfirmed ? (
-            <div className="flex items-center gap-3 rounded-lg border-l-4 border-l-amber-500 bg-amber-50/40 p-4 dark:bg-amber-900/20">
-              <p className="text-sm text-amber-700 dark:text-amber-300">
-                This removes every current membership + officer except SE
-                Admin. Are you sure?
-              </p>
-              <Button
-                variant="destructive"
-                onClick={startNewSemester}
-                disabled={newSemesterLoading}
-              >
-                {newSemesterLoading ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                ) : null}
-                Yes, wipe and start fresh
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setNewSemesterConfirmed(false)}
-                disabled={newSemesterLoading}
-              >
-                Cancel
-              </Button>
-            </div>
-          ) : (
-            <Button onClick={startNewSemester}>Start new semester</Button>
-          )}
-        </div>
-      )}
-
-      {/* ─── CERTIFICATION (VOTING_CLOSED only) ─── */}
-      {election.status === "VOTING_CLOSED" && (
-        <div className="space-y-3">
-          <h2 className="text-base font-display font-bold">Certification</h2>
-          {isSeAdmin ? (
-            <div className="flex items-center justify-between">
+          {/* Inline advance button for President (not certification - that has its own section) */}
+          {isPresident && nextPhase && nextPhase.nextStatus !== "CERTIFIED" && (
+            <div className="flex items-center justify-between pt-4 border-t border-border/10 mt-4">
               <p className="text-sm text-muted-foreground">
-                Review results and certify this election
+                Next: {nextPhase.label}
               </p>
-              <Button onClick={certify} disabled={advanceLoading}>
+              <Button
+                size="sm"
+                onClick={() => updateStatus(nextPhase.nextStatus)}
+                disabled={advanceLoading}
+              >
                 {advanceLoading ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
                 ) : null}
-                Certify Results
+                Advance
               </Button>
             </div>
-          ) : isPresident ? (
+          )}
+        </div>
+
+        {/* ─── OFFICES & NOMINATIONS ─── */}
+        <div className="space-y-6">
+          {election.offices.map((office) => (
+            <div key={office.id} className="space-y-3">
+              <div className="flex items-baseline gap-2">
+                <h2 className="text-base font-display font-bold">
+                  {office.officerPosition.title}
+                </h2>
+                <span className="text-sm text-muted-foreground">
+                  {office.nominations.length} nomination
+                  {office.nominations.length !== 1 ? "s" : ""}
+                </span>
+              </div>
+              {office.nominations.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  No nominations yet.
+                </p>
+              ) : (
+                <div className="flex flex-wrap gap-3">
+                  {office.nominations.map((nom) => (
+                    <NominationRow
+                      key={nom.id}
+                      nomination={nom}
+                      isPresident={isPresident}
+                      onApprove={() => reviewNomination(nom.id, "APPROVED")}
+                      onReject={() => reviewNomination(nom.id, "REJECTED")}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+
+          {election.offices.length === 0 && (
             <p className="text-sm text-muted-foreground">
-              Results are ready. SE Admin must certify before finalizing.
-            </p>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              Awaiting SE Admin certification.
+              No offices configured for this election.
             </p>
           )}
-          <Link
-            href={`/elections/${election.slug}/results`}
-            className="text-sm text-primary hover:underline inline-block"
-          >
-            View full results
-          </Link>
         </div>
-      )}
 
-      {/* ─── SETTINGS MODAL (President only) ─── */}
-      {isPresident && (
-        <Modal
-          open={settingsOpen}
-          onOpenChange={setSettingsOpen}
-          title="Election Settings"
-          description={`Edit settings for ${election.title}`}
-        >
-          <div className="space-y-6 mt-4">
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-title">Title</Label>
-                <Input
-                  id="edit-title"
-                  value={editTitle}
-                  onChange={(e) => setEditTitle(e.target.value)}
-                />
+        {/* ─── NEW SEMESTER (CERTIFIED only, President/SE-Admin) ─── */}
+        {election.status === "CERTIFIED" && (isPresident || isSeAdmin) && (
+          <div className="space-y-3">
+            <h2 className="text-base font-display font-bold">
+              Start a new semester
+            </h2>
+            <p className="text-sm text-muted-foreground max-w-prose">
+              Kicks off the new term: leaves existing memberships archived by
+              their original term, deactivates mentors and outgoing officers,
+              opens committee-head nominations, then sends officer invitations
+              to the certified primary winners.
+            </p>
+            {newSemesterConfirmed ? (
+              <div className="flex items-center gap-3 rounded-lg border-l-4 border-l-amber-500 bg-amber-50/40 p-4 dark:bg-amber-900/20">
+                <p className="text-sm text-amber-700 dark:text-amber-300">
+                  This deactivates current mentors and outgoing officers, then
+                  sends officer invitations to certified winners. Are you sure?
+                </p>
+                <Button
+                  variant="destructive"
+                  onClick={startNewSemester}
+                  disabled={newSemesterLoading}
+                >
+                  {newSemesterLoading ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : null}
+                  Yes, start the new term
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setNewSemesterConfirmed(false)}
+                  disabled={newSemesterLoading}
+                >
+                  Cancel
+                </Button>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-description">Description</Label>
-                <Textarea
-                  id="edit-description"
-                  value={editDescription}
-                  onChange={(e) => setEditDescription(e.target.value)}
-                />
+            ) : (
+              <Button onClick={startNewSemester}>Start new semester</Button>
+            )}
+          </div>
+        )}
+
+        {/* ─── CERTIFICATION (VOTING_CLOSED only) ─── */}
+        {election.status === "VOTING_CLOSED" && (
+          <div className="space-y-3">
+            <h2 className="text-base font-display font-bold">Certification</h2>
+            {isSeAdmin ? (
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">
+                  Review results and certify this election
+                </p>
+                <Button onClick={certify} disabled={advanceLoading}>
+                  {advanceLoading ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : null}
+                  Certify Results
+                </Button>
               </div>
-              <div className="grid gap-4 sm:grid-cols-2">
+            ) : isPresident ? (
+              <p className="text-sm text-muted-foreground">
+                Results are ready. SE Admin must certify before finalizing.
+              </p>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Awaiting SE Admin certification.
+              </p>
+            )}
+            <Link
+              href={`/elections/${election.slug}/results`}
+              className="text-sm text-primary hover:underline inline-block"
+            >
+              View full results
+            </Link>
+          </div>
+        )}
+
+        {/* ─── SETTINGS MODAL (President only) ─── */}
+        {isPresident && (
+          <Modal
+            open={settingsOpen}
+            onOpenChange={setSettingsOpen}
+            title="Election Settings"
+            description={`Edit settings for ${election.title}`}
+          >
+            <div className="space-y-6 mt-4">
+              <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="edit-nom-open">Nominations Open</Label>
+                  <Label htmlFor="edit-title">Title</Label>
                   <Input
-                    id="edit-nom-open"
-                    type="datetime-local"
-                    value={editNominationsOpenAt}
-                    onChange={(e) => setEditNominationsOpenAt(e.target.value)}
+                    id="edit-title"
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="edit-nom-close">Nominations Close</Label>
-                  <Input
-                    id="edit-nom-close"
-                    type="datetime-local"
-                    value={editNominationsCloseAt}
-                    onChange={(e) => setEditNominationsCloseAt(e.target.value)}
+                  <Label htmlFor="edit-description">Description</Label>
+                  <Textarea
+                    id="edit-description"
+                    value={editDescription}
+                    onChange={(e) => setEditDescription(e.target.value)}
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-vote-open">Voting Open</Label>
-                  <Input
-                    id="edit-vote-open"
-                    type="datetime-local"
-                    value={editVotingOpenAt}
-                    onChange={(e) => setEditVotingOpenAt(e.target.value)}
-                  />
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-nom-open">Nominations Open</Label>
+                    <Input
+                      id="edit-nom-open"
+                      type="datetime-local"
+                      value={editNominationsOpenAt}
+                      onChange={(e) => setEditNominationsOpenAt(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-nom-close">Nominations Close</Label>
+                    <Input
+                      id="edit-nom-close"
+                      type="datetime-local"
+                      value={editNominationsCloseAt}
+                      onChange={(e) =>
+                        setEditNominationsCloseAt(e.target.value)
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-vote-open">Voting Open</Label>
+                    <Input
+                      id="edit-vote-open"
+                      type="datetime-local"
+                      value={editVotingOpenAt}
+                      onChange={(e) => setEditVotingOpenAt(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-vote-close">Voting Close</Label>
+                    <Input
+                      id="edit-vote-close"
+                      type="datetime-local"
+                      value={editVotingCloseAt}
+                      onChange={(e) => setEditVotingCloseAt(e.target.value)}
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-vote-close">Voting Close</Label>
-                  <Input
-                    id="edit-vote-close"
-                    type="datetime-local"
-                    value={editVotingCloseAt}
-                    onChange={(e) => setEditVotingCloseAt(e.target.value)}
-                  />
+                <div className="flex justify-end">
+                  <Button onClick={saveSettings} disabled={saving}>
+                    {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+                    Save Changes
+                  </Button>
                 </div>
               </div>
-              <div className="flex justify-end">
-                <Button onClick={saveSettings} disabled={saving}>
-                  {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-                  Save Changes
+
+              <div className="pt-4 border-t border-border/10">
+                <p className="text-sm text-muted-foreground mb-3">
+                  Cancelling an election is permanent.
+                </p>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={cancelElection}
+                  disabled={
+                    cancelling ||
+                    election.status === "CANCELLED" ||
+                    election.status === "CERTIFIED"
+                  }
+                >
+                  {cancelling && (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  )}
+                  Cancel Election
                 </Button>
               </div>
             </div>
+          </Modal>
+        )}
 
-            <div className="pt-4 border-t border-border/10">
-              <p className="text-sm text-muted-foreground mb-3">
-                Cancelling an election is permanent.
-              </p>
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={cancelElection}
-                disabled={
-                  cancelling ||
-                  election.status === "CANCELLED" ||
-                  election.status === "CERTIFIED"
-                }
-              >
-                {cancelling && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                Cancel Election
-              </Button>
-            </div>
-          </div>
-        </Modal>
-      )}
+        {/* ─── EMAIL LOG (collapsible) ─── */}
+        {election.emailLogs.length > 0 && (
+          <Collapsible>
+            <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors group w-full">
+              <ChevronRight className="h-4 w-4 transition-transform group-data-[state=open]:rotate-90" />
+              Sent Emails ({election.emailLogs.length})
+            </CollapsibleTrigger>
+            <CollapsibleContent className="pt-4">
+              <div className="space-y-2">
+                {election.emailLogs.map((log) => (
+                  <div key={log.id} className="py-2 text-sm">
+                    <p className="font-medium">{log.subject}</p>
+                    <p className="text-muted-foreground text-xs">
+                      {log.kind.replace(/_/g, " ").toLowerCase()} &middot;{" "}
+                      {log.sentBy.name} &middot; {log.recipientCount} recipients
+                      &middot; {new Date(log.sentAt).toLocaleString()}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+        )}
 
-      {/* ─── EMAIL LOG (collapsible) ─── */}
-      {election.emailLogs.length > 0 && (
-        <Collapsible>
-          <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors group w-full">
-            <ChevronRight className="h-4 w-4 transition-transform group-data-[state=open]:rotate-90" />
-            Sent Emails ({election.emailLogs.length})
-          </CollapsibleTrigger>
-          <CollapsibleContent className="pt-4">
-            <div className="space-y-2">
-              {election.emailLogs.map((log) => (
-                <div
-                  key={log.id}
-                  className="py-2 text-sm"
-                >
-                  <p className="font-medium">{log.subject}</p>
-                  <p className="text-muted-foreground text-xs">
-                    {log.kind.replace(/_/g, " ").toLowerCase()} &middot;{" "}
-                    {log.sentBy.name} &middot; {log.recipientCount} recipients
-                    &middot; {new Date(log.sentAt).toLocaleString()}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </CollapsibleContent>
-        </Collapsible>
-      )}
-
-      {/* Email modal */}
-      <EmailComposerModal
-        open={emailOpen}
-        onClose={() => setEmailOpen(false)}
-        title="Email Members"
-        defaultSubject={`[SSE Election] ${election.title}`}
-        recipientCount={emailRecipientCount}
-        onSend={sendEmail}
-      />
+        {/* Email modal */}
+        <EmailComposerModal
+          open={emailOpen}
+          onClose={() => setEmailOpen(false)}
+          title="Email Members"
+          defaultSubject={`[SSE Election] ${election.title}`}
+          recipientCount={emailRecipientCount}
+          onSend={sendEmail}
+        />
       </NeoCardContent>
     </NeoCard>
   );

@@ -164,4 +164,30 @@ describe("authLevelResolver", () => {
     // would leak to non-primary staging users like the Tech Head.)
     expect(auth.isPrimaryOfficer).toBe(false);
   });
+
+  it("can resolve request auth without staging elevation for UI role checks", async () => {
+    mockGetSessionToken.mockReturnValue("token-from-cookie");
+    mockHasStagingElevatedAccess.mockReturnValue(true);
+    mockFindFirst.mockResolvedValue({
+      id: 10,
+      graduationTerm: null,
+      graduationYear: null,
+      major: null,
+      gitHub: null,
+      linkedIn: null,
+      mentor: [],
+      officers: [],
+      _count: { Memberships: 0 },
+    });
+
+    const req = { cookies: {}, headers: new Headers() } as any;
+    const auth = await resolveAuthLevelFromRequest(req, {
+      allowStagingElevated: false,
+    });
+
+    expect(auth.userId).toBe(10);
+    expect(auth.isOfficer).toBe(false);
+    expect(auth.isSeAdmin).toBe(false);
+    expect(auth.isPrimary).toBe(false);
+  });
 });
