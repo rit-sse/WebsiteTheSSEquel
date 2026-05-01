@@ -3,18 +3,9 @@
 import { useState, useCallback } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  NeoCard,
-  NeoCardContent,
-} from "@/components/ui/neo-card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { NeoCard, NeoCardContent } from "@/components/ui/neo-card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { ElectionAvatar } from "@/components/elections/ElectionAvatar";
 import { Tooltip } from "@/components/ui/tooltip";
 import { ElectionStatusBadge } from "@/components/elections/ElectionStatusBadge";
@@ -47,10 +38,7 @@ import type {
   SerializedRunningMateInvitation,
   UserRef,
 } from "@/components/elections/types";
-import {
-  compareByPrimaryOrder,
-  isTicketDerivedOffice,
-} from "@/lib/elections";
+import { compareByPrimaryOrder, isTicketDerivedOffice } from "@/lib/elections";
 
 /* ---------- Props ---------- */
 
@@ -165,29 +153,28 @@ export default function ElectionPublicClient({
     expiresAt: string;
     presidentNomineeName: string;
   }
-  const inboundRunningMateInvites: InboundRunningMateInvite[] =
-    election.offices
-      .filter(
-        (office: SerializedElectionOffice) =>
-          office.officerPosition.title === "President"
-      )
-      .flatMap((office: SerializedElectionOffice) =>
-        office.nominations
-          .filter((n: SerializedNomination) => {
-            const inv = n.runningMateInvitation;
-            return (
-              inv &&
-              inv.inviteeUserId === currentUserId &&
-              inv.status === "INVITED"
-            );
-          })
-          .map((n: SerializedNomination) => ({
-            nominationId: n.id,
-            status: n.runningMateInvitation!.status,
-            expiresAt: n.runningMateInvitation!.expiresAt,
-            presidentNomineeName: n.nominee.name,
-          }))
-      );
+  const inboundRunningMateInvites: InboundRunningMateInvite[] = election.offices
+    .filter(
+      (office: SerializedElectionOffice) =>
+        office.officerPosition.title === "President"
+    )
+    .flatMap((office: SerializedElectionOffice) =>
+      office.nominations
+        .filter((n: SerializedNomination) => {
+          const inv = n.runningMateInvitation;
+          return (
+            inv &&
+            inv.inviteeUserId === currentUserId &&
+            inv.status === "INVITED"
+          );
+        })
+        .map((n: SerializedNomination) => ({
+          nominationId: n.id,
+          status: n.runningMateInvitation!.status,
+          expiresAt: n.runningMateInvitation!.expiresAt,
+          presidentNomineeName: n.nominee.name,
+        }))
+    );
 
   // Inline accept/decline used to live on this page; the VP now goes
   // through the dedicated `/respond/running-mate/[nominationId]` flow
@@ -198,9 +185,7 @@ export default function ElectionPublicClient({
     0
   );
 
-  const hasVoted = election.ballots.some(
-    (b) => b.voterId === currentUserId
-  );
+  const hasVoted = election.ballots.some((b) => b.voterId === currentUserId);
 
   /* ---- Handlers ---- */
 
@@ -223,8 +208,7 @@ export default function ElectionPublicClient({
           }
         );
         if (!response.ok) {
-          const msg =
-            (await response.text()) || "Failed to submit nomination";
+          const msg = (await response.text()) || "Failed to submit nomination";
           toast.error(msg);
           throw new Error(msg);
         }
@@ -265,7 +249,8 @@ export default function ElectionPublicClient({
       setResponseState((prev) => ({
         ...prev,
         [nominationId]: {
-          ...(prev[nominationId] ?? defaultResponseState({} as SerializedNomination)),
+          ...(prev[nominationId] ??
+            defaultResponseState({} as SerializedNomination)),
           ...patch,
         },
       }));
@@ -274,10 +259,7 @@ export default function ElectionPublicClient({
   );
 
   const respondToNomination = useCallback(
-    async (
-      nomination: MyNomination,
-      status: "ACCEPTED" | "DECLINED"
-    ) => {
+    async (nomination: MyNomination, status: "ACCEPTED" | "DECLINED") => {
       const nominationId = nomination.id;
       setRespondingId(nominationId);
       try {
@@ -285,9 +267,7 @@ export default function ElectionPublicClient({
         const payload: Record<string, unknown> = { status };
         if (status === "ACCEPTED") {
           payload.statement = state.statement;
-          payload.yearLevel = state.yearLevel
-            ? Number(state.yearLevel)
-            : null;
+          payload.yearLevel = state.yearLevel ? Number(state.yearLevel) : null;
           payload.program = state.program || null;
           payload.canRemainEnrolledFullYear = state.canRemainEnrolledFullYear;
           payload.canRemainEnrolledNextTerm = state.canRemainEnrolledNextTerm;
@@ -330,458 +310,471 @@ export default function ElectionPublicClient({
   return (
     <NeoCard depth={1} className="election-scope w-full">
       <NeoCardContent className="space-y-6 p-6 md:p-8">
-      {/* ---- Breadcrumbs ---- */}
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Link href="/elections" className="hover:text-foreground transition-colors">
-          Elections
-        </Link>
-        <ChevronRight className="h-4 w-4" />
-        <span className="text-foreground font-medium">{election.title}</span>
-      </nav>
+        {/* ---- Breadcrumbs ---- */}
+        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Link
+            href="/elections"
+            className="hover:text-foreground transition-colors"
+          >
+            Elections
+          </Link>
+          <ChevronRight className="h-4 w-4" />
+          <span className="text-foreground font-medium">{election.title}</span>
+        </nav>
 
-      {/* ---- Header ---- */}
-      <div className="space-y-4">
-        <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-3xl font-display font-bold">{election.title}</h1>
-          <ElectionStatusBadge status={election.status} />
-          {election.status === "VOTING_OPEN" && (
-            <span
-              className="live-badge"
-              aria-label="Voting is live"
-              title="Voting is live"
-            >
-              <span className="live-dot" />
-              Live
-            </span>
+        {/* ---- Header ---- */}
+        <div className="space-y-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-3xl font-display font-bold">
+              {election.title}
+            </h1>
+            <ElectionStatusBadge status={election.status} />
+            {election.status === "VOTING_OPEN" && (
+              <span
+                className="live-badge"
+                aria-label="Voting is live"
+                title="Voting is live"
+              >
+                <span className="live-dot" />
+                Live
+              </span>
+            )}
+          </div>
+          {election.description && (
+            <p className="text-base text-muted-foreground">
+              {election.description}
+            </p>
           )}
+          <ElectionPhaseTimeline
+            status={election.status}
+            nominationsOpenAt={election.nominationsOpenAt}
+            nominationsCloseAt={election.nominationsCloseAt}
+            votingOpenAt={election.votingOpenAt}
+            votingCloseAt={election.votingCloseAt}
+            certifiedAt={election.certifiedAt}
+          />
         </div>
-        {election.description && (
-          <p className="text-base text-muted-foreground">
-            {election.description}
-          </p>
-        )}
-        <ElectionPhaseTimeline
-          status={election.status}
-          nominationsOpenAt={election.nominationsOpenAt}
-          nominationsCloseAt={election.nominationsCloseAt}
-          votingOpenAt={election.votingOpenAt}
-          votingCloseAt={election.votingCloseAt}
-          certifiedAt={election.certifiedAt}
-        />
-      </div>
 
-      {/* ---- NOMINATION FORM ----
+        {/* ---- NOMINATION FORM ----
            Mirrors the officer-invite pattern from /dashboard/positions:
            one slot per office, with empty dashed → yellow pending →
            filled accepted states. Clicking "Invite" opens the shared
            `<UserSearchInviteModal>` pre-selected to that office. */}
-      {showNominationForm && (
-        <div id="nomination-form">
-          <div className="mb-6 space-y-1">
-            <h2 className="text-2xl font-display font-bold">
-              Nominate a Candidate
-            </h2>
-            <p className="text-muted-foreground">
-              Invite any SSE member to run for an open position — you can
-              also nominate yourself. Nominations start in the{" "}
-              <em>pending</em> state until the nominee accepts.
-            </p>
-          </div>
-          <div className="space-y-5">
-            {[...election.offices]
-              // VP is ticket-derived — chosen as a running mate by the
-              // presidential nominee, not nominated directly.
-              .filter(
-                (office: SerializedElectionOffice) =>
-                  office.officerPosition.title !== "Vice President"
-              )
-              .sort((a, b) =>
-                compareByPrimaryOrder(
-                  a.officerPosition.title,
-                  b.officerPosition.title
+        {showNominationForm && (
+          <div id="nomination-form">
+            <div className="mb-6 space-y-1">
+              <h2 className="text-2xl font-display font-bold">
+                Nominate a Candidate
+              </h2>
+              <p className="text-muted-foreground">
+                Invite any SSE member to run for an open position — you can also
+                nominate yourself. Nominations start in the <em>pending</em>{" "}
+                state until the nominee accepts.
+              </p>
+            </div>
+            <div className="space-y-5">
+              {[...election.offices]
+                // VP is ticket-derived — chosen as a running mate by the
+                // presidential nominee, not nominated directly.
+                .filter(
+                  (office: SerializedElectionOffice) =>
+                    office.officerPosition.title !== "Vice President"
                 )
+                .sort((a, b) =>
+                  compareByPrimaryOrder(
+                    a.officerPosition.title,
+                    b.officerPosition.title
+                  )
+                )
+                .map((office: SerializedElectionOffice) => {
+                  // Show every active nomination for this office regardless
+                  // of who submitted it — the previous "your-outbound only"
+                  // filter meant a member who tried to second an existing
+                  // nomination saw their slot stay empty (the API correctly
+                  // collapses the duplicate but doesn't reassign ownership),
+                  // making it look like their click did nothing.
+                  const activeNominations = office.nominations.filter(
+                    (n: SerializedNomination) =>
+                      n.status === "PENDING_RESPONSE" || n.status === "ACCEPTED"
+                  );
+                  const isPresidentOffice =
+                    office.officerPosition.title === "President";
+
+                  return (
+                    <div key={office.id} className="space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <h3 className="text-sm font-semibold">
+                          {office.officerPosition.title}
+                        </h3>
+                        {isPresidentOffice && (
+                          <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Info className="h-3 w-3 shrink-0" />
+                            VP is chosen by the President&rsquo;s ticket
+                          </span>
+                        )}
+                      </div>
+                      <div className="space-y-1.5">
+                        {activeNominations.map((nomination) => {
+                          const isAccepted = nomination.status === "ACCEPTED";
+                          const isMine =
+                            nomination.nominatorUserId === currentUserId;
+                          const nominatedByLabel = isMine
+                            ? "Nominated by you"
+                            : `Nominated by ${nomination.nominator.name}`;
+                          const avatar = (
+                            <ElectionAvatar
+                              user={nomination.nominee}
+                              className={
+                                isAccepted
+                                  ? "h-8 w-8 border-2 border-black"
+                                  : "h-8 w-8 border-2 border-amber-500 ring-2 ring-amber-200 dark:ring-amber-700/40"
+                              }
+                              fallbackClassName="text-xs"
+                            />
+                          );
+                          return (
+                            <UserInviteSlot
+                              key={nomination.id}
+                              user={
+                                isAccepted
+                                  ? {
+                                      primary: nomination.nominee.name,
+                                      secondary: `Accepted · ${nominatedByLabel}`,
+                                      avatar,
+                                    }
+                                  : null
+                              }
+                              pendingInvitation={
+                                isAccepted
+                                  ? null
+                                  : {
+                                      primary: nomination.nominee.name,
+                                      secondary: `Awaiting response · ${nominatedByLabel}`,
+                                      avatar,
+                                      badgeLabel: "Invited",
+                                    }
+                              }
+                              emptyLabel=""
+                              inviteLabel=""
+                              onInvite={() => {}}
+                              readOnly
+                            />
+                          );
+                        })}
+                        <UserInviteSlot
+                          user={null}
+                          pendingInvitation={null}
+                          emptyLabel={
+                            activeNominations.length > 0
+                              ? "Nominate another candidate"
+                              : "No nominee invited yet"
+                          }
+                          inviteLabel={
+                            activeNominations.length > 0
+                              ? "Invite another"
+                              : "Invite"
+                          }
+                          onInvite={() => setInviteOfficeId(office.id)}
+                          disabled={submittingNomination}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+          </div>
+        )}
+
+        {/* Nomination invite modal — shared with the officer-invite flow. */}
+        {(() => {
+          const inviteOffice = inviteOfficeId
+            ? election.offices.find(
+                (o: SerializedElectionOffice) => o.id === inviteOfficeId
               )
-              .map((office: SerializedElectionOffice) => {
-                // Show every active nomination for this office regardless
-                // of who submitted it — the previous "your-outbound only"
-                // filter meant a member who tried to second an existing
-                // nomination saw their slot stay empty (the API correctly
-                // collapses the duplicate but doesn't reassign ownership),
-                // making it look like their click did nothing.
-                const activeNominations = office.nominations.filter(
+            : null;
+          const inviteOfficeTitle =
+            inviteOffice?.officerPosition.title ?? "this office";
+          const isPresidentInvite = inviteOfficeTitle === "President";
+          // Surface every active nomination for this office in the search
+          // modal so members can see who's already up and decide whether
+          // to second or pick someone else, instead of clicking blindly
+          // and getting back a slot that looks empty.
+          const existingNominees = inviteOffice
+            ? inviteOffice.nominations
+                .filter(
                   (n: SerializedNomination) =>
-                    n.status === "PENDING_RESPONSE" ||
+                    n.status === "PENDING_RESPONSE" || n.status === "ACCEPTED"
+                )
+                .map((n: SerializedNomination) => ({
+                  userId: n.nomineeUserId,
+                  nominatorName:
+                    n.nominatorUserId === currentUserId
+                      ? "you"
+                      : n.nominator.name,
+                  badgeLabel:
                     n.status === "ACCEPTED"
-                );
-                const isPresidentOffice =
-                  office.officerPosition.title === "President";
+                      ? "Already accepted"
+                      : "Already nominated",
+                }))
+            : [];
+          return (
+            <UserSearchInviteModal
+              open={inviteOfficeId !== null}
+              onOpenChange={(open) => {
+                if (!open) setInviteOfficeId(null);
+              }}
+              title={`Nominate for ${inviteOfficeTitle}`}
+              description={
+                isPresidentInvite
+                  ? "Your nominee will pick their own VP running mate after accepting — no need to nominate a VP separately."
+                  : `Pick an active SSE member to nominate for ${inviteOfficeTitle}. They'll get an email to accept or decline.`
+              }
+              confirmLabel="Send Nomination"
+              onInvite={async (userId) => {
+                if (!inviteOfficeId) return;
+                await submitNominationForOffice(inviteOfficeId, userId);
+              }}
+              renderAvatar={(user: ModalUserSearchResult) => (
+                <ElectionAvatar
+                  user={user}
+                  className="h-9 w-9 border-2 border-black shrink-0"
+                  fallbackClassName="text-xs"
+                />
+              )}
+              searchPlaceholder="Search SSE members by name or email…"
+              existingNominees={existingNominees}
+            />
+          );
+        })()}
 
-                return (
-                  <div key={office.id} className="space-y-2">
-                    <div className="flex items-center justify-between gap-2">
-                      <h3 className="text-sm font-semibold">
-                        {office.officerPosition.title}
-                      </h3>
-                      {isPresidentOffice && (
-                        <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <Info className="h-3 w-3 shrink-0" />
-                          VP is chosen by the President&rsquo;s ticket
-                        </span>
-                      )}
-                    </div>
-                    <div className="space-y-1.5">
-                      {activeNominations.map((nomination) => {
-                        const isAccepted = nomination.status === "ACCEPTED";
-                        const isMine =
-                          nomination.nominatorUserId === currentUserId;
-                        const nominatedByLabel = isMine
-                          ? "Nominated by you"
-                          : `Nominated by ${nomination.nominator.name}`;
-                        const avatar = (
-                          <ElectionAvatar
-                            user={nomination.nominee}
-                            className={
-                              isAccepted
-                                ? "h-8 w-8 border-2 border-black"
-                                : "h-8 w-8 border-2 border-amber-500 ring-2 ring-amber-200 dark:ring-amber-700/40"
-                            }
-                            fallbackClassName="text-xs"
-                          />
-                        );
-                        return (
-                          <UserInviteSlot
-                            key={nomination.id}
-                            user={
-                              isAccepted
-                                ? {
-                                    primary: nomination.nominee.name,
-                                    secondary: `Accepted · ${nominatedByLabel}`,
-                                    avatar,
-                                  }
-                                : null
-                            }
-                            pendingInvitation={
-                              isAccepted
-                                ? null
-                                : {
-                                    primary: nomination.nominee.name,
-                                    secondary: `Awaiting response · ${nominatedByLabel}`,
-                                    avatar,
-                                    badgeLabel: "Invited",
-                                  }
-                            }
-                            emptyLabel=""
-                            inviteLabel=""
-                            onInvite={() => {}}
-                            readOnly
-                          />
-                        );
-                      })}
-                      <UserInviteSlot
-                        user={null}
-                        pendingInvitation={null}
-                        emptyLabel={
-                          activeNominations.length > 0
-                            ? "Nominate another candidate"
-                            : "No nominee invited yet"
-                        }
-                        inviteLabel={
-                          activeNominations.length > 0
-                            ? "Invite another"
-                            : "Invite"
-                        }
-                        onInvite={() => setInviteOfficeId(office.id)}
-                        disabled={submittingNomination}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
+        {/* ---- VOTING CTA (full-width, prominent when voting open) ---- */}
+        {isVotingOpen && isMember && (
+          <div className="flex flex-col sm:flex-row items-center gap-6">
+            <div className="h-16 w-16 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center shrink-0">
+              <Vote className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
+            </div>
+            <div className="flex-1 text-center sm:text-left">
+              <h2 className="text-2xl font-display font-bold">
+                {hasVoted ? "You've voted!" : "Voting is open"}
+              </h2>
+              <p className="text-muted-foreground mt-1">
+                {hasVoted
+                  ? "You can update your ballot until voting closes."
+                  : "Cast your ranked-choice ballot for each position. Rank candidates in order of preference."}
+              </p>
+            </div>
+            <Button asChild size="lg" className="shrink-0">
+              <Link href={`/elections/${election.slug}/vote`}>
+                <Vote className="mr-2 h-4 w-4" />
+                {hasVoted ? "Update Ballot" : "Vote Now"}
+              </Link>
+            </Button>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Nomination invite modal — shared with the officer-invite flow. */}
-      {(() => {
-        const inviteOffice = inviteOfficeId
-          ? election.offices.find(
-              (o: SerializedElectionOffice) => o.id === inviteOfficeId
-            )
-          : null;
-        const inviteOfficeTitle =
-          inviteOffice?.officerPosition.title ?? "this office";
-        const isPresidentInvite = inviteOfficeTitle === "President";
-        // Surface every active nomination for this office in the search
-        // modal so members can see who's already up and decide whether
-        // to second or pick someone else, instead of clicking blindly
-        // and getting back a slot that looks empty.
-        const existingNominees = inviteOffice
-          ? inviteOffice.nominations
-              .filter(
-                (n: SerializedNomination) =>
-                  n.status === "PENDING_RESPONSE" ||
-                  n.status === "ACCEPTED"
-              )
-              .map((n: SerializedNomination) => ({
-                userId: n.nomineeUserId,
-                nominatorName:
-                  n.nominatorUserId === currentUserId
-                    ? "you"
-                    : n.nominator.name,
-                badgeLabel:
-                  n.status === "ACCEPTED"
-                    ? "Already accepted"
-                    : "Already nominated",
-              }))
-          : [];
-        return (
-          <UserSearchInviteModal
-            open={inviteOfficeId !== null}
-            onOpenChange={(open) => {
-              if (!open) setInviteOfficeId(null);
-            }}
-            title={`Nominate for ${inviteOfficeTitle}`}
-            description={
-              isPresidentInvite
-                ? "Your nominee will pick their own VP running mate after accepting — no need to nominate a VP separately."
-                : `Pick an active SSE member to nominate for ${inviteOfficeTitle}. They'll get an email to accept or decline.`
-            }
-            confirmLabel="Send Nomination"
-            onInvite={async (userId) => {
-              if (!inviteOfficeId) return;
-              await submitNominationForOffice(inviteOfficeId, userId);
-            }}
-            renderAvatar={(user: ModalUserSearchResult) => (
-              <ElectionAvatar
-                user={user}
-                className="h-9 w-9 border-2 border-black shrink-0"
-                fallbackClassName="text-xs"
-              />
-            )}
-            searchPlaceholder="Search SSE members by name or email…"
-            existingNominees={existingNominees}
-          />
-        );
-      })()}
-
-      {/* ---- VOTING CTA (full-width, prominent when voting open) ---- */}
-      {isVotingOpen && isMember && (
-        <div className="flex flex-col sm:flex-row items-center gap-6">
-          <div className="h-16 w-16 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center shrink-0">
-            <Vote className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
-          </div>
-          <div className="flex-1 text-center sm:text-left">
-            <h2 className="text-2xl font-display font-bold">
-              {hasVoted ? "You've voted!" : "Voting is open"}
-            </h2>
-            <p className="text-muted-foreground mt-1">
-              {hasVoted
-                ? "You can update your ballot until voting closes."
-                : "Cast your ranked-choice ballot for each position. Rank candidates in order of preference."}
+        {/* Non-member notice */}
+        {!isMember && isUser && (
+          <div className="flex items-center gap-3 rounded-lg border-l-4 border-l-amber-500 bg-amber-50/50 p-4 dark:bg-amber-900/20">
+            <Shield className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+            <p className="text-sm text-amber-800 dark:text-amber-200">
+              You must be an SSE member to nominate candidates and vote.
             </p>
           </div>
-          <Button asChild size="lg" className="shrink-0">
-            <Link href={`/elections/${election.slug}/vote`}>
-              <Vote className="mr-2 h-4 w-4" />
-              {hasVoted ? "Update Ballot" : "Vote Now"}
-            </Link>
-          </Button>
-        </div>
-      )}
+        )}
 
-      {/* Non-member notice */}
-      {!isMember && isUser && (
-        <div className="flex items-center gap-3 rounded-lg border-l-4 border-l-amber-500 bg-amber-50/50 p-4 dark:bg-amber-900/20">
-          <Shield className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-          <p className="text-sm text-amber-800 dark:text-amber-200">
-            You must be an SSE member to nominate candidates and vote.
-          </p>
-        </div>
-      )}
-
-      {/* ---- Your Nominations (pending response) ----
+        {/* ---- Your Nominations (pending response) ----
            The full accept + materials + running-mate flow lives on
            /elections/[slug]/respond/[nominationId]. Here we just surface
            the pending-response banner with a button that jumps there. */}
-      {myNominations.length > 0 && (
-        <div className="space-y-4">
-          <h2 className="text-xl font-display font-bold">Your Nominations</h2>
-          {myNominations.map((nomination) => (
-            <Card key={nomination.id} depth={2} className="p-5">
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <p className="eyebrow">You&rsquo;ve been nominated</p>
-                    <NominationStatusBadge status={nomination.status} />
+        {myNominations.length > 0 && (
+          <div className="space-y-4">
+            <h2 className="text-xl font-display font-bold">Your Nominations</h2>
+            {myNominations.map((nomination) => (
+              <Card key={nomination.id} depth={2} className="p-5">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="eyebrow">You&rsquo;ve been nominated</p>
+                      <NominationStatusBadge status={nomination.status} />
+                    </div>
+                    <p className="mt-1 font-display text-lg font-bold">
+                      {nomination.officeTitle}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Accept or decline on the dedicated response page.
+                    </p>
                   </div>
-                  <p className="mt-1 font-display text-lg font-bold">
-                    {nomination.officeTitle}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Accept or decline on the dedicated response page.
-                  </p>
+                  <Button asChild size="sm">
+                    <Link
+                      href={`/elections/${election.slug}/respond/${nomination.id}`}
+                    >
+                      <CheckCircle className="mr-2 h-4 w-4" />
+                      Respond
+                    </Link>
+                  </Button>
                 </div>
-                <Button asChild size="sm">
-                  <Link
-                    href={`/elections/${election.slug}/respond/${nomination.id}`}
-                  >
-                    <CheckCircle className="mr-2 h-4 w-4" />
-                    Respond
-                  </Link>
-                </Button>
-              </div>
-            </Card>
-          ))}
-        </div>
-      )}
+              </Card>
+            ))}
+          </div>
+        )}
 
-      {/* ---- Amendment 12: inbound running-mate invites ----
+        {/* ---- Amendment 12: inbound running-mate invites ----
            VPs now get the same dedicated accept-and-write-a-blurb flow
            as direct nominees, so this banner just punts them to the
            full page rather than offering an inline accept/decline. */}
-      {inboundRunningMateInvites.length > 0 && (
-        <div className="space-y-4">
-          <h2 className="text-xl font-display font-bold">
-            Running-Mate Invitations
-          </h2>
-          {inboundRunningMateInvites.map((invite) => (
-            <Card key={invite.nominationId} depth={2} className="p-5">
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <div className="min-w-0 flex-1">
-                  <p className="eyebrow">You&rsquo;ve been invited to run</p>
-                  <p className="mt-1 font-display text-lg font-bold">
-                    Run as VP with {invite.presidentNomineeName}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Accept and write your candidate blurb on the response page.
-                  </p>
+        {inboundRunningMateInvites.length > 0 && (
+          <div className="space-y-4">
+            <h2 className="text-xl font-display font-bold">
+              Running-Mate Invitations
+            </h2>
+            {inboundRunningMateInvites.map((invite) => (
+              <Card key={invite.nominationId} depth={2} className="p-5">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <div className="min-w-0 flex-1">
+                    <p className="eyebrow">You&rsquo;ve been invited to run</p>
+                    <p className="mt-1 font-display text-lg font-bold">
+                      Run as VP with {invite.presidentNomineeName}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Accept and write your candidate blurb on the response
+                      page.
+                    </p>
+                  </div>
+                  <Button asChild size="sm">
+                    <Link
+                      href={`/elections/${election.slug}/respond/running-mate/${invite.nominationId}`}
+                    >
+                      <CheckCircle className="mr-2 h-4 w-4" />
+                      Respond
+                    </Link>
+                  </Button>
                 </div>
-                <Button asChild size="sm">
-                  <Link
-                    href={`/elections/${election.slug}/respond/running-mate/${invite.nominationId}`}
-                  >
-                    <CheckCircle className="mr-2 h-4 w-4" />
-                    Respond
-                  </Link>
-                </Button>
-              </div>
-            </Card>
-          ))}
-        </div>
-      )}
-
-      {/* ---- Amendment 12: my accepted presidential ticket(s) ---- */}
-      {myAcceptedPresidentNominations.length > 0 && (
-        <div className="space-y-4">
-          <h2 className="text-xl font-display font-bold">
-            Your Presidential Ticket
-          </h2>
-          {myAcceptedPresidentNominations.map((nomination) => {
-            const invitation =
-              (nomination.runningMateInvitation as
-                | RunningMateInvitation
-                | null
-                | undefined) ?? null;
-            return (
-              <RunningMateInviteCard
-                key={nomination.id}
-                electionId={election.id}
-                nominationId={nomination.id}
-                invitation={invitation}
-                onChange={() => {
-                  // Force a refetch of the election so the invitation state
-                  // is always fresh. The simplest thing here is a full page
-                  // refresh since the server components own the data.
-                  if (typeof window !== "undefined") {
-                    window.location.reload();
-                  }
-                }}
-              />
-            );
-          })}
-        </div>
-      )}
-
-      {/* ---- Inline stats ---- */}
-      <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
-        <span>
-          <strong className="text-foreground font-display text-base">{totalNominations}</strong> nominations
-        </span>
-        <span>
-          <strong className="text-foreground font-display text-base">{election.ballots.length}</strong> ballots cast
-        </span>
-        <span>
-          <strong className="text-foreground font-display text-base">{election.offices.length}</strong> positions
-        </span>
-        <Tooltip
-          content={
-            <p>
-              Instant Runoff Voting: Voters rank candidates in order of
-              preference. The candidate with the fewest votes is eliminated
-              each round until a winner emerges.
-            </p>
-          }
-          size="lg"
-        >
-          <span className="underline decoration-dotted cursor-help">
-            IRV voting system
-          </span>
-        </Tooltip>
-        {(isPresident || isSeAdmin) && (
-          <Link
-            href={`/dashboard/elections/${election.id}`}
-            className="text-primary hover:underline ml-auto"
-          >
-            {isPresident ? "Manage" : "Review"}
-          </Link>
+              </Card>
+            ))}
+          </div>
         )}
-      </div>
 
-      {/* ---- Prominent Results CTA ----
+        {/* ---- Amendment 12: my accepted presidential ticket(s) ---- */}
+        {myAcceptedPresidentNominations.length > 0 && (
+          <div className="space-y-4">
+            <h2 className="text-xl font-display font-bold">
+              Your Presidential Ticket
+            </h2>
+            {myAcceptedPresidentNominations.map((nomination) => {
+              const invitation =
+                (nomination.runningMateInvitation as
+                  | RunningMateInvitation
+                  | null
+                  | undefined) ?? null;
+              return (
+                <RunningMateInviteCard
+                  key={nomination.id}
+                  electionId={election.id}
+                  nominationId={nomination.id}
+                  invitation={invitation}
+                  onChange={() => {
+                    // Force a refetch of the election so the invitation state
+                    // is always fresh. The simplest thing here is a full page
+                    // refresh since the server components own the data.
+                    if (typeof window !== "undefined") {
+                      window.location.reload();
+                    }
+                  }}
+                />
+              );
+            })}
+          </div>
+        )}
+
+        {/* ---- Inline stats ---- */}
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
+          <span>
+            <strong className="text-foreground font-display text-base">
+              {totalNominations}
+            </strong>{" "}
+            nominations
+          </span>
+          <span>
+            <strong className="text-foreground font-display text-base">
+              {election.ballots.length}
+            </strong>{" "}
+            ballots cast
+          </span>
+          <span>
+            <strong className="text-foreground font-display text-base">
+              {election.offices.length}
+            </strong>{" "}
+            positions
+          </span>
+          <Tooltip
+            content={
+              <p>
+                Instant Runoff Voting: Voters rank candidates in order of
+                preference. The candidate with the fewest votes is eliminated
+                each round until a winner emerges.
+              </p>
+            }
+            size="lg"
+          >
+            <span className="underline decoration-dotted cursor-help">
+              IRV voting system
+            </span>
+          </Tooltip>
+          {(isPresident || isSeAdmin) && (
+            <Link
+              href={`/dashboard/elections/${election.id}`}
+              className="text-primary hover:underline ml-auto"
+            >
+              {isPresident ? "Manage" : "Review"}
+            </Link>
+          )}
+        </div>
+
+        {/* ---- Prominent Results CTA ----
            Show to everyone once certified, and to admins/presidents as soon
            as voting is closed so they can review the tally before certifying. */}
-      {(isCertified ||
-        ((isSeAdmin || isPresident) &&
-          election.status === "VOTING_CLOSED")) && (
-        <div className="flex flex-col items-center gap-3 text-center">
-          <p className="eyebrow inline-flex items-center gap-2 justify-center">
-            <Trophy className="h-3 w-3" />{" "}
-            {isCertified
-              ? "Final · Certified"
-              : "Preliminary · Pending certification"}
-          </p>
-          <p className="font-display text-lg font-bold">
-            {isCertified
-              ? "Your new officers have been chosen."
-              : "Round-by-round results are ready."}
-          </p>
-          <p className="max-w-prose text-sm text-muted-foreground">
-            {isCertified
-              ? "Take a moment to meet the winners, then dig into the round-by-round tally."
-              : election.status === "VOTING_CLOSED" && isSeAdmin
-                ? "Review every office before you certify — certification publishes the results."
-                : "The SE Office will certify these results shortly."}
-          </p>
-          <NeoBrutalistButton
-            text={isCertified ? "See who won" : "View results"}
-            variant="orange"
-            icon={<Trophy className="h-[18px] w-[18px]" />}
-            href={
-              isCertified
-                ? `/elections/${election.slug}/reveal`
-                : `/elections/${election.slug}/results`
-            }
-          />
-        </div>
-      )}
+        {(isCertified ||
+          ((isSeAdmin || isPresident) &&
+            election.status === "VOTING_CLOSED")) && (
+          <div className="flex flex-col items-center gap-3 text-center">
+            <p className="eyebrow inline-flex items-center gap-2 justify-center">
+              <Trophy className="h-3 w-3" />{" "}
+              {isCertified
+                ? "Final · Certified"
+                : "Preliminary · Pending certification"}
+            </p>
+            <p className="font-display text-lg font-bold">
+              {isCertified
+                ? "Your new officers have been chosen."
+                : "Round-by-round results are ready."}
+            </p>
+            <p className="max-w-prose text-sm text-muted-foreground">
+              {isCertified
+                ? "Take a moment to meet the winners, then dig into the round-by-round tally."
+                : election.status === "VOTING_CLOSED" && isSeAdmin
+                  ? "Review every office before you certify — certification publishes the results."
+                  : "The SE Office will certify these results shortly."}
+            </p>
+            <NeoBrutalistButton
+              text={isCertified ? "See who won" : "View results"}
+              variant="orange"
+              icon={<Trophy className="h-[18px] w-[18px]" />}
+              href={
+                isCertified
+                  ? `/elections/${election.slug}/reveal`
+                  : `/elections/${election.slug}/results`
+              }
+            />
+          </div>
+        )}
 
-      {/* ---- Positions & Candidates (full width) ----
+        {/* ---- Positions & Candidates (full width) ----
            All the candidate detail that used to live on the dedicated
            /candidates page is now rendered inline — statement, program,
            year level, and (for President) the running-mate VP as a
            co-equal ticket-mate. VP's own office is ticket-derived, so
            it never appears as a standalone card here. */}
-      <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2">
           {[...election.offices]
             .filter(
               (office) => !isTicketDerivedOffice(office.officerPosition.title)
@@ -793,72 +786,72 @@ export default function ElectionPublicClient({
               )
             )
             .map((office: SerializedElectionOffice) => {
-            const acceptedNominations = office.nominations.filter(
-              (n: SerializedNomination) => n.status === "ACCEPTED"
-            );
-            const candidateCount = acceptedNominations.length;
-            const isPresidentOffice =
-              office.officerPosition.title === "President";
+              const acceptedNominations = office.nominations.filter(
+                (n: SerializedNomination) => n.status === "ACCEPTED"
+              );
+              const candidateCount = acceptedNominations.length;
+              const isPresidentOffice =
+                office.officerPosition.title === "President";
 
-            return (
-              <div key={office.id} className="space-y-3">
-                <div className="space-y-1.5">
-                  <h3 className="font-display text-xl font-bold leading-none tracking-tight">
-                    {office.officerPosition.title}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {candidateCount === 0
-                      ? "No candidates yet"
-                      : candidateCount === 1
-                        ? "1 candidate"
-                        : `${candidateCount} candidates`}
-                  </p>
-                </div>
-                <div className="space-y-4">
-                  {candidateCount === 0 && (
-                    <div className="flex items-center gap-3 rounded-lg bg-muted/40 p-4 text-sm text-muted-foreground">
-                      <UserX className="h-5 w-5 shrink-0" />
-                      <p>
-                        {isNominationsOpen
-                          ? "Nominations are still open for this position."
-                          : "No candidates have been nominated for this position."}
-                      </p>
-                    </div>
-                  )}
-                  {acceptedNominations.map(
-                    (nomination: SerializedNomination) => {
-                      const acceptedRunningMate =
-                        isPresidentOffice &&
-                        nomination.runningMateInvitation?.status === "ACCEPTED"
-                          ? nomination.runningMateInvitation
-                          : null;
-                      return (
-                        <Card
-                          key={nomination.id}
-                          depth={2}
-                          className="space-y-4 p-5"
-                        >
-                          <CandidateBlock
-                            nominee={nomination.nominee}
-                            statement={nomination.statement}
-                            program={nomination.program}
-                            yearLevel={nomination.yearLevel}
-                            status={nomination.status}
-                          />
-                          {acceptedRunningMate && (
-                            <RunningMateBlock
-                              invitation={acceptedRunningMate}
+              return (
+                <div key={office.id} className="space-y-3">
+                  <div className="space-y-1.5">
+                    <h3 className="font-display text-xl font-bold leading-none tracking-tight">
+                      {office.officerPosition.title}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      {candidateCount === 0
+                        ? "No candidates yet"
+                        : candidateCount === 1
+                          ? "1 candidate"
+                          : `${candidateCount} candidates`}
+                    </p>
+                  </div>
+                  <div className="space-y-4">
+                    {candidateCount === 0 && (
+                      <div className="flex items-center gap-3 rounded-lg bg-muted/40 p-4 text-sm text-muted-foreground">
+                        <UserX className="h-5 w-5 shrink-0" />
+                        <p>
+                          {isNominationsOpen
+                            ? "Nominations are still open for this position."
+                            : "No candidates have been nominated for this position."}
+                        </p>
+                      </div>
+                    )}
+                    {acceptedNominations.map(
+                      (nomination: SerializedNomination) => {
+                        const acceptedRunningMate =
+                          isPresidentOffice &&
+                          nomination.runningMateInvitation?.status ===
+                            "ACCEPTED"
+                            ? nomination.runningMateInvitation
+                            : null;
+                        return (
+                          <Card
+                            key={nomination.id}
+                            depth={2}
+                            className="space-y-4 p-5"
+                          >
+                            <CandidateBlock
+                              nominee={nomination.nominee}
+                              statement={nomination.statement}
+                              program={nomination.program}
+                              yearLevel={nomination.yearLevel}
                             />
-                          )}
-                        </Card>
-                      );
-                    }
-                  )}
+                            {acceptedRunningMate && (
+                              <RunningMateBlock
+                                invitation={acceptedRunningMate}
+                              />
+                            )}
+                          </Card>
+                        );
+                      }
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-      </div>
+              );
+            })}
+        </div>
       </NeoCardContent>
       <ElectionDevTweaks
         electionId={election.id}
@@ -876,7 +869,7 @@ export default function ElectionPublicClient({
 /**
  * Inline candidate block — what used to live on /elections/[slug]/candidates.
  * Renders everything a voter needs to evaluate the nominee without leaving
- * the election overview: big avatar, name + status, eligibility chips
+ * the election overview: big avatar, name, eligibility chips
  * (program / year), and the full candidate statement.
  */
 function CandidateBlock({
@@ -884,13 +877,11 @@ function CandidateBlock({
   statement,
   program,
   yearLevel,
-  status,
 }: {
   nominee: UserRef;
   statement: string;
   program: string | null;
   yearLevel: number | null;
-  status: SerializedNomination["status"];
 }) {
   return (
     <div className="space-y-3">
@@ -902,7 +893,6 @@ function CandidateBlock({
         />
         <div className="min-w-0 flex-1">
           <p className="truncate text-base font-semibold">{nominee.name}</p>
-          <NominationStatusBadge status={status} className="mt-1" />
         </div>
       </div>
       {(program || yearLevel) && (
@@ -959,9 +949,6 @@ function RunningMateBlock({
           <p className="truncate text-base font-semibold">
             {invitation.invitee.name}
           </p>
-          <Badge variant="outline" className="mt-1">
-            Accepted
-          </Badge>
         </div>
       </div>
       {(invitation.program || invitation.yearLevel) && (
