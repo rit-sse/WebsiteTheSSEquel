@@ -122,9 +122,9 @@ export default function CommentThread({
                     {formatDate(comment.createdAt)}
                   </span>
                 </div>
-                <ReactMarkdown className="prose prose-sm dark:prose-invert max-w-none text-sm leading-relaxed">
-                  {comment.content}
-                </ReactMarkdown>
+                <div className="prose prose-sm dark:prose-invert max-w-none text-sm leading-relaxed">
+                  <ReactMarkdown>{comment.content}</ReactMarkdown>
+                </div>
               </div>
             </div>
           </Card>
@@ -153,7 +153,9 @@ export default function CommentThread({
               {submitting ? "Posting..." : "Post Comment"}
             </Button>
           </div>
-          {message ? <p className="text-xs text-destructive">{message}</p> : null}
+          {message ? (
+            <p className="text-xs text-destructive">{message}</p>
+          ) : null}
         </div>
       ) : isUser ? (
         <div className="pt-2 border-t border-border/30">
@@ -165,10 +167,13 @@ export default function CommentThread({
         <div className="pt-2 border-t border-border/30 flex items-center gap-2">
           <LogIn className="h-4 w-4 text-muted-foreground/60" />
           <p className="text-sm text-muted-foreground">
-            <Link href="/api/auth/signin" className="text-primary hover:underline font-medium">
+            <Link
+              href="/api/auth/signin"
+              className="text-primary hover:underline font-medium"
+            >
               Sign in
-            </Link>
-            {" "}to join the forum discussion.
+            </Link>{" "}
+            to join the forum discussion.
           </p>
         </div>
       )}
