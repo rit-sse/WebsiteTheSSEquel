@@ -1,4 +1,4 @@
-FROM node:25.9.0-bookworm-slim AS base
+FROM node:24-bookworm-slim AS base
 
 RUN apt-get update -y && \
     apt-get install -y --no-install-recommends openssl && \

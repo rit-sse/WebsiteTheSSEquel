@@ -9,7 +9,7 @@ if (!isSupportedLts && !isSupportedForwardVersion) {
       "",
       `Unsupported Node.js version: ${currentVersion}`,
       "This repo supports Node.js 24.x LTS and Node.js 25.9.x.",
-      "CI and Docker use Node.js 25.9.0 by default.",
+      "CI and Docker use Node.js 24.x LTS by default.",
       "Run one of the following before npm ci:",
       "  cd next && fnm install && fnm use",
       "  cd next && nvm install && nvm use",
