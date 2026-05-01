@@ -18,57 +18,57 @@ const studentsItems: NavItem[] = [
   {
     title: "Committee Head",
     href: "/nominate",
-    description: "Apply or nominate.",
+    description: "Run for or nominate a committee head.",
   },
   {
     title: "Tech Committee",
     href: "/tech-committee/apply",
-    description: "Apply to join.",
+    description: "Apply to build SSE's tech.",
   },
   {
     title: "Mentor",
     href: "/mentoring/apply",
-    description: "Apply to mentor.",
+    description: "Sign up to mentor other students.",
   },
   {
     title: "Get Involved",
     href: "/about/get-involved",
-    description: "Ways to participate.",
+    description: "Discover ways to join SSE.",
   },
   {
     title: "Constitution",
     href: "/about/constitution",
-    description: "Governing document.",
+    description: "Read SSE's governing document.",
   },
   {
     title: "Primary Policy",
     href: "/about/primary-officers-policy",
-    description: "Officer rules.",
+    description: "Rules for primary officers.",
   },
   {
     title: "Projects",
     href: "/projects",
-    description: "Student projects.",
+    description: "Browse ongoing student projects.",
   },
   {
     title: "Events",
     href: "/events/calendar",
-    description: "Meetings and socials.",
+    description: "See upcoming meetings and socials.",
   },
   {
     title: "Membership Leaderboard",
     href: "/memberships",
-    description: "Track membership.",
+    description: "Track active member standings.",
   },
   {
     title: "Mentor Schedule",
     href: "/mentoring/schedule",
-    description: "Mentor availability.",
+    description: "Find a mentor's office hours.",
   },
   {
     title: "Library",
     href: "/library",
-    description: "Books and resources.",
+    description: "Borrow books and learning resources.",
   },
 ];
 
@@ -76,12 +76,12 @@ const alumniItems: NavItem[] = [
   {
     title: "Alumni Directory",
     href: "/about/alumni",
-    description: "Graduate stories.",
+    description: "Connect with SSE graduates.",
   },
   {
     title: "Speak at SSE",
     href: "/sponsors#vise",
-    description: "Pitch a ViSE talk.",
+    description: "Give a ViSE industry talk.",
   },
 ];
 
@@ -89,12 +89,12 @@ const companiesItems: NavItem[] = [
   {
     title: "Sponsor SSE",
     href: "/sponsors#sponsor",
-    description: "Sponsorship info.",
+    description: "Become an SSE sponsor.",
   },
   {
     title: "Recruit Students",
     href: "/sponsors#recruit",
-    description: "Recruiting talks.",
+    description: "Hire from our student body.",
   },
 ];
 
@@ -102,22 +102,22 @@ const seOfficeItems: NavItem[] = [
   {
     title: "Leadership",
     href: "/about/leadership",
-    description: "Officers and heads.",
+    description: "Meet the officers and heads.",
   },
   {
     title: "Committees",
     href: "/about/committees",
-    description: "Committee details.",
+    description: "Learn about each committee.",
   },
   {
     title: "Constitution",
     href: "/about/constitution",
-    description: "Governing document.",
+    description: "Read SSE's governing document.",
   },
   {
     title: "Primary Policy",
     href: "/about/primary-officers-policy",
-    description: "Officer rules.",
+    description: "Rules for primary officers.",
   },
 ];
 
@@ -130,7 +130,7 @@ function getPublicElectionItem(
   return {
     title: "Elections",
     href: `/elections/${activeElection.slug}`,
-    description: "Vote or nominate.",
+    description: "Cast your vote or nominate a peer.",
   };
 }
 

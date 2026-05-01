@@ -235,7 +235,7 @@ const Navbar: React.FC<NavbarProps> = ({
                       )}
                     >
                       <ul
-                        className="grid auto-rows-fr items-stretch gap-2 p-2"
+                        className="grid auto-rows-fr items-stretch gap-3 p-3"
                         style={dropdownGridStyle}
                       >
                         {group.items.map((item) => (
@@ -471,7 +471,7 @@ function ListItem({
         <Link
           href={href}
           className={cn(
-            "flex h-full min-h-16 min-w-0 select-none flex-col justify-center rounded-md p-2 leading-none no-underline outline-none",
+            "flex h-full min-h-[4.5rem] min-w-0 select-none flex-col justify-center rounded-md px-4 py-3 leading-none no-underline outline-none",
             "bg-surface-2 border border-border/30",
             "hover:bg-surface-1 hover:border-border/50 hover:shadow-md",
             "focus:bg-surface-2 focus:border-border/50",
@@ -482,7 +482,7 @@ function ListItem({
           <div className="line-clamp-2 min-w-0 break-words text-center text-[0.8125rem] font-bold font-heading leading-tight text-foreground">
             {title}
           </div>
-          <p className="mt-1 line-clamp-2 min-w-0 break-words text-center text-[0.75rem] leading-snug text-muted-foreground">
+          <p className="mt-1.5 line-clamp-2 min-w-0 break-words text-center text-[0.75rem] leading-snug text-muted-foreground">
             {children}
           </p>
         </Link>
