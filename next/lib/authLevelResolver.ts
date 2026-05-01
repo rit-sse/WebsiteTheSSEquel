@@ -14,6 +14,7 @@ import {
 type ResolveOptions = {
   includeProfileComplete?: boolean;
   stagingElevated?: boolean;
+  allowStagingElevated?: boolean;
 };
 
 function getDefaultAuthLevel(includeProfileComplete: boolean): AuthLevel {
@@ -76,7 +77,7 @@ export function getSessionTokenFromRequest(request: Request): string | null {
 
 export async function resolveAuthLevelFromToken(
   token: string | null,
-  options: ResolveOptions = {}
+  options: ResolveOptions = {},
 ): Promise<AuthLevel> {
   const includeProfileComplete = options.includeProfileComplete ?? false;
   const stagingElevated = options.stagingElevated ?? false;
@@ -147,7 +148,7 @@ export async function resolveAuthLevelFromToken(
   // Undergraduate Dean) should grant the same elevated access. Check
   // the category so all four roles count.
   const isSeAdmin = user.officers.some(
-    (officer) => officer.position.category === "SE_OFFICE"
+    (officer) => officer.position.category === "SE_OFFICE",
   );
   authLevel.userId = user.id;
   authLevel.isUser = true;
@@ -158,7 +159,7 @@ export async function resolveAuthLevelFromToken(
   // affected by staging elevation. Use this (not `isPrimary`) when the
   // UI must reflect the user's real-world role even on ssedev.
   authLevel.isPrimaryOfficer = user.officers.some(
-    (officer) => officer.position.is_primary
+    (officer) => officer.position.is_primary,
   );
 
   // NOTE: `isSeAdmin` is intentionally NOT assigned here. When
@@ -170,28 +171,34 @@ export async function resolveAuthLevelFromToken(
   if (!stagingElevated) {
     authLevel.isMentor = isSeAdmin || user.mentor.length > 0;
     authLevel.isOfficer = isSeAdmin || user.officers.length > 0;
-    authLevel.isMentoringHead = isSeAdmin || user.officers.some(
-      (officer) => officer.position.title === MENTOR_HEAD_TITLE
-    );
-    authLevel.isProjectsHead = isSeAdmin || user.officers.some(
-      (officer) => officer.position.title === PROJECTS_HEAD_TITLE
-    );
-    authLevel.isTechCommitteeHead = isSeAdmin || user.officers.some(
-      (officer) => officer.position.title === TECH_COMMITTEE_HEAD_TITLE
-    );
+    authLevel.isMentoringHead =
+      isSeAdmin ||
+      user.officers.some(
+        (officer) => officer.position.title === MENTOR_HEAD_TITLE,
+      );
+    authLevel.isProjectsHead =
+      isSeAdmin ||
+      user.officers.some(
+        (officer) => officer.position.title === PROJECTS_HEAD_TITLE,
+      );
+    authLevel.isTechCommitteeHead =
+      isSeAdmin ||
+      user.officers.some(
+        (officer) => officer.position.title === TECH_COMMITTEE_HEAD_TITLE,
+      );
     authLevel.isTechCommitteeDivisionManager =
       isSeAdmin ||
       user.officers.some((officer) =>
-      TECH_COMMITTEE_DIVISION_MANAGER_TITLES.includes(
-        officer.position
-          .title as (typeof TECH_COMMITTEE_DIVISION_MANAGER_TITLES)[number]
-      )
-    );
+        TECH_COMMITTEE_DIVISION_MANAGER_TITLES.includes(
+          officer.position
+            .title as (typeof TECH_COMMITTEE_DIVISION_MANAGER_TITLES)[number],
+        ),
+      );
     const managedDivisionOfficer = user.officers.find((officer) =>
       TECH_COMMITTEE_DIVISION_MANAGER_TITLES.includes(
         officer.position
-          .title as (typeof TECH_COMMITTEE_DIVISION_MANAGER_TITLES)[number]
-      )
+          .title as (typeof TECH_COMMITTEE_DIVISION_MANAGER_TITLES)[number],
+      ),
     );
     authLevel.techCommitteeManagedDivision = managedDivisionOfficer
       ? TECH_COMMITTEE_DIVISION_MANAGER_BY_TITLE[
@@ -199,9 +206,8 @@ export async function resolveAuthLevelFromToken(
             .title as keyof typeof TECH_COMMITTEE_DIVISION_MANAGER_BY_TITLE
         ]
       : null;
-    authLevel.isPrimary = isSeAdmin || user.officers.some(
-      (officer) => officer.position.is_primary
-    );
+    authLevel.isPrimary =
+      isSeAdmin || user.officers.some((officer) => officer.position.is_primary);
     authLevel.isSeAdmin = isSeAdmin;
   }
 
@@ -220,10 +226,11 @@ export async function resolveAuthLevelFromToken(
 
 export async function resolveAuthLevelFromRequest(
   request: Request,
-  options: Omit<ResolveOptions, "stagingElevated"> = {}
+  options: Omit<ResolveOptions, "stagingElevated"> = {},
 ): Promise<AuthLevel> {
   const token = getSessionTokenFromRequest(request);
-  const stagingElevated = hasStagingElevatedAccess(request);
+  const stagingElevated =
+    (options.allowStagingElevated ?? true) && hasStagingElevatedAccess(request);
   return resolveAuthLevelFromToken(token, {
     includeProfileComplete: options.includeProfileComplete,
     stagingElevated,

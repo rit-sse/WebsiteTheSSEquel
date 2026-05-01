@@ -5,8 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import {
-  Github,
-  Linkedin,
   ExternalLink,
   Pencil,
   Trophy,
@@ -24,6 +22,7 @@ import {
   CheckCircle2,
   GraduationCap,
 } from "lucide-react";
+import { GithubIcon, LinkedinIcon } from "@/components/common/BrandIcons";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -237,8 +236,8 @@ const QUEST_FIELDS = [
   { key: "graduationTerm", label: "Graduation Term", icon: GraduationCap },
   { key: "graduationYear", label: "Graduation Year", icon: Calendar },
   { key: "major", label: "Major", icon: Briefcase },
-  { key: "gitHub", label: "GitHub", icon: Github },
-  { key: "linkedIn", label: "LinkedIn", icon: Linkedin },
+  { key: "gitHub", label: "GitHub", icon: GithubIcon },
+  { key: "linkedIn", label: "LinkedIn", icon: LinkedinIcon },
 ] as const;
 
 const TOTAL_QUEST_FIELDS = QUEST_FIELDS.length;
@@ -328,7 +327,7 @@ function categoricalBadgeStyle(seed: string | number): React.CSSProperties {
 }
 
 function uniqueCategoricalBadgeStyles(
-  seeds: Array<string | number>
+  seeds: Array<string | number>,
 ): Map<string, React.CSSProperties> {
   const styles = new Map<string, React.CSSProperties>();
   const usedIndices = new Set<number>();
@@ -362,7 +361,7 @@ function uniqueCategoricalBadgeStyles(
 
 function normalizeMentorApplicationStatus(
   status: string | undefined,
-  isActiveMentor: boolean
+  isActiveMentor: boolean,
 ): string {
   if (!status) return "unknown";
   if (isActiveMentor && status.toLowerCase() === "invited") return "closed";
@@ -474,7 +473,7 @@ export default function ProfileContent({
                 /* ignore */
               }
               return null;
-            })
+            }),
           );
           setHandoverDocs(docs.filter((d): d is HandoverDoc => d !== null));
         }
@@ -497,7 +496,7 @@ export default function ProfileContent({
     setEditGitHub(extractGitHubUsername(data.gitHub ?? ""));
     setEditGraduationTerm(data.graduationTerm ?? "");
     setEditGraduationYear(
-      data.graduationYear ? String(data.graduationYear) : ""
+      data.graduationYear ? String(data.graduationYear) : "",
     );
     setEditMajor(data.major ?? "");
     setEditCoopSummary(data.coopSummary ?? "");
@@ -598,14 +597,14 @@ export default function ProfileContent({
           {
             icon: <Star className="h-5 w-5 text-yellow-500" />,
             duration: 5000,
-          }
+          },
         );
       } else if (updated.membershipRevoked) {
         toast.warning(
           "Profile saved. Your profile-completion membership was revoked because required fields are now missing.",
           {
             duration: 6000,
-          }
+          },
         );
       } else {
         toast.success("Profile updated!");
@@ -624,7 +623,7 @@ export default function ProfileContent({
       | NonNullable<
           NonNullable<ProfileData["mentorProfile"]>["latestApplication"]
         >
-      | null
+      | null,
   ) {
     if (!source) return;
 
@@ -638,7 +637,9 @@ export default function ProfileContent({
     setToolsComfortable(source.toolsComfortable || "");
     setToolsLearning(source.toolsLearning || "");
     setPreviousSemesters(
-      source.previousSemesters === 5 ? "5+" : `${source.previousSemesters ?? 0}`
+      source.previousSemesters === 5
+        ? "5+"
+        : `${source.previousSemesters ?? 0}`,
     );
     setWhyMentor(source.whyMentor || "");
     setMentorComments(source.comments || "");
@@ -704,7 +705,7 @@ export default function ProfileContent({
         }
 
         populateMentorFields(
-          apps[0] ?? profile.mentorProfile.latestApplication ?? null
+          apps[0] ?? profile.mentorProfile.latestApplication ?? null,
         );
 
         const defaultSlots = profile.mentorProfile.availability ?? [];
@@ -712,7 +713,7 @@ export default function ProfileContent({
 
         if (activeSemester?.id) {
           const availabilityRes = await fetch(
-            `/api/mentor-availability?my=true&semesterId=${activeSemester.id}`
+            `/api/mentor-availability?my=true&semesterId=${activeSemester.id}`,
           );
           if (availabilityRes.ok) {
             const availability = await availabilityRes.json();
@@ -749,7 +750,7 @@ export default function ProfileContent({
   );
   const displayedEditableStatus = normalizeMentorApplicationStatus(
     editableApplication?.status,
-    !!profile?.mentorProfile?.isActive
+    !!profile?.mentorProfile?.isActive,
   );
 
   const getResolvedPronouns = () =>
@@ -789,7 +790,7 @@ export default function ProfileContent({
     setSelectedCourses((previous) =>
       previous.includes(courseId)
         ? previous.filter((id) => id !== courseId)
-        : [...previous, courseId]
+        : [...previous, courseId],
     );
   };
 
@@ -852,7 +853,7 @@ export default function ProfileContent({
       if (!response.ok) {
         const data = await response.json().catch(() => null);
         throw new Error(
-          data?.error || "Failed to resubmit mentor application."
+          data?.error || "Failed to resubmit mentor application.",
         );
       }
       toast.success(`Application submitted for ${activeMentorSemester.name}.`);
@@ -895,7 +896,7 @@ export default function ProfileContent({
       toast.success(
         removedCount > 0
           ? `Availability updated and removed ${removedCount} incompatible shift${removedCount === 1 ? "" : "s"}.`
-          : "Availability updated."
+          : "Availability updated.",
       );
       await fetchProfile();
     } catch (error) {
@@ -948,7 +949,7 @@ export default function ProfileContent({
   };
   const completedQuestFields = QUEST_FIELDS.reduce(
     (sum, f) => sum + (fieldComplete(f.key) ? 1 : 0),
-    0
+    0,
   );
   const allQuestComplete = completedQuestFields === TOTAL_QUEST_FIELDS;
   const headerTagStyles = uniqueCategoricalBadgeStyles([
@@ -977,7 +978,7 @@ export default function ProfileContent({
                   const nextKey = normalizeToS3Key(nextImage);
                   if (currentKey && currentKey !== nextKey) {
                     setPendingCleanupKeys((prev) =>
-                      prev.includes(currentKey) ? prev : [...prev, currentKey]
+                      prev.includes(currentKey) ? prev : [...prev, currentKey],
                     );
                   }
                   setEditImage(nextImage);
@@ -1072,7 +1073,7 @@ export default function ProfileContent({
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    <Github className="h-4 w-4" />
+                    <GithubIcon className="h-4 w-4" />
                     <span className="hidden sm:inline">
                       {extractGitHubUsername(profile.gitHub)}
                     </span>
@@ -1086,7 +1087,7 @@ export default function ProfileContent({
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    <Linkedin className="h-4 w-4" />
+                    <LinkedinIcon className="h-4 w-4" />
                     <span className="hidden sm:inline">LinkedIn</span>
                   </a>
                 )}
@@ -1246,7 +1247,7 @@ export default function ProfileContent({
                 value={editGraduationTerm}
                 onChange={(e) =>
                   setEditGraduationTerm(
-                    e.target.value as "SPRING" | "SUMMER" | "FALL" | ""
+                    e.target.value as "SPRING" | "SUMMER" | "FALL" | "",
                   )
                 }
                 className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
@@ -1414,7 +1415,7 @@ export default function ProfileContent({
                     style={categoricalBadgeStyle(
                       profile.mentorProfile.isActive
                         ? "Active Mentor"
-                        : "Inactive Mentor"
+                        : "Inactive Mentor",
                     )}
                   >
                     {profile.mentorProfile.isActive
@@ -1424,12 +1425,12 @@ export default function ProfileContent({
                   <Badge
                     variant="outline"
                     style={categoricalBadgeStyle(
-                      `expires-${profile.mentorProfile.expirationDate}`
+                      `expires-${profile.mentorProfile.expirationDate}`,
                     )}
                   >
                     Expires{" "}
                     {new Date(
-                      profile.mentorProfile.expirationDate
+                      profile.mentorProfile.expirationDate,
                     ).toLocaleDateString("en-US", {
                       month: "short",
                       day: "numeric",
@@ -1529,7 +1530,7 @@ export default function ProfileContent({
                             <span className="font-medium">
                               {normalizeMentorApplicationStatus(
                                 profile.mentorProfile.latestApplication.status,
-                                profile.mentorProfile.isActive
+                                profile.mentorProfile.isActive,
                               )}
                             </span>
                           </div>
@@ -1599,7 +1600,7 @@ export default function ProfileContent({
                                   >
                                     {course}
                                   </Badge>
-                                )
+                                ),
                               )
                             ) : (
                               <span className="text-sm font-medium">
@@ -1690,7 +1691,7 @@ export default function ProfileContent({
                         style={categoricalBadgeStyle(
                           activeMentorSemester
                             ? `semester-${activeMentorSemester.name}`
-                            : "semester-none"
+                            : "semester-none",
                         )}
                       >
                         {activeMentorSemester
@@ -1701,7 +1702,7 @@ export default function ProfileContent({
                         <Badge
                           variant="outline"
                           style={categoricalBadgeStyle(
-                            `editing-${editableApplication.semester.name}-${displayedEditableStatus}`
+                            `editing-${editableApplication.semester.name}-${displayedEditableStatus}`,
                           )}
                         >
                           {editableApplication.semester.name}

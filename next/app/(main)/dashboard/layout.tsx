@@ -24,6 +24,8 @@ export default async function DashboardLayout({
       isPrimary={authLevel.isPrimary}
       isMentoringHead={authLevel.isMentoringHead}
       isSeAdmin={authLevel.isSeAdmin}
+      isTechCommitteeHead={authLevel.isTechCommitteeHead}
+      isTechCommitteeDivisionManager={authLevel.isTechCommitteeDivisionManager}
     >
       {children}
     </DashboardAuthProvider>

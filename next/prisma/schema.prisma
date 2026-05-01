@@ -94,7 +94,34 @@ enum ElectionRunningMateStatus {
 
 enum PositionCategory {
   PRIMARY_OFFICER
+  COMMITTEE_HEAD
   SE_OFFICE
+}
+
+enum CommitteeHeadNominationCycleStatus {
+  OPEN
+  CLOSED
+  ARCHIVED
+}
+
+enum CommitteeHeadApplicationSource {
+  SELF
+  NOMINATED
+}
+
+enum CommitteeHeadApplicationStatus {
+  PENDING_ACCEPTANCE
+  SUBMITTED
+  SELECTED
+  NOT_SELECTED
+  DECLINED
+  WITHDRAWN
+}
+
+enum CommitteeHeadThirdPartyNominationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
 }
 
 model User {
@@ -160,6 +187,10 @@ model User {
   electionEmailLogs           ElectionEmailLog[]
   runningMateInvitations      ElectionRunningMateInvitation[] @relation("RunningMateInvitee")
   uploadedPhotos              Photo[]
+  committeeHeadApplications   CommitteeHeadApplication[]      @relation("CommitteeHeadApplicant")
+  committeeHeadSelections     CommitteeHeadApplication[]      @relation("CommitteeHeadSelector")
+  committeeHeadNominationsMade CommitteeHeadThirdPartyNomination[] @relation("CommitteeHeadNominator")
+  committeeHeadNominations     CommitteeHeadThirdPartyNomination[] @relation("CommitteeHeadNominee")
 }
 
 model Alumni {
@@ -319,6 +350,8 @@ model OfficerPosition {
   invitations      Invitation[]
   amendmentVotes   AmendmentVote[]
   electionOffices  ElectionOffice[]
+  committeeHeadApplicationPreferences CommitteeHeadApplicationPreference[]
+  selectedCommitteeHeadApplications   CommitteeHeadApplication[]
 }
 
 model HandoverDocument {
@@ -638,6 +671,99 @@ model TechCommitteeApplication {
   @@unique([userId, cycleId])
 }
 
+model CommitteeHeadNominationCycle {
+  id        Int                                @id @default(autoincrement())
+  name      String                             @db.VarChar(120)
+  term      AcademicTerm
+  year      Int
+  status    CommitteeHeadNominationCycleStatus @default(OPEN)
+  openedAt  DateTime                           @default(now())
+  closedAt  DateTime?
+  createdAt DateTime                           @default(now())
+  updatedAt DateTime                           @updatedAt
+
+  officerTermStart DateTime
+  officerTermEnd   DateTime
+
+  sourceElectionId Int?
+
+  sourceElection Election?                  @relation(fields: [sourceElectionId], references: [id], onDelete: SetNull)
+  applications   CommitteeHeadApplication[]
+  nominations    CommitteeHeadThirdPartyNomination[]
+
+  @@unique([term, year])
+}
+
+model CommitteeHeadApplication {
+  id              Int                            @id @default(autoincrement())
+  cycleId         Int
+  applicantUserId Int
+  source          CommitteeHeadApplicationSource
+  status          CommitteeHeadApplicationStatus @default(SUBMITTED)
+
+  yearLevel        String @default("") @db.VarChar(80)
+  major            String @default("") @db.VarChar(120)
+  experienceText   String @default("") @db.Text
+  whyInterested    String @default("") @db.Text
+  weeklyCommitment String @default("") @db.Text
+  comments         String? @db.Text
+
+  submittedAt        DateTime?
+  acceptedAt         DateTime?
+  declinedAt         DateTime?
+  withdrawnAt        DateTime?
+  selectedAt         DateTime?
+  selectedById       Int?
+  selectedPositionId Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cycle            CommitteeHeadNominationCycle @relation(fields: [cycleId], references: [id], onDelete: Cascade)
+  applicant        User                         @relation("CommitteeHeadApplicant", fields: [applicantUserId], references: [id], onDelete: Cascade)
+  selectedBy       User?                        @relation("CommitteeHeadSelector", fields: [selectedById], references: [id], onDelete: SetNull)
+  selectedPosition OfficerPosition?             @relation(fields: [selectedPositionId], references: [id], onDelete: SetNull)
+  preferences      CommitteeHeadApplicationPreference[]
+  nominations      CommitteeHeadThirdPartyNomination[]
+
+  @@unique([cycleId, applicantUserId])
+}
+
+model CommitteeHeadApplicationPreference {
+  id                Int @id @default(autoincrement())
+  applicationId     Int
+  officerPositionId Int
+  rank              Int
+
+  application     CommitteeHeadApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  officerPosition OfficerPosition          @relation(fields: [officerPositionId], references: [id], onDelete: Cascade)
+
+  @@unique([applicationId, officerPositionId])
+  @@unique([applicationId, rank])
+}
+
+model CommitteeHeadThirdPartyNomination {
+  id            Int @id @default(autoincrement())
+  applicationId Int
+  cycleId       Int
+  nomineeUserId Int
+  nominatorUserId Int
+
+  reason                   String @db.Text
+  suggestedPositionIdsJson String @db.Text
+  status                   CommitteeHeadThirdPartyNominationStatus @default(PENDING)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  application CommitteeHeadApplication   @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  cycle       CommitteeHeadNominationCycle @relation(fields: [cycleId], references: [id], onDelete: Cascade)
+  nominee     User                       @relation("CommitteeHeadNominee", fields: [nomineeUserId], references: [id], onDelete: Cascade)
+  nominator   User                       @relation("CommitteeHeadNominator", fields: [nominatorUserId], references: [id], onDelete: Cascade)
+
+  @@unique([cycleId, nomineeUserId, nominatorUserId])
+}
+
 // Mentor availability per user per semester (replaces When2Meet)
 model MentorAvailability {
   // Store an automatically generated unique int for id
@@ -844,6 +970,9 @@ model Photo {
   batchId String @db.VarChar(80)
 
   @@index([status, sortDate])
+  @@index([status, sortDate, id])
+  @@index([status, category, sortDate, id])
+  @@index([status, eventId, sortDate, id])
   @@index([eventId])
   @@index([category])
   @@index([batchId])
@@ -1301,6 +1430,7 @@ model Election {
   approvals   ElectionApproval[]
   ballots     ElectionBallot[]
   emailLogs   ElectionEmailLog[]
+  committeeHeadNominationCycles CommitteeHeadNominationCycle[]
 }
 
 model ElectionOffice {

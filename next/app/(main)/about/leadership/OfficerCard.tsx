@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Github, Linkedin, Mail } from "lucide-react";
+import { Mail } from "lucide-react";
+import { GithubIcon, LinkedinIcon } from "@/components/common/BrandIcons";
 import { TeamMember } from "./team";
 import Avatar from "boring-avatars";
 import { Card } from "@/components/ui/card";
@@ -67,7 +68,7 @@ export default function OfficerCard({
             rel="noopener noreferrer"
             className="text-muted-foreground hover:text-primary transition-colors"
           >
-            <Linkedin className="h-5 w-5" />
+            <LinkedinIcon className="h-5 w-5" />
           </a>
         )}
         {teamMember.github && (
@@ -77,7 +78,7 @@ export default function OfficerCard({
             rel="noopener noreferrer"
             className="text-muted-foreground hover:text-primary transition-colors"
           >
-            <Github className="h-5 w-5" />
+            <GithubIcon className="h-5 w-5" />
           </a>
         )}
         {teamMember.email && (

@@ -24,12 +24,12 @@ export default async function PhotosPage() {
       orderBy: { date: "desc" },
       select: { id: true, title: true, date: true },
     }),
-    prisma.photo.findMany({
-      where: { status: "published" },
-      distinct: ["sortDate"],
-      select: { sortDate: true },
-      orderBy: { sortDate: "desc" },
-    }),
+    prisma.$queryRaw<{ year: number }[]>`
+      SELECT DISTINCT EXTRACT(YEAR FROM "sortDate")::int AS year
+      FROM "Photo"
+      WHERE "status" = 'published'
+      ORDER BY year DESC
+    `,
     prisma.photo.count({ where: { status: "published" } }),
   ]);
 
@@ -37,24 +37,31 @@ export default async function PhotosPage() {
 
   return (
     <section className="mt-16 pb-16 w-full">
-      <div className="w-full max-w-screen-xl mx-auto px-4 md:px-8">
+      <div className="w-full max-w-screen-2xl mx-auto px-3 sm:px-4 md:px-6 xl:px-8">
         <PhotosClient
           initialPhotos={initialPhotos.map(toPhotoDto)}
           initialNextCursor={
             photos.length > PAGE_SIZE
-              ? String(initialPhotos[initialPhotos.length - 1]?.id)
+              ? encodePhotoCursor(initialPhotos[initialPhotos.length - 1])
               : null
           }
           events={events.map(toEventOption)}
-          years={Array.from(
-            new Set(years.map((row) => row.sortDate.getUTCFullYear()))
-          )}
+          years={years.map((row) => Number(row.year))}
           categories={[...PHOTO_CATEGORIES]}
           totalPhotoCount={totalPhotoCount}
         />
       </div>
     </section>
   );
+}
+
+function encodePhotoCursor(photo: { sortDate: Date; id: number }) {
+  return Buffer.from(
+    JSON.stringify({
+      sortDate: photo.sortDate.toISOString(),
+      id: photo.id,
+    })
+  ).toString("base64url");
 }
 
 function toEventOption(event: {

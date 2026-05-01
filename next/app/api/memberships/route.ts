@@ -5,7 +5,7 @@ import {
   MANUAL_MEMBERSHIP_REASONS,
   normalizeMembershipDateInput,
 } from "@/lib/membershipUtils";
-import { getAcademicTermFromDate } from "@/lib/academicTerm";
+import { getCurrentSseOperationalTerm } from "@/lib/sseTerms";
 
 const CreateMembershipSchema = z.object({
   userId: z.number().positive(),
@@ -16,9 +16,10 @@ const CreateMembershipSchema = z.object({
 /**
  * Handles GET requests to the `/api/memberships/` endpoint.
  *
- * Groups memberships by user, counting the number of memberships per user and retrieving
- * the most recent membership date for each user. The results are ordered by membership count
- * (descending) and then by the most recent membership date (descending).
+ * Groups active-term memberships by user, counting the number of memberships
+ * per user for the current SSE operational term and retrieving the most recent
+ * membership date for each user. Summer is intentionally skipped: after Spring,
+ * SSE's next active membership term is Fall.
  *
  * For each grouped user, fetches their name and returns a JSON array of objects containing:
  * - `userId`: The user's ID.
@@ -30,8 +31,10 @@ const CreateMembershipSchema = z.object({
  */
 export async function GET() {
   console.log("GET /api/memberships/");
+  const activeTerm = getCurrentSseOperationalTerm();
   const grouped = await prisma.memberships.groupBy({
     by: ["userId"],
+    where: activeTerm,
     _count: {
       userId: true, // memberships per user
     },
@@ -127,11 +130,11 @@ export async function POST(request: Request) {
     return new Response("Invalid membership payload.", { status: 400 });
   }
 
-  // Derive term/year from dateGiven so admin backfills for past terms
-  // land in the correct bucket rather than always the current term.
+  // Derive the SSE operational term from dateGiven so admin backfills
+  // land in the same Spring/Fall buckets the leaderboard reads. Summer
+  // dates intentionally roll into Fall because SSE is closed in Summer.
   const dateGivenDate = new Date(normalizedDateGiven);
-  const term = getAcademicTermFromDate(dateGivenDate);
-  const year = dateGivenDate.getFullYear();
+  const { term, year } = getCurrentSseOperationalTerm(dateGivenDate);
 
   const created = await prisma.memberships.create({
     data: {

@@ -28,7 +28,11 @@ export default function SponsorsPage() {
       </NeoCard>
 
       {/* Sponsorship Tiers */}
-      <Card className="w-full p-6 md:p-10">
+      {/* `scroll-mt-24` keeps the heading clear of the fixed-ish navbar
+          when navigated to via the `/sponsors#sponsor` deep link from
+          the Companies dropdown. Same pattern on `#recruit` and `#vise`
+          below. */}
+      <Card id="sponsor" className="w-full p-6 md:p-10 scroll-mt-24">
         <h2 className="text-3xl font-bold font-display mb-8 text-center">
           Sponsorship Options
         </h2>
@@ -56,7 +60,7 @@ export default function SponsorsPage() {
       </Card>
 
       {/* Recruiting Talks Section */}
-      <Card className="w-full p-6 md:p-10">
+      <Card id="recruit" className="w-full p-6 md:p-10 scroll-mt-24">
         <h2 className="text-3xl font-bold font-display mb-6">
           Recruiting Talks
         </h2>
@@ -107,7 +111,7 @@ export default function SponsorsPage() {
       </Card>
 
       {/* Voices in Software Engineering (ViSE) Section */}
-      <Card className="w-full p-6 md:p-10">
+      <Card id="vise" className="w-full p-6 md:p-10 scroll-mt-24">
         <h2 className="text-3xl font-bold font-display mb-2">
           Voices in Software Engineering (ViSE)
         </h2>

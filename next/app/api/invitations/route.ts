@@ -4,6 +4,11 @@ import { sendEmail, isEmailConfigured } from "@/lib/email";
 import { NextRequest } from "next/server";
 import { getPublicBaseUrl } from "@/lib/baseUrl";
 import { resolveAuthLevelFromRequest } from "@/lib/authLevelResolver";
+import {
+  createOfficerInvitationRecord,
+  InvitationError,
+  sendOfficerInvitationEmail,
+} from "@/lib/officerInvitations";
 
 export const dynamic = "force-dynamic";
 
@@ -114,36 +119,36 @@ export async function POST(request: NextRequest) {
     });
   }
 
-  // For officer invitations, validate required fields
   if (type === "officer") {
-    if (!positionId || !startDate || !endDate) {
+    try {
+      const { invitation } = await createOfficerInvitationRecord({
+        email,
+        positionId,
+        startDate,
+        endDate,
+        invitedBy: loggedInUser.id,
+      });
+
+      try {
+        await sendOfficerInvitationEmail({
+          invitation,
+          baseUrl: getPublicBaseUrl(request),
+        });
+        console.log(`Invitation email sent to ${email} for officer invitation`);
+      } catch (emailError) {
+        console.error("Failed to send invitation email:", emailError);
+      }
+
+      return Response.json(invitation, { status: 201 });
+    } catch (error) {
+      if (error instanceof InvitationError) {
+        return new Response(error.message, { status: error.status });
+      }
       return new Response(
-        'Officer invitations require "positionId", "startDate", and "endDate"',
-        { status: 400 }
-      );
-    }
-
-    // Check if position exists
-    const position = await prisma.officerPosition.findUnique({
-      where: { id: positionId },
-    });
-
-    if (!position) {
-      return new Response("Position not found", { status: 404 });
-    }
-
-    // Check if position already has an active officer
-    const activeOfficer = await prisma.officer.findFirst({
-      where: {
-        position_id: positionId,
-        is_active: true,
-      },
-    });
-
-    if (activeOfficer) {
-      return new Response(
-        "This position already has an active officer. Remove them first or wait for their term to end.",
-        { status: 409 }
+        error instanceof Error
+          ? error.message
+          : "Failed to create officer invitation",
+        { status: 500 },
       );
     }
   }
@@ -180,7 +185,7 @@ export async function POST(request: NextRequest) {
   if (existingInvitation) {
     return new Response(
       `An invitation for this email as a ${type} already exists`,
-      { status: 409 }
+      { status: 409 },
     );
   }
 

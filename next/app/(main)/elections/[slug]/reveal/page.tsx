@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import {
-  PRESIDENT_TITLE,
   VICE_PRESIDENT_TITLE,
   compareByPrimaryOrder,
   tallyElectionForDisplay,
@@ -12,7 +11,15 @@ import type { RevealSlide } from "./ElectionResultsReveal";
 
 /**
  * "Your new officers" reveal server page. Plays a full-screen carousel
- * announcing each winner in turn, then offers a CTA to the stats page.
+ * announcing each office in turn, then offers a CTA to the stats page.
+ *
+ * Every office in the election gets a slide — winners get the full
+ * dancing-letters celebration; offices that ran without an eligible
+ * candidate, or hit an unresolved tie, get a quieter "no winner" slide
+ * so the audience can see the complete slate. Skipping no-winner offices
+ * (the previous behavior) hid them entirely, which made it look like
+ * the navbar / reveal was wrong rather than the office actually being
+ * vacant.
  *
  * Only available after certification — before then the stats page is
  * still accessible to admins for pre-certification review and a
@@ -51,36 +58,34 @@ export default async function ElectionResultsRevealPage({
 
   const slides: RevealSlide[] = [];
   for (const r of orderedResults) {
-    if (!r.winner) continue;
+    // No-winner offices (no eligible candidates ran, or unresolved tie)
+    // still earn a slide. The slide carries the office title + the
+    // tally `status` string, and the client renders a status-aware
+    // "no winner" panel instead of the dancing-letters celebration.
+    if (!r.winner) {
+      slides.push({
+        officeTitle: r.officeTitle,
+        status: r.status,
+        winnerName: null,
+        winnerUserId: null,
+        winnerImage: null,
+        statement: null,
+        yearLevel: null,
+        program: null,
+        isTicketDerived: r.ticketDerived ?? false,
+      });
+      continue;
+    }
 
     if (r.ticketDerived && r.officeTitle === VICE_PRESIDENT_TITLE) {
-      // VP slide — no nomination record; pull the invitee from the
-      // presidential office's running-mate invitation.
-      const presidentOffice = election.offices.find(
-        (o) => o.officerPosition.title === PRESIDENT_TITLE
-      );
-      let inviteeUserId = 0;
-      let inviteeName = r.winner.name;
-      let inviteeImage: string | null = null;
-      if (presidentOffice) {
-        for (const nomination of presidentOffice.nominations) {
-          const inv = nomination.runningMateInvitation;
-          if (inv && inv.status === "ACCEPTED" && inv.invitee) {
-            inviteeUserId = inv.invitee.id;
-            inviteeName = inv.invitee.name;
-            inviteeImage = resolveUserImage(
-              inv.invitee.profileImageKey ?? null,
-              inv.invitee.googleImageURL ?? null
-            );
-            break;
-          }
-        }
-      }
+      // VP slide — no nomination record. The display tally already resolves
+      // the winning presidential ticket's accepted running mate.
       slides.push({
         officeTitle: VICE_PRESIDENT_TITLE,
-        winnerName: inviteeName,
-        winnerUserId: inviteeUserId,
-        winnerImage: inviteeImage,
+        status: "ok",
+        winnerName: r.winner.name,
+        winnerUserId: r.winner.userId,
+        winnerImage: r.winner.image,
         statement:
           "Elected as the running mate on the winning presidential ticket.",
         yearLevel: null,
@@ -98,6 +103,7 @@ export default async function ElectionResultsRevealPage({
     );
     slides.push({
       officeTitle: r.officeTitle,
+      status: "ok",
       winnerName: r.winner.name,
       winnerUserId: nomination?.nomineeUserId ?? 0,
       winnerImage: nomination?.nominee

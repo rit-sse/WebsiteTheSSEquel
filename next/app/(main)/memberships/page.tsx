@@ -116,13 +116,13 @@ export default function Leaderboard() {
           data={items}
           columns={columns}
           keyField="userId"
-          title="Memberships Leaderboard"
+          title="Membership Leaderboard"
           searchPlaceholder="Search members..."
           searchFields={["name"]}
           onAdd={isOfficer ? () => setOpen(true) : undefined}
           addLabel="Add Membership"
           isLoading={isLoading}
-          emptyMessage="No memberships yet"
+          emptyMessage="No memberships yet for this term"
           enablePagination
           pageSizeOptions={[10, 25, 50, 100]}
           defaultPageSize={25}

@@ -331,6 +331,19 @@ const invitationsVerifier: AuthVerifier = async (request: NextRequest) => {
 };
 
 /**
+ * Auth verifier for election routes:
+ *  - GET is public (election results / nomination listing).
+ *  - Mutations require a signed-in user (the route
+ *    handlers run finer-grained checks like active membership).
+ */
+const electionsVerifier: AuthVerifier = async (request: NextRequest) => {
+  if (request.method === "GET") {
+    return { isAllowed: true, authType: "None" };
+  }
+  return signedInVerifier(request);
+};
+
+/**
  * Map from API route name to authorization verifier. The verifier should be run against any request that
  * goes through that route.
  * Keys are the second element in the path segment; for example, the path "/api/golinks/officer" would
@@ -347,11 +360,12 @@ const ROUTES: { [key: string]: AuthVerifier } = {
   authLevel: allowAllVerifier,
   aws: awsVerifier,
   calendar: nonGetOfficerVerifier,
+  "committee-head-nominations": allowAllVerifier,
   course: nonGetOfficerVerifier,
   courseTaken: nonGetMentorVerifier,
   departments: nonGetOfficerVerifier,
   email: officerVerifier,
-  elections: nonGetVerifier(signedInVerifier),
+  elections: electionsVerifier,
   event: eventVerifier,
   go: allowAllVerifier,
   golinks: goLinkVerifier,

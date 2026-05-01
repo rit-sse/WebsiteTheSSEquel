@@ -2,7 +2,15 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ChevronDown, Menu, User, LogOut } from "lucide-react";
+import {
+  ChevronDown,
+  Menu,
+  User,
+  LogOut,
+  LayoutDashboard,
+  Vote,
+  Mail,
+} from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import SSELogoFull from "../common/SSELogoFull";
 import AuthButton from "./AuthButton";
@@ -31,116 +39,31 @@ import {
 } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import type { ActiveElectionSummary } from "@/lib/elections";
+import { buildNavGroups } from "@/lib/navbarConfig";
 
-const aboutItems = [
-  {
-    title: "About Us",
-    href: "/about",
-    description:
-      "Learn about the Society of Software Engineers and our mission.",
-  },
-  {
-    title: "Get Involved",
-    href: "/about/get-involved",
-    description: "Discover ways to participate and contribute to SSE.",
-  },
-  {
-    title: "Become a Mentor",
-    href: "/mentoring/apply",
-    description: "Apply to help fellow students in the SSE lab.",
-  },
-  {
-    title: "Leadership",
-    href: "/about/leadership",
-    description: "Meet the team leading SSE this year.",
-  },
-  {
-    title: "Alumni",
-    href: "/about/alumni",
-    description: "Connect with SSE graduates and their stories.",
-  },
-  {
-    title: "Committees",
-    href: "/about/committees",
-    description: "Explore our specialized committees and their work.",
-  },
-  {
-    title: "Constitution",
-    href: "/about/constitution",
-    description: "Read our governing document and bylaws.",
-  },
-  {
-    title: "Primary Officer's Policy",
-    href: "/about/primary-officers-policy",
-    description: "View our officer guidelines and policies.",
-  },
-];
-
-const dashboardItems = [
-  {
-    title: "Purchasing",
-    href: "/purchasing",
-    description: "Request PCard checkout and submit receipts.",
-  },
-  {
-    title: "Attendance",
-    href: "/attendance",
-    description: "View event attendance lists and QR flyers.",
-  },
-  {
-    title: "Mentoring",
-    href: "/dashboard/mentoring",
-    description: "Manage mentor schedules and roster.",
-  },
-  {
-    title: "Tech Committee Apps",
-    href: "/dashboard/tech-committee",
-    description: "Review Tech Committee applications and manage availability.",
-  },
-  {
-    title: "Positions & Officers",
-    href: "/dashboard/positions",
-    description: "Manage officer positions and assignments.",
-  },
-  {
-    title: "Users",
-    href: "/dashboard/users",
-    description: "Manage user accounts.",
-  },
-  {
-    title: "Sponsors",
-    href: "/dashboard/sponsors",
-    description: "Manage sponsor information.",
-  },
-  {
-    title: "Alumni Review",
-    href: "/dashboard/alumni",
-    description: "Review alumni requests and auto-generated candidates.",
-  },
-  {
-    title: "Elections",
-    href: "/dashboard/elections",
-    description: "Create and manage primary-officer election cycles.",
-  },
-  {
-    title: "Announcements",
-    href: "/dashboard/announcements",
-    description: "Manage site-wide announcement banners.",
-  },
-  {
-    title: "Photos",
-    href: "/dashboard/photos",
-    description: "Upload and manage SSE photo library images.",
-  },
-];
+/**
+ * Audience-grouped dropdowns rendered between the top-level shortcuts
+ * (About, Photos) and the avatar. Each entry's items are rendered in a
+ * single column when there are two or fewer of them — a 2-col grid on
+ * a 2-item dropdown looks empty.
+ *
+ * Alumni and Companies link into the one-page `/sponsors` via section
+ * anchors (`#sponsor`, `#recruit`, `#vise`) instead of duplicating
+ * routes; that page adds matching `id` + `scroll-mt-24` so headings
+ * clear the navbar after the jump.
+ *
+ * SE Office is gated to SE Office users. Elections surface under Students
+ * only while an election is open for nominations or voting.
+ */
 
 interface NavbarProps {
   /** Resolved on the server so the first paint already includes Dashboard / profile link. */
   serverUserId?: number | null;
   serverShowDashboard?: boolean;
   serverProfileComplete?: boolean;
-  /** When set, the navbar shows a top-level "Elections" link pointing at the
-   * live election. Rendered on the server so the first paint is correct. */
+  serverIsSeAdmin?: boolean;
+  /** Rendered on the server so the first paint includes an open election link
+   * under Students when nominations or voting are live. */
   serverActiveElection?: ActiveElectionSummary | null;
 }
 
@@ -148,6 +71,7 @@ const Navbar: React.FC<NavbarProps> = ({
   serverUserId = null,
   serverShowDashboard = false,
   serverProfileComplete = true,
+  serverIsSeAdmin = false,
   serverActiveElection = null,
 }) => {
   const [open, setOpen] = React.useState(false);
@@ -158,109 +82,36 @@ const Navbar: React.FC<NavbarProps> = ({
   const [showDashboard, setShowDashboard] = React.useState(serverShowDashboard);
   const [userId, setUserId] = React.useState<number | null>(serverUserId);
   const [profileComplete, setProfileComplete] = React.useState(
-    serverProfileComplete
+    serverProfileComplete,
   );
-  const [hasMentorAvailabilityUpdates, setHasMentorAvailabilityUpdates] =
-    React.useState(false);
-  const [canViewTechCommitteeDashboard, setCanViewTechCommitteeDashboard] =
-    React.useState(false);
-  const [canManagePhotos, setCanManagePhotos] = React.useState(false);
-  const [isPrimary, setIsPrimary] = React.useState(false);
+  const [isSeAdmin, setIsSeAdmin] = React.useState(serverIsSeAdmin);
 
-  // Background refresh so dynamic changes (e.g. profile completion) still propagate
+  // Background refresh so dynamic changes (e.g. profile completion) still
+  // propagate. The navbar no longer renders a dashboard dropdown, so we only
+  // need the top-level "is this user an officer/mentor?" gate plus the
+  // profile fields — the dashboard page itself owns the per-section
+  // visibility now.
   React.useEffect(() => {
     if (!session) {
-        setShowDashboard(false);
-        setUserId(null);
-        setCanViewTechCommitteeDashboard(false);
-        setCanManagePhotos(false);
-        setIsPrimary(false);
-        return;
+      setShowDashboard(false);
+      setIsSeAdmin(false);
+      setUserId(null);
+      return;
     }
 
     (async () => {
       try {
         const response = await fetch("/api/authLevel");
         const data = await response.json();
-        setShowDashboard(data.isOfficer || data.isMentor);
+        setShowDashboard(data.isOfficer || data.isMentor || data.isSeAdmin);
+        setIsSeAdmin(Boolean(data.isSeAdmin));
         setUserId(data.userId ?? null);
         setProfileComplete(data.profileComplete ?? true);
-        setCanManagePhotos(!!(data.isOfficer || data.isSeAdmin));
-        // Use the DB-truth flag, NOT `data.isPrimary` — the latter is
-        // set to true by STAGING_PROXY_AUTH for every signed-in user,
-        // which makes the Elections dropdown item show up for everyone
-        // on ssedev (including non-primaries like the Tech Head).
-        setIsPrimary(!!data.isPrimaryOfficer);
-        setCanViewTechCommitteeDashboard(
-          !!(
-            data.isTechCommitteeHead ||
-            data.isPrimary ||
-            data.isTechCommitteeDivisionManager
-          )
-        );
-        if (data.isMentoringHead) {
-          const updatesResponse = await fetch(
-            "/api/mentor-availability/updates"
-          );
-          if (updatesResponse.ok) {
-            const updatesData = await updatesResponse.json();
-            const latestUpdatedAt = updatesData?.latestUpdatedAt
-              ? Date.parse(updatesData.latestUpdatedAt)
-              : 0;
-            const seenAt = Number(
-              localStorage.getItem("mentor-availability-last-seen") || "0"
-            );
-            setHasMentorAvailabilityUpdates(latestUpdatedAt > seenAt);
-          } else {
-            setHasMentorAvailabilityUpdates(false);
-          }
-        } else {
-          setHasMentorAvailabilityUpdates(false);
-        }
       } catch (error) {
         console.error("Error checking auth level:", error);
-        setCanViewTechCommitteeDashboard(false);
-        setCanManagePhotos(false);
-        setIsPrimary(false);
       }
     })();
   }, [session]);
-
-  const visibleDashboardItems = React.useMemo(
-    () =>
-      dashboardItems.filter((item) => {
-        if (item.href === "/dashboard/tech-committee") {
-          return canViewTechCommitteeDashboard;
-        }
-        if (
-          item.href === "/dashboard/elections" ||
-          item.href === "/dashboard/announcements"
-        ) {
-          return isPrimary;
-        }
-        if (item.href === "/dashboard/photos") {
-          return canManagePhotos;
-        }
-        return true;
-      }),
-    [canManagePhotos, canViewTechCommitteeDashboard, isPrimary]
-  );
-
-  React.useEffect(() => {
-    const handleMentorAvailabilitySeen = () => {
-      setHasMentorAvailabilityUpdates(false);
-    };
-    window.addEventListener(
-      "mentor-availability-seen",
-      handleMentorAvailabilitySeen
-    );
-    return () => {
-      window.removeEventListener(
-        "mentor-availability-seen",
-        handleMentorAvailabilitySeen
-      );
-    };
-  }, []);
 
   // Controlled state for navigation menu - click to activate, then hover works
   const [menuValue, setMenuValue] = React.useState<string>("");
@@ -291,6 +142,13 @@ const Navbar: React.FC<NavbarProps> = ({
     }
   };
 
+  const navGroups = React.useMemo(() => {
+    return buildNavGroups({
+      isSeAdmin,
+      activeElection: serverActiveElection,
+    });
+  }, [isSeAdmin, serverActiveElection]);
+
   return (
     <nav
       id="navbar"
@@ -315,26 +173,24 @@ const Navbar: React.FC<NavbarProps> = ({
             value={menuValue}
             onValueChange={handleValueChange}
             delayDuration={isMenuActive ? 100 : 1000000}
+            viewport={false}
           >
             <NavigationMenuList>
+              {/* Top-level shortcut: About is its own page, no
+                  dropdown needed now that Credits / Get Involved live
+                  elsewhere. */}
               <NavigationMenuItem>
                 <NavigationMenuLink
                   asChild
                   className={navigationMenuTriggerStyle()}
                 >
-                  <Link href="/library">Library</Link>
+                  <Link href="/about">About</Link>
                 </NavigationMenuLink>
               </NavigationMenuItem>
 
-              <NavigationMenuItem>
-                <NavigationMenuLink
-                  asChild
-                  className={navigationMenuTriggerStyle()}
-                >
-                  <Link href="/events/calendar">Events</Link>
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-
+              {/* Top-level shortcut: Photos is the most-visited page
+                  outside of Events, so it earns its own slot rather
+                  than living inside the Students dropdown. */}
               <NavigationMenuItem>
                 <NavigationMenuLink
                   asChild
@@ -344,118 +200,68 @@ const Navbar: React.FC<NavbarProps> = ({
                 </NavigationMenuLink>
               </NavigationMenuItem>
 
-              <NavigationMenuItem>
-                <NavigationMenuLink
-                  asChild
-                  className={navigationMenuTriggerStyle()}
-                >
-                  <Link href="/mentoring/schedule">Mentor Schedule</Link>
-                </NavigationMenuLink>
-              </NavigationMenuItem>
+              {navGroups.map((group) => {
+                // Two-or-fewer-item groups render single-column so the
+                // dropdown panel doesn't show a half-empty 2-col grid.
+                const single = group.items.length <= 2;
+                const dropdownGridStyle: React.CSSProperties = {
+                  width: "100%",
+                  gridTemplateColumns: single
+                    ? "minmax(0, 1fr)"
+                    : "repeat(auto-fit, minmax(min(200px, 100%), 1fr))",
+                };
+                const dropdownContentStyle: React.CSSProperties = {
+                  width: single
+                    ? "min(240px, calc(100vw - 32px))"
+                    : "min(500px, calc(100vw - 32px))",
+                  maxHeight: "min(70vh, calc(100vh - 8rem))",
+                };
 
-              <NavigationMenuItem>
-                <NavigationMenuLink
-                  asChild
-                  className={navigationMenuTriggerStyle()}
-                >
-                  <Link href="/memberships">Leaderboard</Link>
-                </NavigationMenuLink>
-              </NavigationMenuItem>
+                return (
+                  <NavigationMenuItem
+                    key={group.value}
+                    value={group.value}
+                    className={single ? "relative" : "static"}
+                  >
+                    <NavigationMenuTrigger
+                      onClick={handleTriggerClick(group.value)}
+                    >
+                      {group.label}
+                    </NavigationMenuTrigger>
+                    <NavigationMenuContent
+                      style={dropdownContentStyle}
+                      className={cn(
+                        "p-0 overflow-x-hidden overflow-y-auto",
+                        !single && "lg:left-auto lg:right-0",
+                      )}
+                    >
+                      <ul
+                        className="grid auto-rows-fr items-stretch gap-4 p-4"
+                        style={dropdownGridStyle}
+                      >
+                        {group.items.map((item) => (
+                          <ListItem
+                            key={item.title}
+                            title={item.title}
+                            href={item.href}
+                          >
+                            {item.description}
+                          </ListItem>
+                        ))}
+                      </ul>
+                    </NavigationMenuContent>
+                  </NavigationMenuItem>
+                );
+              })}
 
-              <NavigationMenuItem>
-                <NavigationMenuLink
-                  asChild
-                  className={navigationMenuTriggerStyle()}
-                >
-                  <Link href="/projects">Projects</Link>
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-
-              <NavigationMenuItem>
-                <NavigationMenuLink
-                  asChild
-                  className={navigationMenuTriggerStyle()}
-                >
-                  <Link href="/go">Go Links</Link>
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-
-              {serverActiveElection && (
+              {showDashboard && (
                 <NavigationMenuItem>
                   <NavigationMenuLink
                     asChild
                     className={navigationMenuTriggerStyle()}
                   >
-                    <Link href={`/elections/${serverActiveElection.slug}`}>
-                      Elections
-                    </Link>
+                    <Link href="/dashboard">Officer Dashboard</Link>
                   </NavigationMenuLink>
-                </NavigationMenuItem>
-              )}
-
-              <NavigationMenuItem>
-                <NavigationMenuLink
-                  asChild
-                  className={navigationMenuTriggerStyle()}
-                >
-                  <Link href="/sponsors">Sponsors</Link>
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-
-              <NavigationMenuItem value="about">
-                <NavigationMenuTrigger onClick={handleTriggerClick("about")}>
-                  About
-                </NavigationMenuTrigger>
-                <NavigationMenuContent>
-                  <ul className="grid gap-3 p-4 md:w-[400px] lg:w-[500px] lg:grid-cols-2">
-                    {aboutItems.map((item) => (
-                      <ListItem
-                        key={item.title}
-                        title={item.title}
-                        href={item.href}
-                      >
-                        {item.description}
-                      </ListItem>
-                    ))}
-                  </ul>
-                </NavigationMenuContent>
-              </NavigationMenuItem>
-
-              {showDashboard && (
-                <NavigationMenuItem value="dashboard">
-                  <NavigationMenuTrigger
-                    onClick={handleTriggerClick("dashboard")}
-                  >
-                    <span className="inline-flex items-center gap-2">
-                      Dashboard
-                      {hasMentorAvailabilityUpdates && (
-                        <span className="h-2 w-2 rounded-full bg-destructive" />
-                      )}
-                    </span>
-                  </NavigationMenuTrigger>
-                  <NavigationMenuContent>
-                    <ul className="grid gap-3 p-4 md:w-[400px] lg:w-[500px] lg:grid-cols-2">
-                      {visibleDashboardItems.map((item) => (
-                        <ListItem
-                          key={item.title}
-                          title={
-                            item.href === "/dashboard/mentoring" &&
-                            hasMentorAvailabilityUpdates ? (
-                              <span className="inline-flex items-center gap-2">
-                                {item.title}
-                                <span className="h-2 w-2 rounded-full bg-destructive" />
-                              </span>
-                            ) : (
-                              item.title
-                            )
-                          }
-                          href={item.href}
-                        >
-                          {item.description}
-                        </ListItem>
-                      ))}
-                    </ul>
-                  </NavigationMenuContent>
                 </NavigationMenuItem>
               )}
 
@@ -482,77 +288,30 @@ const Navbar: React.FC<NavbarProps> = ({
                 <SheetTitle className="text-left">Menu</SheetTitle>
               </SheetHeader>
               <nav className="flex flex-col gap-2 mt-6">
-                <MobileNavLink
-                  href="/events/calendar"
-                  onClick={() => setOpen(false)}
-                >
-                  Events
+                {/* Top-level shortcuts mirror desktop: About + Photos
+                    sit above the audience collapsibles so they're a
+                    single tap on mobile. */}
+                <MobileNavLink href="/about" onClick={() => setOpen(false)}>
+                  About
                 </MobileNavLink>
 
                 <MobileNavLink href="/photos" onClick={() => setOpen(false)}>
                   Photos
                 </MobileNavLink>
 
-                <MobileNavLink
-                  href="/mentoring/schedule"
-                  onClick={() => setOpen(false)}
-                >
-                  Mentor Schedule
-                </MobileNavLink>
-
-                <MobileNavLink
-                  href="/memberships"
-                  onClick={() => setOpen(false)}
-                >
-                  Leaderboard
-                </MobileNavLink>
-
-                <MobileNavLink href="/projects" onClick={() => setOpen(false)}>
-                  Projects
-                </MobileNavLink>
-
-                <MobileNavLink href="/go" onClick={() => setOpen(false)}>
-                  Go Links
-                </MobileNavLink>
-
-                {serverActiveElection && (
+                {showDashboard && (
                   <MobileNavLink
-                    href={`/elections/${serverActiveElection.slug}`}
+                    href="/dashboard"
                     onClick={() => setOpen(false)}
                   >
-                    Elections
+                    <LayoutDashboard className="h-4 w-4 mr-2" />
+                    Officer Dashboard
                   </MobileNavLink>
                 )}
 
-                <MobileNavLink href="/sponsors" onClick={() => setOpen(false)}>
-                  Sponsors
-                </MobileNavLink>
-
-                <MobileNavCollapsible title="About">
-                  {aboutItems.map((item) => (
-                    <MobileNavLink
-                      key={item.title}
-                      href={item.href}
-                      onClick={() => setOpen(false)}
-                      className="pl-4"
-                    >
-                      {item.title}
-                    </MobileNavLink>
-                  ))}
-                </MobileNavCollapsible>
-
-                {showDashboard && (
-                  <MobileNavCollapsible
-                    title={
-                      <span className="inline-flex items-center gap-2">
-                        Dashboard
-                        {hasMentorAvailabilityUpdates && (
-                          <span className="h-2 w-2 rounded-full bg-destructive" />
-                        )}
-                      </span>
-                    }
-                  >
-                    {visibleDashboardItems.map((item) => (
+                {navGroups.map((group) => (
+                  <MobileNavCollapsible key={group.value} title={group.label}>
+                    {group.items.map((item) => (
                       <MobileNavLink
                         key={item.title}
                         href={item.href}
@@ -560,14 +319,10 @@ const Navbar: React.FC<NavbarProps> = ({
                         className="pl-4"
                       >
                         {item.title}
-                        {item.href === "/dashboard/mentoring" &&
-                          hasMentorAvailabilityUpdates && (
-                            <span className="ml-auto h-2 w-2 rounded-full bg-destructive" />
-                          )}
                       </MobileNavLink>
                     ))}
                   </MobileNavCollapsible>
-                )}
+                ))}
 
                 <div className="pt-4 border-t border-border mt-2">
                   {session ? (
@@ -602,6 +357,24 @@ const Navbar: React.FC<NavbarProps> = ({
                           {!profileComplete && (
                             <span className="ml-auto h-2 w-2 rounded-full bg-destructive" />
                           )}
+                        </MobileNavLink>
+                      )}
+                      {userId && (
+                        <MobileNavLink
+                          href="/elections/me"
+                          onClick={() => setOpen(false)}
+                        >
+                          <Vote className="h-4 w-4 mr-2" />
+                          My Nominations
+                        </MobileNavLink>
+                      )}
+                      {userId && (
+                        <MobileNavLink
+                          href="/accept-invitation"
+                          onClick={() => setOpen(false)}
+                        >
+                          <Mail className="h-4 w-4 mr-2" />
+                          My Invitations
                         </MobileNavLink>
                       )}
                       <button
@@ -648,7 +421,7 @@ function MobileNavLink({
       onClick={onClick}
       className={cn(
         "flex items-center py-2 px-3 text-base font-medium rounded-md hover:bg-accent transition-colors",
-        className
+        className,
       )}
     >
       {children}
@@ -672,7 +445,7 @@ function MobileNavCollapsible({
         <ChevronDown
           className={cn(
             "h-4 w-4 transition-transform duration-200",
-            isOpen && "rotate-180"
+            isOpen && "rotate-180",
           )}
         />
       </CollapsibleTrigger>
@@ -694,23 +467,23 @@ function ListItem({
   title: React.ReactNode;
 }) {
   return (
-    <li {...props}>
-      <NavigationMenuLink asChild>
+    <li {...props} className="min-w-0">
+      <NavigationMenuLink asChild className="h-full p-0">
         <Link
           href={href}
           className={cn(
-            "block select-none space-y-1 rounded-lg p-3 leading-none no-underline outline-none",
+            "flex h-full min-h-[4.5rem] min-w-0 select-none flex-col justify-center rounded-md px-4 py-3 leading-none no-underline outline-none",
             "bg-surface-2 border border-border/30",
             "hover:bg-surface-1 hover:border-border/50 hover:shadow-md",
             "focus:bg-surface-2 focus:border-border/50",
             "transition-colors",
-            className
+            className,
           )}
         >
-          <div className="text-sm font-bold font-heading leading-none text-foreground">
+          <div className="line-clamp-2 min-w-0 break-words text-center text-[0.9375rem] font-bold font-heading leading-tight text-foreground">
             {title}
           </div>
-          <p className="line-clamp-2 min-h-[2lh] text-sm leading-snug text-muted-foreground mt-1">
+          <p className="mt-1.5 line-clamp-2 min-w-0 break-words text-center text-[0.8125rem] leading-snug text-muted-foreground">
             {children}
           </p>
         </Link>

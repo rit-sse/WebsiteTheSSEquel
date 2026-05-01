@@ -5,33 +5,41 @@
  *  1. Memberships are *not* touched — they're already tagged with
  *     their term+year on create, so the old rows archive themselves.
  *     New sign-ups naturally create fresh rows in the incoming term.
- *  2. Rotate MentorSemester — flip any active row to `isActive=false`
- *     and create a new row for the next semester with canonical
- *     dates. Existing MentorApplication / MentorAvailability /
- *     MentorHeadcountEntry rows keep pointing at their parent
- *     semester (historical), while new ones pick up the new active
- *     row via the existing `?activeOnly=true` query pattern.
+ *  2. Rotate MentorSemester to the next SSE operational term. Summer
+ *     is skipped because SSE is closed then; after Spring, the next
+ *     active term is Fall.
  *  3. Deactivate every Mentor row (preserving rows for history).
- *  4. Deactivate every Officer EXCEPT SE Admin (SE Office is the
- *     multi-term anchor — they rehydrate the primaries via the
- *     `send-officer-invites` flow).
- *  5. Email every active SE Admin with a deep-link to the dispatch
- *     page where they send the fresh officer invitations.
+ *  4. Deactivate every Officer EXCEPT SE Office.
+ *  5. Create officer invitations for the already-certified winners
+ *     using the same invitation records/email used by the Positions
+ *     and Officers page. This happens only after positions are open.
+ *  6. Open the committee-head nomination/application cycle for the
+ *     incoming SSE term.
  *
  * Auth: the current President (who ran the election) or any SE Admin.
  */
 import prisma from "@/lib/prisma";
 import { getGatewayAuthLevel } from "@/lib/authGateway";
+import { SE_ADMIN_POSITION_TITLE, isUserCurrentPresident } from "@/lib/seAdmin";
 import {
-  SE_ADMIN_POSITION_TITLE,
-  isUserCurrentPresident,
-} from "@/lib/seAdmin";
-import { sendEmail, isEmailConfigured } from "@/lib/email";
-import {
-  formatAcademicTerm,
   getAcademicTermDateRange,
-  getNextSemester,
+  getNextOfficerTermDateRange,
 } from "@/lib/academicTerm";
+import { openCommitteeHeadNominationCycleForHandoff } from "@/lib/committeeHeadNominations";
+import { compareByPrimaryOrder } from "@/lib/elections";
+import {
+  createOfficerInvitationRecord,
+  InvitationError,
+  type OfficerInvitationDispatch,
+  sendOfficerInvitationEmail,
+} from "@/lib/officerInvitations";
+import { getPublicBaseUrl } from "@/lib/baseUrl";
+import {
+  formatSseOperationalTerm,
+  getNextSseOperationalTerm,
+} from "@/lib/sseTerms";
+import { ElectionStatus, PositionCategory } from "@prisma/client";
+import { NextRequest } from "next/server";
 
 export const dynamic = "force-dynamic";
 
@@ -45,8 +53,8 @@ async function parseElectionId(params: Promise<{ id: string }>) {
 }
 
 export async function POST(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const authLevel = await getGatewayAuthLevel(request);
   if (!authLevel.userId) {
@@ -54,24 +62,44 @@ export async function POST(
   }
   const isPresident = await isUserCurrentPresident(authLevel.userId);
   if (!isPresident && !authLevel.isSeAdmin) {
-    return new Response("Only the sitting President or SE Admin can start a new semester", {
-      status: 403,
-    });
+    return new Response(
+      "Only the sitting President or SE Admin can start a new semester",
+      {
+        status: 403,
+      },
+    );
   }
 
   try {
     const electionId = await parseElectionId(params);
     const election = await prisma.election.findUnique({
       where: { id: electionId },
-      select: { id: true, slug: true, title: true, status: true },
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        status: true,
+        offices: {
+          select: {
+            officerPositionId: true,
+            officerPosition: {
+              select: {
+                id: true,
+                title: true,
+                is_primary: true,
+              },
+            },
+          },
+        },
+      },
     });
     if (!election) {
       return new Response("Election not found", { status: 404 });
     }
-    if (election.status !== "CERTIFIED") {
+    if (election.status !== ElectionStatus.CERTIFIED) {
       return new Response(
         "Only a certified election can kick off a new semester",
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -79,10 +107,48 @@ export async function POST(
     // Default application window: 14 days on either side of semester start.
     const APPLICATION_WINDOW_MS = 14 * 24 * 60 * 60 * 1000;
 
-    // Dates for the incoming semester — canonical month boundaries from
-    // `getAcademicTermDateRange`, term/year chosen by `getNextSemester`.
-    const nextTerm = getNextSemester(now);
+    const primaryElectionPositions = election.offices
+      .map((office) => office.officerPosition)
+      .filter((position) => position.is_primary);
+    if (primaryElectionPositions.length === 0) {
+      return new Response("This election has no primary officer positions", {
+        status: 409,
+      });
+    }
+
+    const certifiedOfficers = await prisma.officer.findMany({
+      where: {
+        is_active: true,
+        position_id: { in: primaryElectionPositions.map((item) => item.id) },
+      },
+      select: {
+        user: { select: { id: true, name: true, email: true } },
+        position: { select: { id: true, title: true } },
+      },
+    });
+    const certifiedOfficerByPositionId = new Map(
+      certifiedOfficers.map((officer) => [officer.position.id, officer]),
+    );
+    const missingPositions = primaryElectionPositions
+      .filter((position) => !certifiedOfficerByPositionId.has(position.id))
+      .map((position) => position.title);
+    if (missingPositions.length > 0) {
+      return new Response(
+        `Certified winners must still be active before handoff. Missing active officer records for: ${missingPositions.join(", ")}.`,
+        { status: 409 },
+      );
+    }
+
+    const officersToInvite = primaryElectionPositions
+      .map((position) => certifiedOfficerByPositionId.get(position.id)!)
+      .sort((a, b) =>
+        compareByPrimaryOrder(a.position.title, b.position.title),
+      );
+
+    const nextTerm = getNextSseOperationalTerm(now);
     const nextRange = getAcademicTermDateRange(nextTerm.term, nextTerm.year);
+    const nextTermName = formatSseOperationalTerm(nextTerm.term, nextTerm.year);
+    const officerTerm = getNextOfficerTermDateRange(now);
 
     await prisma.$transaction(async (tx) => {
       // 1. Memberships: no action. They're tagged by term+year on
@@ -90,26 +156,40 @@ export async function POST(
       //    so the old rows archive themselves the moment the calendar
       //    flips.
 
-      // 2. Rotate MentorSemester — old active → inactive, create a
-      //    new active row for the incoming term.
+      // 2. Rotate MentorSemester. Reuse an existing row for the target
+      //    term if one exists so repeated attempts don't create duplicate
+      //    active semesters.
       await tx.mentorSemester.updateMany({
         where: { isActive: true },
         data: { isActive: false },
       });
-      await tx.mentorSemester.create({
-        data: {
-          name: formatAcademicTerm(nextTerm.term, nextTerm.year),
-          isActive: true,
-          semesterStart: nextRange.startDate,
-          semesterEnd: nextRange.endDate,
-          applicationOpen: new Date(
-            nextRange.startDate.getTime() - APPLICATION_WINDOW_MS
-          ),
-          applicationClose: new Date(
-            nextRange.startDate.getTime() + APPLICATION_WINDOW_MS
-          ),
-        },
+
+      const existingMentorSemester = await tx.mentorSemester.findFirst({
+        where: { name: nextTermName },
+        orderBy: { id: "desc" },
       });
+      const mentorSemesterData = {
+        name: nextTermName,
+        isActive: true,
+        semesterStart: nextRange.startDate,
+        semesterEnd: nextRange.endDate,
+        applicationOpen: new Date(
+          nextRange.startDate.getTime() - APPLICATION_WINDOW_MS,
+        ),
+        applicationClose: new Date(
+          nextRange.startDate.getTime() + APPLICATION_WINDOW_MS,
+        ),
+      };
+      if (existingMentorSemester) {
+        await tx.mentorSemester.update({
+          where: { id: existingMentorSemester.id },
+          data: mentorSemesterData,
+        });
+      } else {
+        await tx.mentorSemester.create({
+          data: mentorSemesterData,
+        });
+      }
 
       // 3. Deactivate every Mentor row. We preserve the rows for history
       //    rather than deleting so that downstream features (prior-term
@@ -119,14 +199,16 @@ export async function POST(
         data: { isActive: false },
       });
 
-      // 4. Deactivate all officers except SE Admin. SE Office is the
-      //    multi-term anchor — they receive the invite dispatch email in
-      //    step 5 and rehydrate the primary roster from the election
-      //    winners.
+      // 4. Deactivate all officers except SE Office. The legacy title
+      //    check is retained for databases that still have the old
+      //    literal SE Admin position.
       await tx.officer.updateMany({
         where: {
           is_active: true,
-          position: { title: { not: SE_ADMIN_POSITION_TITLE } },
+          NOT: [
+            { position: { category: PositionCategory.SE_OFFICE } },
+            { position: { title: SE_ADMIN_POSITION_TITLE } },
+          ],
         },
         data: {
           is_active: false,
@@ -135,62 +217,72 @@ export async function POST(
       });
     });
 
-    // 4. Gather SE Admin recipients and email them.
-    const seAdmins = await prisma.officer.findMany({
-      where: {
-        is_active: true,
-        position: { title: SE_ADMIN_POSITION_TITLE },
-      },
-      select: {
-        user: { select: { id: true, email: true, name: true } },
-      },
-    });
+    const committeeHeadCycle = await openCommitteeHeadNominationCycleForHandoff(
+      electionId,
+      now,
+    );
 
-    const baseUrl =
-      process.env.NEXTAUTH_URL?.replace(/\/+$/, "") ||
-      request.headers.get("origin") ||
-      "";
-    const invitePageUrl = `${baseUrl}/dashboard/new-semester/${electionId}`;
+    const baseUrl = getPublicBaseUrl(request);
+    const officerInvitations: OfficerInvitationDispatch[] = [];
+    for (const officer of officersToInvite) {
+      try {
+        const { invitation, created } = await createOfficerInvitationRecord({
+          email: officer.user.email,
+          positionId: officer.position.id,
+          startDate: officerTerm.startDate,
+          endDate: officerTerm.endDate,
+          invitedBy: authLevel.userId,
+          refreshExisting: true,
+        });
 
-    if (isEmailConfigured() && seAdmins.length > 0) {
-      const subject = `[${election.title}] New semester started — send officer invites`;
-      const html = `<p>Hi SE Office,</p>
-<p>The President has started a new semester following the certification of
-<strong>${election.title}</strong>. Mentors and non–SE-Admin officers
-have been deactivated and a fresh <strong>${formatAcademicTerm(nextTerm.term, nextTerm.year)}</strong>
-MentorSemester is now active. Last term's memberships remain in the
-database tagged with their original term, but only new sign-ups for
-the incoming term will count as active members.</p>
-<p>The next step is yours: visit the dispatch page and send the officer
-invitations to the newly-elected primaries.</p>
-<p><a href="${invitePageUrl}">Open the new-semester dispatch page</a></p>
-<p>— The Society of Software Engineers</p>`;
-      const text = `A new semester (${formatAcademicTerm(nextTerm.term, nextTerm.year)}) has started after ${election.title}. Visit ${invitePageUrl} to send the officer invitations to the newly-elected primaries.`;
-      // Fan out email sends, don't block the response on failures.
-      for (const admin of seAdmins) {
-        if (!admin.user?.email) continue;
-        sendEmail({
-          to: admin.user.email,
-          subject,
-          html,
-          text,
-        }).catch((err) =>
-          console.error("start-new-semester email failed", err)
-        );
+        let emailSent = false;
+        try {
+          emailSent = await sendOfficerInvitationEmail({
+            invitation,
+            baseUrl,
+          });
+        } catch (emailError) {
+          console.error("start-new-semester officer invite email failed", {
+            email: officer.user.email,
+            error: emailError,
+          });
+        }
+
+        officerInvitations.push({
+          positionTitle: officer.position.title,
+          email: officer.user.email,
+          name: officer.user.name,
+          created,
+          emailSent,
+        });
+      } catch (error) {
+        if (error instanceof InvitationError) {
+          return new Response(error.message, { status: error.status });
+        }
+        throw error;
       }
     }
 
     return Response.json({
       ok: true,
-      inviteDispatchUrl: `/dashboard/new-semester/${electionId}`,
-      seAdminsNotified: seAdmins.length,
+      mentorSemester: {
+        name: nextTermName,
+        term: nextTerm.term,
+        year: nextTerm.year,
+      },
+      officerInvitations,
+      officerInvitationsCreated: officerInvitations.filter(
+        (item) => item.created,
+      ).length,
+      officerInvitationEmailsSent: officerInvitations.filter(
+        (item) => item.emailSent,
+      ).length,
+      committeeHeadNominationCycle: committeeHeadCycle,
     });
   } catch (error) {
     return new Response(
-      error instanceof Error
-        ? error.message
-        : "Failed to start new semester",
-      { status: 400 }
+      error instanceof Error ? error.message : "Failed to start new semester",
+      { status: 400 },
     );
   }
 }
