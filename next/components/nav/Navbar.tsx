@@ -39,6 +39,7 @@ import {
 } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import type { ActiveElectionSummary } from "@/lib/elections";
+import { buildNavGroups } from "@/lib/navbarConfig";
 
 /**
  * Audience-grouped dropdowns rendered between the top-level shortcuts
@@ -51,128 +52,27 @@ import type { ActiveElectionSummary } from "@/lib/elections";
  * routes; that page adds matching `id` + `scroll-mt-24` so headings
  * clear the navbar after the jump.
  *
- * SE Office grows a conditional "Elections" entry when an election is
- * live (formerly a top-level callout) — wired up inside the component
- * since it depends on the `serverActiveElection` prop.
+ * SE Office is gated to SE Office users. Elections surface under Students
+ * only while an election is open for nominations or voting.
  */
-
-interface NavItem {
-  title: string;
-  href: string;
-  description: string;
-}
-
-type NavGroup = {
-  value: string;
-  label: string;
-  items: NavItem[];
-  align?: "start" | "end";
-};
-
-const studentsItems: NavItem[] = [
-  {
-    title: "Get Involved",
-    href: "/about/get-involved",
-    description: "Discover ways to participate and contribute to SSE.",
-  },
-  {
-    title: "Events",
-    href: "/events/calendar",
-    description: "Upcoming SSE meetings, workshops, and socials.",
-  },
-  {
-    title: "Mentor Schedule",
-    href: "/mentoring/schedule",
-    description: "See when mentors are available in the lab.",
-  },
-  {
-    title: "Become a Mentor",
-    href: "/mentoring/apply",
-    description: "Apply to help fellow students in the SSE lab.",
-  },
-  {
-    title: "Leaderboard",
-    href: "/memberships",
-    description: "See who's on track to earn membership this term.",
-  },
-  {
-    title: "Projects",
-    href: "/projects",
-    description: "Browse student projects built by the SSE community.",
-  },
-  {
-    title: "Go Links",
-    href: "/go",
-    description: "Quick redirects (go/…) maintained by SSE officers.",
-  },
-];
-
-const alumniItems: NavItem[] = [
-  {
-    title: "Alumni Directory",
-    href: "/about/alumni",
-    description: "Stay connected with SSE graduates and their stories.",
-  },
-  {
-    title: "Speak at SSE",
-    href: "/sponsors#vise",
-    description: "Pitch a ViSE talk and share your career or research.",
-  },
-];
-
-const companiesItems: NavItem[] = [
-  {
-    title: "Sponsor SSE",
-    href: "/sponsors#sponsor",
-    description: "Back the lab and gain visibility with our members.",
-  },
-  {
-    title: "Recruit Students",
-    href: "/sponsors#recruit",
-    description: "Schedule a recruiting talk and meet our engineers.",
-  },
-];
-
-const seOfficeItems: NavItem[] = [
-  {
-    title: "Leadership",
-    href: "/about/leadership",
-    description: "Current officers, SE Office staff, and committee heads.",
-  },
-  {
-    title: "Committees",
-    href: "/about/committees",
-    description: "Specialized committees and the work they do.",
-  },
-  {
-    title: "Constitution",
-    href: "/about/constitution",
-    description: "Our governing document and bylaws.",
-  },
-  {
-    title: "Primary Officer's Policy",
-    href: "/about/primary-officers-policy",
-    description: "Officer guidelines and policies.",
-  },
-];
 
 interface NavbarProps {
   /** Resolved on the server so the first paint already includes Dashboard / profile link. */
   serverUserId?: number | null;
   serverShowDashboard?: boolean;
   serverProfileComplete?: boolean;
-  /** When set, the navbar shows a top-level "Elections" link pointing at the
-   * live election. Rendered on the server so the first paint is correct. */
+  serverIsSeAdmin?: boolean;
+  /** Rendered on the server so the first paint includes an open election link
+   * under Students when nominations or voting are live. */
   serverActiveElection?: ActiveElectionSummary | null;
-  serverCommitteeHeadNominationsOpen?: boolean;
 }
 
 const Navbar: React.FC<NavbarProps> = ({
   serverUserId = null,
   serverShowDashboard = false,
   serverProfileComplete = true,
+  serverIsSeAdmin = false,
   serverActiveElection = null,
-  serverCommitteeHeadNominationsOpen = false,
 }) => {
   const [open, setOpen] = React.useState(false);
   const { data: session } = useSession();
@@ -184,6 +84,7 @@ const Navbar: React.FC<NavbarProps> = ({
   const [profileComplete, setProfileComplete] = React.useState(
     serverProfileComplete
   );
+  const [isSeAdmin, setIsSeAdmin] = React.useState(serverIsSeAdmin);
 
   // Background refresh so dynamic changes (e.g. profile completion) still
   // propagate. The navbar no longer renders a dashboard dropdown, so we only
@@ -193,6 +94,7 @@ const Navbar: React.FC<NavbarProps> = ({
   React.useEffect(() => {
     if (!session) {
       setShowDashboard(false);
+      setIsSeAdmin(false);
       setUserId(null);
       return;
     }
@@ -201,7 +103,8 @@ const Navbar: React.FC<NavbarProps> = ({
       try {
         const response = await fetch("/api/authLevel");
         const data = await response.json();
-        setShowDashboard(data.isOfficer || data.isMentor);
+        setShowDashboard(data.isOfficer || data.isMentor || data.isSeAdmin);
+        setIsSeAdmin(Boolean(data.isSeAdmin));
         setUserId(data.userId ?? null);
         setProfileComplete(data.profileComplete ?? true);
       } catch (error) {
@@ -239,46 +142,12 @@ const Navbar: React.FC<NavbarProps> = ({
     }
   };
 
-  // SE Office gets the live election as a conditional last entry. The
-  // groups array is otherwise stable; we rebuild on prop change so the
-  // first-paint server prop and any subsequent client-side election
-  // updates both flow through. Committee Head nominations are a separate
-  // post-election appointment workflow and surface under Students.
   const navGroups = React.useMemo(() => {
-    const seOfficeWithElection: NavItem[] = serverActiveElection
-      ? [
-          ...seOfficeItems,
-          {
-            title: "Elections",
-            href: `/elections/${serverActiveElection.slug}`,
-            description: "Cast your ballot in the active SSE election.",
-          },
-        ]
-      : seOfficeItems;
-    const studentsWithNominations: NavItem[] =
-      serverCommitteeHeadNominationsOpen
-        ? [
-            ...studentsItems,
-            {
-              title: "Committee Head Nominations",
-              href: "/nominate",
-              description:
-                "Apply for or nominate someone for a Committee Head role.",
-            },
-          ]
-        : studentsItems;
-    return [
-      { value: "students", label: "Students", items: studentsWithNominations },
-      { value: "alumni", label: "Alumni", items: alumniItems },
-      { value: "companies", label: "Companies", items: companiesItems },
-      {
-        value: "se-office",
-        label: "SE Office",
-        items: seOfficeWithElection,
-        align: "end",
-      },
-    ] satisfies NavGroup[];
-  }, [serverActiveElection, serverCommitteeHeadNominationsOpen]);
+    return buildNavGroups({
+      isSeAdmin,
+      activeElection: serverActiveElection,
+    });
+  }, [isSeAdmin, serverActiveElection]);
 
   return (
     <nav
@@ -370,11 +239,21 @@ const Navbar: React.FC<NavbarProps> = ({
                 );
               })}
 
+              {showDashboard && (
+                <NavigationMenuItem>
+                  <NavigationMenuLink
+                    asChild
+                    className={navigationMenuTriggerStyle()}
+                  >
+                    <Link href="/dashboard">Officer Dashboard</Link>
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+              )}
+
               <NavigationMenuItem className="flex items-center ml-1">
                 <AuthButton
                   userId={userId}
                   profileComplete={profileComplete}
-                  showOfficerDashboard={showDashboard}
                 />
               </NavigationMenuItem>
             </NavigationMenuList>
@@ -407,6 +286,16 @@ const Navbar: React.FC<NavbarProps> = ({
                 <MobileNavLink href="/photos" onClick={() => setOpen(false)}>
                   Photos
                 </MobileNavLink>
+
+                {showDashboard && (
+                  <MobileNavLink
+                    href="/dashboard"
+                    onClick={() => setOpen(false)}
+                  >
+                    <LayoutDashboard className="h-4 w-4 mr-2" />
+                    Officer Dashboard
+                  </MobileNavLink>
+                )}
 
                 {navGroups.map((group) => (
                   <MobileNavCollapsible key={group.value} title={group.label}>
@@ -446,15 +335,6 @@ const Navbar: React.FC<NavbarProps> = ({
                           </span>
                         </div>
                       </div>
-                      {showDashboard && (
-                        <MobileNavLink
-                          href="/dashboard"
-                          onClick={() => setOpen(false)}
-                        >
-                          <LayoutDashboard className="h-4 w-4 mr-2" />
-                          Officer Dashboard
-                        </MobileNavLink>
-                      )}
                       {userId && (
                         <MobileNavLink
                           href={`/profile/${userId}`}

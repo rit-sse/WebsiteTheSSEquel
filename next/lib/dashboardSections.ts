@@ -14,6 +14,7 @@
 export type DashboardSectionId =
   | "purchasing"
   | "attendance"
+  | "go-links"
   | "mentoring"
   | "tech-committee"
   | "committee-head-nominations"
@@ -59,6 +60,13 @@ export const DASHBOARD_SECTIONS: readonly DashboardSection[] = [
     href: "/attendance",
     description: "View event attendance lists and QR flyers.",
     accentClass: "text-sky-500",
+  },
+  {
+    id: "go-links",
+    title: "Go Links",
+    href: "/go",
+    description: "Manage SSE go links and redirects.",
+    accentClass: "text-indigo-500",
   },
   {
     id: "mentoring",

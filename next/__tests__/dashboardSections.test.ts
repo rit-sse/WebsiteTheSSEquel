@@ -25,6 +25,7 @@ describe("filterVisibleSections", () => {
       expect.arrayContaining([
         "purchasing",
         "attendance",
+        "go-links",
         "mentoring",
         "positions",
         "users",
@@ -45,6 +46,7 @@ describe("filterVisibleSections", () => {
     expect(ids).toEqual([
       "purchasing",
       "attendance",
+      "go-links",
       "mentoring",
       "tech-committee",
       "committee-head-nominations",

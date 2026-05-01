@@ -19,6 +19,18 @@ export type AttendanceSummary = {
   recent: { id: string; title: string; attendeeCount: number }[];
 };
 
+export type GoLinksSummary = {
+  publicCount: number;
+  officerCount: number;
+  pinnedCount: number;
+  recent: {
+    id: number;
+    golink: string;
+    isPublic: boolean;
+    isPinned: boolean;
+  }[];
+};
+
 export type MentoringSummary = {
   activeMentorCount: number;
   scheduleBlockCount: number;
@@ -73,6 +85,7 @@ export type PhotosSummary = {
 export type DashboardSummary = {
   purchasing: PurchasingSummary;
   attendance: AttendanceSummary;
+  "go-links": GoLinksSummary;
   mentoring: MentoringSummary;
   "tech-committee": TechCommitteeSummary;
   "committee-head-nominations": CommitteeHeadNominationsSummary;
@@ -110,6 +123,7 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
   const [
     purchasing,
     attendance,
+    goLinks,
     mentoring,
     techCommittee,
     committeeHeadNominations,
@@ -127,6 +141,12 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
       recent: [],
     } as PurchasingSummary),
     settle(getAttendanceSummary(), { recent: [] } as AttendanceSummary),
+    settle(getGoLinksSummary(), {
+      publicCount: 0,
+      officerCount: 0,
+      pinnedCount: 0,
+      recent: [],
+    } as GoLinksSummary),
     settle(getMentoringSummary(), {
       activeMentorCount: 0,
       scheduleBlockCount: 0,
@@ -173,6 +193,7 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
   return {
     purchasing,
     attendance,
+    "go-links": goLinks,
     mentoring,
     "tech-committee": techCommittee,
     "committee-head-nominations": committeeHeadNominations,
@@ -217,6 +238,25 @@ async function getAttendanceSummary(): Promise<AttendanceSummary> {
       attendeeCount: e._count.attendees,
     })),
   };
+}
+
+async function getGoLinksSummary(): Promise<GoLinksSummary> {
+  const [publicCount, officerCount, pinnedCount, recent] = await Promise.all([
+    prisma.goLinks.count({ where: { isPublic: true } }),
+    prisma.goLinks.count({ where: { isPublic: false } }),
+    prisma.goLinks.count({ where: { isPinned: true } }),
+    prisma.goLinks.findMany({
+      take: 3,
+      orderBy: { updatedAt: "desc" },
+      select: {
+        id: true,
+        golink: true,
+        isPublic: true,
+        isPinned: true,
+      },
+    }),
+  ]);
+  return { publicCount, officerCount, pinnedCount, recent };
 }
 
 async function getMentoringSummary(): Promise<MentoringSummary> {
