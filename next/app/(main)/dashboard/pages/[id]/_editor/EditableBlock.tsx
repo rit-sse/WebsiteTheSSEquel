@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Copy, GripVertical, Plus, Trash2 } from "lucide-react";
@@ -18,6 +19,10 @@ interface Props {
   onAddAfter: () => void;
   isLast: boolean;
   disabled?: boolean;
+  /** Server-rendered children for this block when it's a dynamic
+   *  block (photo carousel, app widget, etc.). When supplied, the
+   *  canvas mounts this in place of the placeholder card. */
+  dynamicSlot?: ReactNode;
 }
 
 /**
@@ -35,6 +40,7 @@ export function EditableBlock({
   onAddAfter,
   isLast,
   disabled,
+  dynamicSlot,
 }: Props) {
   const {
     attributes,
@@ -121,6 +127,7 @@ export function EditableBlock({
           disabled={disabled}
           onUpdate={onUpdate}
           onActivate={onSelect}
+          dynamicSlot={dynamicSlot}
         />
       </div>
 

@@ -10,7 +10,7 @@
  * render as compact placeholders — clicking them still opens the
  * block-properties tab in the sidebar.
  */
-import { useMemo } from "react";
+import { useMemo, type ReactNode } from "react";
 import {
   closestCenter,
   DndContext,
@@ -46,6 +46,8 @@ interface Props {
   onAddBlockAt: (afterId: string | null) => void;
   viewport: "desktop" | "tablet" | "mobile";
   disabled?: boolean;
+  /** Server-rendered children for dynamic blocks. */
+  dynamicSlots?: Record<string, ReactNode>;
 }
 
 const VIEWPORT_CLASS: Record<Props["viewport"], string> = {
@@ -62,6 +64,7 @@ export function EditorCanvas({
   onAddBlockAt,
   viewport,
   disabled,
+  dynamicSlots,
 }: Props) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -179,6 +182,7 @@ export function EditorCanvas({
                 onDuplicate={duplicateBlock}
                 onAddAfter={onAddBlockAt}
                 disabled={disabled}
+                dynamicSlots={dynamicSlots}
               />
             ))}
           </article>
@@ -252,6 +256,7 @@ function CanvasSection({
   onDuplicate,
   onAddAfter,
   disabled,
+  dynamicSlots,
 }: {
   sectionBlock: SectionBlockNode | null;
   props: SectionProps;
@@ -263,6 +268,7 @@ function CanvasSection({
   onDuplicate: (id: string) => void;
   onAddAfter: (afterId: string | null) => void;
   disabled?: boolean;
+  dynamicSlots?: Record<string, ReactNode>;
 }) {
   const sectionSelected =
     sectionBlock != null && sectionBlock.id === selected;
@@ -281,6 +287,7 @@ function CanvasSection({
           onAddAfter={() => onAddAfter(block.id)}
           isLast={i === blocks.length - 1}
           disabled={disabled}
+          dynamicSlot={dynamicSlots?.[block.id]}
         />
       ))}
       {blocks.length === 0 && (

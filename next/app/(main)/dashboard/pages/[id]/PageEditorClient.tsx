@@ -18,7 +18,7 @@
  * PUT /api/pages/[id]. 409 conflicts trigger a reload prompt; everything
  * else surfaces via toast.
  */
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { Lock } from "lucide-react";
 import { toast } from "sonner";
@@ -55,6 +55,12 @@ interface Props {
   page: PageMeta;
   initialContent: PageContent;
   isPrimary: boolean;
+  /** Server-rendered children for dynamic blocks (photo carousels,
+   *  app widgets, event feeds, etc.). Keyed by block id. The canvas
+   *  mounts these as the visible body for each dynamic block so the
+   *  editor preview matches the published view. Refreshed via
+   *  `router.refresh()` after every autosave. */
+  dynamicSlots: Record<string, ReactNode>;
 }
 
 type SaveState = "idle" | "saving" | "saved" | "error";
@@ -66,6 +72,7 @@ export function PageEditorClient({
   page: initialPage,
   initialContent,
   isPrimary,
+  dynamicSlots,
 }: Props) {
   const router = useRouter();
   const [page, setPage] = useState<PageMeta>(initialPage);
@@ -126,6 +133,10 @@ export function PageEditorClient({
       const json = await res.json();
       setPage((p) => ({ ...p, updatedAt: json.page.updatedAt }));
       setSaveState("saved");
+      // Re-render server-side dynamic-block slots so the canvas reflects
+      // edited dynamic-block props (photo carousel category, app widget
+      // selection, etc.) within ~1.5s of the user pausing.
+      router.refresh();
       window.setTimeout(() => {
         setSaveState((s) => (s === "saved" ? "idle" : s));
       }, 1200);
@@ -313,6 +324,7 @@ export function PageEditorClient({
               onAddBlockAt={openAddBlock}
               viewport={viewport}
               disabled={isLocked}
+              dynamicSlots={dynamicSlots}
             />
           </div>
         </main>

@@ -55,16 +55,18 @@ export function EditorTopBar({
 }: Props) {
   return (
     <div className="sticky top-[4.5rem] z-30 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-      <div className="mx-auto flex w-full max-w-[100rem] flex-col gap-3 px-4 py-3 lg:flex-row lg:items-center">
-        <div className="flex min-w-0 items-center gap-2">
+      <div className="mx-auto flex w-full max-w-[100rem] flex-wrap items-center gap-x-3 gap-y-2 px-3 py-2.5 sm:px-4">
+        {/* Left cluster: back, title, slug, badges */}
+        <div className="flex min-w-0 flex-1 items-center gap-2">
           <Link
             href="/dashboard/pages"
-            className="shrink-0 rounded-md p-1 text-muted-foreground hover:bg-surface-1 hover:text-foreground"
+            className="shrink-0 rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-surface-1 hover:text-foreground"
             aria-label="Back to pages"
+            title="Back to pages"
           >
             <ChevronLeft className="h-4 w-4" />
           </Link>
-          <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <div className="flex min-w-0 flex-1 items-center gap-2">
             <InlineText
               as="h1"
               value={title}
@@ -73,42 +75,47 @@ export function EditorTopBar({
               singleLine
               editOnClick
               disabled={isLocked}
-              className="max-w-[18rem] truncate font-display text-lg font-semibold tracking-tight sm:max-w-md"
+              className="min-w-0 max-w-[14rem] truncate font-display text-base font-semibold tracking-tight sm:max-w-[20rem] md:text-lg"
             />
-            <span className="min-w-0 truncate font-mono text-xs text-muted-foreground">
+            <span className="hidden min-w-0 truncate font-mono text-[11px] text-muted-foreground sm:inline">
               /{slug}
             </span>
-            {systemLocked && (
-              <Badge variant="outline" className="gap-1">
-                <Lock className="h-2.5 w-2.5" />
-                System-locked
-              </Badge>
-            )}
-            <StatusBadge status={status} />
+            <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:ml-0">
+              {systemLocked && (
+                <Badge variant="outline" className="gap-1 text-[10px]">
+                  <Lock className="h-2.5 w-2.5" />
+                  Locked
+                </Badge>
+              )}
+              <StatusBadge status={status} />
+            </div>
           </div>
         </div>
 
-        <div className="flex w-full min-w-0 flex-wrap items-center gap-2 pb-1 lg:ml-auto lg:w-auto lg:flex-nowrap lg:pb-0">
+        {/* Right cluster: save indicator, viewport, action buttons */}
+        <div className="flex shrink-0 items-center gap-1.5">
           <SaveIndicator state={saveState} />
           <ViewportSwitcher value={viewport} onChange={onViewportChange} />
+          <div className="hidden h-5 w-px bg-border/60 sm:block" />
           <Link
             href={`/${slug}?preview=1`}
             target="_blank"
             className="shrink-0"
           >
-            <Button variant="neutral" size="sm">
-              <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
-              Preview
+            <Button variant="neutral" size="sm" className="h-8 px-2.5">
+              <ExternalLink className="h-3.5 w-3.5" />
+              <span className="ml-1.5 hidden md:inline">Preview</span>
             </Button>
           </Link>
           <Button
             variant="neutral"
             size="sm"
             onClick={onOpenSettings}
-            className="shrink-0"
+            className="h-8 px-2.5 shrink-0"
+            title="Page settings"
           >
-            <Settings className="h-3.5 w-3.5 mr-1.5" />
-            Settings
+            <Settings className="h-3.5 w-3.5" />
+            <span className="ml-1.5 hidden md:inline">Settings</span>
           </Button>
           {status === "PUBLISHED" ? (
             <>
@@ -117,7 +124,7 @@ export function EditorTopBar({
                 size="sm"
                 onClick={onUnpublish}
                 disabled={isLocked}
-                className="shrink-0"
+                className="h-8 shrink-0 px-2.5 text-xs"
               >
                 Unpublish
               </Button>
@@ -125,7 +132,7 @@ export function EditorTopBar({
                 size="sm"
                 onClick={onPublish}
                 disabled={publishing || isLocked}
-                className="shrink-0"
+                className="h-8 shrink-0 px-3"
               >
                 {publishing ? (
                   <>
@@ -145,7 +152,7 @@ export function EditorTopBar({
               size="sm"
               onClick={onPublish}
               disabled={publishing || isLocked}
-              className="shrink-0"
+              className="h-8 shrink-0 px-3"
             >
               {publishing ? (
                 <>
@@ -214,7 +221,7 @@ function ViewportSwitcher({
     { id: "mobile", label: "Mobile", icon: <Smartphone className="h-3.5 w-3.5" /> },
   ];
   return (
-    <div className="hidden items-center gap-0.5 rounded-md border border-border bg-card p-0.5 sm:inline-flex">
+    <div className="inline-flex items-center gap-0.5 rounded-md border border-border bg-card p-0.5">
       {items.map((it) => (
         <button
           key={it.id}
@@ -225,8 +232,8 @@ function ViewportSwitcher({
           className={cn(
             "rounded-sm p-1.5 transition-colors",
             value === it.id
-              ? "bg-foreground text-background"
-              : "text-muted-foreground hover:text-foreground",
+              ? "bg-foreground text-background shadow-sm"
+              : "text-muted-foreground hover:bg-surface-1 hover:text-foreground",
           )}
         >
           {it.icon}

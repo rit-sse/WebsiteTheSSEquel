@@ -323,10 +323,10 @@ function FilterChip({
       type="button"
       onClick={onClick}
       className={cn(
-        "rounded-full border px-2.5 py-0.5 text-[11px] font-medium transition-colors",
+        "rounded-full border-2 px-3 py-1 text-[11px] font-medium tracking-tight transition-all",
         active
-          ? "border-foreground bg-foreground text-background"
-          : "border-border bg-card text-muted-foreground hover:border-foreground/60 hover:text-foreground",
+          ? "border-foreground bg-foreground text-background shadow-sm"
+          : "border-border bg-card text-muted-foreground hover:border-foreground/40 hover:bg-surface-1 hover:text-foreground",
       )}
     >
       {children}

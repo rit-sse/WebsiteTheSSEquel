@@ -4,13 +4,18 @@
  * CanvasBlockBody — renders a single block on the canvas.
  *
  * Sync blocks (heading / markdown / image / divider / cta / cardGrid /
- * bulletList / bulletListPair) render with full fidelity. Heading and
- * markdown also support inline editing via `InlineText` and
- * `InlineMarkdown`. Async / dynamic blocks render as a stylized
- * placeholder card — clicking still selects them so the sidebar's
- * Block tab can edit their props.
+ * bulletList / bulletListPair) render fully on the client, with
+ * inline-editable text where supported.
+ *
+ * Dynamic blocks (photoCarousel / zCardRow / appWidget / eventFeed
+ * / officerListing / sponsorWall / etc.) render the server-rendered
+ * `dynamicSlot` passed in by the page route. When the user edits a
+ * dynamic block's props, autosave triggers `router.refresh()` and the
+ * server re-renders the slot within ~1.5s. If no slot is provided
+ * (e.g., dynamicSlot was suppressed) the canvas falls back to a
+ * compact placeholder card.
  */
-import Image from "next/image";
+import type { ReactNode } from "react";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -24,6 +29,7 @@ interface Props {
   disabled?: boolean;
   onUpdate: (next: BlockNode["props"]) => void;
   onActivate: () => void;
+  dynamicSlot?: ReactNode;
 }
 
 const HEADING_LEVEL_CLASS: Record<number, string> = {
@@ -53,6 +59,7 @@ export function CanvasBlockBody({
   disabled,
   onUpdate,
   onActivate,
+  dynamicSlot,
 }: Props) {
   switch (block.type) {
     case "heading": {
@@ -249,7 +256,14 @@ export function CanvasBlockBody({
       );
     }
     default:
-      return <PlaceholderCard block={block} />;
+      // Dynamic blocks: render the server-side slot if provided
+      // (the published-page-fidelity render). Fall back to a compact
+      // placeholder if the slot is empty (e.g., a brand-new block
+      // not yet persisted).
+      if (dynamicSlot) {
+        return <div className="cms-editor-dynamic-slot">{dynamicSlot}</div>;
+      }
+      return <PlaceholderCard block={block} note="Save to render preview" />;
   }
 }
 
