@@ -80,8 +80,11 @@ export function PagesListClient({ initialPages, canCreate }: Props) {
 
   return (
     <div className="w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
-      <Card depth={1} className="p-6">
-        <CardHeader className="px-0 pt-0">
+      <Card
+        depth={1}
+        className="flex flex-col overflow-hidden p-0 lg:max-h-[calc(100dvh-8rem)] lg:min-h-[32rem]"
+      >
+        <CardHeader className="shrink-0 border-b border-border/60 px-5 py-4 md:px-6">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-3">
               <FileText className="h-6 w-6 text-primary" />
@@ -109,13 +112,13 @@ export function PagesListClient({ initialPages, canCreate }: Props) {
         </CardHeader>
 
         {pages.length === 0 ? (
-          <p className="text-center text-muted-foreground py-12">
+          <p className="p-6 text-center text-muted-foreground">
             {canCreate
               ? "No pages yet. Create your first one to start building."
               : "No pages yet. Ask a primary officer to create one."}
           </p>
         ) : (
-          <div className="flex flex-col gap-2.5">
+          <div className="min-h-0 flex-1 space-y-2.5 overflow-y-auto px-5 py-4 pr-4 [scrollbar-gutter:stable] md:px-6 md:pr-5">
             {pages.map((p) => (
               <Card
                 key={p.id}
@@ -157,15 +160,28 @@ export function PagesListClient({ initialPages, canCreate }: Props) {
                     /{p.slug}
                   </p>
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <Link href={`/${p.slug}?preview=1`} target="_blank">
-                    <Button variant="neutral" size="sm">
+                <div className="flex w-full items-center gap-2 sm:w-auto sm:shrink-0">
+                  <Link
+                    href={`/${p.slug}?preview=1`}
+                    target="_blank"
+                    className="flex-1 sm:flex-none"
+                  >
+                    <Button
+                      variant="neutral"
+                      size="sm"
+                      className="w-full sm:w-auto"
+                    >
                       <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
                       Preview
                     </Button>
                   </Link>
-                  <Link href={`/dashboard/pages/${p.id}`}>
-                    <Button size="sm">Edit</Button>
+                  <Link
+                    href={`/dashboard/pages/${p.id}`}
+                    className="flex-1 sm:flex-none"
+                  >
+                    <Button size="sm" className="w-full sm:w-auto">
+                      Edit
+                    </Button>
                   </Link>
                 </div>
               </Card>
@@ -174,11 +190,7 @@ export function PagesListClient({ initialPages, canCreate }: Props) {
         )}
       </Card>
 
-      <Modal
-        open={createOpen}
-        onOpenChange={setCreateOpen}
-        title="New page"
-      >
+      <Modal open={createOpen} onOpenChange={setCreateOpen} title="New page">
         <div className="flex flex-col gap-4">
           <div>
             <Label htmlFor="page-title">Title</Label>

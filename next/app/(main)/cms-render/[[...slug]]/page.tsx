@@ -1,9 +1,9 @@
 /**
- * Dynamic page catch-all.
+ * Internal CMS render target.
  *
- * Explicit static routes normally win before this catch-all. The proxy
- * also rewrites existing static paths to /cms-render/<slug> when a CMS page
- * is published or an officer is previewing a draft.
+ * The proxy rewrites concrete static routes here when a matching CMS Page
+ * exists, which lets officers manage existing URLs without moving every
+ * static page into a catch-all route.
  */
 import { Metadata } from "next";
 import {
@@ -16,7 +16,7 @@ export const revalidate = 30;
 type Search = { [k: string]: string | string[] | undefined };
 
 interface PageProps {
-  params: Promise<{ slug: string[] }>;
+  params: Promise<{ slug?: string[] }>;
   searchParams: Promise<Search>;
 }
 
@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return generateCmsPageMetadata(slug);
 }
 
-export default async function DynamicPage({ params, searchParams }: PageProps) {
+export default async function InternalCmsPage({ params, searchParams }: PageProps) {
   const [{ slug }, sp] = await Promise.all([params, searchParams]);
   return renderCmsPage({ slugParts: slug, searchParams: sp });
 }

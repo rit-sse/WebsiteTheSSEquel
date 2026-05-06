@@ -31,7 +31,7 @@ describe("filterVisibleSections", () => {
         "users",
         "sponsors",
         "alumni",
-      ])
+      ]),
     );
     // Gated sections must not leak through when flags are off.
     expect(ids).not.toContain("tech-committee");
@@ -39,6 +39,7 @@ describe("filterVisibleSections", () => {
     expect(ids).not.toContain("elections");
     expect(ids).not.toContain("announcements");
     expect(ids).not.toContain("photos");
+    expect(ids).not.toContain("pages");
   });
 
   it("shows every section to a primary officer", () => {
@@ -57,12 +58,14 @@ describe("filterVisibleSections", () => {
       "elections",
       "announcements",
       "photos",
+      "pages",
     ]);
   });
 
-  it("shows Photos to SE admins but not Elections / Announcements", () => {
+  it("shows CMS sections to SE admins but not Elections / Announcements", () => {
     const ids = idsFor({ isSeAdmin: true });
     expect(ids).toContain("photos");
+    expect(ids).toContain("pages");
     expect(ids).not.toContain("elections");
     expect(ids).not.toContain("announcements");
     expect(ids).not.toContain("tech-committee");
@@ -74,7 +77,7 @@ describe("filterVisibleSections", () => {
 
   it("unlocks Tech Committee Apps for a division manager", () => {
     expect(idsFor({ isTechCommitteeDivisionManager: true })).toContain(
-      "tech-committee"
+      "tech-committee",
     );
   });
 
@@ -86,16 +89,18 @@ describe("filterVisibleSections", () => {
     expect(idsFor({ isOfficer: true })).toContain("photos");
   });
 
+  it("Pages shows for officers even without SE-admin status", () => {
+    expect(idsFor({ isOfficer: true })).toContain("pages");
+  });
+
   it("Elections / Announcements stay primary-only", () => {
     expect(idsFor({ isOfficer: true })).not.toContain("elections");
     expect(idsFor({ isOfficer: true })).not.toContain("announcements");
     expect(idsFor({ isOfficer: true })).not.toContain(
-      "committee-head-nominations"
+      "committee-head-nominations",
     );
     expect(idsFor({ isPrimary: true })).toContain("elections");
     expect(idsFor({ isPrimary: true })).toContain("announcements");
-    expect(idsFor({ isPrimary: true })).toContain(
-      "committee-head-nominations"
-    );
+    expect(idsFor({ isPrimary: true })).toContain("committee-head-nominations");
   });
 });

@@ -2,6 +2,7 @@
 
 import { useLayoutEffect, useRef, useState } from "react";
 import type { ActiveElectionSummary } from "@/lib/elections";
+import type { CmsNavPage } from "@/lib/navbarConfig";
 import type { SiteBanner } from "@/lib/siteBanners";
 import Navbar from "@/components/nav/Navbar";
 import SiteBannerList from "@/components/SiteBannerList";
@@ -14,6 +15,7 @@ type SiteHeaderProps = {
   serverProfileComplete?: boolean;
   serverIsSeAdmin?: boolean;
   serverActiveElection?: ActiveElectionSummary | null;
+  serverCmsNavPages?: CmsNavPage[];
   banners: SiteBanner[];
 };
 
@@ -23,6 +25,7 @@ export default function SiteHeader({
   serverProfileComplete,
   serverIsSeAdmin,
   serverActiveElection,
+  serverCmsNavPages,
   banners,
 }: SiteHeaderProps) {
   const headerRef = useRef<HTMLElement | null>(null);
@@ -59,6 +62,7 @@ export default function SiteHeader({
           serverProfileComplete={serverProfileComplete}
           serverIsSeAdmin={serverIsSeAdmin}
           serverActiveElection={serverActiveElection}
+          serverCmsNavPages={serverCmsNavPages}
         />
         <SiteBannerList banners={banners} />
       </header>

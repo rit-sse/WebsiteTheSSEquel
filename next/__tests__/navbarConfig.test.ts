@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { buildNavGroups } from "@/lib/navbarConfig";
+import {
+  buildNavGroups,
+  buildTopLevelNavItems,
+  type CmsNavPage,
+} from "@/lib/navbarConfig";
 
 const groupTitles = (isSeAdmin = false) =>
   buildNavGroups({ isSeAdmin }).map((group) => group.label);
@@ -80,5 +84,60 @@ describe("buildNavGroups", () => {
       );
     }
     expect(studentTitles(null)).not.toContain("Elections");
+  });
+
+  it("lets CMS page settings hide existing nav links", () => {
+    const cmsPages: CmsNavPage[] = [
+      {
+        slug: "projects",
+        title: "Projects",
+        status: "DRAFT",
+        showInNav: false,
+        navSection: "STUDENTS",
+        navLabel: null,
+        navOrder: 700,
+      },
+    ];
+    const students =
+      buildNavGroups({ isSeAdmin: false, cmsPages })
+        .find((group) => group.value === "students")
+        ?.items.map((item) => item.title) ?? [];
+    expect(students).not.toContain("Projects");
+  });
+
+  it("adds published CMS-only pages to the configured nav section", () => {
+    const cmsPages: CmsNavPage[] = [
+      {
+        slug: "lab-rules",
+        title: "Lab Rules",
+        status: "PUBLISHED",
+        showInNav: true,
+        navSection: "STUDENTS",
+        navLabel: "Lab Rules",
+        navOrder: 50,
+      },
+    ];
+    const students =
+      buildNavGroups({ isSeAdmin: false, cmsPages })
+        .find((group) => group.value === "students")
+        ?.items.map((item) => item.title) ?? [];
+    expect(students[0]).toBe("Lab Rules");
+  });
+
+  it("lets CMS settings control top-level shortcuts", () => {
+    const cmsPages: CmsNavPage[] = [
+      {
+        slug: "photos",
+        title: "Photos",
+        status: "DRAFT",
+        showInNav: false,
+        navSection: "TOP_LEVEL",
+        navLabel: null,
+        navOrder: 200,
+      },
+    ];
+    expect(buildTopLevelNavItems({ cmsPages }).map((item) => item.title)).toEqual([
+      "About",
+    ]);
   });
 });

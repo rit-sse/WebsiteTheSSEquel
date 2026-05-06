@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Github } from "lucide-react";
+import { GitBranch } from "lucide-react";
 import prisma from "@/lib/prisma";
 import type { BlockRenderProps } from "../types";
 
@@ -41,7 +41,10 @@ export async function ProjectListBlock({
             className="group relative overflow-hidden rounded-lg border border-border bg-card neo:shadow-neo transition-transform"
           >
             {p.projectImage && (
-              <div className="relative w-full overflow-hidden" style={{ paddingBottom: "56.25%" }}>
+              <div
+                className="relative w-full overflow-hidden"
+                style={{ paddingBottom: "56.25%" }}
+              >
                 <Image
                   src={p.projectImage}
                   alt={p.title}
@@ -52,18 +55,22 @@ export async function ProjectListBlock({
               </div>
             )}
             <div className="p-4">
-              <h3 className="font-display text-lg font-semibold tracking-tight">{p.title}</h3>
+              <h3 className="font-display text-lg font-semibold tracking-tight">
+                {p.title}
+              </h3>
               <p className="mt-1 text-xs uppercase tracking-wider text-muted-foreground">
                 Lead: {p.lead.name}
               </p>
-              <p className="mt-3 line-clamp-3 text-sm text-foreground/85">{p.description}</p>
+              <p className="mt-3 line-clamp-3 text-sm text-foreground/85">
+                {p.description}
+              </p>
               <div className="mt-4 flex items-center gap-3 text-xs">
                 {p.repoLink && (
                   <Link
                     href={p.repoLink}
                     className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground"
                   >
-                    <Github className="h-3.5 w-3.5" />
+                    <GitBranch className="h-3.5 w-3.5" />
                     Repo
                   </Link>
                 )}

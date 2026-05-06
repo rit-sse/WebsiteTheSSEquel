@@ -15,13 +15,17 @@ const LEVEL_CLASS: Record<number, string> = {
 
 export function HeadingBlock({ props }: BlockRenderProps<"heading">) {
   const Tag = `h${props.level}` as "h1" | "h2" | "h3" | "h4";
+  const accent = props.accent === "primary" ? "text-primary" : "";
   return (
     <Tag
       className={[
         "mb-3 mt-8 first:mt-0 scroll-mt-24",
         LEVEL_CLASS[props.level] ?? LEVEL_CLASS[2],
         ALIGN_CLASS[props.align] ?? "text-left",
-      ].join(" ")}
+        accent,
+      ]
+        .filter(Boolean)
+        .join(" ")}
     >
       {props.text}
     </Tag>

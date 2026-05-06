@@ -1,9 +1,12 @@
-import { PrismaClient } from "@prisma/client";
+import { PositionCategory, Prisma, PrismaClient } from "@prisma/client";
 import {
   formatAcademicTerm,
   getAcademicTermDateRange,
   parseAcademicTermLabel,
 } from "../lib/academicTerm";
+import { PageContentSchema } from "../lib/pageBuilder/blocks";
+import { EXISTING_CMS_PAGE_SEEDS } from "../lib/pageBuilder/existingPageSeeds";
+import { contentHash } from "../lib/pageBuilder/hash";
 const prisma = new PrismaClient();
 
 /**
@@ -87,7 +90,12 @@ async function seedOfficerPosition() {
   // Canonical list of all officer positions
   const positions = [
     // Primary Officers (4)
-    { title: "President", is_primary: true, email: "sse-president@rit.edu" },
+    {
+      title: "President",
+      is_primary: true,
+      email: "sse-president@rit.edu",
+      category: PositionCategory.PRIMARY_OFFICER,
+    },
     {
       // VP is chosen as a running mate (Amendment 12) but is still a
       // primary officer once they take office — they need primary-only
@@ -98,49 +106,118 @@ async function seedOfficerPosition() {
       title: "Vice President",
       is_primary: true,
       email: "sse-vicepresident@rit.edu",
+      category: PositionCategory.PRIMARY_OFFICER,
     },
-    { title: "Treasurer", is_primary: true, email: "sse-treasurer@rit.edu" },
-    { title: "Secretary", is_primary: true, email: "sse-secretary@rit.edu" },
+    {
+      title: "Treasurer",
+      is_primary: true,
+      email: "sse-treasurer@rit.edu",
+      category: PositionCategory.PRIMARY_OFFICER,
+    },
+    {
+      title: "Secretary",
+      is_primary: true,
+      email: "sse-secretary@rit.edu",
+      category: PositionCategory.PRIMARY_OFFICER,
+    },
     // Committee Heads (11)
     {
       // Post-Amendment 13: Mentoring Head is now a Primary Officer.
       title: "Mentoring Head",
       is_primary: true,
       email: "sse-mentoring@rit.edu",
+      category: PositionCategory.PRIMARY_OFFICER,
     },
     {
       title: "Public Relations Head",
       is_primary: false,
       email: "sse-pr@rit.edu",
+      category: PositionCategory.COMMITTEE_HEAD,
     },
     {
       title: "Student Outreach Head",
       is_primary: false,
       email: "sse-outreach@rit.edu",
+      category: PositionCategory.COMMITTEE_HEAD,
     },
-    { title: "Technology Head", is_primary: false, email: "sse-tech@rit.edu" },
-    { title: "Events Head", is_primary: false, email: "sse-events@rit.edu" },
+    {
+      title: "Technology Head",
+      is_primary: false,
+      email: "sse-tech@rit.edu",
+      category: PositionCategory.COMMITTEE_HEAD,
+    },
+    {
+      title: "Events Head",
+      is_primary: false,
+      email: "sse-events@rit.edu",
+      category: PositionCategory.COMMITTEE_HEAD,
+    },
     {
       title: "Winter Ball Head",
       is_primary: false,
       email: "sse-winterball@rit.edu",
+      category: PositionCategory.COMMITTEE_HEAD,
     },
-    { title: "Lab Ops Head", is_primary: false, email: "sse-labops@rit.edu" },
+    {
+      title: "Lab Ops Head",
+      is_primary: false,
+      email: "sse-labops@rit.edu",
+      category: PositionCategory.COMMITTEE_HEAD,
+    },
     {
       title: "Projects Head",
       is_primary: false,
       email: "sse-projects@rit.edu",
+      category: PositionCategory.COMMITTEE_HEAD,
     },
-    { title: "Talks Head", is_primary: false, email: "sse-talks@rit.edu" },
+    {
+      title: "Talks Head",
+      is_primary: false,
+      email: "sse-talks@rit.edu",
+      category: PositionCategory.COMMITTEE_HEAD,
+    },
     {
       title: "Career Development Head",
       is_primary: false,
       email: "sse-careers@rit.edu",
+      category: PositionCategory.COMMITTEE_HEAD,
     },
     {
       title: "Marketing Head",
       is_primary: false,
       email: "sse-marketing@rit.edu",
+      category: PositionCategory.COMMITTEE_HEAD,
+    },
+    // SE Office roles grant SE Admin-level access through category checks.
+    {
+      title: "Administrative Assistant",
+      is_primary: false,
+      email: "se-admin-assistant@rit.edu",
+      category: PositionCategory.SE_OFFICE,
+    },
+    {
+      title: "SE Office Head",
+      is_primary: false,
+      email: "se-office-head@rit.edu",
+      category: PositionCategory.SE_OFFICE,
+    },
+    {
+      title: "Undergraduate Dean",
+      is_primary: false,
+      email: "se-undergrad-dean@rit.edu",
+      category: PositionCategory.SE_OFFICE,
+    },
+    {
+      title: "Dean",
+      is_primary: false,
+      email: "se-dean@rit.edu",
+      category: PositionCategory.SE_OFFICE,
+    },
+    {
+      title: "SE Admin",
+      is_primary: false,
+      email: "sse-se-admin@rit.edu",
+      category: PositionCategory.SE_OFFICE,
     },
   ];
 
@@ -157,7 +234,12 @@ async function seedOfficerPosition() {
   for (const pos of positions) {
     await prisma.officerPosition.upsert({
       where: { title: pos.title },
-      update: { is_primary: pos.is_primary, email: pos.email },
+      update: {
+        is_primary: pos.is_primary,
+        email: pos.email,
+        category: pos.category,
+        is_defunct: false,
+      },
       create: pos,
     });
   }
@@ -185,6 +267,132 @@ async function seedOfficer() {
     });
     console.log("Seeded test officer:", officer);
   }
+}
+
+function isEmptyPageContent(value: unknown) {
+  if (!value) return true;
+  const parsed = PageContentSchema.safeParse(value);
+  return parsed.success && parsed.data.blocks.length === 0;
+}
+
+function isSeededExistingPageContent(value: unknown) {
+  if (!value) return false;
+  const parsed = PageContentSchema.safeParse(value);
+  return (
+    parsed.success &&
+    parsed.data.blocks.length > 0 &&
+    parsed.data.blocks.every((block) => block.id.startsWith("existing-page-"))
+  );
+}
+
+async function seedExistingCmsPages() {
+  const creator = await prisma.user.findFirst({ orderBy: { id: "asc" } });
+  if (!creator) {
+    console.log("Skipped CMS existing page seed: no users exist.");
+    return;
+  }
+
+  const archivedLibraryOverrides = await prisma.page.updateMany({
+    where: {
+      OR: [{ slug: "library" }, { slug: { startsWith: "library/" } }],
+      status: { not: "ARCHIVED" },
+    },
+    data: {
+      status: "ARCHIVED",
+      showInNav: false,
+      navSection: "HIDDEN",
+      archivedAt: new Date(),
+      archivedById: creator.id,
+    },
+  });
+  if (archivedLibraryOverrides.count > 0) {
+    console.log(
+      `Archived ${archivedLibraryOverrides.count} CMS library override(s); /library stays on the library app branch.`,
+    );
+  }
+
+  let written = 0;
+  let skipped = 0;
+
+  for (const seed of EXISTING_CMS_PAGE_SEEDS) {
+    const parsed = PageContentSchema.parse(seed.content);
+    const existing = await prisma.page.findUnique({
+      where: { slug: seed.slug },
+    });
+    const hasCustomContent =
+      existing &&
+      ((!isEmptyPageContent(existing.draftContent) &&
+        !isSeededExistingPageContent(existing.draftContent)) ||
+        (!isEmptyPageContent(existing.publishedContent) &&
+          !isSeededExistingPageContent(existing.publishedContent)));
+
+    if (hasCustomContent) {
+      skipped += 1;
+      continue;
+    }
+
+    const now = new Date();
+    const page = await prisma.page.upsert({
+      where: { slug: seed.slug },
+      update: {
+        title: seed.title,
+        status: "PUBLISHED",
+        draftContent: parsed as unknown as Prisma.InputJsonValue,
+        publishedContent: parsed as unknown as Prisma.InputJsonValue,
+        publishedAt: now,
+        publishedById: creator.id,
+        seoDescription: seed.seoDescription ?? null,
+        showInNav: seed.showInNav,
+        navSection: seed.navSection,
+        navLabel: seed.navLabel ?? null,
+        navOrder: seed.navOrder,
+      },
+      create: {
+        slug: seed.slug,
+        title: seed.title,
+        status: "PUBLISHED",
+        draftContent: parsed as unknown as Prisma.InputJsonValue,
+        publishedContent: parsed as unknown as Prisma.InputJsonValue,
+        publishedAt: now,
+        publishedById: creator.id,
+        seoDescription: seed.seoDescription ?? null,
+        createdById: creator.id,
+        showInNav: seed.showInNav,
+        navSection: seed.navSection,
+        navLabel: seed.navLabel ?? null,
+        navOrder: seed.navOrder,
+      },
+    });
+
+    await prisma.pageVersion.upsert({
+      where: {
+        pageId_version: {
+          pageId: page.id,
+          version: 1,
+        },
+      },
+      update: {
+        content: parsed as unknown as Prisma.InputJsonValue,
+        contentHash: contentHash(parsed),
+        publishedAt: now,
+        publishedById: creator.id,
+      },
+      create: {
+        pageId: page.id,
+        version: 1,
+        content: parsed as unknown as Prisma.InputJsonValue,
+        contentHash: contentHash(parsed),
+        publishedAt: now,
+        publishedById: creator.id,
+      },
+    });
+
+    written += 1;
+  }
+
+  console.log(
+    `Seeded ${written} existing pages into the CMS (${skipped} already had content)`,
+  );
 }
 
 async function seedMentor() {
@@ -414,7 +622,7 @@ async function seedMentorRosterAndApplications() {
         major: "SE",
         yearLevel: "3rd",
         coursesJson: JSON.stringify(
-          courseOptions[index % courseOptions.length]
+          courseOptions[index % courseOptions.length],
         ),
         skillsText: "Java, Python, React",
         toolsComfortable: "Git, VS Code, Postman",
@@ -433,7 +641,7 @@ async function seedMentorRosterAndApplications() {
         major: "SE",
         yearLevel: "3rd",
         coursesJson: JSON.stringify(
-          courseOptions[index % courseOptions.length]
+          courseOptions[index % courseOptions.length],
         ),
         skillsText: "Java, Python, React",
         toolsComfortable: "Git, VS Code, Postman",
@@ -448,7 +656,7 @@ async function seedMentorRosterAndApplications() {
   }
 
   console.log(
-    `Seeded ${users.length} mentor users, ${mentors.length} mentors, ${applicationUsers.length} applications`
+    `Seeded ${users.length} mentor users, ${mentors.length} mentors, ${applicationUsers.length} applications`,
   );
 }
 
@@ -521,14 +729,14 @@ async function seedMentorHeadcountData() {
             dateBase.getMonth(),
             dateBase.getDate(),
             hour,
-            30
+            30,
           ),
         },
       });
 
       const mentorSample = pickRandom(
         mentors,
-        randomInt(1, Math.min(3, mentors.length))
+        randomInt(1, Math.min(3, mentors.length)),
       );
       for (const mentor of mentorSample) {
         await prisma.mentorHeadcountMentor.create({
@@ -550,14 +758,14 @@ async function seedMentorHeadcountData() {
             dateBase.getMonth(),
             dateBase.getDate(),
             hour,
-            55
+            55,
           ),
         },
       });
 
       const menteeMentors = pickRandom(
         mentors,
-        randomInt(1, Math.min(3, mentors.length))
+        randomInt(1, Math.min(3, mentors.length)),
       );
       for (const mentor of menteeMentors) {
         await prisma.menteeHeadcountMentor.create({
@@ -571,7 +779,7 @@ async function seedMentorHeadcountData() {
       if (courses.length > 0) {
         const courseSample = pickRandom(
           courses,
-          randomInt(1, Math.min(2, courses.length))
+          randomInt(1, Math.min(2, courses.length)),
         );
         for (const course of courseSample) {
           await prisma.menteeHeadcountCourse.create({
@@ -1280,11 +1488,41 @@ async function seedMemberships() {
     term: "SPRING" | "SUMMER" | "FALL";
     year: number;
   }> = [
-    { userId: 1, reason: "Test1", dateGiven: new Date("2024-10-01 12:00:00"), term: "FALL", year: 2024 },
-    { userId: 2, reason: "Test2", dateGiven: new Date("2024-10-02 12:00:00"), term: "FALL", year: 2024 },
-    { userId: 1, reason: "Test3", dateGiven: new Date("2025-02-02 12:00:00"), term: "SPRING", year: 2025 },
-    { userId: 1, reason: "Test4", dateGiven: new Date("2025-10-03 12:00:00"), term: "FALL", year: 2025 },
-    { userId: 3, reason: "Test5", dateGiven: new Date("2026-02-04 12:00:00"), term: "SPRING", year: 2026 },
+    {
+      userId: 1,
+      reason: "Test1",
+      dateGiven: new Date("2024-10-01 12:00:00"),
+      term: "FALL",
+      year: 2024,
+    },
+    {
+      userId: 2,
+      reason: "Test2",
+      dateGiven: new Date("2024-10-02 12:00:00"),
+      term: "FALL",
+      year: 2024,
+    },
+    {
+      userId: 1,
+      reason: "Test3",
+      dateGiven: new Date("2025-02-02 12:00:00"),
+      term: "SPRING",
+      year: 2025,
+    },
+    {
+      userId: 1,
+      reason: "Test4",
+      dateGiven: new Date("2025-10-03 12:00:00"),
+      term: "FALL",
+      year: 2025,
+    },
+    {
+      userId: 3,
+      reason: "Test5",
+      dateGiven: new Date("2026-02-04 12:00:00"),
+      term: "SPRING",
+      year: 2026,
+    },
   ];
   // Idempotent re-seed: skip rows whose exact (userId, reason, term, year)
   // already exists. Without a unique constraint we can't use upsert, but
@@ -1306,7 +1544,7 @@ async function seedMemberships() {
   }
   console.log(
     `seedMemberships: ${rows.length} memberships across ` +
-      `Fall 2024 / Spring 2025 / Fall 2025 / Spring 2026`
+      `Fall 2024 / Spring 2025 / Fall 2025 / Spring 2026`,
   );
 }
 
@@ -1540,7 +1778,7 @@ async function seedDemoElection() {
   if (positions.length !== officeTitles.length) {
     console.warn(
       `seedDemoElection: expected ${officeTitles.length} positions (inc. VP), ` +
-        `found ${positions.length}. Skipping demo election seed.`
+        `found ${positions.length}. Skipping demo election seed.`,
     );
     return;
   }
@@ -1593,7 +1831,7 @@ async function seedDemoElection() {
         [uid(1)]:
           "Current VP. Built the new scoreboard. Wants SSE to feel like home for first-years.",
         [uid(2)]:
-          "Lab Ops Head. Runs Rapid Dev. Self-described \"library gremlin\".",
+          'Lab Ops Head. Runs Rapid Dev. Self-described "library gremlin".',
       },
     },
     {
@@ -1601,10 +1839,8 @@ async function seedDemoElection() {
       nominees: [uid(4), uid(7)],
       nominator: uid(0),
       statements: {
-        [uid(4)]:
-          "Runs the SSE discord & socials. Brand-obsessed.",
-        [uid(7)]:
-          "Minutes-taker extraordinaire. Good writer.",
+        [uid(4)]: "Runs the SSE discord & socials. Brand-obsessed.",
+        [uid(7)]: "Minutes-taker extraordinaire. Good writer.",
       },
     },
     {
@@ -1612,10 +1848,8 @@ async function seedDemoElection() {
       nominees: [uid(5), uid(8)],
       nominator: uid(0),
       statements: {
-        [uid(5)]:
-          "Already runs merch ops. QuickBooks enjoyer.",
-        [uid(8)]:
-          "Winter Ball budget lead for 2 years.",
+        [uid(5)]: "Already runs merch ops. QuickBooks enjoyer.",
+        [uid(8)]: "Winter Ball budget lead for 2 years.",
       },
     },
     {
@@ -1623,10 +1857,8 @@ async function seedDemoElection() {
       nominees: [uid(6), uid(9)],
       nominator: uid(0),
       statements: {
-        [uid(6)]:
-          "Mentor for 5 terms. Invented \"office hours bingo\".",
-        [uid(9)]:
-          "SWEN-262 TA. Patient, methodical.",
+        [uid(6)]: 'Mentor for 5 terms. Invented "office hours bingo".',
+        [uid(9)]: "SWEN-262 TA. Patient, methodical.",
       },
     },
   ];
@@ -1644,9 +1876,7 @@ async function seedDemoElection() {
           nominatorUserId: slot.nominator,
           status: "ACCEPTED",
           eligibilityStatus: "APPROVED",
-          statement:
-            slot.statements[nomineeId] ??
-            "Seeded demo nominee.",
+          statement: slot.statements[nomineeId] ?? "Seeded demo nominee.",
           yearLevel: 3,
           program: "Software Engineering",
           canRemainEnrolledFullYear: true,
@@ -1733,10 +1963,7 @@ async function seedDemoElection() {
       nominationId: number;
       rank: number;
     }[] = [];
-    const pushOffice = (
-      officeTitle: string,
-      nomineeOrder: number[]
-    ) => {
+    const pushOffice = (officeTitle: string, nomineeOrder: number[]) => {
       const officeId = officeByTitle.get(officeTitle)!;
       const innerMap = nomId.get(officeTitle)!;
       nomineeOrder.forEach((nomineeUserId, idx) => {
@@ -1760,7 +1987,7 @@ async function seedDemoElection() {
   console.log(
     `seedDemoElection: created competitive VOTING_CLOSED /elections/${demoSlug} ` +
       `— 5 offices (incl. ticket-derived VP), ${nomPlan.reduce((a, s) => a + s.nominees.length, 0)} nominees, ` +
-      `${voters.length} ballots cast, awaiting SE Office certification.`
+      `${voters.length} ballots cast, awaiting SE Office certification.`,
   );
 }
 
@@ -1775,6 +2002,7 @@ async function main() {
     await seedQuote();
     await seedOfficerPosition(); // Officer positions (can exist without officers)
     await seedOfficer(); // Test officer assignment for development
+    await seedExistingCmsPages(); // Published CMS translations of existing public pages
     await seedMentor();
     await seedAlumni();
     await seedSkill();

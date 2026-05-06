@@ -16,6 +16,11 @@ const RevealOnScroll = ({ className, children }: RevealOnScrollProps) => {
     const node = ref.current;
     if (!node) return;
 
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      queueMicrotask(() => setIsVisible(true));
+      return;
+    }
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -23,7 +28,7 @@ const RevealOnScroll = ({ className, children }: RevealOnScrollProps) => {
           observer.unobserve(entry.target);
         }
       },
-      { threshold: 0.15, rootMargin: "0px 0px -10% 0px" }
+      { threshold: 0.15, rootMargin: "0px 0px -10% 0px" },
     );
 
     observer.observe(node);
@@ -36,7 +41,7 @@ const RevealOnScroll = ({ className, children }: RevealOnScrollProps) => {
       className={cn(
         "transform-gpu transition-all duration-700 ease-out",
         isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4",
-        className
+        className,
       )}
     >
       {children}

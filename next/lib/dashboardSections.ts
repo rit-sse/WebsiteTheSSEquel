@@ -24,7 +24,8 @@ export type DashboardSectionId =
   | "alumni"
   | "elections"
   | "announcements"
-  | "photos";
+  | "photos"
+  | "pages";
 
 export type DashboardAuthFlags = {
   isOfficer: boolean;
@@ -79,8 +80,7 @@ export const DASHBOARD_SECTIONS: readonly DashboardSection[] = [
     id: "tech-committee",
     title: "Tech Committee Apps",
     href: "/dashboard/tech-committee",
-    description:
-      "Review Tech Committee applications and manage availability.",
+    description: "Review Tech Committee applications and manage availability.",
     accentClass: "text-violet-500",
     visibleFor: (a) =>
       a.isTechCommitteeHead || a.isPrimary || a.isTechCommitteeDivisionManager,
@@ -118,8 +118,7 @@ export const DASHBOARD_SECTIONS: readonly DashboardSection[] = [
     id: "alumni",
     title: "Alumni Review",
     href: "/dashboard/alumni",
-    description:
-      "Review alumni requests and auto-generated candidates.",
+    description: "Review alumni requests and auto-generated candidates.",
     accentClass: "text-teal-500",
   },
   {
@@ -146,6 +145,14 @@ export const DASHBOARD_SECTIONS: readonly DashboardSection[] = [
     accentClass: "text-fuchsia-500",
     visibleFor: (a) => a.isOfficer || a.isSeAdmin,
   },
+  {
+    id: "pages",
+    title: "Pages",
+    href: "/dashboard/pages",
+    description: "Edit static pages, add carousels, build new ones.",
+    accentClass: "text-blue-500",
+    visibleFor: (a) => a.isOfficer || a.isSeAdmin,
+  },
 ];
 
 /**
@@ -153,9 +160,9 @@ export const DASHBOARD_SECTIONS: readonly DashboardSection[] = [
  * Sections without a `visibleFor` predicate are always returned.
  */
 export function filterVisibleSections(
-  auth: DashboardAuthFlags
+  auth: DashboardAuthFlags,
 ): DashboardSection[] {
   return DASHBOARD_SECTIONS.filter(
-    (section) => !section.visibleFor || section.visibleFor(auth)
+    (section) => !section.visibleFor || section.visibleFor(auth),
   );
 }

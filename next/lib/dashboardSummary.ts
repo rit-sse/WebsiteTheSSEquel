@@ -82,6 +82,13 @@ export type PhotosSummary = {
   recent: { id: number; url: string; alt: string }[];
 };
 
+export type PagesSummary = {
+  draftCount: number;
+  publishedCount: number;
+  archivedCount: number;
+  recent: { id: number; title: string; status: string }[];
+};
+
 export type DashboardSummary = {
   purchasing: PurchasingSummary;
   attendance: AttendanceSummary;
@@ -96,6 +103,7 @@ export type DashboardSummary = {
   elections: ElectionsSummary;
   announcements: AnnouncementsSummary;
   photos: PhotosSummary;
+  pages: PagesSummary;
 };
 
 export type DashboardSectionSummary<Id extends DashboardSectionId> =
@@ -111,7 +119,7 @@ export type DashboardSectionSummary<Id extends DashboardSectionId> =
  * to its empty/zero default and the rest of the dashboard still renders.
  */
 export async function getDashboardSummary(): Promise<DashboardSummary> {
-  const settle = async <T,>(promise: Promise<T>, fallback: T): Promise<T> => {
+  const settle = async <T>(promise: Promise<T>, fallback: T): Promise<T> => {
     try {
       return await promise;
     } catch (error) {
@@ -134,6 +142,7 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
     elections,
     announcements,
     photos,
+    pages,
   ] = await Promise.all([
     settle(getPurchasingSummary(), {
       pendingCount: 0,
@@ -188,6 +197,12 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
       totalCount: 0,
       recent: [],
     } as PhotosSummary),
+    settle(getPagesSummary(), {
+      draftCount: 0,
+      publishedCount: 0,
+      archivedCount: 0,
+      recent: [],
+    } as PagesSummary),
   ]);
 
   return {
@@ -204,6 +219,7 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
     elections,
     announcements,
     photos,
+    pages,
   };
 }
 
@@ -311,7 +327,7 @@ async function getPositionsSummary(): Promise<PositionsSummary> {
     fillablePositionCount,
     vacantPositionCount: Math.max(
       0,
-      fillablePositionCount - filledPositionCount
+      fillablePositionCount - filledPositionCount,
     ),
   };
 }
@@ -416,6 +432,33 @@ async function getPhotosSummary(): Promise<PhotosSummary> {
       id: p.id,
       url: getPhotoImageUrl(p.galleryKey),
       alt: p.altText ?? p.caption ?? "Recent photo",
+    })),
+  };
+}
+
+async function getPagesSummary(): Promise<PagesSummary> {
+  const [draftCount, publishedCount, archivedCount, recent] = await Promise.all(
+    [
+      prisma.page.count({ where: { status: "DRAFT" } }),
+      prisma.page.count({ where: { status: "PUBLISHED" } }),
+      prisma.page.count({ where: { status: "ARCHIVED" } }),
+      prisma.page.findMany({
+        take: 6,
+        where: { status: { not: "ARCHIVED" } },
+        orderBy: { updatedAt: "desc" },
+        select: { id: true, title: true, status: true },
+      }),
+    ],
+  );
+
+  return {
+    draftCount,
+    publishedCount,
+    archivedCount,
+    recent: recent.map((page) => ({
+      id: page.id,
+      title: page.title,
+      status: String(page.status),
     })),
   };
 }

@@ -29,6 +29,110 @@ describe("PageContentSchema", () => {
     expect(parsed.success).toBe(true);
   });
 
+  it("validates a card grid block", () => {
+    const content = {
+      version: 1,
+      blocks: [
+        {
+          id: "cards",
+          type: "cardGrid",
+          props: {
+            heading: "Quick links",
+            columns: 3,
+            items: [
+              {
+                title: "Events",
+                body: "See what is happening next.",
+                href: "/events/calendar",
+                ctaText: "Open events",
+                accent: "orange",
+              },
+            ],
+          },
+        },
+      ],
+    };
+    const parsed = PageContentSchema.safeParse(content);
+    expect(parsed.success).toBe(true);
+  });
+
+  it("validates a section layout block", () => {
+    const content = {
+      version: 1,
+      blocks: [
+        {
+          id: "section",
+          type: "section",
+          props: {
+            label: "Sponsor page shell",
+            width: "wide",
+            depth: "1",
+            padding: "spacious",
+            background: "muted",
+            layout: "stack",
+            gap: "normal",
+            revealOnScroll: true,
+          },
+        },
+        {
+          id: "heading",
+          type: "heading",
+          props: { text: "Hello", level: 1, align: "center" },
+        },
+      ],
+    };
+    const parsed = PageContentSchema.safeParse(content);
+    expect(parsed.success).toBe(true);
+  });
+
+  it("validates rotating photos on image text cards", () => {
+    const content = {
+      version: 1,
+      blocks: [
+        {
+          id: "z",
+          type: "zCardRow",
+          props: {
+            items: [
+              {
+                imageSrc: "",
+                imageAlt: "Fallback alt",
+                photoCategorySlug: "events",
+                photoCount: 6,
+                photoIntervalMs: 6000,
+                title: "Events",
+                body: "Photos can rotate through a historian category.",
+              },
+            ],
+            revealOnScroll: true,
+          },
+        },
+      ],
+    };
+    const parsed = PageContentSchema.safeParse(content);
+    expect(parsed.success).toBe(true);
+  });
+
+  it("validates an app widget block", () => {
+    const content = {
+      version: 1,
+      blocks: [
+        {
+          id: "widget",
+          type: "appWidget",
+          props: {
+            widget: "eventsCalendar",
+            heading: "Events Calendar",
+            body: "Live calendar embedded in a CMS page.",
+            frame: false,
+          },
+        },
+      ],
+    };
+    const parsed = PageContentSchema.safeParse(content);
+    expect(parsed.success).toBe(true);
+  });
+
   it("rejects an unknown block type", () => {
     const content = {
       version: 1,
@@ -69,16 +173,28 @@ describe("validateSlug", () => {
       const r = validateSlug(s);
       expect(r.ok).toBe(true);
       if (r.ok) expect(r.slug).toBe(s);
-    }
+    },
   );
 
-  it.each(["", "with spaces", "/leading", "trailing/", "double--dash", "UPPER!case"])(
-    "rejects invalid slug %s",
+  it.each(["events", "events/calendar", "projects"])(
+    "accepts existing public route slug %s for CMS overrides",
     (s) => {
       const r = validateSlug(s);
-      expect(r.ok).toBe(false);
-    }
+      expect(r.ok).toBe(true);
+    },
   );
+
+  it.each([
+    "",
+    "with spaces",
+    "/leading",
+    "trailing/",
+    "double--dash",
+    "UPPER!case",
+  ])("rejects invalid slug %s", (s) => {
+    const r = validateSlug(s);
+    expect(r.ok).toBe(false);
+  });
 
   it("rejects every reserved prefix", () => {
     for (const p of RESERVED_SLUG_PREFIXES) {
@@ -107,11 +223,11 @@ describe("autoDescribe", () => {
           {
             id: "1",
             type: "markdown",
-            props: { body: "**Hello** [there](https://x)." },
+            props: { body: "**Hello** [there](https://x).", align: "left" },
           },
         ],
       },
-      "fallback"
+      "fallback",
     );
     expect(out).toBe("Hello there.");
   });
@@ -126,13 +242,14 @@ describe("autoDescribe", () => {
             type: "heroSection",
             props: {
               title: "T",
-              description: "Welcome to SSE — the Society for Software Engineers.",
+              description:
+                "Welcome to SSE — the Society for Software Engineers.",
               ctas: [],
             },
           },
         ],
       },
-      "fallback"
+      "fallback",
     );
     expect(out).toMatch(/^Welcome to SSE/);
   });
@@ -143,10 +260,10 @@ describe("autoDescribe", () => {
       {
         version: 1,
         blocks: [
-          { id: "1", type: "markdown", props: { body: long } },
+          { id: "1", type: "markdown", props: { body: long, align: "left" } },
         ],
       },
-      "fallback"
+      "fallback",
     );
     expect(out.length).toBeLessThanOrEqual(160);
     expect(out.endsWith("…")).toBe(true);

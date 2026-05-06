@@ -102,6 +102,23 @@ export async function listArchivedPages() {
   });
 }
 
+/** Lightweight page nav metadata consumed by the server-rendered navbar. */
+export async function listPagesForNavbar() {
+  return prisma.page.findMany({
+    where: { status: { not: "ARCHIVED" } },
+    select: {
+      slug: true,
+      title: true,
+      status: true,
+      showInNav: true,
+      navSection: true,
+      navLabel: true,
+      navOrder: true,
+    },
+    orderBy: [{ navSection: "asc" }, { navOrder: "asc" }, { title: "asc" }],
+  });
+}
+
 interface CreatePageOpts {
   slug: string;
   title: string;

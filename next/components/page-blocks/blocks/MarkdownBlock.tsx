@@ -12,8 +12,14 @@ export function MarkdownBlock({ props }: BlockRenderProps<"markdown">) {
   if (!props.body.trim()) {
     return null;
   }
+  const centered = props.align === "center";
   return (
-    <div className="prose prose-neutral dark:prose-invert max-w-none mb-6 last:mb-0">
+    <div
+      className={[
+        "prose prose-neutral dark:prose-invert mb-6 last:mb-0",
+        centered ? "mx-auto max-w-3xl text-center" : "max-w-none",
+      ].join(" ")}
+    >
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeSanitize]}

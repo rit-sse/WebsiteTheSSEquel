@@ -13,11 +13,13 @@ import type { ComponentType } from "react";
 import type { BlockNode, BlockType } from "@/lib/pageBuilder/blocks";
 import type { BlockRenderProps } from "./types";
 
+import { SectionBlock } from "./blocks/SectionBlock";
 import { HeadingBlock } from "./blocks/HeadingBlock";
 import { MarkdownBlock } from "./blocks/MarkdownBlock";
 import { ImageBlock } from "./blocks/ImageBlock";
 import { DividerBlock } from "./blocks/DividerBlock";
 import { CtaBlock } from "./blocks/CtaBlock";
+import { CardGridBlock } from "./blocks/CardGridBlock";
 import { PhotoCarouselBlock } from "./blocks/PhotoCarouselBlock";
 import { PhotoGridBlock } from "./blocks/PhotoGridBlock";
 import { ZCardRowBlock } from "./blocks/ZCardRowBlock";
@@ -27,7 +29,10 @@ import { TestimonialRotatorBlock } from "./blocks/TestimonialRotatorBlock";
 import { ProjectListBlock } from "./blocks/ProjectListBlock";
 import { OfficerListingBlock } from "./blocks/OfficerListingBlock";
 import { SponsorWallBlock } from "./blocks/SponsorWallBlock";
+import { AppWidgetBlock } from "./blocks/AppWidgetBlock";
 import { RawHtmlBlock } from "./blocks/RawHtmlBlock";
+import { BulletListBlock } from "./blocks/BulletListBlock";
+import { BulletListPairBlock } from "./blocks/BulletListPairBlock";
 
 // Type-erased registry entries. The PageRenderer hands a block's
 // runtime props back in via React.createElement; the cast to `AnyRender`
@@ -36,9 +41,11 @@ import { RawHtmlBlock } from "./blocks/RawHtmlBlock";
 type AnyRender = ComponentType<BlockRenderProps<any>>;
 
 export const RENDER_REGISTRY: Record<BlockType, AnyRender> = {
+  section: SectionBlock as AnyRender,
   heading: HeadingBlock as AnyRender,
   markdown: MarkdownBlock as AnyRender,
   image: ImageBlock as AnyRender,
+  cardGrid: CardGridBlock as AnyRender,
   divider: DividerBlock as AnyRender,
   cta: CtaBlock as AnyRender,
   photoCarousel: PhotoCarouselBlock as AnyRender,
@@ -50,7 +57,10 @@ export const RENDER_REGISTRY: Record<BlockType, AnyRender> = {
   projectList: ProjectListBlock as AnyRender,
   officerListing: OfficerListingBlock as AnyRender,
   sponsorWall: SponsorWallBlock as AnyRender,
+  appWidget: AppWidgetBlock as AnyRender,
   rawHtml: RawHtmlBlock as AnyRender,
+  bulletList: BulletListBlock as AnyRender,
+  bulletListPair: BulletListPairBlock as AnyRender,
 };
 
 export function getRender(type: BlockNode["type"]): AnyRender | null {

@@ -54,6 +54,7 @@ import {
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import {
   BLOCK_META,
   type BlockNode,
@@ -90,11 +91,17 @@ type SaveState = "idle" | "saving" | "saved" | "error";
 
 const AUTOSAVE_DEBOUNCE_MS = 1500;
 
-export function PageEditorClient({ page: initialPage, initialContent, isPrimary }: Props) {
+export function PageEditorClient({
+  page: initialPage,
+  initialContent,
+  isPrimary,
+}: Props) {
   const router = useRouter();
   const [page, setPage] = useState<PageMeta>(initialPage);
   const [content, setContent] = useState<PageContent>(initialContent);
-  const [selected, setSelected] = useState<string | null>(initialContent.blocks[0]?.id ?? null);
+  const [selected, setSelected] = useState<string | null>(
+    initialContent.blocks[0]?.id ?? null,
+  );
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [publishing, setPublishing] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -108,7 +115,7 @@ export function PageEditorClient({ page: initialPage, initialContent, isPrimary 
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    })
+    }),
   );
 
   // Track the latest payload for autosave (avoid stale closures).
@@ -177,7 +184,8 @@ export function PageEditorClient({ page: initialPage, initialContent, isPrimary 
 
   useEffect(() => {
     return () => {
-      if (debounceTimerRef.current) window.clearTimeout(debounceTimerRef.current);
+      if (debounceTimerRef.current)
+        window.clearTimeout(debounceTimerRef.current);
     };
   }, []);
 
@@ -188,7 +196,7 @@ export function PageEditorClient({ page: initialPage, initialContent, isPrimary 
 
   function updateBlockProps(id: string, nextProps: BlockNode["props"]) {
     const blocks = content.blocks.map((b) =>
-      b.id === id ? ({ ...b, props: nextProps } as BlockNode) : b
+      b.id === id ? ({ ...b, props: nextProps } as BlockNode) : b,
     );
     updateContent({ ...content, blocks });
   }
@@ -257,10 +265,9 @@ export function PageEditorClient({ page: initialPage, initialContent, isPrimary 
       if (json.noop) {
         toast.success("Already published — no changes to broadcast");
       } else {
-        toast.success(
-          `Published v${json.version?.version ?? "?"}`,
-          { description: `${page.slug} is now live` }
-        );
+        toast.success(`Published v${json.version?.version ?? "?"}`, {
+          description: `${page.slug} is now live`,
+        });
       }
       router.refresh();
       setPage((p) => ({ ...p, status: "PUBLISHED" }));
@@ -273,7 +280,12 @@ export function PageEditorClient({ page: initialPage, initialContent, isPrimary 
   }
 
   async function unpublish() {
-    if (!confirm("Unpublish this page? It will return to draft and stop serving anonymously.")) return;
+    if (
+      !confirm(
+        "Unpublish this page? It will return to draft and stop serving anonymously.",
+      )
+    )
+      return;
     const res = await fetch(`/api/pages/${page.id}/unpublish`, {
       method: "POST",
     });
@@ -289,37 +301,43 @@ export function PageEditorClient({ page: initialPage, initialContent, isPrimary 
   const selectedBlock = content.blocks.find((b) => b.id === selected) ?? null;
 
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] flex-col">
+    <div className="flex min-h-[calc(100dvh-4rem)] w-full flex-col overflow-x-hidden">
       {/* ── Top bar ── */}
       <div className="sticky top-[4.5rem] z-30 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-        <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center gap-3 px-4 py-3">
-          <Link
-            href="/dashboard/pages"
-            className="text-muted-foreground hover:text-foreground"
-            aria-label="Back to pages"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Link>
+        <div className="mx-auto flex w-full max-w-7xl flex-col gap-3 px-4 py-3 lg:flex-row lg:items-center">
           <div className="flex min-w-0 items-center gap-2">
-            <h1 className="font-display text-lg font-semibold tracking-tight truncate max-w-xs">
-              {page.title}
-            </h1>
-            <span className="font-mono text-xs text-muted-foreground truncate">
-              /{page.slug}
-            </span>
-            {isLocked && (
-              <Badge variant="outline" className="gap-1">
-                <Lock className="h-2.5 w-2.5" />
-                System-locked
-              </Badge>
-            )}
-            <StatusBadge status={page.status} />
+            <Link
+              href="/dashboard/pages"
+              className="shrink-0 text-muted-foreground hover:text-foreground"
+              aria-label="Back to pages"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Link>
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
+              <h1 className="max-w-[14rem] truncate font-display text-lg font-semibold tracking-tight sm:max-w-xs">
+                {page.title}
+              </h1>
+              <span className="min-w-0 truncate font-mono text-xs text-muted-foreground">
+                /{page.slug}
+              </span>
+              {isLocked && (
+                <Badge variant="outline" className="gap-1">
+                  <Lock className="h-2.5 w-2.5" />
+                  System-locked
+                </Badge>
+              )}
+              <StatusBadge status={page.status} />
+            </div>
           </div>
 
-          <div className="ml-auto flex items-center gap-2">
+          <div className="flex w-full min-w-0 flex-wrap items-center gap-2 pb-1 lg:ml-auto lg:w-auto lg:flex-nowrap lg:pb-0">
             <SaveIndicator state={saveState} />
-            <Link href={`/${page.slug}?preview=1`} target="_blank">
-              <Button variant="neutral" size="sm">
+            <Link
+              href={`/${page.slug}?preview=1`}
+              target="_blank"
+              className="shrink-0"
+            >
+              <Button variant="neutral" size="sm" className="shrink-0">
                 <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
                 Preview
               </Button>
@@ -328,16 +346,28 @@ export function PageEditorClient({ page: initialPage, initialContent, isPrimary 
               variant="neutral"
               size="sm"
               onClick={() => setSettingsOpen(true)}
+              className="shrink-0"
             >
               <Settings className="h-3.5 w-3.5 mr-1.5" />
               Settings
             </Button>
             {page.status === "PUBLISHED" ? (
               <>
-                <Button variant="neutral" size="sm" onClick={unpublish} disabled={isLocked}>
+                <Button
+                  variant="neutral"
+                  size="sm"
+                  onClick={unpublish}
+                  disabled={isLocked}
+                  className="shrink-0"
+                >
                   Unpublish
                 </Button>
-                <Button size="sm" onClick={publish} disabled={publishing || isLocked}>
+                <Button
+                  size="sm"
+                  onClick={publish}
+                  disabled={publishing || isLocked}
+                  className="shrink-0"
+                >
                   {publishing ? (
                     <>
                       <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
@@ -352,7 +382,12 @@ export function PageEditorClient({ page: initialPage, initialContent, isPrimary 
                 </Button>
               </>
             ) : (
-              <Button size="sm" onClick={publish} disabled={publishing || isLocked}>
+              <Button
+                size="sm"
+                onClick={publish}
+                disabled={publishing || isLocked}
+                className="shrink-0"
+              >
                 {publishing ? (
                   <>
                     <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
@@ -388,9 +423,9 @@ export function PageEditorClient({ page: initialPage, initialContent, isPrimary 
       )}
 
       {/* ── Editor body ── */}
-      <div className="mx-auto grid w-full max-w-7xl flex-1 grid-cols-1 gap-4 px-4 py-6 lg:grid-cols-[20rem_1fr]">
+      <div className="mx-auto grid w-full max-w-7xl flex-1 grid-cols-1 gap-4 px-4 py-6 lg:min-h-[calc(100dvh-13rem)] lg:grid-cols-[20rem_minmax(0,1fr)]">
         {/* Block list */}
-        <aside className="lg:sticky lg:top-32 lg:max-h-[calc(100vh-10rem)] lg:overflow-auto">
+        <aside className="min-w-0 lg:sticky lg:top-[13rem] lg:max-h-[calc(100dvh-14rem)] lg:overflow-y-auto lg:pr-1 [scrollbar-gutter:stable]">
           <div className="mb-2 flex items-center justify-between">
             <h2 className="text-xs font-display font-semibold uppercase tracking-wider text-muted-foreground">
               Blocks ({content.blocks.length})
@@ -405,7 +440,11 @@ export function PageEditorClient({ page: initialPage, initialContent, isPrimary 
               Add
             </Button>
           </div>
-          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={onDragEnd}
+          >
             <SortableContext
               items={content.blocks.map((b) => b.id)}
               strategy={verticalListSortingStrategy}
@@ -441,7 +480,7 @@ export function PageEditorClient({ page: initialPage, initialContent, isPrimary 
         </aside>
 
         {/* Editor pane */}
-        <section className="rounded-lg border border-border bg-card p-5 md:p-6 min-h-[24rem]">
+        <section className="min-h-[24rem] min-w-0 overflow-hidden rounded-lg border border-border bg-card lg:sticky lg:top-[13rem] lg:h-[calc(100dvh-14rem)] lg:max-h-[calc(100dvh-14rem)]">
           {selectedBlock ? (
             <BlockEditorPane
               block={selectedBlock}
@@ -449,7 +488,7 @@ export function PageEditorClient({ page: initialPage, initialContent, isPrimary 
               disabled={isLocked}
             />
           ) : (
-            <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+            <div className="flex h-full min-h-[24rem] items-center justify-center p-6 text-sm text-muted-foreground">
               {content.blocks.length === 0
                 ? "Add a block to start editing."
                 : "Select a block from the list to edit."}
@@ -532,8 +571,14 @@ function BlockRow({
   locked: boolean;
 }) {
   const meta = BLOCK_META[block.type];
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: block.id });
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: block.id });
 
   const summary = blockSummary(block);
 
@@ -597,12 +642,23 @@ function BlockRow({
 
 function blockSummary(block: BlockNode): string {
   switch (block.type) {
+    case "section":
+      return `${block.props.label || "Section"} • ${block.props.width} • ${block.props.depth === "none" ? "flat" : `depth ${block.props.depth}`}${block.props.revealOnScroll ? " • reveal" : ""}`;
     case "heading":
       return block.props.text || "(empty heading)";
     case "markdown":
-      return block.props.body.slice(0, 60).replace(/\s+/g, " ").trim() || "(empty)";
+      return (
+        block.props.body.slice(0, 60).replace(/\s+/g, " ").trim() || "(empty)"
+      );
     case "image":
-      return block.props.alt || block.props.caption || block.props.src || "(no image)";
+      return (
+        block.props.alt ||
+        block.props.caption ||
+        block.props.src ||
+        "(no image)"
+      );
+    case "cardGrid":
+      return `${block.props.items.length} card${block.props.items.length === 1 ? "" : "s"}`;
     case "photoCarousel":
       return `Carousel — ${block.props.categorySlug} • ${block.props.count} photos • ${block.props.intervalMs / 1000}s`;
     case "photoGrid":
@@ -617,8 +673,10 @@ function blockSummary(block: BlockNode): string {
       return `${block.props.positionCategory} officers`;
     case "sponsorWall":
       return `${block.props.layout} • ${block.props.onlyActive ? "active" : "all"}`;
+    case "appWidget":
+      return block.props.widget;
     case "zCardRow":
-      return `${block.props.items.length} card${block.props.items.length === 1 ? "" : "s"}`;
+      return `${block.props.items.length} card${block.props.items.length === 1 ? "" : "s"}${block.props.revealOnScroll ? " • reveal" : ""}`;
     case "heroSection":
       return block.props.title;
     case "divider":
@@ -626,7 +684,14 @@ function blockSummary(block: BlockNode): string {
     case "cta":
       return `${block.props.text} → ${block.props.href}`;
     case "rawHtml":
-      return block.props.html.slice(0, 60).replace(/\s+/g, " ").trim() || "(empty HTML)";
+      return (
+        block.props.html.slice(0, 60).replace(/\s+/g, " ").trim() ||
+        "(empty HTML)"
+      );
+    case "bulletList":
+      return `${block.props.items.length} bullet${block.props.items.length === 1 ? "" : "s"}${block.props.heading ? ` — ${block.props.heading}` : ""}`;
+    case "bulletListPair":
+      return `${block.props.heading} — ${block.props.columns[0].items.length}+${block.props.columns[1].items.length} bullets`;
   }
 }
 
@@ -654,19 +719,31 @@ function BlockEditorPane({
   // The components themselves are module-scoped — they're not being
   // created on every render.
   return (
-    <div className={disabled ? "pointer-events-none opacity-60" : undefined}>
-      <header className="mb-5 flex items-baseline justify-between gap-3">
+    <div
+      className={cn(
+        "flex min-h-0 flex-col lg:h-full",
+        disabled && "pointer-events-none opacity-60",
+      )}
+    >
+      <header className="flex shrink-0 items-start justify-between gap-3 border-b border-border/60 px-5 py-4 md:px-6">
         <div>
           <h2 className="font-display text-xl font-bold tracking-tight">
             {meta.label}
           </h2>
-          <p className="mt-0.5 text-xs text-muted-foreground">{meta.description}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {meta.description}
+          </p>
         </div>
-        <Badge variant="outline" className="text-[10px] uppercase tracking-wider">
+        <Badge
+          variant="outline"
+          className="text-[10px] uppercase tracking-wider"
+        >
           {meta.category}
         </Badge>
       </header>
-      {createElement(Editor, { props: block.props, onChange })}
+      <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 pr-4 [scrollbar-gutter:stable] md:px-6 md:pr-5">
+        {createElement(Editor, { props: block.props, onChange })}
+      </div>
     </div>
   );
 }

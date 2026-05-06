@@ -28,6 +28,121 @@ import { CategoryPicker } from "../shared/CategoryPicker";
 import type { BlockEditorProps } from "../types";
 import type { BlockType } from "@/lib/pageBuilder/blocks";
 
+const PHOTO_CATEGORY_OPTIONS = [
+  { value: "", label: "Static image only" },
+  { value: "general", label: "General" },
+  { value: "events", label: "Events" },
+  { value: "projects", label: "Projects" },
+  { value: "mentoring", label: "Mentoring" },
+  { value: "social", label: "Social" },
+  { value: "outreach", label: "Outreach" },
+];
+
+// ──────── Layout ────────
+
+function SectionEditor({ props, onChange }: BlockEditorProps<"section">) {
+  return (
+    <div className="flex flex-col gap-4">
+      <TextField
+        label="Editor label"
+        value={props.label}
+        onChange={(v) => onChange({ ...props, label: v })}
+        maxLength={120}
+      />
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <SelectField
+          label="Width"
+          value={props.width}
+          onChange={(v) => onChange({ ...props, width: v })}
+          options={[
+            { value: "narrow", label: "Narrow" },
+            { value: "content", label: "Content" },
+            { value: "screenXl", label: "Screen-xl (classic)" },
+            { value: "wide", label: "Wide" },
+            { value: "full", label: "Full bleed" },
+          ]}
+        />
+        <SelectField
+          label="Depth"
+          value={props.depth}
+          onChange={(v) => onChange({ ...props, depth: v })}
+          options={[
+            { value: "none", label: "No card" },
+            { value: "1", label: "Depth 1" },
+            { value: "2", label: "Depth 2" },
+            { value: "3", label: "Depth 3" },
+          ]}
+        />
+      </div>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <SelectField
+          label="Padding"
+          value={props.padding}
+          onChange={(v) => onChange({ ...props, padding: v })}
+          options={[
+            { value: "none", label: "None" },
+            { value: "compact", label: "Compact" },
+            { value: "normal", label: "Normal" },
+            { value: "spacious", label: "Spacious" },
+          ]}
+        />
+        <SelectField
+          label="Gap"
+          value={props.gap}
+          onChange={(v) => onChange({ ...props, gap: v })}
+          options={[
+            { value: "compact", label: "Compact" },
+            { value: "normal", label: "Normal" },
+            { value: "spacious", label: "Spacious" },
+          ]}
+        />
+      </div>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <SelectField
+          label="Background"
+          value={props.background}
+          onChange={(v) => onChange({ ...props, background: v })}
+          options={[
+            { value: "transparent", label: "Transparent" },
+            { value: "surface", label: "Surface" },
+            { value: "muted", label: "Muted" },
+            { value: "orange", label: "Orange wash" },
+            { value: "blue", label: "Blue wash" },
+            { value: "pink", label: "Pink wash" },
+            { value: "green", label: "Green wash" },
+          ]}
+        />
+        <SelectField
+          label="Layout"
+          value={props.layout}
+          onChange={(v) => onChange({ ...props, layout: v })}
+          options={[
+            { value: "stack", label: "Stack" },
+            { value: "twoColumn", label: "Two columns" },
+            { value: "threeColumn", label: "Three columns" },
+            { value: "grid", label: "Responsive grid" },
+          ]}
+        />
+      </div>
+      <SelectField
+        label="Frame"
+        hint="Card is the standard depth shadow. Neo-card uses a sharp neo-brutalist border (matches the Sponsors hero)."
+        value={props.frame ?? "card"}
+        onChange={(v) => onChange({ ...props, frame: v })}
+        options={[
+          { value: "card", label: "Card" },
+          { value: "neoCard", label: "Neo-card" },
+        ]}
+      />
+      <ToggleField
+        label="Fade in on scroll"
+        value={props.revealOnScroll ?? false}
+        onChange={(v) => onChange({ ...props, revealOnScroll: v })}
+      />
+    </div>
+  );
+}
+
 // ──────── Primitives ────────
 
 function HeadingEditor({ props, onChange }: BlockEditorProps<"heading">) {
@@ -39,11 +154,13 @@ function HeadingEditor({ props, onChange }: BlockEditorProps<"heading">) {
         onChange={(v) => onChange({ ...props, text: v })}
         maxLength={200}
       />
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <SelectField
           label="Level"
           value={String(props.level) as "1" | "2" | "3" | "4"}
-          onChange={(v) => onChange({ ...props, level: Number(v) as 1 | 2 | 3 | 4 })}
+          onChange={(v) =>
+            onChange({ ...props, level: Number(v) as 1 | 2 | 3 | 4 })
+          }
           options={[
             { value: "1", label: "H1 — Page title" },
             { value: "2", label: "H2 — Section" },
@@ -62,20 +179,239 @@ function HeadingEditor({ props, onChange }: BlockEditorProps<"heading">) {
           ]}
         />
       </div>
+      <SelectField
+        label="Color"
+        hint='Primary mirrors the original public-page text-primary look.'
+        value={props.accent ?? "none"}
+        onChange={(v) => onChange({ ...props, accent: v })}
+        options={[
+          { value: "none", label: "Default" },
+          { value: "primary", label: "Primary" },
+        ]}
+      />
     </div>
   );
 }
 
 function MarkdownEditor({ props, onChange }: BlockEditorProps<"markdown">) {
   return (
-    <TextAreaField
-      label="Body (markdown supported)"
-      hint="GitHub-flavored markdown — bold, lists, links, tables."
-      value={props.body}
-      onChange={(v) => onChange({ ...props, body: v })}
-      rows={8}
-      maxLength={20000}
-    />
+    <div className="flex flex-col gap-4">
+      <TextAreaField
+        label="Body (markdown supported)"
+        hint="GitHub-flavored markdown — bold, lists, links, tables."
+        value={props.body}
+        onChange={(v) => onChange({ ...props, body: v })}
+        rows={8}
+        maxLength={20000}
+      />
+      <SelectField
+        label="Align"
+        value={props.align ?? "left"}
+        onChange={(v) => onChange({ ...props, align: v })}
+        options={[
+          { value: "left", label: "Left" },
+          { value: "center", label: "Center (max-w-3xl)" },
+        ]}
+      />
+    </div>
+  );
+}
+
+function BulletListEditor({ props, onChange }: BlockEditorProps<"bulletList">) {
+  function setItem(i: number, value: string) {
+    const items = [...props.items];
+    items[i] = value;
+    onChange({ ...props, items });
+  }
+  function addItem() {
+    onChange({ ...props, items: [...props.items, "New point"] });
+  }
+  function removeItem(i: number) {
+    if (props.items.length <= 1) return;
+    onChange({ ...props, items: props.items.filter((_, j) => j !== i) });
+  }
+  function moveItem(i: number, direction: -1 | 1) {
+    const j = i + direction;
+    if (j < 0 || j >= props.items.length) return;
+    const items = [...props.items];
+    [items[i], items[j]] = [items[j]!, items[i]!];
+    onChange({ ...props, items });
+  }
+  return (
+    <div className="flex flex-col gap-4">
+      <TextField
+        label="Heading (optional)"
+        value={props.heading ?? ""}
+        onChange={(v) =>
+          onChange({ ...props, heading: v || undefined })
+        }
+        maxLength={160}
+      />
+      <Field label={`Items (${props.items.length})`}>
+        <div className="flex flex-col gap-2">
+          {props.items.map((item, i) => (
+            <div key={i} className="flex items-start gap-2">
+              <input
+                type="text"
+                value={item}
+                onChange={(e) => setItem(i, e.target.value)}
+                maxLength={500}
+                className="flex-1 rounded-md border-2 border-border bg-background px-2.5 py-1.5 text-sm focus:border-foreground focus:outline-none"
+                placeholder="Bullet text"
+              />
+              <button
+                type="button"
+                onClick={() => moveItem(i, -1)}
+                disabled={i === 0}
+                className="text-xs text-muted-foreground hover:text-foreground disabled:opacity-30"
+                title="Move up"
+              >
+                ↑
+              </button>
+              <button
+                type="button"
+                onClick={() => moveItem(i, 1)}
+                disabled={i === props.items.length - 1}
+                className="text-xs text-muted-foreground hover:text-foreground disabled:opacity-30"
+                title="Move down"
+              >
+                ↓
+              </button>
+              <button
+                type="button"
+                onClick={() => removeItem(i)}
+                disabled={props.items.length <= 1}
+                className="text-muted-foreground hover:text-destructive disabled:opacity-30"
+                title="Remove"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          ))}
+          <Button
+            variant="neutral"
+            size="sm"
+            onClick={addItem}
+            disabled={props.items.length >= 20}
+          >
+            <Plus className="h-3.5 w-3.5 mr-1" />
+            Add item
+          </Button>
+        </div>
+      </Field>
+    </div>
+  );
+}
+
+function BulletListPairEditor({
+  props,
+  onChange,
+}: BlockEditorProps<"bulletListPair">) {
+  function updateColumn(
+    idx: 0 | 1,
+    next: { heading: string; items: string[] },
+  ) {
+    const columns = [...props.columns] as typeof props.columns;
+    columns[idx] = next;
+    onChange({ ...props, columns });
+  }
+  function setColItem(idx: 0 | 1, i: number, value: string) {
+    const col = props.columns[idx];
+    const items = [...col.items];
+    items[i] = value;
+    updateColumn(idx, { ...col, items });
+  }
+  function addColItem(idx: 0 | 1) {
+    const col = props.columns[idx];
+    updateColumn(idx, { ...col, items: [...col.items, "New point"] });
+  }
+  function removeColItem(idx: 0 | 1, i: number) {
+    const col = props.columns[idx];
+    if (col.items.length <= 1) return;
+    updateColumn(idx, {
+      ...col,
+      items: col.items.filter((_, j) => j !== i),
+    });
+  }
+  return (
+    <div className="flex flex-col gap-5">
+      <TextField
+        label="Heading"
+        value={props.heading}
+        onChange={(v) => onChange({ ...props, heading: v })}
+        maxLength={200}
+      />
+      <TextAreaField
+        label="Description (optional)"
+        value={props.description ?? ""}
+        onChange={(v) =>
+          onChange({ ...props, description: v || undefined })
+        }
+        rows={3}
+        maxLength={2000}
+      />
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+        {[0, 1].map((idx) => {
+          const col = props.columns[idx as 0 | 1];
+          return (
+            <div
+              key={idx}
+              className="rounded-md border border-border/60 bg-surface-1/40 p-3"
+            >
+              <p className="mb-2 text-[10px] uppercase tracking-wider text-muted-foreground">
+                Column {idx + 1}
+              </p>
+              <div className="flex flex-col gap-3">
+                <TextField
+                  label="Subheading"
+                  value={col.heading}
+                  onChange={(v) =>
+                    updateColumn(idx as 0 | 1, { ...col, heading: v })
+                  }
+                  maxLength={160}
+                />
+                <Field label={`Bullets (${col.items.length})`}>
+                  <div className="flex flex-col gap-2">
+                    {col.items.map((item, i) => (
+                      <div key={i} className="flex items-start gap-2">
+                        <input
+                          type="text"
+                          value={item}
+                          onChange={(e) =>
+                            setColItem(idx as 0 | 1, i, e.target.value)
+                          }
+                          maxLength={500}
+                          className="flex-1 rounded-md border-2 border-border bg-background px-2.5 py-1.5 text-sm focus:border-foreground focus:outline-none"
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            removeColItem(idx as 0 | 1, i)
+                          }
+                          disabled={col.items.length <= 1}
+                          className="text-muted-foreground hover:text-destructive disabled:opacity-30"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                    <Button
+                      variant="neutral"
+                      size="sm"
+                      onClick={() => addColItem(idx as 0 | 1)}
+                      disabled={col.items.length >= 20}
+                    >
+                      <Plus className="h-3.5 w-3.5 mr-1" />
+                      Add bullet
+                    </Button>
+                  </div>
+                </Field>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 
@@ -101,12 +437,15 @@ function ImageEditor({ props, onChange }: BlockEditorProps<"image">) {
         onChange={(v) => onChange({ ...props, caption: v })}
         maxLength={500}
       />
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <SelectField
           label="Width"
           value={String(props.widthFraction) as "1" | "0.66" | "0.5" | "0.33"}
           onChange={(v) =>
-            onChange({ ...props, widthFraction: Number(v) as 1 | 0.66 | 0.5 | 0.33 })
+            onChange({
+              ...props,
+              widthFraction: Number(v) as 1 | 0.66 | 0.5 | 0.33,
+            })
           }
           options={[
             { value: "1", label: "Full" },
@@ -123,6 +462,120 @@ function ImageEditor({ props, onChange }: BlockEditorProps<"image">) {
           />
         </Field>
       </div>
+    </div>
+  );
+}
+
+function CardGridEditor({ props, onChange }: BlockEditorProps<"cardGrid">) {
+  function update(i: number, patch: Partial<(typeof props.items)[number]>) {
+    const items = props.items.map((item, idx) =>
+      idx === i ? { ...item, ...patch } : item,
+    );
+    onChange({ ...props, items });
+  }
+
+  function remove(i: number) {
+    onChange({ ...props, items: props.items.filter((_, idx) => idx !== i) });
+  }
+
+  function add() {
+    onChange({
+      ...props,
+      items: [
+        ...props.items,
+        {
+          title: "Card title",
+          body: "Short card body.",
+          href: "",
+          ctaText: "Learn more",
+          accent: "neutral",
+        },
+      ],
+    });
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      <TextField
+        label="Heading (optional)"
+        value={props.heading ?? ""}
+        onChange={(v) => onChange({ ...props, heading: v || undefined })}
+        maxLength={120}
+      />
+      <NumberField
+        label="Columns"
+        value={props.columns}
+        onChange={(v) => onChange({ ...props, columns: v })}
+        min={1}
+        max={4}
+      />
+      {props.items.map((item, i) => (
+        <div
+          key={i}
+          className="space-y-3 rounded-md border border-border bg-card/50 p-3"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-display font-semibold uppercase tracking-wider text-muted-foreground">
+              Card {i + 1}
+            </span>
+            <Button
+              variant="neutral"
+              size="sm"
+              onClick={() => remove(i)}
+              disabled={props.items.length <= 1}
+            >
+              <Trash2 className="h-3 w-3" />
+            </Button>
+          </div>
+          <TextField
+            label="Title"
+            value={item.title}
+            onChange={(v) => update(i, { title: v })}
+            maxLength={160}
+          />
+          <TextAreaField
+            label="Body"
+            value={item.body}
+            onChange={(v) => update(i, { body: v })}
+            rows={3}
+            maxLength={1200}
+          />
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <TextField
+              label="Link (optional)"
+              value={item.href ?? ""}
+              onChange={(v) => update(i, { href: v || undefined })}
+            />
+            <TextField
+              label="CTA text"
+              value={item.ctaText ?? ""}
+              onChange={(v) => update(i, { ctaText: v || undefined })}
+              maxLength={80}
+            />
+          </div>
+          <SelectField
+            label="Accent"
+            value={item.accent}
+            onChange={(v) => update(i, { accent: v })}
+            options={[
+              { value: "neutral", label: "Neutral" },
+              { value: "orange", label: "Orange" },
+              { value: "blue", label: "Blue" },
+              { value: "pink", label: "Pink" },
+              { value: "green", label: "Green" },
+            ]}
+          />
+        </div>
+      ))}
+      <Button
+        variant="neutral"
+        size="sm"
+        onClick={add}
+        disabled={props.items.length >= 24}
+      >
+        <Plus className="mr-1.5 h-3.5 w-3.5" />
+        Add card
+      </Button>
     </div>
   );
 }
@@ -154,7 +607,7 @@ function CtaEditor({ props, onChange }: BlockEditorProps<"cta">) {
         value={props.href}
         onChange={(v) => onChange({ ...props, href: v })}
       />
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <SelectField
           label="Color"
           value={props.variant}
@@ -184,16 +637,22 @@ function CtaEditor({ props, onChange }: BlockEditorProps<"cta">) {
 
 // ──────── Media ────────
 
-function PhotoCarouselEditor({ props, onChange }: BlockEditorProps<"photoCarousel">) {
+function PhotoCarouselEditor({
+  props,
+  onChange,
+}: BlockEditorProps<"photoCarousel">) {
   return (
     <div className="flex flex-col gap-4">
-      <Field label="Photo category" hint="Photos slowly cascade through this category.">
+      <Field
+        label="Photo category"
+        hint="Photos slowly cascade through this category."
+      >
         <CategoryPicker
           value={props.categorySlug}
           onChange={(slug) => onChange({ ...props, categorySlug: slug })}
         />
       </Field>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <NumberField
           label="Photo count"
           value={props.count}
@@ -210,7 +669,7 @@ function PhotoCarouselEditor({ props, onChange }: BlockEditorProps<"photoCarouse
           step={500}
         />
       </div>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <SelectField
           label="Aspect ratio"
           value={props.aspectRatio}
@@ -252,7 +711,7 @@ function PhotoGridEditor({ props, onChange }: BlockEditorProps<"photoGrid">) {
           onChange={(slug) => onChange({ ...props, categorySlug: slug })}
         />
       </Field>
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <NumberField
           label="Photo count"
           value={props.count}
@@ -283,7 +742,9 @@ function PhotoGridEditor({ props, onChange }: BlockEditorProps<"photoGrid">) {
 
 function ZCardRowEditor({ props, onChange }: BlockEditorProps<"zCardRow">) {
   function update(i: number, patch: Partial<(typeof props.items)[number]>) {
-    const items = props.items.map((it, idx) => (idx === i ? { ...it, ...patch } : it));
+    const items = props.items.map((it, idx) =>
+      idx === i ? { ...it, ...patch } : it,
+    );
     onChange({ ...props, items });
   }
   function remove(i: number) {
@@ -294,12 +755,25 @@ function ZCardRowEditor({ props, onChange }: BlockEditorProps<"zCardRow">) {
       ...props,
       items: [
         ...props.items,
-        { imageSrc: "", imageAlt: "", title: "Card title", body: "" },
+        {
+          imageSrc: "",
+          imageAlt: "",
+          photoCategorySlug: "",
+          photoCount: 6,
+          photoIntervalMs: 6000,
+          title: "Card title",
+          body: "",
+        },
       ],
     });
   }
   return (
     <div className="flex flex-col gap-4">
+      <ToggleField
+        label="Fade each card in on scroll"
+        value={props.revealOnScroll ?? false}
+        onChange={(v) => onChange({ ...props, revealOnScroll: v })}
+      />
       {props.items.map((item, i) => (
         <div
           key={i}
@@ -335,6 +809,31 @@ function ZCardRowEditor({ props, onChange }: BlockEditorProps<"zCardRow">) {
             onChange={(v) => update(i, { imageAlt: v })}
             maxLength={500}
           />
+          <SelectField
+            label="Rotating photo category"
+            value={item.photoCategorySlug ?? ""}
+            onChange={(v) => update(i, { photoCategorySlug: v || undefined })}
+            options={PHOTO_CATEGORY_OPTIONS}
+          />
+          {item.photoCategorySlug && (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <NumberField
+                label="Photo count"
+                value={item.photoCount ?? 6}
+                onChange={(v) => update(i, { photoCount: v })}
+                min={1}
+                max={12}
+              />
+              <NumberField
+                label="Interval (ms)"
+                value={item.photoIntervalMs ?? 6000}
+                onChange={(v) => update(i, { photoIntervalMs: v })}
+                min={2000}
+                max={20000}
+                step={500}
+              />
+            </div>
+          )}
           <TextAreaField
             label="Body"
             value={item.body}
@@ -342,7 +841,7 @@ function ZCardRowEditor({ props, onChange }: BlockEditorProps<"zCardRow">) {
             rows={4}
             maxLength={2000}
           />
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <TextField
               label="CTA text (optional)"
               value={item.ctaText ?? ""}
@@ -357,7 +856,12 @@ function ZCardRowEditor({ props, onChange }: BlockEditorProps<"zCardRow">) {
           </div>
         </div>
       ))}
-      <Button variant="neutral" size="sm" onClick={add} disabled={props.items.length >= 20}>
+      <Button
+        variant="neutral"
+        size="sm"
+        onClick={add}
+        disabled={props.items.length >= 20}
+      >
         <Plus className="mr-1.5 h-3.5 w-3.5" />
         Add card
       </Button>
@@ -365,9 +869,14 @@ function ZCardRowEditor({ props, onChange }: BlockEditorProps<"zCardRow">) {
   );
 }
 
-function HeroSectionEditor({ props, onChange }: BlockEditorProps<"heroSection">) {
+function HeroSectionEditor({
+  props,
+  onChange,
+}: BlockEditorProps<"heroSection">) {
   function updateCta(i: number, patch: Partial<(typeof props.ctas)[number]>) {
-    const ctas = props.ctas.map((c, idx) => (idx === i ? { ...c, ...patch } : c));
+    const ctas = props.ctas.map((c, idx) =>
+      idx === i ? { ...c, ...patch } : c,
+    );
     onChange({ ...props, ctas });
   }
   return (
@@ -392,7 +901,7 @@ function HeroSectionEditor({ props, onChange }: BlockEditorProps<"heroSection">)
         rows={3}
         maxLength={1000}
       />
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <TextField
           label="Callout left"
           value={props.calloutLeft ?? ""}
@@ -441,7 +950,7 @@ function HeroSectionEditor({ props, onChange }: BlockEditorProps<"heroSection">)
                   <Trash2 className="h-3 w-3" />
                 </Button>
               </div>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 <TextField
                   label="Text"
                   value={cta.text}
@@ -475,7 +984,10 @@ function HeroSectionEditor({ props, onChange }: BlockEditorProps<"heroSection">)
               onClick={() =>
                 onChange({
                   ...props,
-                  ctas: [...props.ctas, { text: "Learn more", href: "/", variant: "orange" }],
+                  ctas: [
+                    ...props.ctas,
+                    { text: "Learn more", href: "/", variant: "orange" },
+                  ],
                 })
               }
             >
@@ -500,7 +1012,7 @@ function EventFeedEditor({ props, onChange }: BlockEditorProps<"eventFeed">) {
         onChange={(v) => onChange({ ...props, heading: v || undefined })}
         maxLength={120}
       />
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <SelectField
           label="Mode"
           value={props.mode}
@@ -537,7 +1049,10 @@ function TestimonialRotatorEditor({
       ? props.sources.filter((x) => x !== s)
       : [...props.sources, s];
     if (sources.length === 0) return; // require at least 1
-    onChange({ ...props, sources: sources as ["quotes"] | ["alumni"] | ["quotes", "alumni"] });
+    onChange({
+      ...props,
+      sources: sources as ["quotes"] | ["alumni"] | ["quotes", "alumni"],
+    });
   }
   return (
     <div className="flex flex-col gap-4">
@@ -555,7 +1070,7 @@ function TestimonialRotatorEditor({
           />
         </div>
       </Field>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <NumberField
           label="Count"
           value={props.count}
@@ -576,7 +1091,10 @@ function TestimonialRotatorEditor({
   );
 }
 
-function ProjectListEditor({ props, onChange }: BlockEditorProps<"projectList">) {
+function ProjectListEditor({
+  props,
+  onChange,
+}: BlockEditorProps<"projectList">) {
   return (
     <div className="flex flex-col gap-4">
       <TextField
@@ -585,7 +1103,7 @@ function ProjectListEditor({ props, onChange }: BlockEditorProps<"projectList">)
         onChange={(v) => onChange({ ...props, heading: v || undefined })}
         maxLength={120}
       />
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <SelectField
           label="Mode"
           value={props.mode}
@@ -633,7 +1151,10 @@ function OfficerListingEditor({
   );
 }
 
-function SponsorWallEditor({ props, onChange }: BlockEditorProps<"sponsorWall">) {
+function SponsorWallEditor({
+  props,
+  onChange,
+}: BlockEditorProps<"sponsorWall">) {
   return (
     <div className="flex flex-col gap-4">
       <TextField
@@ -642,7 +1163,7 @@ function SponsorWallEditor({ props, onChange }: BlockEditorProps<"sponsorWall">)
         onChange={(v) => onChange({ ...props, heading: v || undefined })}
         maxLength={120}
       />
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <SelectField
           label="Layout"
           value={props.layout}
@@ -664,15 +1185,63 @@ function SponsorWallEditor({ props, onChange }: BlockEditorProps<"sponsorWall">)
   );
 }
 
+function AppWidgetEditor({ props, onChange }: BlockEditorProps<"appWidget">) {
+  return (
+    <div className="flex flex-col gap-4">
+      <SelectField
+        label="Widget"
+        value={props.widget}
+        onChange={(v) => onChange({ ...props, widget: v })}
+        options={[
+          { value: "photosGallery", label: "Photos gallery" },
+          { value: "eventsArchive", label: "Events archive" },
+          { value: "eventsCalendar", label: "Events calendar" },
+          { value: "projectsDirectory", label: "Projects directory" },
+          { value: "membershipLeaderboard", label: "Membership leaderboard" },
+          { value: "mentorSchedule", label: "Mentor schedule" },
+          { value: "alumniDirectory", label: "Alumni directory" },
+          { value: "leadershipDirectory", label: "Leadership directory" },
+          { value: "githubCredits", label: "GitHub credits" },
+          { value: "constitution", label: "Constitution" },
+          { value: "primaryOfficersPolicy", label: "Primary officers policy" },
+          { value: "sponsorshipTiers", label: "Sponsorship tiers" },
+          { value: "sponsorForms", label: "Sponsor contact forms" },
+        ]}
+      />
+      <TextField
+        label="Heading (optional)"
+        value={props.heading ?? ""}
+        onChange={(v) => onChange({ ...props, heading: v || undefined })}
+        maxLength={160}
+      />
+      <TextAreaField
+        label="Intro text (optional)"
+        value={props.body ?? ""}
+        onChange={(v) => onChange({ ...props, body: v || undefined })}
+        rows={3}
+        maxLength={1000}
+      />
+      <ToggleField
+        label="Wrap in a card"
+        value={props.frame}
+        onChange={(v) => onChange({ ...props, frame: v })}
+      />
+    </div>
+  );
+}
+
 function RawHtmlEditor({ props, onChange }: BlockEditorProps<"rawHtml">) {
   const [showWarning, setShowWarning] = useState(true);
   return (
     <div className="flex flex-col gap-3">
       {showWarning && (
         <div className="rounded-md border border-categorical-pink bg-categorical-pink/10 p-3 text-xs">
-          <strong className="font-display uppercase tracking-wider">Heads up:</strong>{" "}
+          <strong className="font-display uppercase tracking-wider">
+            Heads up:
+          </strong>{" "}
           Raw HTML is sanitized — scripts and event handlers are stripped — but
-          you can still break a page&apos;s layout. Prefer the markdown block when you can.{" "}
+          you can still break a page&apos;s layout. Prefer the markdown block
+          when you can.{" "}
           <button
             onClick={() => setShowWarning(false)}
             className="underline ml-1"
@@ -700,9 +1269,11 @@ function RawHtmlEditor({ props, onChange }: BlockEditorProps<"rawHtml">) {
 type AnyEditor = React.ComponentType<BlockEditorProps<any>>;
 
 export const EDITOR_REGISTRY: Record<BlockType, AnyEditor> = {
+  section: SectionEditor as AnyEditor,
   heading: HeadingEditor as AnyEditor,
   markdown: MarkdownEditor as AnyEditor,
   image: ImageEditor as AnyEditor,
+  cardGrid: CardGridEditor as AnyEditor,
   divider: DividerEditor as AnyEditor,
   cta: CtaEditor as AnyEditor,
   photoCarousel: PhotoCarouselEditor as AnyEditor,
@@ -714,7 +1285,10 @@ export const EDITOR_REGISTRY: Record<BlockType, AnyEditor> = {
   projectList: ProjectListEditor as AnyEditor,
   officerListing: OfficerListingEditor as AnyEditor,
   sponsorWall: SponsorWallEditor as AnyEditor,
+  appWidget: AppWidgetEditor as AnyEditor,
   rawHtml: RawHtmlEditor as AnyEditor,
+  bulletList: BulletListEditor as AnyEditor,
+  bulletListPair: BulletListPairEditor as AnyEditor,
 };
 
 export function getEditor(type: BlockType) {

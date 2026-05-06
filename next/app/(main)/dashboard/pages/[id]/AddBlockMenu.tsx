@@ -11,13 +11,14 @@ interface Props {
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
+  layout: "Layout",
   primitive: "Primitives",
   media: "Media",
   dynamic: "Dynamic feeds",
   "officer-only": "Advanced",
 };
 
-const CATEGORY_ORDER = ["primitive", "media", "dynamic", "officer-only"] as const;
+const CATEGORY_ORDER = ["layout", "primitive", "media", "dynamic", "officer-only"] as const;
 
 export function AddBlockMenu({ open, onClose, onAdd, canAddPrimaryOnly }: Props) {
   const grouped = new Map<string, BlockType[]>();

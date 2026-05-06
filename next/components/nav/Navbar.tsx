@@ -39,7 +39,11 @@ import {
 } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import type { ActiveElectionSummary } from "@/lib/elections";
-import { buildNavGroups } from "@/lib/navbarConfig";
+import {
+  buildNavGroups,
+  buildTopLevelNavItems,
+  type CmsNavPage,
+} from "@/lib/navbarConfig";
 
 /**
  * Audience-grouped dropdowns rendered between the top-level shortcuts
@@ -65,6 +69,9 @@ interface NavbarProps {
   /** Rendered on the server so the first paint includes an open election link
    * under Students when nominations or voting are live. */
   serverActiveElection?: ActiveElectionSummary | null;
+  /** Officer-managed page nav settings. Existing static links use these
+   * rows as overrides, and published CMS-only pages are appended by section. */
+  serverCmsNavPages?: CmsNavPage[];
 }
 
 const Navbar: React.FC<NavbarProps> = ({
@@ -73,6 +80,7 @@ const Navbar: React.FC<NavbarProps> = ({
   serverProfileComplete = true,
   serverIsSeAdmin = false,
   serverActiveElection = null,
+  serverCmsNavPages = [],
 }) => {
   const [open, setOpen] = React.useState(false);
   const { data: session } = useSession();
@@ -146,8 +154,13 @@ const Navbar: React.FC<NavbarProps> = ({
     return buildNavGroups({
       isSeAdmin,
       activeElection: serverActiveElection,
+      cmsPages: serverCmsNavPages,
     });
-  }, [isSeAdmin, serverActiveElection]);
+  }, [isSeAdmin, serverActiveElection, serverCmsNavPages]);
+
+  const topLevelNavItems = React.useMemo(() => {
+    return buildTopLevelNavItems({ cmsPages: serverCmsNavPages });
+  }, [serverCmsNavPages]);
 
   return (
     <nav
@@ -176,29 +189,16 @@ const Navbar: React.FC<NavbarProps> = ({
             viewport={false}
           >
             <NavigationMenuList>
-              {/* Top-level shortcut: About is its own page, no
-                  dropdown needed now that Credits / Get Involved live
-                  elsewhere. */}
-              <NavigationMenuItem>
-                <NavigationMenuLink
-                  asChild
-                  className={navigationMenuTriggerStyle()}
-                >
-                  <Link href="/about">About</Link>
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-
-              {/* Top-level shortcut: Photos is the most-visited page
-                  outside of Events, so it earns its own slot rather
-                  than living inside the Students dropdown. */}
-              <NavigationMenuItem>
-                <NavigationMenuLink
-                  asChild
-                  className={navigationMenuTriggerStyle()}
-                >
-                  <Link href="/photos">Photos</Link>
-                </NavigationMenuLink>
-              </NavigationMenuItem>
+              {topLevelNavItems.map((item) => (
+                <NavigationMenuItem key={item.href}>
+                  <NavigationMenuLink
+                    asChild
+                    className={navigationMenuTriggerStyle()}
+                  >
+                    <Link href={item.href}>{item.title}</Link>
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+              ))}
 
               {navGroups.map((group) => {
                 // Two-or-fewer-item groups render single-column so the
@@ -288,16 +288,15 @@ const Navbar: React.FC<NavbarProps> = ({
                 <SheetTitle className="text-left">Menu</SheetTitle>
               </SheetHeader>
               <nav className="flex flex-col gap-2 mt-6">
-                {/* Top-level shortcuts mirror desktop: About + Photos
-                    sit above the audience collapsibles so they're a
-                    single tap on mobile. */}
-                <MobileNavLink href="/about" onClick={() => setOpen(false)}>
-                  About
-                </MobileNavLink>
-
-                <MobileNavLink href="/photos" onClick={() => setOpen(false)}>
-                  Photos
-                </MobileNavLink>
+                {topLevelNavItems.map((item) => (
+                  <MobileNavLink
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setOpen(false)}
+                  >
+                    {item.title}
+                  </MobileNavLink>
+                ))}
 
                 {showDashboard && (
                   <MobileNavLink
