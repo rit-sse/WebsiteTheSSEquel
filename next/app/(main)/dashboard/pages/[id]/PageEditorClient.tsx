@@ -1,59 +1,27 @@
 "use client";
 
 /**
- * PageEditorClient — the page-builder editor.
+ * PageEditorClient — the live-preview page editor.
  *
  * Layout:
- * - Top bar: title, slug, status, Preview / Publish / Settings buttons,
- *   live autosave indicator.
- * - Left rail (desktop) / drawer (mobile): block list with drag-to-reorder
- *   via @dnd-kit/sortable. Click a block row to edit it.
- * - Right pane: the selected block's editor form (looked up in
- *   editor registry by block.type).
- * - Settings drawer: page-level config (slug, SEO, nav).
+ * - EditorTopBar: title (inline-edit), slug, status, save indicator,
+ *   viewport switcher, Preview / Settings / Publish buttons.
+ * - EditorCanvas: renders the page in full visual fidelity (sync
+ *   blocks) or as labeled placeholders (async / dynamic blocks). Each
+ *   block is selectable, hoverable, drag-reorderable, and (for headings
+ *   / markdown) inline-editable.
+ * - EditorSidebar: tabbed (Outline / Block) right rail. Outline shows
+ *   a section-grouped block list; Block hosts the existing schema-form
+ *   editor for the currently-selected block.
  *
- * Persistence: every change to the block list or settings triggers a
- * 1.5s-debounced PUT /api/pages/[id]. On error, the toast surfaces
- * with a retry suggestion. Concurrent-edit conflicts (409) prompt a
- * full-page reload.
+ * Persistence: every content / settings change debounces a 1.5s
+ * PUT /api/pages/[id]. 409 conflicts trigger a reload prompt; everything
+ * else surfaces via toast.
  */
-
-import { createElement, useCallback, useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  closestCenter,
-  DndContext,
-  type DragEndEvent,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  useSortable,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import {
-  Check,
-  ChevronLeft,
-  ExternalLink,
-  GripVertical,
-  History,
-  Loader2,
-  Lock,
-  Plus,
-  Save,
-  Settings,
-  Trash2,
-} from "lucide-react";
+import { Lock } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
   BLOCK_META,
@@ -61,9 +29,11 @@ import {
   type BlockType,
   type PageContent,
 } from "@/lib/pageBuilder/blocks";
-import { getEditor } from "@/components/page-blocks/editors";
 import { PageSettingsDrawer } from "./PageSettingsDrawer";
 import { AddBlockMenu } from "./AddBlockMenu";
+import { EditorTopBar, type Viewport } from "./_editor/EditorTopBar";
+import { EditorCanvas } from "./_editor/EditorCanvas";
+import { EditorSidebar } from "./_editor/EditorSidebar";
 
 interface PageMeta {
   id: number;
@@ -88,6 +58,7 @@ interface Props {
 }
 
 type SaveState = "idle" | "saving" | "saved" | "error";
+type SidebarTab = "outline" | "block";
 
 const AUTOSAVE_DEBOUNCE_MS = 1500;
 
@@ -106,23 +77,16 @@ export function PageEditorClient({
   const [publishing, setPublishing] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
+  const [addAfterId, setAddAfterId] = useState<string | null>(null);
+  const [viewport, setViewport] = useState<Viewport>("desktop");
+  const [sidebarTab, setSidebarTab] = useState<SidebarTab>("outline");
 
   const isLocked = page.systemLocked;
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { distance: 5 },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    }),
-  );
-
-  // Track the latest payload for autosave (avoid stale closures).
-  const pendingRef = useRef<{
-    content: PageContent;
-    meta: PageMeta;
-  }>({ content, meta: page });
+  const pendingRef = useRef<{ content: PageContent; meta: PageMeta }>({
+    content,
+    meta: page,
+  });
   pendingRef.current = { content, meta: page };
 
   const debounceTimerRef = useRef<number | null>(null);
@@ -160,10 +124,8 @@ export function PageEditorClient({
         return;
       }
       const json = await res.json();
-      // Update the page meta with new updatedAt for next conflict check.
       setPage((p) => ({ ...p, updatedAt: json.page.updatedAt }));
       setSaveState("saved");
-      // Drop back to idle after a moment so the indicator re-arms.
       window.setTimeout(() => {
         setSaveState((s) => (s === "saved" ? "idle" : s));
       }, 1200);
@@ -205,48 +167,37 @@ export function PageEditorClient({
     const meta = BLOCK_META[type];
     const id = crypto.randomUUID();
     const block = { id, type, props: { ...meta.defaultProps } } as BlockNode;
-    updateContent({ ...content, blocks: [...content.blocks, block] });
-    setSelected(id);
-    setAddOpen(false);
-  }
-
-  function removeBlock(id: string) {
-    const idx = content.blocks.findIndex((b) => b.id === id);
-    if (idx === -1) return;
-    const blocks = content.blocks.filter((b) => b.id !== id);
-    updateContent({ ...content, blocks });
-    if (selected === id) {
-      setSelected(blocks[Math.min(idx, blocks.length - 1)]?.id ?? null);
+    let nextBlocks: BlockNode[];
+    if (addAfterId == null) {
+      nextBlocks = [...content.blocks, block];
+    } else {
+      const idx = content.blocks.findIndex((b) => b.id === addAfterId);
+      if (idx === -1) {
+        nextBlocks = [...content.blocks, block];
+      } else {
+        nextBlocks = [...content.blocks];
+        nextBlocks.splice(idx + 1, 0, block);
+      }
     }
+    updateContent({ ...content, blocks: nextBlocks });
+    setSelected(id);
+    setSidebarTab("block");
+    setAddOpen(false);
+    setAddAfterId(null);
   }
 
-  function duplicateBlock(id: string) {
-    const block = content.blocks.find((b) => b.id === id);
-    if (!block) return;
-    const clone = { ...block, id: crypto.randomUUID() };
-    const blocks = [...content.blocks];
-    const idx = blocks.findIndex((b) => b.id === id);
-    blocks.splice(idx + 1, 0, clone);
-    updateContent({ ...content, blocks });
-    setSelected(clone.id);
+  function openAddBlock(afterId: string | null) {
+    setAddAfterId(afterId);
+    setAddOpen(true);
   }
 
-  function onDragEnd(event: DragEndEvent) {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
-    const oldIndex = content.blocks.findIndex((b) => b.id === active.id);
-    const newIndex = content.blocks.findIndex((b) => b.id === over.id);
-    if (oldIndex === -1 || newIndex === -1) return;
-    updateContent({
-      ...content,
-      blocks: arrayMove(content.blocks, oldIndex, newIndex),
-    });
+  function selectBlock(id: string | null) {
+    setSelected(id);
+    if (id) setSidebarTab("block");
   }
 
   async function publish() {
     setPublishing(true);
-    // Force a final save before publish so the API operates on the
-    // latest draft (otherwise we'd publish whatever was last persisted).
     if (debounceTimerRef.current) {
       window.clearTimeout(debounceTimerRef.current);
       debounceTimerRef.current = null;
@@ -298,115 +249,39 @@ export function PageEditorClient({
     }
   }
 
-  const selectedBlock = content.blocks.find((b) => b.id === selected) ?? null;
+  const addCaption =
+    addAfterId == null
+      ? "Adds at the end of the page."
+      : (() => {
+          const after = content.blocks.find((b) => b.id === addAfterId);
+          return after
+            ? `Inserts directly after: ${BLOCK_META[after.type].label}`
+            : "Inserts at the end of the page.";
+        })();
 
   return (
     <div className="flex min-h-[calc(100dvh-4rem)] w-full flex-col overflow-x-hidden">
-      {/* ── Top bar ── */}
-      <div className="sticky top-[4.5rem] z-30 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-        <div className="mx-auto flex w-full max-w-7xl flex-col gap-3 px-4 py-3 lg:flex-row lg:items-center">
-          <div className="flex min-w-0 items-center gap-2">
-            <Link
-              href="/dashboard/pages"
-              className="shrink-0 text-muted-foreground hover:text-foreground"
-              aria-label="Back to pages"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Link>
-            <div className="flex min-w-0 flex-wrap items-center gap-2">
-              <h1 className="max-w-[14rem] truncate font-display text-lg font-semibold tracking-tight sm:max-w-xs">
-                {page.title}
-              </h1>
-              <span className="min-w-0 truncate font-mono text-xs text-muted-foreground">
-                /{page.slug}
-              </span>
-              {isLocked && (
-                <Badge variant="outline" className="gap-1">
-                  <Lock className="h-2.5 w-2.5" />
-                  System-locked
-                </Badge>
-              )}
-              <StatusBadge status={page.status} />
-            </div>
-          </div>
-
-          <div className="flex w-full min-w-0 flex-wrap items-center gap-2 pb-1 lg:ml-auto lg:w-auto lg:flex-nowrap lg:pb-0">
-            <SaveIndicator state={saveState} />
-            <Link
-              href={`/${page.slug}?preview=1`}
-              target="_blank"
-              className="shrink-0"
-            >
-              <Button variant="neutral" size="sm" className="shrink-0">
-                <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
-                Preview
-              </Button>
-            </Link>
-            <Button
-              variant="neutral"
-              size="sm"
-              onClick={() => setSettingsOpen(true)}
-              className="shrink-0"
-            >
-              <Settings className="h-3.5 w-3.5 mr-1.5" />
-              Settings
-            </Button>
-            {page.status === "PUBLISHED" ? (
-              <>
-                <Button
-                  variant="neutral"
-                  size="sm"
-                  onClick={unpublish}
-                  disabled={isLocked}
-                  className="shrink-0"
-                >
-                  Unpublish
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={publish}
-                  disabled={publishing || isLocked}
-                  className="shrink-0"
-                >
-                  {publishing ? (
-                    <>
-                      <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
-                      Publishing…
-                    </>
-                  ) : (
-                    <>
-                      <Save className="h-3.5 w-3.5 mr-1.5" />
-                      Republish
-                    </>
-                  )}
-                </Button>
-              </>
-            ) : (
-              <Button
-                size="sm"
-                onClick={publish}
-                disabled={publishing || isLocked}
-                className="shrink-0"
-              >
-                {publishing ? (
-                  <>
-                    <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
-                    Publishing…
-                  </>
-                ) : (
-                  <>
-                    <Save className="h-3.5 w-3.5 mr-1.5" />
-                    Publish
-                  </>
-                )}
-              </Button>
-            )}
-          </div>
-        </div>
-      </div>
+      <EditorTopBar
+        title={page.title}
+        slug={page.slug}
+        status={page.status}
+        systemLocked={page.systemLocked}
+        saveState={saveState}
+        viewport={viewport}
+        publishing={publishing}
+        isLocked={isLocked}
+        onTitleChange={(next) => {
+          setPage((p) => ({ ...p, title: next }));
+          scheduleSave();
+        }}
+        onViewportChange={setViewport}
+        onOpenSettings={() => setSettingsOpen(true)}
+        onPublish={publish}
+        onUnpublish={unpublish}
+      />
 
       {isLocked && (
-        <div className="mx-auto w-full max-w-7xl px-4 pt-4">
+        <div className="mx-auto w-full max-w-[100rem] px-4 pt-4">
           <div className="flex items-start gap-2 rounded-md border-2 border-categorical-pink bg-categorical-pink/10 p-3 text-sm">
             <Lock className="h-4 w-4 mt-0.5 shrink-0" />
             <div>
@@ -422,86 +297,49 @@ export function PageEditorClient({
         </div>
       )}
 
-      {/* ── Editor body ── */}
-      <div className="mx-auto grid w-full max-w-7xl flex-1 grid-cols-1 gap-4 px-4 py-6 lg:min-h-[calc(100dvh-13rem)] lg:grid-cols-[20rem_minmax(0,1fr)]">
-        {/* Block list */}
-        <aside className="min-w-0 lg:sticky lg:top-[13rem] lg:max-h-[calc(100dvh-14rem)] lg:overflow-y-auto lg:pr-1 [scrollbar-gutter:stable]">
-          <div className="mb-2 flex items-center justify-between">
-            <h2 className="text-xs font-display font-semibold uppercase tracking-wider text-muted-foreground">
-              Blocks ({content.blocks.length})
-            </h2>
-            <Button
-              variant="neutral"
-              size="sm"
-              onClick={() => setAddOpen(true)}
-              disabled={isLocked}
-            >
-              <Plus className="h-3.5 w-3.5 mr-1" />
-              Add
-            </Button>
-          </div>
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={onDragEnd}
-          >
-            <SortableContext
-              items={content.blocks.map((b) => b.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              <ul className="flex flex-col gap-1.5">
-                {content.blocks.map((block) => (
-                  <BlockRow
-                    key={block.id}
-                    block={block}
-                    selected={block.id === selected}
-                    onSelect={() => setSelected(block.id)}
-                    onDuplicate={() => duplicateBlock(block.id)}
-                    onRemove={() => removeBlock(block.id)}
-                    locked={isLocked}
-                  />
-                ))}
-              </ul>
-            </SortableContext>
-          </DndContext>
-          {content.blocks.length === 0 && (
-            <div className="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-              No blocks yet.{" "}
-              <button
-                onClick={() => setAddOpen(true)}
-                disabled={isLocked}
-                className="underline hover:text-foreground disabled:no-underline"
-              >
-                Add your first block
-              </button>
-              .
-            </div>
-          )}
-        </aside>
-
-        {/* Editor pane */}
-        <section className="min-h-[24rem] min-w-0 overflow-hidden rounded-lg border border-border bg-card lg:sticky lg:top-[13rem] lg:h-[calc(100dvh-14rem)] lg:max-h-[calc(100dvh-14rem)]">
-          {selectedBlock ? (
-            <BlockEditorPane
-              block={selectedBlock}
-              onChange={(props) => updateBlockProps(selectedBlock.id, props)}
+      <div
+        className={cn(
+          "mx-auto grid w-full max-w-[100rem] flex-1 grid-cols-1 gap-0 px-0 lg:min-h-[calc(100dvh-13rem)] lg:grid-cols-[minmax(0,1fr)_22rem]",
+        )}
+      >
+        {/* Canvas */}
+        <main className="min-w-0 border-r border-border/40 bg-surface-1/30">
+          <div className="px-4 py-2 lg:px-8">
+            <EditorCanvas
+              content={content}
+              selected={selected}
+              onSelect={selectBlock}
+              onChange={updateContent}
+              onAddBlockAt={openAddBlock}
+              viewport={viewport}
               disabled={isLocked}
             />
-          ) : (
-            <div className="flex h-full min-h-[24rem] items-center justify-center p-6 text-sm text-muted-foreground">
-              {content.blocks.length === 0
-                ? "Add a block to start editing."
-                : "Select a block from the list to edit."}
-            </div>
-          )}
-        </section>
+          </div>
+        </main>
+
+        {/* Sidebar */}
+        <aside className="min-w-0 border-t border-border/40 bg-card lg:sticky lg:top-[8.5rem] lg:max-h-[calc(100dvh-9rem)] lg:border-t-0">
+          <EditorSidebar
+            content={content}
+            selected={selected}
+            onSelect={selectBlock}
+            onUpdate={updateBlockProps}
+            tab={sidebarTab}
+            onTabChange={setSidebarTab}
+            disabled={isLocked}
+          />
+        </aside>
       </div>
 
       <AddBlockMenu
         open={addOpen}
-        onClose={() => setAddOpen(false)}
+        onClose={() => {
+          setAddOpen(false);
+          setAddAfterId(null);
+        }}
         onAdd={addBlock}
         canAddPrimaryOnly={isPrimary}
+        caption={addCaption}
       />
 
       <PageSettingsDrawer
@@ -516,234 +354,6 @@ export function PageEditorClient({
         canEditLock={isPrimary}
         disabled={isLocked && page.systemLocked}
       />
-    </div>
-  );
-}
-
-function StatusBadge({ status }: { status: PageMeta["status"] }) {
-  if (status === "PUBLISHED") {
-    return <Badge className="bg-categorical-green text-foreground">Live</Badge>;
-  }
-  if (status === "DRAFT") {
-    return <Badge variant="secondary">Draft</Badge>;
-  }
-  return <Badge variant="outline">Archived</Badge>;
-}
-
-function SaveIndicator({ state }: { state: SaveState }) {
-  if (state === "saving") {
-    return (
-      <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-        <Loader2 className="h-3 w-3 animate-spin" />
-        Saving…
-      </span>
-    );
-  }
-  if (state === "saved") {
-    return (
-      <span className="flex items-center gap-1.5 text-xs text-categorical-green">
-        <Check className="h-3 w-3" />
-        Saved
-      </span>
-    );
-  }
-  if (state === "error") {
-    return (
-      <span className="text-xs text-destructive font-medium">Save failed</span>
-    );
-  }
-  return null;
-}
-
-function BlockRow({
-  block,
-  selected,
-  onSelect,
-  onRemove,
-  onDuplicate,
-  locked,
-}: {
-  block: BlockNode;
-  selected: boolean;
-  onSelect: () => void;
-  onRemove: () => void;
-  onDuplicate: () => void;
-  locked: boolean;
-}) {
-  const meta = BLOCK_META[block.type];
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: block.id });
-
-  const summary = blockSummary(block);
-
-  return (
-    <li
-      ref={setNodeRef}
-      style={{
-        transform: CSS.Transform.toString(transform),
-        transition,
-        opacity: isDragging ? 0.5 : 1,
-      }}
-      className={[
-        "group flex items-center gap-2 rounded-md border bg-card px-2.5 py-2 text-sm transition-colors",
-        selected
-          ? "border-foreground ring-2 ring-foreground/15"
-          : "border-border hover:border-foreground/50",
-      ].join(" ")}
-    >
-      <button
-        type="button"
-        className="cursor-grab text-muted-foreground hover:text-foreground active:cursor-grabbing"
-        aria-label="Drag to reorder"
-        {...attributes}
-        {...listeners}
-        disabled={locked}
-      >
-        <GripVertical className="h-3.5 w-3.5" />
-      </button>
-      <button
-        type="button"
-        onClick={onSelect}
-        className="min-w-0 flex-1 text-left"
-      >
-        <p className="font-display font-semibold text-xs uppercase tracking-wider truncate">
-          {meta.label}
-        </p>
-        <p className="truncate text-xs text-muted-foreground">{summary}</p>
-      </button>
-      <button
-        type="button"
-        onClick={onDuplicate}
-        disabled={locked}
-        className="invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground"
-        aria-label="Duplicate block"
-        title="Duplicate"
-      >
-        <Plus className="h-3 w-3" />
-      </button>
-      <button
-        type="button"
-        onClick={onRemove}
-        disabled={locked}
-        className="invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
-        aria-label="Delete block"
-      >
-        <Trash2 className="h-3 w-3" />
-      </button>
-    </li>
-  );
-}
-
-function blockSummary(block: BlockNode): string {
-  switch (block.type) {
-    case "section":
-      return `${block.props.label || "Section"} • ${block.props.width} • ${block.props.depth === "none" ? "flat" : `depth ${block.props.depth}`}${block.props.revealOnScroll ? " • reveal" : ""}`;
-    case "heading":
-      return block.props.text || "(empty heading)";
-    case "markdown":
-      return (
-        block.props.body.slice(0, 60).replace(/\s+/g, " ").trim() || "(empty)"
-      );
-    case "image":
-      return (
-        block.props.alt ||
-        block.props.caption ||
-        block.props.src ||
-        "(no image)"
-      );
-    case "cardGrid":
-      return `${block.props.items.length} card${block.props.items.length === 1 ? "" : "s"}`;
-    case "photoCarousel":
-      return `Carousel — ${block.props.categorySlug} • ${block.props.count} photos • ${block.props.intervalMs / 1000}s`;
-    case "photoGrid":
-      return `Grid — ${block.props.categorySlug} • ${block.props.count} photos • ${block.props.columns} cols`;
-    case "eventFeed":
-      return `${block.props.mode} events • ${block.props.limit}`;
-    case "testimonialRotator":
-      return `${block.props.sources.join(" + ")} • ${block.props.count}`;
-    case "projectList":
-      return `${block.props.mode} projects • ${block.props.limit}`;
-    case "officerListing":
-      return `${block.props.positionCategory} officers`;
-    case "sponsorWall":
-      return `${block.props.layout} • ${block.props.onlyActive ? "active" : "all"}`;
-    case "appWidget":
-      return block.props.widget;
-    case "zCardRow":
-      return `${block.props.items.length} card${block.props.items.length === 1 ? "" : "s"}${block.props.revealOnScroll ? " • reveal" : ""}`;
-    case "heroSection":
-      return block.props.title;
-    case "divider":
-      return block.props.label || "—";
-    case "cta":
-      return `${block.props.text} → ${block.props.href}`;
-    case "rawHtml":
-      return (
-        block.props.html.slice(0, 60).replace(/\s+/g, " ").trim() ||
-        "(empty HTML)"
-      );
-    case "bulletList":
-      return `${block.props.items.length} bullet${block.props.items.length === 1 ? "" : "s"}${block.props.heading ? ` — ${block.props.heading}` : ""}`;
-    case "bulletListPair":
-      return `${block.props.heading} — ${block.props.columns[0].items.length}+${block.props.columns[1].items.length} bullets`;
-  }
-}
-
-function BlockEditorPane({
-  block,
-  onChange,
-  disabled,
-}: {
-  block: BlockNode;
-  onChange: (props: BlockNode["props"]) => void;
-  disabled: boolean;
-}) {
-  const Editor = getEditor(block.type);
-  if (!Editor) {
-    return (
-      <div className="text-sm text-destructive">
-        No editor registered for block type &ldquo;{block.type}&rdquo;.
-      </div>
-    );
-  }
-  const meta = BLOCK_META[block.type];
-  // Use createElement instead of <Editor> JSX so the
-  // react-hooks/static-components lint rule recognizes this as a
-  // dispatch from a stable registry rather than an inline component.
-  // The components themselves are module-scoped — they're not being
-  // created on every render.
-  return (
-    <div
-      className={cn(
-        "flex min-h-0 flex-col lg:h-full",
-        disabled && "pointer-events-none opacity-60",
-      )}
-    >
-      <header className="flex shrink-0 items-start justify-between gap-3 border-b border-border/60 px-5 py-4 md:px-6">
-        <div>
-          <h2 className="font-display text-xl font-bold tracking-tight">
-            {meta.label}
-          </h2>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            {meta.description}
-          </p>
-        </div>
-        <Badge
-          variant="outline"
-          className="text-[10px] uppercase tracking-wider"
-        >
-          {meta.category}
-        </Badge>
-      </header>
-      <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 pr-4 [scrollbar-gutter:stable] md:px-6 md:pr-5">
-        {createElement(Editor, { props: block.props, onChange })}
-      </div>
     </div>
   );
 }

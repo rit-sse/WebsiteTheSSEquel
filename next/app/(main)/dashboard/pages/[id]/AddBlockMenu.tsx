@@ -6,8 +6,13 @@ import { BLOCK_META, BLOCK_TYPES, type BlockType } from "@/lib/pageBuilder/block
 interface Props {
   open: boolean;
   onClose: () => void;
+  /** When `insertAfterId` is null, the new block is appended to the end.
+   *  When it's set, the new block is inserted directly after that block. */
   onAdd: (type: BlockType) => void;
   canAddPrimaryOnly: boolean;
+  /** Optional caption shown at the top of the modal (e.g.,
+   *  "Insert after: Heading"). */
+  caption?: string;
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -20,7 +25,13 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 const CATEGORY_ORDER = ["layout", "primitive", "media", "dynamic", "officer-only"] as const;
 
-export function AddBlockMenu({ open, onClose, onAdd, canAddPrimaryOnly }: Props) {
+export function AddBlockMenu({
+  open,
+  onClose,
+  onAdd,
+  canAddPrimaryOnly,
+  caption,
+}: Props) {
   const grouped = new Map<string, BlockType[]>();
   for (const t of BLOCK_TYPES) {
     const meta = BLOCK_META[t];
@@ -32,6 +43,9 @@ export function AddBlockMenu({ open, onClose, onAdd, canAddPrimaryOnly }: Props)
   return (
     <Modal open={open} onOpenChange={(o) => !o && onClose()} title="Add a block">
       <div className="flex flex-col gap-5">
+        {caption && (
+          <p className="text-xs text-muted-foreground -mt-1">{caption}</p>
+        )}
         {CATEGORY_ORDER.map((cat) => {
           const items = grouped.get(cat);
           if (!items?.length) return null;
