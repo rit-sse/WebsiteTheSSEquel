@@ -358,7 +358,7 @@ function BulletListPairEditor({
               key={idx}
               className="rounded-md border border-border/60 bg-surface-1/40 p-3"
             >
-              <p className="mb-2 text-[10px] uppercase tracking-wider text-muted-foreground">
+              <p className="mb-2 text-[11px] font-medium text-muted-foreground">
                 Column {idx + 1}
               </p>
               <div className="flex flex-col gap-3">
@@ -515,7 +515,7 @@ function CardGridEditor({ props, onChange }: BlockEditorProps<"cardGrid">) {
           className="space-y-3 rounded-md border border-border bg-card/50 p-3"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-display font-semibold uppercase tracking-wider text-muted-foreground">
+            <span className="text-[13px] font-semibold text-muted-foreground">
               Card {i + 1}
             </span>
             <Button
@@ -780,7 +780,7 @@ function ZCardRowEditor({ props, onChange }: BlockEditorProps<"zCardRow">) {
           className="rounded-md border border-border bg-card/50 p-3 space-y-3"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-display font-semibold uppercase tracking-wider text-muted-foreground">
+            <span className="text-[13px] font-semibold text-muted-foreground">
               Card {i + 1}
             </span>
             <Button
@@ -924,7 +924,7 @@ function HeroSectionEditor({
         />
       </Field>
       <div>
-        <div className="text-xs font-display font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+        <div className="text-[13px] font-semibold text-muted-foreground mb-2">
           CTAs ({props.ctas.length}/3)
         </div>
         <div className="space-y-3">
@@ -934,7 +934,7 @@ function HeroSectionEditor({
               className="rounded-md border border-border bg-card/50 p-3 space-y-2"
             >
               <div className="flex items-center justify-between">
-                <span className="text-xs uppercase tracking-wider text-muted-foreground">
+                <span className="text-[12px] text-muted-foreground">
                   CTA {i + 1}
                 </span>
                 <Button
@@ -1236,9 +1236,7 @@ function RawHtmlEditor({ props, onChange }: BlockEditorProps<"rawHtml">) {
     <div className="flex flex-col gap-3">
       {showWarning && (
         <div className="rounded-md border border-categorical-pink bg-categorical-pink/10 p-3 text-xs">
-          <strong className="font-display uppercase tracking-wider">
-            Heads up:
-          </strong>{" "}
+          <strong className="font-semibold">Heads up:</strong>{" "}
           Raw HTML is sanitized — scripts and event handlers are stripped — but
           you can still break a page&apos;s layout. Prefer the markdown block
           when you can.{" "}

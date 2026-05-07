@@ -24,7 +24,7 @@ export function Field({
     <div className="flex flex-col gap-1.5">
       <Label
         htmlFor={htmlFor}
-        className="text-xs font-display font-semibold uppercase tracking-wider text-muted-foreground"
+        className="text-[13px] font-medium text-foreground/80"
       >
         {label}
       </Label>

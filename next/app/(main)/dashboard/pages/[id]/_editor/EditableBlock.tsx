@@ -96,7 +96,7 @@ export function EditableBlock({
           >
             <GripVertical className="h-3.5 w-3.5" />
           </button>
-          <span className="px-1.5 text-[9px] font-display font-semibold uppercase tracking-wider">
+          <span className="px-1.5 text-[11px] font-medium text-foreground/70">
             {meta.label}
           </span>
           <button

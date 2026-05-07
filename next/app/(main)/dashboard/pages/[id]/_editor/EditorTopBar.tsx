@@ -1,5 +1,13 @@
 "use client";
 
+/**
+ * Editor top bar.
+ *
+ * Modern flat / shadcn-style buttons (ghost for secondary, solid primary
+ * for the single accent action — Publish). No neo-brutalist shadows in
+ * the editor chrome itself; the canvas below renders the public site
+ * with whatever theme the user has set.
+ */
 import Link from "next/link";
 import {
   Check,
@@ -13,8 +21,6 @@ import {
   Smartphone,
   Tablet,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { InlineText } from "./InlineText";
 
@@ -54,155 +60,207 @@ export function EditorTopBar({
   onUnpublish,
 }: Props) {
   return (
-    <div className="sticky top-[4.5rem] z-30 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-      <div className="mx-auto flex w-full max-w-[100rem] flex-wrap items-center gap-x-3 gap-y-2 px-3 py-2.5 sm:px-4">
-        {/* Left cluster: back, title, slug, badges */}
-        <div className="flex min-w-0 flex-1 items-center gap-2">
-          <Link
-            href="/dashboard/pages"
-            className="shrink-0 rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-surface-1 hover:text-foreground"
-            aria-label="Back to pages"
-            title="Back to pages"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Link>
-          <div className="flex min-w-0 flex-1 items-center gap-2">
-            <InlineText
-              as="h1"
-              value={title}
-              onCommit={onTitleChange}
-              ariaLabel="Page title"
-              singleLine
-              editOnClick
-              disabled={isLocked}
-              className="min-w-0 max-w-[14rem] truncate font-display text-base font-semibold tracking-tight sm:max-w-[20rem] md:text-lg"
-            />
-            <span className="hidden min-w-0 truncate font-mono text-[11px] text-muted-foreground sm:inline">
-              /{slug}
-            </span>
-            <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:ml-0">
-              {systemLocked && (
-                <Badge variant="outline" className="gap-1 text-[10px]">
-                  <Lock className="h-2.5 w-2.5" />
-                  Locked
-                </Badge>
-              )}
-              <StatusBadge status={status} />
-            </div>
-          </div>
-        </div>
+    <div className="flex shrink-0 items-center gap-3 border-b border-border bg-background px-3 py-2 sm:px-4">
+      <div className="flex min-w-0 flex-1 items-center gap-2">
+        <Link
+          href="/dashboard/pages"
+          className="shrink-0 rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          aria-label="Back to pages"
+          title="Back to pages"
+        >
+          <ChevronLeft className="size-4" />
+        </Link>
 
-        {/* Right cluster: save indicator, viewport, action buttons */}
-        <div className="flex shrink-0 items-center gap-1.5">
-          <SaveIndicator state={saveState} />
-          <ViewportSwitcher value={viewport} onChange={onViewportChange} />
-          <div className="hidden h-5 w-px bg-border/60 sm:block" />
-          <Link
-            href={`/${slug}?preview=1`}
-            target="_blank"
-            className="shrink-0"
-          >
-            <Button variant="neutral" size="sm" className="h-8 px-2.5">
-              <ExternalLink className="h-3.5 w-3.5" />
-              <span className="ml-1.5 hidden md:inline">Preview</span>
-            </Button>
-          </Link>
-          <Button
-            variant="neutral"
-            size="sm"
-            onClick={onOpenSettings}
-            className="h-8 px-2.5 shrink-0"
-            title="Page settings"
-          >
-            <Settings className="h-3.5 w-3.5" />
-            <span className="ml-1.5 hidden md:inline">Settings</span>
-          </Button>
-          {status === "PUBLISHED" ? (
-            <>
-              <Button
-                variant="neutral"
-                size="sm"
-                onClick={onUnpublish}
-                disabled={isLocked}
-                className="h-8 shrink-0 px-2.5 text-xs"
-              >
-                Unpublish
-              </Button>
-              <Button
-                size="sm"
-                onClick={onPublish}
-                disabled={publishing || isLocked}
-                className="h-8 shrink-0 px-3"
-              >
-                {publishing ? (
-                  <>
-                    <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
-                    Publishing…
-                  </>
-                ) : (
-                  <>
-                    <Save className="h-3.5 w-3.5 mr-1.5" />
-                    Republish
-                  </>
-                )}
-              </Button>
-            </>
-          ) : (
-            <Button
-              size="sm"
+        <InlineText
+          as="h1"
+          value={title}
+          onCommit={onTitleChange}
+          ariaLabel="Page title"
+          singleLine
+          editOnClick
+          disabled={isLocked}
+          className="min-w-0 max-w-[14rem] truncate font-display text-base font-semibold tracking-tight sm:max-w-[22rem] md:text-[17px]"
+        />
+        <span className="hidden min-w-0 truncate font-mono text-[11px] text-muted-foreground sm:inline">
+          /{slug}
+        </span>
+        <StatusPill status={status} systemLocked={systemLocked} />
+      </div>
+
+      <div className="flex shrink-0 items-center gap-1.5">
+        <SaveIndicator state={saveState} />
+        <ViewportSwitcher value={viewport} onChange={onViewportChange} />
+        <span className="hidden h-5 w-px bg-border sm:block" />
+        <Link href={`/${slug}?preview=1`} target="_blank">
+          <GhostButton title="Open public preview in new tab">
+            <ExternalLink className="size-3.5" />
+            <span className="hidden md:inline">Preview</span>
+          </GhostButton>
+        </Link>
+        <GhostButton onClick={onOpenSettings} title="Page settings">
+          <Settings className="size-3.5" />
+          <span className="hidden md:inline">Settings</span>
+        </GhostButton>
+        {status === "PUBLISHED" ? (
+          <>
+            <GhostButton onClick={onUnpublish} disabled={isLocked}>
+              Unpublish
+            </GhostButton>
+            <PrimaryButton
               onClick={onPublish}
               disabled={publishing || isLocked}
-              className="h-8 shrink-0 px-3"
             >
               {publishing ? (
                 <>
-                  <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                  <Loader2 className="size-3.5 animate-spin" />
                   Publishing…
                 </>
               ) : (
                 <>
-                  <Save className="h-3.5 w-3.5 mr-1.5" />
-                  Publish
+                  <Save className="size-3.5" />
+                  Republish
                 </>
               )}
-            </Button>
-          )}
-        </div>
+            </PrimaryButton>
+          </>
+        ) : (
+          <PrimaryButton onClick={onPublish} disabled={publishing || isLocked}>
+            {publishing ? (
+              <>
+                <Loader2 className="size-3.5 animate-spin" />
+                Publishing…
+              </>
+            ) : (
+              <>
+                <Save className="size-3.5" />
+                Publish
+              </>
+            )}
+          </PrimaryButton>
+        )}
       </div>
     </div>
   );
 }
 
-function StatusBadge({ status }: { status: Status }) {
+// ── Buttons ──
+
+const buttonBase =
+  "inline-flex h-8 items-center justify-center gap-1.5 rounded-md px-2.5 text-[13px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50";
+
+function GhostButton({
+  children,
+  onClick,
+  disabled,
+  title,
+}: {
+  children: React.ReactNode;
+  onClick?: () => void;
+  disabled?: boolean;
+  title?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      title={title}
+      className={cn(
+        buttonBase,
+        "text-muted-foreground hover:bg-accent hover:text-foreground",
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+function PrimaryButton({
+  children,
+  onClick,
+  disabled,
+}: {
+  children: React.ReactNode;
+  onClick?: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={cn(
+        buttonBase,
+        "bg-foreground px-3 text-background hover:bg-foreground/90 shadow-sm",
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+// ── Indicators ──
+
+function StatusPill({
+  status,
+  systemLocked,
+}: {
+  status: Status;
+  systemLocked: boolean;
+}) {
+  if (systemLocked) {
+    return (
+      <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+        <Lock className="size-2.5" />
+        Locked
+      </span>
+    );
+  }
   if (status === "PUBLISHED") {
-    return <Badge className="bg-categorical-green text-foreground">Live</Badge>;
+    return (
+      <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-categorical-green/15 px-2 py-0.5 text-[11px] font-medium text-foreground">
+        <span className="size-1.5 rounded-full bg-categorical-green" />
+        Live
+      </span>
+    );
   }
   if (status === "DRAFT") {
-    return <Badge variant="secondary">Draft</Badge>;
+    return (
+      <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-categorical-orange/15 px-2 py-0.5 text-[11px] font-medium text-foreground">
+        <span className="size-1.5 rounded-full bg-categorical-orange" />
+        Draft
+      </span>
+    );
   }
-  return <Badge variant="outline">Archived</Badge>;
+  return (
+    <span className="inline-flex shrink-0 items-center rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+      Archived
+    </span>
+  );
 }
 
 function SaveIndicator({ state }: { state: SaveState }) {
   if (state === "saving") {
     return (
-      <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-        <Loader2 className="h-3 w-3 animate-spin" />
-        Saving…
+      <span className="hidden items-center gap-1.5 px-1 text-[11px] text-muted-foreground sm:inline-flex">
+        <Loader2 className="size-3 animate-spin" />
+        Saving
       </span>
     );
   }
   if (state === "saved") {
     return (
-      <span className="flex items-center gap-1.5 text-xs text-categorical-green">
-        <Check className="h-3 w-3" />
+      <span className="hidden items-center gap-1.5 px-1 text-[11px] text-categorical-green sm:inline-flex">
+        <Check className="size-3" />
         Saved
       </span>
     );
   }
   if (state === "error") {
     return (
-      <span className="text-xs font-medium text-destructive">Save failed</span>
+      <span className="hidden px-1 text-[11px] font-medium text-destructive sm:inline">
+        Save failed
+      </span>
     );
   }
   return null;
@@ -216,12 +274,12 @@ function ViewportSwitcher({
   onChange: (v: Viewport) => void;
 }) {
   const items: { id: Viewport; label: string; icon: React.ReactNode }[] = [
-    { id: "desktop", label: "Desktop", icon: <Monitor className="h-3.5 w-3.5" /> },
-    { id: "tablet", label: "Tablet", icon: <Tablet className="h-3.5 w-3.5" /> },
-    { id: "mobile", label: "Mobile", icon: <Smartphone className="h-3.5 w-3.5" /> },
+    { id: "desktop", label: "Desktop", icon: <Monitor className="size-3.5" /> },
+    { id: "tablet", label: "Tablet", icon: <Tablet className="size-3.5" /> },
+    { id: "mobile", label: "Mobile", icon: <Smartphone className="size-3.5" /> },
   ];
   return (
-    <div className="inline-flex items-center gap-0.5 rounded-md border border-border bg-card p-0.5">
+    <div className="inline-flex items-center rounded-md bg-muted p-0.5">
       {items.map((it) => (
         <button
           key={it.id}
@@ -232,8 +290,8 @@ function ViewportSwitcher({
           className={cn(
             "rounded-sm p-1.5 transition-colors",
             value === it.id
-              ? "bg-foreground text-background shadow-sm"
-              : "text-muted-foreground hover:bg-surface-1 hover:text-foreground",
+              ? "bg-background text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground",
           )}
         >
           {it.icon}

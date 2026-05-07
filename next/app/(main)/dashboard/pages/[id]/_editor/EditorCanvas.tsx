@@ -168,7 +168,7 @@ export function EditorCanvas({
           items={allBlockIds}
           strategy={verticalListSortingStrategy}
         >
-          <article className="flex w-full flex-col gap-8 py-8 md:gap-10 md:py-12">
+          <article className="flex w-full flex-col gap-6 px-3 pb-12 pt-3 md:gap-8 md:px-6 md:pb-16 md:pt-4">
             {sections.map((sec) => (
               <CanvasSection
                 key={sec.key}
@@ -360,7 +360,7 @@ function CanvasSection({
             onSelect(sectionBlock.id);
           }}
           className={cn(
-            "absolute -top-3 left-2 z-10 flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-0.5 text-[10px] font-display font-semibold uppercase tracking-wider text-muted-foreground shadow-sm",
+            "absolute -top-3 left-2 z-10 flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground shadow-sm",
             "opacity-0 group-hover/section:opacity-100 transition-opacity",
             sectionSelected &&
               "opacity-100 border-foreground text-foreground",

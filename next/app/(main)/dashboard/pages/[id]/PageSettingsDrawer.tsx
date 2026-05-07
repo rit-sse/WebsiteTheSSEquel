@@ -46,7 +46,7 @@ export function PageSettingsDrawer({
     >
       <div className={["flex flex-col gap-5", disabled ? "opacity-60 pointer-events-none" : ""].join(" ")}>
         <section>
-          <h3 className="mb-3 text-xs font-display font-semibold uppercase tracking-wider text-muted-foreground">
+          <h3 className="mb-3 text-[13px] font-semibold text-muted-foreground">
             Identity
           </h3>
           <div className="space-y-3">
@@ -78,7 +78,7 @@ export function PageSettingsDrawer({
         </section>
 
         <section>
-          <h3 className="mb-3 text-xs font-display font-semibold uppercase tracking-wider text-muted-foreground">
+          <h3 className="mb-3 text-[13px] font-semibold text-muted-foreground">
             Navigation
           </h3>
           <div className="space-y-3">
@@ -125,7 +125,7 @@ export function PageSettingsDrawer({
         </section>
 
         <section>
-          <h3 className="mb-3 text-xs font-display font-semibold uppercase tracking-wider text-muted-foreground">
+          <h3 className="mb-3 text-[13px] font-semibold text-muted-foreground">
             SEO
           </h3>
           <div className="space-y-3">
@@ -155,7 +155,7 @@ export function PageSettingsDrawer({
 
         {canEditLock && (
           <section>
-            <h3 className="mb-3 text-xs font-display font-semibold uppercase tracking-wider text-muted-foreground">
+            <h3 className="mb-3 text-[13px] font-semibold text-muted-foreground">
               Advanced
             </h3>
             <ToggleField

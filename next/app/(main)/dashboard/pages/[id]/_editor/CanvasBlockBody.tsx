@@ -68,6 +68,10 @@ export function CanvasBlockBody({
         | "h2"
         | "h3"
         | "h4";
+      // The canvas relies on the section's flex gap for spacing, so
+      // skip the default first:mt-0/mt-8 applied by HeadingBlock —
+      // otherwise EditableBlock wrappers break first-child detection
+      // and the page opens with a big empty band above the H1.
       return (
         <InlineText
           as={Tag}
@@ -78,7 +82,7 @@ export function CanvasBlockBody({
           disabled={disabled}
           onActivate={onActivate}
           className={cn(
-            "mb-3 mt-8 first:mt-0 scroll-mt-24",
+            "scroll-mt-24",
             HEADING_LEVEL_CLASS[block.props.level],
             ALIGN_CLASS[block.props.align],
             block.props.accent === "primary" && "text-primary",
@@ -285,19 +289,12 @@ function PlaceholderCard({
         <Sparkles className="h-4 w-4" />
       </div>
       <div className="min-w-0 flex-1">
-        <p className="font-display text-sm font-semibold tracking-tight">
-          {meta.label}
-        </p>
+        <p className="text-sm font-semibold">{meta.label}</p>
         <p className="truncate text-xs text-muted-foreground">{summary}</p>
         {note && (
-          <p className="mt-1 text-[10px] uppercase tracking-wider text-muted-foreground">
-            {note}
-          </p>
+          <p className="mt-1 text-[11px] text-muted-foreground/80">{note}</p>
         )}
       </div>
-      <p className="hidden text-[10px] uppercase tracking-wider text-muted-foreground sm:block">
-        Live render
-      </p>
     </Card>
   );
 }

@@ -51,7 +51,7 @@ export function AddBlockMenu({
           if (!items?.length) return null;
           return (
             <section key={cat}>
-              <h3 className="mb-2 text-xs font-display font-semibold uppercase tracking-wider text-muted-foreground">
+              <h3 className="mb-2 text-[12px] font-semibold text-muted-foreground">
                 {CATEGORY_LABELS[cat] ?? cat}
               </h3>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">

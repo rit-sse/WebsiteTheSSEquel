@@ -362,7 +362,7 @@ function PageGroup({
       <button
         type="button"
         onClick={onToggle}
-        className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs font-display font-semibold uppercase tracking-wider text-muted-foreground transition-colors hover:bg-surface-1"
+        className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[13px] font-semibold text-muted-foreground transition-colors hover:bg-surface-1"
       >
         {collapsed ? (
           <ChevronRight className="h-3.5 w-3.5" />

@@ -271,7 +271,18 @@ export function PageEditorClient({
         })();
 
   return (
-    <div className="flex min-h-[calc(100dvh-4rem)] w-full flex-col overflow-x-hidden">
+    // The (main) layout wraps every page in `px-2 pb-2 md:px-3 md:pb-3 lg:px-4
+    // lg:pb-4`. Negate that here so the editor reads as a native, full-bleed
+    // application rather than a card sitting inside another card. Height is
+    // pinned to the viewport minus the navbar so the canvas and sidebar scroll
+    // independently below.
+    <div
+      className={cn(
+        "-mx-2 -mb-2 flex h-[calc(100dvh-4.5rem)] w-[calc(100%+1rem)] flex-col bg-background",
+        "md:-mx-3 md:-mb-3 md:w-[calc(100%+1.5rem)]",
+        "lg:-mx-4 lg:-mb-4 lg:w-[calc(100%+2rem)]",
+      )}
+    >
       <EditorTopBar
         title={page.title}
         slug={page.slug}
@@ -292,45 +303,34 @@ export function PageEditorClient({
       />
 
       {isLocked && (
-        <div className="mx-auto w-full max-w-[100rem] px-4 pt-4">
-          <div className="flex items-start gap-2 rounded-md border-2 border-categorical-pink bg-categorical-pink/10 p-3 text-sm">
-            <Lock className="h-4 w-4 mt-0.5 shrink-0" />
-            <div>
-              <strong className="font-display uppercase tracking-wider text-xs">
-                System-locked page
-              </strong>
-              <p className="text-muted-foreground mt-0.5">
-                This page is owned by another system (e.g., the amendment
-                process). Edits are read-only here.
-              </p>
-            </div>
-          </div>
+        <div className="shrink-0 border-b border-border/60 bg-categorical-pink/10 px-4 py-2 text-xs">
+          <span className="inline-flex items-center gap-2">
+            <Lock className="h-3.5 w-3.5 shrink-0" />
+            <span className="font-medium text-foreground">System-locked.</span>
+            <span className="text-muted-foreground">
+              This page is owned by another system; edits are read-only here.
+            </span>
+          </span>
         </div>
       )}
 
-      <div
-        className={cn(
-          "mx-auto grid w-full max-w-[100rem] flex-1 grid-cols-1 gap-0 px-0 lg:min-h-[calc(100dvh-13rem)] lg:grid-cols-[minmax(0,1fr)_22rem]",
-        )}
-      >
-        {/* Canvas */}
-        <main className="min-w-0 border-r border-border/40 bg-surface-1/30">
-          <div className="px-4 py-2 lg:px-8">
-            <EditorCanvas
-              content={content}
-              selected={selected}
-              onSelect={selectBlock}
-              onChange={updateContent}
-              onAddBlockAt={openAddBlock}
-              viewport={viewport}
-              disabled={isLocked}
-              dynamicSlots={dynamicSlots}
-            />
-          </div>
+      {/* Body: canvas + sidebar each get their own overflow so the
+          sidebar feels permanent and navigable. */}
+      <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <main className="min-h-0 min-w-0 overflow-y-auto border-b border-border/40 bg-muted/30 lg:border-b-0 lg:border-r lg:border-border/60">
+          <EditorCanvas
+            content={content}
+            selected={selected}
+            onSelect={selectBlock}
+            onChange={updateContent}
+            onAddBlockAt={openAddBlock}
+            viewport={viewport}
+            disabled={isLocked}
+            dynamicSlots={dynamicSlots}
+          />
         </main>
 
-        {/* Sidebar */}
-        <aside className="min-w-0 border-t border-border/40 bg-card lg:sticky lg:top-[8.5rem] lg:max-h-[calc(100dvh-9rem)] lg:border-t-0">
+        <aside className="min-h-0 min-w-0 overflow-y-auto bg-card">
           <EditorSidebar
             content={content}
             selected={selected}
