@@ -26,6 +26,9 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { GripVertical, Layers, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { NeoCard } from "@/components/ui/neo-card";
 import { cn } from "@/lib/utils";
@@ -346,33 +349,180 @@ function CanvasSection({
   return (
     <section
       className={cn(
-        "group/section relative mx-auto w-full transition-[outline]",
+        "relative mx-auto flex w-full flex-col",
         WIDTH_CLASS[props.width],
-        sectionSelected &&
-          "rounded-md outline outline-2 outline-foreground/40 outline-offset-4",
       )}
     >
-      {sectionBlock && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onSelect(sectionBlock.id);
-          }}
-          className={cn(
-            "absolute -top-3 left-2 z-10 flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground shadow-sm",
-            "opacity-0 group-hover/section:opacity-100 transition-opacity",
-            sectionSelected &&
-              "opacity-100 border-foreground text-foreground",
-          )}
-          title={`Section: ${props.label}`}
-        >
-          <span className="size-1.5 rounded-full bg-categorical-blue" />
-          {props.label || "Section"}
-        </button>
+      {sectionBlock ? (
+        <SectionHeader
+          block={sectionBlock}
+          props={props}
+          selected={sectionSelected}
+          onSelect={() => onSelect(sectionBlock.id)}
+          onRemove={() => onRemove(sectionBlock.id)}
+          disabled={disabled}
+        />
+      ) : (
+        <ImplicitSectionHint />
       )}
-      {frame}
+      <div
+        className={cn(
+          "transition-[box-shadow]",
+          sectionSelected &&
+            "rounded-md ring-2 ring-foreground/40 ring-offset-2 ring-offset-background",
+        )}
+      >
+        {frame}
+      </div>
     </section>
+  );
+}
+
+/**
+ * Shown above blocks that aren't enclosed in any explicit Section block —
+ * a small hint telling the user they can wrap them in one for layout
+ * control. (The implicit section uses sensible defaults, but is not
+ * editable.)
+ */
+function ImplicitSectionHint() {
+  return (
+    <div className="mb-2 flex items-center gap-2 px-2 text-[11px] text-muted-foreground/60">
+      <Layers className="size-3" />
+      <span>No section · using page defaults</span>
+    </div>
+  );
+}
+
+/**
+ * SectionHeader — the always-visible chrome above each canvas section.
+ *
+ * Sections are layout boundaries, not content. They control the
+ * width / padding / depth / background of the blocks below them. Without
+ * a visible affordance the editor user can't see, select, or rearrange
+ * them. The header is a thin chip-row with the section label, a compact
+ * inline summary of its properties, and drag / delete actions on hover.
+ */
+function SectionHeader({
+  block,
+  props,
+  selected,
+  onSelect,
+  onRemove,
+  disabled,
+}: {
+  block: SectionBlockNode;
+  props: SectionProps;
+  selected: boolean;
+  onSelect: () => void;
+  onRemove: () => void;
+  disabled?: boolean;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: block.id, disabled });
+
+  const summaryParts: string[] = [];
+  summaryParts.push(WIDTH_LABEL[props.width]);
+  if (props.depth !== "none") {
+    summaryParts.push(props.frame === "neoCard" ? "Neo-card" : "Card");
+  } else {
+    summaryParts.push("No frame");
+  }
+  if (props.padding !== "normal") summaryParts.push(PADDING_LABEL[props.padding]);
+  if (props.background !== "transparent") summaryParts.push("tinted");
+  if (props.layout !== "stack") summaryParts.push(LAYOUT_LABEL[props.layout]);
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.5 : 1,
+      }}
+      className={cn(
+        "group/section-header mb-2 flex items-center gap-2 rounded-md px-1 py-1 transition-colors",
+        selected
+          ? "bg-foreground/8"
+          : "hover:bg-foreground/5",
+      )}
+    >
+      <button
+        type="button"
+        disabled={disabled}
+        className={cn(
+          "flex shrink-0 cursor-grab items-center rounded-sm p-1 text-muted-foreground/60 hover:text-foreground active:cursor-grabbing",
+          "opacity-0 group-hover/section-header:opacity-100",
+          selected && "opacity-100",
+          "disabled:cursor-not-allowed disabled:opacity-30",
+        )}
+        title="Drag to reorder section"
+        aria-label="Drag to reorder section"
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical className="size-3.5" />
+      </button>
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          onSelect();
+        }}
+        className={cn(
+          "flex min-w-0 flex-1 items-center gap-2 rounded-md px-2 py-1 text-left transition-colors",
+          selected
+            ? "text-foreground"
+            : "text-muted-foreground hover:text-foreground",
+        )}
+      >
+        <span
+          className={cn(
+            "flex size-5 shrink-0 items-center justify-center rounded-md",
+            selected
+              ? "bg-foreground text-background"
+              : "bg-categorical-blue/15 text-categorical-blue",
+          )}
+        >
+          <Layers className="size-3" />
+        </span>
+        <span className="truncate text-[13px] font-medium">
+          {props.label || "Section"}
+        </span>
+        <span className="hidden truncate text-[11px] text-muted-foreground/70 sm:inline">
+          {summaryParts.join(" · ")}
+        </span>
+      </button>
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (
+            confirm(
+              "Delete this section? Blocks inside it will reflow into the previous section.",
+            )
+          ) {
+            onRemove();
+          }
+        }}
+        className={cn(
+          "flex shrink-0 items-center rounded-sm p-1 text-muted-foreground/60 hover:bg-destructive/10 hover:text-destructive",
+          "opacity-0 group-hover/section-header:opacity-100",
+          selected && "opacity-100",
+          "disabled:cursor-not-allowed disabled:opacity-30",
+        )}
+        title="Delete section"
+        aria-label="Delete section"
+      >
+        <Trash2 className="size-3.5" />
+      </button>
+    </div>
   );
 }
 
@@ -382,6 +532,28 @@ const WIDTH_CLASS: Record<SectionProps["width"], string> = {
   screenXl: "max-w-screen-xl px-4 md:px-8",
   wide: "max-w-[94vw] px-4 xl:max-w-[1400px]",
   full: "max-w-none",
+};
+
+const WIDTH_LABEL: Record<SectionProps["width"], string> = {
+  narrow: "Narrow",
+  content: "Content",
+  screenXl: "Screen-xl",
+  wide: "Wide",
+  full: "Full bleed",
+};
+
+const PADDING_LABEL: Record<SectionProps["padding"], string> = {
+  none: "No padding",
+  compact: "Compact",
+  normal: "Normal",
+  spacious: "Spacious",
+};
+
+const LAYOUT_LABEL: Record<SectionProps["layout"], string> = {
+  stack: "Stack",
+  twoColumn: "Two-column",
+  threeColumn: "Three-column",
+  grid: "Grid",
 };
 const PADDING_CLASS: Record<SectionProps["padding"], string> = {
   none: "p-0",
