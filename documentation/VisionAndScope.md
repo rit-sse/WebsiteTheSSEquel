@@ -22,6 +22,12 @@ Revised: 05/19/2025 by Ryan (@2nPlusOne)
   - [Nice-to-Have Features](#nice-to-have-features-enhancement)
   - [Project Boundaries](#project-boundaries)
   - [Project Exclusions](#project-exclusions)
+- [Goals and Objectives](#goals-and-objectives)
+- [Critical Success Factors](#critical-success-factors)
+- [Project Assumptions and Risks](#project-assumptions-and-risks)
+  - [Assumptions](#assumptions)
+  - [Risks](#risks)
+- [Roadmap](#roadmap)
 
 ## Project Overview
 
