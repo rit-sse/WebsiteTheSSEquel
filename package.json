@@ -11,7 +11,7 @@
     "test:report": "npm --prefix next run test:report"
   },
   "devDependencies": {
-    "@types/node": "^25.2.3",
+    "@types/node": "^26.0.0",
     "@types/react": "^19.2.14",
     "typescript": "^6.0.3"
   }
