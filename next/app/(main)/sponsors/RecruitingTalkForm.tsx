@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Calendar } from "lucide-react";
 import { Modal, ModalFooter } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
@@ -29,6 +29,15 @@ export default function RecruitingTalkForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+
+  // Allows recruiters to be emailed a direct link
+  // (/sponsors?open=recruiting-talk#recruit) that opens this form automatically.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("open") === "recruiting-talk") {
+      setOpen(true);
+    }
+  }, []);
 
   const handleCancel = () => {
     setCompanyName("");
