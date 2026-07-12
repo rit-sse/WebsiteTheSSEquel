@@ -53,7 +53,11 @@ export default function ConfirmationDialog({
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button variant="neutral" onClick={() => setOpen(false)} disabled={loading}>
+          <Button
+            variant="neutral"
+            onClick={() => setOpen(false)}
+            disabled={loading}
+          >
             {cancelLabel}
           </Button>
           <Button

@@ -17,18 +17,20 @@ type CommentItem = {
   };
 };
 
-function toPublicCommentRows(rawRows: Array<{
-  id: number;
-  content: string;
-  createdAt: Date;
-  updatedAt: Date;
-  author: {
+function toPublicCommentRows(
+  rawRows: Array<{
     id: number;
-    name: string | null;
-    profileImageKey: string | null;
-    googleImageURL: string | null;
-  };
-}>): CommentItem[] {
+    content: string;
+    createdAt: Date;
+    updatedAt: Date;
+    author: {
+      id: number;
+      name: string | null;
+      profileImageKey: string | null;
+      googleImageURL: string | null;
+    };
+  }>
+): CommentItem[] {
   return rawRows.map((row) => ({
     id: row.id,
     content: row.content,
@@ -37,12 +39,18 @@ function toPublicCommentRows(rawRows: Array<{
     author: {
       id: row.author.id,
       name: row.author.name,
-      image: resolveUserImage(row.author.profileImageKey, row.author.googleImageURL),
+      image: resolveUserImage(
+        row.author.profileImageKey,
+        row.author.googleImageURL
+      ),
     },
   }));
 }
 
-export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   const { id } = await params;
   const amendmentId = Number(id);
   if (Number.isNaN(amendmentId)) {
@@ -71,7 +79,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   return Response.json(toPublicCommentRows(comments));
 }
 
-export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function POST(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   const { id } = await params;
   const amendmentId = Number(id);
   if (Number.isNaN(amendmentId)) {

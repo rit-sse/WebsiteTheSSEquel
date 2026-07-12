@@ -1,6 +1,9 @@
 import { redirect } from "next/navigation";
 import { getAuthLevel } from "@/lib/services/authLevelService";
-import { getElectionWithRelations, serializeElectionForClient } from "@/lib/elections";
+import {
+  getElectionWithRelations,
+  serializeElectionForClient,
+} from "@/lib/elections";
 import NomineeAcceptClient from "./NomineeAcceptClient";
 import type {
   SerializedElection,

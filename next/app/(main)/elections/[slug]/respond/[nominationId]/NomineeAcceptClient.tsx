@@ -195,9 +195,7 @@ export default function NomineeAcceptClient({
           body: JSON.stringify({
             status: "ACCEPTED",
             statement: materials.statement,
-            yearLevel: materials.yearLevel
-              ? Number(materials.yearLevel)
-              : null,
+            yearLevel: materials.yearLevel ? Number(materials.yearLevel) : null,
             program: materials.program || null,
             canRemainEnrolledFullYear: materials.canRemainEnrolledFullYear,
             canRemainEnrolledNextTerm: materials.canRemainEnrolledNextTerm,
@@ -223,7 +221,10 @@ export default function NomineeAcceptClient({
     <section className="election-scope w-full max-w-4xl space-y-8">
       {/* Breadcrumbs */}
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Link href="/elections" className="hover:text-foreground transition-colors">
+        <Link
+          href="/elections"
+          className="hover:text-foreground transition-colors"
+        >
           Elections
         </Link>
         <ChevronRight className="h-3.5 w-3.5" />
@@ -356,13 +357,10 @@ function DecideStep({
                 bare-whitespace-between-braces has been unreliable in
                 this exact layout (rendered as "thinksyou'd" in a recent
                 screenshot). */}
-            {nominatorText}
-            {" "}
-            {nominators.length === 1 ? "thinks" : "think"}
-            {" "}
+            {nominatorText} {nominators.length === 1 ? "thinks" : "think"}{" "}
             you&rsquo;d be a great {officeTitle}. You have until{" "}
-            <strong className="text-foreground">{deadlineText}</strong> to accept
-            or decline. Nominations auto-expire after the deadline.
+            <strong className="text-foreground">{deadlineText}</strong> to
+            accept or decline. Nominations auto-expire after the deadline.
           </p>
         </div>
 
@@ -410,11 +408,7 @@ function DecideStep({
         </div>
 
         <div className="flex flex-wrap items-center gap-4 pt-2">
-          <Button
-            onClick={onAccept}
-            disabled={submitting}
-            className="gap-2"
-          >
+          <Button onClick={onAccept} disabled={submitting} className="gap-2">
             <CheckCircle className="h-4 w-4" /> Accept & continue
           </Button>
           <Button
@@ -562,10 +556,7 @@ function MaterialsStep({
                   "canRemainEnrolledFullYear",
                   "Can remain enrolled full academic year",
                 ],
-                [
-                  "canRemainEnrolledNextTerm",
-                  "Can remain enrolled next term",
-                ],
+                ["canRemainEnrolledNextTerm", "Can remain enrolled next term"],
                 ["isOnCampus", "On campus at RIT Henrietta"],
                 ["isOnCoop", "On co-op during the term"],
               ] as const
@@ -660,7 +651,9 @@ function DoneStep({
             <CheckCircle className="h-7 w-7" />
           </div>
         </div>
-        <h2 className="font-display text-2xl font-bold">You&rsquo;re on the ballot.</h2>
+        <h2 className="font-display text-2xl font-bold">
+          You&rsquo;re on the ballot.
+        </h2>
         <p className="mx-auto max-w-prose text-sm text-muted-foreground">
           Members can now see your {officeTitle} candidate card.{" "}
           {isPresident

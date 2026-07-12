@@ -70,13 +70,15 @@ export default function LibraryCatalog() {
         <p className="text-sm text-muted-foreground">
           No library books are available yet.
         </p>
-      ) : loaded
-        ? catalogue.map((book) => (
-            <GeneralBookContainer key={book.ISBN} book={book} />
-          ))
-        : Array.from({ length: 15 }).map((_, index) => (
-            <GeneralBookContainerSkeleton key={index} />
-          ))}
+      ) : loaded ? (
+        catalogue.map((book) => (
+          <GeneralBookContainer key={book.ISBN} book={book} />
+        ))
+      ) : (
+        Array.from({ length: 15 }).map((_, index) => (
+          <GeneralBookContainerSkeleton key={index} />
+        ))
+      )}
     </div>
   );
 }

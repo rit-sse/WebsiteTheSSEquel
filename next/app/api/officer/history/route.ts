@@ -44,8 +44,9 @@ export async function GET() {
   });
 
   // Group by semester using the shared utility — exclude Summer terms
-  const semesterGroups = groupBySemester(officers, (o) => o.start_date.toISOString())
-    .filter(({ label }) => !label.startsWith("Summer"));
+  const semesterGroups = groupBySemester(officers, (o) =>
+    o.start_date.toISOString()
+  ).filter(({ label }) => !label.startsWith("Summer"));
 
   const years = semesterGroups.map(({ label, items }) => {
     const primary_officers = items
@@ -54,29 +55,42 @@ export async function GET() {
         ...o,
         user: {
           ...o.user,
-          image: resolveUserImage(o.user.profileImageKey, o.user.googleImageURL),
+          image: resolveUserImage(
+            o.user.profileImageKey,
+            o.user.googleImageURL
+          ),
         },
       }));
 
     const committee_heads = items
-      .filter((o) => !o.position.is_primary && o.position.category !== "SE_OFFICE")
+      .filter(
+        (o) => !o.position.is_primary && o.position.category !== "SE_OFFICE"
+      )
       .sort((a, b) => a.position.title.localeCompare(b.position.title))
       .map((o) => ({
         ...o,
         user: {
           ...o.user,
-          image: resolveUserImage(o.user.profileImageKey, o.user.googleImageURL),
+          image: resolveUserImage(
+            o.user.profileImageKey,
+            o.user.googleImageURL
+          ),
         },
       }));
 
     const se_office = items
-      .filter((o) => !o.position.is_primary && o.position.category === "SE_OFFICE")
+      .filter(
+        (o) => !o.position.is_primary && o.position.category === "SE_OFFICE"
+      )
       .sort((a, b) => a.position.title.localeCompare(b.position.title))
       .map((o) => ({
         ...o,
         user: {
           ...o.user,
-          image: resolveUserImage(o.user.profileImageKey, o.user.googleImageURL),
+          image: resolveUserImage(
+            o.user.profileImageKey,
+            o.user.googleImageURL
+          ),
         },
       }));
 
@@ -94,27 +108,48 @@ export async function GET() {
  */
 export async function POST(req: NextRequest) {
   const auth = await resolveAuthLevelFromRequest(req);
-  if (!auth.isPrimary) return new Response("Primary officers only", { status: 403 });
+  if (!auth.isPrimary)
+    return new Response("Primary officers only", { status: 403 });
 
-  let body: { email: string; name?: string; position_title: string; start_date: string; end_date: string };
-  try { body = await req.json(); } catch { return new Response("Invalid JSON", { status: 400 }); }
+  let body: {
+    email: string;
+    name?: string;
+    position_title: string;
+    start_date: string;
+    end_date: string;
+  };
+  try {
+    body = await req.json();
+  } catch {
+    return new Response("Invalid JSON", { status: 400 });
+  }
 
   const { email, name, position_title, start_date, end_date } = body;
   if (!email || !position_title || !start_date || !end_date) {
-    return new Response("email, position_title, start_date, and end_date are required", { status: 400 });
+    return new Response(
+      "email, position_title, start_date, and end_date are required",
+      { status: 400 }
+    );
   }
 
   const startDate = new Date(start_date);
   const endDate = new Date(end_date);
   if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
-    return new Response("start_date and end_date must be valid dates", { status: 400 });
+    return new Response("start_date and end_date must be valid dates", {
+      status: 400,
+    });
   }
   if (endDate <= startDate) {
     return new Response("end_date must be after start_date", { status: 400 });
   }
 
-  const position = await prisma.officerPosition.findUnique({ where: { title: position_title } });
-  if (!position) return new Response(`Position "${position_title}" not found`, { status: 404 });
+  const position = await prisma.officerPosition.findUnique({
+    where: { title: position_title },
+  });
+  if (!position)
+    return new Response(`Position "${position_title}" not found`, {
+      status: 404,
+    });
 
   // Upsert the user — keep any existing data, only fill name if not present
   const user = await prisma.user.upsert({
@@ -135,14 +170,36 @@ export async function POST(req: NextRequest) {
       id: true,
       start_date: true,
       end_date: true,
-      user: { select: { id: true, name: true, email: true, profileImageKey: true, googleImageURL: true } },
-      position: { select: { id: true, title: true, is_primary: true, category: true, is_defunct: true } },
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          profileImageKey: true,
+          googleImageURL: true,
+        },
+      },
+      position: {
+        select: {
+          id: true,
+          title: true,
+          is_primary: true,
+          category: true,
+          is_defunct: true,
+        },
+      },
     },
   });
 
   return Response.json({
     ...officer,
-    user: { ...officer.user, image: resolveUserImage(officer.user.profileImageKey, officer.user.googleImageURL) },
+    user: {
+      ...officer.user,
+      image: resolveUserImage(
+        officer.user.profileImageKey,
+        officer.user.googleImageURL
+      ),
+    },
   });
 }
 
@@ -154,21 +211,28 @@ export async function POST(req: NextRequest) {
  */
 export async function PUT(req: NextRequest) {
   const auth = await resolveAuthLevelFromRequest(req);
-  if (!auth.isPrimary) return new Response("Primary officers only", { status: 403 });
+  if (!auth.isPrimary)
+    return new Response("Primary officers only", { status: 403 });
 
   let body: { id: number; start_date?: string; end_date?: string };
-  try { body = await req.json(); } catch { return new Response("Invalid JSON", { status: 400 }); }
+  try {
+    body = await req.json();
+  } catch {
+    return new Response("Invalid JSON", { status: 400 });
+  }
 
   if (!body.id) return new Response("id is required", { status: 400 });
 
   const data: { start_date?: Date; end_date?: Date } = {};
   if (body.start_date) {
     data.start_date = new Date(body.start_date);
-    if (Number.isNaN(data.start_date.getTime())) return new Response("start_date must be valid", { status: 400 });
+    if (Number.isNaN(data.start_date.getTime()))
+      return new Response("start_date must be valid", { status: 400 });
   }
   if (body.end_date) {
     data.end_date = new Date(body.end_date);
-    if (Number.isNaN(data.end_date.getTime())) return new Response("end_date must be valid", { status: 400 });
+    if (Number.isNaN(data.end_date.getTime()))
+      return new Response("end_date must be valid", { status: 400 });
   }
 
   try {
@@ -176,7 +240,8 @@ export async function PUT(req: NextRequest) {
       where: { id: body.id, is_active: false },
       select: { id: true, start_date: true, end_date: true },
     });
-    if (!existing) return new Response("Historical officer not found", { status: 404 });
+    if (!existing)
+      return new Response("Historical officer not found", { status: 404 });
     const effectiveStart = data.start_date ?? existing.start_date;
     const effectiveEnd = data.end_date ?? existing.end_date;
     if (effectiveEnd <= effectiveStart) {
@@ -200,7 +265,8 @@ export async function PUT(req: NextRequest) {
  */
 export async function DELETE(req: NextRequest) {
   const auth = await resolveAuthLevelFromRequest(req);
-  if (!auth.isPrimary) return new Response("Primary officers only", { status: 403 });
+  if (!auth.isPrimary)
+    return new Response("Primary officers only", { status: 403 });
 
   const id = Number(new URL(req.url).searchParams.get("id"));
   if (!id) return new Response("id query param is required", { status: 400 });
@@ -210,7 +276,8 @@ export async function DELETE(req: NextRequest) {
       where: { id, is_active: false },
       select: { id: true },
     });
-    if (!existing) return new Response("Historical officer not found", { status: 404 });
+    if (!existing)
+      return new Response("Historical officer not found", { status: 404 });
 
     await prisma.officer.delete({ where: { id } });
     return new Response(null, { status: 204 });

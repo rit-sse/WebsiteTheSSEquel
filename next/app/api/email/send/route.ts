@@ -92,9 +92,12 @@ export async function POST(request: NextRequest) {
   );
 
   if (!isOfficer && !isMentor && !isSeAdmin) {
-    return new Response("Only officers, mentors, and SE Admins can send emails", {
-      status: 403,
-    });
+    return new Response(
+      "Only officers, mentors, and SE Admins can send emails",
+      {
+        status: 403,
+      }
+    );
   }
 
   let body;

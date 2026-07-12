@@ -60,9 +60,12 @@ export async function PUT(
 ) {
   const authLevel = await getGatewayAuthLevel(request);
   if (!(await canManageElections(authLevel))) {
-    return new Response("Only the President or an SE Admin can update elections", {
-      status: 403,
-    });
+    return new Response(
+      "Only the President or an SE Admin can update elections",
+      {
+        status: 403,
+      }
+    );
   }
 
   let body;
@@ -108,12 +111,14 @@ export async function PUT(
       }
 
       if (nextStatus === ElectionStatus.VOTING_OPEN) {
-        const approvedCandidateCounts = existing.offices.map((office) =>
-          office.nominations.filter(
-            (nomination) =>
-              nomination.status === ElectionNominationStatus.ACCEPTED &&
-              nomination.eligibilityStatus === ElectionEligibilityStatus.APPROVED
-          ).length
+        const approvedCandidateCounts = existing.offices.map(
+          (office) =>
+            office.nominations.filter(
+              (nomination) =>
+                nomination.status === ElectionNominationStatus.ACCEPTED &&
+                nomination.eligibilityStatus ===
+                  ElectionEligibilityStatus.APPROVED
+            ).length
         );
         if (approvedCandidateCounts.some((count) => count < 1)) {
           return new Response(
@@ -137,8 +142,10 @@ export async function PUT(
       return Response.json(updated);
     }
 
-    const title = body.title !== undefined ? String(body.title).trim() : existing.title;
-    const slug = body.slug !== undefined ? String(body.slug).trim() : existing.slug;
+    const title =
+      body.title !== undefined ? String(body.title).trim() : existing.title;
+    const slug =
+      body.slug !== undefined ? String(body.slug).trim() : existing.slug;
     const description =
       body.description !== undefined
         ? String(body.description).trim()
@@ -184,7 +191,9 @@ export async function PUT(
         },
       });
 
-      const currentPositionIds = existing.offices.map((office) => office.officerPositionId);
+      const currentPositionIds = existing.offices.map(
+        (office) => office.officerPositionId
+      );
       const toDelete = currentPositionIds.filter(
         (positionId: number) => !positionIds.includes(positionId)
       );
@@ -212,7 +221,9 @@ export async function PUT(
     });
 
     return Response.json(
-      serializeElectionForClient(await getElectionWithRelations({ id: electionId }))
+      serializeElectionForClient(
+        await getElectionWithRelations({ id: electionId })
+      )
     );
   } catch (error) {
     return new Response(

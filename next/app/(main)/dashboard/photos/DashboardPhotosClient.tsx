@@ -5,7 +5,10 @@ import { Camera, ImagePlus } from "lucide-react";
 import { NeoCard, NeoCardContent } from "@/components/ui/neo-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PhotoBatchUploader } from "./PhotoBatchUploader";
-import { PhotoManagementTable, type ManagedPhoto } from "./PhotoManagementTable";
+import {
+  PhotoManagementTable,
+  type ManagedPhoto,
+} from "./PhotoManagementTable";
 
 export type DashboardPhotoEvent = {
   id: string;
@@ -38,10 +41,12 @@ export function DashboardPhotosClient({
     if (!response.ok) return;
     const data = await response.json();
     setPhotos(
-      data.photos.map((photo: ManagedPhoto & { event: DashboardPhotoEvent | null }) => ({
-        ...photo,
-        eventId: photo.event?.id ?? null,
-      }))
+      data.photos.map(
+        (photo: ManagedPhoto & { event: DashboardPhotoEvent | null }) => ({
+          ...photo,
+          eventId: photo.event?.id ?? null,
+        })
+      )
     );
     setNextCursor(data.nextCursor ?? null);
   }, []);

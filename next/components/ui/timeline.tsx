@@ -1,10 +1,5 @@
 "use client";
-import {
-  useScroll,
-  useTransform,
-  motion,
-  AnimatePresence,
-} from "motion/react";
+import { useScroll, useTransform, motion, AnimatePresence } from "motion/react";
 import React, { useEffect, useRef, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -53,7 +48,10 @@ export const Timeline = ({ data }: { data: TimelineEntry[] }) => {
           const isExpanded = !isCollapsible || expanded.has(index);
 
           return (
-            <div key={index} className="flex justify-start pt-10 md:pt-16 md:gap-4">
+            <div
+              key={index}
+              className="flex justify-start pt-10 md:pt-16 md:gap-4"
+            >
               {/* Left: sticky semester label */}
               <div className="sticky flex flex-col md:flex-row z-40 items-center top-24 self-start md:w-36 shrink-0">
                 <div className="h-10 absolute left-3 md:left-3 w-10 rounded-full bg-background flex items-center justify-center">
@@ -64,7 +62,9 @@ export const Timeline = ({ data }: { data: TimelineEntry[] }) => {
                     onClick={() => toggle(index)}
                     className={cn(
                       "hidden md:flex items-center gap-1 text-base md:pl-16 md:text-lg font-bold transition-colors",
-                      isExpanded ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                      isExpanded
+                        ? "text-primary"
+                        : "text-muted-foreground hover:text-foreground"
                     )}
                   >
                     {item.title}
@@ -93,7 +93,12 @@ export const Timeline = ({ data }: { data: TimelineEntry[] }) => {
                     )}
                   >
                     {item.title}
-                    <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", isExpanded && "rotate-180")} />
+                    <ChevronDown
+                      className={cn(
+                        "h-4 w-4 transition-transform duration-200",
+                        isExpanded && "rotate-180"
+                      )}
+                    />
                   </button>
                 ) : (
                   <h3 className="md:hidden block text-xl mb-4 text-left font-bold text-muted-foreground">

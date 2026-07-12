@@ -22,7 +22,9 @@ export default function EditorStep({
   return (
     <Card depth={2} className="p-4 sm:p-6 space-y-4">
       <div className="space-y-1">
-        <h2 className="font-display text-lg font-semibold">Edit the Constitution</h2>
+        <h2 className="font-display text-lg font-semibold">
+          Edit the Constitution
+        </h2>
         <p className="text-sm text-muted-foreground">
           Make your proposed changes to the constitution text below. The current
           text has been loaded from the official governing documents repository.

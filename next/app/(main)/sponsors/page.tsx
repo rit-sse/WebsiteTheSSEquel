@@ -15,14 +15,16 @@ export default function SponsorsPage() {
             Partner With SSE
           </h1>
           <p className="text-lg text-muted-foreground mb-6">
-            The Society of Software Engineers (SSE) is the core developer community at RIT. 
-            Our lab in GOL-1670 is where students work, study, build projects, and help each other. 
-            Members gain real experience, mentor younger students, and collaborate on software that actually ships. 
-            The environment builds strong engineers who are ready for internships and full-time roles.
+            The Society of Software Engineers (SSE) is the core developer
+            community at RIT. Our lab in GOL-1670 is where students work, study,
+            build projects, and help each other. Members gain real experience,
+            mentor younger students, and collaborate on software that actually
+            ships. The environment builds strong engineers who are ready for
+            internships and full-time roles.
           </p>
           <p className="text-lg text-muted-foreground">
-            Partnering with SSE gives sponsors visibility and direct access to some of the most capable 
-            young engineers on campus.
+            Partnering with SSE gives sponsors visibility and direct access to
+            some of the most capable young engineers on campus.
           </p>
         </div>
       </NeoCard>
@@ -48,8 +50,8 @@ export default function SponsorsPage() {
           <p className="text-muted-foreground mb-8">
             Whether you&apos;re interested in sponsoring SSE, scheduling a
             recruiting talk, or proposing a ViSE talk, we&apos;d love to hear
-            from you. Fill out one of the forms below and our team will get
-            back to you shortly.
+            from you. Fill out one of the forms below and our team will get back
+            to you shortly.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center flex-wrap">
             <BecomeSponsorForm />
@@ -118,12 +120,14 @@ export default function SponsorsPage() {
         <p className="text-muted-foreground mb-6">
           Our speaker series brings industry professionals, alumni, researchers,
           and independent engineers into the SSE community to share their
-          stories, work, and insights. If you have something to say, we want
-          to hear it.
+          stories, work, and insights. If you have something to say, we want to
+          hear it.
         </p>
         <div className="grid md:grid-cols-2 gap-8">
           <div>
-            <h3 className="text-xl font-semibold mb-3">Who We&apos;re Looking For</h3>
+            <h3 className="text-xl font-semibold mb-3">
+              Who We&apos;re Looking For
+            </h3>
             <ul className="space-y-2 text-muted-foreground">
               <li className="flex items-start gap-2">
                 <span className="text-primary mt-1">•</span>
@@ -160,7 +164,9 @@ export default function SponsorsPage() {
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-primary mt-1">•</span>
-                <span>No sales pitches &mdash; ViSE is about ideas, not recruiting</span>
+                <span>
+                  No sales pitches &mdash; ViSE is about ideas, not recruiting
+                </span>
               </li>
             </ul>
           </div>
@@ -170,12 +176,10 @@ export default function SponsorsPage() {
       {/* Contact Section */}
       <Card className="w-full p-6 md:p-10">
         <div className="max-w-2xl mx-auto text-center">
-          <h2 className="text-3xl font-bold font-display mb-4">
-            Questions?
-          </h2>
+          <h2 className="text-3xl font-bold font-display mb-4">Questions?</h2>
           <p className="text-muted-foreground mb-4">
-            Have questions about sponsorship or recruiting opportunities? 
-            Reach out to us directly.
+            Have questions about sponsorship or recruiting opportunities? Reach
+            out to us directly.
           </p>
           <a
             href="mailto:societyofsoftwareengineers@gmail.com"

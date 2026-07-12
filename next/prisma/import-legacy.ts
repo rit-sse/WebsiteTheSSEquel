@@ -46,65 +46,65 @@ if (!fs.existsSync(DUMP_PATH)) {
 
 const TITLE_MAP: Record<string, string> = {
   // ── Primary officers (exist in current system) ──
-  "President":            "President",
-  "Vice President":       "Vice President",
-  "Treasurer":            "Treasurer",
-  "Secretary":            "Secretary",
+  President: "President",
+  "Vice President": "Vice President",
+  Treasurer: "Treasurer",
+  Secretary: "Secretary",
 
   // ── Committee heads (exist in current system) ──
-  "Mentoring Head":       "Mentoring Head",
-  "Mentoring":            "Mentoring Head",
-  "Career Mentoring":     "Mentoring Head",
-  "Mentoring Hours":      "Mentoring Head",
+  "Mentoring Head": "Mentoring Head",
+  Mentoring: "Mentoring Head",
+  "Career Mentoring": "Mentoring Head",
+  "Mentoring Hours": "Mentoring Head",
 
   "Public Relations Head": "Public Relations Head",
-  "Public Relations":      "Public Relations Head",
-  "PR":                    "Public Relations Head",
+  "Public Relations": "Public Relations Head",
+  PR: "Public Relations Head",
 
-  "Projects Head":        "Projects Head",
-  "Projects":             "Projects Head",
+  "Projects Head": "Projects Head",
+  Projects: "Projects Head",
 
-  "Talks Head":           "Talks Head",
-  "Talks":                "Talks Head",
+  "Talks Head": "Talks Head",
+  Talks: "Talks Head",
 
   "Career Development Head": "Career Development Head",
-  "Career Development":      "Career Development Head",
+  "Career Development": "Career Development Head",
 
-  "Marketing Head":       "Marketing Head",
-  "Marketing":            "Marketing Head",
+  "Marketing Head": "Marketing Head",
+  Marketing: "Marketing Head",
 
   // ── Active committee heads (exist in current system) ──
-  "Events":                     "Events",
-  "Events Head":                "Events",
+  Events: "Events",
+  "Events Head": "Events",
 
-  "Laboratory Operations":      "Laboratory Operations",
+  "Laboratory Operations": "Laboratory Operations",
   "Laboratory Operations Head": "Laboratory Operations",
-  "Lab Operations":             "Laboratory Operations",
-  "Lab Operations Head":        "Laboratory Operations",
-  "Lab Ops":                    "Laboratory Operations",
+  "Lab Operations": "Laboratory Operations",
+  "Lab Operations Head": "Laboratory Operations",
+  "Lab Ops": "Laboratory Operations",
 
-  "Tech Head":            "Tech Head",
-  "Technology":           "Tech Head",
-  "Technology Head":      "Tech Head",
+  "Tech Head": "Tech Head",
+  Technology: "Tech Head",
+  "Technology Head": "Tech Head",
 
   // ── Defunct positions (no longer in current org) ──
   "Tech Head Apprentice": "Tech Head Apprentice",
 
-  "Historian":            "Historian",
-  "Historian Head":       "Historian",
+  Historian: "Historian",
+  "Historian Head": "Historian",
 
-  "Branding Head":        "Branding Head",
+  "Branding Head": "Branding Head",
 
-  "Outreach":             "Student Outreach Head",
-  "Student Outreach":     "Student Outreach Head",
-  "Student Outreach Head":"Student Outreach Head",
+  Outreach: "Student Outreach Head",
+  "Student Outreach": "Student Outreach Head",
+  "Student Outreach Head": "Student Outreach Head",
 
-  "Review Sessions":      "Review Sessions Head",
+  "Review Sessions": "Review Sessions Head",
 
-  "Spring Fling":         "Spring Fling Head",
+  "Spring Fling": "Spring Fling Head",
 
-  "Winter Ball":          "Winterball Head",
-  "Winterball Head":      "Winterball Head",
+  "Winter Ball": "Winterball Head",
+  "Winterball Head": "Winterball Head",
 };
 
 /** Canonical titles that should be marked is_defunct */
@@ -138,7 +138,9 @@ function parseDump(filePath: string): Map<string, Row[]> {
   let i = 0;
   while (i < lines.length) {
     const line = lines[i].trimEnd();
-    const match = line.match(/^COPY public\.(\w+)\s+\(([^)]+)\)\s+FROM stdin;$/);
+    const match = line.match(
+      /^COPY public\.(\w+)\s+\(([^)]+)\)\s+FROM stdin;$/
+    );
     if (match) {
       const tableName = match[1];
       const columns = match[2]
@@ -149,7 +151,10 @@ function parseDump(filePath: string): Map<string, Row[]> {
       const rows: Row[] = [];
       while (i < lines.length && lines[i].trimEnd() !== "\\.") {
         const rawLine = lines[i];
-        if (rawLine.trim() === "") { i++; continue; }
+        if (rawLine.trim() === "") {
+          i++;
+          continue;
+        }
         const values = rawLine.split("\t");
         const row: Row = {};
         columns.forEach((col, idx) => {
@@ -182,7 +187,11 @@ function toDate(v: string | null): Date | null {
 
 // ─── Helpers ──────────────────────────────────────────────────
 
-function buildName(firstName: string | null, lastName: string | null, dce: string): string {
+function buildName(
+  firstName: string | null,
+  lastName: string | null,
+  dce: string
+): string {
   const parts = [firstName, lastName].filter(Boolean);
   return parts.length > 0 ? parts.join(" ") : dce;
 }
@@ -237,7 +246,9 @@ async function cleanupPreviousImport() {
   if (orphanedPositions.length > 0) {
     // Must delete associated handover docs first due to cascade
     for (const pos of orphanedPositions) {
-      await prisma.handoverDocument.deleteMany({ where: { positionId: pos.id } });
+      await prisma.handoverDocument.deleteMany({
+        where: { positionId: pos.id },
+      });
     }
     const { count } = await prisma.officerPosition.deleteMany({
       where: { id: { in: orphanedPositions.map((p) => p.id) } },
@@ -253,7 +264,8 @@ async function importUsers(db: Map<string, Row[]>) {
   const rows = db.get("users") ?? [];
   console.log(`  Found ${rows.length} legacy users`);
 
-  let created = 0, skipped = 0;
+  let created = 0,
+    skipped = 0;
   for (const u of rows) {
     const email = dceToEmail(u.dce!);
     const name = buildName(u.firstName, u.lastName, u.dce!);
@@ -277,7 +289,8 @@ async function importEvents(db: Map<string, Row[]>) {
   const rows = db.get("events") ?? [];
   console.log(`  Found ${rows.length} legacy events`);
 
-  let created = 0, skipped = 0;
+  let created = 0,
+    skipped = 0;
   for (const e of rows) {
     const eventId = `legacy-${e.id}`;
     try {
@@ -298,7 +311,9 @@ async function importEvents(db: Map<string, Row[]>) {
       });
       created++;
     } catch (err: any) {
-      console.warn(`  WARN: Failed to import event ${e.id} "${e.name}": ${err.message}`);
+      console.warn(
+        `  WARN: Failed to import event ${e.id} "${e.name}": ${err.message}`
+      );
       skipped++;
     }
   }
@@ -310,13 +325,17 @@ async function importGoLinks(db: Map<string, Row[]>) {
   const rows = db.get("links") ?? [];
   console.log(`  Found ${rows.length} legacy links`);
 
-  let created = 0, skipped = 0;
+  let created = 0,
+    skipped = 0;
   for (const l of rows) {
     try {
       const existing = await prisma.goLinks.findFirst({
         where: { golink: l.shortLink! },
       });
-      if (existing) { skipped++; continue; }
+      if (existing) {
+        skipped++;
+        continue;
+      }
 
       await prisma.goLinks.create({
         data: {
@@ -331,7 +350,9 @@ async function importGoLinks(db: Map<string, Row[]>) {
       });
       created++;
     } catch (err: any) {
-      console.warn(`  WARN: Failed to import link "${l.shortLink}": ${err.message}`);
+      console.warn(
+        `  WARN: Failed to import link "${l.shortLink}": ${err.message}`
+      );
       skipped++;
     }
   }
@@ -340,14 +361,18 @@ async function importGoLinks(db: Map<string, Row[]>) {
 
 async function importQuotes(db: Map<string, Row[]>) {
   console.log("\n═══ Importing Quotes ═══");
-  const rows = (db.get("quotes") ?? []).filter((q) => toBool(q.approved) === true);
+  const rows = (db.get("quotes") ?? []).filter(
+    (q) => toBool(q.approved) === true
+  );
   console.log(`  Found ${rows.length} approved legacy quotes`);
 
-  let created = 0, skipped = 0;
+  let created = 0,
+    skipped = 0;
   for (const q of rows) {
     try {
       const body = q.body ?? "";
-      const quoteText = body.length > 255 ? body.substring(0, 252) + "..." : body;
+      const quoteText =
+        body.length > 255 ? body.substring(0, 252) + "..." : body;
       const author = q.description || "Anonymous";
       const dateAdded = toDate(q.createdAt) ?? new Date();
 
@@ -355,7 +380,10 @@ async function importQuotes(db: Map<string, Row[]>) {
       const existing = await prisma.quote.findFirst({
         where: { quote: quoteText, date_added: dateAdded },
       });
-      if (existing) { skipped++; continue; }
+      if (existing) {
+        skipped++;
+        continue;
+      }
 
       await prisma.quote.create({
         data: {
@@ -381,30 +409,41 @@ async function importOfficers(db: Map<string, Row[]>) {
 
   // Step 1: Collect canonical position info from the dump
   // Use the FIRST email seen for each canonical title as the default.
-  const canonicalInfo = new Map<string, { email: string; isPrimary: boolean }>();
+  const canonicalInfo = new Map<
+    string,
+    { email: string; isPrimary: boolean }
+  >();
   let unmapped = 0;
   for (const o of rows) {
     const rawTitle = o.title!;
     const canonical = TITLE_MAP[rawTitle];
     if (!canonical) {
-      console.warn(`  WARN: Unmapped title "${rawTitle}" — skipping officer ${o.userDce}`);
+      console.warn(
+        `  WARN: Unmapped title "${rawTitle}" — skipping officer ${o.userDce}`
+      );
       unmapped++;
       continue;
     }
     if (!canonicalInfo.has(canonical)) {
       canonicalInfo.set(canonical, {
-        email: o.email ?? `${canonical.toLowerCase().replace(/\s+/g, "-")}@sse.rit.edu`,
+        email:
+          o.email ??
+          `${canonical.toLowerCase().replace(/\s+/g, "-")}@sse.rit.edu`,
         isPrimary: toBool(o.primaryOfficer) ?? false,
       });
     }
   }
-  if (unmapped > 0) console.warn(`  ${unmapped} officers with unmapped titles skipped`);
+  if (unmapped > 0)
+    console.warn(`  ${unmapped} officers with unmapped titles skipped`);
 
   // Step 2: Upsert canonical positions
-  let positionsCreated = 0, positionsExisting = 0;
+  let positionsCreated = 0,
+    positionsExisting = 0;
   for (const [title, info] of canonicalInfo) {
     try {
-      const existing = await prisma.officerPosition.findUnique({ where: { title } });
+      const existing = await prisma.officerPosition.findUnique({
+        where: { title },
+      });
       if (existing) {
         // Mark defunct flag correctly if needed
         if (DEFUNCT_TITLES.has(title) && !existing.is_defunct) {
@@ -435,29 +474,43 @@ async function importOfficers(db: Map<string, Row[]>) {
       });
       positionsCreated++;
     } catch (err: any) {
-      console.warn(`  WARN: Failed to create position "${title}": ${err.message}`);
+      console.warn(
+        `  WARN: Failed to create position "${title}": ${err.message}`
+      );
     }
   }
-  console.log(`  Positions — Created: ${positionsCreated}, Already existing: ${positionsExisting}`);
+  console.log(
+    `  Positions — Created: ${positionsCreated}, Already existing: ${positionsExisting}`
+  );
 
   // Step 3: Import officer assignments using normalized titles
-  let officersCreated = 0, officersSkipped = 0;
+  let officersCreated = 0,
+    officersSkipped = 0;
   for (const o of rows) {
     const rawTitle = o.title!;
     const canonical = TITLE_MAP[rawTitle];
-    if (!canonical) { officersSkipped++; continue; }
-
-    const email = dceToEmail(o.userDce!);
-    const user = await prisma.user.findUnique({ where: { email } });
-    if (!user) {
-      console.warn(`  WARN: No user for officer ${o.userDce} (${rawTitle}→${canonical}), skipping`);
+    if (!canonical) {
       officersSkipped++;
       continue;
     }
 
-    const position = await prisma.officerPosition.findUnique({ where: { title: canonical } });
+    const email = dceToEmail(o.userDce!);
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      console.warn(
+        `  WARN: No user for officer ${o.userDce} (${rawTitle}→${canonical}), skipping`
+      );
+      officersSkipped++;
+      continue;
+    }
+
+    const position = await prisma.officerPosition.findUnique({
+      where: { title: canonical },
+    });
     if (!position) {
-      console.warn(`  WARN: No position for canonical title "${canonical}", skipping`);
+      console.warn(
+        `  WARN: No position for canonical title "${canonical}", skipping`
+      );
       officersSkipped++;
       continue;
     }
@@ -474,7 +527,10 @@ async function importOfficers(db: Map<string, Row[]>) {
           start_date: startDate,
         },
       });
-      if (existing) { officersSkipped++; continue; }
+      if (existing) {
+        officersSkipped++;
+        continue;
+      }
 
       await prisma.officer.create({
         data: {
@@ -487,32 +543,51 @@ async function importOfficers(db: Map<string, Row[]>) {
       });
       officersCreated++;
     } catch (err: any) {
-      console.warn(`  WARN: Failed to import officer ${o.userDce} as ${canonical}: ${err.message}`);
+      console.warn(
+        `  WARN: Failed to import officer ${o.userDce} as ${canonical}: ${err.message}`
+      );
       officersSkipped++;
     }
   }
-  console.log(`  Officers — Created: ${officersCreated}, Skipped: ${officersSkipped}`);
+  console.log(
+    `  Officers — Created: ${officersCreated}, Skipped: ${officersSkipped}`
+  );
 }
 
 async function importMemberships(db: Map<string, Row[]>) {
   console.log("\n═══ Importing Memberships ═══");
-  const rows = (db.get("memberships") ?? []).filter((m) => toBool(m.approved) === true);
+  const rows = (db.get("memberships") ?? []).filter(
+    (m) => toBool(m.approved) === true
+  );
   console.log(`  Found ${rows.length} approved legacy memberships`);
 
-  let created = 0, skipped = 0;
+  let created = 0,
+    skipped = 0;
   for (const m of rows) {
     const email = dceToEmail(m.userDce!);
     const user = await prisma.user.findUnique({ where: { email } });
-    if (!user) { skipped++; continue; }
+    if (!user) {
+      skipped++;
+      continue;
+    }
 
     const dateGiven = toDate(m.startDate) ?? new Date();
     const term = getAcademicTermFromDate(dateGiven);
     const year = dateGiven.getFullYear();
     try {
       const existing = await prisma.memberships.findFirst({
-        where: { userId: user.id, reason: m.reason ?? "", dateGiven, term, year },
+        where: {
+          userId: user.id,
+          reason: m.reason ?? "",
+          dateGiven,
+          term,
+          year,
+        },
       });
-      if (existing) { skipped++; continue; }
+      if (existing) {
+        skipped++;
+        continue;
+      }
 
       await prisma.memberships.create({
         data: {
@@ -525,7 +600,9 @@ async function importMemberships(db: Map<string, Row[]>) {
       });
       created++;
     } catch (err: any) {
-      console.warn(`  WARN: Failed to import membership for ${m.userDce}: ${err.message}`);
+      console.warn(
+        `  WARN: Failed to import membership for ${m.userDce}: ${err.message}`
+      );
       skipped++;
     }
   }
@@ -540,7 +617,9 @@ async function main() {
   console.log("║  Parsing dump file → Prisma                 ║");
   console.log("╚══════════════════════════════════════════════╝");
   console.log(`\nDump file: ${DUMP_PATH}`);
-  console.log(`Target DB: ${(process.env.DATABASE_URL ?? "").substring(0, 50)}...`);
+  console.log(
+    `Target DB: ${(process.env.DATABASE_URL ?? "").substring(0, 50)}...`
+  );
 
   console.log("\nParsing dump file...");
   const db = parseDump(DUMP_PATH);
@@ -563,15 +642,21 @@ async function main() {
   console.log(`\n══════════════════════════════════════════`);
   console.log(`Import complete in ${elapsed}s`);
 
-  const [userCount, eventCount, goLinkCount, quoteCount, officerCount, membershipCount] =
-    await Promise.all([
-      prisma.user.count(),
-      prisma.event.count(),
-      prisma.goLinks.count(),
-      prisma.quote.count(),
-      prisma.officer.count(),
-      prisma.memberships.count(),
-    ]);
+  const [
+    userCount,
+    eventCount,
+    goLinkCount,
+    quoteCount,
+    officerCount,
+    membershipCount,
+  ] = await Promise.all([
+    prisma.user.count(),
+    prisma.event.count(),
+    prisma.goLinks.count(),
+    prisma.quote.count(),
+    prisma.officer.count(),
+    prisma.memberships.count(),
+  ]);
 
   console.log("\nFinal record counts in new DB:");
   console.log(`  Users:       ${userCount}`);
@@ -584,12 +669,16 @@ async function main() {
   // Show position breakdown
   const positions = await prisma.officerPosition.findMany({
     orderBy: { title: "asc" },
-    include: { officers: { where: { is_active: false }, select: { id: true } } },
+    include: {
+      officers: { where: { is_active: false }, select: { id: true } },
+    },
   });
   console.log("\nOfficer positions:");
   for (const p of positions) {
     const tag = p.is_defunct ? " [DEFUNCT]" : "";
-    console.log(`  ${p.title.padEnd(28)} ${String(p.officers.length).padStart(3)} historical officers${tag}`);
+    console.log(
+      `  ${p.title.padEnd(28)} ${String(p.officers.length).padStart(3)} historical officers${tag}`
+    );
   }
 }
 

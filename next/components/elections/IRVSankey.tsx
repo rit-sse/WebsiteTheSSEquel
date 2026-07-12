@@ -60,7 +60,7 @@ export function IRVSankey({
   // Max total across rounds so heights are consistent across rounds
   const rtotal = sankeyRounds.map((r) =>
     r.reduce(
-      (a, c) => a + c.votes + (c.eliminated ? c.transferredFrom ?? 0 : 0),
+      (a, c) => a + c.votes + (c.eliminated ? (c.transferredFrom ?? 0) : 0),
       0
     )
   );
@@ -68,9 +68,16 @@ export function IRVSankey({
   const avail = height - padT - padB;
 
   // Preserve stable vertical order by candidate name across rounds
-  const allNames = [...new Set(sankeyRounds.flatMap((r) => r.map((c) => c.name)))];
+  const allNames = [
+    ...new Set(sankeyRounds.flatMap((r) => r.map((c) => c.name))),
+  ];
 
-  type LaidOut = SankeyCandidate & { x: number; y: number; w: number; h: number };
+  type LaidOut = SankeyCandidate & {
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+  };
   // In each round, eliminated entries (post-elimination ghosts) are filtered
   // out of the layout so surviving bars reclaim the vertical space. Flow
   // computation still resolves their previous-round alive bar via
@@ -79,7 +86,8 @@ export function IRVSankey({
     const sorted = allNames
       .map((n) => round.find((c) => c.name === n))
       .filter(
-        (c): c is SankeyCandidate => Boolean(c) && !(c as SankeyCandidate).eliminated
+        (c): c is SankeyCandidate =>
+          Boolean(c) && !(c as SankeyCandidate).eliminated
       );
     const x = padL + ri * colW;
     let y = padT;

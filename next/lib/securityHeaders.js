@@ -10,7 +10,8 @@ const COMMON_HEADERS = [
 
 function getS3Origins() {
   const bucketName =
-    process.env.AWS_S3_BUCKET_NAME || process.env.NEXT_PUBLIC_AWS_S3_BUCKET_NAME;
+    process.env.AWS_S3_BUCKET_NAME ||
+    process.env.NEXT_PUBLIC_AWS_S3_BUCKET_NAME;
   const region =
     process.env.AWS_S3_REGION || process.env.NEXT_PUBLIC_AWS_S3_REGION;
 

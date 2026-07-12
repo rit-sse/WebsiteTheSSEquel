@@ -37,7 +37,11 @@ function formatDateTime(iso: string) {
   }
 }
 
-export default function AmendmentTimeline({ events }: { events: TimelineEvent[] }) {
+export default function AmendmentTimeline({
+  events,
+}: {
+  events: TimelineEvent[];
+}) {
   const activeEvents = events.filter((e) => e.date !== null);
 
   if (activeEvents.length === 0) return null;

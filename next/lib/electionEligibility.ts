@@ -41,9 +41,7 @@ function buildMembershipWhere(atDate = new Date()) {
 
   const clauses: Array<{ term: AcademicTerm; year: number }> = [
     { term: current.term, year: current.year },
-    ...(inGracePeriod
-      ? [{ term: previous.term, year: previous.year }]
-      : []),
+    ...(inGracePeriod ? [{ term: previous.term, year: previous.year }] : []),
   ];
 
   return { OR: clauses };
@@ -101,4 +99,3 @@ export async function listElectionEmailRecipients() {
     orderBy: { name: "asc" },
   });
 }
-

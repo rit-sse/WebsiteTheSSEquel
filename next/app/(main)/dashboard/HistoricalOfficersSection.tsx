@@ -5,7 +5,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Modal, ModalFooter } from "@/components/ui/modal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
@@ -40,12 +46,23 @@ interface Position {
 }
 
 function getInitials(name: string) {
-  return name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
 }
 
 function formatDate(d: string) {
-  try { return new Date(d).toLocaleDateString("en-US", { year: "numeric", month: "short" }); }
-  catch { return d; }
+  try {
+    return new Date(d).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+    });
+  } catch {
+    return d;
+  }
 }
 
 // ─── Photo upload helper ──────────────────────────────────────────────────────
@@ -60,7 +77,9 @@ async function uploadOfficerPhoto(userId: number, file: File): Promise<string> {
     body: formData,
   });
   if (!res.ok) {
-    const body = await res.json().catch(async () => ({ error: await res.text() }));
+    const body = await res
+      .json()
+      .catch(async () => ({ error: await res.text() }));
     throw new Error(body.error ?? "Upload failed");
   }
   const { key } = await res.json();
@@ -103,8 +122,12 @@ function OfficerRow({
     <div className="flex items-center gap-3 p-2 rounded-lg bg-surface-2 border border-border/30">
       <div className="relative group/photo shrink-0">
         <Avatar className="h-9 w-9">
-          {officer.user.image && <AvatarImage src={officer.user.image} alt={officer.user.name} />}
-          <AvatarFallback className="text-xs">{getInitials(officer.user.name)}</AvatarFallback>
+          {officer.user.image && (
+            <AvatarImage src={officer.user.image} alt={officer.user.name} />
+          )}
+          <AvatarFallback className="text-xs">
+            {getInitials(officer.user.name)}
+          </AvatarFallback>
         </Avatar>
         <button
           onClick={() => fileRef.current?.click()}
@@ -115,14 +138,21 @@ function OfficerRow({
           <Camera className="h-3.5 w-3.5 text-white" />
         </button>
         {!readOnly && (
-          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePhoto} />
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handlePhoto}
+          />
         )}
       </div>
 
       <div className="flex-1 min-w-0">
         <div className="font-medium text-sm truncate">{officer.user.name}</div>
         <div className="text-xs text-muted-foreground truncate">
-          {officer.position.title} · {formatDate(officer.start_date)} – {formatDate(officer.end_date)}
+          {officer.position.title} · {formatDate(officer.start_date)} –{" "}
+          {formatDate(officer.end_date)}
         </div>
       </div>
 
@@ -161,25 +191,43 @@ function AddOfficerModal({
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const reset = () => { setEmail(""); setName(""); setPositionTitle(""); setStartDate(""); setEndDate(""); setError(null); };
+  const reset = () => {
+    setEmail("");
+    setName("");
+    setPositionTitle("");
+    setStartDate("");
+    setEndDate("");
+    setError(null);
+  };
 
-  const handleOpenChange = (o: boolean) => { if (!o) reset(); onOpenChange(o); };
+  const handleOpenChange = (o: boolean) => {
+    if (!o) reset();
+    onOpenChange(o);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     if (!email || !positionTitle || !startDate || !endDate) {
-      setError("All fields except name are required"); return;
+      setError("All fields except name are required");
+      return;
     }
     if (new Date(startDate) >= new Date(endDate)) {
-      setError("End date must be after start date"); return;
+      setError("End date must be after start date");
+      return;
     }
     setSubmitting(true);
     try {
       const res = await fetch("/api/officer/history", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, name: name || undefined, position_title: positionTitle, start_date: startDate, end_date: endDate }),
+        body: JSON.stringify({
+          email,
+          name: name || undefined,
+          position_title: positionTitle,
+          start_date: startDate,
+          end_date: endDate,
+        }),
       });
       if (res.ok) {
         toast.success("Historical officer added");
@@ -196,23 +244,54 @@ function AddOfficerModal({
   };
 
   return (
-    <Modal open={open} onOpenChange={handleOpenChange} title="Add Historical Officer" className="max-w-md">
+    <Modal
+      open={open}
+      onOpenChange={handleOpenChange}
+      title="Add Historical Officer"
+      className="max-w-md"
+    >
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <Label>Email <span className="text-muted-foreground text-xs">(RIT address)</span></Label>
-          <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="dce1234@g.rit.edu" disabled={submitting} />
+          <Label>
+            Email{" "}
+            <span className="text-muted-foreground text-xs">(RIT address)</span>
+          </Label>
+          <Input
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="dce1234@g.rit.edu"
+            disabled={submitting}
+          />
         </div>
         <div className="space-y-2">
-          <Label>Name <span className="text-muted-foreground text-xs">(optional if user exists)</span></Label>
-          <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Jane Doe" disabled={submitting} />
+          <Label>
+            Name{" "}
+            <span className="text-muted-foreground text-xs">
+              (optional if user exists)
+            </span>
+          </Label>
+          <Input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Jane Doe"
+            disabled={submitting}
+          />
         </div>
         <div className="space-y-2">
           <Label>Position</Label>
-          <Select value={positionTitle} onValueChange={setPositionTitle} disabled={submitting}>
-            <SelectTrigger><SelectValue placeholder="Select a position…" /></SelectTrigger>
+          <Select
+            value={positionTitle}
+            onValueChange={setPositionTitle}
+            disabled={submitting}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select a position…" />
+            </SelectTrigger>
             <SelectContent>
               {positions.map((p) => (
-                <SelectItem key={p.id} value={p.title}>{p.title}</SelectItem>
+                <SelectItem key={p.id} value={p.title}>
+                  {p.title}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -220,17 +299,36 @@ function AddOfficerModal({
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label>Term Start</Label>
-            <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} disabled={submitting} />
+            <Input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              disabled={submitting}
+            />
           </div>
           <div className="space-y-2">
             <Label>Term End</Label>
-            <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} disabled={submitting} />
+            <Input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              disabled={submitting}
+            />
           </div>
         </div>
         {error && <p className="text-sm text-destructive">{error}</p>}
         <ModalFooter>
-          <Button type="button" variant="ghost" onClick={() => handleOpenChange(false)} disabled={submitting}>Cancel</Button>
-          <Button type="submit" disabled={submitting}>{submitting ? "Adding…" : "Add Officer"}</Button>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => handleOpenChange(false)}
+            disabled={submitting}
+          >
+            Cancel
+          </Button>
+          <Button type="submit" disabled={submitting}>
+            {submitting ? "Adding…" : "Add Officer"}
+          </Button>
         </ModalFooter>
       </form>
     </Modal>
@@ -265,8 +363,14 @@ function SemesterSection({
       >
         <span className="font-semibold text-sm">{semester.year}</span>
         <div className="flex items-center gap-2 text-muted-foreground text-xs">
-          <span>{all.length} officer{all.length !== 1 ? "s" : ""}</span>
-          {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          <span>
+            {all.length} officer{all.length !== 1 ? "s" : ""}
+          </span>
+          {open ? (
+            <ChevronUp className="h-4 w-4" />
+          ) : (
+            <ChevronDown className="h-4 w-4" />
+          )}
         </div>
       </button>
 
@@ -310,17 +414,27 @@ export default function HistoricalOfficersSection({
       if (posRes.ok) {
         const raw = await posRes.json();
         // Include all positions (active and defunct) for historical entry
-        setPositions(raw.map((p: any) => ({ id: p.id, title: p.title, is_primary: p.is_primary })));
+        setPositions(
+          raw.map((p: any) => ({
+            id: p.id,
+            title: p.title,
+            is_primary: p.is_primary,
+          }))
+        );
       }
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+  }, []);
 
   const handleDelete = async (id: number) => {
-    const res = await fetch(`/api/officer/history?id=${id}`, { method: "DELETE" });
+    const res = await fetch(`/api/officer/history?id=${id}`, {
+      method: "DELETE",
+    });
     if (res.ok) {
       toast.success("Record deleted");
       load();
@@ -334,7 +448,9 @@ export default function HistoricalOfficersSection({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold">Historical Officers</h2>
-          <p className="text-sm text-muted-foreground">Manage past officer records and photos</p>
+          <p className="text-sm text-muted-foreground">
+            Manage past officer records and photos
+          </p>
         </div>
         {!readOnly && (
           <Button size="sm" onClick={() => setAddOpen(true)}>
@@ -346,10 +462,14 @@ export default function HistoricalOfficersSection({
 
       {loading ? (
         <div className="space-y-2">
-          {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-12 w-full rounded-lg" />)}
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-12 w-full rounded-lg" />
+          ))}
         </div>
       ) : semesters.length === 0 ? (
-        <p className="text-muted-foreground text-sm py-8 text-center">No historical officer records found.</p>
+        <p className="text-muted-foreground text-sm py-8 text-center">
+          No historical officer records found.
+        </p>
       ) : (
         <div className="space-y-2">
           {semesters.map((s) => (

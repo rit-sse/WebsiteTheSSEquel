@@ -1,19 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import {
-  ChevronRight,
-  CheckCircle,
-  Clock,
-  Pencil,
-  Vote,
-} from "lucide-react";
+import { ChevronRight, CheckCircle, Clock, Pencil, Vote } from "lucide-react";
 import prisma from "@/lib/prisma";
 import { getAuthLevel } from "@/lib/services/authLevelService";
 import { resolveUserImage } from "@/lib/s3Utils";
-import {
-  NeoCard,
-  NeoCardContent,
-} from "@/components/ui/neo-card";
+import { NeoCard, NeoCardContent } from "@/components/ui/neo-card";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ElectionAvatar } from "@/components/elections/ElectionAvatar";
@@ -119,7 +110,9 @@ export default async function MyElectionsPage() {
               Elections
             </Link>
             <ChevronRight className="h-3.5 w-3.5" />
-            <span className="text-foreground font-medium">Your nominations</span>
+            <span className="text-foreground font-medium">
+              Your nominations
+            </span>
           </nav>
 
           <div className="space-y-2">
@@ -148,8 +141,7 @@ export default async function MyElectionsPage() {
                 );
               }
               for (const i of runningMateInvites) {
-                const eid =
-                  i.presidentNomination.electionOffice.election.id;
+                const eid = i.presidentNomination.electionOffice.election.id;
                 positionsByElection.set(
                   eid,
                   (positionsByElection.get(eid) ?? 0) + 1
@@ -163,9 +155,8 @@ export default async function MyElectionsPage() {
                 <p className="text-xs text-muted-foreground bg-muted/40 rounded-md px-3 py-2 inline-flex items-center gap-2">
                   <Pencil className="h-3.5 w-3.5 shrink-0" />
                   You&rsquo;re running for more than one office in the same
-                  election — each nomination has its own bio, program,
-                  year, and eligibility, so you can pitch separately for
-                  each race.
+                  election — each nomination has its own bio, program, year, and
+                  eligibility, so you can pitch separately for each race.
                 </p>
               );
             })()}
@@ -173,9 +164,7 @@ export default async function MyElectionsPage() {
 
           {/* ─── Nominations (you've been nominated for an office) ─── */}
           <div id="nominations" className="space-y-3 scroll-mt-24">
-            <h2 className="font-display text-xl font-bold">
-              Nominations
-            </h2>
+            <h2 className="font-display text-xl font-bold">Nominations</h2>
             {nominations.length === 0 ? (
               <p className="text-sm text-muted-foreground">
                 You don&rsquo;t have any open nominations right now.

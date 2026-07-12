@@ -25,7 +25,10 @@ export default function WizardStepIndicator({
           const isFuture = index > currentStep;
 
           return (
-            <li key={step.label} className="flex items-center gap-2 flex-1 last:flex-initial">
+            <li
+              key={step.label}
+              className="flex items-center gap-2 flex-1 last:flex-initial"
+            >
               <div className="flex items-center gap-2">
                 {/* Step number/check circle */}
                 <div

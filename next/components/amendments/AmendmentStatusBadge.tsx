@@ -54,7 +54,11 @@ const statusConfig: Record<
   },
 };
 
-export default function AmendmentStatusBadge({ status }: { status: AmendmentStatus }) {
+export default function AmendmentStatusBadge({
+  status,
+}: {
+  status: AmendmentStatus;
+}) {
   const cfg = statusConfig[status];
   return (
     <span

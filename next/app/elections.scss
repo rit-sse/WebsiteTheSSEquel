@@ -27,8 +27,16 @@
 /* Softly tinted page background (two radial accents + vertical wash). */
 .election-scope.election-body-bg {
   background:
-    radial-gradient(1200px 600px at 85% -10%, hsl(var(--surface-2) / 0.55), transparent 60%),
-    radial-gradient(900px 500px at -5% 110%, hsl(var(--surface-2) / 0.35), transparent 70%),
+    radial-gradient(
+      1200px 600px at 85% -10%,
+      hsl(var(--surface-2) / 0.55),
+      transparent 60%
+    ),
+    radial-gradient(
+      900px 500px at -5% 110%,
+      hsl(var(--surface-2) / 0.35),
+      transparent 70%
+    ),
     linear-gradient(to bottom, hsl(var(--background)), hsl(var(--muted)));
 }
 
@@ -136,7 +144,10 @@
   background: hsl(var(--surface-2));
   border: 2px solid #000;
   border-radius: 10px;
-  transition: transform 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
+  transition:
+    transform 0.16s ease,
+    background 0.16s ease,
+    box-shadow 0.16s ease;
   position: relative;
 }
 .election-scope .ballot-card + .ballot-card {

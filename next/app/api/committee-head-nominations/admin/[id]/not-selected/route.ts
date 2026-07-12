@@ -22,7 +22,10 @@ export async function POST(
 ) {
   const auth = await getGatewayAuthLevel(request);
   if (!auth.isPrimary) {
-    return jsonError("Only active Primary Officers can update nominations", 403);
+    return jsonError(
+      "Only active Primary Officers can update nominations",
+      403
+    );
   }
 
   const id = await parseId(params);

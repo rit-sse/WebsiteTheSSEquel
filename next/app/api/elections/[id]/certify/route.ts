@@ -1,8 +1,5 @@
 import { getGatewayAuthLevel } from "@/lib/authGateway";
-import {
-  certifyElection,
-  serializeElectionForClient,
-} from "@/lib/elections";
+import { certifyElection, serializeElectionForClient } from "@/lib/elections";
 import prisma from "@/lib/prisma";
 import { ElectionStatus } from "@prisma/client";
 
@@ -38,7 +35,9 @@ export async function POST(
     return new Response("Election not found", { status: 404 });
   }
   if (election.status !== ElectionStatus.VOTING_CLOSED) {
-    return new Response("Only closed elections can be certified", { status: 409 });
+    return new Response("Only closed elections can be certified", {
+      status: 409,
+    });
   }
 
   try {

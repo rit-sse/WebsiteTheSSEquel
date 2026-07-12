@@ -11,8 +11,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Committee Head Nominations · SSE",
-  description:
-    "Apply for or nominate someone for an SSE Committee Head role.",
+  description: "Apply for or nominate someone for an SSE Committee Head role.",
 };
 
 export default async function NominatePage() {

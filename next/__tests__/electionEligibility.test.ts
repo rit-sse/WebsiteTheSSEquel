@@ -1,12 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { mockMembershipCount, mockUserFindMany, mockGetCurrentAcademicTerm, mockGetAcademicTermDateRange } =
-  vi.hoisted(() => ({
-    mockMembershipCount: vi.fn(),
-    mockUserFindMany: vi.fn(),
-    mockGetCurrentAcademicTerm: vi.fn(),
-    mockGetAcademicTermDateRange: vi.fn(),
-  }));
+const {
+  mockMembershipCount,
+  mockUserFindMany,
+  mockGetCurrentAcademicTerm,
+  mockGetAcademicTermDateRange,
+} = vi.hoisted(() => ({
+  mockMembershipCount: vi.fn(),
+  mockUserFindMany: vi.fn(),
+  mockGetCurrentAcademicTerm: vi.fn(),
+  mockGetAcademicTermDateRange: vi.fn(),
+}));
 
 vi.mock("@/lib/prisma", () => ({
   default: {
@@ -34,18 +38,20 @@ describe("election eligibility", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockGetCurrentAcademicTerm.mockReturnValue({ term: "SPRING", year: 2026 });
-    mockGetAcademicTermDateRange.mockImplementation((term: string, year: number) => {
-      if (term === "SPRING" && year === 2026) {
+    mockGetAcademicTermDateRange.mockImplementation(
+      (term: string, year: number) => {
+        if (term === "SPRING" && year === 2026) {
+          return {
+            startDate: new Date("2026-01-01T00:00:00.000Z"),
+            endDate: new Date("2026-05-31T23:59:59.999Z"),
+          };
+        }
         return {
-          startDate: new Date("2026-01-01T00:00:00.000Z"),
-          endDate: new Date("2026-05-31T23:59:59.999Z"),
+          startDate: new Date("2025-08-01T00:00:00.000Z"),
+          endDate: new Date("2025-12-31T23:59:59.999Z"),
         };
       }
-      return {
-        startDate: new Date("2025-08-01T00:00:00.000Z"),
-        endDate: new Date("2025-12-31T23:59:59.999Z"),
-      };
-    });
+    );
   });
 
   it("checks current-term memberships outside the grace period", async () => {
@@ -67,7 +73,9 @@ describe("election eligibility", () => {
 
   it("includes the previous term during the first 14 days of a term", async () => {
     mockMembershipCount.mockResolvedValue(1);
-    mockUserFindMany.mockResolvedValue([{ id: 1, name: "A", email: "a@example.com" }]);
+    mockUserFindMany.mockResolvedValue([
+      { id: 1, name: "A", email: "a@example.com" },
+    ]);
 
     await isActiveMemberForElection(7, new Date("2026-01-05T12:00:00.000Z"));
     await listEligibleElectionVoters(new Date("2026-01-05T12:00:00.000Z"));
@@ -75,9 +83,7 @@ describe("election eligibility", () => {
     expect(mockMembershipCount).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
-          OR: expect.arrayContaining([
-            { term: "FALL", year: 2025 },
-          ]),
+          OR: expect.arrayContaining([{ term: "FALL", year: 2025 }]),
         }),
       })
     );
@@ -86,9 +92,7 @@ describe("election eligibility", () => {
         where: expect.objectContaining({
           Memberships: expect.objectContaining({
             some: expect.objectContaining({
-              OR: expect.arrayContaining([
-                { term: "FALL", year: 2025 },
-              ]),
+              OR: expect.arrayContaining([{ term: "FALL", year: 2025 }]),
             }),
           }),
         }),
@@ -125,4 +129,3 @@ describe("election eligibility", () => {
     expect(mockGetAcademicTermDateRange).not.toHaveBeenCalled();
   });
 });
-

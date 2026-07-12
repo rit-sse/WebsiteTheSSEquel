@@ -24,7 +24,10 @@ export async function POST(
 ) {
   const auth = await getGatewayAuthLevel(request);
   if (!auth.isPrimary || !auth.userId) {
-    return jsonError("Only active Primary Officers can select Committee Heads", 403);
+    return jsonError(
+      "Only active Primary Officers can select Committee Heads",
+      403
+    );
   }
 
   const applicationId = await parseId(params);
@@ -54,49 +57,69 @@ export async function POST(
     where: { id: positionId },
     select: { id: true, title: true, category: true, is_defunct: true },
   });
-  if (!position || position.category !== "COMMITTEE_HEAD" || position.is_defunct) {
+  if (
+    !position ||
+    position.category !== "COMMITTEE_HEAD" ||
+    position.is_defunct
+  ) {
     return jsonError("Position must be an active Committee Head position", 400);
   }
 
-  const [existingSelection, activeOfficer, pendingPositionInvite, pendingUserInvite] =
-    await Promise.all([
-      prisma.committeeHeadApplication.findFirst({
-        where: {
-          cycleId: application.cycleId,
-          applicantUserId: application.applicantUserId,
-          status: CommitteeHeadApplicationStatus.SELECTED,
+  const [
+    existingSelection,
+    activeOfficer,
+    pendingPositionInvite,
+    pendingUserInvite,
+  ] = await Promise.all([
+    prisma.committeeHeadApplication.findFirst({
+      where: {
+        cycleId: application.cycleId,
+        applicantUserId: application.applicantUserId,
+        status: CommitteeHeadApplicationStatus.SELECTED,
+      },
+    }),
+    prisma.officer.findFirst({
+      where: { position_id: positionId, is_active: true },
+    }),
+    prisma.invitation.findFirst({
+      where: { type: "officer", positionId },
+    }),
+    prisma.invitation.findUnique({
+      where: {
+        invitedEmail_type: {
+          invitedEmail: application.applicant.email,
+          type: "officer",
         },
-      }),
-      prisma.officer.findFirst({
-        where: { position_id: positionId, is_active: true },
-      }),
-      prisma.invitation.findFirst({
-        where: { type: "officer", positionId },
-      }),
-      prisma.invitation.findUnique({
-        where: {
-          invitedEmail_type: {
-            invitedEmail: application.applicant.email,
-            type: "officer",
-          },
-        },
-      }),
-    ]);
+      },
+    }),
+  ]);
 
   if (existingSelection) {
-    return jsonError("This applicant has already been selected this cycle", 409);
+    return jsonError(
+      "This applicant has already been selected this cycle",
+      409
+    );
   }
   if (activeOfficer) {
     return jsonError("This position already has an active officer", 409);
   }
   if (pendingPositionInvite) {
-    return jsonError("This position already has a pending officer invitation", 409);
+    return jsonError(
+      "This position already has a pending officer invitation",
+      409
+    );
   }
   if (pendingUserInvite) {
-    return jsonError("This applicant already has a pending officer invitation", 409);
+    return jsonError(
+      "This applicant already has a pending officer invitation",
+      409
+    );
   }
   if (!application.applicant.email.endsWith("@g.rit.edu")) {
-    return jsonError("Officer invitations require a @g.rit.edu email address", 400);
+    return jsonError(
+      "Officer invitations require a @g.rit.edu email address",
+      400
+    );
   }
 
   const expiresAt = new Date();
@@ -153,5 +176,9 @@ export async function POST(
     }
   }
 
-  return NextResponse.json({ ok: true, invitationId: invitation.id, emailSent });
+  return NextResponse.json({
+    ok: true,
+    invitationId: invitation.id,
+    emailSent,
+  });
 }

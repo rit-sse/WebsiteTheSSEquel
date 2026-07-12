@@ -17,10 +17,16 @@ import {
 describe("election helpers", () => {
   it("allows only valid election status transitions", () => {
     expect(
-      canTransitionElectionStatus(ElectionStatus.DRAFT, ElectionStatus.NOMINATIONS_OPEN)
+      canTransitionElectionStatus(
+        ElectionStatus.DRAFT,
+        ElectionStatus.NOMINATIONS_OPEN
+      )
     ).toBe(true);
     expect(
-      canTransitionElectionStatus(ElectionStatus.DRAFT, ElectionStatus.VOTING_OPEN)
+      canTransitionElectionStatus(
+        ElectionStatus.DRAFT,
+        ElectionStatus.VOTING_OPEN
+      )
     ).toBe(false);
   });
 
@@ -61,9 +67,7 @@ describe("election helpers", () => {
         },
       })
     ).toBeNull();
-    expect(
-      getAcceptedRunningMate({ id: 1, nomineeUserId: 5 })
-    ).toBeNull();
+    expect(getAcceptedRunningMate({ id: 1, nomineeUserId: 5 })).toBeNull();
   });
 
   describe("dedupeMultiOfficeWinners", () => {
@@ -187,8 +191,14 @@ describe("election helpers", () => {
         result("Secretary", [sam, isabell]),
       ];
       dedupeMultiOfficeWinners(results as any);
-      expect(results.find((r) => r.officeTitle === "Secretary")!.winner?.nomineeUserId).toBe(50);
-      expect(results.find((r) => r.officeTitle === "Treasurer")!.winner?.nomineeUserId).toBe(92);
+      expect(
+        results.find((r) => r.officeTitle === "Secretary")!.winner
+          ?.nomineeUserId
+      ).toBe(50);
+      expect(
+        results.find((r) => r.officeTitle === "Treasurer")!.winner
+          ?.nomineeUserId
+      ).toBe(92);
     });
   });
 
@@ -225,10 +235,30 @@ describe("election helpers", () => {
         ],
       } as any,
       ballots: [
-        { rankings: [{ electionOfficeId: 10, nominationId: 1, rank: 1 }, { electionOfficeId: 10, nominationId: 2, rank: 2 }] },
-        { rankings: [{ electionOfficeId: 10, nominationId: 1, rank: 1 }, { electionOfficeId: 10, nominationId: 3, rank: 2 }] },
-        { rankings: [{ electionOfficeId: 10, nominationId: 2, rank: 1 }, { electionOfficeId: 10, nominationId: 1, rank: 2 }] },
-        { rankings: [{ electionOfficeId: 10, nominationId: 3, rank: 1 }, { electionOfficeId: 10, nominationId: 2, rank: 2 }] },
+        {
+          rankings: [
+            { electionOfficeId: 10, nominationId: 1, rank: 1 },
+            { electionOfficeId: 10, nominationId: 2, rank: 2 },
+          ],
+        },
+        {
+          rankings: [
+            { electionOfficeId: 10, nominationId: 1, rank: 1 },
+            { electionOfficeId: 10, nominationId: 3, rank: 2 },
+          ],
+        },
+        {
+          rankings: [
+            { electionOfficeId: 10, nominationId: 2, rank: 1 },
+            { electionOfficeId: 10, nominationId: 1, rank: 2 },
+          ],
+        },
+        {
+          rankings: [
+            { electionOfficeId: 10, nominationId: 3, rank: 1 },
+            { electionOfficeId: 10, nominationId: 2, rank: 2 },
+          ],
+        },
       ],
     });
 

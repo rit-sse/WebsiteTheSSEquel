@@ -111,7 +111,7 @@ export type DashboardSectionSummary<Id extends DashboardSectionId> =
  * to its empty/zero default and the rest of the dashboard still renders.
  */
 export async function getDashboardSummary(): Promise<DashboardSummary> {
-  const settle = async <T,>(promise: Promise<T>, fallback: T): Promise<T> => {
+  const settle = async <T>(promise: Promise<T>, fallback: T): Promise<T> => {
     try {
       return await promise;
     } catch (error) {

@@ -214,7 +214,9 @@ export default function CommitteeHeadNominationsClient() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Active statuses</SelectItem>
-              <SelectItem value="PENDING_ACCEPTANCE">Pending acceptance</SelectItem>
+              <SelectItem value="PENDING_ACCEPTANCE">
+                Pending acceptance
+              </SelectItem>
               <SelectItem value="SUBMITTED">Submitted</SelectItem>
               <SelectItem value="SELECTED">Selected</SelectItem>
               <SelectItem value="NOT_SELECTED">Not selected</SelectItem>
@@ -240,7 +242,9 @@ export default function CommitteeHeadNominationsClient() {
 
       {loading ? (
         <Card>
-          <CardContent className="p-6 text-muted-foreground">Loading...</CardContent>
+          <CardContent className="p-6 text-muted-foreground">
+            Loading...
+          </CardContent>
         </Card>
       ) : !payload?.selectedCycle ? (
         <Card>
@@ -278,8 +282,7 @@ export default function CommitteeHeadNominationsClient() {
                     title="Preferences"
                     body={application.preferences
                       .map(
-                        (pref) =>
-                          `${pref.rank}. ${pref.officerPosition.title}`
+                        (pref) => `${pref.rank}. ${pref.officerPosition.title}`
                       )
                       .join("\n")}
                   />
@@ -292,7 +295,10 @@ export default function CommitteeHeadNominationsClient() {
                     body={application.weeklyCommitment}
                   />
                 </div>
-                <InfoBlock title="Why interested" body={application.whyInterested} />
+                <InfoBlock
+                  title="Why interested"
+                  body={application.whyInterested}
+                />
                 {application.nominations.length > 0 && (
                   <div className="rounded-md border p-3">
                     <h3 className="mb-2 text-sm font-semibold">
@@ -333,7 +339,10 @@ export default function CommitteeHeadNominationsClient() {
                       </SelectTrigger>
                       <SelectContent>
                         {payload.positions.map((position) => (
-                          <SelectItem key={position.id} value={String(position.id)}>
+                          <SelectItem
+                            key={position.id}
+                            value={String(position.id)}
+                          >
                             {position.title}
                           </SelectItem>
                         ))}

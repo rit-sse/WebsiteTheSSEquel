@@ -131,7 +131,9 @@ function encodePhotoCursor(photo: { sortDate: Date; id: number }) {
 
 function decodePhotoCursor(cursor: string): PhotoCursor | null {
   try {
-    const parsed = JSON.parse(Buffer.from(cursor, "base64url").toString("utf8"));
+    const parsed = JSON.parse(
+      Buffer.from(cursor, "base64url").toString("utf8")
+    );
     if (!parsed || typeof parsed !== "object") return null;
     const id = Number.parseInt(String(parsed.id), 10);
     const sortDate =

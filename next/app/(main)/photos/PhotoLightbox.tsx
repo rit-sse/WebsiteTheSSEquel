@@ -81,9 +81,7 @@ export function PhotoLightbox({
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="!max-w-[1100px] w-full p-0 overflow-hidden bg-surface-1">
         <DialogTitle className="sr-only">{headerTitle}</DialogTitle>
-        <DialogDescription className="sr-only">
-          {altText}
-        </DialogDescription>
+        <DialogDescription className="sr-only">{altText}</DialogDescription>
 
         {/* Image stage. Black backdrop so wide-aspect photos breathe. */}
         <div className="relative h-[60vh] md:h-[70vh] bg-black">

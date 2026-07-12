@@ -80,8 +80,17 @@ export default function AnnouncementsPage() {
     const isEdit = editingId !== null;
     const method = isEdit ? "PUT" : "POST";
     const body = isEdit
-      ? { id: editingId, message: formMessage, category: formCategory || null, active: formActive }
-      : { message: formMessage, category: formCategory || null, active: formActive };
+      ? {
+          id: editingId,
+          message: formMessage,
+          category: formCategory || null,
+          active: formActive,
+        }
+      : {
+          message: formMessage,
+          category: formCategory || null,
+          active: formActive,
+        };
 
     try {
       const res = await fetch("/api/announcement", {
@@ -174,7 +183,8 @@ export default function AnnouncementsPage() {
           </div>
         ) : announcements.length === 0 ? (
           <p className="text-center text-muted-foreground py-12">
-            No announcements yet. Create one to display a banner across the site.
+            No announcements yet. Create one to display a banner across the
+            site.
           </p>
         ) : (
           <div className="flex flex-col gap-3">
@@ -270,7 +280,10 @@ export default function AnnouncementsPage() {
           <Button variant="neutral" onClick={() => setModalOpen(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={isSaving || !formMessage.trim()}>
+          <Button
+            onClick={handleSave}
+            disabled={isSaving || !formMessage.trim()}
+          >
             {isSaving ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />

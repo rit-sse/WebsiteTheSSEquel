@@ -1,107 +1,109 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useCallback } from "react"
-import { DataTable, Column } from "@/components/ui/data-table"
-import { Button } from "@/components/ui/button"
-import { Check, X, Trash2, Calendar, Building2 } from "lucide-react"
+import { useState, useEffect, useCallback } from "react";
+import { DataTable, Column } from "@/components/ui/data-table";
+import { Button } from "@/components/ui/button";
+import { Check, X, Trash2, Calendar, Building2 } from "lucide-react";
 
 export interface RecruitingTalkRequest {
-  id: number
-  companyName: string
-  contactName: string
-  contactEmail: string
-  contactPhone?: string
-  preferredDates: string
-  talkType: string
-  expectedAttendees?: number
-  description?: string
-  status: string
-  createdAt: string
+  id: number;
+  companyName: string;
+  contactName: string;
+  contactEmail: string;
+  contactPhone?: string;
+  preferredDates: string;
+  talkType: string;
+  expectedAttendees?: number;
+  description?: string;
+  status: string;
+  createdAt: string;
 }
 
-type FilterStatus = "pending" | "scheduled" | "completed" | "declined"
+type FilterStatus = "pending" | "scheduled" | "completed" | "declined";
 
 const talkTypeLabels: Record<string, string> = {
   tech_talk: "Tech Talk",
   interview_session: "Interview Session",
   workshop: "Workshop",
   info_session: "Info Session",
-}
+};
 
 export default function RecruitingTalkRequestsSection() {
-  const [requests, setRequests] = useState<RecruitingTalkRequest[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [processingId, setProcessingId] = useState<number | null>(null)
-  const [filter, setFilter] = useState<FilterStatus>("pending")
-  const [error, setError] = useState("")
+  const [requests, setRequests] = useState<RecruitingTalkRequest[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [processingId, setProcessingId] = useState<number | null>(null);
+  const [filter, setFilter] = useState<FilterStatus>("pending");
+  const [error, setError] = useState("");
 
   const fetchRequests = useCallback(async () => {
-    setIsLoading(true)
-    setError("")
+    setIsLoading(true);
+    setError("");
     try {
-      const response = await fetch(`/api/recruiting-talk-requests?status=${filter}`)
+      const response = await fetch(
+        `/api/recruiting-talk-requests?status=${filter}`
+      );
       if (!response.ok) {
-        throw new Error("Failed to fetch requests")
+        throw new Error("Failed to fetch requests");
       }
-      const data = await response.json()
-      setRequests(data)
+      const data = await response.json();
+      setRequests(data);
     } catch (err) {
-      console.error("Error fetching requests:", err)
-      setError("Failed to load recruiting talk requests")
+      console.error("Error fetching requests:", err);
+      setError("Failed to load recruiting talk requests");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }, [filter])
+  }, [filter]);
 
   useEffect(() => {
-    fetchRequests()
-  }, [fetchRequests])
+    fetchRequests();
+  }, [fetchRequests]);
 
   const handleUpdateStatus = async (id: number, status: string) => {
-    setProcessingId(id)
+    setProcessingId(id);
     try {
       const response = await fetch("/api/recruiting-talk-requests", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, status }),
-      })
+      });
 
       if (response.ok) {
-        await fetchRequests()
+        await fetchRequests();
       } else {
-        const errorText = await response.text()
-        setError(errorText || `Failed to update status to ${status}`)
+        const errorText = await response.text();
+        setError(errorText || `Failed to update status to ${status}`);
       }
     } catch (err) {
-      console.error("Error updating request:", err)
-      setError("An error occurred")
+      console.error("Error updating request:", err);
+      setError("An error occurred");
     } finally {
-      setProcessingId(null)
+      setProcessingId(null);
     }
-  }
+  };
 
   const handleDelete = async (id: number) => {
-    setProcessingId(id)
+    setProcessingId(id);
     try {
       const response = await fetch("/api/recruiting-talk-requests", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id }),
-      })
+      });
 
       if (response.ok) {
-        await fetchRequests()
+        await fetchRequests();
       } else {
-        const errorText = await response.text()
-        setError(errorText || "Failed to delete request")
+        const errorText = await response.text();
+        setError(errorText || "Failed to delete request");
       }
     } catch (err) {
-      console.error("Error deleting request:", err)
-      setError("An error occurred")
+      console.error("Error deleting request:", err);
+      setError("An error occurred");
     } finally {
-      setProcessingId(null)
+      setProcessingId(null);
     }
-  }
+  };
 
   const columns: Column<RecruitingTalkRequest>[] = [
     {
@@ -112,7 +114,9 @@ export default function RecruitingTalkRequestsSection() {
         <div className="flex items-center gap-2">
           <Building2 className="h-4 w-4 text-muted-foreground flex-shrink-0" />
           <div className="min-w-0">
-            <span className="font-medium text-sm block truncate">{request.companyName}</span>
+            <span className="font-medium text-sm block truncate">
+              {request.companyName}
+            </span>
             <span className="text-xs text-muted-foreground block sm:hidden truncate">
               {request.contactName}
             </span>
@@ -127,7 +131,9 @@ export default function RecruitingTalkRequestsSection() {
       render: (request) => (
         <div className="min-w-0">
           <span className="text-sm block truncate">{request.contactName}</span>
-          <span className="text-xs text-muted-foreground truncate block">{request.contactEmail}</span>
+          <span className="text-xs text-muted-foreground truncate block">
+            {request.contactEmail}
+          </span>
         </div>
       ),
     },
@@ -166,7 +172,7 @@ export default function RecruitingTalkRequestsSection() {
       key: "actions",
       header: "",
       render: (request) => {
-        const isProcessing = processingId === request.id
+        const isProcessing = processingId === request.id;
 
         if (request.status === "pending") {
           return (
@@ -190,7 +196,7 @@ export default function RecruitingTalkRequestsSection() {
                 <Calendar className="h-3 w-3" />
               </Button>
             </div>
-          )
+          );
         }
 
         if (request.status === "scheduled") {
@@ -215,7 +221,7 @@ export default function RecruitingTalkRequestsSection() {
                 <Check className="h-3 w-3" />
               </Button>
             </div>
-          )
+          );
         }
 
         return (
@@ -228,14 +234,16 @@ export default function RecruitingTalkRequestsSection() {
           >
             <Trash2 className="h-3 w-3" />
           </Button>
-        )
+        );
       },
     },
-  ]
+  ];
 
   const filterTabs = (
     <div className="flex gap-1">
-      {(["pending", "scheduled", "completed", "declined"] as FilterStatus[]).map((status) => (
+      {(
+        ["pending", "scheduled", "completed", "declined"] as FilterStatus[]
+      ).map((status) => (
         <button
           key={status}
           onClick={() => setFilter(status)}
@@ -249,7 +257,7 @@ export default function RecruitingTalkRequestsSection() {
         </button>
       ))}
     </div>
-  )
+  );
 
   return (
     <div>
@@ -266,10 +274,15 @@ export default function RecruitingTalkRequestsSection() {
         title="Recruiting Talk Requests"
         titleExtra={filterTabs}
         searchPlaceholder="Search requests..."
-        searchFields={["companyName", "contactName", "contactEmail", "preferredDates"]}
+        searchFields={[
+          "companyName",
+          "contactName",
+          "contactEmail",
+          "preferredDates",
+        ]}
         isLoading={isLoading}
         emptyMessage={`No ${filter} requests`}
       />
     </div>
-  )
+  );
 }

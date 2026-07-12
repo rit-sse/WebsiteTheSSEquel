@@ -5,9 +5,7 @@ import { ElectionEligibilityStatus } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
-async function parseIds(
-  params: Promise<{ id: string; nominationId: string }>
-) {
+async function parseIds(params: Promise<{ id: string; nominationId: string }>) {
   const { id, nominationId } = await params;
   const electionId = Number(id);
   const parsedNominationId = Number(nominationId);
@@ -64,7 +62,9 @@ export async function PUT(
       data: {
         eligibilityStatus: eligibilityStatus as ElectionEligibilityStatus,
         reviewNotes:
-          body.reviewNotes !== undefined ? String(body.reviewNotes).trim() : null,
+          body.reviewNotes !== undefined
+            ? String(body.reviewNotes).trim()
+            : null,
         reviewedById: authLevel.userId,
         reviewedAt: new Date(),
       },
