@@ -86,6 +86,8 @@ jobs:
     name: Vitest
     needs: [commit-messages, prettier]
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
 
     steps:
       - uses: actions/checkout@v4
@@ -107,6 +109,8 @@ jobs:
     name: Build
     needs: [checks, vitest]
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
 
     steps:
       - uses: actions/checkout@v4
@@ -172,6 +176,7 @@ jobs:
           file: ./next/Dockerfile
           push: true
           build-args: |
+            DATABASE_URL=postgresql://ci:ci@localhost:5432/ci
             NEXTAUTH_URL=${{ steps.image.outputs.nextauth_url }}
             NEXT_PUBLIC_ENV=${{ steps.image.outputs.next_public_env }}
             GITHUB_SHA=${{ github.sha }}
@@ -210,10 +215,10 @@ jobs:
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSE_DEPLOY_KEY }}
+          key: ${{ secrets.SERVER_KEY }}
           proxy_host: ${{ secrets.PROXY_HOST }}
           proxy_username: ${{ secrets.PROXY_USER }}
-          proxy_key: ${{ secrets.SSE_DEPLOY_KEY }}
+          proxy_key: ${{ secrets.PROXY_KEY }}
           script: |
             cd /home/administrator/deploy/website
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.repository_owner }}" --password-stdin
