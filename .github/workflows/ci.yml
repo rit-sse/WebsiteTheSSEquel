@@ -1,0 +1,255 @@
+name: Pipeline
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Deployment target
+        required: true
+        type: choice
+        options:
+          - testing
+          - production
+      confirm:
+        description: Confirm that this revision is ready to deploy
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pipeline-${{ github.event_name }}-${{ github.ref }}-${{ inputs.environment || 'ci' }}
+  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
+
+jobs:
+  commit-messages:
+    name: Commit messages
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lint pull request or push commits
+        if: ${{ github.event_name != 'workflow_dispatch' }}
+        uses: wagoid/commitlint-github-action@v6
+        with:
+          failOnWarnings: true
+      - name: Confirm pull-request validation is required before release
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        run: |
+          echo "Commit messages are validated by the protected pull-request pipeline."
+
+  prettier:
+    name: Prettier
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: next/.nvmrc
+          cache: npm
+          cache-dependency-path: next/package-lock.json
+      - name: Install dependencies
+        working-directory: ./next
+        run: npm ci
+      - name: Check formatting
+        run: npm run format:check
+
+  checks:
+    name: Test and checks
+    needs: [commit-messages, prettier]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: next/.nvmrc
+          cache: npm
+          cache-dependency-path: next/package-lock.json
+      - name: Install dependencies
+        working-directory: ./next
+        run: npm ci
+      - name: Generate Prisma client
+        working-directory: ./next
+        run: npx prisma generate
+      - name: Run lint, unit tests, typecheck, and Knip
+        run: npm run lint && npm run test && npm run typecheck && npm run knip
+
+  api-tests:
+    name: API tests
+    needs: [commit-messages, prettier]
+    runs-on: ubuntu-latest
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres?schema=public
+
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: next/.nvmrc
+          cache: npm
+          cache-dependency-path: next/package-lock.json
+      - name: Install dependencies
+        working-directory: ./next
+        run: npm ci
+      - name: Prepare Prisma database
+        working-directory: ./next
+        run: |
+          npx prisma migrate dev
+          npx prisma generate
+          npx prisma db seed
+      - name: Start API
+        working-directory: ./next
+        env:
+          NEXTAUTH_URL: http://localhost:3000
+          NEXTAUTH_SECRET: "123"
+        run: npm run dev &
+      - name: Run API tests
+        id: run-newman
+        uses: anthonyvscode/newman-action@v1
+        with:
+          collection: postman/WebsiteTheSSEquelTests.postman_collection.json
+          environment: postman/WebsiteTheSSEquelTests.postman_collection.json
+          reporters: cli
+      - name: Output test summary
+        run: echo "${{ steps.run-newman.outputs.summary }}"
+
+  build:
+    name: Build
+    needs: [checks, api-tests]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: next/.nvmrc
+          cache: npm
+          cache-dependency-path: next/package-lock.json
+      - name: Install dependencies
+        working-directory: ./next
+        run: npm ci
+      - name: Build production application
+        run: npm run build
+
+  build-release-image:
+    name: Build release image
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Require explicit confirmation
+        if: ${{ !inputs.confirm }}
+        run: |
+          echo "Set 'Confirm that this revision is ready to deploy' to true."
+          exit 1
+      - name: Restrict production deployments to main
+        if: ${{ inputs.environment == 'production' && github.ref_name != 'main' }}
+        run: |
+          echo "Production deployments must be run from the main branch."
+          exit 1
+      - uses: actions/checkout@v4
+      - name: Select image settings
+        id: image
+        env:
+          TARGET: ${{ inputs.environment }}
+          SHA: ${{ github.sha }}
+        run: |
+          if [ "$TARGET" = "production" ]; then
+            echo "tag=prod" >> "$GITHUB_OUTPUT"
+            echo "nextauth_url=https://sse.rit.edu" >> "$GITHUB_OUTPUT"
+            echo "next_public_env=prod" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=dev" >> "$GITHUB_OUTPUT"
+            echo "nextauth_url=https://ssedev.se.rit.edu" >> "$GITHUB_OUTPUT"
+            echo "next_public_env=dev" >> "$GITHUB_OUTPUT"
+          fi
+          echo "sha_tag=sha-${SHA::7}" >> "$GITHUB_OUTPUT"
+      - name: Build image
+        working-directory: ./next
+        env:
+          IMAGE: ghcr.io/${{ github.repository_owner }}/sse-web
+        run: |
+          docker build \
+            --build-arg NEXTAUTH_URL=${{ steps.image.outputs.nextauth_url }} \
+            --build-arg NEXT_PUBLIC_ENV=${{ steps.image.outputs.next_public_env }} \
+            --build-arg GITHUB_SHA=${{ github.sha }} \
+            --build-arg GIT_COMMIT=${{ github.sha }} \
+            -t "$IMAGE:${{ steps.image.outputs.tag }}" \
+            -t "$IMAGE:${{ steps.image.outputs.sha_tag }}" \
+            -f Dockerfile .
+      - name: Log in to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+      - name: Push image
+        env:
+          IMAGE: ghcr.io/${{ github.repository_owner }}/sse-web
+        run: |
+          docker push "$IMAGE:${{ steps.image.outputs.tag }}"
+          docker push "$IMAGE:${{ steps.image.outputs.sha_tag }}"
+
+  deploy:
+    name: Deploy
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    needs: build-release-image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    environment:
+      name: ${{ inputs.environment }}
+      url: ${{ inputs.environment == 'production' && 'https://sse.rit.edu' || 'https://ssedev.se.rit.edu' }}
+
+    steps:
+      - name: Select deployment service
+        id: service
+        env:
+          TARGET: ${{ inputs.environment }}
+        run: |
+          if [ "$TARGET" = "production" ]; then
+            echo "name=website" >> "$GITHUB_OUTPUT"
+          else
+            echo "name=website-dev" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSE_DEPLOY_KEY }}
+          proxy_host: ${{ secrets.PROXY_HOST }}
+          proxy_username: ${{ secrets.PROXY_USER }}
+          proxy_key: ${{ secrets.SSE_DEPLOY_KEY }}
+          script: |
+            cd /home/administrator/deploy/website
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.repository_owner }}" --password-stdin
+            docker compose pull ${{ steps.service.outputs.name }}
+            docker compose up -d ${{ steps.service.outputs.name }}
