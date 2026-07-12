@@ -19,7 +19,12 @@ type AmendmentEmptyStateProps = {
 
 const messages: Record<
   Role,
-  { heading: string; description: string; cta?: { label: string; href: string }; icon: typeof FileText }
+  {
+    heading: string;
+    description: string;
+    cta?: { label: string; href: string };
+    icon: typeof FileText;
+  }
 > = {
   seAdmin: {
     heading: "No amendments yet",
@@ -37,14 +42,20 @@ const messages: Record<
     heading: "No amendments are currently open",
     description:
       "As an officer, you can propose amendments and participate in community discussion once amendments are submitted.",
-    cta: { label: "Propose Amendment", href: "/about/constitution/amendments/new" },
+    cta: {
+      label: "Propose Amendment",
+      href: "/about/constitution/amendments/new",
+    },
     icon: FileText,
   },
   member: {
     heading: "No amendments found",
     description:
       "Have an idea to improve our constitution? Start a proposal and let the community weigh in.",
-    cta: { label: "Propose Amendment", href: "/about/constitution/amendments/new" },
+    cta: {
+      label: "Propose Amendment",
+      href: "/about/constitution/amendments/new",
+    },
     icon: FileText,
   },
   signedIn: {
@@ -63,17 +74,25 @@ const messages: Record<
   },
 };
 
-export default function AmendmentEmptyState({ role, filterLabel }: AmendmentEmptyStateProps) {
+export default function AmendmentEmptyState({
+  role,
+  filterLabel,
+}: AmendmentEmptyStateProps) {
   const config = messages[role];
   const Icon = config.icon;
 
   return (
-    <Card depth={3} className="flex flex-col items-center justify-center py-16 px-6 text-center">
+    <Card
+      depth={3}
+      className="flex flex-col items-center justify-center py-16 px-6 text-center"
+    >
       <div className="rounded-full bg-primary/8 p-4 mb-5">
         <Icon className="h-8 w-8 text-primary/40" strokeWidth={1.5} />
       </div>
       <h3 className="font-display text-lg font-semibold text-foreground mb-2">
-        {filterLabel ? `No ${filterLabel.toLowerCase()} amendments` : config.heading}
+        {filterLabel
+          ? `No ${filterLabel.toLowerCase()} amendments`
+          : config.heading}
       </h3>
       <p className="text-sm text-muted-foreground max-w-md leading-relaxed mb-6">
         {config.description}

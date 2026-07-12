@@ -128,8 +128,8 @@ export default function ViseTalkForm() {
               Proposal Submitted!
             </h3>
             <p className="text-muted-foreground">
-              Thank you for proposing a talk! Our team will review and reach
-              out to coordinate scheduling.
+              Thank you for proposing a talk! Our team will review and reach out
+              to coordinate scheduling.
             </p>
           </div>
         ) : (
@@ -225,7 +225,9 @@ export default function ViseTalkForm() {
                     <SelectValue placeholder="Select a format" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="in_person">In-person (GOL-1670)</SelectItem>
+                    <SelectItem value="in_person">
+                      In-person (GOL-1670)
+                    </SelectItem>
                     <SelectItem value="virtual">Virtual</SelectItem>
                     <SelectItem value="hybrid">Hybrid</SelectItem>
                   </SelectContent>

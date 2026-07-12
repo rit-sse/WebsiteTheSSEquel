@@ -339,14 +339,18 @@ export function PhotoBatchUploader({
           dragActive
             ? "border-primary bg-primary/10 scale-[1.01]"
             : "border-border/50 bg-surface-2 hover:border-primary/40 hover:bg-primary/5",
-          processing || uploading ? "opacity-80 cursor-progress" : "cursor-pointer",
+          processing || uploading
+            ? "opacity-80 cursor-progress"
+            : "cursor-pointer",
         ].join(" ")}
         disabled={processing || uploading}
       >
         <div
           className={[
             "rounded-full p-3 transition-colors",
-            dragActive ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary",
+            dragActive
+              ? "bg-primary text-primary-foreground"
+              : "bg-primary/10 text-primary",
           ].join(" ")}
         >
           {processing ? (
@@ -364,8 +368,8 @@ export function PhotoBatchUploader({
                 : "Drop photos here, or click to browse"}
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
-            JPG, PNG, WebP, or GIF up to 25 MB each. Originals are preserved
-            and optimized WebP copies are served in the gallery.
+            JPG, PNG, WebP, or GIF up to 25 MB each. Originals are preserved and
+            optimized WebP copies are served in the gallery.
           </p>
         </div>
       </button>
@@ -380,8 +384,8 @@ export function PhotoBatchUploader({
               </div>
               <div>
                 <p className="font-semibold">
-                  {summary.total}{" "}
-                  {summary.total === 1 ? "photo" : "photos"} in queue
+                  {summary.total} {summary.total === 1 ? "photo" : "photos"} in
+                  queue
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {(totalSize / (1024 * 1024)).toFixed(1)} MB total
@@ -429,7 +433,10 @@ export function PhotoBatchUploader({
                 ) : (
                   <>
                     <Upload className="size-4" />
-                    Upload {summary.ready === summary.total ? "batch" : `${summary.ready}`}
+                    Upload{" "}
+                    {summary.ready === summary.total
+                      ? "batch"
+                      : `${summary.ready}`}
                   </>
                 )}
               </Button>
@@ -454,7 +461,8 @@ async function readExifDate(file: File): Promise<string | null> {
     const data = await exifr.parse(file, {
       pick: ["DateTimeOriginal", "CreateDate", "ModifyDate"],
     });
-    const value = data?.DateTimeOriginal ?? data?.CreateDate ?? data?.ModifyDate;
+    const value =
+      data?.DateTimeOriginal ?? data?.CreateDate ?? data?.ModifyDate;
     if (value instanceof Date && !Number.isNaN(value.getTime())) {
       return value.toISOString();
     }

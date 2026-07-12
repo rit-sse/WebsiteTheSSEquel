@@ -55,7 +55,7 @@ export async function createOfficerInvitationRecord({
   if (!positionId || !startDate || !endDate) {
     throw new InvitationError(
       'Officer invitations require "positionId", "startDate", and "endDate"',
-      400,
+      400
     );
   }
 
@@ -77,7 +77,7 @@ export async function createOfficerInvitationRecord({
   if (activeOfficer) {
     throw new InvitationError(
       "This position already has an active officer. Remove them first or wait for their term to end.",
-      409,
+      409
     );
   }
 
@@ -93,7 +93,7 @@ export async function createOfficerInvitationRecord({
   if (existingInvitation && !refreshExisting) {
     throw new InvitationError(
       "An invitation for this email as a officer already exists",
-      409,
+      409
     );
   }
 
@@ -140,7 +140,7 @@ export async function sendOfficerInvitationEmail({
   if (!isEmailConfigured() || !invitation.position) return false;
 
   const acceptUrl = `${baseUrl}/accept-invitation?email=${encodeURIComponent(
-    invitation.invitedEmail,
+    invitation.invitedEmail
   )}`;
   await sendEmail({
     to: invitation.invitedEmail,

@@ -5,9 +5,7 @@ import {
   computeVoteSummary,
   getActorFromRequest,
 } from "@/lib/services/amendmentService";
-import {
-  fetchConstitutionSnapshot,
-} from "@/lib/services/githubAmendmentService";
+import { fetchConstitutionSnapshot } from "@/lib/services/githubAmendmentService";
 
 export const dynamic = "force-dynamic";
 
@@ -143,6 +141,6 @@ export async function POST(request: NextRequest) {
 
   return Response.json(
     { message: "Amendment proposal created", amendment },
-    { status: 201 },
+    { status: 201 }
   );
 }

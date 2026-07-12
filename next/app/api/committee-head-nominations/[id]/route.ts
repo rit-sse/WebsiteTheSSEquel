@@ -130,7 +130,10 @@ export async function PATCH(
 
   if (action === "withdraw") {
     if (!cycleOpen || application.status !== "SUBMITTED") {
-      return jsonError("Only submitted applications in an open cycle can be withdrawn", 409);
+      return jsonError(
+        "Only submitted applications in an open cycle can be withdrawn",
+        409
+      );
     }
     await prisma.committeeHeadApplication.update({
       where: { id },
@@ -143,9 +146,12 @@ export async function PATCH(
   }
 
   if (action !== "accept" && action !== "update") {
-    return jsonError('action must be "accept", "update", "decline", or "withdraw"');
+    return jsonError(
+      'action must be "accept", "update", "decline", or "withdraw"'
+    );
   }
-  if (!cycleOpen) return jsonError("Committee Head nominations are closed", 409);
+  if (!cycleOpen)
+    return jsonError("Committee Head nominations are closed", 409);
   if (
     action === "accept" &&
     application.status !== CommitteeHeadApplicationStatus.PENDING_ACCEPTANCE

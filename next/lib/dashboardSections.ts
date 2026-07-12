@@ -79,8 +79,7 @@ export const DASHBOARD_SECTIONS: readonly DashboardSection[] = [
     id: "tech-committee",
     title: "Tech Committee Apps",
     href: "/dashboard/tech-committee",
-    description:
-      "Review Tech Committee applications and manage availability.",
+    description: "Review Tech Committee applications and manage availability.",
     accentClass: "text-violet-500",
     visibleFor: (a) =>
       a.isTechCommitteeHead || a.isPrimary || a.isTechCommitteeDivisionManager,
@@ -118,8 +117,7 @@ export const DASHBOARD_SECTIONS: readonly DashboardSection[] = [
     id: "alumni",
     title: "Alumni Review",
     href: "/dashboard/alumni",
-    description:
-      "Review alumni requests and auto-generated candidates.",
+    description: "Review alumni requests and auto-generated candidates.",
     accentClass: "text-teal-500",
   },
   {

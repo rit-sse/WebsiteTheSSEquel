@@ -78,7 +78,8 @@ export function IRVBarChart({ rounds, totalBallots }: IRVBarChartProps) {
             <div className="space-y-2">
               {sorted.map((entry) => {
                 const color = colorMap.get(entry.nominationId) ?? getColor(0);
-                const widthPct = maxVotes > 0 ? (entry.votes / maxVotes) * 100 : 0;
+                const widthPct =
+                  maxVotes > 0 ? (entry.votes / maxVotes) * 100 : 0;
 
                 return (
                   <div
@@ -134,7 +135,10 @@ export function IRVBarChart({ rounds, totalBallots }: IRVBarChartProps) {
                 <div className="flex-1 relative h-4">
                   <div
                     className="absolute top-0 text-[10px] text-emerald-600 dark:text-emerald-400 whitespace-nowrap font-medium"
-                    style={{ left: `${majorityPct}%`, transform: "translateX(-50%)" }}
+                    style={{
+                      left: `${majorityPct}%`,
+                      transform: "translateX(-50%)",
+                    }}
                   >
                     {majorityThreshold} to win
                   </div>

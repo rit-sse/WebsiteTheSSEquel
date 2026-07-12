@@ -40,7 +40,9 @@ export default async function ElectionDashboardDetailPage({
 
   return (
     <ElectionAdminDetailClient
-      initialElection={serializeElectionForClient(election) as unknown as SerializedElection}
+      initialElection={
+        serializeElectionForClient(election) as unknown as SerializedElection
+      }
       currentUserId={authLevel.userId}
       isPresident={isPresident}
       isSeAdmin={isSeAdminFlag}

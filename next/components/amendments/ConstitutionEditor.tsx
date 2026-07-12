@@ -39,7 +39,7 @@ export default function ConstitutionEditor({
       isSemanticChange,
       proposedContent,
     }),
-    [title, description, isSemanticChange, proposedContent],
+    [title, description, isSemanticChange, proposedContent]
   );
 
   async function submitProposal(event: FormEvent) {
@@ -79,7 +79,8 @@ export default function ConstitutionEditor({
       }
       router.push(`/about/constitution/amendments/${amendmentId}`);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to submit amendment";
+      const message =
+        err instanceof Error ? err.message : "Failed to submit amendment";
       setError(message);
       setLoading(false);
     }
@@ -104,7 +105,9 @@ export default function ConstitutionEditor({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="amendment-description">Description (optional)</Label>
+            <Label htmlFor="amendment-description">
+              Description (optional)
+            </Label>
             <Textarea
               id="amendment-description"
               placeholder="Why is this amendment needed?"
@@ -115,7 +118,9 @@ export default function ConstitutionEditor({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="amendment-content">Proposed Constitution Text</Label>
+            <Label htmlFor="amendment-content">
+              Proposed Constitution Text
+            </Label>
             <Textarea
               id="amendment-content"
               value={proposedContent}
@@ -146,7 +151,10 @@ export default function ConstitutionEditor({
                 Cancel
               </Button>
             ) : null}
-            <Button type="submit" disabled={loading || !title.trim() || !hasChanges}>
+            <Button
+              type="submit"
+              disabled={loading || !title.trim() || !hasChanges}
+            >
               {loading ? "Submitting..." : "Submit Proposal"}
             </Button>
           </div>
@@ -154,14 +162,19 @@ export default function ConstitutionEditor({
 
         <div className="space-y-2">
           <p className="text-sm font-medium">Live Diff Preview</p>
-          <DiffViewer originalContent={initialContent} proposedContent={preview.proposedContent} />
+          <DiffViewer
+            originalContent={initialContent}
+            proposedContent={preview.proposedContent}
+          />
         </div>
 
         <div className="rounded-md border border-border p-3 text-xs text-muted-foreground space-y-1">
           <p>
-            <span className="font-semibold text-foreground">Ballot note:</span> If approved, the proposal should
-            follow the constitutional rule:
-            <span className="ml-1">Approve = finalizes amendment, Reject = keeps current text.</span>
+            <span className="font-semibold text-foreground">Ballot note:</span>{" "}
+            If approved, the proposal should follow the constitutional rule:
+            <span className="ml-1">
+              Approve = finalizes amendment, Reject = keeps current text.
+            </span>
           </p>
           <p>
             {isSemanticChange

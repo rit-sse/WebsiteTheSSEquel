@@ -34,7 +34,8 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   const auth = await resolveAuthLevelFromRequest(request);
-  if (!auth.isPrimary) return new Response("Primary officers only", { status: 403 });
+  if (!auth.isPrimary)
+    return new Response("Primary officers only", { status: 403 });
 
   let body;
   try {
@@ -65,7 +66,8 @@ export async function POST(request: NextRequest) {
  */
 export async function PUT(request: NextRequest) {
   const auth = await resolveAuthLevelFromRequest(request);
-  if (!auth.isPrimary) return new Response("Primary officers only", { status: 403 });
+  if (!auth.isPrimary)
+    return new Response("Primary officers only", { status: 403 });
 
   let body;
   try {
@@ -78,9 +80,11 @@ export async function PUT(request: NextRequest) {
     return new Response('"id" (number) is required', { status: 422 });
   }
 
-  const data: { message?: string; category?: string | null; active?: boolean } = {};
+  const data: { message?: string; category?: string | null; active?: boolean } =
+    {};
   if (body.message !== undefined) data.message = body.message.trim();
-  if (body.category !== undefined) data.category = body.category?.trim() || null;
+  if (body.category !== undefined)
+    data.category = body.category?.trim() || null;
   if (body.active !== undefined) data.active = body.active;
 
   try {
@@ -101,7 +105,8 @@ export async function PUT(request: NextRequest) {
  */
 export async function DELETE(request: NextRequest) {
   const auth = await resolveAuthLevelFromRequest(request);
-  if (!auth.isPrimary) return new Response("Primary officers only", { status: 403 });
+  if (!auth.isPrimary)
+    return new Response("Primary officers only", { status: 403 });
 
   let body;
   try {
@@ -115,7 +120,9 @@ export async function DELETE(request: NextRequest) {
   }
 
   try {
-    const deleted = await prisma.announcement.delete({ where: { id: body.id } });
+    const deleted = await prisma.announcement.delete({
+      where: { id: body.id },
+    });
     return Response.json(deleted);
   } catch {
     return new Response("Announcement not found", { status: 404 });

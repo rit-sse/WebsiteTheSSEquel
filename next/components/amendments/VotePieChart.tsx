@@ -28,23 +28,17 @@ function describeArc(
   cy: number,
   r: number,
   startAngle: number,
-  endAngle: number,
+  endAngle: number
 ): string {
   const start = polarToCartesian(cx, cy, r, endAngle);
   const end = polarToCartesian(cx, cy, r, startAngle);
   const largeArc = endAngle - startAngle > 180 ? 1 : 0;
-  return [
-    "M", start.x, start.y,
-    "A", r, r, 0, largeArc, 0, end.x, end.y,
-  ].join(" ");
+  return ["M", start.x, start.y, "A", r, r, 0, largeArc, 0, end.x, end.y].join(
+    " "
+  );
 }
 
-function polarToCartesian(
-  cx: number,
-  cy: number,
-  r: number,
-  angleDeg: number,
-) {
+function polarToCartesian(cx: number, cy: number, r: number, angleDeg: number) {
   const rad = ((angleDeg - 90) * Math.PI) / 180;
   return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
 }
@@ -83,7 +77,7 @@ export default function VotePieChart({
         hoverCssVar: "hsl(var(--vote-not-voted-hover))",
       },
     ],
-    [approve, reject, notVoted],
+    [approve, reject, notVoted]
   );
 
   const arcs = useMemo(() => {

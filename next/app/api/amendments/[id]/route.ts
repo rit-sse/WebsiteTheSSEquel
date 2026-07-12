@@ -51,7 +51,7 @@ function readContent(input: unknown): string | null {
 
 function canEditAmendmentContent(
   actor: { isPrimary: boolean; isSeAdmin: boolean; id: number } | null,
-  amendment: { authorId: number; status: AmendmentStatus },
+  amendment: { authorId: number; status: AmendmentStatus }
 ) {
   if (!actor) {
     return false;
@@ -66,7 +66,7 @@ function canEditAmendmentContent(
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
   const amendmentId = Number(id);
@@ -121,7 +121,7 @@ export async function GET(
   // Partition votes by phase
   const memberVotes = amendment.votes.filter((v) => v.phase === "VOTING");
   const primaryReviewVotes = amendment.votes.filter(
-    (v) => v.phase === "PRIMARY_REVIEW",
+    (v) => v.phase === "PRIMARY_REVIEW"
   );
 
   // Member vote summary (VOTING phase only)
@@ -159,7 +159,7 @@ export async function GET(
     const vote = primaryReviewVotes.find(
       (v) =>
         v.phase === "PRIMARY_REVIEW" &&
-        (v as { officerPositionId?: number }).officerPositionId === pos.id,
+        (v as { officerPositionId?: number }).officerPositionId === pos.id
     );
     const holder = pos.officers[0]?.user ?? null;
     return {
@@ -228,7 +228,7 @@ export async function GET(
 function canChangeStatus(
   actor: { isPrimary: boolean; isSeAdmin: boolean; id: number } | null,
   amendment: { authorId: number },
-  requestedStatus: AmendmentStatus,
+  requestedStatus: AmendmentStatus
 ) {
   if (!actor) {
     return false;
@@ -248,7 +248,7 @@ function canChangeStatus(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
   const amendmentId = Number(id);
@@ -316,7 +316,7 @@ export async function PATCH(
   ) {
     return new Response(
       "Only primary officers, SE admins, or the author may update this amendment",
-      { status: 403 },
+      { status: 403 }
     );
   }
 
@@ -327,7 +327,7 @@ export async function PATCH(
     if (!canEditAmendmentContent(actor ?? null, amendment)) {
       return new Response(
         "Only the author, a primary officer, or an SE admin can edit this amendment during quorum.",
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -400,7 +400,7 @@ export async function PATCH(
     if (!majorityApproves) {
       return new Response(
         "Cannot open member voting: primary officers have not approved this amendment.",
-        { status: 409 },
+        { status: 409 }
       );
     }
 
@@ -408,7 +408,7 @@ export async function PATCH(
     if (hours === null) {
       return new Response(
         "votingDurationHours must be a number between 1 and 336.",
-        { status: 422 },
+        { status: 422 }
       );
     }
 
@@ -418,7 +418,10 @@ export async function PATCH(
     updateData.votingEndsAt = new Date(now.getTime() + hours * 60 * 60 * 1000);
 
     if (!amendment.githubPrNumber) {
-      const branchName = buildAmendmentBranchName(amendment.title, amendment.id);
+      const branchName = buildAmendmentBranchName(
+        amendment.title,
+        amendment.id
+      );
       const proposedBy = `Member #${amendment.authorId}`;
       const prBody =
         amendment.description ||
@@ -458,7 +461,7 @@ export async function PATCH(
     if (hours === null) {
       return new Response(
         "votingDurationHours must be a number between 1 and 336.",
-        { status: 422 },
+        { status: 422 }
       );
     }
 
@@ -467,7 +470,7 @@ export async function PATCH(
       : (amendment.votingOpenedAt ?? now);
     updateData.votingDurationHours = hours;
     updateData.votingEndsAt = new Date(
-      baseTime.getTime() + hours * 60 * 60 * 1000,
+      baseTime.getTime() + hours * 60 * 60 * 1000
     );
     updateData.votingClosedAt = null;
   }
@@ -496,7 +499,7 @@ export async function PATCH(
     if (!majorityRejects) {
       return new Response(
         "Cannot reject: primary officers have not reached quorum or do not have a rejection majority.",
-        { status: 409 },
+        { status: 409 }
       );
     }
 

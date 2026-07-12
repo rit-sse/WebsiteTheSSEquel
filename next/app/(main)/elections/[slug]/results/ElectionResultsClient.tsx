@@ -32,13 +32,7 @@ import type { IRVOfficeResult } from "@/components/elections/types";
 
 /* ---------- Helpers ---------- */
 
-function PositionIcon({
-  title,
-  size = 14,
-}: {
-  title: string;
-  size?: number;
-}) {
+function PositionIcon({ title, size = 14 }: { title: string; size?: number }) {
   const Icon =
     title === "President"
       ? Crown
@@ -109,11 +103,10 @@ export default function ElectionResultsClient({
 
   /* ---- Estimate eligible voters as unique ballot voters ---- */
   const uniqueVoters = new Set(election.ballots.map((b) => b.voterId));
-  const eligibleVoters = uniqueVoters.size > 0 ? uniqueVoters.size : totalBallots;
+  const eligibleVoters =
+    uniqueVoters.size > 0 ? uniqueVoters.size : totalBallots;
   const turnout =
-    eligibleVoters > 0
-      ? Math.round((totalBallots / eligibleVoters) * 100)
-      : 0;
+    eligibleVoters > 0 ? Math.round((totalBallots / eligibleVoters) * 100) : 0;
 
   // Presidential winner — emphasized (inside its own Card), always rendered
   // above the other offices.
@@ -125,9 +118,7 @@ export default function ElectionResultsClient({
   // (VP → Treasurer → Secretary → Mentoring Head).
   const otherWinners = results
     .filter((r) => r.winner && r.officeTitle !== "President")
-    .sort((a, b) =>
-      compareByPrimaryOrder(a.officeTitle, b.officeTitle)
-    );
+    .sort((a, b) => compareByPrimaryOrder(a.officeTitle, b.officeTitle));
 
   return (
     <div className="election-scope w-full space-y-6">
@@ -348,8 +339,9 @@ export default function ElectionResultsClient({
                           ) : (
                             <>
                               {result.rounds.length} round
-                              {result.rounds.length === 1 ? "" : "s"} &middot;{" "}
-                              {result.winner!.finalVotes} vote
+                              {result.rounds.length === 1
+                                ? ""
+                                : "s"} &middot; {result.winner!.finalVotes} vote
                               {result.winner!.finalVotes === 1 ? "" : "s"}
                             </>
                           )}
@@ -369,9 +361,7 @@ export default function ElectionResultsClient({
                 <ElectionEmptyState
                   title="Results not yet available"
                   description="Election results will be published once the election is certified. Check back after voting closes and the results are reviewed."
-                  icon={
-                    <Lock className="h-16 w-16 text-muted-foreground/30" />
-                  }
+                  icon={<Lock className="h-16 w-16 text-muted-foreground/30" />}
                 />
               </div>
             </Card>
@@ -498,8 +488,8 @@ export default function ElectionResultsClient({
                   {/* Sankey or ticket-derived note */}
                   {selected.ticketDerived ? (
                     <div className="rounded-lg border border-black/30 bg-surface-2 p-4 text-sm text-muted-foreground">
-                      VP is not tallied separately — elected as the running
-                      mate on the winning presidential ticket.
+                      VP is not tallied separately — elected as the running mate
+                      on the winning presidential ticket.
                     </div>
                   ) : selected.rounds.length > 0 ? (
                     <>

@@ -66,7 +66,14 @@ export default function AmendmentListTabs({
   const roleName = getRoleName(auth);
 
   const filterLabel = statusFilter
-    ? { OPEN: "Open Forum", PRIMARY_REVIEW: "Primary Review", VOTING: "Voting", APPROVED: "Approved", REJECTED: "Rejected", MERGED: "Merged" }[statusFilter] ?? statusFilter
+    ? ({
+        OPEN: "Open Forum",
+        PRIMARY_REVIEW: "Primary Review",
+        VOTING: "Voting",
+        APPROVED: "Approved",
+        REJECTED: "Rejected",
+        MERGED: "Merged",
+      }[statusFilter] ?? statusFilter)
     : null;
 
   return (
@@ -78,14 +85,20 @@ export default function AmendmentListTabs({
           <span className="sm:hidden">All</span>
         </TabsTrigger>
         {showDashboard && (
-          <TabsTrigger value="dashboard" className="flex items-center gap-2 flex-1">
+          <TabsTrigger
+            value="dashboard"
+            className="flex items-center gap-2 flex-1"
+          >
             <LayoutDashboard className="h-4 w-4" />
             <span className="hidden sm:inline">Dashboard</span>
             <span className="sm:hidden">Dash</span>
           </TabsTrigger>
         )}
         {showMyActivity && (
-          <TabsTrigger value="activity" className="flex items-center gap-2 flex-1">
+          <TabsTrigger
+            value="activity"
+            className="flex items-center gap-2 flex-1"
+          >
             <User className="h-4 w-4" />
             <span className="hidden sm:inline">My Activity</span>
             <span className="sm:hidden">Mine</span>
@@ -98,7 +111,8 @@ export default function AmendmentListTabs({
         {/* Non-member banner */}
         {auth.isUser && !auth.isMember && (
           <div className="rounded-lg bg-amber-500/8 border border-amber-500/20 px-4 py-3 text-sm text-amber-700 dark:text-amber-300">
-            You&apos;re signed in but not yet a member. Members can propose amendments, vote, and join the discussion.
+            You&apos;re signed in but not yet a member. Members can propose
+            amendments, vote, and join the discussion.
           </div>
         )}
 
@@ -107,7 +121,10 @@ export default function AmendmentListTabs({
         </Suspense>
 
         {amendments.length === 0 ? (
-          <AmendmentEmptyState role={emptyRole} filterLabel={filterLabel ?? undefined} />
+          <AmendmentEmptyState
+            role={emptyRole}
+            filterLabel={filterLabel ?? undefined}
+          />
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {amendments.map((amendment) => (

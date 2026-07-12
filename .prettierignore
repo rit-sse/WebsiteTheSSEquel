@@ -1,0 +1,9 @@
+# Generated files and dependency directories are never source-of-truth.
+.next/
+coverage/
+node_modules/
+next/.next/
+next/coverage/
+next/node_modules/
+.github/
+documentation/

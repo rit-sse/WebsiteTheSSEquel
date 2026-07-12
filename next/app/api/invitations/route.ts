@@ -148,7 +148,7 @@ export async function POST(request: NextRequest) {
         error instanceof Error
           ? error.message
           : "Failed to create officer invitation",
-        { status: 500 },
+        { status: 500 }
       );
     }
   }
@@ -185,7 +185,7 @@ export async function POST(request: NextRequest) {
   if (existingInvitation) {
     return new Response(
       `An invitation for this email as a ${type} already exists`,
-      { status: 409 },
+      { status: 409 }
     );
   }
 

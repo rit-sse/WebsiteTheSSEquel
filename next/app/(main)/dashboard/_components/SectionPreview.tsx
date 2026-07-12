@@ -435,7 +435,9 @@ function TechCommitteePreview({
         {data ? (
           <>
             <div className="flex items-baseline gap-2">
-              <span className={cn("font-display text-2xl font-bold", accentClass)}>
+              <span
+                className={cn("font-display text-2xl font-bold", accentClass)}
+              >
                 {data.totalCount}
               </span>
               <span className="text-xs text-muted-foreground">
@@ -506,9 +508,7 @@ function PositionsPreview({
               data.vacantPositionCount === 1 ? "vacant seat" : "vacant seats"
             }
             accentClass={
-              data.vacantPositionCount > 0
-                ? "text-destructive"
-                : accentClass
+              data.vacantPositionCount > 0 ? "text-destructive" : accentClass
             }
             muted={data.vacantPositionCount === 0}
           />
@@ -617,9 +617,7 @@ function SponsorsPreview({
               <div
                 className={cn(
                   "h-1.5 w-3/4 rounded-sm",
-                  i === 1
-                    ? cn("bg-current", accentClass)
-                    : "bg-foreground/30"
+                  i === 1 ? cn("bg-current", accentClass) : "bg-foreground/30"
                 )}
               />
             )}
@@ -821,8 +819,8 @@ function PhotosPreview({
                 photo
                   ? "bg-foreground/10"
                   : i === 2 || i === 3
-                  ? cn("bg-current/30", accentClass)
-                  : "bg-foreground/15"
+                    ? cn("bg-current/30", accentClass)
+                    : "bg-foreground/15"
               )}
             >
               {photo && (

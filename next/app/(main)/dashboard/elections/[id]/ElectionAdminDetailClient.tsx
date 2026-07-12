@@ -110,16 +110,16 @@ export default function ElectionAdminDetailClient({
   const [editTitle, setEditTitle] = useState(election.title);
   const [editDescription, setEditDescription] = useState(election.description);
   const [editNominationsOpenAt, setEditNominationsOpenAt] = useState(
-    toDateTimeLocalValue(election.nominationsOpenAt),
+    toDateTimeLocalValue(election.nominationsOpenAt)
   );
   const [editNominationsCloseAt, setEditNominationsCloseAt] = useState(
-    toDateTimeLocalValue(election.nominationsCloseAt),
+    toDateTimeLocalValue(election.nominationsCloseAt)
   );
   const [editVotingOpenAt, setEditVotingOpenAt] = useState(
-    toDateTimeLocalValue(election.votingOpenAt),
+    toDateTimeLocalValue(election.votingOpenAt)
   );
   const [editVotingCloseAt, setEditVotingCloseAt] = useState(
-    toDateTimeLocalValue(election.votingCloseAt),
+    toDateTimeLocalValue(election.votingCloseAt)
   );
   const [saving, setSaving] = useState(false);
   const [cancelling, setCancelling] = useState(false);
@@ -151,11 +151,11 @@ export default function ElectionAdminDetailClient({
       }
       await refreshElection();
       toast.success(
-        `Election moved to ${ELECTION_PHASE_LABELS[status] ?? status}`,
+        `Election moved to ${ELECTION_PHASE_LABELS[status] ?? status}`
       );
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to update status",
+        error instanceof Error ? error.message : "Failed to update status"
       );
     } finally {
       setAdvanceLoading(false);
@@ -170,14 +170,14 @@ export default function ElectionAdminDetailClient({
       });
       if (!response.ok) {
         throw new Error(
-          (await response.text()) || "Failed to certify election",
+          (await response.text()) || "Failed to certify election"
         );
       }
       await refreshElection();
       toast.success("Election certified");
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to certify election",
+        error instanceof Error ? error.message : "Failed to certify election"
       );
     } finally {
       setAdvanceLoading(false);
@@ -195,22 +195,22 @@ export default function ElectionAdminDetailClient({
     try {
       const response = await fetch(
         `/api/elections/${election.id}/start-new-semester`,
-        { method: "POST" },
+        { method: "POST" }
       );
       if (!response.ok) {
         throw new Error(
-          (await response.text()) || "Failed to start new semester",
+          (await response.text()) || "Failed to start new semester"
         );
       }
       const data = await response.json();
       toast.success(
         `New semester started — sent ${data.officerInvitationEmailsSent} officer invitation email${
           data.officerInvitationEmailsSent === 1 ? "" : "s"
-        }.`,
+        }.`
       );
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to start new semester",
+        error instanceof Error ? error.message : "Failed to start new semester"
       );
     } finally {
       setNewSemesterLoading(false);
@@ -232,7 +232,7 @@ export default function ElectionAdminDetailClient({
       toast.success("Election cancelled");
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to cancel election",
+        error instanceof Error ? error.message : "Failed to cancel election"
       );
     } finally {
       setCancelling(false);
@@ -256,7 +256,7 @@ export default function ElectionAdminDetailClient({
       toast.success("Approval added");
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to add approval",
+        error instanceof Error ? error.message : "Failed to add approval"
       );
     } finally {
       setApprovalLoading(false);
@@ -278,7 +278,7 @@ export default function ElectionAdminDetailClient({
       toast.success("Approval removed");
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to remove approval",
+        error instanceof Error ? error.message : "Failed to remove approval"
       );
     } finally {
       setApprovalLoading(false);
@@ -290,7 +290,7 @@ export default function ElectionAdminDetailClient({
   const reviewNomination = async (
     nominationId: number,
     eligibilityStatus: "APPROVED" | "REJECTED",
-    reviewNotes = "",
+    reviewNotes = ""
   ) => {
     try {
       const response = await fetch(
@@ -299,18 +299,18 @@ export default function ElectionAdminDetailClient({
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ eligibilityStatus, reviewNotes }),
-        },
+        }
       );
       if (!response.ok) {
         throw new Error(
-          (await response.text()) || "Failed to review nomination",
+          (await response.text()) || "Failed to review nomination"
         );
       }
       await refreshElection();
       toast.success(`Nomination ${eligibilityStatus.toLowerCase()}`);
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to review nomination",
+        error instanceof Error ? error.message : "Failed to review nomination"
       );
     }
   };
@@ -330,7 +330,7 @@ export default function ElectionAdminDetailClient({
     });
     if (!response.ok) {
       throw new Error(
-        (await response.text()) || "Failed to send election email",
+        (await response.text()) || "Failed to send election email"
       );
     }
     const data = await response.json();
@@ -362,7 +362,7 @@ export default function ElectionAdminDetailClient({
       toast.success("Settings saved");
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to save settings",
+        error instanceof Error ? error.message : "Failed to save settings"
       );
     } finally {
       setSaving(false);
@@ -383,7 +383,7 @@ export default function ElectionAdminDetailClient({
     (async () => {
       try {
         const response = await fetch(
-          `/api/elections/${election.id}/send-email`,
+          `/api/elections/${election.id}/send-email`
         );
         if (!response.ok) return;
         const data: { count?: number } = await response.json();

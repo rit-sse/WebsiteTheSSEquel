@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
   const amendmentId = Number(id);
@@ -43,7 +43,7 @@ export async function POST(
   if (!actor.isPrimary && !actor.isSeAdmin && amendment.authorId !== actor.id) {
     return new Response(
       "Only the author, a primary officer, or an SE admin can re-submit a PR",
-      { status: 403 },
+      { status: 403 }
     );
   }
 
@@ -59,7 +59,7 @@ export async function POST(
   ) {
     return new Response(
       "A PR can only be created after quorum has passed and member voting is open.",
-      { status: 409 },
+      { status: 409 }
     );
   }
 

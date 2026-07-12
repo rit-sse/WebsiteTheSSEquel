@@ -118,10 +118,10 @@ export default function AmendmentDetailClient({
   const [isEditingDraft, setIsEditingDraft] = useState(false);
   const [draftTitle, setDraftTitle] = useState(initialAmendment.title);
   const [draftDescription, setDraftDescription] = useState(
-    initialAmendment.description,
+    initialAmendment.description
   );
   const [draftProposedContent, setDraftProposedContent] = useState(
-    initialAmendment.proposedContent,
+    initialAmendment.proposedContent
   );
   const [isSavingDraft, setIsSavingDraft] = useState(false);
 
@@ -158,7 +158,7 @@ export default function AmendmentDetailClient({
 
   async function changeStatus(
     nextStatus: AmendmentStatus,
-    extraData?: Record<string, unknown>,
+    extraData?: Record<string, unknown>
   ) {
     setActionMessage("");
     try {
@@ -192,7 +192,7 @@ export default function AmendmentDetailClient({
       }
     } catch (err) {
       setActionMessage(
-        err instanceof Error ? err.message : "Failed to update status",
+        err instanceof Error ? err.message : "Failed to update status"
       );
     }
   }
@@ -215,7 +215,7 @@ export default function AmendmentDetailClient({
       router.refresh();
     } catch (err) {
       setActionMessage(
-        err instanceof Error ? err.message : "Failed to merge amendment",
+        err instanceof Error ? err.message : "Failed to merge amendment"
       );
     }
   }
@@ -227,7 +227,7 @@ export default function AmendmentDetailClient({
         `/api/amendments/${amendment.id}/resubmit-pr`,
         {
           method: "POST",
-        },
+        }
       );
       if (!response.ok) {
         const message = await response.text();
@@ -237,7 +237,7 @@ export default function AmendmentDetailClient({
       const refreshed = await fetch(`/api/amendments/${amendment.id}`);
       if (!refreshed.ok) {
         throw new Error(
-          "PR was created, but the amendment could not be refreshed",
+          "PR was created, but the amendment could not be refreshed"
         );
       }
 
@@ -245,7 +245,7 @@ export default function AmendmentDetailClient({
       setAmendment((prev) => ({ ...prev, ...full }));
     } catch (err) {
       setActionMessage(
-        err instanceof Error ? err.message : "Failed to create PR",
+        err instanceof Error ? err.message : "Failed to create PR"
       );
     }
   }
@@ -281,7 +281,9 @@ export default function AmendmentDetailClient({
 
       const refreshed = await fetch(`/api/amendments/${amendment.id}`);
       if (!refreshed.ok) {
-        throw new Error("Edits were saved, but the amendment could not be refreshed");
+        throw new Error(
+          "Edits were saved, but the amendment could not be refreshed"
+        );
       }
 
       const full = await refreshed.json();
@@ -292,7 +294,7 @@ export default function AmendmentDetailClient({
       setIsEditingDraft(false);
     } catch (err) {
       setEditMessage(
-        err instanceof Error ? err.message : "Failed to save amendment edits",
+        err instanceof Error ? err.message : "Failed to save amendment edits"
       );
     } finally {
       setIsSavingDraft(false);

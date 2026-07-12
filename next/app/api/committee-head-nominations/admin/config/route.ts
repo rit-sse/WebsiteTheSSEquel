@@ -12,7 +12,10 @@ function jsonError(message: string, status = 400) {
 export async function PUT(request: NextRequest) {
   const auth = await getGatewayAuthLevel(request);
   if (!auth.isPrimary) {
-    return jsonError("Only active Primary Officers can manage nomination cycles", 403);
+    return jsonError(
+      "Only active Primary Officers can manage nomination cycles",
+      403
+    );
   }
 
   let body: { cycleId?: number; status?: string };

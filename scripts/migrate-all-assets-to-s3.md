@@ -10,11 +10,11 @@ files.
 
 There are three categories of assets to migrate:
 
-| Category | Local path | S3 key prefix | Count | Notes |
-|---|---|---|---|---|
-| **Library book covers** | `next/public/library-assets/*.jpg` | `uploads/library-books/{ISBN}/` | 4 | Also requires DB update (`imageKey` column) |
-| **Library/mentor portal icons** | `next/public/library-icons/*.png` | `uploads/library-icons/` | 16 | Referenced as `/library-icons/*.png` in code |
-| **General site images** | `next/public/images/**` | `uploads/images/` | ~36 | Hero images, event photos, sponsor logos, etc. |
+| Category                        | Local path                         | S3 key prefix                   | Count | Notes                                          |
+| ------------------------------- | ---------------------------------- | ------------------------------- | ----- | ---------------------------------------------- |
+| **Library book covers**         | `next/public/library-assets/*.jpg` | `uploads/library-books/{ISBN}/` | 4     | Also requires DB update (`imageKey` column)    |
+| **Library/mentor portal icons** | `next/public/library-icons/*.png`  | `uploads/library-icons/`        | 16    | Referenced as `/library-icons/*.png` in code   |
+| **General site images**         | `next/public/images/**`            | `uploads/images/`               | ~36   | Hero images, event photos, sponsor logos, etc. |
 
 After this migration, newly uploaded images (book covers, profile pictures) will
 go to S3 automatically via the existing upload code. Only these legacy files need
@@ -94,7 +94,7 @@ the manual push.
 >   # Strip leading ./
 >   relpath="${file#./}"
 >   key="uploads/images/$relpath"
->   
+>
 >   # Detect content type
 >   ext="${file##*.}"
 >   case "$ext" in
@@ -104,7 +104,7 @@ the manual push.
 >     svg)      ct="image/svg+xml" ;;
 >     *)        ct="application/octet-stream" ;;
 >   esac
->   
+>
 >   aws s3 cp "$file" "s3://$AWS_S3_BUCKET_NAME/$key" \
 >     --content-type "$ct" \
 >     --cache-control "public, max-age=31536000, immutable"
@@ -122,7 +122,7 @@ the manual push.
 >   # Skip Next.js/Vercel built-in assets
 >   case "$filename" in next.svg|vercel.svg|favicon.ico) continue ;; esac
 >   key="uploads/root/$filename"
->   
+>
 >   ext="${filename##*.}"
 >   case "$ext" in
 >     jpg|jpeg) ct="image/jpeg" ;;
@@ -130,7 +130,7 @@ the manual push.
 >     svg)      ct="image/svg+xml" ;;
 >     *)        ct="application/octet-stream" ;;
 >   esac
->   
+>
 >   aws s3 cp "$file" "s3://$AWS_S3_BUCKET_NAME/$key" \
 >     --content-type "$ct" \
 >     --cache-control "public, max-age=31536000, immutable"
@@ -219,12 +219,10 @@ the manual push.
 >    aws s3 ls "s3://$AWS_S3_BUCKET_NAME/uploads/library-icons/" | wc -l
 >    # Should be 16
 >    ```
->
 > 2. **General images** — spot-check a few:
 >    ```bash
 >    aws s3 ls "s3://$AWS_S3_BUCKET_NAME/uploads/images/" --recursive | head -20
 >    ```
->
 > 3. **Book covers** — verify DB was updated:
 >    ```bash
 >    node -e "
@@ -234,7 +232,6 @@ the manual push.
 >      .then(rows => { console.table(rows); prisma.\$disconnect(); });
 >    "
 >    ```
->
 > 4. **HTTP check** — confirm the image proxy works:
 >    ```bash
 >    curl -sI "https://sse.rit.edu/api/aws/image?key=uploads/library-icons/world.png" | head -5
@@ -301,13 +298,13 @@ touches 8 files.
 
 ### Files referencing `/library-icons/`
 
-| File | References |
-|---|---|
-| `next/app/library/mentorportal/layout.tsx` | 5 |
-| `next/app/library/mentorportal/editbook/page.tsx` | 4 |
-| `next/app/library/mentorportal/addbook/page.tsx` | 4 |
-| `next/components/library/mentorportal/category.tsx` | 4 |
-| `next/app/library/mentorportal/page.tsx` | 2 |
-| `next/app/library/mentorportal/category/page.tsx` | 1 |
-| `next/app/library/mentorportal/exam-management/page.tsx` | 1 |
-| `next/components/library/mentorportal/newcategory.tsx` | 1 |
+| File                                                     | References |
+| -------------------------------------------------------- | ---------- |
+| `next/app/library/mentorportal/layout.tsx`               | 5          |
+| `next/app/library/mentorportal/editbook/page.tsx`        | 4          |
+| `next/app/library/mentorportal/addbook/page.tsx`         | 4          |
+| `next/components/library/mentorportal/category.tsx`      | 4          |
+| `next/app/library/mentorportal/page.tsx`                 | 2          |
+| `next/app/library/mentorportal/category/page.tsx`        | 1          |
+| `next/app/library/mentorportal/exam-management/page.tsx` | 1          |
+| `next/components/library/mentorportal/newcategory.tsx`   | 1          |

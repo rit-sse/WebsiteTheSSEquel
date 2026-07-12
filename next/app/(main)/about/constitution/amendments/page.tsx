@@ -46,7 +46,7 @@ export default async function AmendmentsListPage() {
   if (authLevel.userId) {
     for (const amendment of amendments) {
       const vote = amendment.votes.find(
-        (v) => v.userId === authLevel.userId && v.phase === "VOTING",
+        (v) => v.userId === authLevel.userId && v.phase === "VOTING"
       );
       if (vote) {
         userVotes[amendment.id] = vote.approve;
@@ -67,10 +67,10 @@ export default async function AmendmentsListPage() {
             : ("anonymous" as const);
 
   const activeRows = rows.filter(
-    (r) => r.status !== "WITHDRAWN" && r.status !== "REJECTED",
+    (r) => r.status !== "WITHDRAWN" && r.status !== "REJECTED"
   );
   const withdrawnRows = rows.filter(
-    (r) => r.status === "WITHDRAWN" || r.status === "REJECTED",
+    (r) => r.status === "WITHDRAWN" || r.status === "REJECTED"
   );
 
   return (

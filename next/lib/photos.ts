@@ -106,15 +106,17 @@ export function buildPhotoObjectKeys(input: {
 
 export function keyBelongsToPhotoBatch(key: string, batchId: string): boolean {
   return (
-    key.startsWith(`${PHOTO_ORIGINAL_PREFIX}/`) ||
-    key.startsWith(`${PHOTO_GALLERY_PREFIX}/`)
-  ) && key.includes(`/${batchId}/`);
+    (key.startsWith(`${PHOTO_ORIGINAL_PREFIX}/`) ||
+      key.startsWith(`${PHOTO_GALLERY_PREFIX}/`)) &&
+    key.includes(`/${batchId}/`)
+  );
 }
 
 export function isMissingS3ObjectError(error: unknown): boolean {
   if (!error || typeof error !== "object") return false;
   const name = "name" in error ? String(error.name) : "";
-  const code = "$metadata" in error ? (error as any).$metadata?.httpStatusCode : null;
+  const code =
+    "$metadata" in error ? (error as any).$metadata?.httpStatusCode : null;
   return name === "NoSuchKey" || name === "NotFound" || code === 404;
 }
 

@@ -21,7 +21,8 @@ export function PhotoUploadQueue({
   return (
     <ul className="max-h-[640px] space-y-3 overflow-auto pr-1">
       {items.map((item) => {
-        const locked = item.status === "uploading" || item.status === "uploaded";
+        const locked =
+          item.status === "uploading" || item.status === "uploaded";
         return (
           <li
             key={item.clientId}

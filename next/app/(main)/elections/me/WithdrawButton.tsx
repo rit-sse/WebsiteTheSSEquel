@@ -5,10 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Loader2, UserMinus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Modal,
-  ModalFooter,
-} from "@/components/ui/modal";
+import { Modal, ModalFooter } from "@/components/ui/modal";
 
 interface WithdrawButtonProps {
   /** Distinguishes the two endpoints + body shapes:

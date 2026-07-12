@@ -15,4 +15,3 @@ export default async function ElectionVotePage({
 
   return <ElectionVoteClient electionId={election.id} />;
 }
-

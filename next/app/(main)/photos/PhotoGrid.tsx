@@ -150,8 +150,7 @@ function SectionHeader({
           {group.label}
         </h2>
         <span className="shrink-0 text-xs text-muted-foreground">
-          {group.photos.length}{" "}
-          {group.photos.length === 1 ? "photo" : "photos"}
+          {group.photos.length} {group.photos.length === 1 ? "photo" : "photos"}
         </span>
       </div>
     </motion.div>

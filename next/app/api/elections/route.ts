@@ -59,9 +59,12 @@ export async function GET() {
 export async function POST(request: Request) {
   const authLevel = await getGatewayAuthLevel(request);
   if (!(await canManageElections(authLevel))) {
-    return new Response("Only the President or an SE Admin can create elections", {
-      status: 403,
-    });
+    return new Response(
+      "Only the President or an SE Admin can create elections",
+      {
+        status: 403,
+      }
+    );
   }
   if (!authLevel.userId) {
     return new Response("Unauthorized", { status: 401 });
@@ -88,7 +91,10 @@ export async function POST(request: Request) {
       });
     }
 
-    const nominationsOpenAt = parseDate(body.nominationsOpenAt, "nominationsOpenAt");
+    const nominationsOpenAt = parseDate(
+      body.nominationsOpenAt,
+      "nominationsOpenAt"
+    );
     const nominationsCloseAt = parseDate(
       body.nominationsCloseAt,
       "nominationsCloseAt"
@@ -124,7 +130,9 @@ export async function POST(request: Request) {
     });
 
     return Response.json(
-      serializeElectionForClient(await getElectionWithRelations({ id: created.id })),
+      serializeElectionForClient(
+        await getElectionWithRelations({ id: created.id })
+      ),
       { status: 201 }
     );
   } catch (error: any) {

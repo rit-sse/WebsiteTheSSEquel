@@ -1280,11 +1280,41 @@ async function seedMemberships() {
     term: "SPRING" | "SUMMER" | "FALL";
     year: number;
   }> = [
-    { userId: 1, reason: "Test1", dateGiven: new Date("2024-10-01 12:00:00"), term: "FALL", year: 2024 },
-    { userId: 2, reason: "Test2", dateGiven: new Date("2024-10-02 12:00:00"), term: "FALL", year: 2024 },
-    { userId: 1, reason: "Test3", dateGiven: new Date("2025-02-02 12:00:00"), term: "SPRING", year: 2025 },
-    { userId: 1, reason: "Test4", dateGiven: new Date("2025-10-03 12:00:00"), term: "FALL", year: 2025 },
-    { userId: 3, reason: "Test5", dateGiven: new Date("2026-02-04 12:00:00"), term: "SPRING", year: 2026 },
+    {
+      userId: 1,
+      reason: "Test1",
+      dateGiven: new Date("2024-10-01 12:00:00"),
+      term: "FALL",
+      year: 2024,
+    },
+    {
+      userId: 2,
+      reason: "Test2",
+      dateGiven: new Date("2024-10-02 12:00:00"),
+      term: "FALL",
+      year: 2024,
+    },
+    {
+      userId: 1,
+      reason: "Test3",
+      dateGiven: new Date("2025-02-02 12:00:00"),
+      term: "SPRING",
+      year: 2025,
+    },
+    {
+      userId: 1,
+      reason: "Test4",
+      dateGiven: new Date("2025-10-03 12:00:00"),
+      term: "FALL",
+      year: 2025,
+    },
+    {
+      userId: 3,
+      reason: "Test5",
+      dateGiven: new Date("2026-02-04 12:00:00"),
+      term: "SPRING",
+      year: 2026,
+    },
   ];
   // Idempotent re-seed: skip rows whose exact (userId, reason, term, year)
   // already exists. Without a unique constraint we can't use upsert, but
@@ -1593,7 +1623,7 @@ async function seedDemoElection() {
         [uid(1)]:
           "Current VP. Built the new scoreboard. Wants SSE to feel like home for first-years.",
         [uid(2)]:
-          "Lab Ops Head. Runs Rapid Dev. Self-described \"library gremlin\".",
+          'Lab Ops Head. Runs Rapid Dev. Self-described "library gremlin".',
       },
     },
     {
@@ -1601,10 +1631,8 @@ async function seedDemoElection() {
       nominees: [uid(4), uid(7)],
       nominator: uid(0),
       statements: {
-        [uid(4)]:
-          "Runs the SSE discord & socials. Brand-obsessed.",
-        [uid(7)]:
-          "Minutes-taker extraordinaire. Good writer.",
+        [uid(4)]: "Runs the SSE discord & socials. Brand-obsessed.",
+        [uid(7)]: "Minutes-taker extraordinaire. Good writer.",
       },
     },
     {
@@ -1612,10 +1640,8 @@ async function seedDemoElection() {
       nominees: [uid(5), uid(8)],
       nominator: uid(0),
       statements: {
-        [uid(5)]:
-          "Already runs merch ops. QuickBooks enjoyer.",
-        [uid(8)]:
-          "Winter Ball budget lead for 2 years.",
+        [uid(5)]: "Already runs merch ops. QuickBooks enjoyer.",
+        [uid(8)]: "Winter Ball budget lead for 2 years.",
       },
     },
     {
@@ -1623,10 +1649,8 @@ async function seedDemoElection() {
       nominees: [uid(6), uid(9)],
       nominator: uid(0),
       statements: {
-        [uid(6)]:
-          "Mentor for 5 terms. Invented \"office hours bingo\".",
-        [uid(9)]:
-          "SWEN-262 TA. Patient, methodical.",
+        [uid(6)]: 'Mentor for 5 terms. Invented "office hours bingo".',
+        [uid(9)]: "SWEN-262 TA. Patient, methodical.",
       },
     },
   ];
@@ -1644,9 +1668,7 @@ async function seedDemoElection() {
           nominatorUserId: slot.nominator,
           status: "ACCEPTED",
           eligibilityStatus: "APPROVED",
-          statement:
-            slot.statements[nomineeId] ??
-            "Seeded demo nominee.",
+          statement: slot.statements[nomineeId] ?? "Seeded demo nominee.",
           yearLevel: 3,
           program: "Software Engineering",
           canRemainEnrolledFullYear: true,
@@ -1733,10 +1755,7 @@ async function seedDemoElection() {
       nominationId: number;
       rank: number;
     }[] = [];
-    const pushOffice = (
-      officeTitle: string,
-      nomineeOrder: number[]
-    ) => {
+    const pushOffice = (officeTitle: string, nomineeOrder: number[]) => {
       const officeId = officeByTitle.get(officeTitle)!;
       const innerMap = nomId.get(officeTitle)!;
       nomineeOrder.forEach((nomineeUserId, idx) => {

@@ -211,7 +211,10 @@ function SlideAnnouncement({ slide }: { slide: RevealSlide }) {
               transition={{ duration: 0.5, delay: 0.8 }}
               className="font-display text-xl text-black"
             >
-              {[slide.yearLevel ? `Year ${slide.yearLevel}` : null, slide.program]
+              {[
+                slide.yearLevel ? `Year ${slide.yearLevel}` : null,
+                slide.program,
+              ]
                 .filter(Boolean)
                 .join(" · ")}
             </motion.p>
@@ -350,8 +353,8 @@ function SlideSummary({
                   {hasWinner
                     ? s.winnerName
                     : s.status === "tie"
-                    ? "Tie — runoff"
-                    : "No winner"}
+                      ? "Tie — runoff"
+                      : "No winner"}
                 </p>
               </div>
             </div>

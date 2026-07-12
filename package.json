@@ -7,7 +7,10 @@
     "test": "npm --prefix next run test",
     "typecheck": "npm --prefix next run typecheck",
     "build": "npm --prefix next run build",
-    "check": "npm run lint && npm run test && npm run typecheck",
+    "knip": "npm --prefix next run knip",
+    "format:check": "./next/node_modules/.bin/prettier --check .",
+    "format:write": "./next/node_modules/.bin/prettier --write .",
+    "check": "npm run lint && npm run test && npm run typecheck && npm run knip && npm run build",
     "test:report": "npm --prefix next run test:report"
   },
   "devDependencies": {

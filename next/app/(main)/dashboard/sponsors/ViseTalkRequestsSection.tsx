@@ -1,107 +1,107 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useCallback } from "react"
-import { DataTable, Column } from "@/components/ui/data-table"
-import { Button } from "@/components/ui/button"
-import { Check, X, Trash2, Calendar, Mic } from "lucide-react"
+import { useState, useEffect, useCallback } from "react";
+import { DataTable, Column } from "@/components/ui/data-table";
+import { Button } from "@/components/ui/button";
+import { Check, X, Trash2, Calendar, Mic } from "lucide-react";
 
 export interface ViseTalkRequest {
-  id: number
-  speakerName: string
-  speakerEmail: string
-  speakerPhone?: string
-  affiliation?: string
-  talkTitle: string
-  talkAbstract: string
-  speakerBio: string
-  preferredDates: string
-  talkFormat: string
-  status: string
-  createdAt: string
+  id: number;
+  speakerName: string;
+  speakerEmail: string;
+  speakerPhone?: string;
+  affiliation?: string;
+  talkTitle: string;
+  talkAbstract: string;
+  speakerBio: string;
+  preferredDates: string;
+  talkFormat: string;
+  status: string;
+  createdAt: string;
 }
 
-type FilterStatus = "pending" | "scheduled" | "completed" | "declined"
+type FilterStatus = "pending" | "scheduled" | "completed" | "declined";
 
 const talkFormatLabels: Record<string, string> = {
   in_person: "In-person",
   virtual: "Virtual",
   hybrid: "Hybrid",
-}
+};
 
 export default function ViseTalkRequestsSection() {
-  const [requests, setRequests] = useState<ViseTalkRequest[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [processingId, setProcessingId] = useState<number | null>(null)
-  const [filter, setFilter] = useState<FilterStatus>("pending")
-  const [error, setError] = useState("")
+  const [requests, setRequests] = useState<ViseTalkRequest[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [processingId, setProcessingId] = useState<number | null>(null);
+  const [filter, setFilter] = useState<FilterStatus>("pending");
+  const [error, setError] = useState("");
 
   const fetchRequests = useCallback(async () => {
-    setIsLoading(true)
-    setError("")
+    setIsLoading(true);
+    setError("");
     try {
-      const response = await fetch(`/api/vise-talk-requests?status=${filter}`)
+      const response = await fetch(`/api/vise-talk-requests?status=${filter}`);
       if (!response.ok) {
-        throw new Error("Failed to fetch requests")
+        throw new Error("Failed to fetch requests");
       }
-      const data = await response.json()
-      setRequests(data)
+      const data = await response.json();
+      setRequests(data);
     } catch (err) {
-      console.error("Error fetching requests:", err)
-      setError("Failed to load ViSE talk requests")
+      console.error("Error fetching requests:", err);
+      setError("Failed to load ViSE talk requests");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }, [filter])
+  }, [filter]);
 
   useEffect(() => {
-    fetchRequests()
-  }, [fetchRequests])
+    fetchRequests();
+  }, [fetchRequests]);
 
   const handleUpdateStatus = async (id: number, status: string) => {
-    setProcessingId(id)
+    setProcessingId(id);
     try {
       const response = await fetch("/api/vise-talk-requests", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, status }),
-      })
+      });
 
       if (response.ok) {
-        await fetchRequests()
+        await fetchRequests();
       } else {
-        const errorText = await response.text()
-        setError(errorText || `Failed to update status to ${status}`)
+        const errorText = await response.text();
+        setError(errorText || `Failed to update status to ${status}`);
       }
     } catch (err) {
-      console.error("Error updating request:", err)
-      setError("An error occurred")
+      console.error("Error updating request:", err);
+      setError("An error occurred");
     } finally {
-      setProcessingId(null)
+      setProcessingId(null);
     }
-  }
+  };
 
   const handleDelete = async (id: number) => {
-    setProcessingId(id)
+    setProcessingId(id);
     try {
       const response = await fetch("/api/vise-talk-requests", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id }),
-      })
+      });
 
       if (response.ok) {
-        await fetchRequests()
+        await fetchRequests();
       } else {
-        const errorText = await response.text()
-        setError(errorText || "Failed to delete request")
+        const errorText = await response.text();
+        setError(errorText || "Failed to delete request");
       }
     } catch (err) {
-      console.error("Error deleting request:", err)
-      setError("An error occurred")
+      console.error("Error deleting request:", err);
+      setError("An error occurred");
     } finally {
-      setProcessingId(null)
+      setProcessingId(null);
     }
-  }
+  };
 
   const columns: Column<ViseTalkRequest>[] = [
     {
@@ -112,7 +112,9 @@ export default function ViseTalkRequestsSection() {
         <div className="flex items-center gap-2">
           <Mic className="h-4 w-4 text-muted-foreground flex-shrink-0" />
           <div className="min-w-0">
-            <span className="font-medium text-sm block truncate">{request.speakerName}</span>
+            <span className="font-medium text-sm block truncate">
+              {request.speakerName}
+            </span>
             <span className="text-xs text-muted-foreground block sm:hidden truncate">
               {request.talkTitle}
             </span>
@@ -168,7 +170,7 @@ export default function ViseTalkRequestsSection() {
       key: "actions",
       header: "",
       render: (request) => {
-        const isProcessing = processingId === request.id
+        const isProcessing = processingId === request.id;
 
         if (request.status === "pending") {
           return (
@@ -192,7 +194,7 @@ export default function ViseTalkRequestsSection() {
                 <Calendar className="h-3 w-3" />
               </Button>
             </div>
-          )
+          );
         }
 
         if (request.status === "scheduled") {
@@ -217,7 +219,7 @@ export default function ViseTalkRequestsSection() {
                 <Check className="h-3 w-3" />
               </Button>
             </div>
-          )
+          );
         }
 
         return (
@@ -230,14 +232,16 @@ export default function ViseTalkRequestsSection() {
           >
             <Trash2 className="h-3 w-3" />
           </Button>
-        )
+        );
       },
     },
-  ]
+  ];
 
   const filterTabs = (
     <div className="flex gap-1">
-      {(["pending", "scheduled", "completed", "declined"] as FilterStatus[]).map((status) => (
+      {(
+        ["pending", "scheduled", "completed", "declined"] as FilterStatus[]
+      ).map((status) => (
         <button
           key={status}
           onClick={() => setFilter(status)}
@@ -251,7 +255,7 @@ export default function ViseTalkRequestsSection() {
         </button>
       ))}
     </div>
-  )
+  );
 
   return (
     <div>
@@ -268,10 +272,16 @@ export default function ViseTalkRequestsSection() {
         title="ViSE Talk Proposals"
         titleExtra={filterTabs}
         searchPlaceholder="Search proposals..."
-        searchFields={["speakerName", "speakerEmail", "talkTitle", "affiliation", "preferredDates"]}
+        searchFields={[
+          "speakerName",
+          "speakerEmail",
+          "talkTitle",
+          "affiliation",
+          "preferredDates",
+        ]}
         isLoading={isLoading}
         emptyMessage={`No ${filter} proposals`}
       />
     </div>
-  )
+  );
 }

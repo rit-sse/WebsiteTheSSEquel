@@ -45,7 +45,7 @@ export const getActiveElection = cache(
       orderBy: { createdAt: "desc" },
     });
     return election;
-  },
+  }
 );
 
 /**
@@ -136,7 +136,7 @@ export function validateElectionWindow(input: {
     input.votingOpenAt.getTime() - input.nominationsCloseAt.getTime();
   if (diff < 48 * 60 * 60 * 1000) {
     throw new Error(
-      "Nominations must close at least 48 hours before voting opens.",
+      "Nominations must close at least 48 hours before voting opens."
     );
   }
   if (input.votingCloseAt <= input.votingOpenAt) {
@@ -392,7 +392,7 @@ export function getElectionUrl(request: Request, slug: string) {
 
 export async function stageHasRequiredApprovals(
   electionId: number,
-  stage: ElectionApprovalStage,
+  stage: ElectionApprovalStage
 ) {
   const approvals = await prisma.electionApproval.findMany({
     where: { electionId, stage },
@@ -420,20 +420,20 @@ export async function stageHasRequiredApprovals(
   const presidentApprovers = approvals
     .filter((approval) =>
       approval.user.officers.some(
-        (officer) => officer.position.title === "President",
-      ),
+        (officer) => officer.position.title === "President"
+      )
     )
     .map((approval) => approval.userId);
   const seAdminApprovers = approvals
     .filter((approval) =>
       approval.user.officers.some(
-        (officer) => officer.position.title === SE_ADMIN_POSITION_TITLE,
-      ),
+        (officer) => officer.position.title === SE_ADMIN_POSITION_TITLE
+      )
     )
     .map((approval) => approval.userId);
 
   return presidentApprovers.some((presidentId) =>
-    seAdminApprovers.some((adminId) => adminId !== presidentId),
+    seAdminApprovers.some((adminId) => adminId !== presidentId)
   );
 }
 
@@ -448,10 +448,10 @@ type TallyBallot = {
 function deriveRank(
   ballot: TallyBallot,
   nominationId: number,
-  fallbackRank: number,
+  fallbackRank: number
 ) {
   const explicit = ballot.rankings.find(
-    (ranking) => ranking.nominationId === nominationId,
+    (ranking) => ranking.nominationId === nominationId
   );
   return explicit?.rank ?? fallbackRank;
 }
@@ -459,11 +459,11 @@ function deriveRank(
 function rankScores(
   tiedCandidates: TallyCandidate[],
   ballots: TallyBallot[],
-  officeCandidateCount: number,
+  officeCandidateCount: number
 ) {
   return tiedCandidates.map((candidate) => {
     const ranks = ballots.map((ballot) =>
-      deriveRank(ballot, candidate.id, officeCandidateCount),
+      deriveRank(ballot, candidate.id, officeCandidateCount)
     );
     const total = ranks.reduce((sum, rank) => sum + rank, 0);
     const average =
@@ -475,10 +475,10 @@ function rankScores(
 function chooseBestCandidate(
   tiedCandidates: TallyCandidate[],
   ballots: TallyBallot[],
-  officeCandidateCount: number,
+  officeCandidateCount: number
 ) {
   const scores = rankScores(tiedCandidates, ballots, officeCandidateCount).sort(
-    (a, b) => a.total - b.total || a.average - b.average,
+    (a, b) => a.total - b.total || a.average - b.average
   );
   if (scores.length < 2)
     return { resolved: true, candidate: scores[0]?.candidate ?? null };
@@ -497,10 +497,10 @@ function chooseBestCandidate(
 function chooseWorstCandidate(
   tiedCandidates: TallyCandidate[],
   ballots: TallyBallot[],
-  officeCandidateCount: number,
+  officeCandidateCount: number
 ) {
   const scores = rankScores(tiedCandidates, ballots, officeCandidateCount).sort(
-    (a, b) => b.total - a.total || b.average - a.average,
+    (a, b) => b.total - a.total || b.average - a.average
   );
   if (scores.length < 2)
     return { resolved: true, candidate: scores[0]?.candidate ?? null };
@@ -541,7 +541,7 @@ export function tallyInstantRunoffElection(params: {
   const eligibleNominations = params.office.nominations.filter(
     (nomination) =>
       nomination.status === ElectionNominationStatus.ACCEPTED &&
-      nomination.eligibilityStatus === ElectionEligibilityStatus.APPROVED,
+      nomination.eligibilityStatus === ElectionEligibilityStatus.APPROVED
   );
 
   if (eligibleNominations.length === 0) {
@@ -568,7 +568,7 @@ export function tallyInstantRunoffElection(params: {
     .filter((ballot) => ballot.rankings.length > 0);
 
   const remaining = new Set<number>(
-    eligibleNominations.map((nomination) => nomination.id),
+    eligibleNominations.map((nomination) => nomination.id)
   );
   const rounds: Array<{
     counts: { nominationId: number; votes: number }[];
@@ -602,7 +602,7 @@ export function tallyInstantRunoffElection(params: {
       eliminatedNominationId = lowest[0]?.nominationId;
     } else {
       const tiedCandidates = eligibleNominations.filter((nomination) =>
-        lowest.some((entry) => entry.nominationId === nomination.id),
+        lowest.some((entry) => entry.nominationId === nomination.id)
       );
       const tieBreak = chooseWorstCandidate(
         tiedCandidates.map((nomination) => ({
@@ -611,7 +611,7 @@ export function tallyInstantRunoffElection(params: {
           nominee: nomination.nominee,
         })),
         officeBallots,
-        eligibleNominations.length,
+        eligibleNominations.length
       );
 
       if (!tieBreak.resolved || !tieBreak.candidate) {
@@ -657,7 +657,7 @@ export function tallyInstantRunoffElection(params: {
   let runnerUp =
     eligibleNominations.find(
       (nomination) =>
-        nomination.id === eliminationOrder[eliminationOrder.length - 1],
+        nomination.id === eliminationOrder[eliminationOrder.length - 1]
     ) ?? null;
 
   if (!runnerUp && eligibleNominations.length === 2) {
@@ -679,12 +679,11 @@ export function tallyInstantRunoffElection(params: {
       .reverse()
       .map(
         (id) =>
-          eligibleNominations.find((nomination) => nomination.id === id) ??
-          null,
+          eligibleNominations.find((nomination) => nomination.id === id) ?? null
       ),
   ].filter(
     (nomination): nomination is (typeof eligibleNominations)[number] =>
-      nomination !== null,
+      nomination !== null
   );
 
   return {
@@ -724,7 +723,7 @@ type NominationWithRunningMate = {
 };
 
 export function getAcceptedRunningMate(
-  nomination: NominationWithRunningMate | null | undefined,
+  nomination: NominationWithRunningMate | null | undefined
 ) {
   if (!nomination?.runningMateInvitation) return null;
   if (
@@ -771,11 +770,11 @@ export function dedupeMultiOfficeWinners(
     ticketDerived?: boolean;
     displaced?: boolean;
     originalWinner?: unknown;
-  }>,
+  }>
 ) {
   const claimed = new Set<number>();
   for (const result of [...results].sort((a, b) =>
-    compareByWinnerPriority(a.officeTitle, b.officeTitle),
+    compareByWinnerPriority(a.officeTitle, b.officeTitle)
   )) {
     if (result.status !== "ok" || !result.winner) continue;
 
@@ -821,7 +820,7 @@ export async function tallyElectionResults(electionId: number) {
 
   // Offices on the ballot — VP is ticket-derived and never tallied.
   const ballotedOffices = election.offices.filter(
-    (office) => !isTicketDerivedOffice(office.officerPosition.title),
+    (office) => !isTicketDerivedOffice(office.officerPosition.title)
   );
 
   const results: Array<any> = ballotedOffices.map((office) =>
@@ -834,7 +833,7 @@ export async function tallyElectionResults(electionId: number) {
           rank: ranking.rank,
         })),
       })),
-    }),
+    })
   );
 
   // Amendment 12: attach the winning presidential ticket's running mate as
@@ -842,13 +841,13 @@ export async function tallyElectionResults(electionId: number) {
   // result and as a synthetic "Vice President" result so that certification
   // and existing results UI can continue to key off office title.
   const presidentResult = results.find(
-    (result) => result.officeTitle === PRESIDENT_TITLE,
+    (result) => result.officeTitle === PRESIDENT_TITLE
   );
   const presidentOffice = election.offices.find(
-    (office) => office.officerPosition.title === PRESIDENT_TITLE,
+    (office) => office.officerPosition.title === PRESIDENT_TITLE
   );
   const vicePresidentOffice = election.offices.find(
-    (office) => office.officerPosition.title === VICE_PRESIDENT_TITLE,
+    (office) => office.officerPosition.title === VICE_PRESIDENT_TITLE
   );
 
   let runningMate: {
@@ -861,7 +860,7 @@ export async function tallyElectionResults(electionId: number) {
 
   if (presidentResult && presidentResult.winner && presidentOffice) {
     const winningNomination = presidentOffice.nominations.find(
-      (nomination) => nomination.id === presidentResult.winner.id,
+      (nomination) => nomination.id === presidentResult.winner.id
     );
     const invitee = getAcceptedRunningMate(winningNomination);
     if (invitee) {
@@ -923,7 +922,7 @@ export async function tallyElectionResults(electionId: number) {
 
 export async function certifyElection(
   electionId: number,
-  certifiedById: number,
+  certifiedById: number
 ) {
   const election = await prisma.election.findUnique({
     where: { id: electionId },
@@ -965,7 +964,7 @@ export async function certifyElection(
       }
 
       const office = election.offices.find(
-        (item) => item.id === result.officeId,
+        (item) => item.id === result.officeId
       );
       if (!office) {
         throw new Error(`Office mapping missing for ${result.officeTitle}.`);
@@ -1008,7 +1007,7 @@ export async function certifyElection(
 
 export function canTransitionElectionStatus(
   currentStatus: ElectionStatus,
-  nextStatus: ElectionStatus,
+  nextStatus: ElectionStatus
 ) {
   const transitions: Record<ElectionStatus, ElectionStatus[]> = {
     [ElectionStatus.DRAFT]: [
@@ -1056,7 +1055,7 @@ export async function assertPrimaryOfficerPositions(positionIds: number[]) {
   }
   if (positions.some((position) => !position.is_primary)) {
     throw new Error(
-      "Only primary officer positions can be included in elections.",
+      "Only primary officer positions can be included in elections."
     );
   }
   return positions;
@@ -1077,7 +1076,7 @@ export function serializeElectionForClient<T>(value: T): T {
     if ("profileImageKey" in record || "googleImageURL" in record) {
       record.image = resolveUserImage(
         record.profileImageKey as string | undefined | null,
-        record.googleImageURL as string | undefined | null,
+        record.googleImageURL as string | undefined | null
       );
       delete record.profileImageKey;
       delete record.googleImageURL;
@@ -1119,7 +1118,7 @@ export async function tallyElectionForDisplay(slug: string) {
   // Tally each ballotable office. VP is ticket-derived and excluded here
   // — it's reattached via the running-mate invitation below.
   const officesToTally = election.offices.filter(
-    (office) => !isTicketDerivedOffice(office.officerPosition.title),
+    (office) => !isTicketDerivedOffice(office.officerPosition.title)
   );
 
   const rawResults = officesToTally.map((office) =>
@@ -1132,25 +1131,25 @@ export async function tallyElectionForDisplay(slug: string) {
           rank: ranking.rank,
         })),
       })),
-    }),
+    })
   );
 
   // Attach the running-mate VP row derived from the winning presidential
   // ticket's ACCEPTED invitee.
   const presidentOffice = election.offices.find(
-    (o) => o.officerPosition.title === PRESIDENT_TITLE,
+    (o) => o.officerPosition.title === PRESIDENT_TITLE
   );
   const presidentResult = rawResults.find(
-    (r) => r.officeTitle === PRESIDENT_TITLE,
+    (r) => r.officeTitle === PRESIDENT_TITLE
   );
   if (presidentResult?.winner && presidentOffice) {
     const winningNomination = presidentOffice.nominations.find(
-      (n) => n.id === presidentResult.winner!.id,
+      (n) => n.id === presidentResult.winner!.id
     );
     const invitee = getAcceptedRunningMate(winningNomination);
     if (invitee) {
       const vpOffice = election.offices.find(
-        (o) => o.officerPosition.title === VICE_PRESIDENT_TITLE,
+        (o) => o.officerPosition.title === VICE_PRESIDENT_TITLE
       );
       rawResults.push({
         // Modern elections do not include Vice President as a ballotable
@@ -1194,7 +1193,7 @@ export async function tallyElectionForDisplay(slug: string) {
     if (r.officeTitle === VICE_PRESIDENT_TITLE) r.ticketDerived = true;
   }
   dedupeMultiOfficeWinners(
-    rawResults as unknown as Parameters<typeof dedupeMultiOfficeWinners>[0],
+    rawResults as unknown as Parameters<typeof dedupeMultiOfficeWinners>[0]
   );
 
   // Transform into client-friendly IRVOfficeResult rows. The result
@@ -1209,7 +1208,7 @@ export async function tallyElectionForDisplay(slug: string) {
           counts: Array<{ nominationId: number; votes: number }>;
           eliminatedNominationId?: number | null;
         },
-        index: number,
+        index: number
       ) => ({
         roundNumber: index + 1,
         counts: round.counts.map((entry) => ({
@@ -1219,21 +1218,20 @@ export async function tallyElectionForDisplay(slug: string) {
           eliminated: entry.nominationId === round.eliminatedNominationId,
         })),
         eliminatedNominationId: round.eliminatedNominationId ?? null,
-      }),
+      })
     );
 
     const lastRound = rounds[rounds.length - 1];
     const winnerFinalVotes =
       raw.winner && lastRound
         ? (lastRound.counts.find(
-            (c: { nominationId: number }) => c.nominationId === raw.winner!.id,
+            (c: { nominationId: number }) => c.nominationId === raw.winner!.id
           )?.votes ?? 0)
         : 0;
     const runnerUpFinalVotes =
       raw.runnerUp && lastRound
         ? (lastRound.counts.find(
-            (c: { nominationId: number }) =>
-              c.nominationId === raw.runnerUp!.id,
+            (c: { nominationId: number }) => c.nominationId === raw.runnerUp!.id
           )?.votes ?? 0)
         : 0;
 
@@ -1244,7 +1242,7 @@ export async function tallyElectionForDisplay(slug: string) {
     } | null = null;
     if (raw.officeTitle === PRESIDENT_TITLE && raw.winner && presidentOffice) {
       const winningNomination = presidentOffice.nominations.find(
-        (n) => n.id === raw.winner.id,
+        (n) => n.id === raw.winner.id
       );
       const invitee = getAcceptedRunningMate(winningNomination);
       if (invitee) {
@@ -1253,7 +1251,7 @@ export async function tallyElectionForDisplay(slug: string) {
           name: invitee.name,
           image: resolveUserImage(
             invitee.profileImageKey,
-            invitee.googleImageURL,
+            invitee.googleImageURL
           ),
         };
       }
@@ -1270,7 +1268,7 @@ export async function tallyElectionForDisplay(slug: string) {
             name: raw.winner.nominee.name,
             image: resolveUserImage(
               raw.winner.nominee.profileImageKey,
-              raw.winner.nominee.googleImageURL,
+              raw.winner.nominee.googleImageURL
             ),
             finalVotes: winnerFinalVotes,
           }
@@ -1282,7 +1280,7 @@ export async function tallyElectionForDisplay(slug: string) {
             name: raw.runnerUp.nominee.name,
             image: resolveUserImage(
               raw.runnerUp.nominee.profileImageKey,
-              raw.runnerUp.nominee.googleImageURL,
+              raw.runnerUp.nominee.googleImageURL
             ),
             finalVotes: runnerUpFinalVotes,
           }

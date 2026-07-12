@@ -2,14 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
-import {
-  Calendar,
-  Eye,
-  EyeOff,
-  Loader2,
-  Pencil,
-  Trash2,
-} from "lucide-react";
+import { Calendar, Eye, EyeOff, Loader2, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -72,8 +65,7 @@ export function PhotoManagementTable({
   const groups = useMemo(() => groupByMonth(photos), [photos]);
 
   async function togglePublished(photo: ManagedPhoto) {
-    const nextStatus =
-      photo.status === "published" ? "hidden" : "published";
+    const nextStatus = photo.status === "published" ? "hidden" : "published";
     const response = await fetch(`/api/photos/${photo.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -198,9 +190,7 @@ export function PhotoManagementTable({
                 sizes="48px"
               />
             </div>
-            <p className="text-sm truncate">
-              {confirmDelete.originalFilename}
-            </p>
+            <p className="text-sm truncate">{confirmDelete.originalFilename}</p>
           </Card>
         )}
         <ModalFooter>
@@ -252,7 +242,9 @@ function ManageTile({
         "neo:border-2 neo:border-border/40",
         "clean:border clean:border-border/20",
         isHidden && "ring-2 ring-amber-500/60",
-      ].filter(Boolean).join(" ")}
+      ]
+        .filter(Boolean)
+        .join(" ")}
       style={{ paddingBottom: "100%" }}
     >
       <Image
@@ -264,21 +256,29 @@ function ManageTile({
           "object-cover transition-transform duration-200",
           "group-hover:scale-[1.04]",
           isHidden && "opacity-70",
-        ].filter(Boolean).join(" ")}
+        ]
+          .filter(Boolean)
+          .join(" ")}
         loading="lazy"
       />
 
       {/* Top status row */}
       <div className="absolute left-1.5 right-1.5 top-1.5 flex items-start justify-between gap-1.5">
         {isHidden ? (
-          <Badge variant="secondary" className="bg-amber-500/90 text-white border-0">
+          <Badge
+            variant="secondary"
+            className="bg-amber-500/90 text-white border-0"
+          >
             <EyeOff className="mr-1 size-3" />
             Hidden
           </Badge>
         ) : (
           <span />
         )}
-        <Badge variant="outline" className="bg-black/55 text-white/95 border-white/20 capitalize">
+        <Badge
+          variant="outline"
+          className="bg-black/55 text-white/95 border-white/20 capitalize"
+        >
           {photo.category}
         </Badge>
       </div>
@@ -309,7 +309,11 @@ function ManageTile({
             title={isHidden ? "Publish" : "Hide"}
             aria-label={isHidden ? "Publish photo" : "Hide photo"}
           >
-            {isHidden ? <Eye className="size-3" /> : <EyeOff className="size-3" />}
+            {isHidden ? (
+              <Eye className="size-3" />
+            ) : (
+              <EyeOff className="size-3" />
+            )}
           </button>
           <button
             type="button"

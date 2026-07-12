@@ -70,24 +70,21 @@ export function PhotosClient({
     () =>
       Boolean(
         appliedFilters.year ||
-          appliedFilters.eventId ||
-          appliedFilters.category ||
-          appliedFilters.q.trim()
+        appliedFilters.eventId ||
+        appliedFilters.category ||
+        appliedFilters.q.trim()
       ),
     [appliedFilters]
   );
 
-  const buildQuery = useCallback(
-    (source: Filters) => {
-      const params = new URLSearchParams();
-      if (source.year) params.set("year", source.year);
-      if (source.eventId) params.set("eventId", source.eventId);
-      if (source.category) params.set("category", source.category);
-      if (source.q.trim()) params.set("q", source.q.trim());
-      return params;
-    },
-    []
-  );
+  const buildQuery = useCallback((source: Filters) => {
+    const params = new URLSearchParams();
+    if (source.year) params.set("year", source.year);
+    if (source.eventId) params.set("eventId", source.eventId);
+    if (source.category) params.set("category", source.category);
+    if (source.q.trim()) params.set("q", source.q.trim());
+    return params;
+  }, []);
 
   const fetchPhotos = useCallback(
     async (source: Filters, cursor: string | null, append: boolean) => {
@@ -150,10 +147,7 @@ export function PhotosClient({
   const groups = useMemo(() => groupPhotosByMonth(photos), [photos]);
   const visibleCount = photos.length;
   const showingAll = !isFiltered && totalPhotoCount > 0;
-  const yearChips = useMemo(
-    () => years.slice().sort((a, b) => b - a),
-    [years]
-  );
+  const yearChips = useMemo(() => years.slice().sort((a, b) => b - a), [years]);
 
   const handleQuickYear = (year: string) => {
     const next = { ...filters, year };
@@ -169,117 +163,113 @@ export function PhotosClient({
   return (
     <NeoCard depth={1}>
       <NeoCardContent className="p-6 md:p-8">
-      <div className="space-y-2 mb-6">
-        <div className="flex items-end justify-between flex-wrap gap-3">
-          <h1 className="text-primary leading-none">Historians</h1>
-          {totalPhotoCount > 0 && (
-            <p className="text-sm text-muted-foreground">
-              {showingAll ? (
-                <>
-                  Browsing{" "}
-                  <span className="font-semibold text-foreground">
-                    {totalPhotoCount.toLocaleString()}
-                  </span>{" "}
-                  {totalPhotoCount === 1 ? "photo" : "photos"} from the SSE
-                  archive.
-                </>
-              ) : (
-                <>
-                  Showing{" "}
-                  <span className="font-semibold text-foreground">
-                    {visibleCount.toLocaleString()}
-                  </span>{" "}
-                  of {totalPhotoCount.toLocaleString()}
-                </>
-              )}
-            </p>
-          )}
-        </div>
-      </div>
-
-      {/* Year quick-chips. Active year is filled, the rest are outline. */}
-      {yearChips.length > 1 && (
-        <div className="mb-4 flex flex-wrap items-center gap-2">
-          <YearChip
-            label="All years"
-            active={!filters.year}
-            onClick={() => handleQuickYear("")}
-          />
-          {yearChips.map((year) => (
-            <YearChip
-              key={year}
-              label={String(year)}
-              active={filters.year === String(year)}
-              onClick={() => handleQuickYear(String(year))}
-            />
-          ))}
-        </div>
-      )}
-
-      <PhotoFilters
-        filters={filters}
-        onChange={setFilters}
-        onApply={() => void applyFilters(filters)}
-        onClear={clearFilters}
-        isFiltered={isFiltered}
-        events={events}
-        years={years}
-        categories={categories}
-        disabled={loading}
-      />
-
-      {loading ? (
-        <PhotoGridSkeleton />
-      ) : photos.length === 0 ? (
-        <EmptyState isFiltered={isFiltered} onClear={clearFilters} />
-      ) : (
-        <>
-          <div className="mt-6">
-            <PhotoGrid
-              groups={groups}
-              onPhotoClick={(photo) => {
-                const index = photos.findIndex(
-                  (item) => item.id === photo.id
-                );
-                setSelectedIndex(index >= 0 ? index : null);
-              }}
-            />
+        <div className="space-y-2 mb-6">
+          <div className="flex items-end justify-between flex-wrap gap-3">
+            <h1 className="text-primary leading-none">Historians</h1>
+            {totalPhotoCount > 0 && (
+              <p className="text-sm text-muted-foreground">
+                {showingAll ? (
+                  <>
+                    Browsing{" "}
+                    <span className="font-semibold text-foreground">
+                      {totalPhotoCount.toLocaleString()}
+                    </span>{" "}
+                    {totalPhotoCount === 1 ? "photo" : "photos"} from the SSE
+                    archive.
+                  </>
+                ) : (
+                  <>
+                    Showing{" "}
+                    <span className="font-semibold text-foreground">
+                      {visibleCount.toLocaleString()}
+                    </span>{" "}
+                    of {totalPhotoCount.toLocaleString()}
+                  </>
+                )}
+              </p>
+            )}
           </div>
+        </div>
 
-          <div
-            ref={sentinelRef}
-            aria-hidden
-            className="h-1 w-full"
-          />
+        {/* Year quick-chips. Active year is filled, the rest are outline. */}
+        {yearChips.length > 1 && (
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            <YearChip
+              label="All years"
+              active={!filters.year}
+              onClick={() => handleQuickYear("")}
+            />
+            {yearChips.map((year) => (
+              <YearChip
+                key={year}
+                label={String(year)}
+                active={filters.year === String(year)}
+                onClick={() => handleQuickYear(String(year))}
+              />
+            ))}
+          </div>
+        )}
 
-          {paginating && (
-            <>
-              <PaginationSkeleton />
-              <div className="mt-4 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Loading more photos…
-              </div>
-            </>
-          )}
-
-          {!nextCursor && photos.length > 0 && (
-            <p className="mt-10 text-center text-xs uppercase tracking-wider text-muted-foreground/70">
-              ✦ End of the archive ✦
-            </p>
-          )}
-        </>
-      )}
-
-      {selectedIndex !== null && (
-        <PhotoLightbox
-          photos={photos}
-          selectedIndex={selectedIndex}
-          onSelect={setSelectedIndex}
-          onClose={() => setSelectedIndex(null)}
-          onRequestMore={nextCursor ? loadMore : undefined}
-          paginating={paginating}
+        <PhotoFilters
+          filters={filters}
+          onChange={setFilters}
+          onApply={() => void applyFilters(filters)}
+          onClear={clearFilters}
+          isFiltered={isFiltered}
+          events={events}
+          years={years}
+          categories={categories}
+          disabled={loading}
         />
-      )}
+
+        {loading ? (
+          <PhotoGridSkeleton />
+        ) : photos.length === 0 ? (
+          <EmptyState isFiltered={isFiltered} onClear={clearFilters} />
+        ) : (
+          <>
+            <div className="mt-6">
+              <PhotoGrid
+                groups={groups}
+                onPhotoClick={(photo) => {
+                  const index = photos.findIndex(
+                    (item) => item.id === photo.id
+                  );
+                  setSelectedIndex(index >= 0 ? index : null);
+                }}
+              />
+            </div>
+
+            <div ref={sentinelRef} aria-hidden className="h-1 w-full" />
+
+            {paginating && (
+              <>
+                <PaginationSkeleton />
+                <div className="mt-4 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Loading more photos…
+                </div>
+              </>
+            )}
+
+            {!nextCursor && photos.length > 0 && (
+              <p className="mt-10 text-center text-xs uppercase tracking-wider text-muted-foreground/70">
+                ✦ End of the archive ✦
+              </p>
+            )}
+          </>
+        )}
+
+        {selectedIndex !== null && (
+          <PhotoLightbox
+            photos={photos}
+            selectedIndex={selectedIndex}
+            onSelect={setSelectedIndex}
+            onClose={() => setSelectedIndex(null)}
+            onRequestMore={nextCursor ? loadMore : undefined}
+            paginating={paginating}
+          />
+        )}
       </NeoCardContent>
     </NeoCard>
   );

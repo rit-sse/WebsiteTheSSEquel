@@ -47,14 +47,18 @@ export async function POST(
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Invalid JSON payload" },
+      { status: 400 }
+    );
   }
 
   if (!Array.isArray(body.photos) || body.photos.length === 0) {
     return NextResponse.json({ error: "photos are required" }, { status: 400 });
   }
 
-  const eventId = typeof body.eventId === "string" && body.eventId ? body.eventId : null;
+  const eventId =
+    typeof body.eventId === "string" && body.eventId ? body.eventId : null;
   if (eventId) {
     const event = await prisma.event.findUnique({
       where: { id: eventId },
@@ -72,12 +76,18 @@ export async function POST(
 
   for (const input of body.photos) {
     const clientId = typeof input.clientId === "string" ? input.clientId : "";
-    const originalKey = typeof input.originalKey === "string" ? input.originalKey : "";
-    const galleryKey = typeof input.galleryKey === "string" ? input.galleryKey : "";
+    const originalKey =
+      typeof input.originalKey === "string" ? input.originalKey : "";
+    const galleryKey =
+      typeof input.galleryKey === "string" ? input.galleryKey : "";
     const validationError = validateCompletePhoto(input, batchId);
 
     if (validationError) {
-      failed.push({ clientId, key: originalKey || galleryKey, error: validationError });
+      failed.push({
+        clientId,
+        key: originalKey || galleryKey,
+        error: validationError,
+      });
       continue;
     }
 
