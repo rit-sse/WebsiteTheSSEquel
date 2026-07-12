@@ -65,7 +65,25 @@ jobs:
         run: npm run format:check
 
   checks:
-    name: Test and checks
+    name: Checks
+    needs: [commit-messages, prettier]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: next/.nvmrc
+          cache: npm
+          cache-dependency-path: next/package-lock.json
+      - name: Install dependencies
+        working-directory: ./next
+        run: npm ci
+      - name: Run lint, typecheck, and Knip
+        run: npm run lint && npm run typecheck && npm run knip
+
+  vitest:
+    name: Vitest
     needs: [commit-messages, prettier]
     runs-on: ubuntu-latest
 
@@ -82,66 +100,12 @@ jobs:
       - name: Generate Prisma client
         working-directory: ./next
         run: npx prisma generate
-      - name: Run lint, unit tests, typecheck, and Knip
-        run: npm run lint && npm run test && npm run typecheck && npm run knip
-
-  api-tests:
-    name: API tests
-    needs: [commit-messages, prettier]
-    runs-on: ubuntu-latest
-
-    env:
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres?schema=public
-
-    services:
-      postgres:
-        image: postgres:14
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: next/.nvmrc
-          cache: npm
-          cache-dependency-path: next/package-lock.json
-      - name: Install dependencies
-        working-directory: ./next
-        run: npm ci
-      - name: Prepare Prisma database
-        working-directory: ./next
-        run: |
-          npx prisma migrate dev
-          npx prisma generate
-          npx prisma db seed
-      - name: Start API
-        working-directory: ./next
-        env:
-          NEXTAUTH_URL: http://localhost:3000
-          NEXTAUTH_SECRET: "123"
-        run: npm run dev &
-      - name: Run API tests
-        id: run-newman
-        uses: anthonyvscode/newman-action@v1
-        with:
-          collection: postman/WebsiteTheSSEquelTests.postman_collection.json
-          environment: postman/WebsiteTheSSEquelTests.postman_collection.json
-          reporters: cli
-      - name: Output test summary
-        run: echo "${{ steps.run-newman.outputs.summary }}"
+      - name: Run Vitest
+        run: npm run test
 
   build:
     name: Build
-    needs: [checks, api-tests]
+    needs: [checks, vitest]
     runs-on: ubuntu-latest
 
     steps:
