@@ -11,13 +11,41 @@ import {
 } from "@/components/ui/tooltip";
 
 const FILTERS = [
-  { value: null, label: "All", tooltip: "Show all amendments regardless of status" },
-  { value: "OPEN", label: "Open Forum", tooltip: "Open for community discussion. Voting has not started." },
-  { value: "PRIMARY_REVIEW", label: "Primary Review", tooltip: "Under review by primary officers before member voting" },
-  { value: "VOTING", label: "Voting", tooltip: "Active members may cast their votes" },
-  { value: "APPROVED", label: "Approved", tooltip: "Passed the vote. Awaiting merge into governing documents." },
-  { value: "REJECTED", label: "Rejected", tooltip: "Did not meet required approval thresholds" },
-  { value: "MERGED", label: "Merged", tooltip: "Successfully integrated into the constitution" },
+  {
+    value: null,
+    label: "All",
+    tooltip: "Show all amendments regardless of status",
+  },
+  {
+    value: "OPEN",
+    label: "Open Forum",
+    tooltip: "Open for community discussion. Voting has not started.",
+  },
+  {
+    value: "PRIMARY_REVIEW",
+    label: "Primary Review",
+    tooltip: "Under review by primary officers before member voting",
+  },
+  {
+    value: "VOTING",
+    label: "Voting",
+    tooltip: "Active members may cast their votes",
+  },
+  {
+    value: "APPROVED",
+    label: "Approved",
+    tooltip: "Passed the vote. Awaiting merge into governing documents.",
+  },
+  {
+    value: "REJECTED",
+    label: "Rejected",
+    tooltip: "Did not meet required approval thresholds",
+  },
+  {
+    value: "MERGED",
+    label: "Merged",
+    tooltip: "Successfully integrated into the constitution",
+  },
 ] as const;
 
 export default function AmendmentStatusFilterBar() {

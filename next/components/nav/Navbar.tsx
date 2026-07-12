@@ -82,7 +82,7 @@ const Navbar: React.FC<NavbarProps> = ({
   const [showDashboard, setShowDashboard] = React.useState(serverShowDashboard);
   const [userId, setUserId] = React.useState<number | null>(serverUserId);
   const [profileComplete, setProfileComplete] = React.useState(
-    serverProfileComplete,
+    serverProfileComplete
   );
   const [isSeAdmin, setIsSeAdmin] = React.useState(serverIsSeAdmin);
 
@@ -232,7 +232,7 @@ const Navbar: React.FC<NavbarProps> = ({
                       style={dropdownContentStyle}
                       className={cn(
                         "p-0 overflow-x-hidden overflow-y-auto",
-                        !single && "lg:left-auto lg:right-0",
+                        !single && "lg:left-auto lg:right-0"
                       )}
                     >
                       <ul
@@ -421,7 +421,7 @@ function MobileNavLink({
       onClick={onClick}
       className={cn(
         "flex items-center py-2 px-3 text-base font-medium rounded-md hover:bg-accent transition-colors",
-        className,
+        className
       )}
     >
       {children}
@@ -445,7 +445,7 @@ function MobileNavCollapsible({
         <ChevronDown
           className={cn(
             "h-4 w-4 transition-transform duration-200",
-            isOpen && "rotate-180",
+            isOpen && "rotate-180"
           )}
         />
       </CollapsibleTrigger>
@@ -477,7 +477,7 @@ function ListItem({
             "hover:bg-surface-1 hover:border-border/50 hover:shadow-md",
             "focus:bg-surface-2 focus:border-border/50",
             "transition-colors",
-            className,
+            className
           )}
         >
           <div className="line-clamp-2 min-w-0 break-words text-center text-[0.9375rem] font-bold font-heading leading-tight text-foreground">

@@ -54,7 +54,7 @@ async function parseElectionId(params: Promise<{ id: string }>) {
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const authLevel = await getGatewayAuthLevel(request);
   if (!authLevel.userId) {
@@ -66,7 +66,7 @@ export async function POST(
       "Only the sitting President or SE Admin can start a new semester",
       {
         status: 403,
-      },
+      }
     );
   }
 
@@ -99,7 +99,7 @@ export async function POST(
     if (election.status !== ElectionStatus.CERTIFIED) {
       return new Response(
         "Only a certified election can kick off a new semester",
-        { status: 409 },
+        { status: 409 }
       );
     }
 
@@ -127,7 +127,7 @@ export async function POST(
       },
     });
     const certifiedOfficerByPositionId = new Map(
-      certifiedOfficers.map((officer) => [officer.position.id, officer]),
+      certifiedOfficers.map((officer) => [officer.position.id, officer])
     );
     const missingPositions = primaryElectionPositions
       .filter((position) => !certifiedOfficerByPositionId.has(position.id))
@@ -135,14 +135,14 @@ export async function POST(
     if (missingPositions.length > 0) {
       return new Response(
         `Certified winners must still be active before handoff. Missing active officer records for: ${missingPositions.join(", ")}.`,
-        { status: 409 },
+        { status: 409 }
       );
     }
 
     const officersToInvite = primaryElectionPositions
       .map((position) => certifiedOfficerByPositionId.get(position.id)!)
       .sort((a, b) =>
-        compareByPrimaryOrder(a.position.title, b.position.title),
+        compareByPrimaryOrder(a.position.title, b.position.title)
       );
 
     const nextTerm = getNextSseOperationalTerm(now);
@@ -174,10 +174,10 @@ export async function POST(
         semesterStart: nextRange.startDate,
         semesterEnd: nextRange.endDate,
         applicationOpen: new Date(
-          nextRange.startDate.getTime() - APPLICATION_WINDOW_MS,
+          nextRange.startDate.getTime() - APPLICATION_WINDOW_MS
         ),
         applicationClose: new Date(
-          nextRange.startDate.getTime() + APPLICATION_WINDOW_MS,
+          nextRange.startDate.getTime() + APPLICATION_WINDOW_MS
         ),
       };
       if (existingMentorSemester) {
@@ -219,7 +219,7 @@ export async function POST(
 
     const committeeHeadCycle = await openCommitteeHeadNominationCycleForHandoff(
       electionId,
-      now,
+      now
     );
 
     const baseUrl = getPublicBaseUrl(request);
@@ -272,17 +272,17 @@ export async function POST(
       },
       officerInvitations,
       officerInvitationsCreated: officerInvitations.filter(
-        (item) => item.created,
+        (item) => item.created
       ).length,
       officerInvitationEmailsSent: officerInvitations.filter(
-        (item) => item.emailSent,
+        (item) => item.emailSent
       ).length,
       committeeHeadNominationCycle: committeeHeadCycle,
     });
   } catch (error) {
     return new Response(
       error instanceof Error ? error.message : "Failed to start new semester",
-      { status: 400 },
+      { status: 400 }
     );
   }
 }

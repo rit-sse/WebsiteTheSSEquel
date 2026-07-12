@@ -18,9 +18,12 @@ export async function GET(request: Request) {
   if (includeDefunct) {
     const authLevel = await getGatewayAuthLevel(request);
     if (!authLevel.isPrimary) {
-      return new Response("Only primary officers can include defunct positions", {
-        status: 403,
-      });
+      return new Response(
+        "Only primary officers can include defunct positions",
+        {
+          status: 403,
+        }
+      );
     }
   }
 

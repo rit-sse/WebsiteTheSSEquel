@@ -83,11 +83,11 @@ export default function NewSemesterClient({
         </NeoCardHeader>
         <NeoCardContent className="space-y-6">
           <p className="text-sm text-muted-foreground max-w-prose">
-            The previous term&rsquo;s memberships, mentors, and committee
-            heads have been cleared. Pressing <strong>Send invites</strong>{" "}
-            will dispatch officer invitations to each newly-elected primary.
-            Each invitee receives an email with a sign-in link; on first
-            sign-in they&rsquo;re installed as an officer for the new term.
+            The previous term&rsquo;s memberships, mentors, and committee heads
+            have been cleared. Pressing <strong>Send invites</strong> will
+            dispatch officer invitations to each newly-elected primary. Each
+            invitee receives an email with a sign-in link; on first sign-in
+            they&rsquo;re installed as an officer for the new term.
           </p>
 
           <div className="grid gap-3 md:grid-cols-2">

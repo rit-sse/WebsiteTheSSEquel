@@ -5,9 +5,7 @@ import { ElectionNominationStatus, ElectionStatus } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
-async function parseIds(
-  params: Promise<{ id: string; nominationId: string }>
-) {
+async function parseIds(params: Promise<{ id: string; nominationId: string }>) {
   const { id, nominationId } = await params;
   const electionId = Number(id);
   const parsedNominationId = Number(nominationId);
@@ -86,10 +84,9 @@ export async function POST(
       // be withdrawn — pulling out a still-pending nomination is just
       // DECLINING.
       if (nomination.status !== ElectionNominationStatus.ACCEPTED) {
-        return new Response(
-          "Only an accepted nomination can be withdrawn",
-          { status: 409 }
-        );
+        return new Response("Only an accepted nomination can be withdrawn", {
+          status: 409,
+        });
       }
       if (
         election.status === ElectionStatus.VOTING_CLOSED ||
@@ -181,7 +178,9 @@ export async function POST(
     return Response.json(updated);
   } catch (error) {
     return new Response(
-      error instanceof Error ? error.message : "Failed to respond to nomination",
+      error instanceof Error
+        ? error.message
+        : "Failed to respond to nomination",
       { status: 400 }
     );
   }

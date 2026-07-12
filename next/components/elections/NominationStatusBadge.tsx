@@ -1,5 +1,8 @@
 import { cn } from "@/lib/utils";
-import type { ElectionNominationStatus, ElectionEligibilityStatus } from "./types";
+import type {
+  ElectionNominationStatus,
+  ElectionEligibilityStatus,
+} from "./types";
 
 const nominationConfig: Record<
   ElectionNominationStatus,
@@ -92,10 +95,7 @@ interface EligibilityBadgeProps {
   className?: string;
 }
 
-export function EligibilityBadge({
-  status,
-  className,
-}: EligibilityBadgeProps) {
+export function EligibilityBadge({ status, className }: EligibilityBadgeProps) {
   const config = eligibilityConfig[status] ?? eligibilityConfig.PENDING;
 
   return (

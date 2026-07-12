@@ -58,7 +58,12 @@ export async function POST(request: Request) {
   }
 
   // Validate talk type
-  const validTalkTypes = ["tech_talk", "interview_session", "workshop", "info_session"];
+  const validTalkTypes = [
+    "tech_talk",
+    "interview_session",
+    "workshop",
+    "info_session",
+  ];
   if (!validTalkTypes.includes(body.talkType)) {
     return new Response(
       `Invalid talk type. Must be one of: ${validTalkTypes.join(", ")}`,
@@ -86,7 +91,9 @@ export async function POST(request: Request) {
         contactPhone,
         preferredDates,
         talkType,
-        expectedAttendees: expectedAttendees ? parseInt(expectedAttendees, 10) : null,
+        expectedAttendees: expectedAttendees
+          ? parseInt(expectedAttendees, 10)
+          : null,
         description,
         status: "pending",
       },
@@ -94,7 +101,9 @@ export async function POST(request: Request) {
     return Response.json(newRequest, { status: 201 });
   } catch (e) {
     console.error("Error creating recruiting talk request:", e);
-    return new Response(`Failed to create recruiting talk request: ${e}`, { status: 500 });
+    return new Response(`Failed to create recruiting talk request: ${e}`, {
+      status: 500,
+    });
   }
 }
 
@@ -112,7 +121,9 @@ export async function PUT(request: Request) {
   }
 
   if (!("id" in body) || !("status" in body)) {
-    return new Response("`id` and `status` must be included in request body", { status: 400 });
+    return new Response("`id` and `status` must be included in request body", {
+      status: 400,
+    });
   }
 
   const { id, status } = body;
@@ -141,7 +152,9 @@ export async function PUT(request: Request) {
     return Response.json(updatedRequest);
   } catch (e) {
     console.error("Error updating recruiting talk request:", e);
-    return new Response(`Failed to update recruiting talk request: ${e}`, { status: 500 });
+    return new Response(`Failed to update recruiting talk request: ${e}`, {
+      status: 500,
+    });
   }
 }
 
@@ -159,7 +172,9 @@ export async function DELETE(request: Request) {
   }
 
   if (!("id" in body) || typeof body.id !== "number") {
-    return new Response("A numeric `id` must be included in the request body", { status: 400 });
+    return new Response("A numeric `id` must be included in the request body", {
+      status: 400,
+    });
   }
 
   const { id } = body;
@@ -171,6 +186,8 @@ export async function DELETE(request: Request) {
     return Response.json(deletedRequest);
   } catch (e) {
     console.error("Error deleting recruiting talk request:", e);
-    return new Response("Failed to delete recruiting talk request", { status: 500 });
+    return new Response("Failed to delete recruiting talk request", {
+      status: 500,
+    });
   }
 }

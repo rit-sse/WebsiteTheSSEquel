@@ -39,10 +39,12 @@ export default function DetailsStep({
   return (
     <Card depth={2} className="p-4 sm:p-6 space-y-5">
       <div className="space-y-1">
-        <h2 className="font-display text-lg font-semibold">Amendment Details</h2>
+        <h2 className="font-display text-lg font-semibold">
+          Amendment Details
+        </h2>
         <p className="text-sm text-muted-foreground">
-          Give your amendment a clear title and description so members understand
-          what they&apos;re voting on.
+          Give your amendment a clear title and description so members
+          understand what they&apos;re voting on.
         </p>
       </div>
 
@@ -78,7 +80,9 @@ export default function DetailsStep({
                   <HelpCircle className="h-3.5 w-3.5 text-muted-foreground/60 cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent className="max-w-sm">
-                  <p className="font-semibold mb-1">Semantic vs. Non-semantic</p>
+                  <p className="font-semibold mb-1">
+                    Semantic vs. Non-semantic
+                  </p>
                   <p className="mb-2">
                     <strong>Semantic changes</strong> alter the meaning of the
                     constitution (e.g., changing rules, adding requirements).
@@ -87,8 +91,9 @@ export default function DetailsStep({
                   </p>
                   <p>
                     <strong>Non-semantic changes</strong> are formatting fixes,
-                    typo corrections, or structural clarifications that don&apos;t
-                    change meaning. They require only primary officer consensus.
+                    typo corrections, or structural clarifications that
+                    don&apos;t change meaning. They require only primary officer
+                    consensus.
                   </p>
                 </TooltipContent>
               </Tooltip>

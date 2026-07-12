@@ -24,7 +24,11 @@ type Props = {
   userId: number | null;
 };
 
-export default function WithdrawnAmendments({ amendments, userVotes, userId }: Props) {
+export default function WithdrawnAmendments({
+  amendments,
+  userVotes,
+  userId,
+}: Props) {
   const [open, setOpen] = useState(false);
 
   if (amendments.length === 0) return null;
@@ -40,7 +44,8 @@ export default function WithdrawnAmendments({ amendments, userVotes, userId }: P
           className={`h-4 w-4 transition-transform ${open ? "" : "-rotate-90"}`}
         />
         <span>
-          {amendments.length} withdrawn / rejected amendment{amendments.length !== 1 ? "s" : ""}
+          {amendments.length} withdrawn / rejected amendment
+          {amendments.length !== 1 ? "s" : ""}
         </span>
       </button>
 

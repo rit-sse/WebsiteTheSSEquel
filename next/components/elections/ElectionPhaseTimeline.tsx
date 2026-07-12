@@ -126,14 +126,13 @@ export function ElectionPhaseTimeline({
                       "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400",
                     isCurrent &&
                       "bg-primary text-primary-foreground ring-4 ring-primary/20 scale-110",
-                    isFuture &&
-                      "bg-surface-3 text-muted-foreground/40"
+                    isFuture && "bg-surface-3 text-muted-foreground/40"
                   )}
                 >
                   {isCompleted ? (
                     <Check className="h-3.5 w-3.5" />
                   ) : (
-                    PHASE_ICONS[phase] ?? <Circle className="h-3.5 w-3.5" />
+                    (PHASE_ICONS[phase] ?? <Circle className="h-3.5 w-3.5" />)
                   )}
                 </div>
                 <span
@@ -174,16 +173,16 @@ export function ElectionPhaseTimeline({
               <div
                 className={cn(
                   "h-6 w-6 rounded-full flex items-center justify-center shrink-0",
-                  isCompleted && "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400",
-                  isCurrent &&
-                    "bg-primary text-primary-foreground",
+                  isCompleted &&
+                    "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400",
+                  isCurrent && "bg-primary text-primary-foreground",
                   isFuture && "bg-surface-3 text-muted-foreground/40"
                 )}
               >
                 {isCompleted ? (
                   <Check className="h-3 w-3" />
                 ) : (
-                  PHASE_ICONS[phase] ?? <Circle className="h-3 w-3" />
+                  (PHASE_ICONS[phase] ?? <Circle className="h-3 w-3" />)
                 )}
               </div>
               <div className="flex-1 min-w-0">

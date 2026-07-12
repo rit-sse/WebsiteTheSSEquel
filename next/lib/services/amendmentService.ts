@@ -32,7 +32,9 @@ function toAuthHeaders(request: NextRequest) {
   return token ?? null;
 }
 
-async function resolveActorFromToken(sessionToken: string | null): Promise<Actor | null> {
+async function resolveActorFromToken(
+  sessionToken: string | null
+): Promise<Actor | null> {
   if (!sessionToken) return null;
 
   const user = await prisma.user.findFirst({
@@ -83,7 +85,9 @@ async function resolveActorFromToken(sessionToken: string | null): Promise<Actor
   };
 }
 
-export async function getActorFromRequest(request: NextRequest): Promise<Actor | null> {
+export async function getActorFromRequest(
+  request: NextRequest
+): Promise<Actor | null> {
   const sessionToken = toAuthHeaders(request);
   return resolveActorFromToken(sessionToken);
 }
@@ -98,9 +102,14 @@ export async function getActiveMemberCount(): Promise<number> {
   });
 }
 
-export function computeVoteSummary(votes: Pick<AmendmentVoteRow, "approve">[]): AmendmentVoteSummary {
+export function computeVoteSummary(
+  votes: Pick<AmendmentVoteRow, "approve">[]
+): AmendmentVoteSummary {
   const totalVotes = votes.length;
-  const approveVotes = votes.reduce((acc, vote) => (vote.approve ? acc + 1 : acc), 0);
+  const approveVotes = votes.reduce(
+    (acc, vote) => (vote.approve ? acc + 1 : acc),
+    0
+  );
   return {
     totalVotes,
     approveVotes,
@@ -139,7 +148,7 @@ export function computePrimaryReviewQuorum(primaryCount: number): number {
 
 export function computePrimaryReviewResult(
   votes: Pick<{ approve: boolean }, "approve">[],
-  totalPrimaries: number,
+  totalPrimaries: number
 ) {
   const totalVoted = votes.length;
   const approveVotes = votes.filter((v) => v.approve).length;

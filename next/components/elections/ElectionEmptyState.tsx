@@ -19,9 +19,7 @@ export function ElectionEmptyState({
   return (
     <div className={cn("text-center py-16 space-y-4", className)}>
       <div className="mx-auto w-fit">
-        {icon ?? (
-          <Vote className="h-16 w-16 text-muted-foreground/30" />
-        )}
+        {icon ?? <Vote className="h-16 w-16 text-muted-foreground/30" />}
       </div>
       <h3 className="text-xl font-display font-bold">{title}</h3>
       <p className="text-muted-foreground max-w-md mx-auto text-sm">

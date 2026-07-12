@@ -40,7 +40,9 @@ async function getCycleOrError(cycleId: unknown) {
     where: { id },
   });
   if (!cycle || cycle.status !== "OPEN") {
-    return { response: jsonError("Committee Head nominations are closed", 409) };
+    return {
+      response: jsonError("Committee Head nominations are closed", 409),
+    };
   }
   return { cycle };
 }
@@ -124,7 +126,10 @@ export async function POST(request: NextRequest) {
 
   if (body.mode === "self") {
     if (await isActivePrimaryOfficer(userId)) {
-      return jsonError("Active Primary Officers cannot apply for Committee Head roles", 403);
+      return jsonError(
+        "Active Primary Officers cannot apply for Committee Head roles",
+        403
+      );
     }
 
     const positionIds = normalizeRankedPositionIds(body.preferences);
@@ -140,15 +145,16 @@ export async function POST(request: NextRequest) {
     });
     if (!textResult.ok) return jsonError(textResult.message);
 
-    const existingApplication = await prisma.committeeHeadApplication.findUnique({
-      where: {
-        cycleId_applicantUserId: {
-          cycleId: cycle.id,
-          applicantUserId: userId,
+    const existingApplication =
+      await prisma.committeeHeadApplication.findUnique({
+        where: {
+          cycleId_applicantUserId: {
+            cycleId: cycle.id,
+            applicantUserId: userId,
+          },
         },
-      },
-      select: { status: true },
-    });
+        select: { status: true },
+      });
     if (
       existingApplication &&
       existingApplication.status !== CommitteeHeadApplicationStatus.SUBMITTED &&
@@ -176,7 +182,10 @@ export async function POST(request: NextRequest) {
         experienceText: textResult.data.experienceText,
         whyInterested: textResult.data.whyInterested,
         weeklyCommitment: textResult.data.weeklyCommitment,
-        comments: typeof body.comments === "string" ? body.comments.trim() || null : null,
+        comments:
+          typeof body.comments === "string"
+            ? body.comments.trim() || null
+            : null,
         submittedAt: new Date(),
         withdrawnAt: null,
         declinedAt: null,
@@ -191,7 +200,10 @@ export async function POST(request: NextRequest) {
         experienceText: textResult.data.experienceText,
         whyInterested: textResult.data.whyInterested,
         weeklyCommitment: textResult.data.weeklyCommitment,
-        comments: typeof body.comments === "string" ? body.comments.trim() || null : null,
+        comments:
+          typeof body.comments === "string"
+            ? body.comments.trim() || null
+            : null,
         submittedAt: new Date(),
       },
     });
@@ -206,7 +218,10 @@ export async function POST(request: NextRequest) {
         data: { status: CommitteeHeadThirdPartyNominationStatus.ACCEPTED },
       });
     }
-    return NextResponse.json({ applicationId: application.id }, { status: 201 });
+    return NextResponse.json(
+      { applicationId: application.id },
+      { status: 201 }
+    );
   }
 
   if (body.mode === "nominate") {
@@ -218,7 +233,10 @@ export async function POST(request: NextRequest) {
       return jsonError("Use the self-application form to nominate yourself");
     }
     if (await isActivePrimaryOfficer(nomineeUserId)) {
-      return jsonError("Active Primary Officers cannot be nominated for Committee Head roles", 403);
+      return jsonError(
+        "Active Primary Officers cannot be nominated for Committee Head roles",
+        403
+      );
     }
 
     const positionIds = normalizeRankedPositionIds(body.suggestedPositionIds);
@@ -234,15 +252,16 @@ export async function POST(request: NextRequest) {
     });
     if (!nominee) return jsonError("Nominee not found", 404);
 
-    const existingApplication = await prisma.committeeHeadApplication.findUnique({
-      where: {
-        cycleId_applicantUserId: {
-          cycleId: cycle.id,
-          applicantUserId: nomineeUserId,
+    const existingApplication =
+      await prisma.committeeHeadApplication.findUnique({
+        where: {
+          cycleId_applicantUserId: {
+            cycleId: cycle.id,
+            applicantUserId: nomineeUserId,
+          },
         },
-      },
-      select: { id: true, status: true },
-    });
+        select: { id: true, status: true },
+      });
     if (
       existingApplication &&
       existingApplication.status !==
@@ -279,7 +298,10 @@ export async function POST(request: NextRequest) {
         },
       });
     } catch {
-      return jsonError("You have already nominated this person this cycle", 409);
+      return jsonError(
+        "You have already nominated this person this cycle",
+        409
+      );
     }
 
     let emailSent = false;

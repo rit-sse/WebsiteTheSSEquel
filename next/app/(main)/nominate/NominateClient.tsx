@@ -70,7 +70,9 @@ export default function NominateClient({
     () =>
       selectedPositions
         .map((id) => data.positions.find((position) => position.id === id))
-        .filter((position): position is CommitteeHeadPositionOption => !!position),
+        .filter(
+          (position): position is CommitteeHeadPositionOption => !!position
+        ),
     [data.positions, selectedPositions]
   );
 
@@ -86,7 +88,8 @@ export default function NominateClient({
     setSelectedPositions((prev) => {
       const index = prev.indexOf(positionId);
       const nextIndex = index + direction;
-      if (index === -1 || nextIndex < 0 || nextIndex >= prev.length) return prev;
+      if (index === -1 || nextIndex < 0 || nextIndex >= prev.length)
+        return prev;
       const copy = [...prev];
       [copy[index], copy[nextIndex]] = [copy[nextIndex]!, copy[index]!];
       return copy;
@@ -154,9 +157,7 @@ export default function NominateClient({
       }
       setSubmitted(true);
       toast.success(
-        mode === "self"
-          ? "Application submitted."
-          : "Nomination submitted."
+        mode === "self" ? "Application submitted." : "Nomination submitted."
       );
     } catch (error) {
       console.error("Failed to submit Committee Head nomination:", error);
@@ -328,7 +329,9 @@ export default function NominateClient({
                           size="xs"
                           variant="outline"
                           onClick={() => movePosition(position.id, 1)}
-                          disabled={index === sortedSelectedPositions.length - 1}
+                          disabled={
+                            index === sortedSelectedPositions.length - 1
+                          }
                         >
                           Down
                         </Button>
@@ -344,8 +347,15 @@ export default function NominateClient({
                 <div className="space-y-2">
                   <Label>Nominee</Label>
                   <div className="flex flex-col gap-2 sm:flex-row">
-                    <Input value={nomineeName} readOnly placeholder="No nominee selected" />
-                    <Button type="button" onClick={() => setUserSearchOpen(true)}>
+                    <Input
+                      value={nomineeName}
+                      readOnly
+                      placeholder="No nominee selected"
+                    />
+                    <Button
+                      type="button"
+                      onClick={() => setUserSearchOpen(true)}
+                    >
                       Choose nominee
                     </Button>
                   </div>
@@ -355,7 +365,9 @@ export default function NominateClient({
                   <Textarea
                     id="reason"
                     value={nominationReason}
-                    onChange={(event) => setNominationReason(event.target.value)}
+                    onChange={(event) =>
+                      setNominationReason(event.target.value)
+                    }
                     rows={5}
                   />
                 </div>
@@ -368,7 +380,9 @@ export default function NominateClient({
                     id="yearLevel"
                     className="h-10 rounded-md border border-input bg-background px-3 text-sm"
                     value={form.yearLevel}
-                    onChange={(event) => updateField("yearLevel", event.target.value)}
+                    onChange={(event) =>
+                      updateField("yearLevel", event.target.value)
+                    }
                   >
                     <option value="">Select year</option>
                     {YEAR_LEVELS.map((level) => (
@@ -383,7 +397,9 @@ export default function NominateClient({
                   <Input
                     id="major"
                     value={form.major}
-                    onChange={(event) => updateField("major", event.target.value)}
+                    onChange={(event) =>
+                      updateField("major", event.target.value)
+                    }
                   />
                 </div>
                 <TextAreaField
@@ -462,7 +478,9 @@ function TextAreaField({
     <div className="space-y-2 sm:col-span-2">
       <Label htmlFor={id}>
         {label}
-        {!required && <span className="text-muted-foreground"> (optional)</span>}
+        {!required && (
+          <span className="text-muted-foreground"> (optional)</span>
+        )}
       </Label>
       <Textarea
         id={id}

@@ -94,8 +94,6 @@ describe("filterVisibleSections", () => {
     );
     expect(idsFor({ isPrimary: true })).toContain("elections");
     expect(idsFor({ isPrimary: true })).toContain("announcements");
-    expect(idsFor({ isPrimary: true })).toContain(
-      "committee-head-nominations"
-    );
+    expect(idsFor({ isPrimary: true })).toContain("committee-head-nominations");
   });
 });

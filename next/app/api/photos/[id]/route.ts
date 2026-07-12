@@ -30,7 +30,10 @@ export async function PATCH(
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Invalid JSON payload" },
+      { status: 400 }
+    );
   }
 
   const existing = await prisma.photo.findUnique({
@@ -52,7 +55,8 @@ export async function PATCH(
   if ("altText" in body) data.altText = trimNullableText(body.altText, 500);
   if ("category" in body) data.category = normalizePhotoCategory(body.category);
   if ("eventId" in body) {
-    const eventId = typeof body.eventId === "string" && body.eventId ? body.eventId : null;
+    const eventId =
+      typeof body.eventId === "string" && body.eventId ? body.eventId : null;
     if (eventId) {
       const event = await prisma.event.findUnique({
         where: { id: eventId },

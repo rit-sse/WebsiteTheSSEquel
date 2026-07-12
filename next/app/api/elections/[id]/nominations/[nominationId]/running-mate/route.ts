@@ -16,9 +16,7 @@ export const dynamic = "force-dynamic";
 // to run with them before the invite expires (matches the design spec).
 const RUNNING_MATE_INVITE_TTL_MS = 22 * 60 * 60 * 1000;
 
-async function parseIds(
-  params: Promise<{ id: string; nominationId: string }>
-) {
+async function parseIds(params: Promise<{ id: string; nominationId: string }>) {
   const { id, nominationId } = await params;
   const electionId = Number(id);
   const parsedNominationId = Number(nominationId);
@@ -87,7 +85,10 @@ export async function POST(
 
   try {
     const { electionId, nominationId } = await parseIds(params);
-    const nomination = await loadPresidentialNomination(electionId, nominationId);
+    const nomination = await loadPresidentialNomination(
+      electionId,
+      nominationId
+    );
     if (!nomination || nomination.electionOffice.electionId !== electionId) {
       return new Response("Nomination not found", { status: 404 });
     }
@@ -249,14 +250,20 @@ export async function DELETE(
 ) {
   const authLevel = await getGatewayAuthLevel(request);
   if (!authLevel.userId) {
-    return new Response("You must be signed in to revoke a running-mate invite", {
-      status: 401,
-    });
+    return new Response(
+      "You must be signed in to revoke a running-mate invite",
+      {
+        status: 401,
+      }
+    );
   }
 
   try {
     const { electionId, nominationId } = await parseIds(params);
-    const nomination = await loadPresidentialNomination(electionId, nominationId);
+    const nomination = await loadPresidentialNomination(
+      electionId,
+      nominationId
+    );
     if (!nomination || nomination.electionOffice.electionId !== electionId) {
       return new Response("Nomination not found", { status: 404 });
     }
@@ -290,7 +297,9 @@ export async function DELETE(
     return Response.json(updated);
   } catch (error) {
     return new Response(
-      error instanceof Error ? error.message : "Failed to revoke running-mate invite",
+      error instanceof Error
+        ? error.message
+        : "Failed to revoke running-mate invite",
       { status: 400 }
     );
   }

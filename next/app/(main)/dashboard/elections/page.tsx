@@ -58,7 +58,9 @@ export default async function DashboardElectionsPage() {
 
   return (
     <DashboardElectionsClient
-      initialElections={serializeElectionForClient(elections) as unknown as ElectionListItem[]}
+      initialElections={
+        serializeElectionForClient(elections) as unknown as ElectionListItem[]
+      }
       primaryPositions={serializeElectionForClient(primaryPositions)}
       isPresident={isPresident}
       isSeAdmin={isSeAdminFlag}

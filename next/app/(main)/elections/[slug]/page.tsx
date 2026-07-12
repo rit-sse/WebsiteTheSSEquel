@@ -28,7 +28,9 @@ export default async function ElectionPublicPage({
 
   return (
     <ElectionPublicClient
-      election={serializeElectionForClient(election) as unknown as SerializedElection}
+      election={
+        serializeElectionForClient(election) as unknown as SerializedElection
+      }
       currentUserId={authLevel.userId}
       canNominate={canNominate}
       isMember={authLevel.isMember}

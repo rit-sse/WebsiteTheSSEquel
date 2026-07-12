@@ -48,13 +48,19 @@ export default function AmendmentMyActivity({
               You haven&apos;t proposed any amendments yet.
             </p>
             <Button asChild size="sm">
-              <Link href="/about/constitution/amendments/new">Start a Proposal</Link>
+              <Link href="/about/constitution/amendments/new">
+                Start a Proposal
+              </Link>
             </Button>
           </Card>
         ) : (
           <div className="space-y-2">
             {myProposals.map((amendment) => (
-              <Card key={amendment.id} depth={3} className="p-3 flex items-center gap-3">
+              <Card
+                key={amendment.id}
+                depth={3}
+                className="p-3 flex items-center gap-3"
+              >
                 <AmendmentStatusBadge status={amendment.status} />
                 <Link
                   href={`/about/constitution/amendments/${amendment.id}`}
@@ -91,7 +97,11 @@ export default function AmendmentMyActivity({
             {myVotedAmendments.map((amendment) => {
               const myVote = userVotes[amendment.id];
               return (
-                <Card key={amendment.id} depth={3} className="p-3 flex items-center gap-3">
+                <Card
+                  key={amendment.id}
+                  depth={3}
+                  className="p-3 flex items-center gap-3"
+                >
                   <span
                     className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-semibold ${
                       myVote

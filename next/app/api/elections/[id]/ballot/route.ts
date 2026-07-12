@@ -29,7 +29,9 @@ export async function GET(
 ) {
   const authLevel = await getGatewayAuthLevel(request);
   if (!authLevel.userId) {
-    return new Response("You must be signed in to view a ballot", { status: 401 });
+    return new Response("You must be signed in to view a ballot", {
+      status: 401,
+    });
   }
 
   try {
@@ -39,7 +41,9 @@ export async function GET(
       return new Response("Election not found", { status: 404 });
     }
 
-    const ballot = election.ballots.find((item) => item.voterId === authLevel.userId) ?? null;
+    const ballot =
+      election.ballots.find((item) => item.voterId === authLevel.userId) ??
+      null;
     // Amendment 12: VP is ticket-derived and never appears on the ballot.
     const offices = election.offices
       .filter((office) => !isTicketDerivedOffice(office.officerPosition.title))
@@ -103,7 +107,9 @@ export async function PUT(
 
     const rankings = Array.isArray(body.rankings) ? body.rankings : [];
     if (rankings.length === 0) {
-      return new Response("At least one office ranking is required", { status: 400 });
+      return new Response("At least one office ranking is required", {
+        status: 400,
+      });
     }
 
     const eligibleOffices = election.offices.filter(
@@ -121,16 +127,21 @@ export async function PUT(
       const nominationIds = Array.isArray(officePayload.nominationIds)
         ? officePayload.nominationIds.map((value: unknown) => Number(value))
         : [];
-      const office = eligibleOffices.find((item) => item.id === electionOfficeId);
+      const office = eligibleOffices.find(
+        (item) => item.id === electionOfficeId
+      );
       if (!office) {
-        return new Response("One or more office rankings are invalid", { status: 400 });
+        return new Response("One or more office rankings are invalid", {
+          status: 400,
+        });
       }
       const validNominationIds = new Set(
         office.nominations
           .filter(
             (nomination) =>
               nomination.status === ElectionNominationStatus.ACCEPTED &&
-              nomination.eligibilityStatus === ElectionEligibilityStatus.APPROVED
+              nomination.eligibilityStatus ===
+                ElectionEligibilityStatus.APPROVED
           )
           .map((nomination) => nomination.id)
       );

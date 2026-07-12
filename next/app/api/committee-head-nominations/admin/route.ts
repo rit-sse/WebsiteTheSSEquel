@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  CommitteeHeadApplicationStatus,
-  type Prisma,
-} from "@prisma/client";
+import { CommitteeHeadApplicationStatus, type Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { getGatewayAuthLevel } from "@/lib/authGateway";
 import { isCommitteeHeadStatus } from "@/lib/committeeHeadNominations";
@@ -16,7 +13,12 @@ function jsonError(message: string, status = 400) {
 async function requirePrimary(request: NextRequest) {
   const auth = await getGatewayAuthLevel(request);
   if (!auth.isPrimary || !auth.userId) {
-    return { response: jsonError("Only active Primary Officers can review Committee Head nominations", 403) };
+    return {
+      response: jsonError(
+        "Only active Primary Officers can review Committee Head nominations",
+        403
+      ),
+    };
   }
   return { auth };
 }
@@ -36,7 +38,7 @@ export async function GET(request: NextRequest) {
   const selectedCycle =
     (cycleId
       ? cycles.find((cycle) => cycle.id === Number(cycleId))
-      : cycles.find((cycle) => cycle.status === "OPEN") ?? cycles[0]) ?? null;
+      : (cycles.find((cycle) => cycle.status === "OPEN") ?? cycles[0])) ?? null;
 
   const where: Prisma.CommitteeHeadApplicationWhereInput = selectedCycle
     ? { cycleId: selectedCycle.id }
@@ -86,7 +88,11 @@ export async function GET(request: NextRequest) {
         selectedPosition: { select: { id: true, title: true } },
         selectedBy: { select: { id: true, name: true, email: true } },
       },
-      orderBy: [{ status: "asc" }, { submittedAt: "desc" }, { createdAt: "desc" }],
+      orderBy: [
+        { status: "asc" },
+        { submittedAt: "desc" },
+        { createdAt: "desc" },
+      ],
     }),
     prisma.officerPosition.findMany({
       where: { category: "COMMITTEE_HEAD", is_defunct: false },

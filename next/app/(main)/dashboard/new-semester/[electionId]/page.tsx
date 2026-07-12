@@ -10,9 +10,7 @@ import {
   tallyInstantRunoffElection,
 } from "@/lib/elections";
 import { resolveUserImage } from "@/lib/s3Utils";
-import NewSemesterClient, {
-  type DispatchRecipient,
-} from "./NewSemesterClient";
+import NewSemesterClient, { type DispatchRecipient } from "./NewSemesterClient";
 
 /**
  * SE-Office-only page. Lands here from the email sent by

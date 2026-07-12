@@ -6,9 +6,16 @@ type BreadcrumbItem = {
   href?: string;
 };
 
-export default function AmendmentBreadcrumb({ items }: { items: BreadcrumbItem[] }) {
+export default function AmendmentBreadcrumb({
+  items,
+}: {
+  items: BreadcrumbItem[];
+}) {
   return (
-    <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-sm text-muted-foreground mb-4">
+    <nav
+      aria-label="Breadcrumb"
+      className="flex items-center gap-1.5 text-sm text-muted-foreground mb-4"
+    >
       <Link
         href="/about/constitution/amendments"
         className="hover:text-foreground transition-colors font-medium"
@@ -19,7 +26,10 @@ export default function AmendmentBreadcrumb({ items }: { items: BreadcrumbItem[]
         <span key={index} className="flex items-center gap-1.5">
           <ChevronRight className="h-3.5 w-3.5 shrink-0 opacity-50" />
           {item.href ? (
-            <Link href={item.href} className="hover:text-foreground transition-colors">
+            <Link
+              href={item.href}
+              className="hover:text-foreground transition-colors"
+            >
               {item.label}
             </Link>
           ) : (

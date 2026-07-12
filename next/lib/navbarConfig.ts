@@ -122,7 +122,7 @@ const seOfficeItems: NavItem[] = [
 ];
 
 function getPublicElectionItem(
-  activeElection?: Pick<ActiveElectionSummary, "slug" | "status"> | null,
+  activeElection?: Pick<ActiveElectionSummary, "slug" | "status"> | null
 ): NavItem | null {
   if (!activeElection || !PUBLIC_ELECTION_STATUSES.has(activeElection.status)) {
     return null;

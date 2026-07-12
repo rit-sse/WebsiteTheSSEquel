@@ -33,12 +33,7 @@ describe("buildNavGroups", () => {
       groups
         .find((group) => group.value === "se-office")
         ?.items.map((item) => item.title)
-    ).toEqual([
-      "Leadership",
-      "Committees",
-      "Constitution",
-      "Primary Policy",
-    ]);
+    ).toEqual(["Leadership", "Committees", "Constitution", "Primary Policy"]);
   });
 
   it("keeps the requested student links with compact labels", () => {

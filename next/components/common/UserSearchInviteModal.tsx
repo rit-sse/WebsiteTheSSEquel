@@ -230,8 +230,8 @@ export default function UserSearchInviteModal({
                         </div>
                         {existing ? (
                           <p className="truncate text-xs text-amber-700 dark:text-amber-300">
-                            By {existing.nominatorName} — picking again
-                            sends a &ldquo;seconded&rdquo; email.
+                            By {existing.nominatorName} — picking again sends a
+                            &ldquo;seconded&rdquo; email.
                           </p>
                         ) : (
                           user.email && (

@@ -10,8 +10,8 @@ interface TierProps {
 
 function TierCard({ name, price, benefits, featured }: TierProps) {
   return (
-    <Card 
-      depth={featured ? 3 : 2} 
+    <Card
+      depth={featured ? 3 : 2}
       className={`p-6 h-full flex flex-col ${featured ? "border-primary border-2" : ""}`}
     >
       {featured && (
@@ -22,7 +22,9 @@ function TierCard({ name, price, benefits, featured }: TierProps) {
       <h3 className="text-xl font-bold font-display mb-1">{name}</h3>
       <p className="text-2xl font-bold text-primary mb-4">
         {price}
-        <span className="text-sm font-normal text-muted-foreground ml-1">minimum</span>
+        <span className="text-sm font-normal text-muted-foreground ml-1">
+          minimum
+        </span>
       </p>
       <ul className="space-y-3 flex-grow">
         {benefits.map((benefit, index) => (

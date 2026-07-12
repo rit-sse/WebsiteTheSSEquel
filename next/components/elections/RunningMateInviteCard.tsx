@@ -3,12 +3,7 @@
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { CheckCircle } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ElectionAvatar } from "@/components/elections/ElectionAvatar";
 import UserInviteSlot from "@/components/common/UserInviteSlot";
 import UserSearchInviteModal, {
@@ -169,8 +164,8 @@ export default function RunningMateInviteCard({
         </div>
         <p className="text-sm text-muted-foreground">
           Invite any active member to run as your Vice President. They&rsquo;ll
-          get an email to accept &mdash; President and VP appear together on
-          the ballot as a ticket.
+          get an email to accept &mdash; President and VP appear together on the
+          ballot as a ticket.
         </p>
       </CardHeader>
       <CardContent className="space-y-3">

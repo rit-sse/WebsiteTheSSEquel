@@ -63,7 +63,7 @@ type VotePanelProps = {
   /** Admin action callbacks */
   onChangeStatus?: (
     s: AmendmentStatus,
-    extraData?: Record<string, unknown>,
+    extraData?: Record<string, unknown>
   ) => void;
   onMerge?: () => void;
   actionMessage?: string;
@@ -298,8 +298,8 @@ export default function VotePanel({
     ? Math.max(
         1,
         Math.ceil(
-          (new Date(votingEndsAt).getTime() - Date.now()) / (1000 * 60 * 60),
-        ),
+          (new Date(votingEndsAt).getTime() - Date.now()) / (1000 * 60 * 60)
+        )
       )
     : null;
   const canVote = status === "VOTING" && !votingWindowEnded;
@@ -327,7 +327,7 @@ export default function VotePanel({
       localTotals.approveVotes,
       requiredVotingParticipation,
       totalActiveMembers,
-    ],
+    ]
   );
 
   const requiredApproveVotes = Math.ceil((2 / 3) * localTotals.totalVotes);
@@ -358,9 +358,9 @@ export default function VotePanel({
         throw new Error(
           typeof payload === "object" && payload !== null
             ? ((payload.error as string | undefined) ??
-              (payload.message as string | undefined) ??
-              "Could not record vote")
-            : ((payload as string | null) ?? "Could not record vote"),
+                (payload.message as string | undefined) ??
+                "Could not record vote")
+            : ((payload as string | null) ?? "Could not record vote")
         );
       }
       const voteSummary =
@@ -399,9 +399,9 @@ export default function VotePanel({
         throw new Error(
           typeof payload === "object" && payload !== null
             ? ((payload.error as string | undefined) ??
-              (payload.message as string | undefined) ??
-              "Could not record vote")
-            : ((payload as string | null) ?? "Could not record vote"),
+                (payload.message as string | undefined) ??
+                "Could not record vote")
+            : ((payload as string | null) ?? "Could not record vote")
         );
       }
       if (
@@ -461,7 +461,7 @@ export default function VotePanel({
           <div className="space-y-2">
             {localPrimaryReview.positionSlots.map((slot) => {
               const isMyPosition = userPrimaryPositionIds.includes(
-                slot.positionId,
+                slot.positionId
               );
               const canActOnSlot = isMyPosition && !slot.voted;
               const hasVoted = slot.voted;
@@ -618,7 +618,7 @@ export default function VotePanel({
           }
           const days = Math.floor(remaining / (1000 * 60 * 60 * 24));
           const hours = Math.floor(
-            (remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
+            (remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
           );
           return (
             <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 px-3 py-2 text-xs text-amber-700 dark:text-amber-300 font-medium">

@@ -150,7 +150,10 @@ export function getNextOfficerTermDateRange(referenceDate = new Date()): {
   const current = getDefaultOfficerTermDateRange(referenceDate);
   const shift = (d: Date) =>
     new Date(d.getFullYear() + 1, d.getMonth(), d.getDate());
-  return { startDate: shift(current.startDate), endDate: shift(current.endDate) };
+  return {
+    startDate: shift(current.startDate),
+    endDate: shift(current.endDate),
+  };
 }
 
 export function getDefaultOfficerTermDateRange(referenceDate = new Date()): {

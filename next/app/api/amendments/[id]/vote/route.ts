@@ -9,7 +9,10 @@ import {
 
 export const dynamic = "force-dynamic";
 
-export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function POST(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   const { id } = await params;
   const amendmentId = Number(id);
   if (Number.isNaN(amendmentId)) {
@@ -52,21 +55,33 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     } else if (amendment.status === AmendmentStatus.VOTING) {
       phase = "VOTING";
     } else {
-      return new Response("Voting is not open for this amendment", { status: 409 });
+      return new Response("Voting is not open for this amendment", {
+        status: 409,
+      });
     }
 
-    if (phase === "VOTING" && amendment.votingEndsAt && new Date(amendment.votingEndsAt) < new Date()) {
+    if (
+      phase === "VOTING" &&
+      amendment.votingEndsAt &&
+      new Date(amendment.votingEndsAt) < new Date()
+    ) {
       return new Response("The voting window has ended", { status: 409 });
     }
 
     if (phase === "PRIMARY_REVIEW") {
       if (!actor.isPrimary) {
-        return new Response("Only primary officers can vote during primary review", { status: 403 });
+        return new Response(
+          "Only primary officers can vote during primary review",
+          { status: 403 }
+        );
       }
 
       const positionId = body.officerPositionId;
       if (!positionId || typeof positionId !== "number") {
-        return new Response("officerPositionId is required for primary review votes", { status: 422 });
+        return new Response(
+          "officerPositionId is required for primary review votes",
+          { status: 422 }
+        );
       }
 
       const officerRecord = await prisma.officer.findFirst({
@@ -79,11 +94,17 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         select: { id: true },
       });
       if (!officerRecord) {
-        return new Response("You do not hold this primary officer position", { status: 403 });
+        return new Response("You do not hold this primary officer position", {
+          status: 403,
+        });
       }
 
       const existing = await prisma.amendmentVote.findFirst({
-        where: { amendmentId, officerPositionId: positionId, phase: "PRIMARY_REVIEW" },
+        where: {
+          amendmentId,
+          officerPositionId: positionId,
+          phase: "PRIMARY_REVIEW",
+        },
         select: { id: true },
       });
 
@@ -127,7 +148,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       });
 
       const positionSlots = allPrimaryPositions.map((pos) => {
-        const vote = allPrimaryVotes.find((v) => v.officerPositionId === pos.id);
+        const vote = allPrimaryVotes.find(
+          (v) => v.officerPositionId === pos.id
+        );
         const holder = pos.officers[0]?.user ?? null;
         return {
           positionId: pos.id,
@@ -140,9 +163,14 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
       const totalPositions = positionSlots.length;
       const votedCount = positionSlots.filter((s) => s.voted).length;
-      const approveCount = positionSlots.filter((s) => s.approve === true).length;
-      const rejectCount = positionSlots.filter((s) => s.approve === false).length;
-      const quorumRequired = totalPositions === 0 ? 0 : Math.floor(totalPositions / 2) + 1;
+      const approveCount = positionSlots.filter(
+        (s) => s.approve === true
+      ).length;
+      const rejectCount = positionSlots.filter(
+        (s) => s.approve === false
+      ).length;
+      const quorumRequired =
+        totalPositions === 0 ? 0 : Math.floor(totalPositions / 2) + 1;
       const quorumMet = votedCount >= quorumRequired;
 
       return Response.json({
@@ -163,7 +191,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     }
 
     if (phase === "VOTING" && !amendment.isSemanticChange && !actor.isPrimary) {
-      return new Response("Only primary officers can vote on non-semantic amendments", { status: 403 });
+      return new Response(
+        "Only primary officers can vote on non-semantic amendments",
+        { status: 403 }
+      );
     }
 
     const existingMemberVote = await prisma.amendmentVote.findFirst({
@@ -209,8 +240,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         quorumMet,
         supermajority,
         isPassed: amendment.isSemanticChange
-          ? voteSummary.totalVotes >= quorum && voteSummary.approveVotes >= supermajority
-          : !voteSummary.totalVotes ? false : voteSummary.approveVotes > voteSummary.rejectVotes,
+          ? voteSummary.totalVotes >= quorum &&
+            voteSummary.approveVotes >= supermajority
+          : !voteSummary.totalVotes
+            ? false
+            : voteSummary.approveVotes > voteSummary.rejectVotes,
         hasUserVoted: true,
         userVote: body.approve,
       },

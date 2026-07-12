@@ -26,7 +26,9 @@ export async function GET(
     if (!election) {
       return new Response("Election not found", { status: 404 });
     }
-    return Response.json(election.offices.flatMap((office) => office.nominations));
+    return Response.json(
+      election.offices.flatMap((office) => office.nominations)
+    );
   } catch (error) {
     return new Response(
       error instanceof Error ? error.message : "Failed to load nominations",
@@ -64,7 +66,9 @@ export async function POST(
       return new Response("Election not found", { status: 404 });
     }
     if (election.status !== ElectionStatus.NOMINATIONS_OPEN) {
-      return new Response("Nominations are not currently open", { status: 409 });
+      return new Response("Nominations are not currently open", {
+        status: 409,
+      });
     }
     if (!(await isActiveMemberForElection(authLevel.userId))) {
       return new Response("Only active-term members can submit nominations", {
@@ -82,13 +86,18 @@ export async function POST(
     const electionOfficeId = Number(body.electionOfficeId);
     const nomineeUserId = Number(body.nomineeUserId);
 
-    if (!Number.isInteger(electionOfficeId) || !Number.isInteger(nomineeUserId)) {
+    if (
+      !Number.isInteger(electionOfficeId) ||
+      !Number.isInteger(nomineeUserId)
+    ) {
       return new Response("electionOfficeId and nomineeUserId are required", {
         status: 400,
       });
     }
 
-    const office = election.offices.find((item) => item.id === electionOfficeId);
+    const office = election.offices.find(
+      (item) => item.id === electionOfficeId
+    );
     if (!office) {
       return new Response("Election office not found", { status: 404 });
     }

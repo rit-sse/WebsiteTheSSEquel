@@ -50,7 +50,9 @@ export default function CommitteeHeadNominationAcceptClient({
   applicationId: string;
 }) {
   const { data: session, status } = useSession();
-  const [application, setApplication] = useState<ApplicationDetail | null>(null);
+  const [application, setApplication] = useState<ApplicationDetail | null>(
+    null
+  );
   const [positions, setPositions] = useState<PositionOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -159,7 +161,9 @@ export default function CommitteeHeadNominationAcceptClient({
         toast.error(result.error || "Unable to update nomination.");
         return;
       }
-      toast.success(action === "accept" ? "Nomination accepted." : "Nomination declined.");
+      toast.success(
+        action === "accept" ? "Nomination accepted." : "Nomination declined."
+      );
       window.location.href = "/nominate";
     } finally {
       setSubmitting(false);
@@ -170,7 +174,9 @@ export default function CommitteeHeadNominationAcceptClient({
     return (
       <div className="mx-auto w-full max-w-3xl px-4 py-10">
         <Card>
-          <CardContent className="p-6 text-muted-foreground">Loading...</CardContent>
+          <CardContent className="p-6 text-muted-foreground">
+            Loading...
+          </CardContent>
         </Card>
       </div>
     );
@@ -213,7 +219,9 @@ export default function CommitteeHeadNominationAcceptClient({
       <Card>
         <CardHeader>
           <CardTitle>Accept Committee Head nomination</CardTitle>
-          <p className="text-sm text-muted-foreground">{application.cycle.name}</p>
+          <p className="text-sm text-muted-foreground">
+            {application.cycle.name}
+          </p>
         </CardHeader>
         <CardContent className="space-y-6">
           {application.nominations.length > 0 && (
@@ -221,11 +229,16 @@ export default function CommitteeHeadNominationAcceptClient({
               <h2 className="font-semibold">Nominated by</h2>
               <div className="space-y-2">
                 {application.nominations.map((nomination) => (
-                  <div key={nomination.id} className="rounded-md border p-3 text-sm">
+                  <div
+                    key={nomination.id}
+                    className="rounded-md border p-3 text-sm"
+                  >
                     <p className="font-medium">
                       {nomination.nominator.name} ({nomination.nominator.email})
                     </p>
-                    <p className="mt-1 text-muted-foreground">{nomination.reason}</p>
+                    <p className="mt-1 text-muted-foreground">
+                      {nomination.reason}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -264,7 +277,10 @@ export default function CommitteeHeadNominationAcceptClient({
                 className="h-10 rounded-md border border-input bg-background px-3 text-sm"
                 value={form.yearLevel}
                 onChange={(event) =>
-                  setForm((prev) => ({ ...prev, yearLevel: event.target.value }))
+                  setForm((prev) => ({
+                    ...prev,
+                    yearLevel: event.target.value,
+                  }))
                 }
               >
                 <option value="">Select year</option>
