@@ -34,7 +34,7 @@ jobs:
             echo "NEXT_PUBLIC_ENV=dev" >> $GITHUB_ENV
             echo "DEPLOY_SERVICE=website-dev" >> $GITHUB_ENV
           fi
-          echo "DEPLOY_PATH=/home/administrator/deploy" >> $GITHUB_ENV
+          echo "DEPLOY_PATH=/home/administrator/deploy/website" >> $GITHUB_ENV
           echo "GIT_COMMIT=${GITHUB_SHA::7}" >> $GITHUB_ENV
 
       - name: Build image
