@@ -14,6 +14,8 @@ import { getAuthLevel } from "@/lib/services/authLevelService";
 import SectionPreview from "./_components/SectionPreview";
 import MentorAvailabilityDot from "./_components/MentorAvailabilityDot";
 
+export const dynamic = "force-dynamic";
+
 /**
  * Officer Dashboard landing page.
  *
