@@ -24,6 +24,7 @@
   "vitest": true,
   "eslint": true,
   "husky": true,
+  "ignoreBinaries": ["commitlint"],
   "includeEntryExports": false,
   "ignoreIssues": {
     "app/api/**/*.ts": ["exports"]
