@@ -68,9 +68,8 @@ export async function getActiveElectionWithAutoKickoff(): Promise<ActiveElection
 
   // Defer the import so this module's startup cost stays the same
   // for callers that don't need kickoff.
-  const { kickoffElectionForCurrentTerm } = await import(
-    "@/lib/electionAutoKickoff"
-  );
+  const { kickoffElectionForCurrentTerm } =
+    await import("@/lib/electionAutoKickoff");
   const result = await kickoffElectionForCurrentTerm();
   if (!result.created || !result.electionId) {
     return null;

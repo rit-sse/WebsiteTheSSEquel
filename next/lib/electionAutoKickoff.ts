@@ -79,7 +79,8 @@ export async function shouldKickoffNewElection(
     return true;
   }
 
-  const reference = lastCertified.certifiedAt ?? lastCertified.nominationsCloseAt;
+  const reference =
+    lastCertified.certifiedAt ?? lastCertified.nominationsCloseAt;
   const certifiedTerm = {
     term: getAcademicTermFromDate(reference),
     year: reference.getFullYear(),
@@ -179,14 +180,18 @@ export async function kickoffElectionForCurrentTerm(
   const votingDays = options.votingDays ?? 7;
 
   if (!(await shouldKickoffNewElection(atDate))) {
-    return { created: false, reason: "An election is already in progress for this term." };
+    return {
+      created: false,
+      reason: "An election is already in progress for this term.",
+    };
   }
 
   const actorId = await pickKickoffActor();
   if (actorId == null) {
     return {
       created: false,
-      reason: "No eligible kickoff actor found (no active President, SE Office holder, or past certifier).",
+      reason:
+        "No eligible kickoff actor found (no active President, SE Office holder, or past certifier).",
     };
   }
 
@@ -197,9 +202,7 @@ export async function kickoffElectionForCurrentTerm(
   const day = 24 * 60 * 60 * 1000;
   const nominationsOpenAt = new Date(atDate);
   const nominationsCloseAt = new Date(atDate.getTime() + nominationsDays * day);
-  const votingOpenAt = new Date(
-    nominationsCloseAt.getTime() + breakDays * day
-  );
+  const votingOpenAt = new Date(nominationsCloseAt.getTime() + breakDays * day);
   const votingCloseAt = new Date(votingOpenAt.getTime() + votingDays * day);
 
   const officeTitles = getAutoKickoffOfficeTitles();
@@ -249,5 +252,9 @@ export async function kickoffElectionForCurrentTerm(
     return created;
   });
 
-  return { created: true, electionId: election.id, electionSlug: election.slug };
+  return {
+    created: true,
+    electionId: election.id,
+    electionSlug: election.slug,
+  };
 }

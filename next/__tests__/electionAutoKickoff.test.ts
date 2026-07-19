@@ -150,7 +150,10 @@ describe("electionAutoKickoff", () => {
         { id: 4, title: "Mentoring Head" },
       ]);
 
-      mockElectionCreate.mockResolvedValue({ id: 42, slug: "spring-2026-primary" });
+      mockElectionCreate.mockResolvedValue({
+        id: 42,
+        slug: "spring-2026-primary",
+      });
 
       const result = await kickoffElectionForCurrentTerm({
         atDate: new Date("2026-02-15T00:00:00Z"),
@@ -160,14 +163,18 @@ describe("electionAutoKickoff", () => {
       expect(result.electionId).toBe(42);
       expect(mockElectionCreate).toHaveBeenCalledTimes(1);
       const createArgs = mockElectionCreate.mock.calls[0][0];
-      expect(createArgs.data.title).toBe("Spring 2026 Primary Officer Election");
+      expect(createArgs.data.title).toBe(
+        "Spring 2026 Primary Officer Election"
+      );
       expect(createArgs.data.slug).toBe("spring-2026-primary");
       expect(createArgs.data.status).toBe("NOMINATIONS_OPEN");
       expect(createArgs.data.createdById).toBe(17);
 
       // 4 office rows for the 4 primary positions returned
       expect(mockElectionOfficeCreateMany).toHaveBeenCalledTimes(1);
-      expect(mockElectionOfficeCreateMany.mock.calls[0][0].data).toHaveLength(4);
+      expect(mockElectionOfficeCreateMany.mock.calls[0][0].data).toHaveLength(
+        4
+      );
     });
 
     it("returns a useful reason when no actor is available", async () => {
