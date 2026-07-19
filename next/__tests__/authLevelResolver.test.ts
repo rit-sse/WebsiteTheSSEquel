@@ -1,11 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { mockFindFirst, mockHasStagingElevatedAccess, mockGetSessionToken } =
-  vi.hoisted(() => ({
-    mockFindFirst: vi.fn(),
-    mockHasStagingElevatedAccess: vi.fn(),
-    mockGetSessionToken: vi.fn(),
-  }));
+const {
+  mockFindFirst,
+  mockGetProxyEmail,
+  mockHasStagingElevatedAccess,
+  mockGetSessionToken,
+} = vi.hoisted(() => ({
+  mockFindFirst: vi.fn(),
+  mockGetProxyEmail: vi.fn(),
+  mockHasStagingElevatedAccess: vi.fn(),
+  mockGetSessionToken: vi.fn(),
+}));
 
 vi.mock("@/lib/prisma", () => ({
   default: {
@@ -16,6 +21,7 @@ vi.mock("@/lib/prisma", () => ({
 }));
 
 vi.mock("@/lib/proxyAuth", () => ({
+  getProxyEmail: mockGetProxyEmail,
   hasStagingElevatedAccess: mockHasStagingElevatedAccess,
 }));
 
@@ -163,6 +169,37 @@ describe("authLevelResolver", () => {
     // false. (Prevents regressions where the dashboard Elections item
     // would leak to non-primary staging users like the Tech Head.)
     expect(auth.isPrimaryOfficer).toBe(false);
+  });
+
+  it("uses proxy email as the staging user when no session token exists", async () => {
+    mockGetSessionToken.mockReturnValue(null);
+    mockHasStagingElevatedAccess.mockReturnValue(true);
+    mockGetProxyEmail.mockReturnValue("dev@example.com");
+    mockFindFirst.mockResolvedValue({
+      id: 11,
+      graduationTerm: "FALL",
+      graduationYear: 2026,
+      major: "Software Engineering",
+      gitHub: "dev",
+      linkedIn: "dev",
+      mentor: [],
+      officers: [],
+      _count: { Memberships: 1 },
+    });
+
+    const req = { cookies: {}, headers: new Headers() } as any;
+    const auth = await resolveAuthLevelFromRequest(req, {
+      includeProfileComplete: true,
+    });
+
+    expect(mockFindFirst).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { email: "dev@example.com" } })
+    );
+    expect(auth.userId).toBe(11);
+    expect(auth.isUser).toBe(true);
+    expect(auth.isOfficer).toBe(true);
+    expect(auth.isSeAdmin).toBe(true);
+    expect(auth.profileComplete).toBe(true);
   });
 
   it("can resolve request auth without staging elevation for UI role checks", async () => {
