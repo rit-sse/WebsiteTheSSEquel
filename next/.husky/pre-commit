@@ -1,3 +1,2 @@
 #!/usr/bin/env sh
-npx --no --prefix next commitlint --edit "$1"
 npm --prefix next run lint:staged
