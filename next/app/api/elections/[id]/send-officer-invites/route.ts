@@ -94,7 +94,9 @@ export async function POST(
       if (!raw.winner) continue;
       const office = election.offices.find((o) => o.id === raw.officeId);
       if (!office) continue;
-      const nomination = office.nominations.find((n) => n.id === raw.winner!.id);
+      const nomination = office.nominations.find(
+        (n) => n.id === raw.winner!.id
+      );
       if (!nomination?.nominee.email) continue;
       invitesToCreate.push({
         positionId: office.officerPositionId,
@@ -108,7 +110,9 @@ export async function POST(
     }
 
     // VP from the winning presidential ticket.
-    const presidentRaw = rawResults.find((r) => r.officeTitle === PRESIDENT_TITLE);
+    const presidentRaw = rawResults.find(
+      (r) => r.officeTitle === PRESIDENT_TITLE
+    );
     const presidentOffice = election.offices.find(
       (o) => o.officerPosition.title === PRESIDENT_TITLE
     );

@@ -64,9 +64,7 @@ export function ElectionAvatar({
 
   return (
     <Avatar className={className} style={style}>
-      {user.image ? (
-        <AvatarImage src={user.image} alt={user.name} />
-      ) : null}
+      {user.image ? <AvatarImage src={user.image} alt={user.name} /> : null}
       <AvatarFallback
         className={cn("font-display font-bold", fallbackClassName)}
         style={style}

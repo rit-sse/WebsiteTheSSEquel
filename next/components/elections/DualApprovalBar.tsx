@@ -41,7 +41,10 @@ export function DualApprovalBar({
   const bothApproved = stageApprovals.length >= 2;
 
   return (
-    <Card depth={3} className={cn("p-4 flex flex-wrap items-center gap-4", className)}>
+    <Card
+      depth={3}
+      className={cn("p-4 flex flex-wrap items-center gap-4", className)}
+    >
       <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
         {stageLabel}
       </span>
@@ -77,9 +80,7 @@ export function DualApprovalBar({
               )}
             />
             <span className="text-xs font-medium">President</span>
-            {stageApprovals.length >= 1 && (
-              <Check className="h-3.5 w-3.5" />
-            )}
+            {stageApprovals.length >= 1 && <Check className="h-3.5 w-3.5" />}
           </div>
         </Tooltip>
 
@@ -107,9 +108,7 @@ export function DualApprovalBar({
             <span
               className={cn(
                 "h-2 w-2 rounded-full",
-                bothApproved
-                  ? "bg-emerald-500"
-                  : "bg-muted-foreground/30"
+                bothApproved ? "bg-emerald-500" : "bg-muted-foreground/30"
               )}
             />
             <span className="text-xs font-medium">SE Admin</span>

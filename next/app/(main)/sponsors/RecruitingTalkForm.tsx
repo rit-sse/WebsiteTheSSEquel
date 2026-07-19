@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Calendar } from "lucide-react";
 import { Modal, ModalFooter } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
@@ -30,6 +30,15 @@ export default function RecruitingTalkForm() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
+  // Allows recruiters to be emailed a direct link
+  // (/sponsors?open=recruiting-talk#recruit) that opens this form automatically.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("open") === "recruiting-talk") {
+      setOpen(true);
+    }
+  }, []);
+
   const handleCancel = () => {
     setCompanyName("");
     setContactName("");
@@ -49,7 +58,13 @@ export default function RecruitingTalkForm() {
     setIsSubmitting(true);
 
     // Validate required fields
-    if (!companyName || !contactName || !contactEmail || !talkType || !preferredDates) {
+    if (
+      !companyName ||
+      !contactName ||
+      !contactEmail ||
+      !talkType ||
+      !preferredDates
+    ) {
       setError("Please fill in all required fields");
       setIsSubmitting(false);
       return;
@@ -120,7 +135,8 @@ export default function RecruitingTalkForm() {
               Request Submitted!
             </h3>
             <p className="text-muted-foreground">
-              Thank you for your interest! Our team will reach out to coordinate scheduling.
+              Thank you for your interest! Our team will reach out to coordinate
+              scheduling.
             </p>
           </div>
         ) : (
@@ -179,7 +195,9 @@ export default function RecruitingTalkForm() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="tech_talk">Tech Talk</SelectItem>
-                    <SelectItem value="interview_session">Interview Session</SelectItem>
+                    <SelectItem value="interview_session">
+                      Interview Session
+                    </SelectItem>
                     <SelectItem value="workshop">Workshop</SelectItem>
                     <SelectItem value="info_session">Info Session</SelectItem>
                   </SelectContent>
@@ -229,7 +247,11 @@ export default function RecruitingTalkForm() {
             {error && <p className="text-destructive text-sm mt-2">{error}</p>}
 
             <ModalFooter>
-              <Button variant="neutral" onClick={handleCancel} disabled={isSubmitting}>
+              <Button
+                variant="neutral"
+                onClick={handleCancel}
+                disabled={isSubmitting}
+              >
                 Cancel
               </Button>
               <Button onClick={handleSubmit} disabled={isSubmitting}>

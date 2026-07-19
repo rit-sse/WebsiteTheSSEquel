@@ -5,9 +5,7 @@ import { ElectionRunningMateStatus, ElectionStatus } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
-async function parseIds(
-  params: Promise<{ id: string; nominationId: string }>
-) {
+async function parseIds(params: Promise<{ id: string; nominationId: string }>) {
   const { id, nominationId } = await params;
   const electionId = Number(id);
   const parsedNominationId = Number(nominationId);
@@ -40,9 +38,12 @@ export async function PATCH(
 ) {
   const authLevel = await getGatewayAuthLevel(request);
   if (!authLevel.userId) {
-    return new Response("You must be signed in to respond to a running-mate invite", {
-      status: 401,
-    });
+    return new Response(
+      "You must be signed in to respond to a running-mate invite",
+      {
+        status: 401,
+      }
+    );
   }
 
   let body: {

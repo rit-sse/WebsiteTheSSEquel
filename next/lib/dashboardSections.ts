@@ -14,8 +14,10 @@
 export type DashboardSectionId =
   | "purchasing"
   | "attendance"
+  | "go-links"
   | "mentoring"
   | "tech-committee"
+  | "committee-head-nominations"
   | "positions"
   | "users"
   | "sponsors"
@@ -60,6 +62,13 @@ export const DASHBOARD_SECTIONS: readonly DashboardSection[] = [
     accentClass: "text-sky-500",
   },
   {
+    id: "go-links",
+    title: "Go Links",
+    href: "/go",
+    description: "Manage SSE go links and redirects.",
+    accentClass: "text-indigo-500",
+  },
+  {
     id: "mentoring",
     title: "Mentoring",
     href: "/dashboard/mentoring",
@@ -70,11 +79,18 @@ export const DASHBOARD_SECTIONS: readonly DashboardSection[] = [
     id: "tech-committee",
     title: "Tech Committee Apps",
     href: "/dashboard/tech-committee",
-    description:
-      "Review Tech Committee applications and manage availability.",
+    description: "Review Tech Committee applications and manage availability.",
     accentClass: "text-violet-500",
     visibleFor: (a) =>
       a.isTechCommitteeHead || a.isPrimary || a.isTechCommitteeDivisionManager,
+  },
+  {
+    id: "committee-head-nominations",
+    title: "Committee Head Nominations",
+    href: "/dashboard/committee-head-nominations",
+    description: "Review and select Committee Head applicants.",
+    accentClass: "text-lime-600",
+    visibleFor: (a) => a.isPrimary,
   },
   {
     id: "positions",
@@ -101,8 +117,7 @@ export const DASHBOARD_SECTIONS: readonly DashboardSection[] = [
     id: "alumni",
     title: "Alumni Review",
     href: "/dashboard/alumni",
-    description:
-      "Review alumni requests and auto-generated candidates.",
+    description: "Review alumni requests and auto-generated candidates.",
     accentClass: "text-teal-500",
   },
   {

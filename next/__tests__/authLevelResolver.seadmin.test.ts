@@ -13,6 +13,7 @@ vi.mock("@/lib/prisma", () => ({
 }));
 
 vi.mock("@/lib/proxyAuth", () => ({
+  getProxyEmail: vi.fn(),
   hasStagingElevatedAccess: vi.fn().mockReturnValue(false),
 }));
 

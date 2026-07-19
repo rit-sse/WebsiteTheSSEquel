@@ -41,7 +41,10 @@ export default function PositionsPage() {
           <PositionsSection readOnly={!isPrimary} />
         </TabsContent>
         <TabsContent value="se-office" className="space-y-4">
-          <PositionsSection readOnly={!isPrimary && !isSeAdmin} category="SE_OFFICE" />
+          <PositionsSection
+            readOnly={!isPrimary && !isSeAdmin}
+            category="SE_OFFICE"
+          />
         </TabsContent>
         <TabsContent value="mentors" className="space-y-4">
           <MentorSection />

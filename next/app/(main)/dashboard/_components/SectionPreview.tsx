@@ -2,6 +2,7 @@ import * as React from "react";
 import {
   Receipt,
   QrCode,
+  Link2,
   ClipboardList,
   GraduationCap,
   Megaphone,
@@ -14,8 +15,10 @@ import type {
   AlumniSummary,
   AnnouncementsSummary,
   AttendanceSummary,
+  CommitteeHeadNominationsSummary,
   DashboardSummary,
   ElectionsSummary,
+  GoLinksSummary,
   MentoringSummary,
   PhotosSummary,
   PositionsSummary,
@@ -80,6 +83,13 @@ export default function SectionPreview({
           data={data as AttendanceSummary | undefined}
         />
       );
+    case "go-links":
+      return (
+        <GoLinksPreview
+          accentClass={accentClass}
+          data={data as GoLinksSummary | undefined}
+        />
+      );
     case "mentoring":
       return (
         <MentoringPreview
@@ -93,6 +103,13 @@ export default function SectionPreview({
         <TechCommitteePreview
           accentClass={accentClass}
           data={data as TechCommitteeSummary | undefined}
+        />
+      );
+    case "committee-head-nominations":
+      return (
+        <TechCommitteePreview
+          accentClass={accentClass}
+          data={data as CommitteeHeadNominationsSummary | undefined}
         />
       );
     case "positions":
@@ -264,6 +281,87 @@ function AttendancePreview({
   );
 }
 
+function GoLinksPreview({
+  accentClass,
+  data,
+}: {
+  accentClass: string;
+  data?: GoLinksSummary;
+}) {
+  const rows = data?.recent ?? [];
+  return (
+    <div className={PREVIEW_WRAPPER}>
+      <div className="absolute right-2 top-2 flex items-center gap-1.5">
+        {data && (
+          <span
+            className={cn(
+              "rounded-full px-2 py-0.5 text-[10px] font-semibold",
+              "bg-current/10",
+              accentClass
+            )}
+          >
+            {data.pinnedCount} pinned
+          </span>
+        )}
+        <Link2 className={cn("h-5 w-5", accentClass)} aria-hidden />
+      </div>
+      <div className="flex h-full flex-col justify-center gap-1.5 pr-20">
+        {rows.length > 0 ? (
+          rows.map((link) => (
+            <div key={link.id} className="flex items-center gap-2 text-xs">
+              <span
+                className={cn(
+                  "h-2 w-2 shrink-0 rounded-full",
+                  link.isPinned
+                    ? cn("bg-current", accentClass)
+                    : "bg-foreground/25"
+                )}
+              />
+              <span className="truncate font-mono text-muted-foreground">
+                /go/{link.golink}
+              </span>
+              {!link.isPublic && (
+                <span className="rounded-full bg-foreground/10 px-1.5 py-0.5 text-[9px] text-muted-foreground">
+                  officer
+                </span>
+              )}
+            </div>
+          ))
+        ) : data ? (
+          <div className="grid grid-cols-2 gap-3">
+            <Stat
+              value={data.publicCount}
+              label="public"
+              accentClass={accentClass}
+            />
+            <Stat
+              value={data.officerCount}
+              label="officer"
+              accentClass={accentClass}
+              muted
+            />
+          </div>
+        ) : (
+          [0, 1, 2].map((i) => (
+            <div key={i} className="flex items-center gap-2">
+              <div
+                className={cn(
+                  "h-2 w-2 shrink-0 rounded-full",
+                  i === 0 ? cn("bg-current", accentClass) : "bg-foreground/25"
+                )}
+              />
+              <div
+                className="h-2 rounded-sm bg-foreground/20"
+                style={{ width: `${70 - i * 10}%` }}
+              />
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
 function MentoringPreview({
   accentClass,
   showRedDot,
@@ -337,7 +435,9 @@ function TechCommitteePreview({
         {data ? (
           <>
             <div className="flex items-baseline gap-2">
-              <span className={cn("font-display text-2xl font-bold", accentClass)}>
+              <span
+                className={cn("font-display text-2xl font-bold", accentClass)}
+              >
                 {data.totalCount}
               </span>
               <span className="text-xs text-muted-foreground">
@@ -408,9 +508,7 @@ function PositionsPreview({
               data.vacantPositionCount === 1 ? "vacant seat" : "vacant seats"
             }
             accentClass={
-              data.vacantPositionCount > 0
-                ? "text-destructive"
-                : accentClass
+              data.vacantPositionCount > 0 ? "text-destructive" : accentClass
             }
             muted={data.vacantPositionCount === 0}
           />
@@ -519,9 +617,7 @@ function SponsorsPreview({
               <div
                 className={cn(
                   "h-1.5 w-3/4 rounded-sm",
-                  i === 1
-                    ? cn("bg-current", accentClass)
-                    : "bg-foreground/30"
+                  i === 1 ? cn("bg-current", accentClass) : "bg-foreground/30"
                 )}
               />
             )}
@@ -723,8 +819,8 @@ function PhotosPreview({
                 photo
                   ? "bg-foreground/10"
                   : i === 2 || i === 3
-                  ? cn("bg-current/30", accentClass)
-                  : "bg-foreground/15"
+                    ? cn("bg-current/30", accentClass)
+                    : "bg-foreground/15"
               )}
             >
               {photo && (

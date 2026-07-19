@@ -10,7 +10,7 @@ import AmendmentWizard from "@/components/amendments/AmendmentWizard";
 async function getConstitutionSource(): Promise<string> {
   const response = await fetch(
     "https://raw.githubusercontent.com/rit-sse/governing-docs/main/constitution.md",
-    { cache: "no-store" },
+    { cache: "no-store" }
   );
   if (!response.ok) {
     return "# Constitution\n\nFailed to load constitution draft.";
@@ -27,18 +27,22 @@ export default async function NewAmendmentPage() {
       <section className="w-full max-w-6xl px-2 md:px-4">
         <AmendmentBreadcrumb items={[{ label: "New Proposal" }]} />
         <NeoCard depth={1} className="p-6 md:p-8">
-          <Card depth={2} className="flex flex-col items-center justify-center py-16 px-6 text-center">
+          <Card
+            depth={2}
+            className="flex flex-col items-center justify-center py-16 px-6 text-center"
+          >
             <div className="rounded-full bg-primary/8 p-4 mb-5">
               {authLevel.isUser ? (
-                <UserPlus className="h-8 w-8 text-primary/40" strokeWidth={1.5} />
+                <UserPlus
+                  className="h-8 w-8 text-primary/40"
+                  strokeWidth={1.5}
+                />
               ) : (
                 <LogIn className="h-8 w-8 text-primary/40" strokeWidth={1.5} />
               )}
             </div>
             <h2 className="font-display text-xl font-semibold mb-2">
-              {authLevel.isUser
-                ? "Membership Required"
-                : "Sign In Required"}
+              {authLevel.isUser ? "Membership Required" : "Sign In Required"}
             </h2>
             <p className="text-sm text-muted-foreground max-w-md mb-6">
               {authLevel.isUser
@@ -75,7 +79,8 @@ export default async function NewAmendmentPage() {
           Propose an Amendment
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Walk through the steps below to propose a change to the SSE constitution
+          Walk through the steps below to propose a change to the SSE
+          constitution
         </p>
       </div>
 

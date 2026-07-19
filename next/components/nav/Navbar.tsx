@@ -39,6 +39,7 @@ import {
 } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import type { ActiveElectionSummary } from "@/lib/elections";
+import { buildNavGroups } from "@/lib/navbarConfig";
 
 /**
  * Audience-grouped dropdowns rendered between the top-level shortcuts
@@ -51,118 +52,18 @@ import type { ActiveElectionSummary } from "@/lib/elections";
  * routes; that page adds matching `id` + `scroll-mt-24` so headings
  * clear the navbar after the jump.
  *
- * SE Office grows a conditional "Elections" entry when an election is
- * live (formerly a top-level callout) — wired up inside the component
- * since it depends on the `serverActiveElection` prop.
+ * SE Office is gated to SE Office users. Elections surface under Students
+ * only while an election is open for nominations or voting.
  */
-
-interface NavItem {
-  title: string;
-  href: string;
-  description: string;
-}
-
-type NavGroup = {
-  value: string;
-  label: string;
-  items: NavItem[];
-  align?: "start" | "end";
-};
-
-const studentsItems: NavItem[] = [
-  {
-    title: "Get Involved",
-    href: "/about/get-involved",
-    description: "Discover ways to participate and contribute to SSE.",
-  },
-  {
-    title: "Events",
-    href: "/events/calendar",
-    description: "Upcoming SSE meetings, workshops, and socials.",
-  },
-  {
-    title: "Mentor Schedule",
-    href: "/mentoring/schedule",
-    description: "See when mentors are available in the lab.",
-  },
-  {
-    title: "Become a Mentor",
-    href: "/mentoring/apply",
-    description: "Apply to help fellow students in the SSE lab.",
-  },
-  {
-    title: "Leaderboard",
-    href: "/memberships",
-    description: "See who's on track to earn membership this term.",
-  },
-  {
-    title: "Projects",
-    href: "/projects",
-    description: "Browse student projects built by the SSE community.",
-  },
-  {
-    title: "Go Links",
-    href: "/go",
-    description: "Quick redirects (go/…) maintained by SSE officers.",
-  },
-];
-
-const alumniItems: NavItem[] = [
-  {
-    title: "Alumni Directory",
-    href: "/about/alumni",
-    description: "Stay connected with SSE graduates and their stories.",
-  },
-  {
-    title: "Speak at SSE",
-    href: "/sponsors#vise",
-    description: "Pitch a ViSE talk and share your career or research.",
-  },
-];
-
-const companiesItems: NavItem[] = [
-  {
-    title: "Sponsor SSE",
-    href: "/sponsors#sponsor",
-    description: "Back the lab and gain visibility with our members.",
-  },
-  {
-    title: "Recruit Students",
-    href: "/sponsors#recruit",
-    description: "Schedule a recruiting talk and meet our engineers.",
-  },
-];
-
-const seOfficeItems: NavItem[] = [
-  {
-    title: "Leadership",
-    href: "/about/leadership",
-    description: "Current officers, SE Office staff, and committee heads.",
-  },
-  {
-    title: "Committees",
-    href: "/about/committees",
-    description: "Specialized committees and the work they do.",
-  },
-  {
-    title: "Constitution",
-    href: "/about/constitution",
-    description: "Our governing document and bylaws.",
-  },
-  {
-    title: "Primary Officer's Policy",
-    href: "/about/primary-officers-policy",
-    description: "Officer guidelines and policies.",
-  },
-];
 
 interface NavbarProps {
   /** Resolved on the server so the first paint already includes Dashboard / profile link. */
   serverUserId?: number | null;
   serverShowDashboard?: boolean;
   serverProfileComplete?: boolean;
-  /** When set, the navbar shows a top-level "Elections" link pointing at the
-   * live election. Rendered on the server so the first paint is correct. */
+  serverIsSeAdmin?: boolean;
+  /** Rendered on the server so the first paint includes an open election link
+   * under Students when nominations or voting are live. */
   serverActiveElection?: ActiveElectionSummary | null;
 }
 
@@ -170,6 +71,7 @@ const Navbar: React.FC<NavbarProps> = ({
   serverUserId = null,
   serverShowDashboard = false,
   serverProfileComplete = true,
+  serverIsSeAdmin = false,
   serverActiveElection = null,
 }) => {
   const [open, setOpen] = React.useState(false);
@@ -182,6 +84,7 @@ const Navbar: React.FC<NavbarProps> = ({
   const [profileComplete, setProfileComplete] = React.useState(
     serverProfileComplete
   );
+  const [isSeAdmin, setIsSeAdmin] = React.useState(serverIsSeAdmin);
 
   // Background refresh so dynamic changes (e.g. profile completion) still
   // propagate. The navbar no longer renders a dashboard dropdown, so we only
@@ -191,6 +94,7 @@ const Navbar: React.FC<NavbarProps> = ({
   React.useEffect(() => {
     if (!session) {
       setShowDashboard(false);
+      setIsSeAdmin(false);
       setUserId(null);
       return;
     }
@@ -199,7 +103,8 @@ const Navbar: React.FC<NavbarProps> = ({
       try {
         const response = await fetch("/api/authLevel");
         const data = await response.json();
-        setShowDashboard(data.isOfficer || data.isMentor);
+        setShowDashboard(data.isOfficer || data.isMentor || data.isSeAdmin);
+        setIsSeAdmin(Boolean(data.isSeAdmin));
         setUserId(data.userId ?? null);
         setProfileComplete(data.profileComplete ?? true);
       } catch (error) {
@@ -237,45 +142,12 @@ const Navbar: React.FC<NavbarProps> = ({
     }
   };
 
-  // SE Office gets the live election as a conditional last entry. The
-  // groups array is otherwise stable; we rebuild on prop change so the
-  // first-paint server prop and any subsequent client-side election
-  // updates both flow through. When nominations are open we also
-  // surface a "Nominate" entry alongside Elections so new members can
-  // jump straight into the public funnel.
   const navGroups = React.useMemo(() => {
-    const seOfficeWithElection: NavItem[] = serverActiveElection
-      ? [
-          ...seOfficeItems,
-          {
-            title: "Elections",
-            href: `/elections/${serverActiveElection.slug}`,
-            description: "Cast your ballot in the active SSE election.",
-          },
-          ...(serverActiveElection.status === "NOMINATIONS_OPEN"
-            ? [
-                {
-                  title: "Nominate",
-                  href: "/nominate",
-                  description:
-                    "Nominate a candidate (or yourself) for the open ballot.",
-                },
-              ]
-            : []),
-        ]
-      : seOfficeItems;
-    return [
-      { value: "students", label: "Students", items: studentsItems },
-      { value: "alumni", label: "Alumni", items: alumniItems },
-      { value: "companies", label: "Companies", items: companiesItems },
-      {
-        value: "se-office",
-        label: "SE Office",
-        items: seOfficeWithElection,
-        align: "end",
-      },
-    ] satisfies NavGroup[];
-  }, [serverActiveElection]);
+    return buildNavGroups({
+      isSeAdmin,
+      activeElection: serverActiveElection,
+    });
+  }, [isSeAdmin, serverActiveElection]);
 
   return (
     <nav
@@ -332,25 +204,40 @@ const Navbar: React.FC<NavbarProps> = ({
                 // Two-or-fewer-item groups render single-column so the
                 // dropdown panel doesn't show a half-empty 2-col grid.
                 const single = group.items.length <= 2;
+                const dropdownGridStyle: React.CSSProperties = {
+                  width: "100%",
+                  gridTemplateColumns: single
+                    ? "minmax(0, 1fr)"
+                    : "repeat(auto-fit, minmax(min(200px, 100%), 1fr))",
+                };
+                const dropdownContentStyle: React.CSSProperties = {
+                  width: single
+                    ? "min(240px, calc(100vw - 32px))"
+                    : "min(500px, calc(100vw - 32px))",
+                  maxHeight: "min(70vh, calc(100vh - 8rem))",
+                };
+
                 return (
-                  <NavigationMenuItem key={group.value} value={group.value}>
+                  <NavigationMenuItem
+                    key={group.value}
+                    value={group.value}
+                    className={single ? "relative" : "static"}
+                  >
                     <NavigationMenuTrigger
                       onClick={handleTriggerClick(group.value)}
                     >
                       {group.label}
                     </NavigationMenuTrigger>
                     <NavigationMenuContent
+                      style={dropdownContentStyle}
                       className={cn(
-                        group.align === "end" && "lg:left-auto lg:right-0"
+                        "p-0 overflow-x-hidden overflow-y-auto",
+                        !single && "lg:left-auto lg:right-0"
                       )}
                     >
                       <ul
-                        className={cn(
-                          "grid gap-3 p-4",
-                          single
-                            ? "w-[280px]"
-                            : "md:w-[400px] lg:w-[500px] lg:grid-cols-2"
-                        )}
+                        className="grid auto-rows-fr items-stretch gap-4 p-4"
+                        style={dropdownGridStyle}
                       >
                         {group.items.map((item) => (
                           <ListItem
@@ -367,12 +254,19 @@ const Navbar: React.FC<NavbarProps> = ({
                 );
               })}
 
+              {showDashboard && (
+                <NavigationMenuItem>
+                  <NavigationMenuLink
+                    asChild
+                    className={navigationMenuTriggerStyle()}
+                  >
+                    <Link href="/dashboard">Officer Dashboard</Link>
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+              )}
+
               <NavigationMenuItem className="flex items-center ml-1">
-                <AuthButton
-                  userId={userId}
-                  profileComplete={profileComplete}
-                  showOfficerDashboard={showDashboard}
-                />
+                <AuthButton userId={userId} profileComplete={profileComplete} />
               </NavigationMenuItem>
             </NavigationMenuList>
           </NavigationMenu>
@@ -404,6 +298,16 @@ const Navbar: React.FC<NavbarProps> = ({
                 <MobileNavLink href="/photos" onClick={() => setOpen(false)}>
                   Photos
                 </MobileNavLink>
+
+                {showDashboard && (
+                  <MobileNavLink
+                    href="/dashboard"
+                    onClick={() => setOpen(false)}
+                  >
+                    <LayoutDashboard className="h-4 w-4 mr-2" />
+                    Officer Dashboard
+                  </MobileNavLink>
+                )}
 
                 {navGroups.map((group) => (
                   <MobileNavCollapsible key={group.value} title={group.label}>
@@ -443,15 +347,6 @@ const Navbar: React.FC<NavbarProps> = ({
                           </span>
                         </div>
                       </div>
-                      {showDashboard && (
-                        <MobileNavLink
-                          href="/dashboard"
-                          onClick={() => setOpen(false)}
-                        >
-                          <LayoutDashboard className="h-4 w-4 mr-2" />
-                          Officer Dashboard
-                        </MobileNavLink>
-                      )}
                       {userId && (
                         <MobileNavLink
                           href={`/profile/${userId}`}
@@ -572,12 +467,12 @@ function ListItem({
   title: React.ReactNode;
 }) {
   return (
-    <li {...props}>
-      <NavigationMenuLink asChild>
+    <li {...props} className="min-w-0">
+      <NavigationMenuLink asChild className="h-full p-0">
         <Link
           href={href}
           className={cn(
-            "block select-none space-y-1 rounded-lg p-3 leading-none no-underline outline-none",
+            "flex h-full min-h-[4.5rem] min-w-0 select-none flex-col justify-center rounded-md px-4 py-3 leading-none no-underline outline-none",
             "bg-surface-2 border border-border/30",
             "hover:bg-surface-1 hover:border-border/50 hover:shadow-md",
             "focus:bg-surface-2 focus:border-border/50",
@@ -585,10 +480,10 @@ function ListItem({
             className
           )}
         >
-          <div className="text-sm font-bold font-heading leading-none text-foreground">
+          <div className="line-clamp-2 min-w-0 break-words text-center text-[0.9375rem] font-bold font-heading leading-tight text-foreground">
             {title}
           </div>
-          <p className="line-clamp-2 min-h-[2lh] text-sm leading-snug text-muted-foreground mt-1">
+          <p className="mt-1.5 line-clamp-2 min-w-0 break-words text-center text-[0.8125rem] leading-snug text-muted-foreground">
             {children}
           </p>
         </Link>

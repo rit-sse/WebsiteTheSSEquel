@@ -30,7 +30,7 @@ describe("githubAmendmentService auth", () => {
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(
-        new Response(JSON.stringify({ id: 987654 }), { status: 200 }),
+        new Response(JSON.stringify({ id: 987654 }), { status: 200 })
       )
       .mockResolvedValueOnce(
         new Response(
@@ -38,8 +38,8 @@ describe("githubAmendmentService auth", () => {
             token: "installation-token",
             expires_at: "2099-01-01T00:00:00.000Z",
           }),
-          { status: 200 },
-        ),
+          { status: 200 }
+        )
       )
       .mockResolvedValueOnce(
         new Response(
@@ -48,15 +48,14 @@ describe("githubAmendmentService auth", () => {
             sha: "constitution-sha",
             encoding: "base64",
           }),
-          { status: 200 },
-        ),
+          { status: 200 }
+        )
       );
 
     vi.stubGlobal("fetch", fetchMock);
 
-    const { fetchConstitutionSnapshot } = await import(
-      "@/lib/services/githubAmendmentService"
-    );
+    const { fetchConstitutionSnapshot } =
+      await import("@/lib/services/githubAmendmentService");
     const snapshot = await fetchConstitutionSnapshot();
 
     expect(snapshot).toEqual({
@@ -71,7 +70,7 @@ describe("githubAmendmentService auth", () => {
       expect.stringContaining("\n"),
       expect.objectContaining({
         algorithm: "RS256",
-      }),
+      })
     );
     expect(fetchMock).toHaveBeenNthCalledWith(
       1,
@@ -79,32 +78,32 @@ describe("githubAmendmentService auth", () => {
       expect.objectContaining({
         headers: expect.any(Headers),
         method: "GET",
-      }),
+      })
     );
     expect(
-      (fetchMock.mock.calls[0]?.[1] as RequestInit | undefined)?.headers,
+      (fetchMock.mock.calls[0]?.[1] as RequestInit | undefined)?.headers
     ).toEqual(
       expect.objectContaining({
         get: expect.any(Function),
-      }),
+      })
     );
     expect(
       (
         (fetchMock.mock.calls[0]?.[1] as RequestInit | undefined)
           ?.headers as Headers
-      ).get("Authorization"),
+      ).get("Authorization")
     ).toBe("Bearer app-jwt");
     expect(
       (
         (fetchMock.mock.calls[1]?.[1] as RequestInit | undefined)
           ?.headers as Headers
-      ).get("Authorization"),
+      ).get("Authorization")
     ).toBe("Bearer app-jwt");
     expect(
       (
         (fetchMock.mock.calls[2]?.[1] as RequestInit | undefined)
           ?.headers as Headers
-      ).get("Authorization"),
+      ).get("Authorization")
     ).toBe("Bearer installation-token");
   });
 
@@ -118,15 +117,14 @@ describe("githubAmendmentService auth", () => {
           sha: "constitution-sha",
           encoding: "base64",
         }),
-        { status: 200 },
-      ),
+        { status: 200 }
+      )
     );
 
     vi.stubGlobal("fetch", fetchMock);
 
-    const { fetchConstitutionSnapshot } = await import(
-      "@/lib/services/githubAmendmentService"
-    );
+    const { fetchConstitutionSnapshot } =
+      await import("@/lib/services/githubAmendmentService");
     await fetchConstitutionSnapshot();
 
     expect(signMock).not.toHaveBeenCalled();
@@ -134,7 +132,7 @@ describe("githubAmendmentService auth", () => {
       (
         (fetchMock.mock.calls[0]?.[1] as RequestInit | undefined)
           ?.headers as Headers
-      ).get("Authorization"),
+      ).get("Authorization")
     ).toBe("Bearer legacy-token");
   });
 });

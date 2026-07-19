@@ -41,11 +41,13 @@ Follow our [environment setup guide](documentation/EnvironmentSetup.md) to get s
 After installing dependencies in `next/`, copy `.env.example` to `.env` and run `npm run env:check` before starting the dev server.
 
 ## Required VSCode Extensions
+
 - [Tailwind CSS IntelliSense](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss): bradlc.vscode-tailwindcss (Tailwind CSS IntelliSense)
 - [PostCSS Language Support](https://marketplace.visualstudio.com/items?itemName=csstools.postcss): csstools.postcss (required for Tailwind CSS IntelliSense)
 - [Prisma](https://marketplace.visualstudio.com/items?itemName=Prisma.prisma): Prisma.prisma (Prisma file syntax highlighting, formatting, completions, and linting)
 
 Recommended VSCode Extensions:
+
 - [GitLens](https://marketplace.visualstudio.com/items?itemName=eamodio.gitlens): eamodio.gitlens (GOATed extension for git)
 
 ## Contributing

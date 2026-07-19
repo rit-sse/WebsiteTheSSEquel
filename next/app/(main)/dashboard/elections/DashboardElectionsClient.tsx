@@ -93,8 +93,7 @@ export default function DashboardElectionsClient({
   const pastElections = useMemo(
     () =>
       elections.filter(
-        (e) =>
-          !ACTIVE_STATUSES.includes(e.status as ElectionStatus)
+        (e) => !ACTIVE_STATUSES.includes(e.status as ElectionStatus)
       ),
     [elections]
   );
@@ -168,9 +167,7 @@ export default function DashboardElectionsClient({
       });
 
       if (!response.ok) {
-        throw new Error(
-          (await response.text()) || "Failed to create election"
-        );
+        throw new Error((await response.text()) || "Failed to create election");
       }
 
       const created = await response.json();
@@ -225,12 +222,8 @@ export default function DashboardElectionsClient({
                       )}{" "}
                       nominations
                     </span>
-                    <span>
-                      {currentElection.ballots?.length ?? 0} ballots
-                    </span>
-                    <span>
-                      {currentElection.offices.length} positions
-                    </span>
+                    <span>{currentElection.ballots?.length ?? 0} ballots</span>
+                    <span>{currentElection.offices.length} positions</span>
                   </div>
                 </div>
                 <ChevronRight className="h-5 w-5 text-muted-foreground/30 group-hover:text-muted-foreground transition-colors shrink-0 mt-1" />
@@ -416,9 +409,7 @@ export default function DashboardElectionsClient({
                   disabled={submitting}
                   className="gap-2"
                 >
-                  {submitting && (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  )}
+                  {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
                   Create Election
                 </Button>
               </div>

@@ -6,7 +6,10 @@ import { mergePR } from "@/lib/services/githubAmendmentService";
 
 export const dynamic = "force-dynamic";
 
-export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function POST(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   const { id } = await params;
   const amendmentId = Number(id);
   if (Number.isNaN(amendmentId)) {
@@ -15,7 +18,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   const actor = await getActorFromRequest(request);
   if (!(actor?.isPrimary || actor?.isSeAdmin)) {
-    return new Response("Only primary officers or SE admins can merge amendments", { status: 403 });
+    return new Response(
+      "Only primary officers or SE admins can merge amendments",
+      { status: 403 }
+    );
   }
 
   const amendment = await prisma.amendment.findUnique({
@@ -27,11 +33,15 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   }
 
   if (!amendment.githubPrNumber) {
-    return new Response("This amendment has no linked pull request", { status: 400 });
+    return new Response("This amendment has no linked pull request", {
+      status: 400,
+    });
   }
 
   if (amendment.status !== AmendmentStatus.APPROVED) {
-    return new Response("Only approved amendments can be merged", { status: 409 });
+    return new Response("Only approved amendments can be merged", {
+      status: 409,
+    });
   }
 
   try {

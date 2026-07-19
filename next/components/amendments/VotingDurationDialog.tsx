@@ -42,22 +42,22 @@ export default function VotingDurationDialog({
   const [open, setOpen] = useState(false);
   const normalizedDefaultHours = defaultHours ?? 168;
   const defaultPreset = PRESETS.some(
-    (preset) => preset.hours === normalizedDefaultHours,
+    (preset) => preset.hours === normalizedDefaultHours
   )
     ? normalizedDefaultHours
     : 168;
   const [selectedPreset, setSelectedPreset] = useState<number | null>(
-    defaultPreset,
+    defaultPreset
   );
   const [useCustom, setUseCustom] = useState(
     defaultHours !== null &&
-      !PRESETS.some((preset) => preset.hours === normalizedDefaultHours),
+      !PRESETS.some((preset) => preset.hours === normalizedDefaultHours)
   );
   const [days, setDays] = useState(
-    useCustom ? String(Math.floor(normalizedDefaultHours / 24)) : "",
+    useCustom ? String(Math.floor(normalizedDefaultHours / 24)) : ""
   );
   const [hours, setHours] = useState(
-    useCustom ? String(Math.floor(normalizedDefaultHours % 24)) : "",
+    useCustom ? String(Math.floor(normalizedDefaultHours % 24)) : ""
   );
   const [minutes, setMinutes] = useState("");
   const [loading, setLoading] = useState(false);

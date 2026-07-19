@@ -1,7 +1,7 @@
 import prisma from "@/lib/prisma";
 import { NextRequest } from "next/server";
 import { AuthLevel } from "@/lib/authLevel";
-import { hasStagingElevatedAccess } from "@/lib/proxyAuth";
+import { getProxyEmail, hasStagingElevatedAccess } from "@/lib/proxyAuth";
 import { getSessionToken } from "@/lib/sessionToken";
 import {
   MENTOR_HEAD_TITLE,
@@ -14,7 +14,12 @@ import {
 type ResolveOptions = {
   includeProfileComplete?: boolean;
   stagingElevated?: boolean;
+  allowStagingElevated?: boolean;
 };
+
+type UserWhere =
+  | { email: string }
+  | { session: { some: { sessionToken: string } } };
 
 function getDefaultAuthLevel(includeProfileComplete: boolean): AuthLevel {
   const defaults: AuthLevel = {
@@ -74,8 +79,20 @@ export function getSessionTokenFromRequest(request: Request): string | null {
   return null;
 }
 
-export async function resolveAuthLevelFromToken(
-  token: string | null,
+function applyStagingElevation(authLevel: AuthLevel): void {
+  authLevel.isMentor = true;
+  authLevel.isOfficer = true;
+  authLevel.isMentoringHead = true;
+  authLevel.isProjectsHead = true;
+  authLevel.isTechCommitteeHead = true;
+  authLevel.isTechCommitteeDivisionManager = true;
+  authLevel.techCommitteeManagedDivision = "Lab Division";
+  authLevel.isPrimary = true;
+  authLevel.isSeAdmin = true;
+}
+
+async function resolveAuthLevelFromUserWhere(
+  where: UserWhere | null,
   options: ResolveOptions = {}
 ): Promise<AuthLevel> {
   const includeProfileComplete = options.includeProfileComplete ?? false;
@@ -83,29 +100,15 @@ export async function resolveAuthLevelFromToken(
   const authLevel = getDefaultAuthLevel(includeProfileComplete);
 
   if (stagingElevated) {
-    authLevel.isMentor = true;
-    authLevel.isOfficer = true;
-    authLevel.isMentoringHead = true;
-    authLevel.isProjectsHead = true;
-    authLevel.isTechCommitteeHead = true;
-    authLevel.isTechCommitteeDivisionManager = true;
-    authLevel.techCommitteeManagedDivision = "Lab Division";
-    authLevel.isPrimary = true;
-    authLevel.isSeAdmin = true;
+    applyStagingElevation(authLevel);
   }
 
-  if (!token) {
+  if (!where) {
     return authLevel;
   }
 
   const user = await prisma.user.findFirst({
-    where: {
-      session: {
-        some: {
-          sessionToken: token,
-        },
-      },
-    },
+    where,
     select: {
       id: true,
       graduationTerm: true,
@@ -170,23 +173,29 @@ export async function resolveAuthLevelFromToken(
   if (!stagingElevated) {
     authLevel.isMentor = isSeAdmin || user.mentor.length > 0;
     authLevel.isOfficer = isSeAdmin || user.officers.length > 0;
-    authLevel.isMentoringHead = isSeAdmin || user.officers.some(
-      (officer) => officer.position.title === MENTOR_HEAD_TITLE
-    );
-    authLevel.isProjectsHead = isSeAdmin || user.officers.some(
-      (officer) => officer.position.title === PROJECTS_HEAD_TITLE
-    );
-    authLevel.isTechCommitteeHead = isSeAdmin || user.officers.some(
-      (officer) => officer.position.title === TECH_COMMITTEE_HEAD_TITLE
-    );
+    authLevel.isMentoringHead =
+      isSeAdmin ||
+      user.officers.some(
+        (officer) => officer.position.title === MENTOR_HEAD_TITLE
+      );
+    authLevel.isProjectsHead =
+      isSeAdmin ||
+      user.officers.some(
+        (officer) => officer.position.title === PROJECTS_HEAD_TITLE
+      );
+    authLevel.isTechCommitteeHead =
+      isSeAdmin ||
+      user.officers.some(
+        (officer) => officer.position.title === TECH_COMMITTEE_HEAD_TITLE
+      );
     authLevel.isTechCommitteeDivisionManager =
       isSeAdmin ||
       user.officers.some((officer) =>
-      TECH_COMMITTEE_DIVISION_MANAGER_TITLES.includes(
-        officer.position
-          .title as (typeof TECH_COMMITTEE_DIVISION_MANAGER_TITLES)[number]
-      )
-    );
+        TECH_COMMITTEE_DIVISION_MANAGER_TITLES.includes(
+          officer.position
+            .title as (typeof TECH_COMMITTEE_DIVISION_MANAGER_TITLES)[number]
+        )
+      );
     const managedDivisionOfficer = user.officers.find((officer) =>
       TECH_COMMITTEE_DIVISION_MANAGER_TITLES.includes(
         officer.position
@@ -199,9 +208,8 @@ export async function resolveAuthLevelFromToken(
             .title as keyof typeof TECH_COMMITTEE_DIVISION_MANAGER_BY_TITLE
         ]
       : null;
-    authLevel.isPrimary = isSeAdmin || user.officers.some(
-      (officer) => officer.position.is_primary
-    );
+    authLevel.isPrimary =
+      isSeAdmin || user.officers.some((officer) => officer.position.is_primary);
     authLevel.isSeAdmin = isSeAdmin;
   }
 
@@ -218,12 +226,38 @@ export async function resolveAuthLevelFromToken(
   return authLevel;
 }
 
+export async function resolveAuthLevelFromToken(
+  token: string | null,
+  options: ResolveOptions = {}
+): Promise<AuthLevel> {
+  return resolveAuthLevelFromUserWhere(
+    token ? { session: { some: { sessionToken: token } } } : null,
+    options
+  );
+}
+
+export async function resolveAuthLevelFromProxyEmail(
+  email: string | null,
+  options: ResolveOptions = {}
+): Promise<AuthLevel> {
+  return resolveAuthLevelFromUserWhere(email ? { email } : null, options);
+}
+
 export async function resolveAuthLevelFromRequest(
   request: Request,
   options: Omit<ResolveOptions, "stagingElevated"> = {}
 ): Promise<AuthLevel> {
   const token = getSessionTokenFromRequest(request);
-  const stagingElevated = hasStagingElevatedAccess(request);
+  const stagingElevated =
+    (options.allowStagingElevated ?? true) && hasStagingElevatedAccess(request);
+
+  if (!token && stagingElevated) {
+    return resolveAuthLevelFromProxyEmail(getProxyEmail(request), {
+      includeProfileComplete: options.includeProfileComplete,
+      stagingElevated,
+    });
+  }
+
   return resolveAuthLevelFromToken(token, {
     includeProfileComplete: options.includeProfileComplete,
     stagingElevated,

@@ -30,7 +30,9 @@ export default function ConfirmStep({
   return (
     <Card depth={2} className="p-4 sm:p-6 space-y-5">
       <div className="space-y-1">
-        <h2 className="font-display text-lg font-semibold">Confirm &amp; Submit</h2>
+        <h2 className="font-display text-lg font-semibold">
+          Confirm &amp; Submit
+        </h2>
         <p className="text-sm text-muted-foreground">
           Review your amendment one final time before submitting. This will
           create a pull request on the governing documents repository.
@@ -100,7 +102,9 @@ export default function ConfirmStep({
         <p>
           <span className="font-semibold text-foreground">Note:</span>{" "}
           Submitting will create a GitHub pull request on the{" "}
-          <code className="bg-surface-3 px-1 rounded">rit-sse/governing-docs</code>{" "}
+          <code className="bg-surface-3 px-1 rounded">
+            rit-sse/governing-docs
+          </code>{" "}
           repository. The amendment will start as a draft and must be opened for
           public forum discussion before voting can begin.
         </p>

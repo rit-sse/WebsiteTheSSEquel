@@ -20,7 +20,9 @@ export default function ReviewStep({
   return (
     <Card depth={2} className="p-4 sm:p-6 space-y-4">
       <div className="space-y-1">
-        <h2 className="font-display text-lg font-semibold">Review Your Changes</h2>
+        <h2 className="font-display text-lg font-semibold">
+          Review Your Changes
+        </h2>
         <p className="text-sm text-muted-foreground">
           Review the diff below. Green lines are additions, red lines are
           removals. Make sure your changes accurately reflect your intended

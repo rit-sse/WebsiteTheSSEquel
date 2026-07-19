@@ -2,7 +2,7 @@ name: Discord CI Failures
 
 on:
   workflow_run:
-    workflows: ["Lint", "Test", "Typecheck", "Knip", "Docker CI"]
+    workflows: ["Pipeline"]
     types: [completed]
 
 permissions:
@@ -23,40 +23,13 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const expectedWorkflows = new Set(["Lint", "Test", "Typecheck", "Knip", "Docker CI"]);
+            const workflowRun = context.payload.workflow_run;
             const owner = context.repo.owner;
             const repo = context.repo.repo;
-            const headSha = context.payload.workflow_run.head_sha;
-
-            const runs = await github.paginate(github.rest.actions.listWorkflowRunsForRepo, {
-              owner,
-              repo,
-              head_sha: headSha,
-              per_page: 100,
-            });
-
-            const ciRuns = runs.filter((run) => expectedWorkflows.has(run.name));
-            const latestByName = new Map();
-
-            for (const run of ciRuns) {
-              const previous = latestByName.get(run.name);
-              if (!previous || new Date(run.run_started_at) > new Date(previous.run_started_at)) {
-                latestByName.set(run.name, run);
-              }
-            }
-
-            const latestRuns = Array.from(latestByName.values());
-            const allCompleted = expectedWorkflows.size === latestRuns.length
-              && latestRuns.every((run) => run.status === "completed");
-
-            const failedRuns = latestRuns.filter((run) => run.conclusion === "failure");
-            const shouldNotify = allCompleted && failedRuns.length > 0;
+            const shouldNotify = workflowRun.conclusion === "failure";
 
             core.setOutput("should_notify", shouldNotify ? "true" : "false");
-            core.setOutput(
-              "failed_workflows",
-              failedRuns.map((run) => `- ${run.name}`).join("\n")
-            );
+            core.setOutput("failed_workflows", `- ${workflowRun.name}`);
             core.setOutput(
               "summary_url",
               `https://github.com/${owner}/${repo}/actions?query=branch%3A${encodeURIComponent(context.payload.workflow_run.head_branch)}`

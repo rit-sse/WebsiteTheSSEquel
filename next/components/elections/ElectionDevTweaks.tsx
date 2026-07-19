@@ -22,18 +22,19 @@ import type { ElectionStatus } from "@prisma/client";
  * doesn't bounce the phase back on the next request.
  */
 
-const PHASES: Array<{ status: ElectionStatus; label: string; short: string }> = [
-  { status: "DRAFT", label: "Draft", short: "Draft" },
-  { status: "NOMINATIONS_OPEN", label: "Nominations Open", short: "Noms" },
-  {
-    status: "NOMINATIONS_CLOSED",
-    label: "Nominations Closed",
-    short: "Accept",
-  },
-  { status: "VOTING_OPEN", label: "Voting Open", short: "Voting" },
-  { status: "VOTING_CLOSED", label: "Voting Closed", short: "Tallied" },
-  { status: "CERTIFIED", label: "Certified", short: "Done" },
-];
+const PHASES: Array<{ status: ElectionStatus; label: string; short: string }> =
+  [
+    { status: "DRAFT", label: "Draft", short: "Draft" },
+    { status: "NOMINATIONS_OPEN", label: "Nominations Open", short: "Noms" },
+    {
+      status: "NOMINATIONS_CLOSED",
+      label: "Nominations Closed",
+      short: "Accept",
+    },
+    { status: "VOTING_OPEN", label: "Voting Open", short: "Voting" },
+    { status: "VOTING_CLOSED", label: "Voting Closed", short: "Tallied" },
+    { status: "CERTIFIED", label: "Certified", short: "Done" },
+  ];
 
 const TERMINAL: Array<{ status: ElectionStatus; label: string }> = [
   { status: "TIE_RUNOFF_REQUIRED", label: "Runoff needed" },
@@ -103,10 +104,7 @@ export default function ElectionDevTweaks({
   const persistOpen = (next: boolean) => {
     setOpen(next);
     try {
-      window.localStorage.setItem(
-        "sse_election_tweaks_open",
-        next ? "1" : "0"
-      );
+      window.localStorage.setItem("sse_election_tweaks_open", next ? "1" : "0");
     } catch {}
   };
 

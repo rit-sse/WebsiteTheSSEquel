@@ -5,8 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import {
-  Github,
-  Linkedin,
   ExternalLink,
   Pencil,
   Trophy,
@@ -24,6 +22,7 @@ import {
   CheckCircle2,
   GraduationCap,
 } from "lucide-react";
+import { GithubIcon, LinkedinIcon } from "@/components/common/BrandIcons";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -237,8 +236,8 @@ const QUEST_FIELDS = [
   { key: "graduationTerm", label: "Graduation Term", icon: GraduationCap },
   { key: "graduationYear", label: "Graduation Year", icon: Calendar },
   { key: "major", label: "Major", icon: Briefcase },
-  { key: "gitHub", label: "GitHub", icon: Github },
-  { key: "linkedIn", label: "LinkedIn", icon: Linkedin },
+  { key: "gitHub", label: "GitHub", icon: GithubIcon },
+  { key: "linkedIn", label: "LinkedIn", icon: LinkedinIcon },
 ] as const;
 
 const TOTAL_QUEST_FIELDS = QUEST_FIELDS.length;
@@ -1072,7 +1071,7 @@ export default function ProfileContent({
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    <Github className="h-4 w-4" />
+                    <GithubIcon className="h-4 w-4" />
                     <span className="hidden sm:inline">
                       {extractGitHubUsername(profile.gitHub)}
                     </span>
@@ -1086,7 +1085,7 @@ export default function ProfileContent({
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    <Linkedin className="h-4 w-4" />
+                    <LinkedinIcon className="h-4 w-4" />
                     <span className="hidden sm:inline">LinkedIn</span>
                   </a>
                 )}

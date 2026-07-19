@@ -2,11 +2,15 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const {
   mockGetGatewayAuthLevel,
+  mockGetCurrentAcademicTerm,
+  mockFormatAcademicTerm,
   mockTechCommitteeApplicationCycleFindFirst,
   mockTechCommitteeApplicationCycleCreate,
   mockTechCommitteeApplicationCycleUpdate,
 } = vi.hoisted(() => ({
   mockGetGatewayAuthLevel: vi.fn(),
+  mockGetCurrentAcademicTerm: vi.fn(),
+  mockFormatAcademicTerm: vi.fn(),
   mockTechCommitteeApplicationCycleFindFirst: vi.fn(),
   mockTechCommitteeApplicationCycleCreate: vi.fn(),
   mockTechCommitteeApplicationCycleUpdate: vi.fn(),
@@ -14,6 +18,11 @@ const {
 
 vi.mock("@/lib/authGateway", () => ({
   getGatewayAuthLevel: mockGetGatewayAuthLevel,
+}));
+
+vi.mock("@/lib/academicTerm", () => ({
+  getCurrentAcademicTerm: mockGetCurrentAcademicTerm,
+  formatAcademicTerm: mockFormatAcademicTerm,
 }));
 
 vi.mock("@/lib/prisma", () => ({
@@ -51,6 +60,8 @@ describe("/api/tech-committee-application/config route", () => {
       isTechCommitteeDivisionManager: false,
       isPrimary: false,
     });
+    mockGetCurrentAcademicTerm.mockReturnValue({ term: "SPRING", year: 2026 });
+    mockFormatAcademicTerm.mockReturnValue("Spring 2026");
   });
 
   it("rejects non-reviewers", async () => {

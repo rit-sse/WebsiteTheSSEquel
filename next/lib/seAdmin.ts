@@ -55,7 +55,9 @@ export async function isUserSeAdmin(userId: number | null) {
   return !!officer;
 }
 
-export async function canManageElections(authLevel: Pick<AuthLevel, "userId" | "isSeAdmin">) {
+export async function canManageElections(
+  authLevel: Pick<AuthLevel, "userId" | "isSeAdmin">
+) {
   if (!authLevel.userId) return false;
   if (authLevel.isSeAdmin) return true;
   return isUserCurrentPresident(authLevel.userId);

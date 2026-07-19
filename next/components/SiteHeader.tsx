@@ -12,6 +12,7 @@ type SiteHeaderProps = {
   serverUserId?: number | null;
   serverShowDashboard?: boolean;
   serverProfileComplete?: boolean;
+  serverIsSeAdmin?: boolean;
   serverActiveElection?: ActiveElectionSummary | null;
   banners: SiteBanner[];
 };
@@ -20,6 +21,7 @@ export default function SiteHeader({
   serverUserId,
   serverShowDashboard,
   serverProfileComplete,
+  serverIsSeAdmin,
   serverActiveElection,
   banners,
 }: SiteHeaderProps) {
@@ -55,6 +57,7 @@ export default function SiteHeader({
           serverUserId={serverUserId}
           serverShowDashboard={serverShowDashboard}
           serverProfileComplete={serverProfileComplete}
+          serverIsSeAdmin={serverIsSeAdmin}
           serverActiveElection={serverActiveElection}
         />
         <SiteBannerList banners={banners} />

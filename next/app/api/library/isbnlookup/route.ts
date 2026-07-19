@@ -12,7 +12,10 @@ export async function GET(params: NextRequest) {
     let isbn = params.nextUrl.searchParams.get("isbn") || "";
 
     if (!isbn || isbn.trim() === "") {
-      return NextResponse.json({ error: '"isbn" is required' }, { status: 400 });
+      return NextResponse.json(
+        { error: '"isbn" is required' },
+        { status: 400 }
+      );
     }
     let bookData: {
       name: string;
@@ -54,11 +57,17 @@ export async function GET(params: NextRequest) {
         : 0;
     } catch (e) {
       console.error("Error fetching external book data:", e);
-      return NextResponse.json({ error: "Failed to fetch book data" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to fetch book data" },
+        { status: 500 }
+      );
     }
     return NextResponse.json(bookData);
   } catch (e) {
     console.error("Error fetching book data:", e);
-    return NextResponse.json({ error: "Failed to fetch book data" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch book data" },
+      { status: 500 }
+    );
   }
 }

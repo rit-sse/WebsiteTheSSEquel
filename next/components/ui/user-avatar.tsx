@@ -42,16 +42,7 @@ interface UserAvatarProps {
  * in and cause visual inconsistency across surfaces.
  */
 const UserAvatar = React.forwardRef<HTMLDivElement, UserAvatarProps>(
-  (
-    {
-      src,
-      name,
-      className,
-      initialsClassName = "text-xs",
-      alt,
-    },
-    ref
-  ) => {
+  ({ src, name, className, initialsClassName = "text-xs", alt }, ref) => {
     const initials = getInitials(name);
     const [imgFailed, setImgFailed] = React.useState(false);
 

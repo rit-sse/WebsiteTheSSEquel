@@ -35,6 +35,7 @@ export async function PUT(request: Request): Promise<Response> {
 export async function GET(request: NextRequest) {
   const authLevel = await resolveAuthLevelFromRequest(request, {
     includeProfileComplete: true,
+    allowStagingElevated: true,
   });
   return Response.json(authLevel);
 }

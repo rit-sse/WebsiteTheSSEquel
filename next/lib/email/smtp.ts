@@ -1,5 +1,90 @@
 import nodemailer from "nodemailer";
+import sanitizeHtml from "sanitize-html";
 import { SendEmailOptions } from "./index";
+
+const SAFE_STYLE_VALUE = /^(?!.*(?:url|expression)\s*\()[#%(),./:\-\w\s]+$/i;
+const EMAIL_STYLE_PROPERTIES = [
+  "background",
+  "background-color",
+  "border",
+  "border-bottom",
+  "border-left",
+  "border-right",
+  "border-top",
+  "border-radius",
+  "color",
+  "display",
+  "font-family",
+  "font-size",
+  "font-weight",
+  "height",
+  "line-height",
+  "margin",
+  "margin-bottom",
+  "margin-left",
+  "margin-right",
+  "margin-top",
+  "max-width",
+  "opacity",
+  "padding",
+  "padding-bottom",
+  "padding-left",
+  "padding-right",
+  "padding-top",
+  "text-align",
+  "text-decoration",
+  "width",
+];
+
+const emailAllowedStyles = EMAIL_STYLE_PROPERTIES.reduce<
+  Record<string, RegExp[]>
+>((styles, property) => {
+  styles[property] = [SAFE_STYLE_VALUE];
+  return styles;
+}, {});
+
+function sanitizeEmailHtml(html: string): string {
+  return sanitizeHtml(html, {
+    allowedTags: sanitizeHtml.defaults.allowedTags.concat([
+      "div",
+      "h1",
+      "h2",
+      "h3",
+      "hr",
+      "img",
+      "span",
+      "table",
+      "tbody",
+      "td",
+      "th",
+      "thead",
+      "tr",
+    ]),
+    allowedAttributes: {
+      ...sanitizeHtml.defaults.allowedAttributes,
+      "*": ["style"],
+      a: ["href", "name", "rel", "style", "target"],
+      img: ["alt", "height", "src", "style", "width"],
+      table: ["border", "cellpadding", "cellspacing", "style"],
+      td: ["colspan", "rowspan", "style"],
+      th: ["colspan", "rowspan", "style"],
+    },
+    allowedSchemes: ["http", "https", "mailto"],
+    allowedSchemesByTag: {
+      img: ["http", "https", "data"],
+    },
+    allowedStyles: {
+      "*": emailAllowedStyles,
+    },
+    transformTags: {
+      a: sanitizeHtml.simpleTransform(
+        "a",
+        { rel: "noopener noreferrer" },
+        true
+      ),
+    },
+  });
+}
 
 /**
  * Send an email using SMTP via nodemailer
@@ -47,6 +132,7 @@ export async function sendEmailViaSMTP(
     content: attachment.content,
     encoding: (attachment.encoding as BufferEncoding) || "base64",
   }));
+  const sanitizedHtml = sanitizeEmailHtml(html);
 
   // Send email
   const info = await transporter.sendMail({
@@ -54,7 +140,7 @@ export async function sendEmailViaSMTP(
     to,
     subject,
     text: text || undefined,
-    html,
+    html: sanitizedHtml,
     attachments: nodemailerAttachments,
   });
 

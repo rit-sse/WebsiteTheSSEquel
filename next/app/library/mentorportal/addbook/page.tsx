@@ -120,7 +120,9 @@ export default function AddBook() {
     fetch("/api/library/isbnlookup?isbn=" + lookupISBNInput, {})
       .then(async (res) => {
         if (!res.ok) {
-          throw new Error(await readErrorMessage(res, "Failed to fetch book data"));
+          throw new Error(
+            await readErrorMessage(res, "Failed to fetch book data")
+          );
         }
 
         return res.json();
@@ -140,7 +142,9 @@ export default function AddBook() {
         }
       })
       .catch((err) => {
-        setError(err instanceof Error ? err.message : "Failed to fetch book data");
+        setError(
+          err instanceof Error ? err.message : "Failed to fetch book data"
+        );
       });
   };
 
@@ -386,7 +390,7 @@ export default function AddBook() {
               onChange={(e) =>
                 setNewBookData({
                   ...newBookData,
-                    yearPublished: normalizeYearPublished(e.target.value),
+                  yearPublished: normalizeYearPublished(e.target.value),
                 })
               }
             />

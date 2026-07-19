@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { getCurrentAcademicTerm, hasTermPassed } from "@/lib/academicTerm";
+import {
+  getCurrentSseOperationalTerm,
+  getNextSseOperationalTerm,
+} from "@/lib/sseTerms";
 import { isProfileCompletionEligible } from "@/lib/services/profileCompletionService";
 
 describe("academic term utilities", () => {
@@ -32,6 +36,19 @@ describe("academic term utilities", () => {
         year: 2026,
       })
     ).toBe(false);
+  });
+});
+
+describe("SSE operational term utilities", () => {
+  it("skips summer for SSE operating cycles", () => {
+    expect(getCurrentSseOperationalTerm(new Date("2026-06-10"))).toEqual({
+      term: "FALL",
+      year: 2026,
+    });
+    expect(getNextSseOperationalTerm(new Date("2026-04-10"))).toEqual({
+      term: "FALL",
+      year: 2026,
+    });
   });
 });
 

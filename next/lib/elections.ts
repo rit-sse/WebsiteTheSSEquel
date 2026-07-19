@@ -14,23 +14,15 @@ import { SE_ADMIN_POSITION_TITLE } from "@/lib/seAdmin";
 import { resolveUserImage } from "@/lib/s3Utils";
 
 /**
- * Statuses that count as "an election is live on the site" — i.e. there's
- * something a member might want to look at / act on. Excludes DRAFT
- * (pre-launch) and CANCELLED (post-kill). Included:
- *   - NOMINATIONS_OPEN / _CLOSED  → nominate or wait
- *   - VOTING_OPEN / _CLOSED       → vote or wait for reveal
- *   - TIE_RUNOFF_REQUIRED          → needs admin attention
- *   - CERTIFIED                    → result pages still worth showing
- *                                    briefly (filtered out of nav by the
- *                                    callers that want "pre-result only")
+ * Statuses that count as "an election is live on the public site".
+ * Public CTA/nav treatment is only for active participation windows:
+ * nominations are open or voting is open. Closed/certified elections
+ * remain available by direct URL, but they should not advertise as a
+ * pink homepage election button.
  */
 const LIVE_ELECTION_STATUSES: ElectionStatus[] = [
   ElectionStatus.NOMINATIONS_OPEN,
-  ElectionStatus.NOMINATIONS_CLOSED,
   ElectionStatus.VOTING_OPEN,
-  ElectionStatus.VOTING_CLOSED,
-  ElectionStatus.TIE_RUNOFF_REQUIRED,
-  ElectionStatus.CERTIFIED,
 ];
 
 export type ActiveElectionSummary = {
@@ -173,7 +165,8 @@ export function validateElectionWindow(input: {
   if (input.votingOpenAt <= input.nominationsCloseAt) {
     throw new Error("Voting must open after nominations close.");
   }
-  const diff = input.votingOpenAt.getTime() - input.nominationsCloseAt.getTime();
+  const diff =
+    input.votingOpenAt.getTime() - input.nominationsCloseAt.getTime();
   if (diff < 48 * 60 * 60 * 1000) {
     throw new Error(
       "Nominations must close at least 48 hours before voting opens."
@@ -244,10 +237,22 @@ export async function getElectionWithRelations(where: {
           nominations: {
             include: {
               nominee: {
-                select: { id: true, name: true, email: true, profileImageKey: true, googleImageURL: true },
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                  profileImageKey: true,
+                  googleImageURL: true,
+                },
               },
               nominator: {
-                select: { id: true, name: true, email: true, profileImageKey: true, googleImageURL: true },
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                  profileImageKey: true,
+                  googleImageURL: true,
+                },
               },
               reviewedBy: {
                 select: { id: true, name: true, email: true },
@@ -255,7 +260,13 @@ export async function getElectionWithRelations(where: {
               runningMateInvitation: {
                 include: {
                   invitee: {
-                    select: { id: true, name: true, email: true, profileImageKey: true, googleImageURL: true },
+                    select: {
+                      id: true,
+                      name: true,
+                      email: true,
+                      profileImageKey: true,
+                      googleImageURL: true,
+                    },
                   },
                 },
               },
@@ -326,10 +337,22 @@ export async function getElectionWithRelations(where: {
           nominations: {
             include: {
               nominee: {
-                select: { id: true, name: true, email: true, profileImageKey: true, googleImageURL: true },
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                  profileImageKey: true,
+                  googleImageURL: true,
+                },
               },
               nominator: {
-                select: { id: true, name: true, email: true, profileImageKey: true, googleImageURL: true },
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                  profileImageKey: true,
+                  googleImageURL: true,
+                },
               },
               reviewedBy: {
                 select: { id: true, name: true, email: true },
@@ -337,7 +360,13 @@ export async function getElectionWithRelations(where: {
               runningMateInvitation: {
                 include: {
                   invitee: {
-                    select: { id: true, name: true, email: true, profileImageKey: true, googleImageURL: true },
+                    select: {
+                      id: true,
+                      name: true,
+                      email: true,
+                      profileImageKey: true,
+                      googleImageURL: true,
+                    },
                   },
                 },
               },
@@ -407,7 +436,9 @@ export async function stageHasRequiredApprovals(
           officers: {
             where: {
               is_active: true,
-              position: { title: { in: ["President", SE_ADMIN_POSITION_TITLE] } },
+              position: {
+                title: { in: ["President", SE_ADMIN_POSITION_TITLE] },
+              },
             },
             select: {
               id: true,
@@ -447,8 +478,14 @@ type TallyBallot = {
   rankings: { nominationId: number; rank: number }[];
 };
 
-function deriveRank(ballot: TallyBallot, nominationId: number, fallbackRank: number) {
-  const explicit = ballot.rankings.find((ranking) => ranking.nominationId === nominationId);
+function deriveRank(
+  ballot: TallyBallot,
+  nominationId: number,
+  fallbackRank: number
+) {
+  const explicit = ballot.rankings.find(
+    (ranking) => ranking.nominationId === nominationId
+  );
   return explicit?.rank ?? fallbackRank;
 }
 
@@ -462,7 +499,8 @@ function rankScores(
       deriveRank(ballot, candidate.id, officeCandidateCount)
     );
     const total = ranks.reduce((sum, rank) => sum + rank, 0);
-    const average = ballots.length > 0 ? total / ballots.length : officeCandidateCount;
+    const average =
+      ballots.length > 0 ? total / ballots.length : officeCandidateCount;
     return { candidate, total, average };
   });
 }
@@ -475,10 +513,15 @@ function chooseBestCandidate(
   const scores = rankScores(tiedCandidates, ballots, officeCandidateCount).sort(
     (a, b) => a.total - b.total || a.average - b.average
   );
-  if (scores.length < 2) return { resolved: true, candidate: scores[0]?.candidate ?? null };
+  if (scores.length < 2)
+    return { resolved: true, candidate: scores[0]?.candidate ?? null };
   const [first, second] = scores;
   if (!first) return { resolved: false, candidate: null };
-  if (second && first.total === second.total && first.average === second.average) {
+  if (
+    second &&
+    first.total === second.total &&
+    first.average === second.average
+  ) {
     return { resolved: false, candidate: null };
   }
   return { resolved: true, candidate: first.candidate };
@@ -492,19 +535,21 @@ function chooseWorstCandidate(
   const scores = rankScores(tiedCandidates, ballots, officeCandidateCount).sort(
     (a, b) => b.total - a.total || b.average - a.average
   );
-  if (scores.length < 2) return { resolved: true, candidate: scores[0]?.candidate ?? null };
+  if (scores.length < 2)
+    return { resolved: true, candidate: scores[0]?.candidate ?? null };
   const [first, second] = scores;
   if (!first) return { resolved: false, candidate: null };
-  if (second && first.total === second.total && first.average === second.average) {
+  if (
+    second &&
+    first.total === second.total &&
+    first.average === second.average
+  ) {
     return { resolved: false, candidate: null };
   }
   return { resolved: true, candidate: first.candidate };
 }
 
-function getTopRemainingChoice(
-  ballot: TallyBallot,
-  remainingIds: Set<number>
-) {
+function getTopRemainingChoice(ballot: TallyBallot, remainingIds: Set<number>) {
   const rankedRemaining = ballot.rankings
     .filter((ranking) => remainingIds.has(ranking.nominationId))
     .sort((a, b) => a.rank - b.rank);
@@ -555,7 +600,9 @@ export function tallyInstantRunoffElection(params: {
     }))
     .filter((ballot) => ballot.rankings.length > 0);
 
-  const remaining = new Set<number>(eligibleNominations.map((nomination) => nomination.id));
+  const remaining = new Set<number>(
+    eligibleNominations.map((nomination) => nomination.id)
+  );
   const rounds: Array<{
     counts: { nominationId: number; votes: number }[];
     eliminatedNominationId?: number;
@@ -637,15 +684,19 @@ export function tallyInstantRunoffElection(params: {
     };
   }
 
-  const winner = eligibleNominations.find((nomination) => nomination.id === winnerId) ?? null;
+  const winner =
+    eligibleNominations.find((nomination) => nomination.id === winnerId) ??
+    null;
   let runnerUp =
     eligibleNominations.find(
-      (nomination) => nomination.id === eliminationOrder[eliminationOrder.length - 1]
+      (nomination) =>
+        nomination.id === eliminationOrder[eliminationOrder.length - 1]
     ) ?? null;
 
   if (!runnerUp && eligibleNominations.length === 2) {
     runnerUp =
-      eligibleNominations.find((nomination) => nomination.id !== winnerId) ?? null;
+      eligibleNominations.find((nomination) => nomination.id !== winnerId) ??
+      null;
   }
 
   // Full ranking, winner first → last-place last. Built by walking
@@ -708,7 +759,10 @@ export function getAcceptedRunningMate(
   nomination: NominationWithRunningMate | null | undefined
 ) {
   if (!nomination?.runningMateInvitation) return null;
-  if (nomination.runningMateInvitation.status !== ElectionRunningMateStatus.ACCEPTED) {
+  if (
+    nomination.runningMateInvitation.status !==
+    ElectionRunningMateStatus.ACCEPTED
+  ) {
     return null;
   }
   return nomination.runningMateInvitation.invitee;
@@ -885,9 +939,7 @@ export async function tallyElectionResults(electionId: number) {
 
   // Canonical primary-office order, applied site-wide via the tally
   // consumers (results page, reveal page, certify).
-  results.sort((a, b) =>
-    compareByPrimaryOrder(a.officeTitle, b.officeTitle)
-  );
+  results.sort((a, b) => compareByPrimaryOrder(a.officeTitle, b.officeTitle));
 
   return {
     electionId: election.id,
@@ -901,7 +953,10 @@ export async function tallyElectionResults(electionId: number) {
   };
 }
 
-export async function certifyElection(electionId: number, certifiedById: number) {
+export async function certifyElection(
+  electionId: number,
+  certifiedById: number
+) {
   const election = await prisma.election.findUnique({
     where: { id: electionId },
     include: {
@@ -941,7 +996,9 @@ export async function certifyElection(electionId: number, certifiedById: number)
         throw new Error(`No winner available for ${result.officeTitle}.`);
       }
 
-      const office = election.offices.find((item) => item.id === result.officeId);
+      const office = election.offices.find(
+        (item) => item.id === result.officeId
+      );
       if (!office) {
         throw new Error(`Office mapping missing for ${result.officeTitle}.`);
       }
@@ -986,7 +1043,10 @@ export function canTransitionElectionStatus(
   nextStatus: ElectionStatus
 ) {
   const transitions: Record<ElectionStatus, ElectionStatus[]> = {
-    [ElectionStatus.DRAFT]: [ElectionStatus.NOMINATIONS_OPEN, ElectionStatus.CANCELLED],
+    [ElectionStatus.DRAFT]: [
+      ElectionStatus.NOMINATIONS_OPEN,
+      ElectionStatus.CANCELLED,
+    ],
     [ElectionStatus.NOMINATIONS_OPEN]: [
       ElectionStatus.NOMINATIONS_CLOSED,
       ElectionStatus.CANCELLED,
@@ -1027,7 +1087,9 @@ export async function assertPrimaryOfficerPositions(positionIds: number[]) {
     throw new Error("One or more officer positions were not found.");
   }
   if (positions.some((position) => !position.is_primary)) {
-    throw new Error("Only primary officer positions can be included in elections.");
+    throw new Error(
+      "Only primary officer positions can be included in elections."
+    );
   }
   return positions;
 }
@@ -1157,7 +1219,10 @@ export async function tallyElectionForDisplay(slug: string) {
   // entry above carries `ticketDerived: false` here (the display
   // pipeline marks it later in the .map below), so add a temporary
   // hint for the helper.
-  for (const r of rawResults as Array<{ officeTitle: string; ticketDerived?: boolean }>) {
+  for (const r of rawResults as Array<{
+    officeTitle: string;
+    ticketDerived?: boolean;
+  }>) {
     if (r.officeTitle === VICE_PRESIDENT_TITLE) r.ticketDerived = true;
   }
   dedupeMultiOfficeWinners(
@@ -1192,16 +1257,15 @@ export async function tallyElectionForDisplay(slug: string) {
     const lastRound = rounds[rounds.length - 1];
     const winnerFinalVotes =
       raw.winner && lastRound
-        ? lastRound.counts.find(
+        ? (lastRound.counts.find(
             (c: { nominationId: number }) => c.nominationId === raw.winner!.id
-          )?.votes ?? 0
+          )?.votes ?? 0)
         : 0;
     const runnerUpFinalVotes =
       raw.runnerUp && lastRound
-        ? lastRound.counts.find(
-            (c: { nominationId: number }) =>
-              c.nominationId === raw.runnerUp!.id
-          )?.votes ?? 0
+        ? (lastRound.counts.find(
+            (c: { nominationId: number }) => c.nominationId === raw.runnerUp!.id
+          )?.votes ?? 0)
         : 0;
 
     let runningMate: {
@@ -1263,9 +1327,7 @@ export async function tallyElectionForDisplay(slug: string) {
 
   // Canonical primary-office order — threads through the results page
   // and the reveal carousel because both consume this `results` array.
-  results.sort((a, b) =>
-    compareByPrimaryOrder(a.officeTitle, b.officeTitle)
-  );
+  results.sort((a, b) => compareByPrimaryOrder(a.officeTitle, b.officeTitle));
 
   return { election, results };
 }

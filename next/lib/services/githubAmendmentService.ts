@@ -51,7 +51,7 @@ export type AmendmentPRResult = {
 
 export function buildAmendmentBranchName(
   title: string,
-  amendmentId: number,
+  amendmentId: number
 ): string {
   const slug = title
     .toLowerCase()
@@ -73,13 +73,11 @@ function getLegacyGithubToken(): string | null {
   return token && token.length > 0 ? token : null;
 }
 
-function getGithubAppConfig():
-  | {
-      appId: string;
-      installationId: number | null;
-      privateKey: string;
-    }
-  | null {
+function getGithubAppConfig(): {
+  appId: string;
+  installationId: number | null;
+  privateKey: string;
+} | null {
   const appId = process.env.GITHUB_APP_ID?.trim();
   const privateKey = process.env.GITHUB_APP_PRIVATE_KEY?.trim();
 
@@ -88,10 +86,14 @@ function getGithubAppConfig():
   }
 
   const installationIdValue = process.env.GITHUB_APP_INSTALLATION_ID?.trim();
-  const installationId = installationIdValue ? Number(installationIdValue) : null;
+  const installationId = installationIdValue
+    ? Number(installationIdValue)
+    : null;
 
   if (installationIdValue && Number.isNaN(installationId)) {
-    throw new Error("GITHUB_APP_INSTALLATION_ID must be a number when provided.");
+    throw new Error(
+      "GITHUB_APP_INSTALLATION_ID must be a number when provided."
+    );
   }
 
   return {
@@ -122,16 +124,14 @@ function createGithubAppJwt(): string {
     config.privateKey,
     {
       algorithm: "RS256",
-    },
+    }
   );
 }
 
-let cachedInstallationToken:
-  | {
-      token: string;
-      expiresAtMs: number;
-    }
-  | null = null;
+let cachedInstallationToken: {
+  token: string;
+  expiresAtMs: number;
+} | null = null;
 let cachedInstallationTokenPromise: Promise<string> | null = null;
 let cachedInstallationId: number | null = null;
 
@@ -156,7 +156,7 @@ async function fetchGithubWithJwt(url: string, options: RequestInit = {}) {
   if (!response.ok) {
     const message = await response.text();
     throw new Error(
-      `GitHub App request failed (${response.status}): ${message}`,
+      `GitHub App request failed (${response.status}): ${message}`
     );
   }
 
@@ -182,13 +182,13 @@ async function resolveGithubInstallationId(): Promise<number> {
     `${GOVERNING_DOCS_API}/installation`,
     {
       method: "GET",
-    },
+    }
   );
   const installation = (await response.json()) as GitHubInstallation;
 
   if (!installation?.id) {
     throw new Error(
-      `GitHub App is not installed on ${GOVERNING_DOC_OWNER}/${GOVERNING_DOC_REPO}.`,
+      `GitHub App is not installed on ${GOVERNING_DOC_OWNER}/${GOVERNING_DOC_REPO}.`
     );
   }
 
@@ -212,13 +212,15 @@ async function getGithubInstallationToken(): Promise<string> {
         `https://api.github.com/app/installations/${installationId}/access_tokens`,
         {
           method: "POST",
-        },
+        }
       );
       const token = (await response.json()) as GitHubInstallationToken;
       const expiresAtMs = Date.parse(token.expires_at);
 
       if (!token.token || Number.isNaN(expiresAtMs)) {
-        throw new Error("GitHub App did not return a valid installation token.");
+        throw new Error(
+          "GitHub App did not return a valid installation token."
+        );
       }
 
       cachedInstallationToken = {
@@ -243,7 +245,7 @@ async function getGithubToken(): Promise<string> {
   const token = getLegacyGithubToken();
   if (!token) {
     throw new Error(
-      "Neither GitHub App credentials nor GITHUB_PAT are configured on the server.",
+      "Neither GitHub App credentials nor GITHUB_PAT are configured on the server."
     );
   }
   return token;
@@ -269,7 +271,7 @@ async function fetchGithub(url: string, options: RequestInit = {}) {
   if (!response.ok) {
     const message = await response.text();
     throw new Error(
-      `GitHub API request failed (${response.status}): ${message}`,
+      `GitHub API request failed (${response.status}): ${message}`
     );
   }
   return response;
@@ -295,12 +297,12 @@ export async function fetchConstitutionSnapshot(): Promise<ConstitutionFileSnaps
     `${GOVERNING_DOCS_API}/contents/${encodedPath}?ref=${GOVERNING_DOC_BRANCH}`,
     {
       method: "GET",
-    },
+    }
   );
   const json = (await response.json()) as GitHubFileResponse;
   if (!json?.content || !json?.sha) {
     throw new Error(
-      "GitHub API did not return a valid constitution file payload.",
+      "GitHub API did not return a valid constitution file payload."
     );
   }
 
@@ -316,7 +318,7 @@ async function createAmendmentBranch(branchName: string): Promise<void> {
     `${GOVERNING_DOCS_API}/git/ref/heads/${GOVERNING_DOC_BRANCH}`,
     {
       method: "GET",
-    },
+    }
   );
   const baseRef = (await baseRefResponse.json()) as GitHubRefResponse;
 
@@ -399,7 +401,7 @@ export async function fetchPRDiff(prNumber: number): Promise<string> {
       headers: {
         Accept: "application/vnd.github.v3.diff",
       },
-    },
+    }
   );
 
   return response.text();

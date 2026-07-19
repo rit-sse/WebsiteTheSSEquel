@@ -77,7 +77,11 @@ function ManageLink({ isOfficer }: { isOfficer: boolean }) {
   );
 }
 
-function HistoricalOfficerGrid({ officers }: { officers: HistoricalOfficer[] }) {
+function HistoricalOfficerGrid({
+  officers,
+}: {
+  officers: HistoricalOfficer[];
+}) {
   if (officers.length === 0) return null;
 
   return (
@@ -429,10 +433,7 @@ export default function Leadership() {
             </div>
           </div>
 
-          <PastOfficersSection
-            history={history}
-            isLoading={isHistoryLoading}
-          />
+          <PastOfficersSection history={history} isLoading={isHistoryLoading} />
         </Card>
       </div>
     </section>

@@ -79,7 +79,10 @@ export function IRVRoundTable({ rounds, totalBallots }: IRVRoundTableProps) {
         </thead>
         <tbody>
           {candidates.map((candidate) => (
-            <tr key={candidate.nominationId} className="border-b border-border/20">
+            <tr
+              key={candidate.nominationId}
+              className="border-b border-border/20"
+            >
               <td className="py-2.5 pr-4 font-medium whitespace-nowrap">
                 {candidate.name}
               </td>
@@ -95,8 +98,7 @@ export function IRVRoundTable({ rounds, totalBallots }: IRVRoundTableProps) {
                 const isWinnerFinal =
                   round.roundNumber === rounds.length &&
                   candidate.nominationId === winnerId;
-                const wasEliminatedBefore =
-                  !justEliminated && eliminated;
+                const wasEliminatedBefore = !justEliminated && eliminated;
 
                 /* Candidate was already eliminated in a previous round */
                 if (wasEliminatedBefore) {

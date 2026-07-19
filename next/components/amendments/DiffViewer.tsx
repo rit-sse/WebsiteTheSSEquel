@@ -37,15 +37,27 @@ function buildLineRows(original: string, proposed: string): DiffLine[] {
         ? "removed"
         : "unchanged";
     const splitLines = (patch.value as string).split(/\r?\n/);
-    const allLines = splitLines.every((line: string) => line === "") ? [] : splitLines;
+    const allLines = splitLines.every((line: string) => line === "")
+      ? []
+      : splitLines;
 
     for (const contentLine of allLines) {
       if (changeType === "removed") {
-        tempLines.push({ type: "removed", leftLine: originalLine++, rightLine: null, content: contentLine });
+        tempLines.push({
+          type: "removed",
+          leftLine: originalLine++,
+          rightLine: null,
+          content: contentLine,
+        });
         continue;
       }
       if (changeType === "added") {
-        tempLines.push({ type: "added", leftLine: null, rightLine: proposedLine++, content: contentLine });
+        tempLines.push({
+          type: "added",
+          leftLine: null,
+          rightLine: proposedLine++,
+          content: contentLine,
+        });
         continue;
       }
       tempLines.push({
@@ -91,7 +103,10 @@ function buildLineRows(original: string, proposed: string): DiffLine[] {
   return lines;
 }
 
-function buildDisplayRows(lines: DiffLine[], expandedSections: Set<number>): DisplayRow[] {
+function buildDisplayRows(
+  lines: DiffLine[],
+  expandedSections: Set<number>
+): DisplayRow[] {
   const rows: DisplayRow[] = [];
 
   let i = 0;
@@ -125,7 +140,10 @@ function buildDisplayRows(lines: DiffLine[], expandedSections: Set<number>): Dis
     }
 
     const contextBefore = Math.min(CONTEXT_LINES, runEnd - runStart);
-    const contextAfter = Math.min(CONTEXT_LINES, runEnd - runStart - contextBefore);
+    const contextAfter = Math.min(
+      CONTEXT_LINES,
+      runEnd - runStart - contextBefore
+    );
     const collapsedCount = runEnd - runStart - contextBefore - contextAfter;
 
     for (let j = runStart; j < runStart + contextBefore; j++) {
@@ -133,7 +151,11 @@ function buildDisplayRows(lines: DiffLine[], expandedSections: Set<number>): Dis
     }
 
     if (collapsedCount > 0) {
-      rows.push({ kind: "collapsed", count: collapsedCount, startIdx: runStart });
+      rows.push({
+        kind: "collapsed",
+        count: collapsedCount,
+        startIdx: runStart,
+      });
     }
 
     for (let j = runEnd - contextAfter; j < runEnd; j++) {
@@ -180,32 +202,37 @@ function WordHighlightedContent({
 
   return (
     <pre className="whitespace-pre-wrap break-words font-mono text-sm">
-      {wordDiffs.map((part: { added?: boolean; removed?: boolean; value: string }, idx: number) => {
-        const isRelevant =
-          (type === "removed" && part.removed) ||
-          (type === "added" && part.added);
-        const isOpposite =
-          (type === "removed" && part.added) ||
-          (type === "added" && part.removed);
+      {wordDiffs.map(
+        (
+          part: { added?: boolean; removed?: boolean; value: string },
+          idx: number
+        ) => {
+          const isRelevant =
+            (type === "removed" && part.removed) ||
+            (type === "added" && part.added);
+          const isOpposite =
+            (type === "removed" && part.added) ||
+            (type === "added" && part.removed);
 
-        // Skip parts that belong to the other side
-        if (isOpposite) return null;
+          // Skip parts that belong to the other side
+          if (isOpposite) return null;
 
-        if (isRelevant) {
-          return (
-            <span key={idx} className={highlightClass}>
-              {part.value}
-            </span>
-          );
+          if (isRelevant) {
+            return (
+              <span key={idx} className={highlightClass}>
+                {part.value}
+              </span>
+            );
+          }
+
+          // Unchanged part
+          if (!part.added && !part.removed) {
+            return <span key={idx}>{part.value}</span>;
+          }
+
+          return null;
         }
-
-        // Unchanged part
-        if (!part.added && !part.removed) {
-          return <span key={idx}>{part.value}</span>;
-        }
-
-        return null;
-      })}
+      )}
     </pre>
   );
 }
@@ -217,16 +244,18 @@ export default function DiffViewer({
   originalContent: string;
   proposedContent: string;
 }) {
-  const [expandedSections, setExpandedSections] = useState<Set<number>>(new Set());
+  const [expandedSections, setExpandedSections] = useState<Set<number>>(
+    new Set()
+  );
 
   const lines = useMemo(
     () => buildLineRows(originalContent, proposedContent),
-    [originalContent, proposedContent],
+    [originalContent, proposedContent]
   );
 
   const displayRows = useMemo(
     () => buildDisplayRows(lines, expandedSections),
-    [lines, expandedSections],
+    [lines, expandedSections]
   );
 
   const addedCount = lines.filter((l) => l.type === "added").length;
@@ -243,10 +272,14 @@ export default function DiffViewer({
         <span className="text-sm font-semibold font-mono">constitution.md</span>
         <div className="flex items-center gap-3 text-xs font-mono">
           {addedCount > 0 && (
-            <span className="text-emerald-700 dark:text-emerald-400 font-semibold">+{addedCount}</span>
+            <span className="text-emerald-700 dark:text-emerald-400 font-semibold">
+              +{addedCount}
+            </span>
           )}
           {removedCount > 0 && (
-            <span className="text-rose-700 dark:text-rose-400 font-semibold">-{removedCount}</span>
+            <span className="text-rose-700 dark:text-rose-400 font-semibold">
+              -{removedCount}
+            </span>
           )}
         </div>
       </div>
@@ -265,7 +298,9 @@ export default function DiffViewer({
                         className="w-full flex items-center justify-center gap-2 py-1.5 text-xs text-primary/70 bg-primary/5 hover:bg-primary/10 transition-colors cursor-pointer border-y border-primary/10"
                       >
                         <ChevronRight className="h-3 w-3" />
-                        <span className="font-mono">{row.count} unchanged lines</span>
+                        <span className="font-mono">
+                          {row.count} unchanged lines
+                        </span>
                         <ChevronDown className="h-3 w-3" />
                       </button>
                     </td>
@@ -285,14 +320,20 @@ export default function DiffViewer({
                   <td className="w-10 px-2 py-1 tabular-nums text-muted-foreground text-right select-none hidden sm:table-cell text-xs">
                     {line.rightLine ?? ""}
                   </td>
-                  <td className={`w-5 px-1 py-1 text-center select-none text-xs font-mono font-bold ${
-                    line.type === "added"
-                      ? "text-emerald-700 dark:text-emerald-400"
+                  <td
+                    className={`w-5 px-1 py-1 text-center select-none text-xs font-mono font-bold ${
+                      line.type === "added"
+                        ? "text-emerald-700 dark:text-emerald-400"
+                        : line.type === "removed"
+                          ? "text-rose-700 dark:text-rose-400"
+                          : "text-transparent"
+                    }`}
+                  >
+                    {line.type === "added"
+                      ? "+"
                       : line.type === "removed"
-                        ? "text-rose-700 dark:text-rose-400"
-                        : "text-transparent"
-                  }`}>
-                    {line.type === "added" ? "+" : line.type === "removed" ? "-" : ""}
+                        ? "-"
+                        : ""}
                   </td>
                   <td className="px-3 py-0.5">
                     <WordHighlightedContent
@@ -306,7 +347,10 @@ export default function DiffViewer({
             })}
             {displayRows.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-3 py-4 text-muted-foreground text-center">
+                <td
+                  colSpan={4}
+                  className="px-3 py-4 text-muted-foreground text-center"
+                >
                   No changes to display.
                 </td>
               </tr>

@@ -1,7 +1,10 @@
 import prisma from "@/lib/prisma";
+import { headers } from "next/headers";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { AuthLevel } from "@/lib/authLevel";
+import { getProxyEmail, isStagingProxyAuthEnabled } from "@/lib/proxyAuth";
+import { resolveAuthLevelFromProxyEmail } from "@/lib/authLevelResolver";
 import {
   MENTOR_HEAD_TITLE,
   PROJECTS_HEAD_TITLE,
@@ -33,6 +36,21 @@ export async function getAuthLevel(): Promise<AuthLevel> {
     isSeAdmin: false,
     profileComplete: true,
   };
+
+  if (isStagingProxyAuthEnabled()) {
+    try {
+      const requestHeaders = await headers();
+      const proxyEmail = getProxyEmail({ headers: requestHeaders });
+      if (proxyEmail) {
+        return resolveAuthLevelFromProxyEmail(proxyEmail, {
+          includeProfileComplete: true,
+          stagingElevated: true,
+        });
+      }
+    } catch {
+      // Some server-side callers may not have request headers available.
+    }
+  }
 
   const session = await getServerSession(authOptions);
   const email = session?.user?.email;

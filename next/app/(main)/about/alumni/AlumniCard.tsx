@@ -2,8 +2,6 @@
 
 import { useRef, useEffect, useState } from "react";
 import {
-  Github,
-  Linkedin,
   Mail,
   X,
   Building2,
@@ -12,6 +10,7 @@ import {
   Globe,
   Star,
 } from "lucide-react";
+import { GithubIcon, LinkedinIcon } from "@/components/common/BrandIcons";
 import { motion, AnimatePresence } from "motion/react";
 import { AlumniMember } from "./alumni";
 import Avatar from "boring-avatars";
@@ -404,7 +403,7 @@ export default function AlumniCard({
                 className="text-muted-foreground hover:text-primary transition-colors"
                 title="LinkedIn"
               >
-                <Linkedin className="h-5 w-5" />
+                <LinkedinIcon className="h-5 w-5" />
               </a>
             )}
             {alumniMember.github && (
@@ -415,7 +414,7 @@ export default function AlumniCard({
                 className="text-muted-foreground hover:text-primary transition-colors"
                 title="GitHub"
               >
-                <Github className="h-5 w-5" />
+                <GithubIcon className="h-5 w-5" />
               </a>
             )}
             {ghUser?.blog && (

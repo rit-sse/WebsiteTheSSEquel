@@ -58,9 +58,7 @@ export function ElectionPhaseIndicator({
                 className={cn(
                   "h-px w-3 transition-colors duration-300",
                   compact && "w-2",
-                  isCompleted || isCurrent
-                    ? "bg-primary/60"
-                    : "bg-border/40"
+                  isCompleted || isCurrent ? "bg-primary/60" : "bg-border/40"
                 )}
               />
             )}

@@ -1,7 +1,11 @@
 import { Metadata } from "next";
 import prisma from "@/lib/prisma";
 import { getPhotoImageUrl, PHOTO_CATEGORIES } from "@/lib/photos";
-import { PhotosClient, type PhotoDto, type PhotoEventOption } from "./PhotosClient";
+import {
+  PhotosClient,
+  type PhotoDto,
+  type PhotoEventOption,
+} from "./PhotosClient";
 
 export const metadata: Metadata = {
   title: "Historians",

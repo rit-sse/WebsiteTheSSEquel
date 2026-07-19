@@ -9,7 +9,14 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { AlertCircle, CheckCircle2, Vote, GitMerge, FileText, Shield } from "lucide-react";
+import {
+  AlertCircle,
+  CheckCircle2,
+  Vote,
+  GitMerge,
+  FileText,
+  Shield,
+} from "lucide-react";
 import AmendmentStatusBadge from "@/components/amendments/AmendmentStatusBadge";
 import type { AmendmentStatus } from "@prisma/client";
 
@@ -34,7 +41,8 @@ export default function AmendmentDashboardStats({
 }: AmendmentDashboardStatsProps) {
   const counts = {
     OPEN: amendments.filter((a) => a.status === "OPEN").length,
-    PRIMARY_REVIEW: amendments.filter((a) => a.status === "PRIMARY_REVIEW").length,
+    PRIMARY_REVIEW: amendments.filter((a) => a.status === "PRIMARY_REVIEW")
+      .length,
     VOTING: amendments.filter((a) => a.status === "VOTING").length,
     APPROVED: amendments.filter((a) => a.status === "APPROVED").length,
     MERGED: amendments.filter((a) => a.status === "MERGED").length,
@@ -43,7 +51,11 @@ export default function AmendmentDashboardStats({
   };
 
   const needsAttention = amendments.filter(
-    (a) => a.status === "OPEN" || a.status === "PRIMARY_REVIEW" || a.status === "VOTING" || a.status === "APPROVED"
+    (a) =>
+      a.status === "OPEN" ||
+      a.status === "PRIMARY_REVIEW" ||
+      a.status === "VOTING" ||
+      a.status === "APPROVED"
   );
 
   const statTiles = [
@@ -97,7 +109,10 @@ export default function AmendmentDashboardStats({
           {statTiles.map((tile) => (
             <Tooltip key={tile.label}>
               <TooltipTrigger asChild>
-                <Card depth={2} className="p-4 cursor-help transition-colors hover:bg-surface-3/50">
+                <Card
+                  depth={2}
+                  className="p-4 cursor-help transition-colors hover:bg-surface-3/50"
+                >
                   <div className="flex items-start gap-3">
                     <div className={`rounded-lg p-2 ${tile.bg}`}>
                       <tile.icon className={`h-4 w-4 ${tile.color}`} />
@@ -106,7 +121,9 @@ export default function AmendmentDashboardStats({
                       <p className="text-2xl font-display font-bold tabular-nums leading-none">
                         {tile.count}
                       </p>
-                      <p className="text-xs text-muted-foreground mt-1 truncate">{tile.label}</p>
+                      <p className="text-xs text-muted-foreground mt-1 truncate">
+                        {tile.label}
+                      </p>
                     </div>
                   </div>
                 </Card>
@@ -126,11 +143,17 @@ export default function AmendmentDashboardStats({
               <h3 className="font-display font-semibold text-sm">
                 Requires Your Attention
               </h3>
-              <span className="text-xs text-muted-foreground">as {roleName}</span>
+              <span className="text-xs text-muted-foreground">
+                as {roleName}
+              </span>
             </div>
             <div className="space-y-2">
               {needsAttention.slice(0, 5).map((amendment) => (
-                <Card key={amendment.id} depth={3} className="p-3 flex items-center gap-3">
+                <Card
+                  key={amendment.id}
+                  depth={3}
+                  className="p-3 flex items-center gap-3"
+                >
                   <AmendmentStatusBadge status={amendment.status} />
                   <Link
                     href={`/about/constitution/amendments/${amendment.id}`}
@@ -139,7 +162,9 @@ export default function AmendmentDashboardStats({
                     {amendment.title}
                   </Link>
                   <Button asChild size="xs" variant="outline">
-                    <Link href={`/about/constitution/amendments/${amendment.id}`}>
+                    <Link
+                      href={`/about/constitution/amendments/${amendment.id}`}
+                    >
                       Review
                     </Link>
                   </Button>

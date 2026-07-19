@@ -2,7 +2,11 @@ import prisma from "@/lib/prisma";
 import { getGatewayAuthLevel } from "@/lib/authGateway";
 import { getElectionUrl } from "@/lib/elections";
 import { listElectionEmailRecipients } from "@/lib/electionEligibility";
-import { sendEmail, isEmailConfigured, type EmailAttachment } from "@/lib/email";
+import {
+  sendEmail,
+  isEmailConfigured,
+  type EmailAttachment,
+} from "@/lib/email";
 import { NextRequest } from "next/server";
 import { remark } from "remark";
 import remarkGfm from "remark-gfm";
@@ -71,9 +75,12 @@ export async function POST(
 ) {
   const authLevel = await getGatewayAuthLevel(request);
   if (!(await canManageElections(authLevel)) || !authLevel.userId) {
-    return new Response("Only the President or an SE Admin can send election emails", {
-      status: 403,
-    });
+    return new Response(
+      "Only the President or an SE Admin can send election emails",
+      {
+        status: 403,
+      }
+    );
   }
   if (!isEmailConfigured()) {
     return new Response("Email service is not configured", { status: 503 });
@@ -109,7 +116,9 @@ export async function POST(
     ElectionEmailKind.NOMINATION_NOTICE,
   ];
   if (!kind || !broadcastKinds.includes(kind)) {
-    return new Response("A valid election email kind is required", { status: 400 });
+    return new Response("A valid election email kind is required", {
+      status: 400,
+    });
   }
 
   const subject = String(body.subject ?? "").trim();

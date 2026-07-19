@@ -6,11 +6,13 @@ const {
   mockUserFindMany,
   mockMembershipsCreate,
   mockResolveUserImage,
+  mockGetCurrentSseOperationalTerm,
 } = vi.hoisted(() => ({
   mockMembershipsGroupBy: vi.fn(),
   mockUserFindMany: vi.fn(),
   mockMembershipsCreate: vi.fn(),
   mockResolveUserImage: vi.fn(),
+  mockGetCurrentSseOperationalTerm: vi.fn(),
 }));
 
 vi.mock("@/lib/prisma", () => ({
@@ -32,15 +34,23 @@ vi.mock("@/lib/s3Utils", () => ({
   normalizeToS3Key: vi.fn(),
 }));
 
+vi.mock("@/lib/sseTerms", () => ({
+  getCurrentSseOperationalTerm: mockGetCurrentSseOperationalTerm,
+}));
+
 import { GET, POST } from "@/app/api/memberships/route";
 
 describe("/api/memberships route", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockResolveUserImage.mockReturnValue("resolved-image");
+    mockGetCurrentSseOperationalTerm.mockReturnValue({
+      term: "SPRING",
+      year: 2026,
+    });
   });
 
-  it("GET aggregates memberships per user", async () => {
+  it("GET aggregates memberships per user for the active SSE term", async () => {
     mockMembershipsGroupBy.mockResolvedValue([
       {
         userId: 10,
@@ -60,6 +70,11 @@ describe("/api/memberships route", () => {
     const res = await GET();
 
     expect(res.status).toBe(200);
+    expect(mockMembershipsGroupBy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { term: "SPRING", year: 2026 },
+      })
+    );
     expect(await res.json()).toEqual([
       {
         userId: 10,
@@ -94,6 +109,10 @@ describe("/api/memberships route", () => {
   });
 
   it("POST creates a membership record for valid input", async () => {
+    mockGetCurrentSseOperationalTerm.mockReturnValue({
+      term: "SPRING",
+      year: 2026,
+    });
     mockMembershipsCreate.mockResolvedValue({
       id: 1,
       userId: 15,
@@ -114,7 +133,9 @@ describe("/api/memberships route", () => {
     const res = await POST(req);
 
     expect(res.status).toBe(201);
-    // term/year are derived from `dateGiven` — 2026-02-01 → SPRING 2026.
+    expect(mockGetCurrentSseOperationalTerm).toHaveBeenCalledWith(
+      new Date("2026-02-01T00:00:00.000Z")
+    );
     expect(mockMembershipsCreate).toHaveBeenCalledWith({
       data: {
         userId: 15,
@@ -131,6 +152,41 @@ describe("/api/memberships route", () => {
       reason: "Event Attendance",
       dateGiven: "2026-02-01T00:00:00.000Z",
     });
+  });
+
+  it("POST uses SSE operational terms so summer dates land in Fall", async () => {
+    mockGetCurrentSseOperationalTerm.mockReturnValue({
+      term: "FALL",
+      year: 2026,
+    });
+    mockMembershipsCreate.mockResolvedValue({
+      id: 2,
+      userId: 15,
+      reason: "Event Attendance",
+      dateGiven: "2026-06-15T00:00:00.000Z",
+    });
+
+    const req = new Request("http://localhost/api/memberships", {
+      method: "POST",
+      body: JSON.stringify({
+        userId: 15,
+        reason: "Event Attendance",
+        dateGiven: "2026-06-15",
+      }),
+      headers: { "content-type": "application/json" },
+    });
+
+    const res = await POST(req);
+
+    expect(res.status).toBe(201);
+    expect(mockMembershipsCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          term: "FALL",
+          year: 2026,
+        }),
+      })
+    );
   });
 
   it("POST rejects unsupported manual reasons", async () => {

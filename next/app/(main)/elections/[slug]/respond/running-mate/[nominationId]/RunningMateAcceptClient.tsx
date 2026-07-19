@@ -141,9 +141,7 @@ export default function RunningMateAcceptClient({
           body: JSON.stringify({
             action: "ACCEPT",
             statement: materials.statement,
-            yearLevel: materials.yearLevel
-              ? Number(materials.yearLevel)
-              : null,
+            yearLevel: materials.yearLevel ? Number(materials.yearLevel) : null,
             program: materials.program || null,
             canRemainEnrolledFullYear: materials.canRemainEnrolledFullYear,
             canRemainEnrolledNextTerm: materials.canRemainEnrolledNextTerm,
@@ -183,9 +181,7 @@ export default function RunningMateAcceptClient({
           {electionTitle}
         </Link>
         <ChevronRight className="h-3.5 w-3.5" />
-        <span className="text-foreground font-medium">
-          Your VP invitation
-        </span>
+        <span className="text-foreground font-medium">Your VP invitation</span>
       </nav>
 
       {step === "decide" && (
@@ -307,8 +303,8 @@ function DecideStep({
               </li>
               <li className="flex items-start gap-2">
                 <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
-                Fill in your bio, program, and eligibility — they show on
-                your candidate card next to {presidentName}.
+                Fill in your bio, program, and eligibility — they show on your
+                candidate card next to {presidentName}.
               </li>
               <li className="flex items-start gap-2">
                 <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
@@ -319,11 +315,7 @@ function DecideStep({
         </div>
 
         <div className="flex flex-wrap items-center gap-4 pt-2">
-          <Button
-            onClick={onAccept}
-            disabled={submitting}
-            className="gap-2"
-          >
+          <Button onClick={onAccept} disabled={submitting} className="gap-2">
             <CheckCircle className="h-4 w-4" /> Accept &amp; continue
           </Button>
           <Button
@@ -416,10 +408,7 @@ function MaterialsStep({
                   "canRemainEnrolledFullYear",
                   "Can remain enrolled full academic year",
                 ],
-                [
-                  "canRemainEnrolledNextTerm",
-                  "Can remain enrolled next term",
-                ],
+                ["canRemainEnrolledNextTerm", "Can remain enrolled next term"],
                 ["isOnCampus", "On campus at RIT Henrietta"],
                 ["isOnCoop", "On co-op during the term"],
               ] as const
@@ -546,10 +535,10 @@ function DeclinedStep({
           Invitation declined.
         </h2>
         <p className="mx-auto max-w-prose text-sm text-muted-foreground">
-          You&rsquo;ve declined the running-mate invitation from{" "}
-          {presidentName}. Thanks for letting them know — if you change your
-          mind, ask them to send a fresh invitation (declined invitations
-          can&rsquo;t be re-opened in place).
+          You&rsquo;ve declined the running-mate invitation from {presidentName}
+          . Thanks for letting them know — if you change your mind, ask them to
+          send a fresh invitation (declined invitations can&rsquo;t be re-opened
+          in place).
         </p>
         <div className="flex justify-center pt-2">
           <Link

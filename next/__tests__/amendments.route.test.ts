@@ -81,7 +81,7 @@ describe("/api/amendments routes", () => {
 
   it("POST persists the client baseline when GitHub snapshot creation fails", async () => {
     mockFetchConstitutionSnapshot.mockRejectedValue(
-      new Error("github offline"),
+      new Error("github offline")
     );
     mockAmendmentCreate.mockResolvedValue({
       id: 42,
@@ -102,7 +102,7 @@ describe("/api/amendments routes", () => {
           proposedContent: "# SSE Constitution\n\nUpdated text",
           isSemanticChange: true,
         }),
-      }) as any,
+      }) as any
     );
 
     expect(res.status).toBe(201);
@@ -148,7 +148,7 @@ describe("/api/amendments routes", () => {
           resetVotingWindowFromNow: true,
         }),
       }) as any,
-      { params: Promise.resolve({ id: "12" }) },
+      { params: Promise.resolve({ id: "12" }) }
     );
 
     expect(res.status).toBe(200);
@@ -197,7 +197,7 @@ describe("/api/amendments routes", () => {
           proposedContent: "# SSE Constitution\n\nUpdated text",
         }),
       }) as any,
-      { params: Promise.resolve({ id: "21" }) },
+      { params: Promise.resolve({ id: "21" }) }
     );
 
     expect(res.status).toBe(200);
@@ -255,7 +255,7 @@ describe("/api/amendments routes", () => {
           votingDurationHours: 72,
         }),
       }) as any,
-      { params: Promise.resolve({ id: "34" }) },
+      { params: Promise.resolve({ id: "34" }) }
     );
 
     expect(res.status).toBe(200);
@@ -313,7 +313,7 @@ describe("/api/amendments routes", () => {
       new Request("http://localhost/api/amendments/55/resubmit-pr", {
         method: "POST",
       }) as any,
-      { params: Promise.resolve({ id: "55" }) },
+      { params: Promise.resolve({ id: "55" }) }
     );
 
     expect(res.status).toBe(200);

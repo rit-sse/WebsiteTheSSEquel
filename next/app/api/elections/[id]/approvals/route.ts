@@ -1,7 +1,5 @@
 import { getGatewayAuthLevel } from "@/lib/authGateway";
-import {
-  stageHasRequiredApprovals,
-} from "@/lib/elections";
+import { stageHasRequiredApprovals } from "@/lib/elections";
 import { canManageElections, getElectionApprovalRole } from "@/lib/seAdmin";
 import prisma from "@/lib/prisma";
 import { ElectionApprovalStage } from "@prisma/client";
@@ -23,16 +21,22 @@ export async function POST(
 ) {
   const authLevel = await getGatewayAuthLevel(request);
   if (!(await canManageElections(authLevel)) || !authLevel.userId) {
-    return new Response("Only the President or an SE Admin can approve elections", {
-      status: 403,
-    });
+    return new Response(
+      "Only the President or an SE Admin can approve elections",
+      {
+        status: 403,
+      }
+    );
   }
 
   const approvalRole = await getElectionApprovalRole(authLevel);
   if (!approvalRole) {
-    return new Response("Only the President or an SE Admin can approve elections", {
-      status: 403,
-    });
+    return new Response(
+      "Only the President or an SE Admin can approve elections",
+      {
+        status: 403,
+      }
+    );
   }
 
   let body;
@@ -84,9 +88,12 @@ export async function DELETE(
 ) {
   const authLevel = await getGatewayAuthLevel(request);
   if (!(await canManageElections(authLevel)) || !authLevel.userId) {
-    return new Response("Only the President or an SE Admin can remove approvals", {
-      status: 403,
-    });
+    return new Response(
+      "Only the President or an SE Admin can remove approvals",
+      {
+        status: 403,
+      }
+    );
   }
 
   let body;
