@@ -88,6 +88,7 @@ function applyStagingElevation(authLevel: AuthLevel): void {
   authLevel.isTechCommitteeDivisionManager = true;
   authLevel.techCommitteeManagedDivision = "Lab Division";
   authLevel.isPrimary = true;
+  authLevel.isPrimaryOfficer = true;
   authLevel.isSeAdmin = true;
 }
 
@@ -157,12 +158,14 @@ async function resolveAuthLevelFromUserWhere(
   authLevel.membershipCount = membershipCount;
   authLevel.isMember = membershipCount >= 1;
 
-  // `isPrimaryOfficer` is ALWAYS the ground-truth DB state and is NOT
-  // affected by staging elevation. Use this (not `isPrimary`) when the
-  // UI must reflect the user's real-world role even on ssedev.
-  authLevel.isPrimaryOfficer = user.officers.some(
-    (officer) => officer.position.is_primary
-  );
+  // Outside staging, primary-officer status remains the database truth.
+  // Staging elevation above permits exercising the election dashboard and
+  // its test controls without modifying production role assignments.
+  if (!stagingElevated) {
+    authLevel.isPrimaryOfficer = user.officers.some(
+      (officer) => officer.position.is_primary
+    );
+  }
 
   // NOTE: `isSeAdmin` is intentionally NOT assigned here. When
   // `stagingElevated` is true we want the top-of-function `true` default

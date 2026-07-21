@@ -65,6 +65,7 @@ describe("resolveAuthLevelFromToken with SE Admin", () => {
     expect(authLevel.isSeAdmin).toBe(true);
     expect(authLevel.isOfficer).toBe(true);
     expect(authLevel.isPrimary).toBe(true);
+    expect(authLevel.isPrimaryOfficer).toBe(false);
     expect(authLevel.isMentor).toBe(true);
     expect(authLevel.isTechCommitteeHead).toBe(true);
   });

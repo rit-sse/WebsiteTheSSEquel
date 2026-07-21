@@ -12,10 +12,8 @@ export type AuthLevel = {
   techCommitteeManagedDivision: string | null;
   isPrimary: boolean;
   /**
-   * True iff the user actually holds an active officer row with a
-   * `is_primary` position in the DB. Unlike `isPrimary`, this is NEVER
-   * elevated by `STAGING_PROXY_AUTH`, so it can be used to gate UI that
-   * must reflect real-world role assignments even on staging.
+   * True for active primary officers, or for a staging-proxy user in the
+   * testing environment so election flows can be exercised safely.
    */
   isPrimaryOfficer: boolean;
   isSeAdmin: boolean;
