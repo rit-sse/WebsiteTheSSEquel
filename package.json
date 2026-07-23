@@ -1,4 +1,10 @@
 {
+  "name": "website-the-ssequel-workspace",
+  "private": true,
+  "packageManager": "pnpm@10.34.0",
+  "engines": {
+    "node": "^26.0.0"
+  },
   "scripts": {
     "setup:dev": "git config core.hooksPath next/.husky && npm --prefix next ci && docker compose -f docker-compose.dev.yml up -d && npm --prefix next run migrate:deploy && npm --prefix next run prisma:seed",
     "env:check": "npm --prefix next run env:check",
