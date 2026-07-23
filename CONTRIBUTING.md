@@ -76,8 +76,8 @@ Before opening a PR:
    - `pnpm run test`
    - `pnpm run build`
 4. Run database migration/seed commands if schema changed:
-   - `pnpm --filter website-the-ssequel exec prisma migrate dev`
-   - `pnpm --filter website-the-ssequel exec prisma db seed` (only when needed for test data validation)
+   - `pnpm run prisma:migrate`
+   - `pnpm run prisma:seed` (only when needed for test data validation)
 
 PR description must include:
 

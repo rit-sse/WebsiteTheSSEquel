@@ -16,8 +16,8 @@ Before requesting review, validate from the repository root:
 2. `pnpm run lint`
 3. `pnpm run test`
 4. `pnpm run build`
-5. `pnpm --filter website-the-ssequel exec prisma migrate dev` (if schema changed)
-6. `pnpm --filter website-the-ssequel exec prisma db seed` (if your change requires seeded test data)
+5. `pnpm run prisma:migrate` (if schema changed)
+6. `pnpm run prisma:seed` (if your change requires seeded test data)
 
 If any step fails, fix or document why it is intentionally skipped.
 
@@ -312,7 +312,7 @@ Any PR that changes setup without updating this file should be considered incomp
 
 If your branch includes alumni/profile lifecycle changes, apply migrations before running:
 
-1. `pnpm --filter website-the-ssequel run prisma:migrate`
-2. `pnpm --filter website-the-ssequel exec prisma generate`
+1. `pnpm run prisma:migrate`
+2. `pnpm run prisma:generate`
 
 This ensures new academic term fields, alumni candidate queue tables, and enums are available locally.

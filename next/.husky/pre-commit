@@ -1,2 +1,2 @@
 #!/usr/bin/env sh
-pnpm --filter website-the-ssequel run lint:staged
+pnpm run lint:staged

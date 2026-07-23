@@ -23,8 +23,8 @@ Use this checklist in order. Do not skip steps.
    - From repo root: `docker compose -f docker-compose.dev.yml up -d`
 4. Create `next/.env` and add required variables (see [EnvironmentSetup.md](./EnvironmentSetup.md)).
 5. Build local database:
-   - From repo root: `pnpm --filter website-the-ssequel exec prisma migrate dev`
-   - From repo root: `pnpm --filter website-the-ssequel exec prisma db seed`
+   - From repo root: `pnpm run prisma:migrate`
+   - From repo root: `pnpm run prisma:seed`
 6. Verify full local workflow:
    - From repo root: `pnpm run lint`
    - From repo root: `pnpm run test`
@@ -127,8 +127,8 @@ If any item is missing, clarify it before implementation.
 - Confirm local DB is running (`docker compose -f docker-compose.dev.yml up -d`).
 - Confirm `DATABASE_URL` points to the running DB.
 - Re-run:
-  - `pnpm --filter website-the-ssequel exec prisma migrate dev`
-  - `pnpm --filter website-the-ssequel exec prisma db seed`
+  - `pnpm run prisma:migrate`
+  - `pnpm run prisma:seed`
 
 ### Tests fail due to external integrations
 
