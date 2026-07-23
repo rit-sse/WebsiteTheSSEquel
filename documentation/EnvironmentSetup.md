@@ -21,7 +21,7 @@ Before requesting review, validate from the `next/` directory:
 
 If any step fails, fix or document why it is intentionally skipped.
 
-1. Install Node.js. GitHub workers and the Next.js Docker image use Node.js `24.x` LTS by default. The repository root still uses Node.js `25.9.0` for forward-compatibility testing.
+1. Install Node.js. GitHub workers and the Next.js Docker image use Node.js `26.x` LTS by default.
 
    > [!NOTE]
    > We recommend using [`fnm`](https://www.fnmnode.com/guide/install.html) so your shell automatically switches to the default version in [`next/.nvmrc`](../next/.nvmrc) when you enter the app directory.
@@ -66,7 +66,7 @@ If any step fails, fix or document why it is intentionally skipped.
    ```
 
    > [!IMPORTANT]
-   > `node -v` should print a `v24.x` release when using the Next.js app default. If you use another Node version manager, install Node.js `24.x` LTS for GitHub workers and Docker, or Node.js `25.9.0` for forward-compatibility testing from the repository root, then switch to it before running npm commands.
+   > `node -v` should print a `v26.x` release when using the Next.js app default. If you use another Node version manager, install Node.js `26.x` LTS for GitHub workers and Docker and project work.
 
    If you already use [`nvm`](https://github.com/nvm-sh/nvm), you can use the same version file instead:
 
