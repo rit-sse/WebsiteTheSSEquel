@@ -239,11 +239,11 @@ export default function Alumni() {
                 Check the server console. If the database is missing tables or
                 columns, run:{" "}
                 <code className="bg-muted px-1.5 py-0.5 rounded text-xs">
-                  npx prisma db push
+                  pnpm exec prisma db push
                 </code>{" "}
                 and{" "}
                 <code className="bg-muted px-1.5 py-0.5 rounded text-xs">
-                  npx prisma db seed
+                  pnpm exec prisma db seed
                 </code>{" "}
                 from the{" "}
                 <code className="bg-muted px-1.5 py-0.5 rounded text-xs">
@@ -257,7 +257,7 @@ export default function Alumni() {
               No alumni to display yet. Officers can add alumni with the button
               above, or run{" "}
               <code className="bg-muted px-1.5 py-0.5 rounded text-xs">
-                npx prisma db seed
+                pnpm exec prisma db seed
               </code>{" "}
               from the{" "}
               <code className="bg-muted px-1.5 py-0.5 rounded text-xs">

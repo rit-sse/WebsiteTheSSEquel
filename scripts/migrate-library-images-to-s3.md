@@ -29,7 +29,7 @@ server's `.env`):
 
 ```bash
 cd next
-npx prisma migrate deploy
+pnpm --filter website-the-ssequel exec prisma migrate deploy
 ```
 
 This applies the `20260316000000_add_textbook_image_key` migration that adds

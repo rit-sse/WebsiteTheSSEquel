@@ -8,13 +8,13 @@ Database code is in `prisma/` (`schema.prisma`, `migrations/`, `seed.ts`). Stati
 
 ## Build, Test, and Development Commands
 
-- `npm run dev`: start local dev server on `http://localhost:3000` with required env defaults.
-- `npm run build`: production Next.js build.
-- `npm run start`: run the production server.
-- `npm run lint`: run ESLint (`next/core-web-vitals`).
-- `npm test`: run Vitest tests.
-- `npx prisma migrate dev`: create/apply local schema migrations.
-- `npx prisma db seed`: seed development data.
+- `pnpm run dev`: start local dev server on `http://localhost:3000` with required env defaults.
+- `pnpm run build`: production Next.js build.
+- `pnpm run start`: run the production server.
+- `pnpm run lint`: run ESLint (`next/core-web-vitals`).
+- `pnpm test`: run Vitest tests.
+- `pnpm exec prisma migrate dev`: create/apply local schema migrations.
+- `pnpm exec prisma db seed`: seed development data.
 
 ## Coding Style & Naming Conventions
 
@@ -24,7 +24,7 @@ TypeScript is strict (`tsconfig.json`) and uses the `@/*` import alias. Follow P
 - `camelCase` for variables/functions
 - `kebab-case` for route segment folders when appropriate
 
-Run `npm run lint` before opening a PR.
+Run `pnpm run lint` before opening a PR.
 
 ## Testing Guidelines
 

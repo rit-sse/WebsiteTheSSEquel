@@ -21,7 +21,7 @@
  * to send invitations through the dashboard.
  *
  * Usage:
- *   EMAIL=someone@g.rit.edu POSITION="President" npx ts-node scripts/make-officer.ts
+ *   EMAIL=someone@g.rit.edu POSITION="President" pnpm exec ts-node scripts/make-officer.ts
  *
  * The invitation will be created in the database. The user can then:
  * 1. Go to the SSE website
@@ -40,7 +40,7 @@ async function main() {
   if (!email) {
     console.error("❌ ERROR: EMAIL environment variable is required");
     console.log(
-      'Usage: EMAIL=someone@g.rit.edu POSITION="President" npx ts-node scripts/make-officer.ts'
+      'Usage: EMAIL=someone@g.rit.edu POSITION="President" pnpm exec ts-node scripts/make-officer.ts'
     );
     process.exit(1);
   }

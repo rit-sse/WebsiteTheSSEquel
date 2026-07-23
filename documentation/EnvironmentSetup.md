@@ -10,14 +10,14 @@ This guide should mirror what is needed to safely run and validate changes befor
 
 ## Pre-Merge Validation (Required)
 
-Before requesting review, validate from the `next/` directory:
+Before requesting review, validate from the repository root:
 
-1. `npm run env:check`
-2. `npm run lint`
-3. `npm run test`
-4. `npm run build`
-5. `npx prisma migrate dev` (if schema changed)
-6. `npx prisma db seed` (if your change requires seeded test data)
+1. `pnpm run env:check`
+2. `pnpm run lint`
+3. `pnpm run test`
+4. `pnpm run build`
+5. `pnpm --filter website-the-ssequel exec prisma migrate dev` (if schema changed)
+6. `pnpm --filter website-the-ssequel exec prisma db seed` (if your change requires seeded test data)
 
 If any step fails, fix or document why it is intentionally skipped.
 
@@ -78,7 +78,7 @@ If any step fails, fix or document why it is intentionally skipped.
 
 2. Clone or fork this repository. You can do this by running `git clone https://github.com/rit-sse/WebsiteTheSSEquel.git` in your terminal in the directory you want to clone the repository to.
 
-3. Run `npm run setup:dev` to install app dependencies, start local Docker services, and run database setup commands.
+3. Run `corepack enable`, then `pnpm run setup:dev` to install app dependencies, start local Docker services, and run database setup commands.
 
 4. Navigate to the directory you cloned the repository to and run `cd ./next`. This will take you to the `next` directory, which is where the Next.js application is located.
 
@@ -86,9 +86,9 @@ If any step fails, fix or document why it is intentionally skipped.
 
    - `cp .env.example .env`
 
-6. Run `npm run env:check` to validate required environment variables before starting the app.
+6. Run `pnpm run env:check` to validate required environment variables before starting the app.
 
-7. Run `npm run dev` to start the development server. You can view the website at `localhost:3000`.
+7. Run `pnpm run dev` to start the development server. You can view the website at `localhost:3000`.
 
 At this point, you should be able to explore the site without logging in or having to set up a database. In order to have authentication and access to the database, you will need to set up a `.env` file. This file is not included in the repository because it contains sensitive information. Start by copying `.env.example` to `.env`, then update values for your local environment. The `.env` file should be located in the `next` directory. Use this template (matching `next/.env.example`):
 
@@ -273,7 +273,7 @@ How to configure:
 
 1. Create or obtain SMTP credentials from the team-approved provider.
 2. Add the SMTP values to your `next/.env`.
-3. Restart `npm run dev` after changing `.env`.
+3. Restart `pnpm run dev` after changing `.env`.
 
 Local verification checklist:
 
@@ -290,12 +290,12 @@ If SMTP is missing or invalid, email endpoints will fail with configuration/auth
 If you run the project now, you'll encounter schema errors. This is because the local database hasn't been built. We use Prisma for managing the Postgres database, so we'll use [Prisma's migrate command](https://www.prisma.io/docs/concepts/components/prisma-migrate/migrate-development-production) to build the db tables using the schema defined in the [schema.prisma](../next/prisma/schema.prisma) file.
 
 In the /next/ directory, run the following commands to build and push the schema to the database: 
-`npx prisma migrate dev`
-`npx prisma db push`
-`npx prisma generate`
-then finally, run `npx prisma db seed` to populate the database with test data.
+`pnpm exec prisma migrate dev`
+`pnpm exec prisma db push`
+`pnpm exec prisma generate`
+then finally, run `pnpm exec prisma db seed` to populate the database with test data.
 
-That's it! You should now be able to run `npm run dev` and view the website at `localhost:3000` with authentication and access to your local database instance. Try logging in with your RIT email.
+That's it! You should now be able to run `pnpm run dev` and view the website at `localhost:3000` with authentication and access to your local database instance. Try logging in with your RIT email.
 
 ## Keeping This Guide Accurate
 
@@ -312,7 +312,7 @@ Any PR that changes setup without updating this file should be considered incomp
 
 If your branch includes alumni/profile lifecycle changes, apply migrations before running:
 
-1. `npm --prefix next run prisma:migrate`
-2. `npm --prefix next exec prisma generate`
+1. `pnpm --filter website-the-ssequel run prisma:migrate`
+2. `pnpm --filter website-the-ssequel exec prisma generate`
 
 This ensures new academic term fields, alumni candidate queue tables, and enums are available locally.

@@ -13,13 +13,13 @@ From the repository root:
 
 1. Bootstrap local development:
 
-   `npm run setup:dev`
+   `pnpm run setup:dev`
 
    This command installs app dependencies, starts local Docker services, and runs database setup commands.
 
 2. Start the app:
 
-   `npm run dev`
+   `pnpm run dev`
 
 3. Open the app at:
 
@@ -27,18 +27,18 @@ From the repository root:
 
 ## Developer Commands (from repo root)
 
-- `npm run dev` — start local development server
-- `npm run lint` — run lint checks
-- `npm run test` — run tests
-- `npm run typecheck` — run TypeScript type checks
-- `npm run build` — run production build
-- `npm run check` — run lint + test + typecheck
+- `pnpm run dev` — start local development server
+- `pnpm run lint` — run lint checks
+- `pnpm run test` — run tests
+- `pnpm run typecheck` — run TypeScript type checks
+- `pnpm run build` — run production build
+- `pnpm run check` — run lint + test + typecheck
 
 ## Environment Setup
 
 Follow our [environment setup guide](documentation/EnvironmentSetup.md) to get started with the project.
 
-After installing dependencies in `next/`, copy `.env.example` to `.env` and run `npm run env:check` before starting the dev server.
+After installing dependencies from the repository root, copy `next/.env.example` to `next/.env` and run `pnpm run env:check` before starting the dev server.
 
 ## Required VSCode Extensions
 
