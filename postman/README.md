@@ -31,7 +31,7 @@ pm.test("Assert Expected value for <your request>", function () {
 >
 > API Tests verify that the expected data is returned from API calls. This means that if your local database contains
 > unexpected modifications, API calls will fail to produce expected behavior. If you are experiencing failures when testing
-> locally, try running `npx prisma db seed`
+> locally, try running `pnpm run prisma:seed`
 
 ### Export Tests
 

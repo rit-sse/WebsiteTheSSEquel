@@ -67,8 +67,8 @@ it() should <behavior 2>
 
 From `next/`, run:
 
-1. `npm run lint`
-2. `npm run test`
-3. `npm run build`
+1. `pnpm run lint`
+2. `pnpm run test`
+3. `pnpm run build`
 
 If your change affects setup/process, update docs in the same PR.

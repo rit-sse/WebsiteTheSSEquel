@@ -1,0 +1,16 @@
+.git
+.github
+node_modules
+next/node_modules
+next/.next
+next/.swc
+next/coverage
+next/npm-debug.log*
+next/yarn-debug.log*
+next/yarn-error.log*
+next/pnpm-debug.log*
+next/.DS_Store
+next/.env
+next/.env.*
+next/README.md
+next/__tests__

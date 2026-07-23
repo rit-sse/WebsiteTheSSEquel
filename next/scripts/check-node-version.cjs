@@ -9,7 +9,7 @@ if (!isSupportedLts) {
       `Unsupported Node.js version: ${currentVersion}`,
       "This repo supports Node.js 26.x LTS.",
       "CI and Docker use Node.js 26.x LTS by default.",
-      "Run one of the following before npm ci:",
+      "Run one of the following before pnpm install:",
       "  cd next && fnm install && fnm use",
       "  cd next && nvm install && nvm use",
       "",

@@ -10,7 +10,7 @@
     "prepare": "husky",
     "env:check": "node ./scripts/validate-env.mjs",
     "dev": "cross-env INTERNAL_API_URL=\"http://localhost:3000\" SESSION_COOKIE_NAME=\"next-auth.session-token\" next dev",
-    "dev:safe": "npm run env:check && npm run dev",
+    "dev:safe": "pnpm run env:check && pnpm run dev",
     "build": "next build",
     "start": "next start",
     "migrate:deploy": "prisma migrate deploy",
@@ -125,21 +125,5 @@
     "*.{json,md,css,scss,yml,yaml}": [
       "prettier --write"
     ]
-  },
-  "overrides": {
-    "tar": "^7.5.7",
-    "recharts": {
-      "@types/react": "$@types/react",
-      "@types/react-dom": "$@types/react-dom"
-    }
-  },
-  "allowScripts": {
-    "@parcel/watcher@2.5.6": true,
-    "@prisma/client@5.22.0": true,
-    "@prisma/engines@5.22.0": true,
-    "fsevents@2.3.3": true,
-    "prisma@5.22.0": true,
-    "sharp@0.34.5": true,
-    "unrs-resolver@1.11.1": true
   }
 }

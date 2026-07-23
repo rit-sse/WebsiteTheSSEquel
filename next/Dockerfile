@@ -1,14 +1,23 @@
+FROM node:24-bookworm-slim AS corepack
+
 FROM node:26-bookworm-slim AS base
+
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+
+COPY --from=corepack /usr/local/lib/node_modules/corepack /usr/local/lib/node_modules/corepack
 
 RUN apt-get update -y && \
     apt-get install -y --no-install-recommends openssl && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* && \
+    ln -s ../lib/node_modules/corepack/dist/corepack.js /usr/local/bin/corepack && \
+    corepack enable && \
+    corepack install --global pnpm@10.34.0
 
-# Install dependencies only when needed
+WORKDIR /workspace
+
+# Install the workspace from its single frozen lockfile.
 FROM base AS deps
-# Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
-
-WORKDIR /app
 
 ARG NEXTAUTH_URL
 ARG NEXT_PUBLIC_ENV
@@ -16,54 +25,58 @@ ARG NEXT_PUBLIC_ENV
 ENV NEXTAUTH_URL=$NEXTAUTH_URL
 ENV NEXT_PUBLIC_ENV=$NEXT_PUBLIC_ENV
 
-# Install dependencies based on the preferred package manager
-COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
-COPY scripts/check-node-version.cjs ./scripts/check-node-version.cjs
-RUN \
-  if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
-  elif [ -f package-lock.json ]; then npm ci || npm install; \
-  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm i --frozen-lockfile; \
-  else echo "Lockfile not found." && exit 1; \
-  fi
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY next/package.json ./next/package.json
+COPY next/scripts/check-node-version.cjs ./next/scripts/check-node-version.cjs
 
+RUN pnpm install --frozen-lockfile
 
-# Rebuild the source code only when needed
+# Build the application and assemble a self-contained Prisma runtime.
 FROM base AS builder
-WORKDIR /app
 
+ARG DATABASE_URL
 ARG GIT_COMMIT
 ARG NEXTAUTH_URL
 ARG NEXT_PUBLIC_ENV
 
+ENV DATABASE_URL=$DATABASE_URL
 ENV NEXTAUTH_URL=$NEXTAUTH_URL
 ENV NEXT_PUBLIC_ENV=$NEXT_PUBLIC_ENV
+ENV NEXT_TELEMETRY_DISABLED=1
 
-COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /workspace/node_modules ./node_modules
+COPY --from=deps /workspace/next/node_modules ./next/node_modules
 COPY . .
 
-# Use commit hash passed from CI for accurate branch-specific build metadata.
+# Use the commit hash passed from CI for accurate branch-specific build metadata.
 RUN COMMIT_HASH="${GIT_COMMIT:-dev}" && \
     echo "COMMIT_HASH=$COMMIT_HASH" && \
     echo "$COMMIT_HASH" > /tmp/commit_hash
 
-RUN npx prisma generate
+RUN pnpm run prisma:generate
 
-# Next.js collects completely anonymous telemetry data about general usage.
-# Learn more here: https://nextjs.org/telemetry
-# Uncomment the following line in case you want to disable telemetry during the build.
-ENV NEXT_TELEMETRY_DISABLED=1
-
-# Set the commit hash as a build-time env var for Next.js
 RUN COMMIT_HASH=$(cat /tmp/commit_hash) && \
-  if [ -f yarn.lock ]; then NEXT_PUBLIC_COMMIT_HASH=$COMMIT_HASH yarn run build; \
-  elif [ -f package-lock.json ]; then NEXT_PUBLIC_COMMIT_HASH=$COMMIT_HASH npm run build; \
-  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && NEXT_PUBLIC_COMMIT_HASH=$COMMIT_HASH pnpm run build; \
-  else echo "Lockfile not found." && exit 1; \
-  fi
+    NEXT_PUBLIC_COMMIT_HASH=$COMMIT_HASH pnpm run build
 
-# Production image, copy all the files and run next
+# pnpm stores packages behind symlinks. Dereference the Prisma CLI, client, and
+# engine packages into a small, portable tree for startup migrations.
+RUN set -eux; \
+    mkdir -p /prisma-runtime/node_modules/@prisma; \
+    cp -RL next/node_modules/prisma /prisma-runtime/node_modules/prisma; \
+    for generated_client in node_modules/.pnpm/@prisma+client@*/node_modules/.prisma; do \
+      cp -RL "$generated_client" /prisma-runtime/node_modules/.prisma; \
+    done; \
+    for package in node_modules/.pnpm/@prisma+*/node_modules/@prisma/*; do \
+      if [ -d "$package" ]; then \
+        cp -RL "$package" /prisma-runtime/node_modules/@prisma/; \
+      fi; \
+    done; \
+    node /prisma-runtime/node_modules/prisma/build/index.js --version
+
+# Production image, copy only the standalone app and migration runtime.
 FROM base AS runner
-WORKDIR /app
+
+WORKDIR /app/next
 
 ARG NEXTAUTH_URL
 ARG NEXT_PUBLIC_ENV
@@ -71,36 +84,26 @@ ARG NEXT_PUBLIC_ENV
 ENV NODE_ENV=production
 ENV NEXTAUTH_URL=$NEXTAUTH_URL
 ENV NEXT_PUBLIC_ENV=$NEXT_PUBLIC_ENV
-# Uncomment the following line in case you want to disable telemetry during runtime.
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=3000
+ENV PRISMA_MIGRATE_ON_START=true
+ENV HOSTNAME="0.0.0.0"
 
-RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
 
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY docker/entrypoint.sh /entrypoint.sh
+COPY --from=builder --chown=nextjs:nodejs /workspace/next/.next/standalone /app
+COPY --from=builder --chown=nextjs:nodejs /workspace/next/.next/static /app/next/.next/static
+COPY --from=builder --chown=nextjs:nodejs /workspace/next/public /app/next/public
+COPY --from=builder --chown=nextjs:nodejs /workspace/next/prisma /app/next/prisma
+COPY --from=builder --chown=nextjs:nodejs /prisma-runtime/node_modules /app/node_modules
+COPY next/docker/entrypoint.sh /entrypoint.sh
 
-# Set the correct permission for prerender cache
-RUN mkdir .next && chown nextjs:nodejs .next
 RUN chmod +x /entrypoint.sh
-
-# Automatically leverage output traces to reduce image size
-# https://nextjs.org/docs/advanced-features/output-file-tracing
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs
 
 EXPOSE 3000
 
-ENV PORT=3000
-ENV PRISMA_MIGRATE_ON_START=true
-
-# server.js is created by next build from the standalone output
-# https://nextjs.org/docs/pages/api-reference/next-config-js/output
-ENV HOSTNAME="0.0.0.0"
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["node", "server.js"]

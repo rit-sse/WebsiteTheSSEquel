@@ -53,16 +53,18 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.34.0
       - uses: actions/setup-node@v4
         with:
-          node-version-file: next/.nvmrc
-          cache: npm
-          cache-dependency-path: next/package-lock.json
+          node-version-file: .nvmrc
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
       - name: Install dependencies
-        working-directory: ./next
-        run: npm ci
+        run: pnpm install --frozen-lockfile
       - name: Check formatting
-        run: npm run format:check
+        run: pnpm run format:check
 
   checks:
     name: Checks
@@ -71,16 +73,20 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.34.0
       - uses: actions/setup-node@v4
         with:
-          node-version-file: next/.nvmrc
-          cache: npm
-          cache-dependency-path: next/package-lock.json
+          node-version-file: .nvmrc
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
       - name: Install dependencies
-        working-directory: ./next
-        run: npm ci
+        run: pnpm install --frozen-lockfile
+      - name: Generate Prisma client
+        run: pnpm run prisma:generate
       - name: Run lint, typecheck, and Knip
-        run: npm run lint && npm run typecheck && npm run knip
+        run: pnpm run lint && pnpm run typecheck && pnpm run knip
 
   vitest:
     name: Vitest
@@ -91,19 +97,20 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.34.0
       - uses: actions/setup-node@v4
         with:
-          node-version-file: next/.nvmrc
-          cache: npm
-          cache-dependency-path: next/package-lock.json
+          node-version-file: .nvmrc
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
       - name: Install dependencies
-        working-directory: ./next
-        run: npm ci
+        run: pnpm install --frozen-lockfile
       - name: Generate Prisma client
-        working-directory: ./next
-        run: npx prisma generate
+        run: pnpm run prisma:generate
       - name: Run Vitest
-        run: npm run test
+        run: pnpm run test
 
   build:
     name: Build
@@ -114,19 +121,20 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.34.0
       - uses: actions/setup-node@v4
         with:
-          node-version-file: next/.nvmrc
-          cache: npm
-          cache-dependency-path: next/package-lock.json
+          node-version-file: .nvmrc
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
       - name: Install dependencies
-        working-directory: ./next
-        run: npm ci
+        run: pnpm install --frozen-lockfile
       - name: Generate Prisma client
-        working-directory: ./next
-        run: npx prisma generate
+        run: pnpm run prisma:generate
       - name: Build production application
-        run: npm run build
+        run: pnpm run build
 
   build-release-image:
     name: Build release image
@@ -172,7 +180,7 @@ jobs:
       - name: Build and push image
         uses: docker/build-push-action@v6
         with:
-          context: ./next
+          context: .
           file: ./next/Dockerfile
           push: true
           build-args: |

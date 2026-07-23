@@ -1,0 +1,19 @@
+packages:
+  - next
+
+overrides:
+  tar: ^7.5.7
+  recharts>@types/react: ^19
+  recharts>@types/react-dom: ^19
+
+allowBuilds:
+  "@parcel/watcher@2.5.6": true
+  "@prisma/client@5.22.0": true
+  "@prisma/engines@5.22.0": true
+  "fsevents@2.3.3": true
+  "prisma@5.22.0": true
+  "sharp@0.34.5": true
+  "unrs-resolver@1.11.1": true
+
+strictDepBuilds: true
+packageManagerStrictVersion: true

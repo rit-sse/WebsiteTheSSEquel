@@ -9,7 +9,7 @@ updates:
       day: "monday"
       time: "09:00"
       timezone: "America/New_York"
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 10
     labels:
       - "dependencies"
     commit-message:
@@ -19,21 +19,6 @@ updates:
         patterns:
           - "@types/*"
           - "typescript"
-
-  - package-ecosystem: "npm"
-    directory: "/next"
-    target-branch: "main"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "09:15"
-      timezone: "America/New_York"
-    open-pull-requests-limit: 10
-    labels:
-      - "dependencies"
-    commit-message:
-      prefix: "deps"
-    groups:
       next-react:
         patterns:
           - "next"

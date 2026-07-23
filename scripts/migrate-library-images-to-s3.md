@@ -28,8 +28,8 @@ server's `.env`):
 ### 1. Run the Prisma migration (if not already applied)
 
 ```bash
-cd next
-npx prisma migrate deploy
+# From the repository root
+pnpm run prisma:migrate:deploy
 ```
 
 This applies the `20260316000000_add_textbook_image_key` migration that adds

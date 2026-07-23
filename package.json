@@ -1,17 +1,30 @@
 {
+  "name": "website-the-ssequel-workspace",
+  "private": true,
+  "packageManager": "pnpm@10.34.0",
+  "engines": {
+    "node": "^26.0.0"
+  },
   "scripts": {
-    "setup:dev": "git config core.hooksPath next/.husky && npm --prefix next ci && docker compose -f docker-compose.dev.yml up -d && npm --prefix next run migrate:deploy && npm --prefix next run prisma:seed",
-    "env:check": "npm --prefix next run env:check",
-    "dev": "npm --prefix next run dev",
-    "lint": "npm --prefix next run lint",
-    "test": "npm --prefix next run test",
-    "typecheck": "npm --prefix next run typecheck",
-    "build": "npm --prefix next run build",
-    "knip": "npm --prefix next run knip",
-    "format:check": "./next/node_modules/.bin/prettier --check .",
-    "format:write": "./next/node_modules/.bin/prettier --write .",
-    "check": "npm run lint && npm run test && npm run typecheck && npm run knip && npm run build",
-    "test:report": "npm --prefix next run test:report"
+    "setup:dev": "git config core.hooksPath next/.husky && pnpm install --frozen-lockfile && docker compose -f docker-compose.dev.yml up -d && pnpm run prisma:migrate:deploy && pnpm run prisma:seed",
+    "env:check": "pnpm --dir next run env:check",
+    "dev": "pnpm --dir next run dev",
+    "lint": "pnpm --dir next run lint",
+    "lint:staged": "pnpm --dir next run lint:staged",
+    "test": "pnpm --dir next run test",
+    "typecheck": "pnpm --dir next run typecheck",
+    "build": "pnpm --dir next run build",
+    "knip": "pnpm --dir next run knip",
+    "format:check": "pnpm --dir next exec prettier --config ../.prettierrc.json --ignore-path ../.prettierignore --check ..",
+    "format:write": "pnpm --dir next exec prettier --config ../.prettierrc.json --ignore-path ../.prettierignore --write ..",
+    "prisma:db:push": "pnpm --dir next exec prisma db push",
+    "prisma:generate": "pnpm --dir next exec prisma generate",
+    "prisma:migrate": "pnpm --dir next run prisma:migrate",
+    "prisma:migrate:deploy": "pnpm --dir next run migrate:deploy",
+    "prisma:seed": "pnpm --dir next run prisma:seed",
+    "prisma:validate": "pnpm --dir next exec prisma validate",
+    "check": "pnpm run lint && pnpm run test && pnpm run typecheck && pnpm run knip && pnpm run build",
+    "test:report": "pnpm --dir next run test:report"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.1",

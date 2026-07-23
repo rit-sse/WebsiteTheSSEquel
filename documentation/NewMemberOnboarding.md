@@ -14,21 +14,21 @@ Use this checklist in order. Do not skip steps.
 1. Clone the repo and install dependencies:
    - `git clone https://github.com/rit-sse/WebsiteTheSSEquel.git`
    - `cd WebsiteTheSSEquel`
-   - `npm install`
-   - `cd next && npm install`
+   - `corepack enable`
+   - `pnpm install --frozen-lockfile`
 2. Run the app without auth/database first:
-   - `npm run dev`
+   - `pnpm run dev`
    - Open `http://localhost:3000`
 3. Set up local services with Docker (recommended):
    - From repo root: `docker compose -f docker-compose.dev.yml up -d`
 4. Create `next/.env` and add required variables (see [EnvironmentSetup.md](./EnvironmentSetup.md)).
 5. Build local database:
-   - From `next/`: `npx prisma migrate dev`
-   - From `next/`: `npx prisma db seed`
+   - From repo root: `pnpm run prisma:migrate`
+   - From repo root: `pnpm run prisma:seed`
 6. Verify full local workflow:
-   - From `next/`: `npm run lint`
-   - From `next/`: `npm run test`
-   - From `next/`: `npm run build`
+   - From repo root: `pnpm run lint`
+   - From repo root: `pnpm run test`
+   - From repo root: `pnpm run build`
 7. Confirm you can sign in and access the pages required for your ticket.
 
 If any step fails, use the troubleshooting section in this document before asking for help.
@@ -55,7 +55,7 @@ Use the right mode for your first contribution.
 
 Use when working on UI, styles, and pages that do not require authentication or external integrations.
 
-- Required: repo clone, `npm install`, `npm run dev`
+- Required: repo clone, `pnpm install --frozen-lockfile`, `pnpm run dev`
 - Not required immediately: Google OAuth, S3, SMTP, GCal
 - Still required before merge: lint/test/build from `next/`
 
@@ -79,9 +79,9 @@ Follow this exact path for your first contribution.
    - Example: `docs/512-add-new-member-onboarding-guide`
 4. Implement only the scoped change from the acceptance criteria.
 5. Run required validation before opening PR:
-   - From `next/`: `npm run lint`
-   - From `next/`: `npm run test`
-   - From `next/`: `npm run build`
+   - From repo root: `pnpm run lint`
+   - From repo root: `pnpm run test`
+   - From repo root: `pnpm run build`
 6. Open PR and include:
    - Linked story/ticket
    - What changed
@@ -112,7 +112,7 @@ If any item is missing, clarify it before implementation.
 
 ### `next/.env` values not taking effect
 
-- Restart `npm run dev` after any `.env` change.
+- Restart `pnpm run dev` after any `.env` change.
 - Confirm `.env` is in `next/.env` (not repo root).
 
 ### OAuth login fails with redirect URI errors
@@ -127,8 +127,8 @@ If any item is missing, clarify it before implementation.
 - Confirm local DB is running (`docker compose -f docker-compose.dev.yml up -d`).
 - Confirm `DATABASE_URL` points to the running DB.
 - Re-run:
-  - `npx prisma migrate dev`
-  - `npx prisma db seed`
+  - `pnpm run prisma:migrate`
+  - `pnpm run prisma:seed`
 
 ### Tests fail due to external integrations
 
