@@ -1,8 +1,8 @@
 const currentVersion = process.versions.node;
-const [majorStr, minorStr] = currentVersion.split(".");
+const [majorStr] = currentVersion.split(".");
 const isSupportedLts = majorStr === "26";
 
-if (!isSupportedLts && !isSupportedForwardVersion) {
+if (!isSupportedLts) {
   console.error(
     [
       "",
