@@ -47,6 +47,18 @@ interface FormProps {
   setEvents: (event: Event[]) => void;
 }
 
+async function getResponseError(response: Response) {
+  const text = await response.text();
+  if (!text) return `Request failed (${response.status})`;
+
+  try {
+    const body = JSON.parse(text);
+    return body.error || body.message || text;
+  } catch {
+    return text;
+  }
+}
+
 export default function EditEventForm({
   isOpen,
   onClose,
@@ -74,6 +86,7 @@ export default function EditEventForm({
   const [eventName, setEventName] = useState("");
   const [location, setLocation] = useState("");
   const [datetime, setDatetime] = useState("");
+  const [endDatetime, setEndDatetime] = useState("");
   const [description, setDescription] = useState("");
   const [image, setImage] = useState("");
   const [attendanceEnabled, setAttendanceEnabled] = useState(false);
@@ -90,6 +103,14 @@ export default function EditEventForm({
       setLocation(event.location ?? "");
       setDatetime(
         new Date(date.getTime() - offset).toISOString().slice(0, 16) ?? ""
+      );
+      const endDate = event.endDate ? new Date(event.endDate) : null;
+      const effectiveEndDate =
+        endDate && !Number.isNaN(endDate.getTime())
+          ? endDate
+          : new Date(date.getTime() + 60 * 60 * 1000);
+      setEndDatetime(
+        new Date(effectiveEndDate.getTime() - offset).toISOString().slice(0, 16)
       );
       setDescription(event.description ?? "");
       setImage(event.image ?? "");
@@ -188,8 +209,22 @@ export default function EditEventForm({
     setError(null);
     setLoading(true);
 
-    if (!eventName || !datetime) {
-      setError("Event name and date/time are required");
+    if (!eventName || !datetime || !endDatetime) {
+      setError("Event name, start date/time, and end date/time are required");
+      setLoading(false);
+      return;
+    }
+
+    const startDate = new Date(datetime);
+    const endDate = new Date(endDatetime);
+    if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
+      setError("Start and end date/times must be valid");
+      setLoading(false);
+      return;
+    }
+
+    if (endDate <= startDate) {
+      setError("End date/time must be after the start date/time");
       setLoading(false);
       return;
     }
@@ -201,7 +236,27 @@ export default function EditEventForm({
       : image; // Keep existing image URL if not a new Google Drive link
 
     try {
-      // Update to Prisma
+      if (!event.id?.startsWith("local-")) {
+        const gCalResponse = await fetch("/api/calendar", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: event.id,
+            summary: eventName,
+            location: location,
+            description: description,
+            start: startDate.toISOString(),
+            end: endDate.toISOString(),
+          }),
+        });
+
+        if (!gCalResponse.ok) {
+          throw new Error(
+            `Google Calendar update failed: ${await getResponseError(gCalResponse)}`
+          );
+        }
+      }
+
       const res = await fetch("/api/event", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -210,7 +265,8 @@ export default function EditEventForm({
           title: eventName,
           location: location,
           description: description,
-          date: new Date(datetime).toISOString(),
+          date: startDate.toISOString(),
+          endDate: endDate.toISOString(),
           image: googleImageLink,
           attendanceEnabled: attendanceEnabled,
           grantsMembership: grantsMembership,
@@ -218,27 +274,12 @@ export default function EditEventForm({
       });
 
       if (!res.ok) {
-        throw new Error("Failed to update event");
+        throw new Error(
+          `Failed to update event: ${await getResponseError(res)}`
+        );
       }
 
       const newEvent = await res.json();
-      const gCalID = newEvent.id;
-
-      // Update to Google Calendar
-      await fetch("/api/calendar", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: gCalID,
-          summary: eventName,
-          location: location,
-          description: description,
-          start: new Date(datetime).toISOString(),
-          end: new Date(
-            new Date(datetime).getTime() + 60 * 60 * 1000
-          ).toISOString(),
-        }),
-      }).catch(console.warn); // Don't fail if GCal update fails
 
       // Find and remove the old event
       let updatedEvents = events.filter((e: Event) => e.id !== newEvent.id);
@@ -254,7 +295,11 @@ export default function EditEventForm({
       clearForm();
     } catch (err) {
       console.error(err);
-      setError("Failed to update event. Please try again.");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to update event. Please try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -264,6 +309,7 @@ export default function EditEventForm({
     setEventName("");
     setLocation("");
     setDatetime("");
+    setEndDatetime("");
     setDescription("");
     setImage("");
     setAttendanceEnabled(false);
@@ -313,6 +359,17 @@ export default function EditEventForm({
           type="datetime-local"
           value={datetime}
           onChange={(e) => setDatetime(e.target.value)}
+          required
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="endDatetime">End Date & Time *</Label>
+        <Input
+          id="endDatetime"
+          type="datetime-local"
+          value={endDatetime}
+          onChange={(e) => setEndDatetime(e.target.value)}
           required
         />
       </div>

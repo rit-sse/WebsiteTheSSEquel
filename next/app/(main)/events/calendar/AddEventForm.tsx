@@ -26,6 +26,7 @@ import {
   Lock,
 } from "lucide-react";
 import { getAcademicTermEndDate } from "@/lib/academicTerm";
+import { toast } from "sonner";
 
 // Required email recipient that is always included for purchase requests
 const REQUIRED_RECIPIENT = "softwareengineering@rit.edu";
@@ -54,6 +55,23 @@ const COMMITTEES = [
   "Projects",
   "Misc/Presidential",
 ];
+
+function toDateTimeLocalValue(date: Date) {
+  const timezoneOffset = date.getTimezoneOffset() * 60000;
+  return new Date(date.getTime() - timezoneOffset).toISOString().slice(0, 16);
+}
+
+async function getResponseError(response: Response) {
+  const text = await response.text();
+  if (!text) return `Request failed (${response.status})`;
+
+  try {
+    const body = JSON.parse(text);
+    return body.error || body.message || text;
+  } catch {
+    return text;
+  }
+}
 
 // Generate recurring dates within the semester
 function generateRecurringDates(
@@ -88,6 +106,7 @@ export default function AddEventForm({
   const [eventName, setEventName] = useState("");
   const [location, setLocation] = useState("");
   const [datetime, setDatetime] = useState("");
+  const [endDatetime, setEndDatetime] = useState("");
   const [description, setDescription] = useState("");
   const [image, setImage] = useState("");
   const [attendanceEnabled, setAttendanceEnabled] = useState(false);
@@ -134,8 +153,22 @@ export default function AddEventForm({
     setError(null);
     setLoading(true);
 
-    if (!eventName || !datetime) {
-      setError("Event name and date/time are required");
+    if (!eventName || !datetime || !endDatetime) {
+      setError("Event name, start date/time, and end date/time are required");
+      setLoading(false);
+      return;
+    }
+
+    const startDate = new Date(datetime);
+    const endDate = new Date(endDatetime);
+    if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
+      setError("Start and end date/times must be valid");
+      setLoading(false);
+      return;
+    }
+
+    if (endDate <= startDate) {
+      setError("End date/time must be after the start date/time");
       setLoading(false);
       return;
     }
@@ -144,6 +177,16 @@ export default function AddEventForm({
     if (createPurchaseRequest) {
       if (!purchaseCommittee || !purchaseEstimatedCost) {
         setError("Please fill in all required PCard request fields");
+        setLoading(false);
+        return;
+      }
+
+      const requestDescription =
+        purchaseDescription || `Purchase for event: ${eventName}`;
+      if (requestDescription.length > 1000) {
+        setError(
+          "PCard purchase descriptions must be 1,000 characters or fewer"
+        );
         setLoading(false);
         return;
       }
@@ -156,12 +199,14 @@ export default function AddEventForm({
       : "";
 
     try {
-      const startDate = new Date(datetime);
       const recurringDates = generateRecurringDates(startDate, recurrence);
+      const duration = endDate.getTime() - startDate.getTime();
       const newEvents: Event[] = [];
+      let purchaseRequestFailure: string | null = null;
 
       for (let i = 0; i < recurringDates.length; i++) {
         const eventDate = recurringDates[i];
+        const eventEndDate = new Date(eventDate.getTime() + duration);
         const eventTitle =
           recurringDates.length > 1 ? `${eventName}` : eventName;
 
@@ -174,7 +219,7 @@ export default function AddEventForm({
             location: location,
             description: description,
             start: eventDate.toISOString(),
-            end: new Date(eventDate.getTime() + 60 * 60 * 1000).toISOString(),
+            end: eventEndDate.toISOString(),
           }),
         });
 
@@ -182,6 +227,9 @@ export default function AddEventForm({
           // If Google Calendar fails, create without it
           console.warn(
             "Google Calendar sync failed, creating event locally only"
+          );
+          toast.warning(
+            "Google Calendar sync failed. The event was saved locally, but will not appear on the calendar."
           );
         }
 
@@ -200,6 +248,7 @@ export default function AddEventForm({
             location: location,
             description: description,
             date: eventDate.toISOString(),
+            endDate: eventEndDate.toISOString(),
             image: googleImageLink,
             attendanceEnabled: attendanceEnabled,
             grantsMembership: grantsMembership,
@@ -228,11 +277,13 @@ export default function AddEventForm({
                 }),
               });
 
-              // Send notification email for the purchase request
-              if (purchaseResponse.ok) {
+              if (!purchaseResponse.ok) {
+                purchaseRequestFailure =
+                  await getResponseError(purchaseResponse);
+              } else {
                 const newPurchaseRequest = await purchaseResponse.json();
                 try {
-                  await fetch(
+                  const emailResponse = await fetch(
                     `/api/purchasing/${newPurchaseRequest.id}/email`,
                     {
                       method: "POST",
@@ -240,6 +291,11 @@ export default function AddEventForm({
                       body: JSON.stringify({ type: "checkout" }),
                     }
                   );
+                  if (!emailResponse.ok) {
+                    toast.warning(
+                      "PCard request was created, but its email notification could not be sent."
+                    );
+                  }
                 } catch (emailError) {
                   console.warn(
                     "Failed to send purchase request email:",
@@ -250,7 +306,8 @@ export default function AddEventForm({
               }
             } catch (purchaseError) {
               console.warn("Failed to create purchase request:", purchaseError);
-              // Don't fail the whole operation if purchase request fails
+              purchaseRequestFailure =
+                "Unable to reach the PCard request service";
             }
           }
         } else {
@@ -271,6 +328,12 @@ export default function AddEventForm({
       );
       setEvents(updatedEvents);
 
+      if (purchaseRequestFailure) {
+        toast.error(
+          `Event created, but PCard request was not submitted: ${purchaseRequestFailure}`
+        );
+      }
+
       onClose();
       clearForm();
     } catch (err) {
@@ -285,6 +348,7 @@ export default function AddEventForm({
     setEventName("");
     setLocation("");
     setDatetime("");
+    setEndDatetime("");
     setDescription("");
     setImage("");
     setAttendanceEnabled(false);
@@ -304,6 +368,18 @@ export default function AddEventForm({
     const dates = generateRecurringDates(new Date(datetime), recurrence);
     if (dates.length <= 1) return null;
     return `This will create ${dates.length} events through the end of the semester`;
+  };
+
+  const handleStartDateTimeChange = (value: string) => {
+    setDatetime(value);
+    const start = new Date(value);
+    const currentEnd = new Date(endDatetime);
+    if (
+      !Number.isNaN(start.getTime()) &&
+      (Number.isNaN(currentEnd.getTime()) || currentEnd <= start)
+    ) {
+      setEndDatetime(toDateTimeLocalValue(new Date(start.getTime() + 3600000)));
+    }
   };
 
   return (
@@ -350,7 +426,18 @@ export default function AddEventForm({
               id="datetime"
               type="datetime-local"
               value={datetime}
-              onChange={(e) => setDatetime(e.target.value)}
+              onChange={(e) => handleStartDateTimeChange(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="endDatetime">End Date & Time *</Label>
+            <Input
+              id="endDatetime"
+              type="datetime-local"
+              value={endDatetime}
+              onChange={(e) => setEndDatetime(e.target.value)}
               required
             />
           </div>
@@ -538,7 +625,11 @@ export default function AddEventForm({
                     onChange={(e) => setPurchaseDescription(e.target.value)}
                     placeholder="Describe what you're purchasing..."
                     rows={2}
+                    maxLength={1000}
                   />
+                  <p className="text-xs text-muted-foreground">
+                    {purchaseDescription.length}/1000 characters
+                  </p>
                 </div>
 
                 <div className="space-y-2">

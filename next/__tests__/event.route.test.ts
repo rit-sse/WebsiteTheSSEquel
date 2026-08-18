@@ -31,6 +31,11 @@ describe("/api/event route", () => {
     const res = await GET();
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual([{ id: "e1" }]);
+    expect(mockEventFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        select: expect.objectContaining({ endDate: true }),
+      })
+    );
   });
 
   it("GET returns 500 on DB failure", async () => {
@@ -58,11 +63,19 @@ describe("/api/event route", () => {
         title: "Title",
         description: "Desc",
         date: "2026-03-04T12:00:00.000Z",
+        endDate: "2026-03-04T14:00:00.000Z",
       }),
       headers: { "content-type": "application/json" },
     });
     const res = await POST(req);
     expect(res.status).toBe(201);
+    expect(mockEventCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          endDate: "2026-03-04T14:00:00.000Z",
+        }),
+      })
+    );
   });
 
   it("DELETE returns 400 when id missing", async () => {
@@ -89,11 +102,22 @@ describe("/api/event route", () => {
     mockEventUpdate.mockResolvedValue({ id: "evt-1", title: "Updated" });
     const req = new Request("http://localhost/api/event", {
       method: "PUT",
-      body: JSON.stringify({ id: "evt-1", title: "Updated" }),
+      body: JSON.stringify({
+        id: "evt-1",
+        title: "Updated",
+        endDate: "2026-03-04T14:00:00.000Z",
+      }),
       headers: { "content-type": "application/json" },
     });
     const res = await PUT(req);
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ id: "evt-1", title: "Updated" });
+    expect(mockEventUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          endDate: "2026-03-04T14:00:00.000Z",
+        }),
+      })
+    );
   });
 });
