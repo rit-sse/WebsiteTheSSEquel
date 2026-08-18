@@ -3,14 +3,25 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Plus } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Event } from "../event";
+import { Pencil, Plus } from "lucide-react";
 
 interface Props {
   modalAdd: () => void;
+  events: Event[];
+  onEditEvent: (event: Event) => void;
 }
 
-const ManageEventCard = ({ modalAdd }: Props) => {
+const ManageEventCard = ({ modalAdd, events, onEditEvent }: Props) => {
   const [isOfficer, setIsOfficer] = useState(false);
+  const [selectedEventId, setSelectedEventId] = useState("");
 
   useEffect(() => {
     const checkUserStatus = async () => {
@@ -36,9 +47,38 @@ const ManageEventCard = ({ modalAdd }: Props) => {
         <Plus className="h-4 w-4" />
         Add Event
       </Button>
-      <p className="text-xs text-muted-foreground text-center mt-2">
-        Click on an event in the calendar to view or edit
-      </p>
+      <div className="mt-4 space-y-2">
+        <p className="text-sm font-medium flex items-center gap-2">
+          <Pencil className="h-4 w-4" />
+          Edit Event
+        </p>
+        <Select
+          value={selectedEventId}
+          onValueChange={(eventId) => {
+            setSelectedEventId("");
+            const event = events.find((candidate) => candidate.id === eventId);
+            if (event) onEditEvent(event);
+          }}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select an event" />
+          </SelectTrigger>
+          <SelectContent>
+            {events
+              .filter((event): event is Event & { id: string } =>
+                Boolean(event.id)
+              )
+              .map((event) => (
+                <SelectItem key={event.id} value={event.id}>
+                  {event.title} ({new Date(event.date).toLocaleDateString()})
+                </SelectItem>
+              ))}
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-muted-foreground">
+          The embedded calendar is view-only. Select an event here to edit it.
+        </p>
+      </div>
     </Card>
   );
 };

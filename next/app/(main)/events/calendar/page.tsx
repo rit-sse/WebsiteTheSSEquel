@@ -48,7 +48,14 @@ export default function EventsCalendar() {
           </div>
 
           {/* Card that only officers can see */}
-          <ManageEventsCard modalAdd={() => setModalAdd(true)} />
+          <ManageEventsCard
+            modalAdd={() => setModalAdd(true)}
+            events={events}
+            onEditEvent={(event) => {
+              setSelectedEvent(event);
+              setModalEdit(true);
+            }}
+          />
         </div>
       </Card>
 
