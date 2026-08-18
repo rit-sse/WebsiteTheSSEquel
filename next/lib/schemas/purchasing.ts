@@ -16,6 +16,9 @@ export const CreatePurchaseRequestSchema = z.object({
     .refine((val) => !isNaN(Date.parse(val)), {
       message: "plannedDate must be a valid date string",
     }),
-  notifyEmail: z.string().email().max(255),
+  notifyEmail: z
+    .union([z.string().email().max(255), z.literal("")])
+    .optional()
+    .default(""),
   eventId: z.string().nullable().optional(),
 });

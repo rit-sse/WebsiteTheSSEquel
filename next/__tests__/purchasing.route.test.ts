@@ -94,4 +94,53 @@ describe("/api/purchasing route", () => {
     expect(mockCreate).toHaveBeenCalled();
     expect(await res.json()).toEqual({ id: 100, userId: 7 });
   });
+
+  it("POST accepts an empty optional notification email", async () => {
+    mockGetSessionToken.mockReturnValue("token");
+    mockFindFirst.mockResolvedValue({ id: 7 });
+    mockCreate.mockResolvedValue({ id: 101, userId: 7 });
+
+    const req = new Request("http://localhost/api/purchasing", {
+      method: "POST",
+      body: JSON.stringify({
+        name: "Name",
+        committee: "Projects",
+        description: "Thing",
+        estimatedCost: 42.5,
+        plannedDate: "2026-03-04",
+        notifyEmail: "",
+      }),
+      headers: { "content-type": "application/json" },
+    });
+
+    const res = await POST(req as any);
+    expect(res.status).toBe(201);
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ notifyEmail: "" }),
+      })
+    );
+  });
+
+  it("POST rejects descriptions longer than 1,000 characters", async () => {
+    mockGetSessionToken.mockReturnValue("token");
+    mockFindFirst.mockResolvedValue({ id: 7 });
+
+    const req = new Request("http://localhost/api/purchasing", {
+      method: "POST",
+      body: JSON.stringify({
+        name: "Name",
+        committee: "Projects",
+        description: "x".repeat(1001),
+        estimatedCost: 42.5,
+        plannedDate: "2026-03-04",
+        notifyEmail: "",
+      }),
+      headers: { "content-type": "application/json" },
+    });
+
+    const res = await POST(req as any);
+    expect(res.status).toBe(422);
+    expect(mockCreate).not.toHaveBeenCalled();
+  });
 });
