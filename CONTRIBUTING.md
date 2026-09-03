@@ -97,6 +97,31 @@ Work is done when:
 - Documentation is updated
 - Story is moved to `Done`
 
+## Release Versioning
+
+Release Please reads Conventional Commits merged into `main` and maintains a
+release pull request. Use these commit types to communicate the release impact:
+
+- `fix: ...` produces a patch release (`1.2.3` -> `1.2.4`)
+- `feat: ...` produces a minor release (`1.2.3` -> `1.3.0`)
+- `feat!: ...`, `fix!: ...`, or a `BREAKING CHANGE:` footer produces a major
+  release (`1.2.3` -> `2.0.0`)
+
+The release pull request updates the root `package.json`, `next/package.json`,
+`.release-please-manifest.json`, and `CHANGELOG.md`. Merging it creates the
+matching `v<version>` tag and GitHub Release. Do not manually create the tag or
+edit those version fields during the normal release flow.
+
+The workflow falls back to GitHub's built-in token, but release pull requests
+created by that token do not trigger other workflows. Configure the
+`RELEASE_PLEASE_TOKEN` Actions secret with a fine-grained token that can write
+repository contents, pull requests, and issues so generated release pull
+requests trigger the normal CI workflow.
+
+CI appends the short source commit as build metadata without changing version
+precedence, so version `1.2.3` is displayed as, for example,
+`v1.2.3+95feb0a`.
+
 ## Documentation Expectations
 
 If your change affects setup, deployment assumptions, dependencies, env vars, or team process:

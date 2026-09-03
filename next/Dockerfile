@@ -48,15 +48,11 @@ COPY --from=deps /workspace/node_modules ./node_modules
 COPY --from=deps /workspace/next/node_modules ./next/node_modules
 COPY . .
 
-# Use the commit hash passed from CI for accurate branch-specific build metadata.
-RUN COMMIT_HASH="${GIT_COMMIT:-dev}" && \
-    echo "COMMIT_HASH=$COMMIT_HASH" && \
-    echo "$COMMIT_HASH" > /tmp/commit_hash
-
 RUN pnpm run prisma:generate
 
-RUN COMMIT_HASH=$(cat /tmp/commit_hash) && \
-    NEXT_PUBLIC_COMMIT_HASH=$COMMIT_HASH pnpm run build
+# next/package.json owns the release version. The commit supplied by CI is
+# appended as SemVer build metadata and retained for the footer's source link.
+RUN GIT_COMMIT="${GIT_COMMIT:-}" pnpm run build
 
 # pnpm stores packages behind symlinks. Dereference the Prisma CLI, client, and
 # engine packages into a small, portable tree for startup migrations.

@@ -83,7 +83,6 @@ If any step fails, fix or document why it is intentionally skipped.
 4. Navigate to the directory you cloned the repository to and run `cd ./next`. This will take you to the `next` directory, which is where the Next.js application is located.
 
 5. Copy the environment template and fill in your local values:
-
    - `cp .env.example .env`
 
 6. Run `pnpm run env:check` to validate required environment variables before starting the app.
@@ -134,9 +133,14 @@ SMTP_PASS="dev"
 INTERNAL_API_URL="http://localhost:3000"
 STAGING_PROXY_AUTH="false"
 NEXT_PUBLIC_ENV="dev"
-NEXT_PUBLIC_COMMIT_HASH="dev"
 PORT="3000"
 ```
+
+The release version is maintained automatically in the root `package.json` and
+mirrored to `next/package.json`. Production image builds append the short Git
+commit as SemVer build metadata (for example, `0.1.0+95feb0a`), so
+`NEXT_PUBLIC_APP_VERSION` and `NEXT_PUBLIC_COMMIT_HASH` should not be set
+manually.
 
 The above is just a placeholder, you'll need to fill in each entry with the appropriate information. First, let's step through setting up a local database.
 
@@ -160,13 +164,14 @@ You do **not** need PostgreSQL installed directly on your computer if you use Do
    - User: `postgres`
    - Password: `postgres`
    - Database: `ssequel_dev`
-   
-     1. If port `5432` is already used on your machine, update `docker-compose.dev.yml` to map another host port (for example `5433:5432`) and update `DATABASE_URL` accordingly.*
+     1. If port `5432` is already used on your machine, update `docker-compose.dev.yml` to map another host port (for example `5433:5432`) and update `DATABASE_URL` accordingly.\*
+
 5. When finished, in the repo root run the following to shut down services when not needed:
    - `docker compose down`
+
 ### Option B: Native PostgreSQL install
 
-1. Download and install [PostgreSQL](https://www.postgresql.org/download/) 14. *Make sure you're installing 14, not any higher versions!* This is the database management system we are using for the project. When you visit the downloads page, click on your operating system and look for the following in the subsequent page: [![PostgreSQL 14 Download Page](https://i.imgur.com/VlfCWO6.png)](https://www.postgresql.org/download/)
+1. Download and install [PostgreSQL](https://www.postgresql.org/download/) 14. _Make sure you're installing 14, not any higher versions!_ This is the database management system we are using for the project. When you visit the downloads page, click on your operating system and look for the following in the subsequent page: [![PostgreSQL 14 Download Page](https://i.imgur.com/VlfCWO6.png)](https://www.postgresql.org/download/)
 
 2. Run the installer and follow the instructions to install PostgreSQL. Make sure you remember the password you set for the database superuser.
 
@@ -289,7 +294,7 @@ If SMTP is missing or invalid, email endpoints will fail with configuration/auth
 
 If you run the project now, you'll encounter schema errors. This is because the local database hasn't been built. We use Prisma for managing the Postgres database, so we'll use [Prisma's migrate command](https://www.prisma.io/docs/concepts/components/prisma-migrate/migrate-development-production) to build the db tables using the schema defined in the [schema.prisma](../next/prisma/schema.prisma) file.
 
-In the /next/ directory, run the following commands to build and push the schema to the database: 
+In the /next/ directory, run the following commands to build and push the schema to the database:
 `pnpm exec prisma migrate dev`
 `pnpm exec prisma db push`
 `pnpm exec prisma generate`
