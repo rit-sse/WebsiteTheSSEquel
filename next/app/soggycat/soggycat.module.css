@@ -1,0 +1,209 @@
+.stage {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  overscroll-behavior: none;
+  background-color: rgb(250, 201, 110);
+  color-scheme: light;
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.tiltFrame {
+  position: relative;
+  z-index: 1;
+  will-change: transform;
+}
+
+.catPhoto {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 78vw;
+  max-height: 72vh;
+  border-radius: 14px;
+  box-shadow: 0 18px 40px rgba(30, 30, 40, 0.35);
+}
+
+/* June-only holographic sheen */
+.holo {
+  border-radius: 14px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.holo .catPhoto {
+  filter: saturate(1.4) contrast(1.08);
+}
+
+.holo::after {
+  content: "";
+  position: absolute;
+  inset: -90%;
+  z-index: 2;
+  opacity: 0.55;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    105deg,
+    rgba(255, 120, 140, 0.45) 0px,
+    rgba(255, 190, 120, 0.45) 40px,
+    rgba(255, 245, 150, 0.45) 80px,
+    rgba(140, 235, 170, 0.45) 120px,
+    rgba(140, 200, 255, 0.45) 160px,
+    rgba(205, 150, 255, 0.45) 200px,
+    rgba(255, 120, 140, 0.45) 240px
+  );
+  animation: holoSweep 7s linear infinite;
+}
+
+@keyframes holoSweep {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-240px);
+  }
+}
+
+/* Round navigation button, bottom-right corner */
+.circleButton {
+  position: fixed;
+  z-index: 30;
+  right: max(1.25rem, env(safe-area-inset-right, 0px));
+  bottom: max(1.25rem, env(safe-area-inset-bottom, 0px));
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  background-color: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(4px);
+  box-shadow: 0 10px 24px rgba(30, 30, 40, 0.3);
+  transition:
+    transform 180ms ease,
+    background-color 180ms ease;
+}
+
+@media (hover: hover) {
+  .circleButton:hover {
+    transform: scale(1.18);
+    background-color: rgba(255, 255, 255, 0.55);
+  }
+}
+
+.circleButton:active {
+  transform: scale(0.92) translateY(2px);
+  transition-duration: 60ms;
+}
+
+/* Slide-in side menu */
+.menu {
+  position: fixed;
+  z-index: 20;
+  right: 0;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 4.5rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 9.5rem;
+  max-width: 100%;
+  padding: 0.4rem 0 0.4rem 0.4rem;
+  background-color: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(4px);
+  border-radius: 0.9rem 0 0 0.9rem;
+  box-shadow: 0 10px 24px rgba(30, 30, 40, 0.3);
+  transition:
+    transform 450ms cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 450ms;
+  font-family: var(--soggy-font, monospace);
+}
+
+.menuClosed {
+  transform: translateX(105%);
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.menuLink {
+  text-decoration: none;
+  color: black;
+  cursor: pointer;
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  text-align: left;
+}
+
+.menuPill {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.45rem;
+  white-space: nowrap;
+  height: 2.9rem;
+  font-size: 1.4rem;
+  padding: 0 0.7rem;
+  background-color: white;
+  border-radius: 999px 0 0 999px;
+  transform-origin: right center;
+  transition: transform 160ms ease;
+}
+
+.menuPill svg {
+  flex-shrink: 0;
+}
+
+.menuPill:hover {
+  transform: scale(1.06);
+}
+
+.menuPillSmall {
+  height: 1.8rem;
+  font-size: 0.95rem;
+}
+
+.menuNote {
+  font-size: 0.6em;
+  vertical-align: super;
+}
+
+/* Secret-code modal */
+.codeOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 1.5rem;
+}
+
+.codePill {
+  display: flex;
+  align-items: center;
+  width: 7rem;
+  padding: 0.45em 0.7em;
+  border-radius: 999px;
+  background-color: white;
+  box-shadow: 0 10px 24px rgba(30, 30, 40, 0.3);
+}
+
+.codePill input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  text-align: center;
+  font-size: 1em;
+  font-family: var(--soggy-font, monospace);
+}

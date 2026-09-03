@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [main]
   push:
-    branches: ["**"]
+    branches: [main]
   workflow_dispatch:
     inputs:
       environment:
@@ -41,6 +41,7 @@ jobs:
         if: ${{ github.event_name != 'workflow_dispatch' }}
         uses: wagoid/commitlint-github-action@v6
         with:
+          configFile: ./commitlint.config.mjs
           failOnWarnings: true
       - name: Confirm pull-request validation is required before release
         if: ${{ github.event_name == 'workflow_dispatch' }}
@@ -187,7 +188,6 @@ jobs:
             DATABASE_URL=postgresql://ci:ci@localhost:5432/ci
             NEXTAUTH_URL=${{ steps.image.outputs.nextauth_url }}
             NEXT_PUBLIC_ENV=${{ steps.image.outputs.next_public_env }}
-            GITHUB_SHA=${{ github.sha }}
             GIT_COMMIT=${{ github.sha }}
           tags: |
             ghcr.io/${{ github.repository_owner }}/sse-web:${{ steps.image.outputs.tag }}

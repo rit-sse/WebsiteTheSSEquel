@@ -4,31 +4,22 @@ about: Propose a new feature or enhancement
 title: "Feature: "
 labels: "feature"
 assignees: ""
-
 ---
 
 ## Problem
 
-[What problem are we solving?]
+<!-- What need or opportunity should we address? -->
 
-## Proposed Solution
+## Proposed change
 
-[Describe the feature]
+<!-- What would you like to see? -->
 
-## Alternatives Considered
+## Done when
 
-[Other approaches and tradeoffs]
+<!-- Add the key acceptance criteria as checklist items. -->
 
-## Scope
+- [ ] [Criterion]
 
-- In scope:
-- Out of scope:
+## Anything else?
 
-## Acceptance Criteria
-
-- [ ] [Criterion 1]
-- [ ] [Criterion 2]
-
-## Additional Context
-
-[Links, mockups, references]
+<!-- Optional: mockups, links, alternatives, or other context. -->
