@@ -4,32 +4,18 @@ about: Track a concrete implementation task
 title: "Task: "
 labels: "task"
 assignees: ""
-
 ---
 
-# Task Summary
+## Goal
 
-[Describe the task in one or two sentences]
+<!-- What needs to be done, and why? -->
+
+## Done when
+
+<!-- Add the key completion criteria as checklist items. -->
+
+- [ ] [Criterion]
 
 ## Context
 
-[Why this task is needed]
-
-## Scope
-
-
-## Acceptance Criteria
-
-- [ ] [Criterion 1]
-- [ ] [Criterion 2]
-
-## Subtasks / Checklist
-
-- [ ] [Subtask 1]
-- [ ] [Subtask 2]
-- [ ] [Subtask 3]
-
-## Validation
-
-- [ ] Manual verification steps listed
-- [ ] Tests added/updated where applicable
+<!-- Optional: links, constraints, or validation notes. -->
