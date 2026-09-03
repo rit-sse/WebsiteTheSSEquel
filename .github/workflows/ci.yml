@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [main]
   push:
-    branches: ["**"]
+    branches: [main]
   workflow_dispatch:
     inputs:
       environment:
@@ -41,6 +41,7 @@ jobs:
         if: ${{ github.event_name != 'workflow_dispatch' }}
         uses: wagoid/commitlint-github-action@v6
         with:
+          configFile: ./commitlint.config.mjs
           failOnWarnings: true
       - name: Confirm pull-request validation is required before release
         if: ${{ github.event_name == 'workflow_dispatch' }}

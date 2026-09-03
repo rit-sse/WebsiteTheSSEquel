@@ -26,9 +26,9 @@ Use this checklist in order. Do not skip steps.
    - From repo root: `pnpm run prisma:migrate`
    - From repo root: `pnpm run prisma:seed`
 6. Verify full local workflow:
-   - From repo root: `pnpm run lint`
-   - From repo root: `pnpm run test`
-   - From repo root: `pnpm run build`
+   - From repo root: `pnpm run prisma:generate`
+   - From repo root: `pnpm run format:check`
+   - From repo root: `pnpm run check`
 7. Confirm you can sign in and access the pages required for your ticket.
 
 If any step fails, use the troubleshooting section in this document before asking for help.
@@ -57,7 +57,7 @@ Use when working on UI, styles, and pages that do not require authentication or 
 
 - Required: repo clone, `pnpm install --frozen-lockfile`, `pnpm run dev`
 - Not required immediately: Google OAuth, S3, SMTP, GCal
-- Still required before merge: lint/test/build from `next/`
+- Still required before merge: run the standard validation commands from the repository root
 
 ### Full mode (feature-complete local parity)
 
@@ -79,9 +79,9 @@ Follow this exact path for your first contribution.
    - Example: `docs/512-add-new-member-onboarding-guide`
 4. Implement only the scoped change from the acceptance criteria.
 5. Run required validation before opening PR:
-   - From repo root: `pnpm run lint`
-   - From repo root: `pnpm run test`
-   - From repo root: `pnpm run build`
+   - From repo root: `pnpm run prisma:generate`
+   - From repo root: `pnpm run format:check`
+   - From repo root: `pnpm run check`
 6. Open PR and include:
    - Linked story/ticket
    - What changed
@@ -95,11 +95,10 @@ Follow this exact path for your first contribution.
 
 A ticket is ready when all are true:
 
-- Problem statement is clear.
-- Scope and non-goals are explicit.
-- Acceptance criteria are testable.
+- The problem or goal is clear.
+- Completion criteria are testable.
 - Required access/secrets are available.
-- You can describe how success will be verified locally.
+- Relevant context or blockers are documented.
 
 If any item is missing, clarify it before implementation.
 
@@ -157,7 +156,7 @@ Use:
 You are considered onboarded when all are true:
 
 - Local app runs in your intended mode (minimal or full).
-- You can run lint/test/build from `next/`.
+- You can run the standard validation commands from the repository root.
 - You can move a ticket through the project workflow.
 - You opened at least one PR following [CONTRIBUTING.md](../CONTRIBUTING.md).
 - You understand where to update docs when workflow/setup changes.

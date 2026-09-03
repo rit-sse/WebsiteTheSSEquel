@@ -65,10 +65,10 @@ it() should <behavior 2>
 
 ## Before Opening a PR
 
-From `next/`, run:
+From the repository root, run:
 
-1. `pnpm run lint`
-2. `pnpm run test`
-3. `pnpm run build`
+1. `pnpm run prisma:generate`
+2. `pnpm run format:check`
+3. `pnpm run check`
 
 If your change affects setup/process, update docs in the same PR.

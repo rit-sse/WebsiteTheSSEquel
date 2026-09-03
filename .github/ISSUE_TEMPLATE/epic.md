@@ -4,43 +4,18 @@ about: Group multiple stories into a larger initiative
 title: "Epic: "
 labels: "epic"
 assignees: ""
-
 ---
 
-# Epic Goal
+## Goal
 
-[Describe the desired end state]
+<!-- What outcome should this epic achieve? -->
 
-## Problem / Opportunity
+## Done when
 
-[What problem this epic solves]
+<!-- Add the key outcomes as checklist items. -->
 
-## Success Criteria
+- [ ] [Outcome]
 
-- [ ] [Outcome 1]
-- [ ] [Outcome 2]
+## Related issues
 
-## Stories in This Epic
-
-- [ ] Story: [link]
-- [ ] Story: [link]
-- [ ] Story: [link]
-
-## Technical Requirements / Constraints
-
-- [ ] [Requirement 1]
-- [ ] [Requirement 2]
-
-## Dependencies
-
-- [ ] [Dependency 1]
-- [ ] [Dependency 2]
-
-## Risks
-
-- [ ] [Risk 1]
-- [ ] [Risk 2]
-
-## Notes / References
-
-[Links to docs, design, or research]
+<!-- Link stories, tasks, or supporting context. -->
