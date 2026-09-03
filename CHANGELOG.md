@@ -13,18 +13,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Changed
 
-- Placeholder for future changes.
+- Display the application release version with the source commit as SemVer
+  build metadata.
+- Generate version bumps, changelog entries, Git tags, and GitHub Releases from
+  Conventional Commits through an automated release pull request.
 
 ### Fixed
 
 - Placeholder for future fixes.
 
-## [1.0.0] - 2025-04-09
+## [0.1.0] - 2025-04-09
 
 ### Added
 
 - Initial release of the project.
 - Most MVP features implemented.
 
-[Unreleased]: https://github.com/your-repo/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/your-repo/releases/tag/v1.0.0
+[Unreleased]: https://github.com/rit-sse/WebsiteTheSSEquel/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/rit-sse/WebsiteTheSSEquel/releases/tag/v0.1.0
