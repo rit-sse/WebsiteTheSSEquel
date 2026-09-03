@@ -4,45 +4,21 @@ about: Time-boxed research/prototyping for unknowns
 title: "Spike: "
 labels: "spike"
 assignees: ""
-
 ---
 
-> [!NOTE]
-> A Spike in agile development is a time-boxed research or prototyping activity aimed at answering a particular question, reducing technical uncertainty, or exploring a potential solution. It is a way to reduce risk and ensure that you are making informed decisions.
+## Question
 
-# Spike Question
-
-[What specific unknown are we trying to answer?]
+<!-- What specific unknown should this spike answer? -->
 
 ## Timebox
 
-[How long will this spike run? Example: 1-2 days]
+<!-- Example: one day. -->
+
+## Done when
+
+- [ ] Findings and tradeoffs are documented.
+- [ ] A next step is recommended.
 
 ## Context
 
-[Why this unknown matters]
-
-## Hypothesis
-
-[Best current guess]
-
-## Questions to Answer
-
-- [ ] [Question 1]
-- [ ] [Question 2]
-- [ ] [Question 3]
-
-## Research / Prototyping Tasks
-
-- [ ] [Task 1]
-- [ ] [Task 2]
-- [ ] [Task 3]
-
-## Output
-
-[Document findings, tradeoffs, and recommendation]
-
-## Recommendation
-
-- Proposed next step:
-- Follow-up story/task links:
+<!-- Why does this matter? Add useful links or constraints. -->

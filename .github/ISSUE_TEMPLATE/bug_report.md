@@ -1,46 +1,23 @@
 ---
 name: Bug report
-about: Report a defect with clear repro and impact
+about: Report something that is not working
 title: "Bug: "
 labels: "bug"
 assignees: ""
-
 ---
 
-## Summary
+## What happened?
 
-[What is broken?]
+<!-- Briefly describe the problem. -->
 
-## Impact
+## How can we reproduce it?
 
-- Severity: [low/medium/high]
-- Affected users/surfaces:
+<!-- List the smallest set of steps needed to see the problem. -->
 
-## Steps to Reproduce
+## What should happen instead?
 
-1. [Step 1]
-2. [Step 2]
-3. [Step 3]
+<!-- Describe the expected behavior. -->
 
-## Actual Result
+## Anything else?
 
-[What currently happens]
-
-## Expected Result
-
-[What should happen]
-
-## Environment
-
-- Environment: [local/dev/staging/prod]
-- Browser/OS:
-- Commit/branch:
-
-## Evidence
-
-- Logs:
-- Screenshots/video:
-
-## Proposed Fix (Optional)
-
-[Notes if known]
+<!-- Optional: environment, screenshots, logs, or other useful context. -->

@@ -30,13 +30,20 @@ Branch names must follow:
 
 Allowed `type` values:
 
+- `build`
+- `chore`
+- `ci`
+- `deps`
+- `docs`
 - `feat`
 - `fix`
-- `docs`
+- `perf`
 - `refactor`
+- `revert`
+- `style`
 - `test`
-- `hotfix`
-- `dev`
+
+These match the Conventional Commit types enforced by CI. Automated branches created by tools such as Dependabot are exempt from the branch naming convention.
 
 Examples:
 
@@ -50,11 +57,9 @@ Create a ticket/story for every idea, feature, bug, refactor, or docs change.
 
 Each story should include:
 
-- Problem or goal
-- Scope (what is in/out)
-- Acceptance criteria
-- Any dependencies or blockers
-- Validation notes (how to verify it works)
+- A clear problem or goal
+- Testable completion criteria
+- Relevant context, links, or blockers when needed
 
 Project board expectations:
 
@@ -66,15 +71,14 @@ Project board expectations:
 
 Before opening a PR:
 
-1. Rebase or merge latest `dev` into your branch.
+1. Rebase or merge the latest `main` into your branch.
 2. Commit locally and verify pre-commit hooks run successfully.
    - Pre-commit runs staged-file checks via `lint-staged` from `next/`.
    - If hooks are not installed yet, run `pnpm install --frozen-lockfile` from the repository root.
 3. Run local checks from the repository root:
-   - `pnpm run knip`
-   - `pnpm run lint`
-   - `pnpm run test`
-   - `pnpm run build`
+   - `pnpm run prisma:generate`
+   - `pnpm run format:check`
+   - `pnpm run check`
 4. Run database migration/seed commands if schema changed:
    - `pnpm run prisma:migrate`
    - `pnpm run prisma:seed` (only when needed for test data validation)
@@ -85,7 +89,6 @@ PR description must include:
 - Summary of behavior changes
 - Testing completed
 - Screenshots for UI changes (if applicable)
-- Docs updates made (or reason none were needed)
 
 ## Definition of Done
 
@@ -96,6 +99,30 @@ Work is done when:
 - Checks pass
 - Documentation is updated
 - Story is moved to `Done`
+
+## Release Versioning
+
+Release Please reads Conventional Commits merged into `main` and maintains a
+release pull request. Use these commit types to communicate the release impact:
+
+- `fix: ...` produces a patch release (`1.2.3` -> `1.2.4`)
+- `feat: ...` produces a minor release (`1.2.3` -> `1.3.0`)
+- `feat!: ...`, `fix!: ...`, or a `BREAKING CHANGE:` footer produces a major
+  release (`1.2.3` -> `2.0.0`)
+
+The release pull request updates the root `package.json`, `next/package.json`,
+`.release-please-manifest.json`, and `CHANGELOG.md`. Merging it creates the
+matching `v<version>` tag and GitHub Release. Do not manually create the tag or
+edit those version fields during the normal release flow.
+
+The workflow uses GitHub's built-in token so release pull requests are authored
+by `github-actions[bot]`. GitHub does not trigger additional workflows from
+pull requests created with this token, so generated release pull requests do
+not automatically run the normal CI workflow.
+
+CI appends the short source commit as build metadata without changing version
+precedence, so version `1.2.3` is displayed as, for example,
+`v1.2.3+95feb0a`.
 
 ## Documentation Expectations
 
