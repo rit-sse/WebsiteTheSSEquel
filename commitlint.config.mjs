@@ -1,7 +1,9 @@
 /** @type {import('@commitlint/types').UserConfig} */
-module.exports = {
+export default {
   extends: ["@commitlint/config-conventional"],
   rules: {
+    // Dependabot generates commit bodies with long Markdown links that cannot be configured.
+    "body-max-line-length": [0],
     "type-enum": [
       2,
       "always",
