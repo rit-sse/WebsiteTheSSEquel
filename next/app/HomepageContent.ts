@@ -18,7 +18,7 @@ export default {
     "An academic organization at the Rochester Institute of Technology providing mentoring and community to students in Golisano College.",
   labHoursCallout: "Mentoring hours: Monday-Friday from 10:00 AM - 6:00 PM",
   weeklyMeetingCallout:
-    "Come to our weekly meetings on Wednesday at 3:00 PM in GOL-1670!",
+    "Come to our weekly meetings on Fridays at 6:00 PM in GOL-1670!",
   discordLink: "https://www.discord.gg/rNC6wj82kq",
   instagramLink: "https://www.instagram.com/rit_sse/",
   tiktokLink: "https://www.tiktok.com/@rit_sse",
