@@ -11,7 +11,8 @@ import {
 } from "./common/Icons";
 import ThemeControlsToggle from "./common/ThemeControlsToggle";
 
-const commitHash = process.env.NEXT_PUBLIC_COMMIT_HASH || "dev";
+const appVersion = process.env.NEXT_PUBLIC_APP_VERSION || "0.0.0-dev";
+const commitHash = process.env.NEXT_PUBLIC_COMMIT_HASH;
 
 const Footer: React.FC = () => {
   return (
@@ -20,22 +21,22 @@ const Footer: React.FC = () => {
         <ThemeControlsToggle />
       </div>
       <div className="flex flex-row items-center gap-2 ml-auto">
-        {commitHash !== "dev" ? (
+        {commitHash ? (
           <Link
             href={`https://github.com/rit-sse/WebsiteTheSSEquel/commit/${commitHash}`}
             target="_blank"
             rel="noopener noreferrer"
             className="text-xs font-mono text-muted-foreground/60 hover:text-foreground transition-colors"
-            title={`Build: ${commitHash}`}
+            title={`Version ${appVersion} (commit ${commitHash})`}
           >
-            v{commitHash}
+            v{appVersion}
           </Link>
         ) : (
           <span
             className="text-xs font-mono text-muted-foreground/60"
-            title={`Build: ${commitHash}`}
+            title={`Version ${appVersion}`}
           >
-            v{commitHash}
+            v{appVersion}
           </span>
         )}
         <Link
