@@ -1,6 +1,6 @@
 # Environment Setup
 
-This guide should mirror what is needed to safely run and validate changes before merging into `dev`.
+This guide should mirror what is needed to safely run and validate changes before merging into `main`.
 
 ## Local-Prod Parity Policy
 
@@ -13,9 +13,9 @@ This guide should mirror what is needed to safely run and validate changes befor
 Before requesting review, validate from the repository root:
 
 1. `pnpm run env:check`
-2. `pnpm run lint`
-3. `pnpm run test`
-4. `pnpm run build`
+2. `pnpm run prisma:generate`
+3. `pnpm run format:check`
+4. `pnpm run check`
 5. `pnpm run prisma:migrate` (if schema changed)
 6. `pnpm run prisma:seed` (if your change requires seeded test data)
 
