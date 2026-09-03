@@ -32,7 +32,9 @@ From the repository root:
 - `pnpm run test` — run tests
 - `pnpm run typecheck` — run TypeScript type checks
 - `pnpm run build` — run production build
-- `pnpm run check` — run lint + test + typecheck
+- `pnpm run format:check` — check repository formatting
+- `pnpm run prisma:generate` — generate the Prisma client
+- `pnpm run check` — run lint, tests, type checking, Knip, and a production build
 
 ## Environment Setup
 
