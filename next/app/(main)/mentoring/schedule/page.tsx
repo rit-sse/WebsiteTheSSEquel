@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -51,6 +51,7 @@ export default function PublicMentorSchedulePage() {
   const [slotModalOpen, setSlotModalOpen] = useState(false);
   const [slotTitle, setSlotTitle] = useState("");
   const [slotMentors, setSlotMentors] = useState<ScheduleBlock[]>([]);
+  const [selectedMentorId, setSelectedMentorId] = useState<number | null>(null);
 
   const fetchSchedule = useCallback(async () => {
     try {
@@ -87,6 +88,33 @@ export default function PublicMentorSchedulePage() {
     setSlotMentors(slotBlocks);
     setSlotTitle(`${DAYS[weekday - 1]} · ${label}`);
     setSlotModalOpen(true);
+  };
+
+  const mentors = useMemo(() => {
+    const byId = new Map<number, ScheduleBlock["mentor"]>();
+    for (const block of blocks) {
+      if (!byId.has(block.mentor.id)) byId.set(block.mentor.id, block.mentor);
+    }
+    return Array.from(byId.values()).sort((a, b) =>
+      a.name.localeCompare(b.name)
+    );
+  }, [blocks]);
+
+  const toggleMentorSelection = (mentorId: number) => {
+    setSelectedMentorId((current) => (current === mentorId ? null : mentorId));
+  };
+
+  const getSlotChipStyle = (mentorId: number) => {
+    const color = getCategoricalColorFromSeed(mentorId);
+    const isSelected = selectedMentorId === mentorId;
+    const isDimmed = selectedMentorId !== null && !isSelected;
+    return {
+      backgroundColor: color.fill,
+      color: color.foreground,
+      borderColor: color.fill,
+      opacity: isDimmed ? 0.25 : 1,
+      boxShadow: isSelected ? `0 0 0 2px ${color.hex}` : undefined,
+    };
   };
 
   if (loading) {
@@ -165,20 +193,14 @@ export default function PublicMentorSchedulePage() {
                                     {slotBlocks.map((block) => (
                                       <div
                                         key={block.id}
-                                        className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs border max-w-full"
-                                        style={{
-                                          backgroundColor:
-                                            getCategoricalColorFromSeed(
-                                              block.mentor.id
-                                            ).fill,
-                                          color: getCategoricalColorFromSeed(
-                                            block.mentor.id
-                                          ).foreground,
-                                          borderColor:
-                                            getCategoricalColorFromSeed(
-                                              block.mentor.id
-                                            ).fill,
-                                        }}
+                                        className={`flex items-center gap-1.5 rounded-md px-2 py-1 text-xs border max-w-full transition-all duration-200 ${
+                                          selectedMentorId === block.mentor.id
+                                            ? "scale-105 font-semibold"
+                                            : ""
+                                        }`}
+                                        style={getSlotChipStyle(
+                                          block.mentor.id
+                                        )}
                                       >
                                         <Avatar className="h-4 w-4 shrink-0">
                                           {block.mentor.image ? (
@@ -263,19 +285,12 @@ export default function PublicMentorSchedulePage() {
                               {slotBlocks.map((block) => (
                                 <div
                                   key={block.id}
-                                  className="flex items-center justify-center gap-1.5 rounded-md px-2 py-1 text-xs border"
-                                  style={{
-                                    backgroundColor:
-                                      getCategoricalColorFromSeed(
-                                        block.mentor.id
-                                      ).fill,
-                                    color: getCategoricalColorFromSeed(
-                                      block.mentor.id
-                                    ).foreground,
-                                    borderColor: getCategoricalColorFromSeed(
-                                      block.mentor.id
-                                    ).fill,
-                                  }}
+                                  className={`flex items-center justify-center gap-1.5 rounded-md px-2 py-1 text-xs border transition-all duration-200 ${
+                                    selectedMentorId === block.mentor.id
+                                      ? "scale-105 font-semibold"
+                                      : ""
+                                  }`}
+                                  style={getSlotChipStyle(block.mentor.id)}
                                 >
                                   <Avatar className="h-4 w-4">
                                     {block.mentor.image ? (
@@ -300,6 +315,69 @@ export default function PublicMentorSchedulePage() {
                 </tbody>
               </table>
             </div>
+          </div>
+        </Card>
+      )}
+
+      {mentors.length > 0 && (
+        <Card depth={2} className="p-4 space-y-3">
+          <div className="flex items-center justify-between gap-2">
+            <div>
+              <h2 className="text-sm font-semibold">Mentors</h2>
+              <p className="text-xs text-muted-foreground">
+                Click a mentor to highlight their time slots above.
+              </p>
+            </div>
+            {selectedMentorId !== null && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedMentorId(null)}
+              >
+                Clear
+              </Button>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {mentors.map((mentor) => {
+              const color = getCategoricalColorFromSeed(mentor.id);
+              const isSelected = selectedMentorId === mentor.id;
+              const isDimmed = selectedMentorId !== null && !isSelected;
+              return (
+                <button
+                  key={mentor.id}
+                  type="button"
+                  onClick={() => toggleMentorSelection(mentor.id)}
+                  aria-pressed={isSelected}
+                  className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-all duration-200 hover:bg-muted/40 ${
+                    isSelected ? "scale-105 font-semibold" : ""
+                  }`}
+                  style={{
+                    borderColor: color.fill,
+                    boxShadow: isSelected
+                      ? `0 0 0 2px ${color.hex}`
+                      : undefined,
+                    opacity: isDimmed ? 0.5 : 1,
+                  }}
+                >
+                  <Avatar className="h-5 w-5">
+                    {mentor.image ? (
+                      <AvatarImage src={mentor.image} alt={mentor.name} />
+                    ) : null}
+                    <AvatarFallback
+                      className="text-[9px]"
+                      style={{
+                        backgroundColor: color.fill,
+                        color: color.foreground,
+                      }}
+                    >
+                      {getInitials(mentor.name)}
+                    </AvatarFallback>
+                  </Avatar>
+                  {mentor.name}
+                </button>
+              );
+            })}
           </div>
         </Card>
       )}
