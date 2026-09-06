@@ -1795,6 +1795,8 @@ async function main() {
     await seedOfficerPosition(); // Officer positions (can exist without officers)
     await seedOfficer(); // Test officer assignment for development
     await seedMentor();
+    await seedMentorSchedule(); // Sample mentor schedule (needed by seedScheduleBlock)
+    await seedScheduleBlock(); // Sample weekly coverage blocks for the public schedule page
     await seedAlumni();
     await seedSkill();
     await seedMentorSkill();
