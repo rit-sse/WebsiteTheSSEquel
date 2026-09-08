@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { signIn, signOut, useSession } from "next-auth/react";
-import { User, LogOut, Vote, Mail } from "lucide-react";
+import { User, LogOut, Vote, Mail, LayoutDashboard } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,11 +19,19 @@ import { useProfileImage } from "@/contexts/ProfileImageContext";
 interface AuthButtonProps {
   userId?: number | null;
   profileComplete?: boolean;
+  /**
+   * When true, the dropdown surfaces an "Officer Dashboard" entry above the
+   * personal-account items. The Navbar passes this through based on the
+   * user's officer / mentor status (the same gate that previously controlled
+   * the dropdown that lived in the navbar itself).
+   */
+  showOfficerDashboard?: boolean;
 }
 
 export default function AuthButton({
   userId,
   profileComplete = true,
+  showOfficerDashboard = false,
 }: AuthButtonProps = {}) {
   const { data: session } = useSession();
   const router = useRouter();
@@ -85,6 +93,21 @@ export default function AuthButton({
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
+          {/* Officer Dashboard sits ABOVE the personal-account items because
+              officers/mentors hit the dashboard far more often than their
+              own profile. The trailing separator visually groups officer
+              ops away from My Profile / My Nominations / My Invitations. */}
+          {showOfficerDashboard && (
+            <>
+              <DropdownMenuItem asChild>
+                <Link href="/dashboard" className="cursor-pointer">
+                  <LayoutDashboard className="h-4 w-4" />
+                  Officer Dashboard
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+            </>
+          )}
           {/* DropdownMenuItem already provides `flex items-center gap-2`
               to its child (via Radix asChild), so adding `mr-2` to the
               icons would double-space them — let the inherited gap do
