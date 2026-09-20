@@ -12,7 +12,7 @@ import {
 import ThemeControlsToggle from "./common/ThemeControlsToggle";
 
 const appVersion = process.env.NEXT_PUBLIC_APP_VERSION || "0.0.0-dev";
-const commitHash = process.env.NEXT_PUBLIC_COMMIT_HASH;
+const releaseUrl = `https://github.com/rit-sse/WebsiteTheSSEquel/releases/tag/v${appVersion}`;
 
 const Footer: React.FC = () => {
   return (
@@ -21,24 +21,15 @@ const Footer: React.FC = () => {
         <ThemeControlsToggle />
       </div>
       <div className="flex flex-row items-center gap-2 ml-auto">
-        {commitHash ? (
-          <Link
-            href={`https://github.com/rit-sse/WebsiteTheSSEquel/commit/${commitHash}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs font-mono text-muted-foreground/60 hover:text-foreground transition-colors"
-            title={`Version ${appVersion} (commit ${commitHash})`}
-          >
-            v{appVersion}
-          </Link>
-        ) : (
-          <span
-            className="text-xs font-mono text-muted-foreground/60"
-            title={`Version ${appVersion}`}
-          >
-            v{appVersion}
-          </span>
-        )}
+        <Link
+          href={releaseUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-xs font-mono text-muted-foreground/60 hover:text-foreground transition-colors"
+          title={`Release ${appVersion}`}
+        >
+          v{appVersion}
+        </Link>
         <Link
           href="/privacy-policy"
           className="text-xs text-muted-foreground hover:text-foreground transition-colors"

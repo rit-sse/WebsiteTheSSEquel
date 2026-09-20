@@ -1,22 +1,18 @@
 const { resolve } = require("path");
-const {
-  assertMatchingReleaseVersions,
-  createBuildVersion,
-  normalizeGitCommit,
-} = require("./lib/buildVersion");
+const { resolveReleaseVersion } = require("./lib/releaseVersion");
 const { getSecurityHeaders } = require("./lib/securityHeaders");
-const { version: releaseVersion } = require("../package.json");
+const { version: workspaceVersion } = require("../package.json");
 const { version: appPackageVersion } = require("./package.json");
 
-assertMatchingReleaseVersions(releaseVersion, appPackageVersion);
-const gitCommit = normalizeGitCommit(process.env.GIT_COMMIT);
-const buildVersion = createBuildVersion(releaseVersion, gitCommit);
+const releaseVersion = resolveReleaseVersion(
+  workspaceVersion,
+  appPackageVersion
+);
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   env: {
-    NEXT_PUBLIC_APP_VERSION: buildVersion,
-    NEXT_PUBLIC_COMMIT_HASH: gitCommit ?? "",
+    NEXT_PUBLIC_APP_VERSION: releaseVersion,
   },
   async headers() {
     return [

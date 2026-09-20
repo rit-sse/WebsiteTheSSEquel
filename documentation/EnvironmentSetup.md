@@ -137,10 +137,9 @@ PORT="3000"
 ```
 
 The release version is maintained automatically in the root `package.json` and
-mirrored to `next/package.json`. Production image builds append the short Git
-commit as SemVer build metadata (for example, `0.1.0+95feb0a`), so
-`NEXT_PUBLIC_APP_VERSION` and `NEXT_PUBLIC_COMMIT_HASH` should not be set
-manually.
+mirrored to `next/package.json`. The application validates those versions at
+build time and displays the release version in the footer, so
+`NEXT_PUBLIC_APP_VERSION` should not be set manually.
 
 The above is just a placeholder, you'll need to fill in each entry with the appropriate information. First, let's step through setting up a local database.
 

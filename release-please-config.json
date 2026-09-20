@@ -4,6 +4,7 @@
   "include-v-in-tag": true,
   "include-component-in-tag": false,
   "last-release-sha": "ebe5694ba3794a62f748200d4822c4614d77e445",
+  "release-as": "1.0.0",
   "pull-request-title-pattern": "chore: release ${version}",
   "pull-request-header": "This automated pull request prepares the next WebsiteTheSSEquel release. Merging it creates the corresponding Git tag and GitHub Release.",
   "packages": {

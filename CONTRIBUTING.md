@@ -120,9 +120,9 @@ by `github-actions[bot]`. GitHub does not trigger additional workflows from
 pull requests created with this token, so generated release pull requests do
 not automatically run the normal CI workflow.
 
-CI appends the short source commit as build metadata without changing version
-precedence, so version `1.2.3` is displayed as, for example,
-`v1.2.3+95feb0a`.
+The footer displays the synchronized package version and links to its matching
+GitHub Release. Container images keep separate short-SHA tags for deployment
+traceability without exposing the commit as part of the public release version.
 
 ## Documentation Expectations
 

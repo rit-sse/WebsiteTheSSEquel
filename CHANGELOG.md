@@ -13,8 +13,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Changed
 
-- Display the application release version with the source commit as SemVer
-  build metadata.
+- Display the application release version in the footer with a link to the
+  matching GitHub Release.
 - Generate version bumps, changelog entries, Git tags, and GitHub Releases from
   Conventional Commits through an automated release pull request.
 
