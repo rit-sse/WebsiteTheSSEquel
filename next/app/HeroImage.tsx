@@ -58,7 +58,7 @@ export const HeroImage = () => {
   const startIndex = typeof window !== "undefined" ? getSaved() : 0;
 
   return (
-    <div className="flex mt-8 md:mt-0 w-full lg:w-[55%] justify-center">
+    <div className="flex mt-8 md:mt-0 w-full lg:w-1/2 justify-center">
       <Carousel
         className="w-full max-w-none group/carousel"
         opts={{ loop: true, startIndex }}

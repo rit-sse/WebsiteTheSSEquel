@@ -10,7 +10,7 @@ interface NeoBrutalistButtonProps {
   onClick?: () => void;
   href?: string;
   icon?: ReactNode;
-  variant?: "pink" | "orange" | "blue" | "green";
+  variant?: "pink" | "orange" | "blue" | "green" | "white" | "deepblue";
   disabled?: boolean;
   type?: "button" | "submit" | "reset";
   ariaLabel?: string;
@@ -26,6 +26,8 @@ const variantStyles = {
   orange: "bg-[#ffb347]",
   blue: "bg-[#87ceeb]",
   green: "bg-[#98fb98]",
+  white: "bg-white",
+  deepblue: "bg-[#3C8CDD]",
 };
 
 const NeoBrutalistButton = ({
