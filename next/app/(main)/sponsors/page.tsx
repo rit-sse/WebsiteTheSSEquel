@@ -38,7 +38,9 @@ export default function SponsorsPage() {
         <h2 className="text-3xl font-bold font-display mb-8 text-center">
           Sponsorship Options
         </h2>
-        <SponsorshipTiers />
+        <h3 className="text-center font-semibold">
+          Coming soon... keep an eye out!
+        </h3>
       </Card>
 
       {/* Call to Action Section */}
