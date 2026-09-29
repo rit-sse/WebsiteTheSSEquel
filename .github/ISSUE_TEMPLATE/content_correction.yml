@@ -1,0 +1,50 @@
+name: Content Correction
+description: Report outdated, incorrect, or unclear website content.
+title: "Content: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for text, dates, links, images, and other content that
+        should be corrected. Do not include private information.
+
+  - type: input
+    id: affected-page
+    attributes:
+      label: Affected page
+      description: Paste the URL containing the content to change.
+      placeholder: https://sse.rit.edu/...
+    validations:
+      required: true
+
+  - type: textarea
+    id: current-content
+    attributes:
+      label: Current content
+      description: Quote the text, describe the image, or identify the link that is wrong.
+      placeholder: The page currently says ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: corrected-content
+    attributes:
+      label: Corrected content
+      description: Provide the exact replacement wording or explain the needed change.
+      placeholder: It should say ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: source
+    attributes:
+      label: Source or reason for the correction
+      description: Link an authoritative source or explain why this change is accurate.
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Add screenshots or details that would help verify the correction.

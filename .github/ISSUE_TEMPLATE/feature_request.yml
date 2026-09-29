@@ -1,0 +1,54 @@
+name: Feature Request
+description: Propose an improvement or a new website capability.
+title: "Feature: "
+labels:
+  - feature
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for sharing an idea. Start with the problem it would solve;
+        that helps us evaluate possible solutions.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+      description: Describe the current limitation, need, or opportunity.
+      placeholder: It is difficult to ... because ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed solution
+      description: Explain the change you would like to see.
+      placeholder: Add or change ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: beneficiaries
+    attributes:
+      label: Who would benefit?
+      description: Tell us which visitors, members, officers, or other groups this helps.
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: What does done look like?
+      description: List the outcomes that would make this request complete.
+      placeholder: |
+        - [ ] Visitors can ...
+        - [ ] Officers can ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives or additional context
+      description: Include mockups, examples, workarounds, or other approaches if helpful.
