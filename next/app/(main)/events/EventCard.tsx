@@ -9,10 +9,10 @@ export const EventCard: React.FC<Event> = (event: Event) => {
   const eventParam = event.id ? `?eventId=${encodeURIComponent(event.id)}` : "";
 
   return (
-    <Link href={`/events/calendar${eventParam}`} className="block">
+    <Link href={`/events/calendar${eventParam}`} className="block h-full">
       <Card
         depth={2}
-        className="overflow-hidden transition-all hover:scale-[1.02] cursor-pointer"
+        className="h-full overflow-hidden transition-all hover:scale-[1.02] cursor-pointer"
       >
         <div className="relative w-full aspect-video">
           {event.image ? (
