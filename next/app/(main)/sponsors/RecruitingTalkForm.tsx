@@ -118,7 +118,7 @@ export default function RecruitingTalkForm() {
         onClick={() => setOpen(true)}
         text="Schedule a Talk"
         variant="blue"
-        icon={<Calendar className="h-[18px] w-[18px]" />}
+        icon={<Calendar className="h-5 w-5" />}
       />
 
       <Modal
