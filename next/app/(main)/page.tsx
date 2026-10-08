@@ -14,6 +14,7 @@ import NeoBrutalistButton from "@/components/neo-brutalist-button";
 import { Handshake, Building2, Mic, ArrowRight } from "lucide-react";
 import prisma from "@/lib/prisma";
 import { getActiveElection } from "@/lib/elections";
+import { getCurrentMentors } from "@/lib/currentMentors";
 
 interface SponsorData {
   id: number;
@@ -35,6 +36,7 @@ export default async function Home() {
   // Deduped via React `cache` with the same call in layout.tsx — at most
   // one DB hit per request even though both render paths read it.
   const activeElection = await getActiveElection();
+  const currentMentors = await getCurrentMentors();
 
   // Fetch active sponsors from the database
   // Wrapped in try-catch to handle case where table doesn't exist yet
@@ -89,6 +91,40 @@ export default async function Home() {
           />
           <HeroImage />
         </div>
+      </NeoCard>
+
+      {/* Current mentors */}
+      <NeoCard className="w-full p-6 md:p-10">
+        <h2 className="mb-2 text-3xl font-bold font-display">Mentoring Now</h2>
+        <p className="mb-6 text-muted-foreground">
+          Mentors scheduled for the current hour in the SSE lab.
+        </p>
+
+        {currentMentors.length > 0 ? (
+          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {currentMentors.map((block) => {
+              const user = block.mentor.user;
+              const application = user.mentorApplications[0];
+
+              return (
+                <li key={block.mentor.id} className="rounded-lg border p-4">
+                  <h3 className="text-lg font-semibold">{user.name}</h3>
+                  {application && (
+                    <p className="text-sm text-muted-foreground">
+                      {[application.major, application.yearLevel]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </p>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <p className="text-muted-foreground">
+            No mentors scheduled right now.
+          </p>
+        )}
       </NeoCard>
 
       {/* Upcoming Events */}
