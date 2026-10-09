@@ -12,17 +12,19 @@ vi.mock("next/server", () => {
   class MockNextResponse {
     body: string;
     status: number;
+    headers: Headers;
 
-    constructor(body: string, init?: { status?: number }) {
+    constructor(body: string, init?: ResponseInit) {
       this.body = body;
       this.status = init?.status ?? 200;
+      this.headers = new Headers(init?.headers);
     }
 
     static next() {
       return { kind: "next" };
     }
 
-    static json(payload: unknown, init?: { status?: number }) {
+    static json(payload: unknown, init?: ResponseInit) {
       // Serialize so existing `.body.toContain(...)` assertions keep working
       // against the legacy plain-text substring checks.
       return new MockNextResponse(JSON.stringify(payload), init);
@@ -66,6 +68,32 @@ describe("authMiddleware", () => {
 
   it("allows public GET on nonGetOfficer route", async () => {
     const res = await authMiddleware(req("/api/quotes", "GET"));
+    expect((res as any).kind).toBe("next");
+  });
+
+  it.each(["/api/user/export", "/api/user/export/"])(
+    "requires officer access for user export GET: %s",
+    async (pathname) => {
+      const res = await authMiddleware(req(pathname));
+      expect((res as any).status).toBe(403);
+      expect((res as any).body).toContain("need to be Officer");
+      expect((res as any).headers.get("Cache-Control")).toBe(
+        "private, no-store"
+      );
+    }
+  );
+
+  it.each([
+    { isUser: true, isOfficer: true, isSeAdmin: false },
+    { isUser: true, isOfficer: false, isSeAdmin: true },
+  ])("allows user export for officer access: %j", async (auth) => {
+    mockGetGatewayAuthLevel.mockResolvedValue(auth);
+    const res = await authMiddleware(req("/api/user/export"));
+    expect((res as any).kind).toBe("next");
+  });
+
+  it("keeps ordinary user GET public", async () => {
+    const res = await authMiddleware(req("/api/user"));
     expect((res as any).kind).toBe("next");
   });
 

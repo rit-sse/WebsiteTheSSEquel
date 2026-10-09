@@ -4,9 +4,10 @@ import { useState, useEffect, useCallback } from "react";
 import { DataTable, Column } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Pencil, Trash2, Mail, Clock, X } from "lucide-react";
+import { Pencil, Trash2, Mail, Clock, X, Download } from "lucide-react";
 import UserModal, { User } from "./UserModal";
 import UserInviteModal from "./UserInviteModal";
+import UserExportModal from "./UserExportModal";
 import { Modal, ModalFooter } from "@/components/ui/modal";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -32,6 +33,7 @@ export default function UsersSection() {
   const [isLoading, setIsLoading] = useState(true);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
+  const [exportModalOpen, setExportModalOpen] = useState(false);
   const [editUser, setEditUser] = useState<User | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
@@ -296,6 +298,16 @@ export default function UsersSection() {
         columns={columns}
         keyField="id"
         title="Users"
+        titleExtra={
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setExportModalOpen(true)}
+          >
+            <Download className="mr-2 h-4 w-4" />
+            Export users
+          </Button>
+        }
         searchPlaceholder="Search users by name or email..."
         searchFields={["name", "email"]}
         onAdd={handleInvite}
@@ -305,6 +317,11 @@ export default function UsersSection() {
         enablePagination
         pageSizeOptions={[10, 25, 50, 100]}
         defaultPageSize={25}
+      />
+
+      <UserExportModal
+        open={exportModalOpen}
+        onOpenChange={setExportModalOpen}
       />
 
       {/* Invite Modal */}
