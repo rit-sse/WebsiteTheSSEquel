@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import Papa from "papaparse";
 
 const { mockAuth, mockFindMany, mockTransaction } = vi.hoisted(() => ({
@@ -23,6 +23,7 @@ function user(id: number, overrides: Record<string, unknown> = {}) {
     name: `User ${id}`,
     email: `user${id}@example.com`,
     createdAt: null,
+    graduationYear: null,
     alumni: null,
     ...overrides,
   };
@@ -31,6 +32,8 @@ function user(id: number, overrides: Record<string, unknown> = {}) {
 describe("GET /api/user/export", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-10-08T14:30:00.123Z"));
     mockAuth.mockResolvedValue({
       isUser: true,
       isOfficer: true,
@@ -41,6 +44,8 @@ describe("GET /api/user/export", () => {
       callback({ user: { findMany: mockFindMany } })
     );
   });
+
+  afterEach(() => vi.useRealTimers());
 
   it.each([
     [{ isUser: false, isOfficer: false, isSeAdmin: false }, 401],
@@ -113,6 +118,7 @@ describe("GET /api/user/export", () => {
         name: true,
         email: true,
         createdAt: true,
+        graduationYear: true,
         alumni: { select: { id: true } },
       },
       orderBy: [{ name: "asc" }, { id: "asc" }],
@@ -120,6 +126,41 @@ describe("GET /api/user/export", () => {
     expect(mockTransaction).toHaveBeenCalledWith(expect.any(Function), {
       isolationLevel: "RepeatableRead",
     });
+  });
+
+  it.each([
+    [2025, "true"],
+    [2026, "false"],
+    [2027, "false"],
+    [null, "false"],
+  ])(
+    "infers alumni without an application from graduation year %s",
+    async (graduationYear, expected) => {
+      mockFindMany.mockResolvedValue([user(1, { graduationYear })]);
+      const response = await GET(request());
+      const parsed = Papa.parse<string[]>(await response.text());
+      expect(parsed.data[0]).toEqual(headers);
+      expect(parsed.data[1][3]).toBe(expected);
+    }
+  );
+
+  it("keeps linked alumni marked even with a future graduation year", async () => {
+    mockFindMany.mockResolvedValue([
+      user(1, { alumni: { id: 8 }, graduationYear: 2027 }),
+    ]);
+    const response = await GET(request());
+    expect(Papa.parse<string[]>(await response.text()).data[1][3]).toBe("true");
+  });
+
+  it("uses the current year at export time across the UTC year boundary", async () => {
+    mockFindMany.mockResolvedValue([user(1, { graduationYear: 2026 })]);
+    vi.setSystemTime(new Date("2026-12-31T23:59:59.999Z"));
+    const before = await GET(request());
+    expect(Papa.parse<string[]>(await before.text()).data[1][3]).toBe("false");
+
+    vi.setSystemTime(new Date("2027-01-01T00:00:00.000Z"));
+    const after = await GET(request());
+    expect(Papa.parse<string[]>(await after.text()).data[1][3]).toBe("true");
   });
 
   it("returns stable headers when there are no users", async () => {

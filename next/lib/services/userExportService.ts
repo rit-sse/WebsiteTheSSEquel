@@ -19,12 +19,15 @@ export async function exportUsersCsv(): Promise<string> {
           name: true,
           email: true,
           createdAt: true,
+          graduationYear: true,
           alumni: { select: { id: true } },
         },
         orderBy: [{ name: "asc" }, { id: "asc" }],
       }),
     { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead }
   );
+
+  const currentYear = new Date().getUTCFullYear();
 
   return Papa.unparse(
     {
@@ -33,7 +36,8 @@ export async function exportUsersCsv(): Promise<string> {
         user.id,
         user.name,
         user.email,
-        user.alumni !== null,
+        user.alumni !== null ||
+          (user.graduationYear !== null && user.graduationYear < currentYear),
         user.createdAt?.toISOString() ?? "",
       ]),
     },
