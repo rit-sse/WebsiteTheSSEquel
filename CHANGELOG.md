@@ -4,6 +4,31 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1](https://github.com/rit-sse/WebsiteTheSSEquel/compare/v0.1.0...v0.1.1) (2026-10-09)
+
+
+### Features
+
+* add a soggy cat easter-egg page at /soggycat ([#582](https://github.com/rit-sse/WebsiteTheSSEquel/issues/582)) ([#583](https://github.com/rit-sse/WebsiteTheSSEquel/issues/583)) ([95feb0a](https://github.com/rit-sse/WebsiteTheSSEquel/commit/95feb0abec3e190d4bf940425b122d1c0a1de96c))
+* add dashboard user CSV export ([#608](https://github.com/rit-sse/WebsiteTheSSEquel/issues/608)) ([72fc06d](https://github.com/rit-sse/WebsiteTheSSEquel/commit/72fc06da8777a119386030b768a6b07844227ab7))
+* added button for mentoring schedule ([#591](https://github.com/rit-sse/WebsiteTheSSEquel/issues/591)) ([848ac96](https://github.com/rit-sse/WebsiteTheSSEquel/commit/848ac96dafda176b47a6f0b370e59f6d5e1b1e53))
+* automate semantic versioning releases ([#586](https://github.com/rit-sse/WebsiteTheSSEquel/issues/586)) ([796f5fb](https://github.com/rit-sse/WebsiteTheSSEquel/commit/796f5fbd2240f1307a413fbcd792861618c7f73e))
+
+
+### Bug Fixes
+
+* corrected linkedin link in credits section of website ([#606](https://github.com/rit-sse/WebsiteTheSSEquel/issues/606)) ([c7568b1](https://github.com/rit-sse/WebsiteTheSSEquel/commit/c7568b15d55a17a194009564598500c5429b99ec))
+* made all cards in the events row the same height whether it has a description ([#602](https://github.com/rit-sse/WebsiteTheSSEquel/issues/602)) ([f2e66b1](https://github.com/rit-sse/WebsiteTheSSEquel/commit/f2e66b1e5b3c8d997c2b7f3684587de43cb98991))
+* made buttons all the same style in a specific row on the sponsorship page ([#601](https://github.com/rit-sse/WebsiteTheSSEquel/issues/601)) ([03e41ab](https://github.com/rit-sse/WebsiteTheSSEquel/commit/03e41abaa7523a72966e370fa24c16c97f398f79))
+* obscuring sponsorship tiers until we have something concrete ([#600](https://github.com/rit-sse/WebsiteTheSSEquel/issues/600)) ([f9548b1](https://github.com/rit-sse/WebsiteTheSSEquel/commit/f9548b14df6b5236bda5b25b2a292237422c1154))
+* readded seeding of mentors because it was removed for some reason ([#592](https://github.com/rit-sse/WebsiteTheSSEquel/issues/592)) ([d9e8c1f](https://github.com/rit-sse/WebsiteTheSSEquel/commit/d9e8c1f190f080be29d8623551777771f68711f7))
+* update mentor application requirements ([#598](https://github.com/rit-sse/WebsiteTheSSEquel/issues/598)) ([ea7459b](https://github.com/rit-sse/WebsiteTheSSEquel/commit/ea7459b38760a45b1baa99e081daf5230ba532d9))
+
+
+### Miscellaneous Chores
+
+* release 0.1.1 ([0b27ddb](https://github.com/rit-sse/WebsiteTheSSEquel/commit/0b27ddba58d4e3e5c2f818d961662ac3b870f602))
+
 ## [Unreleased]
 
 ### Added
