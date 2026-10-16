@@ -402,7 +402,6 @@ const ROUTES: { [key: string]: AuthVerifier } = {
   "tech-committee-application": techCommitteeApplicationVerifier,
   user: userVerifier,
   userProject: nonGetOfficerVerifier,
-  when2meet: signedInVerifier,
 };
 
 const accessDenied = (authType: string, request: NextRequest) => {
