@@ -122,8 +122,6 @@ interface TrafficDatum {
 // Day and hour labels
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 const HOURS = [
-  { hour: 10, label: "10am - 11am" },
-  { hour: 11, label: "11am - 12pm" },
   { hour: 12, label: "12pm - 1pm" },
   { hour: 13, label: "1pm - 2pm" },
   { hour: 14, label: "2pm - 3pm" },

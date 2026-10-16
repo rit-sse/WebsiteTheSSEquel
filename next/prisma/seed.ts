@@ -365,7 +365,7 @@ async function seedMentorRosterAndApplications() {
     const slotKeys = new Set<string>();
     while (slotKeys.size < count) {
       const weekday = 1 + Math.floor(Math.random() * 5);
-      const hour = 10 + Math.floor(Math.random() * 8);
+      const hour = 12 + Math.floor(Math.random() * 6);
       slotKeys.add(`${weekday}-${hour}`);
     }
     return Array.from(slotKeys).map((key) => {
@@ -509,7 +509,7 @@ async function seedMentorHeadcountData() {
     const dateBase = new Date(now);
     dateBase.setDate(now.getDate() - dayOffset);
 
-    const hours = [10, 11, 12, 13, 14, 15, 16, 17];
+    const hours = [12, 13, 14, 15, 16, 17];
     for (const hour of hours) {
       const mentorEntry = await prisma.mentorHeadcountEntry.create({
         data: {
@@ -926,9 +926,9 @@ async function seedMentorSchedule() {
 async function seedScheduleBlock() {
   // Sample schedule blocks for Spring 2026
   const blocks = [
-    // Mentor 1 - Monday and Wednesday at 10am
-    { weekday: 1, startHour: 10, mentorId: 1, scheduleId: 1 },
-    { weekday: 3, startHour: 10, mentorId: 1, scheduleId: 1 },
+    // Mentor 1 - Monday and Wednesday at 12pm
+    { weekday: 1, startHour: 12, mentorId: 1, scheduleId: 1 },
+    { weekday: 3, startHour: 12, mentorId: 1, scheduleId: 1 },
     // Mentor 2 - Tuesday and Thursday at 12pm
     { weekday: 2, startHour: 12, mentorId: 2, scheduleId: 1 },
     { weekday: 4, startHour: 12, mentorId: 2, scheduleId: 1 },

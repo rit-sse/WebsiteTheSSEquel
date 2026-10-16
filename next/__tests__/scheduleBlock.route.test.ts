@@ -75,7 +75,7 @@ describe("/api/scheduleBlock route", () => {
     });
     const req = new Request("http://localhost/api/scheduleBlock", {
       method: "POST",
-      body: JSON.stringify({ mentorId: 1, weekday: 1, startHour: 10 }),
+      body: JSON.stringify({ mentorId: 1, weekday: 1, startHour: 12 }),
       headers: { "content-type": "application/json" },
     }) as any;
     const res = await POST(req);
@@ -89,12 +89,59 @@ describe("/api/scheduleBlock route", () => {
     });
     const req = new Request("http://localhost/api/scheduleBlock", {
       method: "POST",
-      body: JSON.stringify({ mentorId: 1, weekday: 9, startHour: 10 }),
+      body: JSON.stringify({ mentorId: 1, weekday: 9, startHour: 12 }),
       headers: { "content-type": "application/json" },
     }) as any;
     const res = await POST(req);
     expect(res.status).toBe(400);
   });
+
+  it.each([10, 11, 18])(
+    "POST rejects start hour %i outside 12-17",
+    async (startHour) => {
+      mockGetGatewayAuthLevel.mockResolvedValue({
+        isMentoringHead: true,
+        isPrimary: false,
+      });
+      const req = new Request("http://localhost/api/scheduleBlock", {
+        method: "POST",
+        body: JSON.stringify({ mentorId: 7, weekday: 1, startHour }),
+        headers: { "content-type": "application/json" },
+      }) as any;
+
+      const res = await POST(req);
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.error).toContain("Invalid start hour");
+      expect(mockScheduleBlockCreate).not.toHaveBeenCalled();
+    }
+  );
+
+  it.each([12, 17])(
+    "POST accepts boundary start hour %i",
+    async (startHour) => {
+      mockGetGatewayAuthLevel.mockResolvedValue({
+        isMentoringHead: true,
+        isPrimary: false,
+      });
+      mockMentorScheduleFindFirst.mockResolvedValue({ id: 55 });
+      mockMentorFindUnique.mockResolvedValue({ id: 7, isActive: true });
+      mockScheduleBlockFindFirst.mockResolvedValue(null);
+      mockScheduleBlockCreate.mockResolvedValue({
+        id: 99,
+        mentor: { user: { profileImageKey: null, googleImageURL: null } },
+      });
+
+      const req = new Request("http://localhost/api/scheduleBlock", {
+        method: "POST",
+        body: JSON.stringify({ mentorId: 7, weekday: 1, startHour }),
+        headers: { "content-type": "application/json" },
+      }) as any;
+
+      const res = await POST(req);
+      expect(res.status).toBe(201);
+    }
+  );
 
   it("POST creates block when valid", async () => {
     mockGetGatewayAuthLevel.mockResolvedValue({
@@ -116,7 +163,7 @@ describe("/api/scheduleBlock route", () => {
 
     const req = new Request("http://localhost/api/scheduleBlock", {
       method: "POST",
-      body: JSON.stringify({ mentorId: 7, weekday: 1, startHour: 10 }),
+      body: JSON.stringify({ mentorId: 7, weekday: 1, startHour: 12 }),
       headers: { "content-type": "application/json" },
     }) as any;
     const res = await POST(req);
@@ -126,6 +173,29 @@ describe("/api/scheduleBlock route", () => {
     expect(body.mentor.user.image).toBe("resolved-image");
   });
 
+  it.each([10, 11, 18])(
+    "PUT rejects start hour %i outside 12-17",
+    async (startHour) => {
+      mockGetGatewayAuthLevel.mockResolvedValue({
+        isMentoringHead: true,
+        isPrimary: false,
+      });
+      const req = new Request("http://localhost/api/scheduleBlock", {
+        method: "PUT",
+        body: JSON.stringify({ id: 123, weekday: 1, startHour }),
+        headers: { "content-type": "application/json" },
+      }) as any;
+
+      const res = await PUT(req);
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.error).toContain("Invalid start hour");
+      // Rejected by validation before any lookup or write
+      expect(mockScheduleBlockFindUnique).not.toHaveBeenCalled();
+      expect(mockScheduleBlockUpdate).not.toHaveBeenCalled();
+    }
+  );
+
   it("PUT returns 404 when schedule block does not exist", async () => {
     mockGetGatewayAuthLevel.mockResolvedValue({
       isMentoringHead: true,
@@ -134,7 +204,7 @@ describe("/api/scheduleBlock route", () => {
     mockScheduleBlockFindUnique.mockResolvedValue(null);
     const req = new Request("http://localhost/api/scheduleBlock", {
       method: "PUT",
-      body: JSON.stringify({ id: 123, weekday: 1, startHour: 10 }),
+      body: JSON.stringify({ id: 123, weekday: 1, startHour: 12 }),
       headers: { "content-type": "application/json" },
     }) as any;
     const res = await PUT(req);
