@@ -879,7 +879,7 @@ model ScheduleBlock {
   // Day of week: 1 = Monday, 5 = Friday
   weekday Int
 
-  // Start hour in 24h time (10 = 10am, 17 = 5pm)
+  // Start hour in 24h time (12 = 12pm, 17 = 5pm)
   startHour Int
 
   // Foreign keys

@@ -124,7 +124,7 @@ describe("/api/mentor-availability route", () => {
       id: 22,
       userId: 7,
       semesterId: 2,
-      slots: JSON.stringify([{ weekday: 1, hour: 10 }]),
+      slots: JSON.stringify([{ weekday: 1, hour: 12 }]),
       updatedAt: new Date("2026-03-01T00:00:00.000Z"),
       semester: { id: 2, name: "Spring 2026" },
     });
@@ -134,7 +134,7 @@ describe("/api/mentor-availability route", () => {
       method: "POST",
       body: JSON.stringify({
         semesterId: 2,
-        slots: [{ weekday: 1, hour: 10 }],
+        slots: [{ weekday: 1, hour: 12 }],
       }),
       headers: { "content-type": "application/json" },
     }) as any;
@@ -142,7 +142,7 @@ describe("/api/mentor-availability route", () => {
     const res = await POST(req);
     expect(res.status).toBe(200);
     const body = await res.json();
-    expect(body.slots).toEqual([{ weekday: 1, hour: 10 }]);
+    expect(body.slots).toEqual([{ weekday: 1, hour: 12 }]);
     expect(mockRecordMentorAvailabilityEvent).toHaveBeenCalled();
   });
 

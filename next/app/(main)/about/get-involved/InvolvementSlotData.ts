@@ -14,13 +14,13 @@ const involvementSlotData = [
     body: `We have a general meeting every week on Wednesday at 3 PM in the SSE lab (GOL 1670). Come join us
             to stay up to date with what's happening in the SSE and to meet other members! If you have any questions,
             feel free to reach out to any of the officers (found on the Leadership page). The lab is open every weekday
-            from 10 AM to 6 PM. Feel free to stop by and hang out, we love meeting new people!`,
+            from 12 PM to 6 PM. Feel free to stop by and hang out, we love meeting new people!`,
   },
   {
     imageSrc: "/images/mentoring.jpg",
     title: "Come in for Mentoring",
     body: `If you need help with any of your GCCIS or math classes, we have mentors who would love to help! Mentoring is 
-        open Monday to Friday from 10AM to 6PM. You can check out the mentoring schedule of the times for each mentor. 
+        open Monday to Friday from 12PM to 6PM. You can check out the mentoring schedule of the times for each mentor. 
         If you would like to apply to be a mentor, please reach out to our Mentoring Head.`,
   },
   {

@@ -926,9 +926,9 @@ async function seedMentorSchedule() {
 async function seedScheduleBlock() {
   // Sample schedule blocks for Spring 2026
   const blocks = [
-    // Mentor 1 - Monday and Wednesday at 10am
-    { weekday: 1, startHour: 10, mentorId: 1, scheduleId: 1 },
-    { weekday: 3, startHour: 10, mentorId: 1, scheduleId: 1 },
+    // Mentor 1 - Monday and Wednesday at 12pm
+    { weekday: 1, startHour: 12, mentorId: 1, scheduleId: 1 },
+    { weekday: 3, startHour: 12, mentorId: 1, scheduleId: 1 },
     // Mentor 2 - Tuesday and Thursday at 12pm
     { weekday: 2, startHour: 12, mentorId: 2, scheduleId: 1 },
     { weekday: 4, startHour: 12, mentorId: 2, scheduleId: 1 },

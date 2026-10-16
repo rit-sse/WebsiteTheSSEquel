@@ -183,10 +183,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate startHour (10-17, 10am-5pm)
-    if (startHour < 10 || startHour > 17) {
+    // Validate startHour (12-17, 12pm-5pm)
+    if (startHour < 12 || startHour > 17) {
       return NextResponse.json(
-        { error: "Invalid start hour. Must be between 10 (10am) and 17 (5pm)" },
+        { error: "Invalid start hour. Must be between 12 (12pm) and 17 (5pm)" },
         { status: 400 }
       );
     }
@@ -391,10 +391,10 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // Validate startHour (10-17, 10am-5pm)
-    if (startHour < 10 || startHour > 17) {
+    // Validate startHour (12-17, 12pm-5pm)
+    if (startHour < 12 || startHour > 17) {
       return NextResponse.json(
-        { error: "Invalid start hour. Must be between 10 (10am) and 17 (5pm)" },
+        { error: "Invalid start hour. Must be between 12 (12pm) and 17 (5pm)" },
         { status: 400 }
       );
     }

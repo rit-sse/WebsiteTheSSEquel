@@ -207,8 +207,8 @@ function parseWhen2MeetData(html: string): When2MeetData | null {
         .map((id) => idToName[id])
         .filter(Boolean);
 
-      // Only include Monday-Friday, 10am-6pm (matching our schedule grid)
-      if (dayIndex >= 1 && dayIndex <= 5 && hour >= 10 && hour < 18) {
+      // Only include Monday-Friday, 12pm-6pm (matching our schedule grid)
+      if (dayIndex >= 1 && dayIndex <= 5 && hour >= 12 && hour < 18) {
         // Only add full hour slots (minute === 0) or combine 15-min slots
         if (minute === 0) {
           slots.push({

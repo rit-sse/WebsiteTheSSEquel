@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 
 interface AvailabilitySlot {
   weekday: number; // 1-5 (Monday-Friday)
-  hour: number; // 10-17 (10am-5pm)
+  hour: number; // 12-17 (12pm-5pm)
 }
 
 /**
@@ -162,13 +162,13 @@ export async function POST(request: NextRequest) {
         typeof slot.hour !== "number" ||
         slot.weekday < 1 ||
         slot.weekday > 5 ||
-        slot.hour < 10 ||
+        slot.hour < 12 ||
         slot.hour > 17
       ) {
         return NextResponse.json(
           {
             error:
-              "Invalid slot format. weekday must be 1-5, hour must be 10-17",
+              "Invalid slot format. weekday must be 1-5, hour must be 12-17",
           },
           { status: 400 }
         );

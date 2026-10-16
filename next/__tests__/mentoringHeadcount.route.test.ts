@@ -57,6 +57,34 @@ describe("/api/mentoring-headcount route", () => {
     });
   });
 
+  it("GET traffic mode keeps pre-12pm hours before Oct 12 and drops them after", async () => {
+    mockHeadcountFindMany.mockResolvedValue([
+      { peopleInLab: 4, createdAt: new Date(2026, 9, 5, 10, 30) }, // Mon, old hours
+      { peopleInLab: 6, createdAt: new Date(2026, 9, 5, 13, 0) }, // Mon, 1pm
+      { peopleInLab: 9, createdAt: new Date(2026, 9, 12, 10, 30) }, // Mon, after change
+      { peopleInLab: 7, createdAt: new Date(2026, 9, 12, 13, 0) }, // Mon, 1pm
+    ]);
+
+    const res = await GET(
+      req("http://localhost/api/mentoring-headcount?traffic=true")
+    );
+    const body = await res.json();
+    const byHour = new Map(
+      body.map((b: { hour: number; averagePeopleInLab: number }) => [b.hour, b])
+    );
+
+    // 10am only has the pre-change check-in
+    expect(byHour.get(10)).toMatchObject({
+      averagePeopleInLab: 4,
+      sampleCount: 1,
+    });
+    // 1pm keeps both
+    expect(byHour.get(13)).toMatchObject({
+      averagePeopleInLab: 6.5,
+      sampleCount: 2,
+    });
+  });
+
   it("POST validates required feeling", async () => {
     const res = await POST(
       req("http://localhost/api/mentoring-headcount", "POST", {

@@ -75,7 +75,7 @@ describe("/api/scheduleBlock route", () => {
     });
     const req = new Request("http://localhost/api/scheduleBlock", {
       method: "POST",
-      body: JSON.stringify({ mentorId: 1, weekday: 1, startHour: 10 }),
+      body: JSON.stringify({ mentorId: 1, weekday: 1, startHour: 12 }),
       headers: { "content-type": "application/json" },
     }) as any;
     const res = await POST(req);
@@ -89,7 +89,7 @@ describe("/api/scheduleBlock route", () => {
     });
     const req = new Request("http://localhost/api/scheduleBlock", {
       method: "POST",
-      body: JSON.stringify({ mentorId: 1, weekday: 9, startHour: 10 }),
+      body: JSON.stringify({ mentorId: 1, weekday: 9, startHour: 12 }),
       headers: { "content-type": "application/json" },
     }) as any;
     const res = await POST(req);
@@ -116,7 +116,7 @@ describe("/api/scheduleBlock route", () => {
 
     const req = new Request("http://localhost/api/scheduleBlock", {
       method: "POST",
-      body: JSON.stringify({ mentorId: 7, weekday: 1, startHour: 10 }),
+      body: JSON.stringify({ mentorId: 7, weekday: 1, startHour: 12 }),
       headers: { "content-type": "application/json" },
     }) as any;
     const res = await POST(req);
@@ -134,7 +134,7 @@ describe("/api/scheduleBlock route", () => {
     mockScheduleBlockFindUnique.mockResolvedValue(null);
     const req = new Request("http://localhost/api/scheduleBlock", {
       method: "PUT",
-      body: JSON.stringify({ id: 123, weekday: 1, startHour: 10 }),
+      body: JSON.stringify({ id: 123, weekday: 1, startHour: 12 }),
       headers: { "content-type": "application/json" },
     }) as any;
     const res = await PUT(req);
