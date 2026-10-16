@@ -4,6 +4,12 @@
  * change date onward only hours at or after MENTORING_START_HOUR count.
  */
 export const MENTORING_START_HOUR = 12;
+export const MENTORING_LAST_START_HOUR = 17; // 5pm - 6pm is the last slot
+
+/** True for hours a mentor can currently be scheduled or available in. */
+export function isMentoringSlotHour(hour: number): boolean {
+  return hour >= MENTORING_START_HOUR && hour <= MENTORING_LAST_START_HOUR;
+}
 export const MENTORING_HOURS_CHANGE_DATE = new Date(2026, 9, 12); // Oct 12, 2026
 
 export function isWithinMentoringHours(createdAt: Date): boolean {

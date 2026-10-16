@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   getVisibleHeatmapHours,
+  isMentoringSlotHour,
   isWithinMentoringHours,
   MENTORING_HOURS_CHANGE_DATE,
 } from "@/lib/mentoringHours";
@@ -40,6 +41,14 @@ describe("isWithinMentoringHours", () => {
     expect(isWithinMentoringHours(new Date(2026, 9, 12, 12, 0))).toBe(true);
     expect(isWithinMentoringHours(new Date(2026, 9, 12, 17, 59))).toBe(true);
     expect(isWithinMentoringHours(new Date(2026, 10, 3, 14, 0))).toBe(true);
+  });
+});
+
+describe("isMentoringSlotHour", () => {
+  it("accepts 12 through 17 and rejects everything else", () => {
+    expect([9, 10, 11].some(isMentoringSlotHour)).toBe(false);
+    expect([12, 13, 14, 15, 16, 17].every(isMentoringSlotHour)).toBe(true);
+    expect([18, 19].some(isMentoringSlotHour)).toBe(false);
   });
 });
 

@@ -365,7 +365,7 @@ async function seedMentorRosterAndApplications() {
     const slotKeys = new Set<string>();
     while (slotKeys.size < count) {
       const weekday = 1 + Math.floor(Math.random() * 5);
-      const hour = 10 + Math.floor(Math.random() * 8);
+      const hour = 12 + Math.floor(Math.random() * 6);
       slotKeys.add(`${weekday}-${hour}`);
     }
     return Array.from(slotKeys).map((key) => {

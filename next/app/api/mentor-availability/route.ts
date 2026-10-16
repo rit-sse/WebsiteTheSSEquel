@@ -5,6 +5,7 @@ import prisma from "@/lib/prisma";
 import { getGatewayAuthLevel } from "@/lib/authGateway";
 import { resolveUserImage } from "@/lib/s3Utils";
 import { recordMentorAvailabilityEvent } from "@/lib/mentorAvailabilityEvents";
+import { isMentoringSlotHour } from "@/lib/mentoringHours";
 
 export const dynamic = "force-dynamic";
 
@@ -105,7 +106,11 @@ export async function GET(request: NextRequest) {
         image: resolveUserImage(a.user.profileImageKey, a.user.googleImageURL),
       },
       semesterId: a.semesterId,
-      slots: JSON.parse(a.slots) as AvailabilitySlot[],
+      // Legacy 10am/11am slots may still be stored; they can no longer be
+      // scheduled or re-saved, so don't hand them to clients.
+      slots: (JSON.parse(a.slots) as AvailabilitySlot[]).filter((slot) =>
+        isMentoringSlotHour(slot.hour)
+      ),
       updatedAt: a.updatedAt,
     }));
 

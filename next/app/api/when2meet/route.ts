@@ -89,6 +89,26 @@ export async function POST(request: NextRequest) {
 }
 
 /**
+ * Returns the text between the outer brackets of `name = [ ... ]`, matching
+ * nested brackets, or null when the assignment is not found or unbalanced.
+ */
+function extractBracketedArray(html: string, name: string): string | null {
+  const start = html.match(new RegExp(`${name}\\s*=\\s*\\[`));
+  if (!start || start.index === undefined) return null;
+
+  const contentStart = start.index + start[0].length;
+  let depth = 1;
+  for (let i = contentStart; i < html.length; i++) {
+    if (html[i] === "[") depth++;
+    else if (html[i] === "]") {
+      depth--;
+      if (depth === 0) return html.slice(contentStart, i);
+    }
+  }
+  return null;
+}
+
+/**
  * Parse When2Meet HTML to extract availability data
  */
 function parseWhen2MeetData(html: string): When2MeetData | null {
@@ -136,16 +156,14 @@ function parseWhen2MeetData(html: string): When2MeetData | null {
       .filter((n) => !isNaN(n));
 
     // Extract AvailableAtSlot array (which people are available at each slot)
-    const availableAtSlotMatch = html.match(
-      /AvailableAtSlot\s*=\s*\[([^\]]*)\]/
-    );
-    if (!availableAtSlotMatch) {
+    // AvailableAtSlot is an array of arrays, so the closing bracket has to be
+    // found by depth rather than with a [^\]]* regex.
+    const availableAtSlotStr = extractBracketedArray(html, "AvailableAtSlot");
+    if (availableAtSlotStr === null) {
       console.error("Could not find AvailableAtSlot");
       return null;
     }
 
-    // AvailableAtSlot is an array of arrays, need to parse it carefully
-    const availableAtSlotStr = availableAtSlotMatch[1];
     const availableAtSlot: number[][] = [];
 
     // Parse the nested array structure

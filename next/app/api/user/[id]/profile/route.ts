@@ -2,6 +2,7 @@ import prisma from "@/lib/prisma";
 import { resolveUserImage } from "@/lib/s3Utils";
 import { MENTOR_HEAD_TITLE } from "@/lib/utils";
 import { getGatewayAuthLevel } from "@/lib/authGateway";
+import { isMentoringSlotHour } from "@/lib/mentoringHours";
 
 export const dynamic = "force-dynamic";
 
@@ -26,7 +27,9 @@ function parseAvailability(
     if (!Array.isArray(parsed)) return [];
     return parsed.filter(
       (slot): slot is { weekday: number; hour: number } =>
-        typeof slot?.weekday === "number" && typeof slot?.hour === "number"
+        typeof slot?.weekday === "number" &&
+        typeof slot?.hour === "number" &&
+        isMentoringSlotHour(slot.hour)
     );
   } catch {
     return [];
@@ -209,15 +212,19 @@ export async function GET(
             isActive: user.mentor[0].isActive,
             expirationDate: user.mentor[0].expirationDate,
             availability: availabilitySlots,
-            shifts: user.mentor[0].scheduleBlocks.map((slot) => ({
-              id: slot.id,
-              weekday: slot.weekday,
-              dayLabel: DAYS[slot.weekday - 1] ?? "Unknown",
-              startHour: slot.startHour,
-              label: `${DAYS[slot.weekday - 1] ?? "Unknown"} ${slot.startHour}:00-${
-                slot.startHour + 1
-              }:00`,
-            })),
+            // Legacy 10am/11am blocks may still exist in the database but are
+            // no longer valid mentoring hours, so they are not shown.
+            shifts: user.mentor[0].scheduleBlocks
+              .filter((slot) => isMentoringSlotHour(slot.startHour))
+              .map((slot) => ({
+                id: slot.id,
+                weekday: slot.weekday,
+                dayLabel: DAYS[slot.weekday - 1] ?? "Unknown",
+                startHour: slot.startHour,
+                label: `${DAYS[slot.weekday - 1] ?? "Unknown"} ${slot.startHour}:00-${
+                  slot.startHour + 1
+                }:00`,
+              })),
             latestApplication: latestMentorApplication
               ? {
                   ...latestMentorApplication,
