@@ -15,6 +15,17 @@ interface AvailabilitySlot {
 }
 
 /**
+ * Parses stored slots for a response. Legacy 10am/11am slots may still be
+ * stored; they can no longer be scheduled or re-saved, so they are not handed
+ * to clients (the stored row itself is left untouched).
+ */
+function parseVisibleSlots(slotsJson: string): AvailabilitySlot[] {
+  return (JSON.parse(slotsJson) as AvailabilitySlot[]).filter((slot) =>
+    isMentoringSlotHour(slot.hour)
+  );
+}
+
+/**
  * Check if the current user can manage all availability
  * (Must be Mentoring Head or Primary Officer)
  */
@@ -71,7 +82,9 @@ export async function GET(request: NextRequest) {
         orderBy: { updatedAt: "desc" },
       });
 
-      return NextResponse.json(availability);
+      return NextResponse.json(
+        availability.map((a) => ({ ...a, slots: parseVisibleSlots(a.slots) }))
+      );
     }
 
     // For fetching all availability (requires management permission for full list)
@@ -106,11 +119,7 @@ export async function GET(request: NextRequest) {
         image: resolveUserImage(a.user.profileImageKey, a.user.googleImageURL),
       },
       semesterId: a.semesterId,
-      // Legacy 10am/11am slots may still be stored; they can no longer be
-      // scheduled or re-saved, so don't hand them to clients.
-      slots: (JSON.parse(a.slots) as AvailabilitySlot[]).filter((slot) =>
-        isMentoringSlotHour(slot.hour)
-      ),
+      slots: parseVisibleSlots(a.slots),
       updatedAt: a.updatedAt,
     }));
 
@@ -241,8 +250,13 @@ export async function POST(request: NextRequest) {
         },
       });
 
+      // Legacy pre-noon blocks can never appear in submitted slots, so they
+      // would always look "absent". Leave them in place (they are hidden from
+      // reads) rather than deleting them as a side effect of saving.
       const blocksToRemove = existingBlocks.filter(
-        (block) => !slotSet.has(`${block.weekday}-${block.startHour}`)
+        (block) =>
+          isMentoringSlotHour(block.startHour) &&
+          !slotSet.has(`${block.weekday}-${block.startHour}`)
       );
 
       if (blocksToRemove.length > 0) {
