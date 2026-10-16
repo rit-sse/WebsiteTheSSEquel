@@ -509,7 +509,7 @@ async function seedMentorHeadcountData() {
     const dateBase = new Date(now);
     dateBase.setDate(now.getDate() - dayOffset);
 
-    const hours = [10, 11, 12, 13, 14, 15, 16, 17];
+    const hours = [12, 13, 14, 15, 16, 17];
     for (const hour of hours) {
       const mentorEntry = await prisma.mentorHeadcountEntry.create({
         data: {
