@@ -16,6 +16,11 @@ export const CreatePurchaseRequestSchema = z.object({
     .refine((val) => !isNaN(Date.parse(val)), {
       message: "plannedDate must be a valid date string",
     }),
-  notifyEmail: z.string().email().max(255),
+  // Optional: softwareengineering@rit.edu is always notified, so an empty
+  // string means "no additional recipient".
+  notifyEmail: z
+    .union([z.literal(""), z.string().trim().email().max(255)])
+    .optional()
+    .default(""),
   eventId: z.string().nullable().optional(),
 });
