@@ -30,3 +30,20 @@ export function getInitials(name: string | null | undefined): string {
     .join("")
     .toUpperCase();
 }
+
+/**
+ * Compact "First L." label for tight surfaces like the mentor schedule,
+ * so two mentors with the same first name stay distinguishable.
+ *
+ * Examples:
+ *   getShortName("Sam Lavine")        // "Sam L."
+ *   getShortName("  Thomas  A  Lee ") // "Thomas L."
+ *   getShortName("Cher")              // "Cher"
+ *   getShortName("")                  // ""
+ */
+export function getShortName(name: string | null | undefined): string {
+  const tokens = (name ?? "").trim().split(/\s+/).filter(Boolean);
+  if (tokens.length === 0) return "";
+  if (tokens.length === 1) return tokens[0];
+  return `${tokens[0]} ${tokens[tokens.length - 1][0].toUpperCase()}.`;
+}
