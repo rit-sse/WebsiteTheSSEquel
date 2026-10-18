@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { getGoLinkErrorMessage } from "./goLinkError";
 
 export interface GoLinkProps {
   id: number;
@@ -37,6 +38,7 @@ const GoLink: React.FC<GoLinkProps> = ({
   const [newDescription, setDescription] = useState(description);
   const [newPinned, setPinned] = useState(pinned);
   const [newOfficer, setOfficer] = useState(officer);
+  const [editError, setEditError] = useState<string | null>(null);
 
   const handleCancel = () => {
     setTitle(goUrl);
@@ -44,11 +46,13 @@ const GoLink: React.FC<GoLinkProps> = ({
     setDescription(description);
     setPinned(pinned);
     setOfficer(officer);
+    setEditError(null);
   };
 
   const handleEdit = async () => {
+    setEditError(null);
     try {
-      const response = await fetch("api/golinks", {
+      const response = await fetch("/api/golinks", {
         method: "PUT",
         body: JSON.stringify({
           id: id,
@@ -63,9 +67,12 @@ const GoLink: React.FC<GoLinkProps> = ({
       if (response.ok) {
         setEditOpen(false);
         fetchData();
+      } else {
+        setEditError(await getGoLinkErrorMessage(response));
       }
     } catch (error) {
       console.error("Failed to edit golink:", error);
+      setEditError("Failed to update go link. Please try again.");
     }
   };
 
@@ -174,6 +181,12 @@ const GoLink: React.FC<GoLinkProps> = ({
               Officer (Won&apos;t be publicly shown)
             </Label>
           </div>
+
+          {editError && (
+            <p role="alert" className="text-sm text-destructive">
+              {editError}
+            </p>
+          )}
         </div>
 
         <ModalFooter>
