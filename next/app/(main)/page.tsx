@@ -15,6 +15,8 @@ import { Handshake, Building2, Mic, ArrowRight } from "lucide-react";
 import prisma from "@/lib/prisma";
 import { getActiveElection } from "@/lib/elections";
 import { getCurrentMentors } from "@/lib/currentMentors";
+import { MentorCard } from "@/components/mentoring/MentorCard";
+import Link from "next/link";
 
 interface SponsorData {
   id: number;
@@ -95,30 +97,31 @@ export default async function Home() {
 
       {/* Current mentors */}
       <NeoCard className="w-full p-6 md:p-10">
-        <h2 className="mb-2 text-3xl font-bold font-display">Mentoring Now</h2>
-        <p className="mb-6 text-muted-foreground">
-          Mentors scheduled for the current hour in the SSE lab.
-        </p>
+        <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 className="mb-2 text-3xl font-bold font-display">
+              Mentoring Now
+            </h2>
+            <p className="text-muted-foreground">
+              Mentors scheduled for the current hour in the SSE lab.
+            </p>
+          </div>
+          <Link
+            href="/mentoring/schedule"
+            className="inline-flex min-h-[44px] items-center gap-2 rounded-md px-2 text-sm font-semibold hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            Full schedule
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          </Link>
+        </div>
 
         {currentMentors.length > 0 ? (
-          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {currentMentors.map((block) => {
-              const user = block.mentor.user;
-              const application = user.mentorApplications[0];
-
-              return (
-                <li key={block.mentor.id} className="rounded-lg border p-4">
-                  <h3 className="text-lg font-semibold">{user.name}</h3>
-                  {application && (
-                    <p className="text-sm text-muted-foreground">
-                      {[application.major, application.yearLevel]
-                        .filter(Boolean)
-                        .join(" · ")}
-                    </p>
-                  )}
-                </li>
-              );
-            })}
+          <ul className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            {currentMentors.map((mentor) => (
+              <li key={mentor.id} className="min-w-0">
+                <MentorCard mentor={mentor} />
+              </li>
+            ))}
           </ul>
         ) : (
           <p className="text-muted-foreground">

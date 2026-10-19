@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { mentorProfileSelect, toMentorProfile } from "@/lib/mentorProfiles";
 
 export function getCurrentMentoringSlot(now: Date = new Date()) {
   const parts = new Intl.DateTimeFormat("en-US", {
@@ -32,7 +33,8 @@ export function getCurrentMentoringSlot(now: Date = new Date()) {
 }
 
 export async function getCurrentMentors() {
-  const currentMentoringHours = getCurrentMentoringSlot();
+  const now = new Date();
+  const currentMentoringHours = getCurrentMentoringSlot(now);
   const mentors = await prisma.scheduleBlock.findMany({
     where: {
       weekday: { equals: currentMentoringHours.weekday },
@@ -42,32 +44,21 @@ export async function getCurrentMentors() {
       },
       mentor: {
         isActive: true,
+        expirationDate: {
+          gt: now,
+        },
       },
     },
     select: {
       mentor: {
-        select: {
-          id: true,
-          user: {
-            select: {
-              id: true,
-              name: true,
-              mentorApplications: {
-                where: {
-                  semester: {
-                    isActive: true,
-                  },
-                },
-                select: {
-                  yearLevel: true,
-                  major: true,
-                },
-              },
-            },
-          },
-        },
+        select: mentorProfileSelect,
       },
     },
   });
-  return mentors;
+  // A mentor can appear in more than one active schedule.
+  return Array.from(
+    new Map(
+      mentors.map(({ mentor }) => [mentor.id, toMentorProfile(mentor)])
+    ).values()
+  );
 }
