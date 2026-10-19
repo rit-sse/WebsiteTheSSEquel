@@ -93,6 +93,23 @@ describe("/api/golinks route", () => {
     expect(res.status).toBe(422);
   });
 
+  it("POST returns 422 (not 500) for unparseable URLs", async () => {
+    const req = new Request("http://localhost/api/golinks", {
+      method: "POST",
+      body: JSON.stringify({
+        url: "not a url",
+        golink: "abc",
+        description: "desc",
+        isPinned: false,
+        isPublic: true,
+      }),
+      headers: { "content-type": "application/json" },
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(422);
+  });
+
   it("DELETE returns 400 when id is missing", async () => {
     const req = new Request("http://localhost/api/golinks", {
       method: "DELETE",

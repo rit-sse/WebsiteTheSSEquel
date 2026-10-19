@@ -17,6 +17,8 @@ const GoLinkUrlSchema = z.preprocess(
     .max(500)
     .url("must be a valid URL")
     .refine((value) => {
+      // Zod keeps running checks after .url() fails, so guard the parse.
+      if (!URL.canParse(value)) return true;
       const protocol = new URL(value).protocol;
       return protocol === "http:" || protocol === "https:";
     }, "must use http:// or https://")
