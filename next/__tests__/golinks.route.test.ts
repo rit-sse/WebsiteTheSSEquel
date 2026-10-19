@@ -93,6 +93,23 @@ describe("/api/golinks route", () => {
     expect(res.status).toBe(422);
   });
 
+  it("POST returns 422 (not 500) for unparseable URLs", async () => {
+    const req = new Request("http://localhost/api/golinks", {
+      method: "POST",
+      body: JSON.stringify({
+        url: "not a url",
+        golink: "abc",
+        description: "desc",
+        isPinned: false,
+        isPublic: true,
+      }),
+      headers: { "content-type": "application/json" },
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(422);
+  });
+
   it("DELETE returns 400 when id is missing", async () => {
     const req = new Request("http://localhost/api/golinks", {
       method: "DELETE",
@@ -118,6 +135,29 @@ describe("/api/golinks route", () => {
     });
     const res = await POST(req);
     expect(res.status).toBe(201);
+  });
+
+  it("POST adds https:// to URLs entered without a protocol", async () => {
+    mockCreate.mockResolvedValue({ id: 12, golink: "site" });
+    const req = new Request("http://localhost/api/golinks", {
+      method: "POST",
+      body: JSON.stringify({
+        url: "sse.rit.edu/events",
+        golink: "site",
+        description: "desc",
+        isPinned: false,
+        isPublic: true,
+      }),
+      headers: { "content-type": "application/json" },
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(201);
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ url: "https://sse.rit.edu/events" }),
+      })
+    );
   });
 
   it("POST accepts http URLs", async () => {
