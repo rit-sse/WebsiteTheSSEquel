@@ -22,6 +22,7 @@ import {
   ChevronDown,
   ChevronUp,
   UserPlus,
+  RotateCcw,
 } from "lucide-react";
 import { getInitials } from "@/lib/userDisplay";
 
@@ -150,7 +151,11 @@ export default function ApplicationReview() {
       });
 
       if (response.ok) {
-        toast.success(`Application ${newStatus}`);
+        toast.success(
+          newStatus === "pending"
+            ? "Application reopened"
+            : `Application ${newStatus}`
+        );
         fetchApplications();
       } else {
         const data = await response.json();
@@ -360,6 +365,16 @@ export default function ApplicationReview() {
               title="Send invite"
             >
               <UserPlus className="h-3 w-3" />
+            </Button>
+          )}
+          {(app.status === "approved" || app.status === "rejected") && (
+            <Button
+              size="xs"
+              variant="ghost"
+              onClick={() => handleUpdateStatus(app.id, "pending")}
+              title="Reopen (set back to pending)"
+            >
+              <RotateCcw className="h-3 w-3" />
             </Button>
           )}
         </div>
@@ -625,6 +640,20 @@ export default function ApplicationReview() {
               </Button>
             </>
           )}
+          {viewApplication &&
+            (viewApplication.status === "approved" ||
+              viewApplication.status === "rejected") && (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  handleUpdateStatus(viewApplication.id, "pending");
+                  setViewModalOpen(false);
+                }}
+              >
+                <RotateCcw className="h-4 w-4 mr-2" />
+                Reopen
+              </Button>
+            )}
           {viewApplication && viewApplication.status === "approved" && (
             <Button
               onClick={() => {
