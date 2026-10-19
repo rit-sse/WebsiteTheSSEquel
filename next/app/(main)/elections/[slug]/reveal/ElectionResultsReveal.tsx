@@ -85,12 +85,12 @@ export default function ElectionResultsReveal({
         <div className="flex items-center justify-between">
           <Link
             href={`/elections/${electionSlug}`}
-            className="inline-flex items-center gap-2 text-sm text-black hover:text-black/70 transition-colors"
+            className="inline-flex items-center gap-2 text-sm text-foreground hover:text-foreground/70 transition-colors"
           >
             <Home className="h-4 w-4" />
             {electionTitle}
           </Link>
-          <div className="text-xs font-semibold uppercase tracking-widest text-black">
+          <div className="text-xs font-semibold uppercase tracking-widest text-foreground">
             {index + 1} / {totalSteps}
           </div>
         </div>
@@ -133,7 +133,7 @@ export default function ElectionResultsReveal({
               type="button"
               onClick={() => go(-1)}
               disabled={index === 0}
-              className="inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-black hover:text-black/70 hover:bg-muted/60 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+              className="inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-foreground hover:text-foreground/70 hover:bg-muted/60 disabled:opacity-40 disabled:pointer-events-none transition-colors"
             >
               <ArrowLeft className="h-4 w-4" />
               Previous
@@ -174,7 +174,7 @@ function SlideAnnouncement({ slide }: { slide: RevealSlide }) {
     >
       <NeoCard depth={1}>
         <NeoCardContent className="flex flex-col items-center gap-8 px-6 py-10 text-center md:px-12 md:py-14">
-          <p className="eyebrow text-sm !text-black">
+          <p className="eyebrow text-sm !text-foreground">
             YOUR NEW {slide.officeTitle.toUpperCase()} IS
           </p>
 
@@ -209,7 +209,7 @@ function SlideAnnouncement({ slide }: { slide: RevealSlide }) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.8 }}
-              className="font-display text-xl text-black"
+              className="font-display text-xl text-foreground"
             >
               {[
                 slide.yearLevel ? `Year ${slide.yearLevel}` : null,
@@ -225,7 +225,7 @@ function SlideAnnouncement({ slide }: { slide: RevealSlide }) {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 1.1 }}
-              className="max-w-prose text-lg leading-relaxed text-black"
+              className="max-w-prose text-lg leading-relaxed text-foreground"
             >
               &ldquo;{slide.statement}&rdquo;
             </motion.p>
@@ -270,19 +270,19 @@ function SlideNoWinner({ slide }: { slide: RevealSlide }) {
     >
       <NeoCard depth={1}>
         <NeoCardContent className="flex flex-col items-center gap-6 px-6 py-10 text-center md:px-12 md:py-14">
-          <p className="eyebrow text-sm !text-black/60">
+          <p className="eyebrow text-sm !text-foreground/60">
             {slide.officeTitle.toUpperCase()}
           </p>
           <div
             aria-hidden
             className="flex h-[140px] w-[140px] items-center justify-center rounded-full border-[3px] border-dashed border-black/40 bg-muted/40"
           >
-            <Minus className="h-16 w-16 text-black/40" strokeWidth={3} />
+            <Minus className="h-16 w-16 text-foreground/40" strokeWidth={3} />
           </div>
-          <h3 className="font-display text-3xl font-bold !leading-tight text-black/70 md:text-4xl">
+          <h3 className="font-display text-3xl font-bold !leading-tight text-foreground/70 md:text-4xl">
             {headline}
           </h3>
-          <p className="max-w-prose text-base leading-relaxed text-black/60 md:text-lg">
+          <p className="max-w-prose text-base leading-relaxed text-foreground/60 md:text-lg">
             {subline}
           </p>
         </NeoCardContent>
@@ -310,8 +310,10 @@ function SlideSummary({
       transition={{ duration: 0.4 }}
       className="flex w-full flex-col items-center gap-8 text-center"
     >
-      <p className="eyebrow text-sm !text-black">Your new primary officers</p>
-      <h2 className="font-display text-4xl font-bold text-black md:text-5xl">
+      <p className="eyebrow text-sm !text-foreground">
+        Your new primary officers
+      </p>
+      <h2 className="font-display text-4xl font-bold text-foreground md:text-5xl">
         Congratulations to the SSE.
       </h2>
 
@@ -338,16 +340,19 @@ function SlideSummary({
                   aria-hidden
                   className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-dashed border-black/40 bg-muted/40 shadow-[3px_3px_0_0_rgba(0,0,0,0.25)]"
                 >
-                  <Minus className="h-7 w-7 text-black/40" strokeWidth={3} />
+                  <Minus
+                    className="h-7 w-7 text-foreground/40"
+                    strokeWidth={3}
+                  />
                 </div>
               )}
               <div className="min-w-0">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-black">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-foreground">
                   {s.officeTitle}
                 </p>
                 <p
                   className={`truncate font-display text-sm font-bold ${
-                    hasWinner ? "text-black" : "italic text-black/50"
+                    hasWinner ? "text-foreground" : "italic text-foreground/50"
                   }`}
                 >
                   {hasWinner
@@ -371,7 +376,7 @@ function SlideSummary({
         />
         <Link
           href={`/elections/${electionSlug}`}
-          className="inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-black hover:text-black/70 transition-colors"
+          className="inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-foreground hover:text-foreground/70 transition-colors"
         >
           Back to election
         </Link>
