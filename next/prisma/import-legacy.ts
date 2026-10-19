@@ -276,7 +276,9 @@ async function importUsers(db: Map<string, Row[]>) {
     try {
       await prisma.user.upsert({
         where: { email },
-        create: { email, name, isImported: true },
+        // The dump's original user creation dates have not been verified.
+        // Import time must not be reported as the user's creation date.
+        create: { email, name, isImported: true, createdAt: null },
         update: {},
       });
       created++;

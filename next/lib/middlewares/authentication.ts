@@ -213,11 +213,15 @@ const alumniRequestsVerifier: AuthVerifier = async (request: NextRequest) => {
 
 /**
  * Auth verifier for user routes:
+ * - Export requires officer access for all methods
  * - GET is public
  * - PUT is allowed through (route-level checks handle self-edit vs officer-edit)
  * - POST, DELETE require officer
  */
 const userVerifier: AuthVerifier = async (request: NextRequest) => {
+  if (request.nextUrl.pathname.replace(/\/+$/, "") === "/api/user/export") {
+    return officerVerifier(request);
+  }
   if (request.method === "GET" || request.method === "PUT") {
     return { isAllowed: true, authType: "None" };
   }
@@ -407,7 +411,13 @@ const accessDenied = (authType: string, request: NextRequest) => {
     {
       error: `Access Denied; need to be ${authType} to access ${request.method} ${pathname}`,
     },
-    { status: 403 }
+    {
+      status: 403,
+      headers:
+        pathname.replace(/\/+$/, "") === "/api/user/export"
+          ? { "Cache-Control": "private, no-store" }
+          : undefined,
+    }
   );
 };
 
