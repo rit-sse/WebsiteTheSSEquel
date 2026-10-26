@@ -68,6 +68,69 @@ describe("/api/scheduleBlock route", () => {
     expect(await res.json()).toEqual({ schedule: null, blocks: [] });
   });
 
+  it.each(["", "?scheduleId=55"])(
+    "GET excludes legacy shifts from scheduling data (%s)",
+    async (query) => {
+      const storedBlocks = [10, 11, 10, 11, 12, 17, 18].map(
+        (startHour, index) => ({
+          id: index + 1,
+          weekday: index < 2 ? 1 : 2,
+          startHour,
+          mentorId: 7,
+          mentor: {
+            id: 7,
+            isActive: true,
+            user: {
+              name: "Sam Mentor",
+              email: "sam@example.com",
+              profileImageKey: null,
+              googleImageURL: null,
+              description: null,
+              linkedIn: null,
+              gitHub: null,
+            },
+            mentorSkill: [],
+            courseTaken: [],
+          },
+        })
+      );
+      mockMentorScheduleFindFirst.mockResolvedValue({
+        id: 55,
+        name: "Fall 2026",
+        isActive: true,
+        blocks: storedBlocks,
+      });
+      const url = `http://localhost/api/scheduleBlock${query}`;
+      const req = new Request(url) as any;
+      req.nextUrl = new URL(url);
+
+      const res = await GET(req);
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.schedule).toEqual({
+        id: 55,
+        name: "Fall 2026",
+        isActive: true,
+      });
+      expect(
+        body.blocks.map((block: { id: number; startHour: number }) => ({
+          id: block.id,
+          startHour: block.startHour,
+        }))
+      ).toEqual([
+        { id: 5, startHour: 12 },
+        { id: 6, startHour: 17 },
+      ]);
+      expect(body.blocks[0].mentor).toMatchObject({
+        id: 7,
+        name: "Sam Mentor",
+        image: "resolved-image",
+      });
+      expect(storedBlocks).toHaveLength(7);
+      expect(mockScheduleBlockDeleteMany).not.toHaveBeenCalled();
+    }
+  );
+
   it("POST returns 403 when user cannot manage schedules", async () => {
     mockGetGatewayAuthLevel.mockResolvedValue({
       isMentoringHead: false,
