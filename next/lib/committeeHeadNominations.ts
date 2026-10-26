@@ -4,6 +4,7 @@ import {
   formatSseOperationalTerm,
   getNextSseOperationalTerm,
 } from "@/lib/sseTerms";
+import { TECH_COMMITTEE_DIVISION_MANAGER_TITLES } from "@/lib/utils";
 import {
   CommitteeHeadApplicationStatus,
   CommitteeHeadNominationCycleStatus,
@@ -63,12 +64,17 @@ export async function getOpenCommitteeHeadNominationCycle() {
   });
 }
 
+// Division Managers are appointed by the Tech Committee Head, not nominated,
+// so they're excluded even if their position is categorized as a committee head.
+const NOMINATABLE_COMMITTEE_HEAD_WHERE = {
+  category: PositionCategory.COMMITTEE_HEAD,
+  is_defunct: false,
+  title: { notIn: [...TECH_COMMITTEE_DIVISION_MANAGER_TITLES] },
+};
+
 export async function listCommitteeHeadPositions() {
   return prisma.officerPosition.findMany({
-    where: {
-      category: PositionCategory.COMMITTEE_HEAD,
-      is_defunct: false,
-    },
+    where: NOMINATABLE_COMMITTEE_HEAD_WHERE,
     select: {
       id: true,
       title: true,
@@ -85,9 +91,8 @@ export async function validateCommitteeHeadPositionIds(positionIds: number[]) {
 
   const positions = await prisma.officerPosition.findMany({
     where: {
+      ...NOMINATABLE_COMMITTEE_HEAD_WHERE,
       id: { in: positionIds },
-      category: PositionCategory.COMMITTEE_HEAD,
-      is_defunct: false,
     },
     select: { id: true, title: true },
   });
