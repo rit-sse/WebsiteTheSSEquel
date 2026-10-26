@@ -115,11 +115,10 @@ The release pull request updates the root `package.json`, `next/package.json`,
 matching `v<version>` tag and GitHub Release. Do not manually create the tag or
 edit those version fields during the normal release flow.
 
-The workflow falls back to GitHub's built-in token, but release pull requests
-created by that token do not trigger other workflows. Configure the
-`RELEASE_PLEASE_TOKEN` Actions secret with a fine-grained token that can write
-repository contents, pull requests, and issues so generated release pull
-requests trigger the normal CI workflow.
+The workflow uses GitHub's built-in token so release pull requests are authored
+by `github-actions[bot]`. GitHub does not trigger additional workflows from
+pull requests created with this token, so generated release pull requests do
+not automatically run the normal CI workflow.
 
 CI appends the short source commit as build metadata without changing version
 precedence, so version `1.2.3` is displayed as, for example,

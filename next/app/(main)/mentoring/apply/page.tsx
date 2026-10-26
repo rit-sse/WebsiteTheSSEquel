@@ -23,13 +23,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { toast } from "sonner";
-import {
-  GraduationCap,
-  Calendar,
-  Clock,
-  CheckCircle2,
-  ExternalLink,
-} from "lucide-react";
+import { GraduationCap, Calendar, Clock, CheckCircle2 } from "lucide-react";
 import AvailabilityGrid, {
   AvailabilitySlot,
 } from "@/app/(main)/dashboard/mentoring/components/AvailabilityGrid";
@@ -37,7 +31,6 @@ import AvailabilityGrid, {
 interface MentorSemester {
   id: number;
   name: string;
-  when2meetUrl: string | null;
   applicationOpen: string | null;
   applicationClose: string | null;
   isActive: boolean;
@@ -149,6 +142,7 @@ export default function MentorApplyPage() {
   const [pronouns, setPronouns] = useState("");
   const [pronounsOther, setPronounsOther] = useState("");
   const [major, setMajor] = useState("");
+  const [acknowledgement, setAcknowledgement] = useState(false);
   const [majorOther, setMajorOther] = useState("");
   const [yearLevel, setYearLevel] = useState("");
   const [yearLevelOther, setYearLevelOther] = useState("");
@@ -325,6 +319,10 @@ export default function MentorApplyPage() {
     }
     if (!whyMentor.trim()) {
       toast.error("Please explain why you want to be a mentor");
+      return;
+    }
+    if (!acknowledgement) {
+      toast.error("Please acknowledge the review-session responsibility.");
       return;
     }
 
@@ -586,23 +584,6 @@ export default function MentorApplyPage() {
                     existingApplication.status.slice(1)}
                 </span>
               </p>
-              {activeSemester.when2meetUrl && (
-                <div className="pt-4 border-t">
-                  <p className="text-sm text-muted-foreground mb-2">
-                    Don&apos;t forget to fill out the When2Meet for scheduling:
-                  </p>
-                  <Button asChild variant="outline">
-                    <a
-                      href={activeSemester.when2meetUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <ExternalLink className="h-4 w-4 mr-2" />
-                      Open When2Meet
-                    </a>
-                  </Button>
-                </div>
-              )}
             </CardContent>
           </Card>
         </div>
@@ -628,29 +609,9 @@ export default function MentorApplyPage() {
                 mentor.
               </p>
               <p className="break-words">
-                If you are selected, we will be sending out a When2Meet to get
-                everyone&apos;s availability so we can find the best mentoring
-                times for you!
+                Please select your availability below in the form. We&apos;ll
+                use it to create the mentoring schedule.
               </p>
-              {activeSemester.when2meetUrl && (
-                <div className="bg-muted p-3 rounded-md">
-                  <p className="text-sm font-medium">When2Meet is available!</p>
-                  <p className="text-sm text-muted-foreground mb-2">
-                    Please also fill out the When2Meet after submitting your
-                    application:
-                  </p>
-                  <Button asChild size="sm" variant="outline">
-                    <a
-                      href={activeSemester.when2meetUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <ExternalLink className="h-4 w-4 mr-2" />
-                      Open When2Meet
-                    </a>
-                  </Button>
-                </div>
-              )}
               <div className="bg-muted p-3 rounded-md text-sm">
                 <p className="font-medium mb-2">Important Info:</p>
                 <ul className="list-disc list-inside space-y-1 text-muted-foreground break-words">
@@ -930,7 +891,27 @@ export default function MentorApplyPage() {
                   />
                 </div>
               </div>
-
+              {/* Agreement */}
+              <div className="flex items-start gap-3">
+                <Checkbox
+                  id="review-session-acknowledgement"
+                  checked={acknowledgement}
+                  onCheckedChange={(checked) =>
+                    setAcknowledgement(checked === true)
+                  }
+                  required
+                  className="mt-0.5 shrink-0"
+                />
+                <Label
+                  htmlFor="review-session-acknowledgement"
+                  className="text-sm leading-6 cursor-pointer"
+                >
+                  I understand that review sessions are a core mentoring
+                  responsibility and that I should be available for two review
+                  sessions during the semester.{" "}
+                  <span className="text-destructive">*</span>
+                </Label>
+              </div>
               {/* Comments */}
               <div className="space-y-2">
                 <Label htmlFor="comments">

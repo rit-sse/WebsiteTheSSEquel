@@ -6,6 +6,7 @@ import { Modal, ModalFooter } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import NeoBrutalistButton from "@/components/neo-brutalist-button";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -92,10 +93,12 @@ export default function BecomeSponsorForm() {
 
   return (
     <>
-      <Button onClick={() => setOpen(true)} size="lg">
-        <Handshake className="h-5 w-5 mr-2" />
-        Become a Sponsor
-      </Button>
+      <NeoBrutalistButton
+        onClick={() => setOpen(true)}
+        text="Become a Sponsor"
+        variant="deepblue"
+        icon={<Handshake className="h-5 w-5" />}
+      />
 
       <Modal
         open={open}

@@ -150,6 +150,9 @@ model User {
 
   emailVerified DateTime?
 
+  // Unknown for users created before creation dates were tracked.
+  createdAt DateTime? @default(now()) @db.Timestamptz(3)
+
   // True for stub users created from the legacy database import. Cleared
   // when a real Google sign-in provides current profile details.
   isImported Boolean @default(false)

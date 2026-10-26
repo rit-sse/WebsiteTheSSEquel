@@ -1,0 +1,57 @@
+name: Task
+description: Create an internal implementation task for the website team.
+title: "Task: "
+labels:
+  - task
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This form is for internal SSE website work. Use a Story or Epic when
+        the work needs broader product planning.
+
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: State what needs to be done and why.
+      placeholder: Update ... so that ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Link related issues, pages, documentation, or relevant decisions.
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance criteria
+      description: List the observable outcomes needed to complete this task.
+      placeholder: |
+        - [ ] ...
+        - [ ] ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies or blockers
+      description: List required work, access, decisions, or write None.
+      placeholder: None
+    validations:
+      required: true
+
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validation plan
+      description: Explain how the completed work will be checked.
+      placeholder: Run ..., then verify ...
+    validations:
+      required: true

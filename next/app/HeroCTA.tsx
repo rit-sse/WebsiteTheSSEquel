@@ -2,7 +2,14 @@
 
 import DancingLetters from "@/components/dancing-letters";
 import NeoBrutalistButton from "@/components/neo-brutalist-button";
-import { Send, Rocket, Calendar, Clock, Vote } from "lucide-react";
+import {
+  Send,
+  Rocket,
+  Calendar,
+  Clock,
+  Vote,
+  GraduationCap,
+} from "lucide-react";
 import { NeoCard } from "@/components/ui/neo-card";
 import type { ActiveElectionSummary } from "@/lib/elections";
 
@@ -41,7 +48,7 @@ export const HeroCTA = ({
   activeElection = null,
 }: HeroCTAProps) => {
   return (
-    <div className="text-center lg:text-left w-full lg:w-[45%] lg:flex-shrink-0">
+    <div className="text-center lg:text-left w-full lg:w-1/2 lg:flex-shrink-0">
       <div className="flex flex-col items-center lg:items-start gap-1 py-2">
         <span className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-bold !leading-tight tracking-tight font-display text-foreground">
           A place to
@@ -67,7 +74,7 @@ export const HeroCTA = ({
           </span>
         </NeoCard>
       </div>
-      <div className="mt-6 flex flex-wrap gap-4 justify-center lg:justify-start pb-2">
+      <div className="mt-6 flex flex-wrap gap-3 justify-center lg:justify-start pb-2">
         <NeoBrutalistButton
           href={discordLink}
           text="Join Discord"
@@ -79,6 +86,12 @@ export const HeroCTA = ({
           text="Get Involved"
           variant="blue"
           icon={<Rocket className="h-[18px] w-[18px]" />}
+        />
+        <NeoBrutalistButton
+          href="/mentoring/schedule"
+          text="Get Mentoring"
+          variant="deepblue"
+          icon={<GraduationCap className="h-[18px] w-[18px]" />}
         />
         {activeElection && (
           <NeoBrutalistButton

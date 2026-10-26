@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { Event } from "../event";
 import { compareDateStrings } from "./utils";
 import { Button } from "@/components/ui/button";
@@ -159,6 +160,7 @@ export default function AddEventForm({
       const startDate = new Date(datetime);
       const recurringDates = generateRecurringDates(startDate, recurrence);
       const newEvents: Event[] = [];
+      let purchaseRequestFailed = false;
 
       for (let i = 0; i < recurringDates.length; i++) {
         const eventDate = recurringDates[i];
@@ -228,8 +230,10 @@ export default function AddEventForm({
                 }),
               });
 
-              // Send notification email for the purchase request
-              if (purchaseResponse.ok) {
+              if (!purchaseResponse.ok) {
+                purchaseRequestFailed = true;
+              } else {
+                // Send notification email for the purchase request
                 const newPurchaseRequest = await purchaseResponse.json();
                 try {
                   await fetch(
@@ -250,7 +254,7 @@ export default function AddEventForm({
               }
             } catch (purchaseError) {
               console.warn("Failed to create purchase request:", purchaseError);
-              // Don't fail the whole operation if purchase request fails
+              purchaseRequestFailed = true;
             }
           }
         } else {
@@ -270,6 +274,12 @@ export default function AddEventForm({
         compareDateStrings(event1.date, event2.date)
       );
       setEvents(updatedEvents);
+
+      if (purchaseRequestFailed) {
+        toast.error(
+          "Event created, but the PCard request failed. Submit it from the Purchasing page and link it to this event."
+        );
+      }
 
       onClose();
       clearForm();
