@@ -94,4 +94,53 @@ describe("/api/purchasing route", () => {
     expect(mockCreate).toHaveBeenCalled();
     expect(await res.json()).toEqual({ id: 100, userId: 7 });
   });
+
+  it("POST accepts a blank notifyEmail since the club inbox is always notified", async () => {
+    mockGetSessionToken.mockReturnValue("token");
+    mockFindFirst.mockResolvedValue({ id: 7 });
+    mockCreate.mockResolvedValue({ id: 101, userId: 7 });
+
+    const req = new Request("http://localhost/api/purchasing", {
+      method: "POST",
+      body: JSON.stringify({
+        name: "Name",
+        committee: "Projects",
+        description: "Thing",
+        estimatedCost: 42.5,
+        plannedDate: "2026-03-04",
+        notifyEmail: "",
+        eventId: "evt-1",
+      }),
+      headers: { "content-type": "application/json" },
+    });
+
+    const res = await POST(req as any);
+    expect(res.status).toBe(201);
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ notifyEmail: "", eventId: "evt-1" }),
+      })
+    );
+  });
+
+  it("POST rejects a malformed notifyEmail", async () => {
+    mockGetSessionToken.mockReturnValue("token");
+    mockFindFirst.mockResolvedValue({ id: 7 });
+
+    const req = new Request("http://localhost/api/purchasing", {
+      method: "POST",
+      body: JSON.stringify({
+        name: "Name",
+        committee: "Projects",
+        description: "Thing",
+        estimatedCost: 42.5,
+        plannedDate: "2026-03-04",
+        notifyEmail: "not-an-email",
+      }),
+      headers: { "content-type": "application/json" },
+    });
+
+    const res = await POST(req as any);
+    expect(res.status).toBe(422);
+  });
 });
