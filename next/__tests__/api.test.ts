@@ -68,6 +68,7 @@ describe("Mentor API Test", () => {
     expect(response.status).toBe(200);
     const body = await response.json();
     expect(body).toHaveLength(2);
+    expect(body[0]).not.toHaveProperty("scheduleBlocks");
     expect(body[0]).toEqual(
       expect.objectContaining({
         id: 1,
@@ -83,6 +84,50 @@ describe("Mentor API Test", () => {
       })
     );
   });
+
+  it.each([
+    { hours: [10, 11, 10, 11], expected: [] },
+    { hours: [10, 11, 12, 17, 18], expected: [12, 17] },
+  ])(
+    "GET detailed mentors excludes legacy hours from $hours",
+    async ({ hours, expected }) => {
+      const scheduleBlocks = hours.map((startHour, index) => ({
+        id: index + 1,
+        weekday: 1,
+        startHour,
+        scheduleId: 55,
+      }));
+      mockFindMany.mockResolvedValue([
+        {
+          id: 7,
+          isActive: true,
+          expirationDate: new Date("2026-12-31T00:00:00.000Z"),
+          user: {
+            id: 8,
+            name: "Sam Mentor",
+            profileImageKey: null,
+            googleImageURL: null,
+            mentorApplications: [],
+          },
+          scheduleBlocks,
+          mentorSkill: [],
+          courseTaken: [],
+        },
+      ]);
+      const request = {
+        nextUrl: new URL("http://localhost/api/mentor?detailed=true"),
+      } as any;
+
+      const response = await GET(request);
+      expect(response.status).toBe(200);
+      const body = await response.json();
+      expect(body[0].scheduleBlocks).toEqual(
+        scheduleBlocks.filter((block) => expected.includes(block.startHour))
+      );
+      expect(body[0].scheduleBlocks).toHaveLength(expected.length);
+      expect(scheduleBlocks).toHaveLength(hours.length);
+    }
+  );
 
   it("GET /api/mentor returns empty array when no mentors exist", async () => {
     mockFindMany.mockResolvedValue([]);

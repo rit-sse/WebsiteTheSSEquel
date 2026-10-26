@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 
 export interface AvailabilitySlot {
   weekday: number; // 1-5 (Monday-Friday)
-  hour: number; // 10-17 (10am-5pm)
+  hour: number; // 12-17 (12pm-5pm)
 }
 
 interface AvailabilityGridProps {
@@ -24,8 +24,6 @@ const WEEKDAYS = [
 ];
 
 const HOURS = [
-  { value: 10, label: "10am - 11am" },
-  { value: 11, label: "11am - 12pm" },
   { value: 12, label: "12pm - 1pm" },
   { value: 13, label: "1pm - 2pm" },
   { value: 14, label: "2pm - 3pm" },

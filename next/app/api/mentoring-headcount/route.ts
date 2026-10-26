@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { isWithinMentoringHours } from "@/lib/mentoringHours";
 
 export const dynamic = "force-dynamic";
 
@@ -34,6 +35,7 @@ export async function GET(request: NextRequest) {
     for (const entry of entries) {
       const { weekday, hour } = getWeekdayHour(entry.createdAt);
       if (weekday < 1 || weekday > 5) continue;
+      if (!isWithinMentoringHours(entry.createdAt)) continue;
       const key = `${weekday}-${hour}`;
       const existing = trafficMap.get(key) ?? {
         total: 0,

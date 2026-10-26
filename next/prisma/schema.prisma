@@ -778,7 +778,9 @@ model MentorAvailability {
   // Semester this availability is for
   semesterId Int
 
-  // Availability slots stored as JSON: [{weekday:1, hour:10}, {weekday:1, hour:11}, ...]
+  // Availability slots stored as JSON: [{weekday:1, hour:12}, {weekday:1, hour:13}, ...]
+  // Hours are 12-17 (12pm-6pm). Rows saved before the hours changed may still
+  // contain legacy hour 10/11 slots; the API omits them when reading.
   slots String @db.Text
 
   // Timestamps
@@ -879,7 +881,7 @@ model ScheduleBlock {
   // Day of week: 1 = Monday, 5 = Friday
   weekday Int
 
-  // Start hour in 24h time (10 = 10am, 17 = 5pm)
+  // Start hour in 24h time (12 = 12pm, 17 = 5pm)
   startHour Int
 
   // Foreign keys
