@@ -10,8 +10,9 @@ export default async function DashboardElectionsPage() {
   const authLevel = await getAuthLevel();
   // Non-primary officers have no business on the elections dashboard —
   // bounce them to the home page instead of /dashboard (which 404s).
-  // Use `isPrimaryOfficer` (DB truth) not `isPrimary` so staging proxy
-  // auth can't silently let tech heads et al. in.
+  // Use `isPrimaryOfficer` (DB truth) not `isPrimary` so SE Admins and
+  // other non-primary roles can't get in. STAGING_PROXY_AUTH deliberately
+  // grants it so developers can test election flows (#567).
   if (!authLevel.isPrimaryOfficer) {
     redirect("/");
   }
