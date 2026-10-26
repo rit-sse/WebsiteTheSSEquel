@@ -1,15 +1,28 @@
 import { z } from "zod";
 
-const GoLinkUrlSchema = z
-  .string()
-  .trim()
-  .min(1)
-  .max(500)
-  .url("must be a valid absolute URL")
-  .refine((value) => {
-    const protocol = new URL(value).protocol;
-    return protocol === "http:" || protocol === "https:";
-  }, "URL must use http:// or https://");
+// Accept "sse.rit.edu" as well as "https://sse.rit.edu" (the form placeholder
+// suggests the former), storing the normalized absolute URL.
+const withDefaultProtocol = (value: unknown) => {
+  if (typeof value !== "string") return value;
+  const trimmed = value.trim();
+  if (!trimmed || /^[a-z][a-z\d+.-]*:/i.test(trimmed)) return trimmed;
+  return `https://${trimmed}`;
+};
+
+const GoLinkUrlSchema = z.preprocess(
+  withDefaultProtocol,
+  z
+    .string()
+    .min(1)
+    .max(500)
+    .url("must be a valid URL")
+    .refine((value) => {
+      // Zod keeps running checks after .url() fails, so guard the parse.
+      if (!URL.canParse(value)) return true;
+      const protocol = new URL(value).protocol;
+      return protocol === "http:" || protocol === "https:";
+    }, "must use http:// or https://")
+);
 
 export const CreateGoLinkSchema = z.object({
   golink: z
