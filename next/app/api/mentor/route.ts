@@ -4,6 +4,7 @@ import { resolveUserImage } from "@/lib/s3Utils";
 import { getGatewayAuthLevel } from "@/lib/authGateway";
 import { CreateMentorSchema, UpdateMentorSchema } from "@/lib/schemas/mentor";
 import { ApiError } from "@/lib/apiError";
+import { isMentoringSlotHour } from "@/lib/mentoringHours";
 
 export const dynamic = "force-dynamic";
 
@@ -164,6 +165,11 @@ export async function GET(request: NextRequest) {
 
     return {
       ...mentor,
+      ...(detailed && {
+        scheduleBlocks: mentor.scheduleBlocks.filter((block) =>
+          isMentoringSlotHour(block.startHour)
+        ),
+      }),
       applicationCourseCount,
       latestMentorApplication: latestApplication
         ? {
