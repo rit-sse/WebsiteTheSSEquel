@@ -1,7 +1,9 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { AutocompleteOption, Membership } from "./membership";
+import { AutocompleteOption } from "./membership";
+import { toast } from "sonner";
+import { membershipAwardEmailSchema } from "@/lib/services/membershipAwardValidation";
 import { UserAutocomplete } from "./Autocomplete";
 import { Modal, ModalFooter } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
@@ -30,9 +32,11 @@ export function AddMembershipModal({
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
-  onCreated?: (c: Membership) => void;
+  onCreated?: () => void;
 }) {
   const [selected, setSelected] = useState<AutocompleteOption | null>(null);
+  const [recipient, setRecipient] = useState("");
+  const [awardId, setAwardId] = useState(() => crypto.randomUUID());
   const [reason, setReason] = useState("");
   const [dateGiven, setDateGiven] = useState<string>(getTodayDateInputValue());
   const [submitting, setSubmitting] = useState(false);
@@ -40,25 +44,35 @@ export function AddMembershipModal({
 
   const resetForm = () => {
     setSelected(null);
+    setRecipient("");
+    setAwardId(crypto.randomUUID());
     setReason("");
     setDateGiven(getTodayDateInputValue());
     setError(null);
   };
 
   const handleOpenChange = (newOpen: boolean) => {
-    if (newOpen) {
-      resetForm();
-    }
+    resetForm();
     onOpenChange(newOpen);
   };
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!selected) return;
+    const email = membershipAwardEmailSchema.safeParse(
+      selected?.email ?? recipient
+    );
+    if (!email.success) {
+      setError("Select a member or enter a valid @g.rit.edu email.");
+      return;
+    }
     setSubmitting(true);
     setError(null);
     try {
-      const body: Record<string, unknown> = { userId: selected.id, reason };
+      const body: Record<string, unknown> = {
+        email: email.data,
+        awardId,
+        reason,
+      };
       if (dateGiven) {
         body.dateGiven = normalizeMembershipDateInput(dateGiven);
       }
@@ -68,9 +82,17 @@ export function AddMembershipModal({
         body: JSON.stringify(body),
       });
 
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) throw new Error(await res.text());
       const created = await res.json();
-      onCreated?.(created);
+      if (created.status === "awarded") {
+        toast.success("Membership awarded.");
+      } else if (created.emailStatus === "SENT") {
+        toast.success(created.message);
+      } else {
+        toast.warning(created.message);
+      }
+      onCreated?.();
+      resetForm();
       onOpenChange(false);
     } catch (err: unknown) {
       const message =
@@ -82,19 +104,37 @@ export function AddMembershipModal({
   }
 
   return (
-    <Modal open={open} onOpenChange={handleOpenChange} title="Add membership">
+    <Modal
+      open={open}
+      onOpenChange={(value) => {
+        if (!submitting) handleOpenChange(value);
+      }}
+      title="Add membership"
+      className="w-[calc(100%-2rem)] sm:w-full"
+    >
       <form className="space-y-4" onSubmit={onSubmit}>
         <div className="space-y-2">
-          <Label>Member</Label>
-          <UserAutocomplete option={selected} onChange={setSelected} />
-          <p className="text-sm text-muted-foreground">
-            Type 2+ characters to search
-          </p>
+          <Label htmlFor="membership-recipient">
+            Member or RIT Google email
+          </Label>
+          <UserAutocomplete
+            key={awardId}
+            id="membership-recipient"
+            option={selected}
+            onChange={setSelected}
+            onQueryChange={setRecipient}
+            disabled={submitting}
+            placeholder="Search members or enter an @g.rit.edu email"
+          />
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="membership-reason">Reason</Label>
-          <Select value={reason} onValueChange={setReason}>
+          <Select
+            value={reason}
+            onValueChange={setReason}
+            disabled={submitting}
+          >
             <SelectTrigger id="membership-reason">
               <SelectValue placeholder="Select a standardized reason" />
             </SelectTrigger>
@@ -112,22 +152,25 @@ export function AddMembershipModal({
           <Label htmlFor="membership-date">Date</Label>
           <Input
             id="membership-date"
+            disabled={submitting}
             type="date"
             value={dateGiven}
             onChange={(e) => setDateGiven(e.target.value)}
             required
           />
-          <p className="text-sm text-muted-foreground">
-            Saved as midnight UTC for the selected day.
-          </p>
         </div>
 
-        {error && <div className="text-destructive text-sm py-2">{error}</div>}
+        {error && (
+          <div role="alert" className="text-destructive text-sm py-2">
+            {error}
+          </div>
+        )}
 
         <ModalFooter>
           <Button
             type="button"
             variant="neutral"
+            disabled={submitting}
             onClick={() => {
               resetForm();
               onOpenChange(false);
@@ -137,7 +180,14 @@ export function AddMembershipModal({
           </Button>
           <Button
             type="submit"
-            disabled={!selected || !reason.trim() || !dateGiven || submitting}
+            disabled={
+              !membershipAwardEmailSchema.safeParse(
+                selected?.email ?? recipient
+              ).success ||
+              !reason.trim() ||
+              !dateGiven ||
+              submitting
+            }
           >
             {submitting ? "Saving..." : "Save"}
           </Button>

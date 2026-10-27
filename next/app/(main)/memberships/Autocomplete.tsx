@@ -7,6 +7,9 @@ interface AutocompleteOptionProps {
   option: AutocompleteOption | null;
   onChange: (opt: AutocompleteOption | null) => void;
   placeholder?: string;
+  id?: string;
+  disabled?: boolean;
+  onQueryChange?: (query: string) => void;
 }
 
 function useDebouncedValue<T>(value: T, delay: number) {
@@ -30,6 +33,9 @@ function useDebouncedValue<T>(value: T, delay: number) {
 export function UserAutocomplete({
   option,
   onChange,
+  id,
+  disabled,
+  onQueryChange,
   placeholder = "Search Users...",
 }: AutocompleteOptionProps) {
   const [query, setQuery] = useState("");
@@ -96,18 +102,21 @@ export function UserAutocomplete({
   return (
     <div className="relative w-full">
       <input
+        id={id}
+        disabled={disabled}
         className="input input-bordered w-full"
         placeholder={placeholder}
         value={displayedQuery}
         onChange={(e) => {
           setQuery(e.target.value);
           onChange(null);
+          onQueryChange?.(e.target.value);
         }}
         onFocus={() => opts.length > 0 && setIsOpen(true)}
         onKeyDown={onKeyDown}
         aria-autocomplete="list"
         aria-expanded={open}
-        // eslint-disable-next-line jsx-a11y/role-has-required-aria-props
+        aria-controls="user-listbox"
         role="combobox"
       />
       {open && (

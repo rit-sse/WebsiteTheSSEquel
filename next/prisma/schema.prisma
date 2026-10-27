@@ -16,6 +16,13 @@ enum AcademicTerm {
   FALL
 }
 
+enum MembershipAwardEmailStatus {
+  PENDING
+  SENDING
+  SENT
+  FAILED
+}
+
 enum AlumniSource {
   manual
   from_user
@@ -168,6 +175,7 @@ model User {
   textbookCopies       TextbookCopies[]
 
   Memberships               Memberships[]
+  membershipAwardsGiven     PendingMembershipAward[]
   purchaseRequests          PurchaseRequest[]
   invitationsSent           Invitation[]
   eventAttendances          EventAttendance[]
@@ -1099,6 +1107,9 @@ model Memberships {
   reason    String
   dateGiven DateTime
 
+  pendingAwardId String? @unique
+  pendingAward   PendingMembershipAward? @relation(fields: [pendingAwardId], references: [id], onDelete: SetNull)
+
   // Academic term this membership is granted for. Filled in by API
   // helpers from `lib/academicTerm.ts::getCurrentAcademicTerm()` when
   // not explicitly provided. Lets us archive-by-term instead of
@@ -1117,6 +1128,27 @@ model Memberships {
 
   @@index([userId, term, year])
   @@index([term, year])
+}
+
+model PendingMembershipAward {
+  // Reuse the form's ID on retries so a lost response doesn't create another award.
+  id          String       @id @default(uuid())
+  email       String       @db.VarChar(255)
+  reason      String
+  dateGiven   DateTime
+  term        AcademicTerm
+  year        Int
+  awardedById Int?
+  awardedBy   User?        @relation(fields: [awardedById], references: [id], onDelete: SetNull)
+  createdAt   DateTime     @default(now())
+  claimedAt   DateTime?
+  cancelledAt DateTime?
+  membership  Memberships?
+
+  emailStatus        MembershipAwardEmailStatus @default(PENDING)
+  emailLastAttemptAt DateTime?
+
+  @@index([email, claimedAt, cancelledAt])
 }
 
 model Amendment {
