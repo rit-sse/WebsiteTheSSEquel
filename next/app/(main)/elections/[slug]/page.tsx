@@ -2,12 +2,16 @@ import { getAuthLevel } from "@/lib/services/authLevelService";
 import {
   getElectionWithRelations,
   serializeElectionForClient,
+  toPublicElectionView,
 } from "@/lib/elections";
 import { isActiveMemberForElection } from "@/lib/electionEligibility";
 import { isUserCurrentPresident } from "@/lib/seAdmin";
 import { redirect } from "next/navigation";
 import ElectionPublicClient from "../ElectionPublicClient";
-import type { SerializedElection } from "@/components/elections/types";
+import type {
+  PublicElection,
+  SerializedElection,
+} from "@/components/elections/types";
 
 export default async function ElectionPublicPage({
   params,
@@ -28,9 +32,11 @@ export default async function ElectionPublicPage({
 
   return (
     <ElectionPublicClient
-      election={
-        serializeElectionForClient(election) as unknown as SerializedElection
-      }
+      // Page props are embedded in the HTML, so never send ballots or emails.
+      election={toPublicElectionView(
+        serializeElectionForClient(election) as unknown as SerializedElection,
+        authLevel.userId
+      )}
       currentUserId={authLevel.userId}
       canNominate={canNominate}
       isMember={authLevel.isMember}

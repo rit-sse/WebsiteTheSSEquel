@@ -4,6 +4,7 @@ import {
   assertPrimaryOfficerPositions,
   getElectionWithRelations,
   serializeElectionForClient,
+  stripUserEmails,
   validateElectionWindow,
 } from "@/lib/elections";
 import { canManageElections } from "@/lib/seAdmin";
@@ -19,7 +20,7 @@ function parseDate(value: unknown, field: string) {
   return parsed;
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   const elections = await prisma.election.findMany({
     include: {
       createdBy: {
@@ -53,7 +54,11 @@ export async function GET() {
     orderBy: [{ createdAt: "desc" }],
   });
 
-  return Response.json(serializeElectionForClient(elections));
+  const serialized = serializeElectionForClient(elections);
+  if (!(await canManageElections(await getGatewayAuthLevel(request)))) {
+    stripUserEmails(serialized);
+  }
+  return Response.json(serialized);
 }
 
 export async function POST(request: Request) {

@@ -6,6 +6,8 @@ import { isMentoringSlotHour } from "@/lib/mentoringHours";
 
 export const dynamic = "force-dynamic";
 
+const PRIVATE_NO_STORE = { "Cache-Control": "private, no-store" };
+
 function parseCourses(coursesJson: string | null | undefined): string[] {
   if (!coursesJson) return [];
   try {
@@ -38,8 +40,9 @@ function parseAvailability(
 
 /**
  * GET /api/user/[id]/profile
- * Returns a user's public profile data including memberships, projects, and officer roles.
- * Email is only included for the owner or an active officer.
+ * Returns a user's profile data including memberships, projects, officer
+ * roles and mentor application. Matches the /profile/[id] page: only the
+ * profile owner or an active officer may read it.
  */
 export async function GET(
   request: Request,
@@ -50,6 +53,22 @@ export async function GET(
   const id = parseInt(rawId);
   if (isNaN(id)) {
     return new Response("Invalid User ID", { status: 422 });
+  }
+
+  const authLevel = await getGatewayAuthLevel(request as Request);
+  if (!authLevel.userId) {
+    return Response.json(
+      { error: "Unauthorized" },
+      { status: 401, headers: PRIVATE_NO_STORE }
+    );
+  }
+  const isOwner = authLevel.userId === id;
+  const isOfficer = authLevel.isOfficer;
+  if (!isOwner && !isOfficer) {
+    return Response.json(
+      { error: "Only the profile owner or an officer can view this profile" },
+      { status: 403, headers: PRIVATE_NO_STORE }
+    );
   }
 
   const user = await prisma.user.findUnique({
@@ -156,8 +175,7 @@ export async function GET(
   }
 
   // Run independent queries in parallel to cut load time.
-  const [authLevel, mentoringHead, activeSemester] = await Promise.all([
-    getGatewayAuthLevel(request as Request),
+  const [mentoringHead, activeSemester] = await Promise.all([
     prisma.officer.findFirst({
       where: { is_active: true, position: { title: MENTOR_HEAD_TITLE } },
       select: { user: { select: { id: true, name: true, email: true } } },
@@ -168,9 +186,6 @@ export async function GET(
       orderBy: { updatedAt: "desc" },
     }),
   ]);
-
-  const isOwner = authLevel.userId === user.id;
-  const isOfficer = authLevel.isOfficer;
 
   const projects = user.projectContributions.map((pc) => pc.project);
   const latestMentorApplication = user.mentorApplications[0];
@@ -188,58 +203,61 @@ export async function GET(
     : null;
   const availabilitySlots = parseAvailability(mentorAvailability?.slots);
 
-  return Response.json({
-    id: user.id,
-    name: user.name,
-    email: isOwner || isOfficer ? user.email : undefined,
-    image: resolveUserImage(user.profileImageKey, user.googleImageURL),
-    profileImageKey: user.profileImageKey ?? null,
-    linkedIn: user.linkedIn,
-    gitHub: user.gitHub,
-    description: user.description,
-    graduationTerm: user.graduationTerm,
-    graduationYear: user.graduationYear,
-    major: user.major,
-    coopSummary: user.coopSummary,
-    membershipCount: user.Memberships.length,
-    memberships: user.Memberships,
-    projects,
-    officerRoles: user.officers,
-    mentorProfile:
-      user.mentor.length > 0
-        ? {
-            id: user.mentor[0].id,
-            isActive: user.mentor[0].isActive,
-            expirationDate: user.mentor[0].expirationDate,
-            availability: availabilitySlots,
-            // Legacy 10am/11am blocks may still exist in the database but are
-            // no longer valid mentoring hours, so they are not shown.
-            shifts: user.mentor[0].scheduleBlocks
-              .filter((slot) => isMentoringSlotHour(slot.startHour))
-              .map((slot) => ({
-                id: slot.id,
-                weekday: slot.weekday,
-                dayLabel: DAYS[slot.weekday - 1] ?? "Unknown",
-                startHour: slot.startHour,
-                label: `${DAYS[slot.weekday - 1] ?? "Unknown"} ${slot.startHour}:00-${
-                  slot.startHour + 1
-                }:00`,
-              })),
-            latestApplication: latestMentorApplication
-              ? {
-                  ...latestMentorApplication,
-                  courses: parseCourses(latestMentorApplication.coursesJson),
-                }
-              : null,
-            mentoringHead: mentoringHead
-              ? {
-                  id: mentoringHead.user.id,
-                  name: mentoringHead.user.name,
-                  email: mentoringHead.user.email,
-                }
-              : null,
-          }
-        : null,
-    isOwner: !!isOwner,
-  });
+  return Response.json(
+    {
+      id: user.id,
+      name: user.name,
+      email: isOwner || isOfficer ? user.email : undefined,
+      image: resolveUserImage(user.profileImageKey, user.googleImageURL),
+      profileImageKey: user.profileImageKey ?? null,
+      linkedIn: user.linkedIn,
+      gitHub: user.gitHub,
+      description: user.description,
+      graduationTerm: user.graduationTerm,
+      graduationYear: user.graduationYear,
+      major: user.major,
+      coopSummary: user.coopSummary,
+      membershipCount: user.Memberships.length,
+      memberships: user.Memberships,
+      projects,
+      officerRoles: user.officers,
+      mentorProfile:
+        user.mentor.length > 0
+          ? {
+              id: user.mentor[0].id,
+              isActive: user.mentor[0].isActive,
+              expirationDate: user.mentor[0].expirationDate,
+              availability: availabilitySlots,
+              // Legacy 10am/11am blocks may still exist in the database but are
+              // no longer valid mentoring hours, so they are not shown.
+              shifts: user.mentor[0].scheduleBlocks
+                .filter((slot) => isMentoringSlotHour(slot.startHour))
+                .map((slot) => ({
+                  id: slot.id,
+                  weekday: slot.weekday,
+                  dayLabel: DAYS[slot.weekday - 1] ?? "Unknown",
+                  startHour: slot.startHour,
+                  label: `${DAYS[slot.weekday - 1] ?? "Unknown"} ${slot.startHour}:00-${
+                    slot.startHour + 1
+                  }:00`,
+                })),
+              latestApplication: latestMentorApplication
+                ? {
+                    ...latestMentorApplication,
+                    courses: parseCourses(latestMentorApplication.coursesJson),
+                  }
+                : null,
+              mentoringHead: mentoringHead
+                ? {
+                    id: mentoringHead.user.id,
+                    name: mentoringHead.user.name,
+                    email: mentoringHead.user.email,
+                  }
+                : null,
+            }
+          : null,
+      isOwner: !!isOwner,
+    },
+    { headers: PRIVATE_NO_STORE }
+  );
 }

@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { requireOfficer } from "@/lib/authGateway";
 
 export const dynamic = "force-dynamic";
 
@@ -9,6 +10,9 @@ export const dynamic = "force-dynamic";
  * @returns SponsorshipInquiry[]
  */
 export async function GET(request: Request) {
+  const denied = await requireOfficer(request);
+  if (denied) return denied;
+
   const { searchParams } = new URL(request.url);
   const status = searchParams.get("status");
 
@@ -101,6 +105,9 @@ export async function POST(request: Request) {
  * @param request {id: number, status: 'pending' | 'contacted' | 'approved' | 'declined'}
  */
 export async function PUT(request: Request) {
+  const denied = await requireOfficer(request);
+  if (denied) return denied;
+
   let body;
   try {
     body = await request.json();
@@ -152,6 +159,9 @@ export async function PUT(request: Request) {
  * @param request {id: number}
  */
 export async function DELETE(request: Request) {
+  const denied = await requireOfficer(request);
+  if (denied) return denied;
+
   let body;
   try {
     body = await request.json();

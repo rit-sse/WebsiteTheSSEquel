@@ -27,7 +27,7 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 import NeoBrutalistButton from "@/components/neo-brutalist-button";
-import type { SerializedElection } from "@/components/elections/types";
+import type { PublicElection } from "@/components/elections/types";
 import type { IRVOfficeResult } from "@/components/elections/types";
 
 /* ---------- Helpers ---------- */
@@ -51,7 +51,7 @@ function PositionIcon({ title, size = 14 }: { title: string; size?: number }) {
 /* ---------- Props ---------- */
 
 interface Props {
-  election: SerializedElection;
+  election: PublicElection;
   results: IRVOfficeResult[];
   canView: boolean;
   /** True only for SE Office users when the election is VOTING_CLOSED. */
@@ -101,10 +101,11 @@ export default function ElectionResultsClient({
     }
   };
 
-  /* ---- Estimate eligible voters as unique ballot voters ---- */
-  const uniqueVoters = new Set(election.ballots.map((b) => b.voterId));
-  const eligibleVoters =
-    uniqueVoters.size > 0 ? uniqueVoters.size : totalBallots;
+  /* ---- Estimate eligible voters as ballot voters ----
+   * Each member can cast one ballot per election (unique on electionId +
+   * voterId), so the ballot count is the voter count. Voter ids aren't sent
+   * to this page. */
+  const eligibleVoters = totalBallots;
   const turnout =
     eligibleVoters > 0 ? Math.round((totalBallots / eligibleVoters) * 100) : 0;
 

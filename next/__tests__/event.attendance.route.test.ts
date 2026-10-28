@@ -89,7 +89,7 @@ describe("/api/event/[id]/attendance route", () => {
       email: "u@g.rit.edu",
       officers: [],
     });
-    mockGetGatewayAuthLevel.mockResolvedValue({ isOfficer: false });
+    mockGetGatewayAuthLevel.mockResolvedValue({ userId: 1, isOfficer: false });
     mockTxAttendanceCreate.mockResolvedValue({
       id: 11,
       eventId: "evt-1",
@@ -117,6 +117,7 @@ describe("/api/event/[id]/attendance route", () => {
   });
 
   it("GET reconciles memberships for ended grants-membership event", async () => {
+    mockGetGatewayAuthLevel.mockResolvedValue({ userId: 5, isOfficer: true });
     mockEventFindUnique.mockResolvedValue({
       id: "evt-1",
       title: "Event",
@@ -139,6 +140,83 @@ describe("/api/event/[id]/attendance route", () => {
     });
     expect(res.status).toBe(200);
     expect(mockMembershipCreate).toHaveBeenCalledTimes(1);
+  });
+
+  describe("GET attendee visibility", () => {
+    const endedEvent = {
+      id: "evt-1",
+      title: "Event",
+      date: "2026-01-01T00:00:00.000Z",
+      attendanceEnabled: true,
+      grantsMembership: true,
+    };
+    const attendees = [
+      {
+        id: 11,
+        user: { id: 1, name: "Self", email: "self@g.rit.edu" },
+        createdAt: "2026-01-01T00:00:00.000Z",
+      },
+      {
+        id: 12,
+        user: { id: 2, name: "Other", email: "other@g.rit.edu" },
+        createdAt: "2026-01-01T00:01:00.000Z",
+      },
+    ];
+
+    it("returns 401 for anonymous callers without touching the database", async () => {
+      mockGetGatewayAuthLevel.mockResolvedValue({
+        userId: null,
+        isOfficer: false,
+      });
+
+      const res = await GET({} as any, {
+        params: Promise.resolve({ id: "evt-1" }),
+      });
+      expect(res.status).toBe(401);
+      expect(mockEventFindUnique).not.toHaveBeenCalled();
+      expect(mockTransaction).not.toHaveBeenCalled();
+    });
+
+    it("shows a signed-in non-officer only their own check-in, with no writes", async () => {
+      mockGetGatewayAuthLevel.mockResolvedValue({
+        userId: 1,
+        isOfficer: false,
+      });
+      mockEventFindUnique.mockResolvedValue(endedEvent);
+      mockTxAttendanceFindMany.mockResolvedValue(attendees);
+
+      const res = await GET({} as any, {
+        params: Promise.resolve({ id: "evt-1" }),
+      });
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.count).toBe(2);
+      expect(body.attendees).toEqual([
+        expect.objectContaining({ userId: 1, email: "self@g.rit.edu" }),
+      ]);
+      expect(JSON.stringify(body)).not.toContain("other@g.rit.edu");
+      expect(mockMembershipCreate).not.toHaveBeenCalled();
+      expect(res.headers.get("Cache-Control")).toBe("private, no-store");
+    });
+
+    it("shows officers every attendee", async () => {
+      mockGetGatewayAuthLevel.mockResolvedValue({ userId: 5, isOfficer: true });
+      mockEventFindUnique.mockResolvedValue({
+        ...endedEvent,
+        grantsMembership: false,
+      });
+      mockTxAttendanceFindMany.mockResolvedValue(attendees);
+
+      const res = await GET({} as any, {
+        params: Promise.resolve({ id: "evt-1" }),
+      });
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.attendees.map((a: any) => a.email)).toEqual([
+        "self@g.rit.edu",
+        "other@g.rit.edu",
+      ]);
+    });
   });
 
   it("POST returns 401 when user is unauthenticated", async () => {

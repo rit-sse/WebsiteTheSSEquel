@@ -158,18 +158,19 @@ const goLinkVerifier = async (request: NextRequest) => {
 
 /**
  * Auth verifier for events:
- * - GET remains public
- * - attendance mutation endpoints require signed-in user (route handles owner logic)
+ * - attendance endpoints require signed-in user for every method (route
+ *   handles owner vs officer logic, including who can list attendees)
+ * - other GETs remain public
  * - all other non-GET event mutations require officer
  */
 const eventVerifier: AuthVerifier = async (request: NextRequest) => {
   const pathname = request.nextUrl.pathname;
-  if (request.method === "GET") {
-    return { isAllowed: true, authType: "None" };
+  if (/^\/api\/event\/[^/]+\/attendance\/?$/.test(pathname)) {
+    return signedInVerifier(request);
   }
 
-  if (/^\/api\/event\/[^/]+\/attendance$/.test(pathname)) {
-    return signedInVerifier(request);
+  if (request.method === "GET") {
+    return { isAllowed: true, authType: "None" };
   }
 
   return officerVerifier(request);
@@ -200,9 +201,11 @@ const nonGetScheduleManagementVerifier = nonGetVerifier(
 );
 
 /**
- * Auth verifier for alumni requests - allows POST (public submissions) but requires officer for GET/PUT/DELETE
+ * Auth verifier for public intake forms (alumni requests, sponsorship
+ * inquiries, talk requests) - allows POST (public submissions) but requires
+ * officer for GET/PUT/DELETE
  */
-const alumniRequestsVerifier: AuthVerifier = async (request: NextRequest) => {
+const publicSubmissionVerifier: AuthVerifier = async (request: NextRequest) => {
   // Allow POST requests from anyone (public can submit requests)
   if (request.method === "POST") {
     return { isAllowed: true, authType: "None" };
@@ -213,16 +216,30 @@ const alumniRequestsVerifier: AuthVerifier = async (request: NextRequest) => {
 
 /**
  * Auth verifier for user routes:
- * - Export requires officer access for all methods
- * - GET is public
+ * - The directory (GET /api/user) and export require officer access
+ * - Profiles and search require a signed-in user (routes redact further)
+ * - GET /api/user/[id] stays public (name and image only)
  * - PUT is allowed through (route-level checks handle self-edit vs officer-edit)
  * - POST, DELETE require officer
  */
 const userVerifier: AuthVerifier = async (request: NextRequest) => {
-  if (request.nextUrl.pathname.replace(/\/+$/, "") === "/api/user/export") {
+  const pathname = request.nextUrl.pathname.replace(/\/+$/, "");
+  if (pathname === "/api/user/export") {
     return officerVerifier(request);
   }
-  if (request.method === "GET" || request.method === "PUT") {
+  if (request.method === "PUT") {
+    return { isAllowed: true, authType: "None" };
+  }
+  if (request.method === "GET") {
+    if (pathname === "/api/user") {
+      return officerVerifier(request);
+    }
+    if (
+      pathname === "/api/user/search" ||
+      /^\/api\/user\/[^/]+\/profile$/.test(pathname)
+    ) {
+      return signedInVerifier(request);
+    }
     return { isAllowed: true, authType: "None" };
   }
   return officerVerifier(request);
@@ -335,17 +352,13 @@ const invitationsVerifier: AuthVerifier = async (request: NextRequest) => {
 };
 
 /**
- * Auth verifier for election routes:
- *  - GET is public (election results / nomination listing).
+ * Auth verifier for election and amendment routes:
+ *  - GET passes through (route handlers redact ballots, emails, etc. for
+ *    anyone who isn't an election admin).
  *  - Mutations require a signed-in user (the route
  *    handlers run finer-grained checks like active membership).
  */
-const electionsVerifier: AuthVerifier = async (request: NextRequest) => {
-  if (request.method === "GET") {
-    return { isAllowed: true, authType: "None" };
-  }
-  return signedInVerifier(request);
-};
+const nonGetSignedInVerifier = nonGetVerifier(signedInVerifier);
 
 /**
  * Map from API route name to authorization verifier. The verifier should be run against any request that
@@ -353,13 +366,15 @@ const electionsVerifier: AuthVerifier = async (request: NextRequest) => {
  * Keys are the second element in the path segment; for example, the path "/api/golinks/officer" would
  * correspond to the key "golinks"
  *
- * IMPORTANT: Every API route directory must have an entry here. Routes without an entry
- * will pass through without any auth check.
+ * IMPORTANT: Every API route directory must have an entry here. Requests to an
+ * unlisted route are denied.
  */
 const ROUTES: { [key: string]: AuthVerifier } = {
   alumni: nonGetOfficerVerifier,
   "alumni-candidates": officerVerifier,
-  "alumni-requests": alumniRequestsVerifier,
+  "alumni-requests": publicSubmissionVerifier,
+  amendments: nonGetSignedInVerifier,
+  announcement: nonGetPrimaryOfficerVerifier,
   auth: allowAllVerifier,
   authLevel: allowAllVerifier,
   aws: awsVerifier,
@@ -369,8 +384,10 @@ const ROUTES: { [key: string]: AuthVerifier } = {
   courseTaken: nonGetMentorVerifier,
   departments: nonGetOfficerVerifier,
   email: officerVerifier,
-  elections: electionsVerifier,
+  elections: nonGetSignedInVerifier,
   event: eventVerifier,
+  // GitHub webhooks authenticate with a signature, not a session.
+  github: allowAllVerifier,
   go: allowAllVerifier,
   golinks: goLinkVerifier,
   handover: nonGetOfficerVerifier,
@@ -390,19 +407,33 @@ const ROUTES: { [key: string]: AuthVerifier } = {
   mentorSkill: nonGetMentorVerifier,
   officer: nonGetPrimaryOfficerVerifier,
   "officer-positions": nonGetPrimaryOfficerVerifier,
+  photos: nonGetOfficerVerifier,
   project: nonGetOfficerVerifier,
   projectContributor: nonGetOfficerVerifier,
   purchasing: officerVerifier, // All purchasing routes require officer auth
   quotes: quoteVerifier,
+  "recruiting-talk-requests": publicSubmissionVerifier,
   schedule: nonGetScheduleManagementVerifier,
   scheduleBlock: nonGetScheduleManagementVerifier,
   skills: nonGetOfficerVerifier,
   sponsor: nonGetOfficerVerifier,
+  "sponsorship-inquiries": publicSubmissionVerifier,
   "swipe-access": officerVerifier,
   "tech-committee-application": techCommitteeApplicationVerifier,
   user: userVerifier,
-  userProject: nonGetOfficerVerifier,
+  "vise-talk-requests": publicSubmissionVerifier,
 };
+
+/** Route directories under app/api that the middleware knows about. */
+export const registeredApiSegments = Object.keys(ROUTES);
+
+const unregisteredRoute = (request: NextRequest) =>
+  NextResponse.json(
+    {
+      error: `Access Denied; ${request.nextUrl.pathname} is not registered with the API auth middleware`,
+    },
+    { status: 403 }
+  );
 
 const accessDenied = (authType: string, request: NextRequest) => {
   const { pathname } = request.nextUrl;
@@ -426,10 +457,11 @@ export const authMiddleware = async (request: NextRequest) => {
   if (apiSegment != "api") {
     return NextResponse.next();
   }
-  const routeAuth = ROUTES[pathSegment];
-  if (routeAuth == null) {
-    return NextResponse.next();
+  // Fail closed: a new route directory must opt in to a verifier.
+  if (!pathSegment || !Object.hasOwn(ROUTES, pathSegment)) {
+    return unregisteredRoute(request);
   }
+  const routeAuth = ROUTES[pathSegment];
   const { isAllowed, authType } = await routeAuth(request);
   if (isAllowed) {
     return NextResponse.next();

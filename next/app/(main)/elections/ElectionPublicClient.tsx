@@ -32,7 +32,7 @@ import {
   UserX,
 } from "lucide-react";
 import type {
-  SerializedElection,
+  PublicElection,
   SerializedElectionOffice,
   SerializedNomination,
   SerializedRunningMateInvitation,
@@ -43,7 +43,7 @@ import { compareByPrimaryOrder, isTicketDerivedOffice } from "@/lib/elections";
 /* ---------- Props ---------- */
 
 interface Props {
-  election: SerializedElection;
+  election: PublicElection;
   currentUserId: number | null;
   canNominate: boolean;
   isMember: boolean;
