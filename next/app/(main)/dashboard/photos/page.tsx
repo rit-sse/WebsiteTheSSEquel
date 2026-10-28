@@ -52,9 +52,10 @@ export default async function DashboardPhotosPage() {
               }
             : null,
           photoDate:
-            photo.exifTakenAt?.toISOString() ??
             photo.manualTakenAt?.toISOString() ??
+            photo.exifTakenAt?.toISOString() ??
             null,
+          manualTakenAt: photo.manualTakenAt?.toISOString() ?? null,
           uploadedAt: photo.uploadedAt.toISOString(),
           sortDate: photo.sortDate.toISOString(),
           status: photo.status,

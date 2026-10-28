@@ -58,11 +58,11 @@ export function parsePhotoDate(value: unknown): Date | null {
 }
 
 export function computePhotoSortDate(source: DateSource): Date {
-  const exif = normalizeDate(source.exifTakenAt);
-  if (exif) return exif;
-
   const manual = normalizeDate(source.manualTakenAt);
   if (manual) return manual;
+
+  const exif = normalizeDate(source.exifTakenAt);
+  if (exif) return exif;
 
   return normalizeDate(source.uploadedAt) ?? new Date();
 }

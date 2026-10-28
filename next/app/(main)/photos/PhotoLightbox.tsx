@@ -79,7 +79,10 @@ export function PhotoLightbox({
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="!max-w-[1100px] w-full p-0 overflow-hidden bg-surface-1">
+      <DialogContent
+        showCloseButton={false}
+        className="!max-w-[1100px] w-full p-0 overflow-hidden bg-surface-1"
+      >
         <DialogTitle className="sr-only">{headerTitle}</DialogTitle>
         <DialogDescription className="sr-only">{altText}</DialogDescription>
 

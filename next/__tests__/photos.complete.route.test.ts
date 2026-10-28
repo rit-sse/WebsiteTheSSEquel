@@ -79,7 +79,7 @@ describe("/api/photos/batches/[batchId]/complete route", () => {
     expect(res.status).toBe(400);
   });
 
-  it("uses EXIF date before manual date", async () => {
+  it("uses the per-photo assigned date before EXIF and the batch date", async () => {
     await POST(
       req({
         batchManualTakenAt: "2026-01-01",
@@ -96,7 +96,7 @@ describe("/api/photos/batches/[batchId]/complete route", () => {
     expect(mockPhotoCreate).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
-          sortDate: new Date("2026-02-03T00:00:00.000Z"),
+          sortDate: new Date("2026-02-01T00:00:00.000Z"),
         }),
       })
     );
@@ -115,6 +115,23 @@ describe("/api/photos/batches/[batchId]/complete route", () => {
       expect.objectContaining({
         data: expect.objectContaining({
           sortDate: new Date("2026-02-01T00:00:00.000Z"),
+        }),
+      })
+    );
+  });
+
+  it("uses the batch assigned date before EXIF", async () => {
+    await POST(
+      req({
+        batchManualTakenAt: "2025-12-01",
+        photos: [photoInput({ exifTakenAt: "2026-02-03T00:00:00.000Z" })],
+      }),
+      params
+    );
+    expect(mockPhotoCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          sortDate: new Date("2025-12-01T00:00:00.000Z"),
         }),
       })
     );
