@@ -111,6 +111,8 @@ async function reconcileEndedEventMemberships(
 
 /**
  * HTTP GET request to /api/event/[id]/attendance
+ * Officers get the full attendee list. Other signed-in users get the
+ * attendee count and only their own check-in.
  * @returns list of attendees for the event
  */
 export async function GET(
@@ -118,6 +120,15 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id: eventId } = await params;
+
+  const authLevel = await getGatewayAuthLevel(request);
+  if (!authLevel.userId) {
+    return NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 401, headers: { "Cache-Control": "private, no-store" } }
+    );
+  }
+  const canViewAllAttendees = authLevel.isOfficer;
 
   try {
     // Check if event exists
@@ -137,7 +148,10 @@ export async function GET(
     }
 
     const attendances = await prisma.$transaction(async (tx: TxClient) => {
-      await reconcileEndedEventMemberships(tx, event);
+      // Only an officer's read may write memberships; other GETs stay read-only.
+      if (canViewAllAttendees) {
+        await reconcileEndedEventMemberships(tx, event);
+      }
 
       return tx.eventAttendance.findMany({
         where: { eventId },
@@ -156,26 +170,35 @@ export async function GET(
       });
     });
 
-    return NextResponse.json({
-      eventId,
-      eventTitle: event.title,
-      attendanceEnabled: event.attendanceEnabled,
-      eventHasEnded: isEventEnded(event.date),
-      attendees: attendances.map(
-        (a: {
-          id: any;
-          user: { id: any; name: any; email: any };
-          createdAt: any;
-        }) => ({
-          id: a.id,
-          userId: a.user.id,
-          name: a.user.name,
-          email: a.user.email,
-          attendedAt: a.createdAt,
-        })
-      ),
-      count: attendances.length,
-    });
+    const visibleAttendances = canViewAllAttendees
+      ? attendances
+      : attendances.filter(
+          (a: { user: { id: number } }) => a.user.id === authLevel.userId
+        );
+
+    return NextResponse.json(
+      {
+        eventId,
+        eventTitle: event.title,
+        attendanceEnabled: event.attendanceEnabled,
+        eventHasEnded: isEventEnded(event.date),
+        attendees: visibleAttendances.map(
+          (a: {
+            id: any;
+            user: { id: any; name: any; email: any };
+            createdAt: any;
+          }) => ({
+            id: a.id,
+            userId: a.user.id,
+            name: a.user.name,
+            email: a.user.email,
+            attendedAt: a.createdAt,
+          })
+        ),
+        count: attendances.length,
+      },
+      { headers: { "Cache-Control": "private, no-store" } }
+    );
   } catch (error) {
     console.error("Error fetching attendance:", error);
     return NextResponse.json(
