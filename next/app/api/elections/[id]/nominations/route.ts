@@ -1,6 +1,12 @@
 import prisma from "@/lib/prisma";
 import { getGatewayAuthLevel } from "@/lib/authGateway";
-import { getElectionUrl, getElectionWithRelations } from "@/lib/elections";
+import {
+  getElectionUrl,
+  getElectionWithRelations,
+  serializeElectionForClient,
+  toPublicElectionView,
+} from "@/lib/elections";
+import { canManageElections } from "@/lib/seAdmin";
 import { isActiveMemberForElection } from "@/lib/electionEligibility";
 import { isEmailConfigured, sendEmail } from "@/lib/email";
 import { ElectionStatus } from "@prisma/client";
@@ -17,7 +23,7 @@ async function parseElectionId(params: Promise<{ id: string }>) {
 }
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -26,8 +32,20 @@ export async function GET(
     if (!election) {
       return new Response("Election not found", { status: 404 });
     }
+    const authLevel = await getGatewayAuthLevel(request);
+    if (await canManageElections(authLevel)) {
+      return Response.json(
+        election.offices.flatMap((office) => office.nominations),
+        { headers: { "Cache-Control": "private, no-store" } }
+      );
+    }
+    // Non-admins get emails, eligibility answers and review notes removed.
+    const publicView = toPublicElectionView(
+      serializeElectionForClient(election),
+      authLevel.userId
+    );
     return Response.json(
-      election.offices.flatMap((office) => office.nominations)
+      publicView.offices.flatMap((office) => office.nominations)
     );
   } catch (error) {
     return new Response(

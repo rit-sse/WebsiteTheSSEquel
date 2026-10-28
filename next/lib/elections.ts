@@ -1091,6 +1091,109 @@ export function serializeElectionForClient<T>(value: T): T {
   return serialized as T;
 }
 
+const ELIGIBILITY_ANSWER_FIELDS = [
+  "canRemainEnrolledFullYear",
+  "canRemainEnrolledNextTerm",
+  "isOnCampus",
+  "isOnCoop",
+] as const;
+
+const PRIVATE_NOMINATION_FIELDS = [
+  "reviewNotes",
+  "reviewedById",
+  "reviewedBy",
+  ...ELIGIBILITY_ANSWER_FIELDS,
+] as const;
+
+const PRIVATE_RUNNING_MATE_FIELDS = [
+  "declineReason",
+  ...ELIGIBILITY_ANSWER_FIELDS,
+] as const;
+
+/**
+ * Redacts a serialized election (from `serializeElectionForClient`) for
+ * anyone who isn't an election admin, and for every public page:
+ * - ballots keep only their id, plus the voterId of the viewer's own ballot
+ *   so "you voted" still works; voter identities and rankings are removed
+ * - email logs are dropped
+ * - every user reference loses its email (role emails on positions stay)
+ * - nominations lose eligibility answers and review notes unless the viewer
+ *   is the nominee, and running-mate invitations lose eligibility answers
+ *   and decline reasons unless the viewer is the invitee or the presidential
+ *   nominee
+ */
+export function toPublicElectionView<
+  T extends {
+    ballots: Array<{ id: number; voterId: number }>;
+    emailLogs: unknown[];
+  },
+>(
+  election: T,
+  viewerUserId: number | null
+): Omit<T, "ballots" | "emailLogs"> & {
+  ballots: PublicElectionBallot[];
+  emailLogs: [];
+} {
+  const view = JSON.parse(JSON.stringify(election)) as Record<string, unknown>;
+
+  view.ballots = election.ballots.map((ballot) => ({
+    id: ballot.id,
+    voterId:
+      viewerUserId !== null && ballot.voterId === viewerUserId
+        ? ballot.voterId
+        : null,
+  }));
+  view.emailLogs = [];
+
+  const offices = Array.isArray(view.offices) ? view.offices : [];
+  for (const office of offices as Array<{ nominations?: unknown[] }>) {
+    for (const nomination of (office.nominations ?? []) as Array<
+      Record<string, unknown>
+    >) {
+      if (nomination.nomineeUserId !== viewerUserId) {
+        for (const field of PRIVATE_NOMINATION_FIELDS) delete nomination[field];
+      }
+      const invitation = nomination.runningMateInvitation as
+        | Record<string, unknown>
+        | null
+        | undefined;
+      if (
+        invitation &&
+        invitation.inviteeUserId !== viewerUserId &&
+        nomination.nomineeUserId !== viewerUserId
+      ) {
+        for (const field of PRIVATE_RUNNING_MATE_FIELDS) {
+          delete invitation[field];
+        }
+      }
+    }
+  }
+
+  stripUserEmails(view);
+  return view as unknown as Omit<T, "ballots" | "emailLogs"> & {
+    ballots: PublicElectionBallot[];
+    emailLogs: [];
+  };
+}
+
+export type PublicElectionBallot = { id: number; voterId: number | null };
+
+/** Removes `email` from user-shaped objects (they have a `name`). */
+export function stripUserEmails(value: unknown): void {
+  if (!value || typeof value !== "object") return;
+  if (Array.isArray(value)) {
+    value.forEach(stripUserEmails);
+    return;
+  }
+  const record = value as Record<string, unknown>;
+  if ("name" in record && "email" in record) {
+    delete record.email;
+  }
+  for (const nested of Object.values(record)) {
+    stripUserEmails(nested);
+  }
+}
+
 /**
  * Full tally → client-friendly rounds helper. Centralizes the pipeline
  * previously inlined in `app/(main)/elections/[slug]/results/page.tsx`

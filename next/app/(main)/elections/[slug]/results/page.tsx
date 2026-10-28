@@ -3,6 +3,7 @@ import { getAuthLevel } from "@/lib/services/authLevelService";
 import {
   serializeElectionForClient,
   tallyElectionForDisplay,
+  toPublicElectionView,
 } from "@/lib/elections";
 import { canManageElections } from "@/lib/seAdmin";
 import ElectionResultsClient from "./ElectionResultsClient";
@@ -32,9 +33,11 @@ export default async function ElectionResultsPage({
   const isVotingClosed = election.status === "VOTING_CLOSED";
   const canViewResults = isCertified || (isVotingClosed && isAdmin);
 
-  const serialized = serializeElectionForClient(
-    election
-  ) as unknown as SerializedElection;
+  // Results are aggregate tallies; individual ballots never reach the page.
+  const serialized = toPublicElectionView(
+    serializeElectionForClient(election) as unknown as SerializedElection,
+    authLevel.userId
+  );
 
   if (!canViewResults) {
     return (
