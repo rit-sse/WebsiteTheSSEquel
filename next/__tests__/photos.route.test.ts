@@ -56,6 +56,22 @@ describe("/api/photos route", () => {
     );
   });
 
+  it("returns the assigned photo date instead of EXIF metadata", async () => {
+    const assignedDate = new Date("2025-12-01T00:00:00Z");
+    mockPhotoFindMany.mockResolvedValue([
+      {
+        ...photo(1, assignedDate),
+        manualTakenAt: assignedDate,
+        exifTakenAt: new Date("2026-03-01T12:30:00Z"),
+      },
+    ]);
+    const res = await GET(req());
+    const body = await res.json();
+    expect(body.photos[0].photoDate).toBe(assignedDate.toISOString());
+    expect(body.photos[0].manualTakenAt).toBe(assignedDate.toISOString());
+    expect(body.photos[0].sortDate).toBe(assignedDate.toISOString());
+  });
+
   it("returns a cursor that includes sort date and id", async () => {
     mockPhotoFindMany.mockResolvedValue([
       photo(3, new Date("2026-03-01T00:00:00Z")),

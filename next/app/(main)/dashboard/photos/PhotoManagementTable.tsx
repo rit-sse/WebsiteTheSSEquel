@@ -29,6 +29,7 @@ export type ManagedPhoto = {
   eventId?: string | null;
   event: DashboardPhotoEvent | null;
   photoDate: string | null;
+  manualTakenAt: string | null;
   uploadedAt: string;
   sortDate: string;
   status: string;
@@ -348,7 +349,7 @@ function EditPhotoModal({
   const [category, setCategory] = useState(photo.category);
   const [eventId, setEventId] = useState(photo.eventId ?? "");
   const [manualTakenAt, setManualTakenAt] = useState(
-    toDateInputValue(photo.photoDate)
+    toDateInputValue(photo.manualTakenAt)
   );
   const [status, setStatus] = useState(photo.status);
   const [saving, setSaving] = useState(false);
@@ -360,7 +361,7 @@ function EditPhotoModal({
     setAltText(photo.altText ?? "");
     setCategory(photo.category);
     setEventId(photo.eventId ?? "");
-    setManualTakenAt(toDateInputValue(photo.photoDate));
+    setManualTakenAt(toDateInputValue(photo.manualTakenAt));
     setStatus(photo.status);
   }, [photo]);
 
@@ -491,7 +492,8 @@ function EditPhotoModal({
                 onChange={(event) => setManualTakenAt(event.target.value)}
               />
               <p className="text-xs text-muted-foreground">
-                Used to sort the photo in the gallery.
+                Overrides the metadata date. Clear to use metadata or upload
+                date.
               </p>
             </div>
             <div className="space-y-1.5">

@@ -300,7 +300,7 @@ export function PhotoBatchUploader({
               disabled={uploading}
             />
             <p className="text-xs text-muted-foreground">
-              Used when EXIF and per-photo overrides are blank.
+              Overrides EXIF dates unless a per-photo date is assigned.
             </p>
           </div>
         </div>

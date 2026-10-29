@@ -101,8 +101,8 @@ function toPhotoDto(photo: {
     category: photo.category,
     event: photo.event ? toEventOption(photo.event) : null,
     photoDate:
-      photo.exifTakenAt?.toISOString() ??
       photo.manualTakenAt?.toISOString() ??
+      photo.exifTakenAt?.toISOString() ??
       null,
     uploadedAt: photo.uploadedAt.toISOString(),
     sortDate: photo.sortDate.toISOString(),

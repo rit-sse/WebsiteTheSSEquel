@@ -80,7 +80,13 @@ describe("/api/photos/[id] route", () => {
     expect(res.status).toBe(401);
   });
 
-  it("recomputes sortDate when manual date changes", async () => {
+  it("recomputes sortDate from the assigned date even with EXIF", async () => {
+    mockPhotoFindUnique.mockResolvedValue({
+      id: 1,
+      exifTakenAt: new Date("2026-03-01T12:30:00Z"),
+      manualTakenAt: null,
+      uploadedAt: new Date("2026-04-01T00:00:00Z"),
+    });
     const res = await PATCH(req({ manualTakenAt: "2026-02-01" }), params);
 
     expect(res.status).toBe(200);
@@ -93,6 +99,31 @@ describe("/api/photos/[id] route", () => {
       })
     );
   });
+
+  it.each([
+    [new Date("2026-03-01T12:30:00Z"), "2026-03-01T12:30:00Z"],
+    [null, "2026-04-01T00:00:00Z"],
+  ])(
+    "restores the fallback when an override is cleared (%s)",
+    async (exifTakenAt, expected) => {
+      mockPhotoFindUnique.mockResolvedValue({
+        id: 1,
+        exifTakenAt,
+        manualTakenAt: new Date("2025-12-01T00:00:00Z"),
+        uploadedAt: new Date("2026-04-01T00:00:00Z"),
+      });
+      const res = await PATCH(req({ manualTakenAt: null }), params);
+      expect(res.status).toBe(200);
+      expect(mockPhotoUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            manualTakenAt: null,
+            sortDate: new Date(expected),
+          }),
+        })
+      );
+    }
+  );
 
   it("deletes both S3 objects and the DB row", async () => {
     const res = await DELETE(req(), params);
