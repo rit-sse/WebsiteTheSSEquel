@@ -38,18 +38,23 @@ export async function getAuthLevel(): Promise<AuthLevel> {
   };
 
   if (isStagingProxyAuthEnabled()) {
+    // Match `/api/authLevel` (resolveAuthLevelFromRequest): staging elevation
+    // applies whenever the flag is on, whether the user is identified by the
+    // proxy header or by a regular NextAuth session. Otherwise server-gated
+    // pages like the dashboard redirect while the client thinks you're in.
+    let proxyEmail: string | null = null;
     try {
       const requestHeaders = await headers();
-      const proxyEmail = getProxyEmail({ headers: requestHeaders });
-      if (proxyEmail) {
-        return resolveAuthLevelFromProxyEmail(proxyEmail, {
-          includeProfileComplete: true,
-          stagingElevated: true,
-        });
-      }
+      proxyEmail = getProxyEmail({ headers: requestHeaders });
     } catch {
       // Some server-side callers may not have request headers available.
     }
+    const stagingEmail =
+      proxyEmail ?? (await getServerSession(authOptions))?.user?.email ?? null;
+    return resolveAuthLevelFromProxyEmail(stagingEmail, {
+      includeProfileComplete: true,
+      stagingElevated: true,
+    });
   }
 
   const session = await getServerSession(authOptions);

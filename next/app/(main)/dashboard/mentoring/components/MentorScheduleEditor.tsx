@@ -29,7 +29,7 @@ import {
 import { Tooltip } from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import { parseApiError } from "@/lib/apiClient";
-import { getInitials } from "@/lib/userDisplay";
+import { getInitials, getShortName } from "@/lib/userDisplay";
 import {
   X,
   User,
@@ -46,6 +46,9 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  SelectGroup,
+  SelectLabel,
+  SelectSeparator,
 } from "@/components/ui/select";
 import {
   DndContext,
@@ -122,8 +125,6 @@ interface TrafficDatum {
 // Day and hour labels
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 const HOURS = [
-  { hour: 10, label: "10am - 11am" },
-  { hour: 11, label: "11am - 12pm" },
   { hour: 12, label: "12pm - 1pm" },
   { hour: 13, label: "1pm - 2pm" },
   { hour: 14, label: "2pm - 3pm" },
@@ -1396,7 +1397,7 @@ export default function MentorScheduleEditor({
                                         colorToken={getMentorColor(
                                           block.mentor.id
                                         )}
-                                        label={block.mentor.name.split(" ")[0]}
+                                        label={getShortName(block.mentor.name)}
                                         fullName={block.mentor.name}
                                         image={block.mentor.image}
                                         onClick={() =>
@@ -1419,8 +1420,8 @@ export default function MentorScheduleEditor({
                                     >
                                       {mappedAvailable.length > 0
                                         ? mappedAvailable
-                                            .map(
-                                              (m) => m.user.name.split(" ")[0]
+                                            .map((m) =>
+                                              getShortName(m.user.name)
                                             )
                                             .join(", ")
                                         : availableNames.length > 0
@@ -1544,11 +1545,9 @@ export default function MentorScheduleEditor({
                                                 />
                                               ) : null}
                                               <span className="truncate">
-                                                {
-                                                  block.mentor.name.split(
-                                                    " "
-                                                  )[0]
-                                                }
+                                                {getShortName(
+                                                  block.mentor.name
+                                                )}
                                               </span>
                                             </button>
                                           ))
@@ -1572,9 +1571,8 @@ export default function MentorScheduleEditor({
                                           >
                                             {mappedAvailable.length > 0
                                               ? mappedAvailable
-                                                  .map(
-                                                    (m) =>
-                                                      m.user.name.split(" ")[0]
+                                                  .map((m) =>
+                                                    getShortName(m.user.name)
                                                   )
                                                   .join(", ")
                                               : `${availableNames.length} avail.`}
@@ -1666,7 +1664,7 @@ export default function MentorScheduleEditor({
                         id={`mentor-${mentor.id}`}
                         mentorId={mentor.id}
                         colorToken={getMentorColor(mentor.id)}
-                        label={mentor.user.name.split(" ")[0]}
+                        label={getShortName(mentor.user.name)}
                         fullName={mentor.user.name}
                         image={mentor.user.image}
                         title={`Drag ${mentor.user.name} onto the schedule`}
@@ -2367,16 +2365,51 @@ export default function MentorScheduleEditor({
             </SelectTrigger>
             <SelectContent>
               {assignSlot &&
-                getAvailableMentors(assignSlot.weekday, assignSlot.hour).map(
-                  (mentor) => (
+                (() => {
+                  // Mentors who marked this slot available come first; the
+                  // rest stay assignable in case availability is incomplete.
+                  const candidates = getAvailableMentors(
+                    assignSlot.weekday,
+                    assignSlot.hour
+                  );
+                  const available = candidates.filter((mentor) =>
+                    isMentorAvailableForSlot(
+                      mentor.id,
+                      assignSlot.weekday,
+                      assignSlot.hour
+                    )
+                  );
+                  const unavailable = candidates.filter(
+                    (mentor) => !available.includes(mentor)
+                  );
+                  const renderItem = (mentor: Mentor) => (
                     <SelectItem key={mentor.id} value={mentor.id.toString()}>
                       <div className="flex items-center gap-2">
                         <User className="h-4 w-4" />
                         {mentor.user.name}
                       </div>
                     </SelectItem>
-                  )
-                )}
+                  );
+                  return (
+                    <>
+                      {available.length > 0 && (
+                        <SelectGroup>
+                          <SelectLabel>Available at this time</SelectLabel>
+                          {available.map(renderItem)}
+                        </SelectGroup>
+                      )}
+                      {available.length > 0 && unavailable.length > 0 && (
+                        <SelectSeparator />
+                      )}
+                      {unavailable.length > 0 && (
+                        <SelectGroup>
+                          <SelectLabel>Not marked available</SelectLabel>
+                          {unavailable.map(renderItem)}
+                        </SelectGroup>
+                      )}
+                    </>
+                  );
+                })()}
             </SelectContent>
           </Select>
           {assignSlot &&

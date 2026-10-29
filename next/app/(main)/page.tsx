@@ -14,6 +14,9 @@ import NeoBrutalistButton from "@/components/neo-brutalist-button";
 import { Handshake, Building2, Mic, ArrowRight } from "lucide-react";
 import prisma from "@/lib/prisma";
 import { getActiveElection } from "@/lib/elections";
+import { getCurrentMentors } from "@/lib/currentMentors";
+import { MentorCard } from "@/components/mentoring/MentorCard";
+import Link from "next/link";
 
 interface SponsorData {
   id: number;
@@ -35,6 +38,7 @@ export default async function Home() {
   // Deduped via React `cache` with the same call in layout.tsx — at most
   // one DB hit per request even though both render paths read it.
   const activeElection = await getActiveElection();
+  const currentMentors = await getCurrentMentors();
 
   // Fetch active sponsors from the database
   // Wrapped in try-catch to handle case where table doesn't exist yet
@@ -89,6 +93,41 @@ export default async function Home() {
           />
           <HeroImage />
         </div>
+      </NeoCard>
+
+      {/* Current mentors */}
+      <NeoCard className="w-full p-6 md:p-10">
+        <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 className="mb-2 text-3xl font-bold font-display">
+              Mentoring Now
+            </h2>
+            <p className="text-muted-foreground">
+              Mentors scheduled for the current hour in the SSE lab.
+            </p>
+          </div>
+          <Link
+            href="/mentoring/schedule"
+            className="inline-flex min-h-[44px] items-center gap-2 rounded-md px-2 text-sm font-semibold hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            Full schedule
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          </Link>
+        </div>
+
+        {currentMentors.length > 0 ? (
+          <ul className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            {currentMentors.map((mentor) => (
+              <li key={mentor.id} className="min-w-0">
+                <MentorCard mentor={mentor} />
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-muted-foreground">
+            No mentors scheduled right now.
+          </p>
+        )}
       </NeoCard>
 
       {/* Upcoming Events */}

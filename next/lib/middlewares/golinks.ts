@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { isUrlValid } from "../utils";
 import prisma from "@/lib/prisma";
 
 const getDestinationUrl = async (goUrl: string) => {
@@ -14,6 +13,15 @@ const getDestinationUrl = async (goUrl: string) => {
   } catch (err) {
     console.error("golinks: failed to resolve destination for", goUrl, err);
     return null;
+  }
+};
+
+const isRedirectableUrl = (value: string) => {
+  try {
+    const { protocol } = new URL(value);
+    return protocol === "http:" || protocol === "https:";
+  } catch {
+    return false;
   }
 };
 
@@ -34,7 +42,7 @@ export const golinksMiddleware = async (request: NextRequest) => {
     const goLink = pathname.split("/go/")[1];
     const destination = await getDestinationUrl(goLink);
     // If the destination exists and is valid, redirect to it
-    if (destination && isUrlValid(destination)) {
+    if (destination && isRedirectableUrl(destination)) {
       // check if the url is a live site
       return NextResponse.redirect(destination);
     }

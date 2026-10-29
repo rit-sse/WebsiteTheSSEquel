@@ -1,4 +1,13 @@
 import prisma from "@/lib/prisma";
+import { NextRequest } from "next/server";
+import { getGatewayAuthLevel } from "@/lib/authGateway";
+import { getPublicBaseUrl } from "@/lib/baseUrl";
+import {
+  createEmailMembershipAward,
+  emailMembershipAwardSchema,
+  MembershipAwardError,
+  sendMembershipAwardEmail,
+} from "@/lib/services/membershipAwardService";
 import { z } from "zod";
 import { resolveUserImage } from "@/lib/s3Utils";
 import {
@@ -8,7 +17,7 @@ import {
 import { getCurrentSseOperationalTerm } from "@/lib/sseTerms";
 
 const CreateMembershipSchema = z.object({
-  userId: z.number().positive(),
+  userId: z.number().int().positive(),
   reason: z.enum(MANUAL_MEMBERSHIP_REASONS),
   dateGiven: z.string().min(1),
 });
@@ -79,43 +88,82 @@ export async function GET() {
   return Response.json(items);
 }
 
-/**
- * Handle POST /api/memberships requests to create a new membership record.
- *
- * Parses and validates the incoming JSON payload, ensures required fields are present,
- * creates a membership row via Prisma, and returns the created resource.
- *
- * @param request - The incoming Fetch API Request object. Expected to contain a JSON body:
- *   {
- *     userId: string,
- *     reason: string,
- *     dateGiven: string | Date
- *   }
- *
- * @returns A Promise resolving to a Response:
- *   - 201: JSON body containing the created membership { id, userId, reason, dateGiven }.
- *   - 400: "Invalid JSON Payload" when request body is not valid JSON.
- *   - 400: "Body is missing 'userId', 'reason', or 'dateGiven'." when required keys are absent.
- *   - 5xx: Possible server error if schema validation or database operations throw and are not caught.
- *
- * @throws {ZodError} If CreateMembershipSchema.parse fails validation (may result in an uncaught error
- *         unless handled by surrounding middleware).
- */
 export async function POST(request: Request) {
-  console.log("POST /api/memberships/");
+  const auth = await getGatewayAuthLevel(request);
+  if (!auth.userId)
+    return new Response("Please sign in first.", { status: 401 });
+  if (!auth.isOfficer)
+    return new Response("Officer access required.", { status: 403 });
 
-  let body: any;
+  let body: unknown;
   try {
     body = await request.json();
-  } catch (err) {
-    console.error("Failed to parse JSON:", err);
-    return new Response("Invalid JSON Payload", { status: 400 });
+  } catch {
+    return new Response("Invalid JSON payload.", { status: 400 });
   }
 
-  if (!("userId" in body && "reason" in body && "dateGiven" in body)) {
-    return new Response("Body is missing 'userId', 'reason', or 'dateGiven'.", {
-      status: 400,
-    });
+  if (typeof body !== "object" || body === null || Array.isArray(body)) {
+    return new Response("Invalid membership payload.", { status: 400 });
+  }
+
+  if ("email" in body) {
+    const parsed = emailMembershipAwardSchema.safeParse(body);
+    if (!parsed.success) {
+      return new Response(
+        "Provide a valid @g.rit.edu email, membership reason, and earned date.",
+        { status: 400 }
+      );
+    }
+    try {
+      normalizeMembershipDateInput(parsed.data.dateGiven);
+    } catch {
+      return new Response("Invalid membership date.", { status: 400 });
+    }
+    try {
+      const { award, membership } = await createEmailMembershipAward(
+        parsed.data,
+        auth.userId
+      );
+      if (membership) {
+        return Response.json(
+          { status: "awarded", membership },
+          { status: 201 }
+        );
+      }
+      // Retrying a save shouldn't send another email. Resends have their own action.
+      const delivery =
+        award.emailStatus === "PENDING"
+          ? await sendMembershipAwardEmail(
+              award.id,
+              getPublicBaseUrl(
+                new NextRequest(request.url, { headers: request.headers })
+              )
+            )
+          : {
+              emailStatus: award.emailStatus,
+              message:
+                "Award already saved. Check pending memberships for email status.",
+            };
+      if ("membership" in delivery) {
+        return Response.json(
+          { status: "awarded", membership: delivery.membership },
+          { status: 201 }
+        );
+      }
+      return Response.json(
+        { status: "pending", awardId: award.id, ...delivery },
+        { status: 201 }
+      );
+    } catch (error) {
+      if (error instanceof MembershipAwardError) {
+        return new Response(error.message, { status: error.status });
+      }
+      console.error("Failed to save membership award", error);
+      return new Response(
+        "Could not finish saving the award. Retry without closing the form.",
+        { status: 500 }
+      );
+    }
   }
 
   const parsed = CreateMembershipSchema.safeParse(body);
@@ -130,12 +178,14 @@ export async function POST(request: Request) {
     return new Response("Invalid membership payload.", { status: 400 });
   }
 
-  // Derive the SSE operational term from dateGiven so admin backfills
-  // land in the same Spring/Fall buckets the leaderboard reads. Summer
-  // dates intentionally roll into Fall because SSE is closed in Summer.
-  const dateGivenDate = new Date(normalizedDateGiven);
-  const { term, year } = getCurrentSseOperationalTerm(dateGivenDate);
-
+  const user = await prisma.user.findUnique({
+    where: { id: parsed.data.userId },
+    select: { id: true },
+  });
+  if (!user) return new Response("Member account not found.", { status: 404 });
+  const { term, year } = getCurrentSseOperationalTerm(
+    new Date(normalizedDateGiven)
+  );
   const created = await prisma.memberships.create({
     data: {
       userId: parsed.data.userId,
@@ -146,6 +196,5 @@ export async function POST(request: Request) {
     },
     select: { id: true, userId: true, reason: true, dateGiven: true },
   });
-
   return Response.json(created, { status: 201 });
 }

@@ -32,6 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { getVisibleHeatmapHours } from "@/lib/mentoringHours";
 import {
   TrendingUp,
   TrendingDown,
@@ -91,6 +92,8 @@ interface MentorSemester {
 
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri"];
 const DAY_NAMES = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+// Hours before MENTORING_START_HOUR only appear when there is historical
+// check-in data for them (from before the hours changed).
 const HOURS = [10, 11, 12, 13, 14, 15, 16, 17];
 const TRAFFIC_LEGEND = [
   { label: "≤6", swatchClassName: "bg-sky-100 dark:bg-sky-950/50" },
@@ -471,6 +474,15 @@ export default function HeadcountDashboard({
     );
     return m;
   }, [trafficData]);
+
+  const visibleHours = useMemo(
+    () =>
+      getVisibleHeatmapHours(
+        HOURS,
+        trafficData.map((d) => d.hour)
+      ),
+    [trafficData]
+  );
 
   const maxHeat = useMemo(
     () =>
@@ -1057,7 +1069,7 @@ export default function HeadcountDashboard({
                       </tr>
                     </thead>
                     <tbody>
-                      {HOURS.map((hour) => (
+                      {visibleHours.map((hour) => (
                         <tr key={hour}>
                           <td className="p-1 text-muted-foreground font-medium whitespace-nowrap text-right pr-2">
                             {formatHour(hour)}

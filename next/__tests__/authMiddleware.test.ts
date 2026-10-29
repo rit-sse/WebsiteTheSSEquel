@@ -1,3 +1,5 @@
+import { readdirSync } from "node:fs";
+import path from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const { mockGetGatewayAuthLevel } = vi.hoisted(() => ({
@@ -36,7 +38,10 @@ vi.mock("next/server", () => {
   };
 });
 
-import { authMiddleware } from "@/lib/middlewares/authentication";
+import {
+  authMiddleware,
+  registeredApiSegments,
+} from "@/lib/middlewares/authentication";
 
 function req(pathname: string, method = "GET") {
   return {
@@ -61,9 +66,37 @@ describe("authMiddleware", () => {
     expect((res as any).kind).toBe("next");
   });
 
-  it("allows unknown api routes", async () => {
-    const res = await authMiddleware(req("/api/unknown", "POST"));
-    expect((res as any).kind).toBe("next");
+  it.each(["GET", "POST", "PUT", "DELETE"])(
+    "denies unknown api routes by default: %s",
+    async (method) => {
+      mockGetGatewayAuthLevel.mockResolvedValue({
+        isUser: true,
+        isOfficer: true,
+        isSeAdmin: true,
+        isPrimary: true,
+      });
+      const res = await authMiddleware(req("/api/unknown", method));
+      expect((res as any).status).toBe(403);
+      expect((res as any).body).toContain("not registered");
+    }
+  );
+
+  it.each(["/api", "/api/", "/api/constructor", "/api/__proto__/x"])(
+    "denies paths that are not real route groups: %s",
+    async (pathname) => {
+      const res = await authMiddleware(req(pathname));
+      expect((res as any).status).toBe(403);
+    }
+  );
+
+  it("registers every app/api route directory", () => {
+    const apiDir = path.join(__dirname, "..", "app", "api");
+    const routeDirs = readdirSync(apiDir, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => entry.name);
+    expect(
+      routeDirs.filter((dir) => !registeredApiSegments.includes(dir))
+    ).toEqual([]);
   });
 
   it("allows public GET on nonGetOfficer route", async () => {
@@ -92,9 +125,101 @@ describe("authMiddleware", () => {
     expect((res as any).kind).toBe("next");
   });
 
-  it("keeps ordinary user GET public", async () => {
+  it.each(["/api/user", "/api/user/"])(
+    "denies the user directory to anonymous users: %s",
+    async (pathname) => {
+      const res = await authMiddleware(req(pathname));
+      expect((res as any).status).toBe(403);
+      expect((res as any).body).toContain("need to be Officer");
+    }
+  );
+
+  it("denies the user directory to signed-in non-officers", async () => {
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isUser: true,
+      isOfficer: false,
+    });
+    const res = await authMiddleware(req("/api/user"));
+    expect((res as any).status).toBe(403);
+  });
+
+  it("allows the user directory for officers", async () => {
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      isUser: true,
+      isOfficer: true,
+    });
     const res = await authMiddleware(req("/api/user"));
     expect((res as any).kind).toBe("next");
+  });
+
+  it.each(["/api/user/12/profile", "/api/user/search"])(
+    "requires sign-in for %s",
+    async (pathname) => {
+      const denied = await authMiddleware(req(pathname));
+      expect((denied as any).status).toBe(403);
+      expect((denied as any).body).toContain("need to be Signed-in User");
+
+      mockGetGatewayAuthLevel.mockResolvedValue({ isUser: true });
+      const allowed = await authMiddleware(req(pathname));
+      expect((allowed as any).kind).toBe("next");
+    }
+  );
+
+  it("keeps the name-and-image user lookup public", async () => {
+    const res = await authMiddleware(req("/api/user/12"));
+    expect((res as any).kind).toBe("next");
+  });
+
+  it("requires sign-in to read event attendance", async () => {
+    const denied = await authMiddleware(req("/api/event/123/attendance"));
+    expect((denied as any).status).toBe(403);
+
+    mockGetGatewayAuthLevel.mockResolvedValue({ isUser: true });
+    const allowed = await authMiddleware(req("/api/event/123/attendance"));
+    expect((allowed as any).kind).toBe("next");
+  });
+
+  it("keeps the event list public", async () => {
+    const res = await authMiddleware(req("/api/event/123"));
+    expect((res as any).kind).toBe("next");
+  });
+
+  describe.each([
+    "/api/sponsorship-inquiries",
+    "/api/recruiting-talk-requests",
+    "/api/vise-talk-requests",
+  ])("public intake route %s", (pathname) => {
+    it("allows anonymous submissions", async () => {
+      const res = await authMiddleware(req(pathname, "POST"));
+      expect((res as any).kind).toBe("next");
+    });
+
+    it.each(["GET", "PUT", "DELETE"])(
+      "denies %s to anonymous users and non-officers",
+      async (method) => {
+        const anon = await authMiddleware(req(pathname, method));
+        expect((anon as any).status).toBe(403);
+
+        mockGetGatewayAuthLevel.mockResolvedValue({
+          isUser: true,
+          isOfficer: false,
+        });
+        const member = await authMiddleware(req(pathname, method));
+        expect((member as any).status).toBe(403);
+      }
+    );
+
+    it.each(["GET", "PUT", "DELETE"])(
+      "allows %s for officers",
+      async (method) => {
+        mockGetGatewayAuthLevel.mockResolvedValue({
+          isUser: true,
+          isOfficer: true,
+        });
+        const res = await authMiddleware(req(pathname, method));
+        expect((res as any).kind).toBe("next");
+      }
+    );
   });
 
   it("allows auth level lookups without blocking anonymous users", async () => {

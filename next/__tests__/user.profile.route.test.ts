@@ -64,6 +64,7 @@ describe("/api/user/[id]/profile route", () => {
     mockOfficerFindFirst.mockResolvedValue(null);
     mockMentorSemesterFindFirst.mockResolvedValue(null);
     mockMentorAvailabilityFindUnique.mockResolvedValue(null);
+    mockGetGatewayAuthLevel.mockResolvedValue({ userId: 99, isOfficer: true });
   });
 
   it("returns 422 for invalid user id", async () => {
@@ -81,17 +82,30 @@ describe("/api/user/[id]/profile route", () => {
     expect(res.status).toBe(404);
   });
 
-  it("hides email for non-owner non-officer", async () => {
+  it("returns 401 without reading the user when signed out", async () => {
+    mockUserFindUnique.mockResolvedValue(baseUser());
+    mockGetGatewayAuthLevel.mockResolvedValue({
+      userId: null,
+      isOfficer: false,
+    });
+
+    const res = await GET(new Request("http://localhost") as any, {
+      params: Promise.resolve({ id: "12" }),
+    });
+    expect(res.status).toBe(401);
+    expect(res.headers.get("Cache-Control")).toBe("private, no-store");
+    expect(mockUserFindUnique).not.toHaveBeenCalled();
+  });
+
+  it("returns 403 for a signed-in non-owner non-officer", async () => {
     mockUserFindUnique.mockResolvedValue(baseUser());
     mockGetGatewayAuthLevel.mockResolvedValue({ userId: 99, isOfficer: false });
 
     const res = await GET(new Request("http://localhost") as any, {
       params: Promise.resolve({ id: "12" }),
     });
-    expect(res.status).toBe(200);
-    const body = await res.json();
-    expect(body.email).toBeUndefined();
-    expect(body.image).toBe("resolved-image");
+    expect(res.status).toBe(403);
+    expect(mockUserFindUnique).not.toHaveBeenCalled();
   });
 
   it("shows email for officer", async () => {
@@ -103,6 +117,50 @@ describe("/api/user/[id]/profile route", () => {
     });
     const body = await res.json();
     expect(body.email).toBe("user@example.com");
+  });
+
+  it("omits legacy pre-noon shifts and availability from mentor profile", async () => {
+    mockGetGatewayAuthLevel.mockResolvedValue({ userId: 12, isOfficer: false });
+    mockMentorSemesterFindFirst.mockResolvedValue({ id: 2 });
+    mockMentorAvailabilityFindUnique.mockResolvedValue({
+      slots: JSON.stringify([
+        { weekday: 1, hour: 10 },
+        { weekday: 2, hour: 11 },
+        { weekday: 3, hour: 12 },
+        { weekday: 4, hour: 17 },
+      ]),
+    });
+    mockUserFindUnique.mockResolvedValue({
+      ...baseUser(),
+      mentor: [
+        {
+          id: 5,
+          isActive: true,
+          expirationDate: null,
+          scheduleBlocks: [
+            { id: 1, weekday: 1, startHour: 10 },
+            { id: 2, weekday: 1, startHour: 11 },
+            { id: 3, weekday: 1, startHour: 12 },
+            { id: 4, weekday: 5, startHour: 17 },
+          ],
+        },
+      ],
+    });
+
+    const res = await GET(new Request("http://localhost") as any, {
+      params: Promise.resolve({ id: "12" }),
+    });
+    expect(res.status).toBe(200);
+    const body = await res.json();
+
+    expect(body.mentorProfile.shifts.map((s: any) => s.label)).toEqual([
+      "Monday 12:00-13:00",
+      "Friday 17:00-18:00",
+    ]);
+    expect(body.mentorProfile.availability).toEqual([
+      { weekday: 3, hour: 12 },
+      { weekday: 4, hour: 17 },
+    ]);
   });
 
   it("shows email for owner", async () => {

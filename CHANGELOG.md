@@ -4,6 +4,26 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0](https://github.com/rit-sse/WebsiteTheSSEquel/compare/v0.1.1...v0.2.0) (2026-10-28)
+
+
+### Features
+
+* add membership invitations ([a06a772](https://github.com/rit-sse/WebsiteTheSSEquel/commit/a06a772e0f39988777a910fdaf11a0aa73c7c392)), closes [#621](https://github.com/rit-sse/WebsiteTheSSEquel/issues/621)
+* allow reopening approved or rejected mentor applications ([#618](https://github.com/rit-sse/WebsiteTheSSEquel/issues/618)) ([867cf06](https://github.com/rit-sse/WebsiteTheSSEquel/commit/867cf0692c0297befa3bef7aed63f1e8bca702cb))
+* current mentors to homepage ([#607](https://github.com/rit-sse/WebsiteTheSSEquel/issues/607)) ([6e2e964](https://github.com/rit-sse/WebsiteTheSSEquel/commit/6e2e9642ed7b6b10b9f48ce47953c3d80f816ef1))
+* show last initials and availability grouping on mentor schedule ([#619](https://github.com/rit-sse/WebsiteTheSSEquel/issues/619)) ([05b63e2](https://github.com/rit-sse/WebsiteTheSSEquel/commit/05b63e2c931e28b7d928b4287dcff67f2515f2d0))
+
+
+### Bug Fixes
+
+* create p-card requests submitted with a new event ([#613](https://github.com/rit-sse/WebsiteTheSSEquel/issues/613)) ([1ab9de0](https://github.com/rit-sse/WebsiteTheSSEquel/commit/1ab9de0b19648c10ff5ce0dbd3efa17957e226a6))
+* exclude division managers from committee head nominations ([#615](https://github.com/rit-sse/WebsiteTheSSEquel/issues/615)) ([3cd0f2b](https://github.com/rit-sse/WebsiteTheSSEquel/commit/3cd0f2bddc7e9af905a77cf0ec307b6305c0edaf))
+* harden API authorization for member data (1 of 2) ([#624](https://github.com/rit-sse/WebsiteTheSSEquel/issues/624)) ([773fb7a](https://github.com/rit-sse/WebsiteTheSSEquel/commit/773fb7a41ce4fb2cb8a9bfedff1e828b9b71cc74))
+* honor staging auth for NextAuth sessions on server-gated pages ([#614](https://github.com/rit-sse/WebsiteTheSSEquel/issues/614)) ([6b799ae](https://github.com/rit-sse/WebsiteTheSSEquel/commit/6b799ae6615afc756a773deafa65c7fba66f4d4b))
+* show golink validation errors and accept URLs without a protocol ([#617](https://github.com/rit-sse/WebsiteTheSSEquel/issues/617)) ([fa5b158](https://github.com/rit-sse/WebsiteTheSSEquel/commit/fa5b158c5d18f2a32b7f988ea82df13838b5fb5d))
+* use theme text color on the election results reveal page ([#616](https://github.com/rit-sse/WebsiteTheSSEquel/issues/616)) ([6cb2678](https://github.com/rit-sse/WebsiteTheSSEquel/commit/6cb26783f111ffe16070b419c9ff46c636b5d807))
+
 ## [0.1.1](https://github.com/rit-sse/WebsiteTheSSEquel/compare/v0.1.0...v0.1.1) (2026-10-09)
 
 

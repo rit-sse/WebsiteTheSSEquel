@@ -5,12 +5,24 @@ import prisma from "@/lib/prisma";
 import { getGatewayAuthLevel } from "@/lib/authGateway";
 import { resolveUserImage } from "@/lib/s3Utils";
 import { recordMentorAvailabilityEvent } from "@/lib/mentorAvailabilityEvents";
+import { isMentoringSlotHour } from "@/lib/mentoringHours";
 
 export const dynamic = "force-dynamic";
 
 interface AvailabilitySlot {
   weekday: number; // 1-5 (Monday-Friday)
-  hour: number; // 10-17 (10am-5pm)
+  hour: number; // 12-17 (12pm-5pm)
+}
+
+/**
+ * Parses stored slots for a response. Legacy 10am/11am slots may still be
+ * stored; they can no longer be scheduled or re-saved, so they are not handed
+ * to clients (the stored row itself is left untouched).
+ */
+function parseVisibleSlots(slotsJson: string): AvailabilitySlot[] {
+  return (JSON.parse(slotsJson) as AvailabilitySlot[]).filter((slot) =>
+    isMentoringSlotHour(slot.hour)
+  );
 }
 
 /**
@@ -70,7 +82,9 @@ export async function GET(request: NextRequest) {
         orderBy: { updatedAt: "desc" },
       });
 
-      return NextResponse.json(availability);
+      return NextResponse.json(
+        availability.map((a) => ({ ...a, slots: parseVisibleSlots(a.slots) }))
+      );
     }
 
     // For fetching all availability (requires management permission for full list)
@@ -105,7 +119,7 @@ export async function GET(request: NextRequest) {
         image: resolveUserImage(a.user.profileImageKey, a.user.googleImageURL),
       },
       semesterId: a.semesterId,
-      slots: JSON.parse(a.slots) as AvailabilitySlot[],
+      slots: parseVisibleSlots(a.slots),
       updatedAt: a.updatedAt,
     }));
 
@@ -162,13 +176,13 @@ export async function POST(request: NextRequest) {
         typeof slot.hour !== "number" ||
         slot.weekday < 1 ||
         slot.weekday > 5 ||
-        slot.hour < 10 ||
+        slot.hour < 12 ||
         slot.hour > 17
       ) {
         return NextResponse.json(
           {
             error:
-              "Invalid slot format. weekday must be 1-5, hour must be 10-17",
+              "Invalid slot format. weekday must be 1-5, hour must be 12-17",
           },
           { status: 400 }
         );
@@ -236,8 +250,13 @@ export async function POST(request: NextRequest) {
         },
       });
 
+      // Legacy pre-noon blocks can never appear in submitted slots, so they
+      // would always look "absent". Leave them in place (they are hidden from
+      // reads) rather than deleting them as a side effect of saving.
       const blocksToRemove = existingBlocks.filter(
-        (block) => !slotSet.has(`${block.weekday}-${block.startHour}`)
+        (block) =>
+          isMentoringSlotHour(block.startHour) &&
+          !slotSet.has(`${block.weekday}-${block.startHour}`)
       );
 
       if (blocksToRemove.length > 0) {

@@ -21,14 +21,27 @@ function isOwnedProfileImageKey(key: string, userId: number): boolean {
   return key.startsWith(`uploads/profile-pictures/${userId}/`);
 }
 
+const PRIVATE_NO_STORE = { "Cache-Control": "private, no-store" };
+
 /**
  * HTTP GET request to /api/user/
- * Returns user list with field-level restrictions:
- * - Officers: full user directory fields.
- * - Authenticated non-officers: full fields only for self; limited public fields for others.
- * - Unauthenticated: limited public fields only.
+ * Returns the full user directory. Officers only.
  */
-export async function GET() {
+export async function GET(request: Request) {
+  const authLevel = await getGatewayAuthLevel(request);
+  if (!authLevel.isUser) {
+    return Response.json(
+      { error: "Unauthorized" },
+      { status: 401, headers: PRIVATE_NO_STORE }
+    );
+  }
+  if (!authLevel.isOfficer) {
+    return Response.json(
+      { error: "Officer access required" },
+      { status: 403, headers: PRIVATE_NO_STORE }
+    );
+  }
+
   const users = await prisma.user.findMany({
     select: {
       id: true,
@@ -69,7 +82,7 @@ export async function GET() {
     isMember: user._count.Memberships >= 1, // Computed for backward compatibility
   }));
 
-  return Response.json(usersWithMembershipCount);
+  return Response.json(usersWithMembershipCount, { headers: PRIVATE_NO_STORE });
 }
 
 /**

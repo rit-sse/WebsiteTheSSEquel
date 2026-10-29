@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getGatewayAuthLevel } from "@/lib/authGateway";
 import { resolveUserImage } from "@/lib/s3Utils";
+import { isMentoringSlotHour } from "@/lib/mentoringHours";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +17,7 @@ async function canManageSchedules(request: NextRequest): Promise<boolean> {
 
 /**
  * HTTP GET request to /api/scheduleBlock
- * Returns all schedule blocks for the active schedule, or a specific schedule if id provided
+ * Returns blocks within current mentoring hours for the active or requested schedule.
  */
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -97,35 +98,37 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ schedule: null, blocks: [] }, { status: 200 });
     }
 
-    // Transform the data for easier consumption
-    const blocks = schedule.blocks.map((block) => ({
-      id: block.id,
-      weekday: block.weekday,
-      startHour: block.startHour,
-      mentor: {
-        id: block.mentor.id,
-        isActive: block.mentor.isActive,
-        name: block.mentor.user.name,
-        email: block.mentor.user.email,
-        image: resolveUserImage(
-          block.mentor.user.profileImageKey,
-          block.mentor.user.googleImageURL
-        ),
-        description: block.mentor.user.description,
-        linkedIn: block.mentor.user.linkedIn,
-        gitHub: block.mentor.user.gitHub,
-        skills: block.mentor.mentorSkill.map((ms) => ({
-          id: ms.skill.id,
-          name: ms.skill.skill,
-        })),
-        courses: block.mentor.courseTaken.map((ct) => ({
-          id: ct.course.id,
-          title: ct.course.title,
-          code: `${ct.course.department.shortTitle}-${ct.course.code}`,
-          department: ct.course.department.title,
-        })),
-      },
-    }));
+    // Schedule blocks are filtered to only include those within mentoring hours (12pm-5pm)
+    const blocks = schedule.blocks
+      .filter((block) => isMentoringSlotHour(block.startHour))
+      .map((block) => ({
+        id: block.id,
+        weekday: block.weekday,
+        startHour: block.startHour,
+        mentor: {
+          id: block.mentor.id,
+          isActive: block.mentor.isActive,
+          name: block.mentor.user.name,
+          email: block.mentor.user.email,
+          image: resolveUserImage(
+            block.mentor.user.profileImageKey,
+            block.mentor.user.googleImageURL
+          ),
+          description: block.mentor.user.description,
+          linkedIn: block.mentor.user.linkedIn,
+          gitHub: block.mentor.user.gitHub,
+          skills: block.mentor.mentorSkill.map((ms) => ({
+            id: ms.skill.id,
+            name: ms.skill.skill,
+          })),
+          courses: block.mentor.courseTaken.map((ct) => ({
+            id: ct.course.id,
+            title: ct.course.title,
+            code: `${ct.course.department.shortTitle}-${ct.course.code}`,
+            department: ct.course.department.title,
+          })),
+        },
+      }));
 
     return NextResponse.json({
       schedule: {
@@ -183,10 +186,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate startHour (10-17, 10am-5pm)
-    if (startHour < 10 || startHour > 17) {
+    // Validate startHour (12-17, 12pm-5pm)
+    if (startHour < 12 || startHour > 17) {
       return NextResponse.json(
-        { error: "Invalid start hour. Must be between 10 (10am) and 17 (5pm)" },
+        { error: "Invalid start hour. Must be between 12 (12pm) and 17 (5pm)" },
         { status: 400 }
       );
     }
@@ -391,10 +394,10 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // Validate startHour (10-17, 10am-5pm)
-    if (startHour < 10 || startHour > 17) {
+    // Validate startHour (12-17, 12pm-5pm)
+    if (startHour < 12 || startHour > 17) {
       return NextResponse.json(
-        { error: "Invalid start hour. Must be between 10 (10am) and 17 (5pm)" },
+        { error: "Invalid start hour. Must be between 12 (12pm) and 17 (5pm)" },
         { status: 400 }
       );
     }

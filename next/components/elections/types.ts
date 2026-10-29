@@ -168,6 +168,19 @@ export interface SerializedElection {
   emailLogs: SerializedEmailLog[];
 }
 
+/**
+ * What public pages and non-admin API callers receive
+ * (see `toPublicElectionView`): ballots carry no voter identity or
+ * rankings, and user references have their email removed.
+ */
+export type PublicElection = Omit<
+  SerializedElection,
+  "ballots" | "emailLogs"
+> & {
+  ballots: { id: number; voterId: number | null }[];
+  emailLogs: [];
+};
+
 /* ---------- Election list item (lightweight) ---------- */
 export interface ElectionListItem {
   id: number;

@@ -2,9 +2,9 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import prisma from "@/lib/prisma";
 import { AuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import { getImageProps } from "next/image";
 import { resolveUserImage } from "./s3Utils";
 import { maybeCreateAlumniCandidate } from "@/lib/services/alumniCandidateService";
+import { claimPendingMembershipAwards } from "@/lib/services/membershipAwardService";
 
 // OAuth scopes for authentication
 const scopes = "openid email profile";
@@ -27,6 +27,17 @@ export const authOptions: AuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+      profile(profile) {
+        return {
+          id: profile.sub,
+          name: profile.name,
+          email: profile.email,
+          image: profile.picture,
+          // Keep Google's verification result here; the sign-in event doesn't
+          // receive the original email_verified field.
+          emailVerified: profile.email_verified === true ? new Date() : null,
+        };
+      },
       // Allow linking OAuth accounts to existing users with matching email
       // This is safe because we restrict to @g.rit.edu which is verified by Google
       allowDangerousEmailAccountLinking: true,
@@ -38,6 +49,28 @@ export const authOptions: AuthOptions = {
       },
     }),
   ],
+  events: {
+    async signIn({ user, account, profile }) {
+      const googleProfile = profile as
+        | { email?: string; emailVerified?: Date | null }
+        | undefined;
+      // We need the saved account ID, so claim in the event rather than the
+      // callback, which runs before a new account exists.
+      if (
+        account?.provider === "google" &&
+        googleProfile?.emailVerified instanceof Date &&
+        user.email &&
+        googleProfile.email?.toLowerCase() === user.email.toLowerCase()
+      ) {
+        try {
+          await claimPendingMembershipAwards(Number(user.id), user.email);
+        } catch (error) {
+          // A failed claim shouldn't block sign-in. We can retry next time.
+          console.error("Failed to claim pending membership awards", error);
+        }
+      }
+    },
+  },
   callbacks: {
     async session({ session }) {
       if (!session.user?.email) return session;

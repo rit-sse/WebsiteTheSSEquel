@@ -6,6 +6,7 @@ import {
   getElectionWithRelations,
   serializeElectionForClient,
   stageHasRequiredApprovals,
+  toPublicElectionView,
   validateElectionWindow,
 } from "@/lib/elections";
 import { canManageElections } from "@/lib/seAdmin";
@@ -36,7 +37,7 @@ async function parseElectionId(params: Promise<{ id: string }>) {
 }
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -45,7 +46,15 @@ export async function GET(
     if (!election) {
       return new Response("Election not found", { status: 404 });
     }
-    return Response.json(serializeElectionForClient(election));
+    const serialized = serializeElectionForClient(election);
+    const authLevel = await getGatewayAuthLevel(request);
+    // Only election admins may see ballots, voters and emails.
+    if (await canManageElections(authLevel)) {
+      return Response.json(serialized, {
+        headers: { "Cache-Control": "private, no-store" },
+      });
+    }
+    return Response.json(toPublicElectionView(serialized, authLevel.userId));
   } catch (error) {
     return new Response(
       error instanceof Error ? error.message : "Failed to load election",

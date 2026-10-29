@@ -1,4 +1,5 @@
 import { AuthLevel } from "@/lib/authLevel";
+import { ApiError } from "@/lib/apiError";
 
 export type GatewayAuthLevel = AuthLevel;
 
@@ -18,6 +19,19 @@ const DEFAULT_GATEWAY_AUTH_LEVEL: GatewayAuthLevel = {
   isPrimaryOfficer: false,
   isSeAdmin: false,
 };
+
+/**
+ * Route-level officer check for handlers that also sit behind the auth
+ * middleware. Returns an error response to send, or null when allowed.
+ */
+export async function requireOfficer(
+  request: Request
+): Promise<Response | null> {
+  const authLevel = await getGatewayAuthLevel(request);
+  if (!authLevel.isUser) return ApiError.unauthorized();
+  if (!authLevel.isOfficer && !authLevel.isSeAdmin) return ApiError.forbidden();
+  return null;
+}
 
 export async function getGatewayAuthLevel(
   request: Request

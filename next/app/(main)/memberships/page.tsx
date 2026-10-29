@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import { LeaderboardItem } from "./membership";
 import { AddMembershipModal } from "./AddMembershipModal";
+import { PendingMembershipAwards } from "./PendingMembershipAwards";
 import { DataTable, Column } from "@/components/ui/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -10,14 +12,39 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 export default function Leaderboard() {
   const [items, setItems] = useState<LeaderboardItem[]>([]);
   const [open, setOpen] = useState(false);
-  const [isOfficer, setIsOfficer] = useState(false);
+  const { data: session, status } = useSession();
+  const authKey = `${status}:${session?.user?.email ?? ""}`;
+  const [officerAuthKey, setOfficerAuthKey] = useState<string | null>(null);
+  const isOfficer = officerAuthKey === authKey;
   const [isLoading, setIsLoading] = useState(true);
+  const [awardsRevision, setAwardsRevision] = useState(0);
 
-  async function userStatus() {
-    const res = await fetch("/api/authLevel");
-    const data = await res.json();
-    setIsOfficer(data.isOfficer);
-  }
+  useEffect(() => {
+    if (status === "loading") return;
+    const controller = new AbortController();
+    setOfficerAuthKey(null);
+    void (async () => {
+      try {
+        const res = await fetch("/api/authLevel", {
+          signal: controller.signal,
+          cache: "no-store",
+        });
+        if (!res.ok) return;
+        const auth = await res.json();
+        if (
+          !controller.signal.aborted &&
+          auth.isUser === true &&
+          auth.userId != null &&
+          auth.isOfficer === true
+        ) {
+          setOfficerAuthKey(authKey);
+        }
+      } catch {
+        // Keep officer controls hidden if we can't verify access.
+      }
+    })();
+    return () => controller.abort();
+  }, [authKey, status]);
 
   async function load() {
     setIsLoading(true);
@@ -37,7 +64,6 @@ export default function Leaderboard() {
   }
 
   useEffect(() => {
-    userStatus();
     load();
   }, []);
 
@@ -131,9 +157,13 @@ export default function Leaderboard() {
           <AddMembershipModal
             open={open}
             onOpenChange={setOpen}
-            onCreated={load}
+            onCreated={() => {
+              void load();
+              setAwardsRevision((value) => value + 1);
+            }}
           />
         )}
+        {isOfficer && <PendingMembershipAwards revision={awardsRevision} />}
       </div>
     </section>
   );
