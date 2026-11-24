@@ -24,6 +24,7 @@ interface UserProfile {
   profileImageKey: string | null;
   linkedIn: string | null;
   gitHub: string | null;
+  personalWebsite: string | null;
   description: string | null;
   graduationTerm: "SPRING" | "SUMMER" | "FALL" | null;
   graduationYear: number | null;
@@ -74,6 +75,7 @@ export default function ProfileSettings() {
   const [description, setDescription] = useState("");
   const [linkedIn, setLinkedIn] = useState("");
   const [gitHub, setGitHub] = useState("");
+  const [personalWebsite, setPersonalWebsite] = useState("");
   const [image, setImage] = useState(DEFAULT_IMAGE);
   const [graduationTerm, setGraduationTerm] = useState<
     "SPRING" | "SUMMER" | "FALL" | ""
@@ -100,6 +102,7 @@ export default function ProfileSettings() {
           setDescription(me.description ?? "");
           setLinkedIn(extractLinkedInUsername(me.linkedIn ?? ""));
           setGitHub(extractGitHubUsername(me.gitHub ?? ""));
+          setPersonalWebsite(me.personalWebsite ?? "");
           setImage(me.image ?? DEFAULT_IMAGE);
           setGraduationTerm(me.graduationTerm ?? "");
           setGraduationYear(me.graduationYear ? String(me.graduationYear) : "");
@@ -167,6 +170,9 @@ export default function ProfileSettings() {
       const originalGh = extractGitHubUsername(original?.gitHub ?? "");
       if (linkedIn !== originalLi) payload.linkedIn = linkedIn;
       if (gitHub !== originalGh) payload.gitHub = gitHub;
+      if (personalWebsite !== (original?.personalWebsite ?? "")) {
+        payload.personalWebsite = personalWebsite || null;
+      }
       if (graduationTerm !== (original?.graduationTerm ?? "")) {
         payload.graduationTerm = graduationTerm || null;
       }
@@ -210,6 +216,7 @@ export default function ProfileSettings() {
         profileImageKey: updated.profileImageKey ?? null,
         linkedIn: updated.linkedIn,
         gitHub: updated.gitHub,
+        personalWebsite: updated.personalWebsite,
         description: updated.description,
         graduationTerm: updated.graduationTerm ?? null,
         graduationYear: updated.graduationYear ?? null,
@@ -249,6 +256,7 @@ export default function ProfileSettings() {
     setDescription(original.description ?? "");
     setLinkedIn(extractLinkedInUsername(original.linkedIn ?? ""));
     setGitHub(extractGitHubUsername(original.gitHub ?? ""));
+    setPersonalWebsite(original.personalWebsite ?? "");
     setImage(original.image ?? DEFAULT_IMAGE);
     setPendingCleanupKeys([]);
     setGraduationTerm(original.graduationTerm ?? "");
@@ -265,6 +273,7 @@ export default function ProfileSettings() {
       description !== (original.description ?? "") ||
       linkedIn !== extractLinkedInUsername(original.linkedIn ?? "") ||
       gitHub !== extractGitHubUsername(original.gitHub ?? "") ||
+      personalWebsite !== (original.personalWebsite ?? "") ||
       graduationTerm !== (original.graduationTerm ?? "") ||
       graduationYear !==
         (original.graduationYear ? String(original.graduationYear) : "") ||
@@ -420,6 +429,16 @@ export default function ProfileSettings() {
                     className="neo:rounded-l-none clean:rounded-l-none"
                   />
                 </div>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="personalWebsite">Personal Website</Label>
+                <Input
+                  id="personalWebsite"
+                  value={personalWebsite}
+                  onChange={(e) => setPersonalWebsite(e.target.value)}
+                  placeholder="https://example.com"
+                />
               </div>
             </div>
           </div>

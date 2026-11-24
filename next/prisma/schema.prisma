@@ -143,6 +143,7 @@ model User {
 
   linkedIn                     String?       @db.VarChar(500)
   gitHub                       String?       @db.VarChar(500)
+  personalWebsite              String?       @db.VarChar(500)
   description                  String?       @db.VarChar(1000)
   graduationTerm               AcademicTerm?
   graduationYear               Int?
@@ -151,7 +152,7 @@ model User {
   profileCompletionGrantedTerm AcademicTerm?
   profileCompletionGrantedYear Int?
 
-  //Image will be saved
+  //Image will be saved››
   profileImageKey String? @db.VarChar(500)
   googleImageURL  String? @db.VarChar(500)
 

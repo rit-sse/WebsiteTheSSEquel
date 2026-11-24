@@ -7,6 +7,7 @@ export const UpdateUserSchema = z.object({
   description: z.string().max(1000).nullable().optional(),
   linkedIn: z.string().max(500).nullable().optional(),
   gitHub: z.string().max(500).nullable().optional(),
+  personalWebsite: z.string().max(500).nullable().optional(),
   major: z.string().max(100).nullable().optional(),
   coopSummary: z.string().max(1000).nullable().optional(),
   graduationTerm: z.enum(["SPRING", "SUMMER", "FALL"]).nullable().optional(),
