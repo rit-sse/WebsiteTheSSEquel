@@ -49,6 +49,7 @@ export async function GET(request: Request) {
       email: true,
       linkedIn: true,
       gitHub: true,
+      personalWebsite: true,
       description: true,
       graduationTerm: true,
       graduationYear: true,
@@ -70,6 +71,7 @@ export async function GET(request: Request) {
     email: user.email,
     linkedIn: user.linkedIn,
     gitHub: user.gitHub,
+    personalWebsite: user.personalWebsite,
     description: user.description,
     graduationTerm: user.graduationTerm ?? null,
     graduationYear: user.graduationYear ?? null,
@@ -212,6 +214,7 @@ export async function PUT(request: NextRequest) {
     description?: string | null;
     linkedIn?: string | null;
     gitHub?: string | null;
+    personalWebsite?: string | null;
     profileImageKey?: string | null;
     googleImageURL?: string | null;
     graduationTerm?: "SPRING" | "SUMMER" | "FALL" | null;
@@ -235,6 +238,9 @@ export async function PUT(request: NextRequest) {
   }
   if ("gitHub" in body) {
     data.gitHub = body.gitHub;
+  }
+  if ("personalWebsite" in body) {
+    data.personalWebsite = body.personalWebsite;
   }
   if ("graduationTerm" in body) {
     data.graduationTerm = body.graduationTerm;

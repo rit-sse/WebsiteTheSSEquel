@@ -74,6 +74,7 @@ interface ProfileData {
   coopSummary: string | null;
   linkedIn: string | null;
   gitHub: string | null;
+  personalWebsite: string | null;
   description: string | null;
   membershipCount: number;
   memberships: {
@@ -194,6 +195,13 @@ function linkedinUrl(val: string): string {
   return `https://linkedin.com/in/${val}`;
 }
 
+function websiteUrl(val: string): string {
+  if (val.startsWith("https://") || val.startsWith("http://")) {
+    return val;
+  }
+
+  return `https://${val}`;
+}
 function prettifyTerm(term: "SPRING" | "SUMMER" | "FALL" | null): string {
   if (!term) return "Not set";
   if (term === "SPRING") return "Spring";
@@ -403,6 +411,7 @@ export default function ProfileContent({
   const [editDescription, setEditDescription] = useState("");
   const [editLinkedIn, setEditLinkedIn] = useState("");
   const [editGitHub, setEditGitHub] = useState("");
+  const [editPersonalWebsite, setEditPersonalWebsite] = useState("");
   const [editGraduationTerm, setEditGraduationTerm] = useState<
     "SPRING" | "SUMMER" | "FALL" | ""
   >("");
@@ -493,6 +502,7 @@ export default function ProfileContent({
     setEditName(data.name);
     setEditDescription(data.description ?? "");
     setEditLinkedIn(extractLinkedInUsername(data.linkedIn ?? ""));
+    setEditPersonalWebsite(data.personalWebsite ?? "");
     setEditGitHub(extractGitHubUsername(data.gitHub ?? ""));
     setEditGraduationTerm(data.graduationTerm ?? "");
     setEditGraduationYear(
@@ -529,6 +539,9 @@ export default function ProfileContent({
       const originalGh = extractGitHubUsername(profile.gitHub ?? "");
       if (editLinkedIn !== originalLi) payload.linkedIn = editLinkedIn;
       if (editGitHub !== originalGh) payload.gitHub = editGitHub;
+      if (editPersonalWebsite !== (profile.personalWebsite ?? "")) {
+        payload.personalWebsite = editPersonalWebsite || null;
+      }
       if (editGraduationTerm !== (profile.graduationTerm ?? "")) {
         payload.graduationTerm = editGraduationTerm || null;
       }
@@ -1089,6 +1102,18 @@ export default function ProfileContent({
                     <span className="hidden sm:inline">LinkedIn</span>
                   </a>
                 )}
+
+                {profile.personalWebsite && (
+                  <a
+                    href={websiteUrl(profile.personalWebsite)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    <span className="hidden sm:inline">Personal Site</span>
+                  </a>
+                )}
               </div>
             )}
           </div>
@@ -1324,6 +1349,16 @@ export default function ProfileContent({
                   className="neo:rounded-l-none clean:rounded-l-none"
                 />
               </div>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="edit-personalWebsite">Personal Website</Label>
+              <Input
+                id="edit-personalWebsite"
+                value={editPersonalWebsite}
+                onChange={(e) => setEditPersonalWebsite(e.target.value)}
+                placeholder="https://example.com"
+              />
             </div>
           </div>
         </div>
